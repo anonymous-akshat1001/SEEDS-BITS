@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "160635759571",
+    "project_id": "seeds-bits",
+    "storage_bucket": "seeds-bits.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:160635759571:android:18019c219f3c9ef6c39d26",
+        "android_client_info": {
+          "package_name": "com.example.frontend"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA0WdmH0_PUSl4EESF_5uNz8SU701hkbqU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,81 @@
+-- USERS: Authentication + roles
+CREATE TABLE users (
+    user_id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    phone_number TEXT UNIQUE NOT NULL,
+    role VARCHAR(20) CHECK (role IN ('teacher', 'student')) NOT NULL,
+    password_hash TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- SESSIONS: A "conference call" or "web-app service session"
+CREATE TABLE sessions (
+    session_id SERIAL PRIMARY KEY,
+    title TEXT,
+    created_by INT REFERENCES users(user_id) ON DELETE SET NULL,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT NOW(),
+    ended_at TIMESTAMP
+);
+
+-- PARTICIPANTS: who is in which session
+CREATE TABLE participants (
+    participant_id SERIAL PRIMARY KEY,
+    session_id INT REFERENCES sessions(session_id) ON DELETE CASCADE,
+    user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
+    joined_at TIMESTAMP DEFAULT NOW(),
+    left_at TIMESTAMP,
+    is_muted BOOLEAN DEFAULT TRUE,
+    is_kicked BOOLEAN DEFAULT FALSE,
+    UNIQUE(session_id, user_id)
+);
+
+-- AUDIO FILES: library of stories/books
+CREATE TABLE audio_files (
+    audio_id SERIAL PRIMARY KEY,
+    title TEXT NOT NULL,
+    description TEXT,
+    file_path TEXT NOT NULL,   -- local path on server/device
+    mime_type TEXT DEFAULT 'audio/mpeg/mp3', -- optional, e.g., audio/mp3, audio/wav
+    uploaded_by INT REFERENCES users(user_id) ON DELETE SET NULL,
+    uploaded_at TIMESTAMP DEFAULT NOW()
+);
+
+-- PLAYBACK: track what audio was played in which session
+CREATE TABLE playback (
+    playback_id SERIAL PRIMARY KEY,
+    session_id INT REFERENCES sessions(session_id) ON DELETE CASCADE,
+    audio_id INT REFERENCES audio_files(audio_id) ON DELETE SET NULL,
+    started_by INT REFERENCES users(user_id) ON DELETE SET NULL,
+    started_at TIMESTAMP DEFAULT NOW(),
+    ended_at TIMESTAMP
+);
+
+
+-- QUESTIONS: asked by students during a session
+CREATE TABLE questions (
+    question_id SERIAL PRIMARY KEY,
+    session_id INT REFERENCES sessions(session_id) ON DELETE CASCADE,
+    asked_by INT REFERENCES users(user_id) ON DELETE SET NULL,
+    content TEXT NOT NULL,
+    asked_at TIMESTAMP DEFAULT NOW()
+);
+
+-- LOGS: detailed analytics
+CREATE TABLE logs (
+    log_id SERIAL PRIMARY KEY,
+    session_id INT REFERENCES sessions(session_id) ON DELETE CASCADE,
+    user_id INT REFERENCES users(user_id) ON DELETE SET NULL,
+    event_type VARCHAR(50),  -- e.g. 'login', 'join_session', 'play_audio', 'mute', 'question'
+    event_details JSONB,     -- flexible metadata
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- TOKENS: JWT management (optional, for refresh/blacklist)
+CREATE TABLE jwt_tokens (
+    token_id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
+    token TEXT UNIQUE NOT NULL,
+    issued_at TIMESTAMP DEFAULT NOW(),
+    expires_at TIMESTAMP
+);
