@@ -22,6 +22,7 @@ from . import models, schemas, auth, ws_manager
 from .database import engine, get_db
 from .notification_service import fcm_service
 from .ws_manager import ws_mgr, SESSION_STATE, SESSION_LOCK
+from .session_logger import SessionLogger, get_session_logs, get_session_summary
 
 
 # Audio directory - store audio files locally
@@ -178,6 +179,10 @@ async def create_session(payload: schemas.SessionCreate,
             "participants": {},
             "playback": {"audio_id": None, "status": "stopped", "speed": 1.0, "position": 0.0}
         })
+    
+    # Log session creation
+    await SessionLogger.log_session_created(db, s.session_id, user.user_id, payload.title)
+    
     return s
 
 
@@ -347,6 +352,9 @@ async def invite_student_to_session(
     # Try to send to student via any active WebSocket connections
     # (This would require tracking user connections globally, not just per-session)
     
+    # Log invitation
+    await SessionLogger.log_participant_invited(db, session_id, student_id, current_user.user_id)
+    
     return {
         "ok": True,
         "message": f"Invitation sent to {student.name}",
@@ -437,6 +445,9 @@ async def join_or_add_participant(
         "user_id": user_id,
         "name": target_user.name
     })
+    
+    # Log participant joined
+    await SessionLogger.log_participant_joined(db, session_id, user_id, p.participant_id, target_user.name)
 
     return {"ok": True, "participant_id": p.participant_id}
 
@@ -465,6 +476,9 @@ async def remove_participant(session_id: int, participant_id: int,
         background_tasks.add_task(ws_mgr.kick_participant, session_id, participant_id, "Removed by teacher")
     else:
         asyncio.create_task(ws_mgr.kick_participant(session_id, participant_id, "Removed by teacher"))
+    
+    # Log participant kicked
+    await SessionLogger.log_participant_kicked(db, session_id, p.user_id, current_user.user_id, participant_id, "Removed by teacher")
     
     return {"ok": True}
 
@@ -577,6 +591,10 @@ async def upload_audio(title: str = Form(...),
     db.add(af)
     await db.commit()
     await db.refresh(af)
+    
+    # Log audio upload
+    await SessionLogger.log_audio_uploaded(db, current_user.user_id, af.audio_id, title, file_path, duration)
+    
     return af
 
 
@@ -641,6 +659,10 @@ async def rest_select_audio(session_id: int,
         raise HTTPException(status_code=404, detail="Audio file not found")
     
     await ws_mgr.audio_select(session_id, audio_id, af.title)
+    
+    # Log audio selected
+    await SessionLogger.log_audio_selected(db, session_id, current_user.user_id, audio_id, af.title)
+    
     return {"ok": True, "audio_id": audio_id, "title": af.title}
 
 
@@ -662,6 +684,10 @@ async def rest_play_audio(session_id: int,
             raise HTTPException(status_code=400, detail="No audio selected for this session")
     
     await ws_mgr.audio_play(session_id, audio_id, speed, position)
+    
+    # Log audio play
+    await SessionLogger.log_audio_play(db, session_id, current_user.user_id, audio_id, position, speed)
+    
     return {"ok": True}
 
 
@@ -812,6 +838,9 @@ async def send_chat_message(
             "timestamp": chat_msg.timestamp.isoformat(),
         },
     )
+    
+    # Log chat message
+    await SessionLogger.log_chat_message(db, session_id, current_user.user_id, msg.participant_id, msg.message)
 
     return chat_msg
 
@@ -866,6 +895,70 @@ async def get_session_state(session_id: int, db: Annotated[AsyncSession, Depends
             "started_at": playback.started_at.isoformat(),
         } if playback else None,
     }
+
+
+# ============ SESSION LOGS ENDPOINTS ============
+
+@app.get("/sessions/{session_id}/logs")
+async def get_session_logs_endpoint(
+    session_id: int,
+    event_type: Optional[str] = Query(None, description="Filter by event type"),
+    user_id: Optional[int] = Query(None, description="Filter by user ID"),
+    limit: int = Query(100, ge=1, le=1000),
+    current_user: models.User = Depends(get_user_by_id),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get session activity logs.
+    Teachers can view all logs for sessions they created.
+    """
+    # Verify session exists and user has access
+    session = await db.get(models.Session, session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    
+    # Only session creator (teacher) can view logs
+    if session.created_by != current_user.user_id and current_user.role.lower() != "teacher":
+        raise HTTPException(status_code=403, detail="Only the session creator can view logs")
+    
+    logs = await get_session_logs(db, session_id, event_type, user_id, limit)
+    
+    return {
+        "session_id": session_id,
+        "total_logs": len(logs),
+        "logs": [
+            {
+                "log_id": log.log_id,
+                "event_type": log.event_type,
+                "user_id": log.user_id,
+                "event_details": log.event_details,
+                "created_at": log.created_at.isoformat()
+            }
+            for log in logs
+        ]
+    }
+
+
+@app.get("/sessions/{session_id}/logs/summary")
+async def get_session_logs_summary_endpoint(
+    session_id: int,
+    current_user: models.User = Depends(get_user_by_id),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get a summary of session activity including event counts.
+    """
+    # Verify session exists and user has access
+    session = await db.get(models.Session, session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    
+    # Only session creator (teacher) can view logs
+    if session.created_by != current_user.user_id and current_user.role.lower() != "teacher":
+        raise HTTPException(status_code=403, detail="Only the session creator can view logs")
+    
+    summary = await get_session_summary(db, session_id)
+    return summary
 
 
 
