@@ -11,7 +11,7 @@ class UserCreate(BaseModel):
     phone_number: str = Field(..., min_length=10, max_length=20)
     password: str = Field(..., min_length=6)
     role: str  # 'teacher' or 'student'
-    
+    # valid -> column
     @validator('role')
     def validate_role(cls, v):
         if v.lower() not in ['teacher', 'student']:
@@ -28,6 +28,7 @@ class UserOut(BaseModel):
     
     class Config:
         orm_mode = True
+
 
 
 class UserLogin(BaseModel):
@@ -154,19 +155,19 @@ class PlaybackOut(BaseModel):
 
 
 class AudioPlaybackControl(BaseModel):
-    audio_id: int | None = None
+    audio_id: Optional[int] = None
     speed: float = 1.0
     position: float = 0.0
     action: str  # 'play', 'pause', 'seek'
 
 
 class AudioPlaybackState(BaseModel):
-    audio_id: int | None
-    title: str | None
+    audio_id: Optional[int]
+    title: Optional[str]
     status: str  # 'stopped', 'playing', 'paused'
     speed: float
     position: float
-    duration: float | None
+    duration: Optional[float]
 
 
 

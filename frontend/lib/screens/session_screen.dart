@@ -1,20 +1,23 @@
 // ignore_for_file: avoid_print
 
 import 'dart:async';
+import 'dart:convert';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:audioplayers/audioplayers.dart';
-import 'dart:convert';
+import 'package:file_picker/file_picker.dart';
+import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_service.dart';
-// Allows reading environment variables
+import '../services/sse_service.dart';
+import 'invite_students_screen.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 
-// Backend and websocket URL
 final baseUrl = dotenv.env['API_BASE_URL'];
-final wsBaseUrl = dotenv.env['WS_BASE_URL'];
 
 
 class SessionScreen extends StatefulWidget {
@@ -36,88 +39,117 @@ class SessionScreen extends StatefulWidget {
 }
 
 class _SessionScreenState extends State<SessionScreen> {
-  // WebRTC
-  MediaStream? _localStream;
-  final Map<int, RTCPeerConnection> _peerConnections = {};
-  final Map<int, RTCVideoRenderer> _remoteRenderers = {};
-  
-  final FlutterTts _tts = FlutterTts();
-  final AudioPlayer _sessionAudioPlayer = AudioPlayer(); // For synchronized session audio
+  // ── WebRTC ─────────────────────────────────────────────────────────────
+  MediaStream?                         _localStream;
+  final Map<int, RTCPeerConnection>    _peerConnections  = {};
+  final Map<int, RTCVideoRenderer>     _remoteRenderers  = {};
 
-  bool _muted = false;
-  bool _handRaised = false;
-  bool _ttsEnabled = true;
-  bool _isInitializing = true;
-  int? _participantId;
-  int? _currentAudioId;
+  // ICE candidate batching — collect candidates for 150 ms then send as one POST
+  final Map<int, List<Map<String, dynamic>>> _pendingIceCandidates = {};
+  final Map<int, Timer>                      _iceTimers            = {};
+
+  // ── SSE transport ──────────────────────────────────────────────────────
+  final SseService _sse = SseService();
+
+  // ── audio ──────────────────────────────────────────────────────────────
+  final FlutterTts   _tts              = FlutterTts();
+  final AudioPlayer  _sessionAudioPlayer = AudioPlayer();
+
+  // ── UI state ───────────────────────────────────────────────────────────
+  bool    _muted                = false;
+  bool    _handRaised           = false;
+  bool    _ttsEnabled           = true;
+  bool    _isInitializing       = true;
+
+  // Set from the SSE 'connected' event — authoritative server-assigned id
+  int?    _participantId;
+
+  // Audio
+  int?    _currentAudioId;
   String? _currentAudioTitle;
-  bool _isPlayingSessionAudio = false;
-  double _audioSpeed = 1.0;
+  bool    _isPlayingSessionAudio = false;
+  double  _audioSpeed            = 1.0;
   double? _audioDuration;
-  double _currentPosition = 0.0;
-  // Timer? _positionTracker;
-  bool _isSeeking = false;  
+  double  _currentPosition       = 0.0;
+  bool    _isSeeking             = false;
 
+  // Chat & participants
+  final TextEditingController          _chatController    = TextEditingController();
+  final List<Map<String, dynamic>>     _messages          = [];
+  final Map<int, Map<String, dynamic>> _participants      = {};
+  final ScrollController               _chatScrollController = ScrollController();
 
-  final TextEditingController _chatController = TextEditingController();
-  final List<Map<String, dynamic>> _messages = [];
-  final Map<int, Map<String, dynamic>> _participants = {};
-  
-  WebSocketChannel? _wsChannel;
-  final ScrollController _chatScrollController = ScrollController();
+  // ── Audio library panel toggle (teacher) ───────────────────────────────
+  bool _showAudioPanel = false;
 
-  // STUN/TURN Configuration
+  // ── Audio library (teacher only) ────────────────────────────────────────
+  List<Map<String, dynamic>> _audioFiles        = [];
+  bool                       _audioLibraryLoaded = false;
+  bool                       _isUploadingAudio   = false;
+  int?                       _previewingAudioId;
+  final AudioPlayer          _previewPlayer      = AudioPlayer();
+  final TextEditingController _uploadTitleCtrl   = TextEditingController();
+  final TextEditingController _uploadDescCtrl    = TextEditingController();
+
+  // WebRTC config
   final Map<String, dynamic> _iceServers = {
     'iceServers': [
       {'urls': 'stun:stun.l.google.com:19302'},
       {'urls': 'stun:stun1.l.google.com:19302'},
-      {'urls': 'stun:stun2.l.google.com:19302'},
     ],
     'sdpSemantics': 'unified-plan',
   };
+
+  // ── lifecycle ───────────────────────────────────────────────────────────
 
   @override
   void initState() {
     super.initState();
     _initialize();
 
-    // Listen to audio player position updates
-    _sessionAudioPlayer.onPositionChanged.listen((position) {
+    _sessionAudioPlayer.onPositionChanged.listen((pos) {
       if (mounted && !_isSeeking) {
-        setState(() {
-          _currentPosition = position.inSeconds.toDouble();
-        });
+        setState(() => _currentPosition = pos.inSeconds.toDouble());
       }
     });
-    
-    // Listen to duration
-    _sessionAudioPlayer.onDurationChanged.listen((duration) {
+    _sessionAudioPlayer.onDurationChanged.listen((dur) {
+      if (mounted) setState(() => _audioDuration = dur.inSeconds.toDouble());
+    });
+    _sessionAudioPlayer.onPlayerComplete.listen((_) {
       if (mounted) {
-        setState(() {
-          _audioDuration = duration.inSeconds.toDouble();
-        });
+        setState(() { _isPlayingSessionAudio = false; _currentPosition = 0; });
+        _speakIfEnabled("Playback finished");
       }
     });
 
-    // Listen to playback completion
-    _sessionAudioPlayer.onPlayerComplete.listen((_) {
-      if (mounted) {
-        setState(() {
-          _isPlayingSessionAudio = false;
-          _currentPosition = 0.0;
-        });
-        _speakIfEnabled("Playback finished");
+    // Preview player for audio library
+    _previewPlayer.onPlayerComplete.listen((_) {
+      if (mounted) setState(() => _previewingAudioId = null);
+    });
+    _previewPlayer.onPlayerStateChanged.listen((state) {
+      if (mounted && state == PlayerState.stopped) {
+        setState(() => _previewingAudioId = null);
       }
     });
   }
 
-
   Future<void> _initialize() async {
     try {
-      print('[INIT] Starting initialization...');
+      print('[INIT] Starting…');
       await _initializeMedia();
-      await _joinSession();
-      await _connectWebSocket();
+
+      // Join the session HTTP-side so a Participant row exists before SSE connects.
+      // The SSE endpoint also creates the row if absent, but calling join first
+      // ensures _participantId is known slightly earlier.
+      await _joinSessionHttp();
+
+      // Open the SSE stream — this also creates the participant row server-side
+      // and returns the authoritative participant_id via the 'connected' event.
+      _connectSse();
+
+      // Pre-load audio library for teacher so the panel is ready immediately
+      if (widget.isTeacher) _loadAudioLibrary();
+
       setState(() => _isInitializing = false);
       await _speakIfEnabled("Session ready");
     } catch (e) {
@@ -129,635 +161,753 @@ class _SessionScreenState extends State<SessionScreen> {
 
   Future<void> _initializeMedia() async {
     try {
-      print('[MEDIA] Requesting permissions...');
-      
-      // Request audio with optimal settings
-      final Map<String, dynamic> mediaConstraints = {
+      _localStream = await navigator.mediaDevices.getUserMedia({
         'audio': {
           'mandatory': {
             'googEchoCancellation': true,
             'googNoiseSuppression': true,
-            'googAutoGainControl': true,
-            'googHighpassFilter': true,
+            'googAutoGainControl':  true,
           },
           'optional': [],
         },
         'video': false,
-      };
-
-      _localStream = await navigator.mediaDevices.getUserMedia(mediaConstraints);
-      
-      if (_localStream == null) {
-        throw Exception('Failed to get media stream');
-      }
-
-      // Set initial mute state
-      _localStream!.getAudioTracks().forEach((track) {
-        track.enabled = !_muted;
-        print('[MEDIA] Audio track: ${track.id}, enabled: ${track.enabled}');
       });
-      
-      print('[MEDIA] Local stream initialized successfully');
+      _localStream!.getAudioTracks().forEach((t) => t.enabled = !_muted);
+      print('[MEDIA] Local stream ready');
     } catch (e) {
       print('[MEDIA ERROR] $e');
-      throw Exception('Microphone permission denied or unavailable');
+      throw Exception('Microphone permission denied');
     }
   }
 
-  Future<void> _joinSession() async {
+  /// HTTP join — ensures a Participant row exists and caches participant_id.
+  Future<void> _joinSessionHttp() async {
     try {
-      print('[JOIN] Joining session ${widget.sessionId}...');
       final result = await ApiService.joinSession(widget.sessionId);
       if (result != null && result['participant_id'] != null) {
-        _participantId = result['participant_id'];
-        print('[JOIN] Success! Participant ID: $_participantId');
-      } else {
-        print('[JOIN] No participant_id in response');
+        // This may be overwritten by the SSE 'connected' event, which is fine.
+        _participantId = result['participant_id'] as int?;
+        print('[JOIN] HTTP participant_id=$_participantId');
       }
     } catch (e) {
-      print('[JOIN ERROR] $e');
-      throw Exception('Failed to join session');
+      print('[JOIN HTTP ERROR] $e');
+      // Non-fatal: SSE endpoint will create the participant row too.
     }
   }
 
-  Future<void> _connectWebSocket() async {
-    try {
-      final wsUrl = '$wsBaseUrl/ws/sessions/${widget.sessionId}?user_id=${widget.userId}';
-      print('[WS] Connecting to: $wsUrl');
-      
-      _wsChannel = WebSocketChannel.connect(Uri.parse(wsUrl));
-      
-      _wsChannel!.stream.listen(
-        (message) => _handleWebSocketMessage(message),
-        onError: (error) {
-          print('[WS ERROR] $error');
-          _reconnectWebSocket();
-        },
-        onDone: () {
-          print('[WS] Connection closed, reconnecting...');
-          _reconnectWebSocket();
-        },
-      );
-      
-      print('[WS] Connected successfully');
-    } catch (e) {
-      print('[WS ERROR] Failed to connect: $e');
-      Future.delayed(const Duration(seconds: 3), _reconnectWebSocket);
+  // ── SSE connection ──────────────────────────────────────────────────────
+
+  void _connectSse() {
+    _sse.connect(
+      widget.sessionId.toString(),
+      widget.userId,
+      _handleSseMessage,
+    );
+  }
+
+  void _handleSseMessage(Map<String, dynamic> data) {
+    final type = data['type'] as String? ?? '';
+    print('[SSE RECV] $type');
+
+    switch (type) {
+      // ── connection bootstrap ─────────────────────────────────────────
+      case 'connected':
+        // Server tells us our authoritative participant_id
+        final pid = data['participant_id'] as int?;
+        if (pid != null) {
+          setState(() => _participantId = pid);
+          print('[SSE] Server assigned participant_id=$pid');
+        }
+
+      case 'session_state':
+        _updateSessionState(data);
+
+      // ── participant presence ─────────────────────────────────────────
+      case 'participant_joined':
+        _onParticipantJoined(data);
+
+      case 'participant_left':
+        _onParticipantLeft(data);
+
+      case 'participant_kicked':
+        // Another participant was kicked — remove them from local list
+        final pid = data['participant_id'] as int?;
+        if (pid != null && pid != _participantId) {
+          setState(() => _participants.remove(pid));
+          _closePeerConnection(pid);
+        }
+
+      // ── mute / hand ──────────────────────────────────────────────────
+      case 'participant_muted':
+        _onParticipantMuted(data);
+
+      case 'hand_raised':
+        _onHandChanged(data, true);
+
+      case 'hand_lowered':
+        _onHandChanged(data, false);
+
+      // ── chat ─────────────────────────────────────────────────────────
+      case 'chat':
+        _onChatMessage(data);
+
+      // ── kicked / session ended ───────────────────────────────────────
+      case 'kicked':
+        _onKicked(data);
+
+      case 'session_ended':
+      case 'session_ending':
+        _onSessionEnded();
+
+      // ── WebRTC signalling ────────────────────────────────────────────
+      case 'webrtc_signal':
+        _handleWebRTCSignal(data);
+
+      // ── audio ────────────────────────────────────────────────────────
+      case 'audio_selected':
+        _onAudioSelected(data);
+
+      case 'audio_play':
+        _onAudioPlay(data);
+
+      case 'audio_pause':
+        _onAudioPause(data);
+
+      case 'audio_seek':
+        _onAudioSeek(data);
+
+      case 'audio_speed_change':
+        // data['speed'] is a num from JSON
+        final newSpeed = (data['speed'] as num?)?.toDouble();
+        if (newSpeed != null) _applyAudioSpeedLocally(newSpeed);
+
+      case 'error':
+        print('[SSE SERVER ERROR] ${data['detail']}');
+        _showSnackError(data['detail']?.toString() ?? 'Server error');
+
+      default:
+        print('[SSE] Unhandled type: $type');
     }
   }
 
-  Future<void> _reconnectWebSocket() async {
-    if (!mounted) return;
-    await Future.delayed(const Duration(seconds: 2));
-    if (mounted) {
-      await _connectWebSocket();
-    }
-  }
-
-  void _sendWebSocketMessage(Map<String, dynamic> message) {
-    try {
-      if (_wsChannel != null) {
-        final json = jsonEncode(message);
-        _wsChannel!.sink.add(json);
-        print('[WS SEND] ${message['type']}');
-      }
-    } catch (e) {
-      print('[WS SEND ERROR] $e');
-    }
-  }
-
-  void _handleWebSocketMessage(dynamic message) {
-    try {
-      final data = jsonDecode(message);
-      final type = data['type'];
-
-      print('[WS RECEIVE] $type');
-
-      switch (type) {
-        case 'connected':
-          print('[WS] Connection confirmed');
-          break;
-        case 'session_state':
-          _updateSessionState(data);
-          break;
-        case 'participant_joined':
-          _onParticipantJoined(data);
-          break;
-        case 'participant_left':
-          _onParticipantLeft(data);
-          break;
-        case 'participant_muted':
-          _onParticipantMuted(data);
-          break;
-        case 'hand_raised':
-          _onHandRaised(data, true);
-          break;
-        case 'hand_lowered':
-          _onHandRaised(data, false);
-          break;
-        case 'chat':
-          _onChatMessage(data);
-          break;
-        case 'kicked':
-          _onKicked(data);
-          break;
-        case 'session_ended':
-          _onSessionEnded();
-          break;
-        case 'webrtc_signal':
-          _handleWebRTCSignal(data);
-          break;
-        case 'audio_selected':
-          _onAudioSelected(data);
-          break;
-        case 'audio_play':
-          _onAudioPlay(data);
-          break;
-        case 'audio_pause':
-          _onAudioPause(data);
-          break;
-        case 'audio_seek':
-          _onAudioSeek(data);
-          break;
-        case 'audio_speed_change':
-          _changeAudioSpeed(data);
-          break;
-        case 'error':
-          print('[WS ERROR] ${data['detail']}');
-          _showError(message);
-          break;
-        default:
-          print('[WS] Unknown message type: $type');
-      }
-    } catch (e) {
-      print('[WS PARSE ERROR] $e');
-    }
-  }
+  // ── session state snapshot ──────────────────────────────────────────────
 
   void _updateSessionState(Map<String, dynamic> data) {
-    print('[STATE] Updating session state...');
+    print('[STATE] Updating session state…');
+    final participants = data['participants'] as Map<String, dynamic>? ?? {};
+
     setState(() {
       _participants.clear();
-      final participants = data['participants'] as Map<String, dynamic>? ?? {};
-      
+
       participants.forEach((key, value) {
-        final participantId = int.tryParse(key) ?? 0;
-        if (participantId == 0) return;
-        
-        final participantData = value as Map<String, dynamic>;
-        
-        _participants[participantId] = {
-          'id': participantId,
-          'user_id': participantData['user_id'],
-          'name': participantData['name'] ?? 'User ${participantData['user_id']}',
-          'is_muted': participantData['is_muted'] ?? false,
-          'raised_hand': participantData['raised_hand'] ?? false,
-          'is_teacher': false,
+        final pid  = int.tryParse(key);
+        if (pid == null || pid == 0) return;
+
+        final meta = value as Map<String, dynamic>;
+        _participants[pid] = {
+          'id':         pid,
+          'user_id':    meta['user_id'],
+          'name':       meta['name'] ?? 'User ${meta['user_id']}',
+          'is_muted':   meta['is_muted']   ?? false,
+          'raised_hand': meta['raised_hand'] ?? false,
+          // is_teacher is now stored server-side and included in the snapshot
+          'is_teacher': meta['is_teacher']  ?? false,
         };
       });
     });
-    
-    print('[STATE] ${_participants.length} participants loaded');
-    
-    // Create WebRTC connections for all participants (except self)
-    _participants.keys.where((id) => id != _participantId).forEach((participantId) {
-      if (!_peerConnections.containsKey(participantId)) {
-        print('[WebRTC] Creating connection for participant $participantId');
-        _createPeerConnection(participantId, true); // true = create offer
+
+    print('[STATE] ${_participants.length} participants');
+
+    // Also restore audio playback state if the session was already playing
+    final playback = data['playback'] as Map<String, dynamic>?;
+    if (playback != null && playback['status'] == 'playing') {
+      final audioId  = playback['audio_id'] as int?;
+      final speed    = (playback['speed']   as num?)?.toDouble() ?? 1.0;
+      final position = (playback['position'] as num?)?.toDouble() ?? 0.0;
+      if (audioId != null) {
+        _onAudioPlay({
+          'audio_id': audioId,
+          'speed':    speed,
+          'position': position,
+          'title':    playback['title'],
+        });
       }
-    });
+    }
+
+    // Initiate WebRTC with every existing participant (except self)
+    final myPid = _participantId;
+    if (myPid != null) {
+      _participants.keys
+          .where((pid) => pid != myPid)
+          .where((pid) => !_peerConnections.containsKey(pid))
+          .forEach((pid) => _createPeerConnection(pid, true));
+    }
   }
 
+  // ── participant events ──────────────────────────────────────────────────
+
   void _onParticipantJoined(Map<String, dynamic> data) {
-    final participantId = data['participant_id'] as int?;
-    final userId = data['user_id'] as int?;
-    final name = data['name'] ?? 'User $userId';
-    final isTeacher = data['is_teacher'] ?? false;
-    
-    if (participantId == null || participantId == _participantId) return;
-    
-    print('[PARTICIPANT] Joined: $name ($participantId)');
-    
+    final pid       = data['participant_id'] as int?;
+    final uid       = data['user_id']       as int?;
+    final name      = data['name']          as String? ?? 'User $uid';
+    final isTeacher = data['is_teacher']    as bool?   ?? false;
+
+    if (pid == null || pid == _participantId) return;
+
+    print('[PARTICIPANT] Joined: $name (pid=$pid)');
+
     setState(() {
-      _participants[participantId] = {
-        'id': participantId,
-        'user_id': userId,
-        'name': name,
-        'is_muted': false,
+      _participants[pid] = {
+        'id':         pid,
+        'user_id':    uid,
+        'name':       name,
+        'is_muted':   false,
         'raised_hand': false,
         'is_teacher': isTeacher,
       };
     });
-    
+
     _speakIfEnabled('$name joined');
-    
-    // Create WebRTC connection (we'll wait for their offer)
-    if (!_isInitializing && participantId != _participantId) {
-      // Don't create offer immediately, wait for their offer or create ours after delay
-      Future.delayed(const Duration(milliseconds: 500), () {
-        if (!_peerConnections.containsKey(participantId)) {
-          _createPeerConnection(participantId, participantId > (_participantId ?? 0));
-        }
-      });
-    }
+
+    // Give a short delay so both sides have their SSE streams open
+    // before we attempt WebRTC negotiation.
+    Future.delayed(const Duration(milliseconds: 600), () {
+      if (mounted && !_peerConnections.containsKey(pid)) {
+        // The participant with the higher id creates the offer.
+        // This prevents both sides creating offers simultaneously.
+        final myPid = _participantId ?? 0;
+        _createPeerConnection(pid, myPid > pid);
+      }
+    });
   }
 
   void _onParticipantLeft(Map<String, dynamic> data) {
-    final participantId = data['participant_id'] as int?;
-    if (participantId == null) return;
-    
-    final participant = _participants[participantId];
-    if (participant != null) {
-      final name = participant['name'] as String;
-      print('[PARTICIPANT] Left: $name ($participantId)');
-      
-      setState(() {
-        _participants.remove(participantId);
-      });
-      
-      // Clean up WebRTC connection
-      _closePeerConnection(participantId);
-      
-      _speakIfEnabled('$name left');
-    }
+    final pid = data['participant_id'] as int?;
+    if (pid == null) return;
+
+    final name = _participants[pid]?['name'] as String? ?? 'Someone';
+    setState(() => _participants.remove(pid));
+    _closePeerConnection(pid);
+    _speakIfEnabled('$name left');
   }
 
   void _onParticipantMuted(Map<String, dynamic> data) {
-    final participantId = data['participant_id'] as int?;
-    final isMuted = data['is_muted'] ?? false;
-    
-    if (participantId == null) return;
-    
+    final pid     = data['participant_id'] as int?;
+    final isMuted = data['is_muted']       as bool? ?? false;
+    if (pid == null) return;
+
     setState(() {
-      if (_participants.containsKey(participantId)) {
-        _participants[participantId]!['is_muted'] = isMuted;
+      if (_participants.containsKey(pid)) {
+        _participants[pid]!['is_muted'] = isMuted;
       }
+      // If it's about us, update our local mute state too
+      if (pid == _participantId) _muted = isMuted;
     });
   }
 
-  void _onHandRaised(Map<String, dynamic> data, bool raised) {
-    final participantId = data['participant_id'] as int?;
-    if (participantId == null) return;
-    
+  void _onHandChanged(Map<String, dynamic> data, bool raised) {
+    final pid = data['participant_id'] as int?;
+    if (pid == null) return;
+
     setState(() {
-      if (_participants.containsKey(participantId)) {
-        _participants[participantId]!['raised_hand'] = raised;
+      if (_participants.containsKey(pid)) {
+        _participants[pid]!['raised_hand'] = raised;
       }
     });
-    
+
     if (raised && widget.isTeacher) {
-      final name = _participants[participantId]?['name'] ?? 'Someone';
+      final name = _participants[pid]?['name'] ?? 'Someone';
       _speakIfEnabled('$name raised their hand');
     }
   }
 
+  // ── chat ────────────────────────────────────────────────────────────────
+
   void _onChatMessage(Map<String, dynamic> data) {
-    final senderName = data['sender_name'] ?? data['from']?.toString() ?? 'Unknown';
-    final text = data['text'] ?? data['message'] ?? '';
-    
+    final senderName = data['sender_name'] as String? ?? 'Unknown';
+    final text       = data['text']        as String? ?? '';
+    final isOwn      = data['is_own']      as bool?   ?? false;
+
     if (text.isEmpty) return;
-    
+
+    // isOwn is set by SseService by comparing data['from'] == _myParticipantId.
+    // We already added our own message optimistically in _sendMessage(),
+    // so skip duplicates from the echo-back.
+    if (isOwn) return;
+
     setState(() {
       _messages.add({
-        'sender': senderName,
-        'text': text,
+        'sender':    senderName,
+        'text':      text,
         'timestamp': DateTime.now(),
-        'isMe': senderName == widget.userName,
+        'isMe':      false,
       });
     });
-    
-    // Auto-scroll
-    Future.delayed(const Duration(milliseconds: 100), () {
-      if (_chatScrollController.hasClients) {
-        _chatScrollController.animateTo(
-          _chatScrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
-      }
-    });
-    
-    // TTS for others' messages
-    if (senderName != widget.userName) {
-      _speakIfEnabled('$senderName: $text');
-    }
+
+    _scrollChatToBottom();
+    _speakIfEnabled('$senderName: $text');
   }
 
   void _onKicked(Map<String, dynamic> data) {
-    _speakIfEnabled('You have been removed');
-    Navigator.pop(context);
+    _speakIfEnabled('You have been removed from the session');
+    if (mounted) Navigator.pop(context);
   }
 
   void _onSessionEnded() {
     _speakIfEnabled('Session ended');
-    Navigator.pop(context);
+    if (mounted) Navigator.pop(context);
   }
 
-  // Audio playback handlers
+  // ── audio playback ──────────────────────────────────────────────────────
+
   void _onAudioSelected(Map<String, dynamic> data) {
     final audioId = data['audio_id'] as int?;
-    final title = data['title'] as String?;
-    
-    if (audioId != null) {
-      setState(() {
-        _currentAudioId = audioId;
-        _currentAudioTitle = title;
-      });
-      _speakIfEnabled('Audio selected: ${title ?? "Unknown"}');
-    }
+    final title   = data['title']   as String?;
+    if (audioId == null) return;
+    setState(() { _currentAudioId = audioId; _currentAudioTitle = title; });
+    _speakIfEnabled('Audio selected: ${title ?? "Unknown"}');
   }
 
   Future<void> _onAudioPlay(Map<String, dynamic> data) async {
-    final audioId = data['audio_id'] as int?;
-    final speed = (data['speed'] as num?)?.toDouble() ?? 1.0;
+    final audioId  = data['audio_id'] as int?;
+    final speed    = (data['speed']   as num?)?.toDouble() ?? 1.0;
     final position = (data['position'] as num?)?.toDouble() ?? 0.0;
-    final title = data['title'] as String?;
+    final title    = data['title']    as String?;
     final duration = (data['duration'] as num?)?.toDouble();
-    
+
     if (audioId == null) return;
 
     try {
       setState(() {
-        _currentAudioId = audioId;
-        _currentAudioTitle = title;
+        _currentAudioId        = audioId;
+        _currentAudioTitle     = title ?? _currentAudioTitle;
         _isPlayingSessionAudio = true;
-        _audioSpeed = speed;
-        _currentPosition = position;
-        _audioDuration = duration;
+        _audioSpeed            = speed;
+        _currentPosition       = position;
+        if (duration != null) _audioDuration = duration;
       });
 
       await _sessionAudioPlayer.stop();
-      
-      final url = '$baseUrl/audio/$audioId/stream';
       await _sessionAudioPlayer.setPlaybackRate(speed);
-      await _sessionAudioPlayer.play(UrlSource(url));
-      
-      // Seek to position if not starting from beginning
+      await _sessionAudioPlayer.play(UrlSource('$baseUrl/audio/$audioId/stream'));
       if (position > 0) {
         await _sessionAudioPlayer.seek(Duration(seconds: position.toInt()));
       }
-      
-      print('[AUDIO] Playing from position: ${position}s at speed $speed');
     } catch (e) {
-      print('[AUDIO] Error: $e');
+      print('[AUDIO PLAY ERROR] $e');
       setState(() => _isPlayingSessionAudio = false);
     }
   }
 
-
   Future<void> _onAudioPause(Map<String, dynamic> data) async {
     final position = (data['position'] as num?)?.toDouble();
-    
-    try {
-      await _sessionAudioPlayer.pause();
-      
-      if (position != null) {
-        setState(() {
-          _isPlayingSessionAudio = false;
-          _currentPosition = position;
-        });
-      } else {
-        // Get current position from player
-        final currentPos = await _sessionAudioPlayer.getCurrentPosition();
-        setState(() {
-          _isPlayingSessionAudio = false;
-          _currentPosition = currentPos?.inSeconds.toDouble() ?? 0.0;
-        });
-      }
-      
-      print('[AUDIO] Paused at position: ${_currentPosition}s');
-    } catch (e) {
-      print('[AUDIO] Error pausing: $e');
-    }
+    await _sessionAudioPlayer.pause();
+    setState(() {
+      _isPlayingSessionAudio = false;
+      if (position != null) _currentPosition = position;
+    });
   }
-
 
   Future<void> _onAudioSeek(Map<String, dynamic> data) async {
-    final position = (data['position'] as num?)?.toDouble() ?? 0.0;
+    final position     = (data['position']      as num?)?.toDouble() ?? 0.0;
     final resumePlaying = data['resume_playing'] as bool? ?? false;
-    
-    try {
-      await _sessionAudioPlayer.seek(Duration(seconds: position.toInt()));
-      
-      setState(() {
-        _currentPosition = position;
-      });
-      
-      if (resumePlaying && !_isPlayingSessionAudio) {
-        await _sessionAudioPlayer.resume();
-        setState(() => _isPlayingSessionAudio = true);
-      }
-      
-      print('[AUDIO] Seeked to position: ${position}s');
-    } catch (e) {
-      print('[AUDIO] Error seeking: $e');
+    await _sessionAudioPlayer.seek(Duration(seconds: position.toInt()));
+    setState(() => _currentPosition = position);
+    if (resumePlaying && !_isPlayingSessionAudio) {
+      await _sessionAudioPlayer.resume();
+      setState(() => _isPlayingSessionAudio = true);
     }
   }
 
+  void _applyAudioSpeedLocally(double speed) {
+    setState(() => _audioSpeed = speed);
+    _sessionAudioPlayer.setPlaybackRate(speed);
+  }
 
-  // Teacher audio controls
+  // ── teacher audio controls ──────────────────────────────────────────────
+
   Future<void> _playSessionAudio() async {
     if (_currentAudioId == null) return;
-
-    try {
-      final result = await ApiService.controlAudio(
-        widget.sessionId,
-        action: 'play',
-        audioId: _currentAudioId!,
-        speed: _audioSpeed,
-        position: _currentPosition,
-      );
-
-      if (result != null && result['ok'] == true) {
-        setState(() => _isPlayingSessionAudio = true);
-      }
-    } catch (e) {
-      print('[AUDIO CONTROL] Error: $e');
+    final result = await ApiService.controlAudio(
+      widget.sessionId,
+      action:   'play',
+      audioId:  _currentAudioId!,
+      speed:    _audioSpeed,
+      position: _currentPosition,
+    );
+    if (result != null && result['ok'] == true) {
+      setState(() => _isPlayingSessionAudio = true);
     }
   }
 
   Future<void> _pauseSessionAudio() async {
-    // Get current position before pausing
-    final position = await _sessionAudioPlayer.getCurrentPosition();
-    final positionSeconds = position?.inSeconds.toDouble() ?? _currentPosition;
-    
-    setState(() {
-      _currentPosition = positionSeconds;
-      _isPlayingSessionAudio = false;
-    });
-    
-    // Pause local playback
+    final pos = await _sessionAudioPlayer.getCurrentPosition();
+    final posSeconds = pos?.inSeconds.toDouble() ?? _currentPosition;
+    setState(() { _currentPosition = posSeconds; _isPlayingSessionAudio = false; });
     await _sessionAudioPlayer.pause();
-    
-    // Broadcast pause with position to all participants
-    try {
-      await ApiService.controlAudio(
-        widget.sessionId,
-        action: 'pause',
-        position: positionSeconds,
-      );
-    } catch (e) {
-      print('[AUDIO CONTROL] Error: $e');
-    }
+    await ApiService.controlAudio(widget.sessionId, action: 'pause', position: posSeconds);
   }
 
   Future<void> _seekAudio(double position) async {
     if (!widget.isTeacher) return;
-    
     setState(() => _isSeeking = true);
-    
     try {
-      await ApiService.controlAudio(
-        widget.sessionId,
-        action: 'seek',
-        position: position,
-      );
-      
-      // Local seek
+      await ApiService.controlAudio(widget.sessionId, action: 'seek', position: position);
       await _sessionAudioPlayer.seek(Duration(seconds: position.toInt()));
-      
-      setState(() {
-        _currentPosition = position;
-      });
-    } catch (e) {
-      print('[SEEK] Error: $e');
+      setState(() => _currentPosition = position);
     } finally {
       setState(() => _isSeeking = false);
     }
   }
 
-  void _changeAudioSpeed(double newSpeed) async {
-    if (!widget.isTeacher) return;
-    
+  Future<void> _changeAudioSpeed(double newSpeed) async {
+    if (!widget.isTeacher || _currentAudioId == null) return;
     setState(() => _audioSpeed = newSpeed);
-    
-    try {
-      // Get current position
-      final position = await _sessionAudioPlayer.getCurrentPosition();
-      final positionSeconds = position?.inSeconds.toDouble() ?? _currentPosition;
-      
-      // Update speed locally
-      await _sessionAudioPlayer.setPlaybackRate(newSpeed);
-      
-      // Broadcast to participants
-      await ApiService.controlAudio(
-        widget.sessionId,
-        action: 'play',
-        audioId: _currentAudioId!,
-        speed: newSpeed,
-        position: positionSeconds,
-      );
-    } catch (e) {
-      print('[SPEED CHANGE] Error: $e');
-    }
+    await _sessionAudioPlayer.setPlaybackRate(newSpeed);
+    final pos = await _sessionAudioPlayer.getCurrentPosition();
+    await ApiService.controlAudio(
+      widget.sessionId,
+      action:   'play',
+      audioId:  _currentAudioId!,
+      speed:    newSpeed,
+      position: pos?.inSeconds.toDouble() ?? _currentPosition,
+    );
   }
 
-  void _showError(String message) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
+  // ── user actions (sent via HTTP POST) ───────────────────────────────────
+
+  void _toggleMute() async {
+    setState(() => _muted = !_muted);
+    _localStream?.getAudioTracks().forEach((t) => t.enabled = !_muted);
+    await _sse.send({'type': 'mute_self', 'mute': _muted});
+    await _speakIfEnabled(_muted ? 'Muted' : 'Unmuted');
+  }
+
+  void _toggleHandRaise() async {
+    setState(() => _handRaised = !_handRaised);
+    await _sse.send({'type': _handRaised ? 'raise_hand' : 'lower_hand'});
+    await _speakIfEnabled(_handRaised ? 'Hand raised' : 'Hand lowered');
+  }
+
+  /// Chat send: add to UI immediately (optimistic) then POST to server.
+  /// The server will echo the message back via SSE, but SseService marks it
+  /// is_own=true so _onChatMessage skips it — no duplicate.
+  void _sendMessage() {
+    final text = _chatController.text.trim();
+    if (text.isEmpty) return;
+
+    // Optimistic local insert
+    setState(() {
+      _messages.add({
+        'sender':    widget.userName,
+        'text':      text,
+        'timestamp': DateTime.now(),
+        'isMe':      true,
+      });
+    });
+    _chatController.clear();
+    _scrollChatToBottom();
+
+    // Fire-and-forget POST
+    _sse.send({'type': 'chat', 'text': text});
+  }
+
+  void _muteParticipant(int participantId, bool mute) {
+    _sse.send({
+      'type':                  mute ? 'mute_participant' : 'unmute_participant',
+      'target_participant_id': participantId,
+    });
+  }
+
+  void _kickParticipant(int participantId) {
+    _sse.send({'type': 'kick_participant', 'target_participant_id': participantId});
+  }
+
+  void _leaveSession() async {
+    await _speakIfEnabled('Leaving session');
+    if (mounted) Navigator.pop(context);
+  }
+
+  // ── Invite participants (teacher only) ───────────────────────────────────
+
+  void _openInviteScreen() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => InviteStudentsScreen(
+          sessionId:    widget.sessionId,
+          sessionTitle: 'Session ${widget.sessionId}',
+        ),
       ),
     );
   }
 
-  // Open audio library
-  void _openAudioLibrary() {
-    if (!widget.isTeacher) {
-      _speakIfEnabled('Only teachers can manage audio');
-      return;
-    }
+  // ── Audio library (teacher only) ─────────────────────────────────────────
 
-    Navigator.pushNamed(
-      context,
-      '/audio_library',
-      arguments: {'sessionId': widget.sessionId},
-    );
-  }
-
-  // WebRTC Implementation
-  Future<void> _createPeerConnection(int participantId, bool createOffer) async {
+  Future<void> _loadAudioLibrary() async {
     try {
-      print('[WebRTC] Creating peer connection for $participantId (offer: $createOffer)');
-      
-      RTCPeerConnection pc = await createPeerConnection(_iceServers);
-      
-      // Add local stream
-      if (_localStream != null) {
-        _localStream!.getTracks().forEach((track) {
-          pc.addTrack(track, _localStream!);
-          print('[WebRTC] Added local track: ${track.kind}');
-        });
-      }
-
-      // Handle remote stream
-      pc.onTrack = (RTCTrackEvent event) {
-        print('[WebRTC] Received track from $participantId: ${event.track.kind}');
-        if (event.streams.isNotEmpty) {
-          _handleRemoteStream(participantId, event.streams[0]);
-        }
-      };
-
-      // Handle ICE candidates
-      pc.onIceCandidate = (RTCIceCandidate? candidate) {
-        if (candidate != null) {
-          print('[WebRTC] Sending ICE candidate to $participantId');
-          _sendWebSocketMessage({
-            'type': 'webrtc_signal',
-            'target_participant_id': participantId,
-            'payload': {
-              'type': 'ice_candidate',
-              'candidate': candidate.toMap(),
-            },
-          });
-        }
-      };
-
-      // Connection state monitoring
-      pc.onConnectionState = (RTCPeerConnectionState state) {
-        print('[WebRTC] Connection state with $participantId: $state');
-        if (state == RTCPeerConnectionState.RTCPeerConnectionStateFailed ||
-            state == RTCPeerConnectionState.RTCPeerConnectionStateClosed) {
-          _closePeerConnection(participantId);
-        }
-      };
-
-      _peerConnections[participantId] = pc;
-
-      // Create offer if needed
-      if (createOffer) {
-        await Future.delayed(const Duration(milliseconds: 100));
-        RTCSessionDescription offer = await pc.createOffer();
-        await pc.setLocalDescription(offer);
-
-        print('[WebRTC] Sending offer to $participantId');
-        _sendWebSocketMessage({
-          'type': 'webrtc_signal',
-          'target_participant_id': participantId,
-          'payload': {
-            'type': 'offer',
-            'sdp': offer.sdp,
-          },
+      final result = await ApiService.get('/audio/list', useAuth: true);
+      if (result != null && mounted) {
+        setState(() {
+          _audioLibraryLoaded = true;
+          if (result is List) {
+            _audioFiles = result.cast<Map<String, dynamic>>();
+          } else if (result is Map && result.containsKey('files')) {
+            _audioFiles = (result['files'] as List).cast<Map<String, dynamic>>();
+          }
         });
       }
     } catch (e) {
-      print('[WebRTC ERROR] Failed to create peer connection: $e');
+      print('[AUDIO LIST ERROR] $e');
     }
   }
 
+  Future<void> _uploadAudio() async {
+    try {
+      final picked = await FilePicker.platform.pickFiles(
+        type: FileType.audio,
+        allowMultiple: false,
+      );
+      if (picked == null || picked.files.isEmpty) return;
+      final file = picked.files.first;
+
+      _uploadTitleCtrl.clear();
+      _uploadDescCtrl.clear();
+
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text('Upload Audio'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('File: ${file.name}',
+                    style: const TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _uploadTitleCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'Title *',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _uploadDescCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'Description',
+                    border: OutlineInputBorder(),
+                  ),
+                  maxLines: 2,
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.teal),
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Upload', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
+      );
+      if (confirmed != true) return;
+
+      final title = _uploadTitleCtrl.text.trim();
+      if (title.isEmpty) {
+        _showSnackError('Title is required');
+        return;
+      }
+
+      if (mounted) setState(() => _isUploadingAudio = true);
+
+      final prefs  = await SharedPreferences.getInstance();
+      final userId = prefs.getInt('user_id');
+      final uri    = Uri.parse('$baseUrl/audio/upload?user_id=$userId');
+      final headers = await ApiService.getHeaders();
+
+      final request = http.MultipartRequest('POST', uri)
+        ..headers.addAll(headers)
+        ..fields['title']       = title
+        ..fields['description'] = _uploadDescCtrl.text.trim();
+
+      final ext = file.extension?.toLowerCase() ?? '';
+      final contentType = const {
+        'mp3':  'audio/mpeg',
+        'wav':  'audio/wav',
+        'm4a':  'audio/x-m4a',
+        'mp4':  'audio/mp4',
+        'ogg':  'audio/ogg',
+        'webm': 'audio/webm',
+      }[ext] ?? 'audio/mpeg';
+
+      if (kIsWeb && file.bytes != null) {
+        request.files.add(http.MultipartFile.fromBytes(
+          'file', file.bytes!,
+          filename: file.name,
+          contentType: MediaType.parse(contentType),
+        ));
+      } else if (!kIsWeb && file.path != null) {
+        request.files.add(await http.MultipartFile.fromPath(
+          'file', file.path!,
+          filename: file.name,
+          contentType: MediaType.parse(contentType),
+        ));
+      }
+
+      final response     = await request.send();
+      final responseBody = await response.stream.bytesToString();
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        _speakIfEnabled('Upload successful');
+        await _loadAudioLibrary();
+      } else {
+        final detail = (jsonDecode(responseBody) as Map)['detail'] ?? 'Upload failed';
+        _showSnackError(detail.toString());
+      }
+    } catch (e) {
+      _showSnackError('Upload error: $e');
+    } finally {
+      if (mounted) setState(() => _isUploadingAudio = false);
+    }
+  }
+
+  Future<void> _previewAudio(int audioId, String title) async {
+    if (_previewingAudioId == audioId) {
+      await _previewPlayer.stop();
+      if (mounted) setState(() => _previewingAudioId = null);
+      return;
+    }
+    await _previewPlayer.stop();
+    await _previewPlayer.play(UrlSource('$baseUrl/audio/$audioId/stream'));
+    if (mounted) setState(() => _previewingAudioId = audioId);
+    _speakIfEnabled('Previewing $title');
+  }
+
+  Future<void> _selectAndPlayAudio(int audioId, String title) async {
+    // Tell server which audio is selected — broadcasts audio_selected to all
+    final selected = await ApiService.selectAudio(widget.sessionId, audioId);
+    if (selected == null || selected['ok'] != true) {
+      _showSnackError('Failed to select audio');
+      return;
+    }
+    if (mounted) setState(() { _currentAudioId = audioId; _currentAudioTitle = title; });
+
+    // Ask teacher whether to play now
+    if (!mounted) return;
+    final play = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Audio Selected'),
+        content: Text('Play "$title" for all participants now?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Not Yet'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Play Now', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (play == true) {
+      await ApiService.controlAudio(
+        widget.sessionId,
+        action: 'play',
+        audioId: audioId,
+        speed: 1.0,
+        position: 0.0,
+      );
+      _speakIfEnabled('Playing $title for all participants');
+    }
+  }
+
+  // ── WebRTC ──────────────────────────────────────────────────────────────
+
+  Future<void> _createPeerConnection(int participantId, bool createOffer) async {
+    if (_peerConnections.containsKey(participantId)) return;
+
+    print('[WebRTC] Creating connection pid=$participantId offer=$createOffer');
+
+    final pc = await createPeerConnection(_iceServers);
+    _peerConnections[participantId] = pc;
+
+    _localStream?.getTracks().forEach((track) => pc.addTrack(track, _localStream!));
+
+    pc.onTrack = (event) {
+      if (event.streams.isNotEmpty) _handleRemoteStream(participantId, event.streams[0]);
+    };
+
+    // Batch ICE candidates: collect for 150 ms then send as a single POST
+    pc.onIceCandidate = (candidate) {
+      if (candidate == null) return;
+      _pendingIceCandidates
+          .putIfAbsent(participantId, () => [])
+          .add({
+            'candidate':     candidate.candidate,
+            'sdpMid':        candidate.sdpMid,
+            'sdpMLineIndex': candidate.sdpMLineIndex,
+          });
+
+      // Reset or start the flush timer
+      _iceTimers[participantId]?.cancel();
+      _iceTimers[participantId] = Timer(const Duration(milliseconds: 150), () {
+        _flushIceCandidates(participantId);
+      });
+    };
+
+    pc.onConnectionState = (state) {
+      print('[WebRTC] State with pid=$participantId: $state');
+      if (state == RTCPeerConnectionState.RTCPeerConnectionStateFailed ||
+          state == RTCPeerConnectionState.RTCPeerConnectionStateClosed) {
+        _closePeerConnection(participantId);
+      }
+    };
+
+    if (createOffer) {
+      await Future.delayed(const Duration(milliseconds: 100));
+      final offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+      await _sse.send({
+        'type':                  'webrtc_signal',
+        'target_participant_id': participantId,
+        'payload': {'type': 'offer', 'sdp': offer.sdp},
+      });
+    }
+  }
+
+  /// Send all buffered ICE candidates for a peer in a single POST.
+  /// A single POST with multiple candidates is faster than N individual POSTs.
+  Future<void> _flushIceCandidates(int participantId) async {
+    final candidates = _pendingIceCandidates.remove(participantId);
+    _iceTimers.remove(participantId);
+    if (candidates == null || candidates.isEmpty) return;
+
+    print('[WebRTC] Flushing ${candidates.length} ICE candidates to pid=$participantId');
+
+    await _sse.send({
+      'type':                  'webrtc_signal',
+      'target_participant_id': participantId,
+      'payload': {'type': 'ice_candidates_batch', 'candidates': candidates},
+    });
+  }
+
   void _handleRemoteStream(int participantId, MediaStream stream) {
-    print('[WebRTC] Setting up remote stream for $participantId');
-    
-    // Create renderer if doesn't exist
     if (!_remoteRenderers.containsKey(participantId)) {
-      RTCVideoRenderer renderer = RTCVideoRenderer();
+      final renderer = RTCVideoRenderer();
       renderer.initialize().then((_) {
         renderer.srcObject = stream;
-        setState(() {
-          _remoteRenderers[participantId] = renderer;
-        });
-        print('[WebRTC] Remote renderer initialized for $participantId');
+        if (mounted) setState(() => _remoteRenderers[participantId] = renderer);
       });
     } else {
       _remoteRenderers[participantId]!.srcObject = stream;
@@ -765,760 +915,403 @@ class _SessionScreenState extends State<SessionScreen> {
   }
 
   Future<void> _handleWebRTCSignal(Map<String, dynamic> data) async {
-    try {
-      final fromParticipantId = data['from'] as int?;
-      final toParticipantId = data['to'] as int?;
-      final payload = data['payload'] as Map<String, dynamic>?;
+    final fromPid  = data['from']    as int?;
+    final toPid    = data['to']      as int?;
+    final payload  = data['payload'] as Map<String, dynamic>?;
 
-      if (fromParticipantId == null || payload == null) return;
-      if (toParticipantId != null && toParticipantId != _participantId) return;
+    if (fromPid == null || payload == null) return;
+    // Ignore signals not addressed to us
+    if (toPid != null && toPid != _participantId) return;
 
-      final signalType = payload['type'] as String?;
-      print('[WebRTC] Received signal from $fromParticipantId: $signalType');
+    final signalType = payload['type'] as String?;
+    print('[WebRTC] Signal from=$fromPid type=$signalType');
 
-      switch (signalType) {
-        case 'offer':
-          await _handleOffer(fromParticipantId, payload);
-          break;
-        case 'answer':
-          await _handleAnswer(fromParticipantId, payload);
-          break;
-        case 'ice_candidate':
-          await _handleICECandidate(fromParticipantId, payload);
-          break;
-      }
-    } catch (e) {
-      print('[WebRTC SIGNAL ERROR] $e');
+    switch (signalType) {
+      case 'offer':
+        await _handleOffer(fromPid, payload);
+      case 'answer':
+        await _handleAnswer(fromPid, payload);
+      case 'ice_candidate':
+        await _handleIceCandidateSingle(fromPid, payload);
+      case 'ice_candidates_batch':
+        await _handleIceCandidateBatch(fromPid, payload);
     }
   }
 
-  Future<void> _handleOffer(int fromParticipantId, Map<String, dynamic> payload) async {
-    try {
-      final sdp = payload['sdp'] as String?;
-      if (sdp == null) return;
-
-      print('[WebRTC] Handling offer from $fromParticipantId');
-
-      // Create connection if doesn't exist
-      if (!_peerConnections.containsKey(fromParticipantId)) {
-        await _createPeerConnection(fromParticipantId, false);
-      }
-
-      final pc = _peerConnections[fromParticipantId]!;
-      await pc.setRemoteDescription(RTCSessionDescription(sdp, 'offer'));
-
-      // Create answer
-      RTCSessionDescription answer = await pc.createAnswer();
-      await pc.setLocalDescription(answer);
-
-      print('[WebRTC] Sending answer to $fromParticipantId');
-      _sendWebSocketMessage({
-        'type': 'webrtc_signal',
-        'target_participant_id': fromParticipantId,
-        'payload': {
-          'type': 'answer',
-          'sdp': answer.sdp,
-        },
-      });
-    } catch (e) {
-      print('[WebRTC] Error handling offer: $e');
+  Future<void> _handleOffer(int fromPid, Map<String, dynamic> payload) async {
+    final sdp = payload['sdp'] as String?;
+    if (sdp == null) return;
+    if (!_peerConnections.containsKey(fromPid)) {
+      await _createPeerConnection(fromPid, false);
     }
+    final pc = _peerConnections[fromPid]!;
+    await pc.setRemoteDescription(RTCSessionDescription(sdp, 'offer'));
+    final answer = await pc.createAnswer();
+    await pc.setLocalDescription(answer);
+    await _sse.send({
+      'type':                  'webrtc_signal',
+      'target_participant_id': fromPid,
+      'payload': {'type': 'answer', 'sdp': answer.sdp},
+    });
   }
 
-  Future<void> _handleAnswer(int fromParticipantId, Map<String, dynamic> payload) async {
-    try {
-      final sdp = payload['sdp'] as String?;
-      if (sdp == null) return;
-
-      print('[WebRTC] Handling answer from $fromParticipantId');
-
-      final pc = _peerConnections[fromParticipantId];
-      if (pc != null) {
-        await pc.setRemoteDescription(RTCSessionDescription(sdp, 'answer'));
-        print('[WebRTC] Remote description set for $fromParticipantId');
-      }
-    } catch (e) {
-      print('[WebRTC] Error handling answer: $e');
-    }
+  Future<void> _handleAnswer(int fromPid, Map<String, dynamic> payload) async {
+    final sdp = payload['sdp'] as String?;
+    if (sdp == null) return;
+    await _peerConnections[fromPid]
+        ?.setRemoteDescription(RTCSessionDescription(sdp, 'answer'));
   }
 
-  Future<void> _handleICECandidate(int fromParticipantId, Map<String, dynamic> payload) async {
-    try {
-      final candidateMap = payload['candidate'] as Map<String, dynamic>?;
-      if (candidateMap == null) return;
+  Future<void> _handleIceCandidateSingle(
+      int fromPid, Map<String, dynamic> payload) async {
+    final c = payload['candidate'] as Map<String, dynamic>?;
+    if (c == null) return;
+    await _peerConnections[fromPid]?.addCandidate(RTCIceCandidate(
+      c['candidate'], c['sdpMid'], c['sdpMLineIndex'],
+    ));
+  }
 
-      final pc = _peerConnections[fromParticipantId];
-      if (pc != null) {
-        final candidate = RTCIceCandidate(
-          candidateMap['candidate'],
-          candidateMap['sdpMid'],
-          candidateMap['sdpMLineIndex'],
-        );
-        await pc.addCandidate(candidate);
-        print('[WebRTC] Added ICE candidate from $fromParticipantId');
+  Future<void> _handleIceCandidateBatch(
+      int fromPid, Map<String, dynamic> payload) async {
+    final list = payload['candidates'] as List<dynamic>?;
+    if (list == null) return;
+    final pc = _peerConnections[fromPid];
+    if (pc == null) return;
+    for (final c in list) {
+      final cm = c as Map<String, dynamic>;
+      try {
+        await pc.addCandidate(RTCIceCandidate(
+          cm['candidate'], cm['sdpMid'], cm['sdpMLineIndex'],
+        ));
+      } catch (e) {
+        print('[WebRTC] ICE add error: $e');
       }
-    } catch (e) {
-      print('[WebRTC] Error handling ICE candidate: $e');
     }
+    print('[WebRTC] Applied ${list.length} ICE candidates from pid=$fromPid');
   }
 
   void _closePeerConnection(int participantId) {
-    _peerConnections[participantId]?.close();
-    _peerConnections.remove(participantId);
-    _remoteRenderers[participantId]?.dispose();
-    _remoteRenderers.remove(participantId);
-    print('[WebRTC] Closed connection for $participantId');
+    _iceTimers.remove(participantId)?.cancel();
+    _pendingIceCandidates.remove(participantId);
+    _peerConnections.remove(participantId)?.close();
+    _remoteRenderers.remove(participantId)?.dispose();
   }
+
+  // ── helpers ─────────────────────────────────────────────────────────────
 
   Future<void> _speakIfEnabled(String text) async {
     if (_ttsEnabled && mounted) {
-      try {
-        await _tts.speak(text);
-      } catch (e) {
-        print('[TTS ERROR] $e');
-      }
+      try { await _tts.speak(text); } catch (_) {}
     }
   }
 
-  @override
-  void dispose() {
-    _chatController.dispose();
-    _chatScrollController.dispose();
-    
-    // Close WebSocket
-    _wsChannel?.sink.close();
-    
-    // Clean up WebRTC
-    _localStream?.dispose();
-    _peerConnections.forEach((_, pc) => pc.close());
-    _remoteRenderers.forEach((_, renderer) => renderer.dispose());
-    
-    // Stop audio
-    _sessionAudioPlayer.dispose();
-    _tts.stop();
-    
-    super.dispose();
+  void _showSnackError(String msg) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(msg), backgroundColor: Colors.red),
+    );
   }
 
-  // UI Actions
-  void _toggleMute() async {
-    setState(() => _muted = !_muted);
-
-    // Toggle local audio tracks
-    if (_localStream != null) {
-      _localStream!.getAudioTracks().forEach((track) {
-        track.enabled = !_muted;
-        print('[AUDIO] Track ${track.id} enabled: ${track.enabled}');
-      });
-    }
-
-    _sendWebSocketMessage({
-      'type': 'mute_self',
-      'mute': _muted,
-    });
-
-    await _speakIfEnabled(_muted ? "Muted" : "Unmuted");
-  }
-
-  void _toggleHandRaise() async {
-    setState(() => _handRaised = !_handRaised);
-    
-    _sendWebSocketMessage({
-      'type': _handRaised ? 'raise_hand' : 'lower_hand',
-    });
-    
-    await _speakIfEnabled(_handRaised ? "Hand raised" : "Hand lowered");
-  }
-
-  void _sendMessage() {
-    final text = _chatController.text.trim();
-    if (text.isEmpty) return;
-
-    _sendWebSocketMessage({
-      'type': 'chat',
-      'text': text,
-    });
-    
-    // Add to local messages
-    setState(() {
-      _messages.add({
-        'sender': widget.userName,
-        'text': text,
-        'timestamp': DateTime.now(),
-        'isMe': true,
-      });
-    });
-    
-    _chatController.clear();
-    
-    // Auto-scroll
+  void _scrollChatToBottom() {
     Future.delayed(const Duration(milliseconds: 100), () {
       if (_chatScrollController.hasClients) {
         _chatScrollController.animateTo(
           _chatScrollController.position.maxScrollExtent,
           duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
+          curve:    Curves.easeOut,
         );
       }
     });
   }
 
-  void _muteParticipant(int participantId, bool mute) {
-    _sendWebSocketMessage({
-      'type': mute ? 'mute_participant' : 'unmute_participant',
-      'target_participant_id': participantId,
-    });
-  }
-
-  void _kickParticipant(int participantId) {
-    _sendWebSocketMessage({
-      'type': 'kick_participant',
-      'target_participant_id': participantId,
-    });
-  }
-
-  void _leaveSession() async {
-    await _speakIfEnabled("Leaving session");
-    Navigator.pop(context);
-  }
-
-
-
-
-  // Helper function to format duration
   String _formatDuration(double seconds) {
-    final duration = Duration(seconds: seconds.toInt());
-    final hours = duration.inHours;
-    final minutes = duration.inMinutes.remainder(60);
-    final secs = duration.inSeconds.remainder(60);
-    
-    if (hours > 0) {
-      return '${hours}:${minutes.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
-    }
-    return '${minutes}:${secs.toString().padLeft(2, '0')}';
+    final d = Duration(seconds: seconds.toInt());
+    final h = d.inHours;
+    final m = d.inMinutes.remainder(60);
+    final s = d.inSeconds.remainder(60);
+    return h > 0
+        ? '$h:${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}'
+        : '$m:${s.toString().padLeft(2, '0')}';
   }
 
+  // ── dispose ─────────────────────────────────────────────────────────────
 
+  @override
+  void dispose() {
+    _chatController.dispose();
+    _chatScrollController.dispose();
+    _uploadTitleCtrl.dispose();
+    _uploadDescCtrl.dispose();
 
-  // Add this widget for the enhanced audio control UI
-  Widget _buildAudioControlSection() {
-    if (_currentAudioId == null) return const SizedBox.shrink();
-    
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: _isPlayingSessionAudio ? Colors.purple.shade100 : Colors.grey.shade200,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          // Title and speed
-          Row(
-            children: [
-              Icon(
-                _isPlayingSessionAudio ? Icons.music_note : Icons.audiotrack,
-                color: _isPlayingSessionAudio ? Colors.purple.shade700 : Colors.grey.shade700,
-                size: 24,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      _currentAudioTitle ?? 'Audio Selected',
-                      style: TextStyle(
-                        color: _isPlayingSessionAudio ? Colors.purple.shade700 : Colors.grey.shade700,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${_formatDuration(_currentPosition)} / ${_audioDuration != null ? _formatDuration(_audioDuration!) : '--:--'}',
-                      style: TextStyle(
-                        color: _isPlayingSessionAudio ? Colors.purple.shade600 : Colors.grey.shade600,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: _isPlayingSessionAudio ? Colors.purple.shade700 : Colors.grey.shade600,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  '${_audioSpeed.toStringAsFixed(1)}x',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          
-          const SizedBox(height: 12),
-          
-          // Progress bar with seek functionality
-          Column(
-            children: [
-              SliderTheme(
-                data: SliderThemeData(
-                  trackHeight: 4,
-                  thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
-                  overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
-                  activeTrackColor: Colors.purple.shade700,
-                  inactiveTrackColor: Colors.grey.shade400,
-                  thumbColor: Colors.purple.shade700,
-                  overlayColor: Colors.purple.shade700.withOpacity(0.2),
-                ),
-                child: Slider(
-                  value: _audioDuration != null && _audioDuration! > 0
-                      ? (_currentPosition / _audioDuration!).clamp(0.0, 1.0)
-                      : 0.0,
-                  onChanged: widget.isTeacher
-                      ? (value) {
-                          if (_audioDuration != null) {
-                            final newPosition = value * _audioDuration!;
-                            setState(() => _currentPosition = newPosition);
-                          }
-                        }
-                      : null,
-                  onChangeEnd: widget.isTeacher
-                      ? (value) {
-                          if (_audioDuration != null) {
-                            final newPosition = value * _audioDuration!;
-                            _seekAudio(newPosition);
-                          }
-                        }
-                      : null,
-                ),
-              ),
-            ],
-          ),
-          
-          // Teacher controls
-          if (widget.isTeacher) ...[
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Slower button
-                IconButton(
-                  icon: const Icon(Icons.fast_rewind),
-                  tooltip: 'Slower (0.25x)',
-                  onPressed: _audioSpeed > 0.5
-                      ? () => _changeAudioSpeed((_audioSpeed - 0.25).clamp(0.5, 2.0))
-                      : null,
-                  color: Colors.purple.shade700,
-                  iconSize: 28,
-                ),
-                
-                const SizedBox(width: 8),
-                
-                // Skip backward 10s
-                IconButton(
-                  icon: const Icon(Icons.replay_10),
-                  tooltip: 'Rewind 10s',
-                  onPressed: () {
-                    final newPosition = (_currentPosition - 10).clamp(0.0, _audioDuration ?? 0.0);
-                    _seekAudio(newPosition);
-                  },
-                  color: Colors.purple.shade700,
-                  iconSize: 28,
-                ),
-                
-                const SizedBox(width: 16),
-                
-                // Play/Pause
-                ElevatedButton.icon(
-                  onPressed: _isPlayingSessionAudio ? _pauseSessionAudio : _playSessionAudio,
-                  icon: Icon(
-                    _isPlayingSessionAudio ? Icons.pause : Icons.play_arrow,
-                    size: 28,
-                  ),
-                  label: Text(
-                    _isPlayingSessionAudio ? 'Pause' : 'Play',
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _isPlayingSessionAudio ? Colors.orange : Colors.green,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    elevation: 4,
-                  ),
-                ),
-                
-                const SizedBox(width: 16),
-                
-                // Skip forward 10s
-                IconButton(
-                  icon: const Icon(Icons.forward_10),
-                  tooltip: 'Forward 10s',
-                  onPressed: () {
-                    final newPosition = (_currentPosition + 10).clamp(0.0, _audioDuration ?? 0.0);
-                    _seekAudio(newPosition);
-                  },
-                  color: Colors.purple.shade700,
-                  iconSize: 28,
-                ),
-                
-                const SizedBox(width: 8),
-                
-                // Faster button
-                IconButton(
-                  icon: const Icon(Icons.fast_forward),
-                  tooltip: 'Faster (0.25x)',
-                  onPressed: _audioSpeed < 2.0
-                      ? () => _changeAudioSpeed((_audioSpeed + 0.25).clamp(0.5, 2.0))
-                      : null,
-                  color: Colors.purple.shade700,
-                  iconSize: 28,
-                ),
-              ],
-            ),
-          ],
-        ],
-      ),
-    );
+    _sse.close();
+
+    _localStream?.dispose();
+    for (final pc in _peerConnections.values) { pc.close(); }
+    for (final r  in _remoteRenderers.values) { r.dispose(); }
+    for (final t  in _iceTimers.values)       { t.cancel(); }
+
+    _sessionAudioPlayer.dispose();
+    _previewPlayer.stop();
+    _previewPlayer.dispose();
+    _tts.stop();
+    super.dispose();
   }
+
+  // ── UI ───────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
-    // Make UI more phone-friendly with larger touch targets
-    final isMobile = MediaQuery.of(context).size.width < 600;
-    
     if (_isInitializing) {
-      return Scaffold(
-        backgroundColor: Colors.grey.shade900,
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const CircularProgressIndicator(color: Colors.teal),
-              const SizedBox(height: 20),
-              Text(
-                'Initializing session...',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: isMobile ? 16 : 18,
-                ),
-              ),
-            ],
-          ),
-        ),
+      return const Scaffold(
+        body: Center(child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text('Joining session…'),
+          ],
+        )),
       );
     }
 
-    final participantsList = _participants.values.toList();
-
     return Scaffold(
-      backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
-        title: Text(
-          'Session ${widget.sessionId}',
-          style: TextStyle(fontSize: MediaQuery.of(context).size.width < 400 ? 16 : 20),
-        ),
+        title: Text(widget.isTeacher ? 'Session (Teacher)' : 'Session'),
         backgroundColor: Colors.teal,
         actions: [
-          // Invite students button for teachers
+          // TTS toggle
+          IconButton(
+            icon: Icon(_ttsEnabled ? Icons.volume_up : Icons.volume_off),
+            tooltip: 'Toggle TTS',
+            onPressed: () => setState(() => _ttsEnabled = !_ttsEnabled),
+          ),
+          // Invite students — teacher only
           if (widget.isTeacher)
             IconButton(
               icon: const Icon(Icons.person_add),
               tooltip: 'Invite Students',
-              iconSize: 24,
-              onPressed: () {
-                Navigator.pushNamed(
-                  context,
-                  '/invite_students',
-                  arguments: {
-                    'sessionId': widget.sessionId,
-                    'sessionTitle': 'Session ${widget.sessionId}',
-                  },
-                );
-              },
+              onPressed: _openInviteScreen,
             ),
-          // Audio library button for teachers
+          // End session — teacher only
           if (widget.isTeacher)
             IconButton(
-              icon: const Icon(Icons.library_music),
-              tooltip: 'Audio Library',
-              iconSize: 24,
-              onPressed: _openAudioLibrary,
+              icon: const Icon(Icons.stop_circle, color: Colors.red),
+              tooltip: 'End session',
+              onPressed: () => _sse.send({'type': 'end_session'}),
             ),
-          // REMOVED: Participant count badge (causes overflow on small screens)
-          // Leave button
+          // Leave
           IconButton(
-            icon: const Icon(Icons.call_end),
+            icon: const Icon(Icons.exit_to_app),
             tooltip: 'Leave',
-            iconSize: 24,
             onPressed: _leaveSession,
           ),
         ],
       ),
       body: Column(
         children: [
-          // Session audio status indicator with controls
-          if (_currentAudioId != null)
-            _buildAudioControlSection(),
-          
-          // Large mic status indicator - make more compact on small screens
-          Container(
-            width: double.infinity,
-            padding: EdgeInsets.all(MediaQuery.of(context).size.width < 400 ? 12 : 20),
-            color: _muted ? Colors.red.shade50 : Colors.green.shade50,
+          // ── Audio playback bar (visible to everyone when audio is active) ──
+          _buildAudioControlSection(),
+
+          // ── Main content ───────────────────────────────────────────────
+          Expanded(
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Container(
-                  width: MediaQuery.of(context).size.width < 400 ? 50 : 80,
-                  height: MediaQuery.of(context).size.width < 400 ? 50 : 80,
-                  decoration: BoxDecoration(
-                    color: _muted ? Colors.red : Colors.green,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    _muted ? Icons.mic_off : Icons.mic,
-                    size: MediaQuery.of(context).size.width < 400 ? 24 : 40,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
+                // Left: Participants list
+                SizedBox(
+                  width: 260,
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        _muted ? 'MUTED' : 'LIVE',
-                        style: TextStyle(
-                          fontSize: MediaQuery.of(context).size.width < 400 ? 18 : 24,
-                          fontWeight: FontWeight.bold,
-                          color: _muted ? Colors.red : Colors.green,
-                        ),
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        color: Colors.teal.shade50,
+                        child: Row(children: [
+                          const Icon(Icons.people, color: Colors.teal),
+                          const SizedBox(width: 8),
+                          Text('Participants (${_participants.length})',
+                              style: const TextStyle(fontWeight: FontWeight.bold)),
+                        ]),
                       ),
-                      Text(
-                        widget.userName,
-                        style: TextStyle(
-                          fontSize: MediaQuery.of(context).size.width < 400 ? 12 : 16,
-                          color: Colors.grey.shade700,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                      Expanded(child: _buildParticipantsList(_participants.values.toList())),
                     ],
                   ),
                 ),
+
+                const VerticalDivider(width: 1),
+
+                // Right: Chat panel (always visible)
+                Expanded(child: _buildChatPanel()),
               ],
             ),
           ),
-          
-          // Large action buttons - more compact on mobile
-          Container(
-            padding: EdgeInsets.all(MediaQuery.of(context).size.width < 400 ? 8 : 16),
-            color: Colors.white,
-            child: Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: _toggleMute,
-                    icon: Icon(
-                      _muted ? Icons.mic : Icons.mic_off,
-                      size: MediaQuery.of(context).size.width < 400 ? 20 : 24,
-                    ),
-                    label: Text(
-                      _muted ? 'Unmute' : 'Mute',
-                      style: TextStyle(
-                        fontSize: MediaQuery.of(context).size.width < 400 ? 14 : 16,
-                      ),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: _muted ? Colors.green : Colors.red,
-                      padding: EdgeInsets.symmetric(
-                        vertical: MediaQuery.of(context).size.width < 400 ? 12 : 16,
-                      ),
-                      minimumSize: const Size(0, 48),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: _toggleHandRaise,
-                    icon: Icon(
-                      _handRaised ? Icons.pan_tool : Icons.pan_tool_outlined,
-                      size: MediaQuery.of(context).size.width < 400 ? 20 : 24,
-                    ),
-                    label: Text(
-                      _handRaised ? 'Lower' : 'Raise',
-                      style: TextStyle(
-                        fontSize: MediaQuery.of(context).size.width < 400 ? 14 : 16,
-                      ),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: _handRaised ? Colors.amber : Colors.grey,
-                      padding: EdgeInsets.symmetric(
-                        vertical: MediaQuery.of(context).size.width < 400 ? 12 : 16,
-                      ),
-                      minimumSize: const Size(0, 48),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          
-          const Divider(height: 1),
-          
-          // Participants and Chat split
-          Expanded(
-            child: MediaQuery.of(context).size.width < 600
-                ? _buildMobileLayout(participantsList)
-                : _buildDesktopLayout(participantsList),
-          ),
+
+          // ── Audio library panel (teacher only, slides in above action bar) ─
+          if (widget.isTeacher) _buildAudioLibraryPanel(),
+
+          // ── Bottom action bar ──────────────────────────────────────────
+          _buildActionBar(),
         ],
       ),
     );
   }
 
-  Widget _buildMobileLayout(List<Map<String, dynamic>> participantsList) {
-    return DefaultTabController(
-      length: 2,
+  Widget _buildActionBar() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      color: Colors.grey.shade900,
+      child: SafeArea(
+        top: false,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            // Mute
+            _actionBarBtn(
+              icon:  _muted ? Icons.mic_off : Icons.mic,
+              label: _muted ? 'Unmute' : 'Mute',
+              color: _muted ? Colors.red : Colors.green,
+              onTap: _toggleMute,
+            ),
+
+            // Raise / lower hand
+            _actionBarBtn(
+              icon:  _handRaised ? Icons.pan_tool : Icons.pan_tool_outlined,
+              label: _handRaised ? 'Lower' : 'Raise Hand',
+              color: _handRaised ? Colors.amber : Colors.grey.shade400,
+              onTap: _toggleHandRaise,
+            ),
+
+            // Invite students — teacher only
+            if (widget.isTeacher)
+              _actionBarBtn(
+                icon:  Icons.person_add,
+                label: 'Invite',
+                color: Colors.lightBlue,
+                onTap: _openInviteScreen,
+              ),
+
+            // Audio library — teacher only
+            if (widget.isTeacher)
+              _actionBarBtn(
+                icon:  Icons.library_music,
+                label: 'Audio',
+                color: Colors.purple.shade300,
+                onTap: () => setState(() => _showAudioPanel = !_showAudioPanel),
+                active: _showAudioPanel,
+              ),
+
+            // Leave
+            _actionBarBtn(
+              icon:  Icons.call_end,
+              label: 'Leave',
+              color: Colors.red.shade400,
+              onTap: _leaveSession,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _actionBarBtn({
+    required IconData     icon,
+    required String       label,
+    required Color        color,
+    required VoidCallback onTap,
+    bool                  active = false,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          const TabBar(
-            tabs: [
-              Tab(text: 'Participants', icon: Icon(Icons.people)),
-              Tab(text: 'Chat', icon: Icon(Icons.chat)),
-            ],
-            labelColor: Colors.teal,
-          ),
-          Expanded(
-            child: TabBarView(
-              children: [
-                _buildParticipantsList(participantsList),
-                _buildChatPanel(),
-              ],
+          Container(
+            width: 48, height: 48,
+            decoration: BoxDecoration(
+              color: active ? color.withOpacity(0.3) : Colors.transparent,
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: active ? color : color.withOpacity(0.6),
+                width: 2,
+              ),
             ),
+            child: Icon(icon, color: color, size: 24),
           ),
+          const SizedBox(height: 3),
+          Text(label,
+              style: TextStyle(
+                  color: Colors.grey.shade400,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w500)),
         ],
       ),
     );
   }
 
-  Widget _buildDesktopLayout(List<Map<String, dynamic>> participantsList) {
-    return Row(
-      children: [
-        Expanded(
-          flex: 2,
-          child: _buildParticipantsList(participantsList),
-        ),
-        const VerticalDivider(width: 1),
-        Expanded(
-          flex: 3,
-          child: _buildChatPanel(),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildParticipantsList(List<Map<String, dynamic>> participantsList) {
-    if (participantsList.isEmpty) {
+  Widget _buildParticipantsList(List<Map<String, dynamic>> list) {
+    if (list.isEmpty) {
       return const Center(
-        child: Text(
-          'Waiting for participants...',
-          style: TextStyle(color: Colors.grey, fontSize: 16),
-        ),
+        child: Text('Waiting for participants…',
+            style: TextStyle(color: Colors.grey)),
       );
     }
 
     return ListView.builder(
       padding: const EdgeInsets.all(8),
-      itemCount: participantsList.length,
-      itemBuilder: (context, index) {
-        final p = participantsList[index];
-        final participantId = p['id'] as int;
-        final isSelf = participantId == _participantId;
+      itemCount: list.length,
+      itemBuilder: (_, i) {
+        final p          = list[i];
+        final pid        = p['id']        as int;
+        final isSelf     = pid == _participantId;
+        final isMuted    = p['is_muted']  as bool? ?? false;
+        final isTeacher  = p['is_teacher'] as bool? ?? false;
+        final raisedHand = p['raised_hand'] as bool? ?? false;
+        final name       = p['name']      as String? ?? '?';
 
         return Card(
           margin: const EdgeInsets.only(bottom: 8),
           child: ListTile(
-            // Make it more compact for mobile
-            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            
             leading: CircleAvatar(
-              backgroundColor: p['is_muted'] ? Colors.red : Colors.green,
-              radius: 20, // Slightly smaller
-              child: Icon(
-                p['is_muted'] ? Icons.mic_off : Icons.mic,
-                color: Colors.white,
-                size: 18,
-              ),
+              backgroundColor: isMuted ? Colors.red : Colors.green,
+              radius: 20,
+              child: Icon(isMuted ? Icons.mic_off : Icons.mic,
+                  color: Colors.white, size: 18),
             ),
-            
             title: Text(
-              isSelf ? '${p['name']} (You)' : p['name'],
+              isSelf ? '$name (You)' : name,
               style: TextStyle(
                 fontWeight: isSelf ? FontWeight.bold : FontWeight.normal,
-                fontSize: 14, // Smaller font for mobile
+                fontSize: 14,
               ),
-              maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-            
             subtitle: Text(
-              p['is_teacher'] ? 'Teacher' : 'Student',
+              isTeacher ? 'Teacher' : 'Student',
               style: TextStyle(
-                color: p['is_teacher'] ? Colors.teal : Colors.grey,
+                color: isTeacher ? Colors.teal : Colors.grey,
                 fontSize: 12,
               ),
             ),
-            
             trailing: Row(
-              mainAxisSize: MainAxisSize.min, // IMPORTANT: Prevent overflow
+              mainAxisSize: MainAxisSize.min,
               children: [
-                // Raised hand indicator
-                if (p['raised_hand'])
+                if (raisedHand)
                   const Padding(
                     padding: EdgeInsets.only(right: 4),
                     child: Icon(Icons.pan_tool, color: Colors.amber, size: 20),
                   ),
-                
-                // Teacher controls - more compact
                 if (widget.isTeacher && !isSelf) ...[
                   IconButton(
-                    icon: Icon(
-                      p['is_muted'] ? Icons.mic : Icons.mic_off,
-                      size: 20,
-                    ),
+                    icon: Icon(isMuted ? Icons.mic : Icons.mic_off, size: 20),
                     color: Colors.blue,
-                    padding: const EdgeInsets.all(4),
-                    constraints: const BoxConstraints(), // Remove default constraints
-                    onPressed: () => _muteParticipant(participantId, !p['is_muted']),
-                    tooltip: p['is_muted'] ? 'Unmute' : 'Mute',
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    onPressed: () => _muteParticipant(pid, !isMuted),
                   ),
                   IconButton(
                     icon: const Icon(Icons.remove_circle, size: 20),
                     color: Colors.red,
-                    padding: const EdgeInsets.all(4),
+                    padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
-                    onPressed: () => _kickParticipant(participantId),
-                    tooltip: 'Remove',
+                    onPressed: () => _kickParticipant(pid),
                   ),
                 ],
               ],
@@ -1529,148 +1322,471 @@ class _SessionScreenState extends State<SessionScreen> {
     );
   }
 
-
   Widget _buildChatPanel() {
-    return Column(
-      children: [
-        // Header
-        Container(
-          padding: const EdgeInsets.all(12),
-          color: Colors.teal.shade50,
-          child: Row(
-            children: [
-              const Icon(Icons.chat, color: Colors.teal, size: 20),
-              const SizedBox(width: 8),
-              const Expanded(
-                child: Text(
-                  'Chat',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-              ),
-              IconButton(
-                icon: Icon(_ttsEnabled ? Icons.volume_up : Icons.volume_off, size: 20),
-                tooltip: 'Toggle TTS',
-                padding: const EdgeInsets.all(4),
-                constraints: const BoxConstraints(),
-                onPressed: () {
-                  setState(() => _ttsEnabled = !_ttsEnabled);
-                  _speakIfEnabled(_ttsEnabled ? "TTS enabled" : "TTS disabled");
+    return Column(children: [
+      // header
+      Container(
+        padding: const EdgeInsets.all(12),
+        color: Colors.teal.shade50,
+        child: const Row(children: [
+          Icon(Icons.chat, color: Colors.teal, size: 20),
+          SizedBox(width: 8),
+          Text('Chat', style: TextStyle(fontWeight: FontWeight.bold)),
+        ]),
+      ),
+
+      // messages
+      Expanded(
+        child: _messages.isEmpty
+            ? const Center(child: Text('No messages yet',
+                style: TextStyle(color: Colors.grey)))
+            : ListView.builder(
+                controller: _chatScrollController,
+                padding: const EdgeInsets.all(8),
+                itemCount: _messages.length,
+                itemBuilder: (_, i) {
+                  final msg  = _messages[i];
+                  final isMe = msg['isMe'] as bool? ?? false;
+                  return Align(
+                    alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+                    child: Container(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      constraints: BoxConstraints(
+                          maxWidth: MediaQuery.of(context).size.width * 0.65),
+                      decoration: BoxDecoration(
+                        color: isMe ? Colors.teal.shade100 : Colors.grey.shade200,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(msg['sender'] as String,
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 11)),
+                          const SizedBox(height: 4),
+                          Text(msg['text'] as String,
+                              style: const TextStyle(fontSize: 14)),
+                        ],
+                      ),
+                    ),
+                  );
                 },
               ),
-            ],
-          ),
-        ),
-        
-        // Messages - with proper flex
-        Expanded(
-          child: _messages.isEmpty
-              ? const Center(
-                  child: Text(
-                    'No messages yet',
-                    style: TextStyle(color: Colors.grey, fontSize: 14),
-                  ),
-                )
-              : ListView.builder(
-                  controller: _chatScrollController,
-                  padding: const EdgeInsets.all(8),
-                  itemCount: _messages.length,
-                  itemBuilder: (context, index) {
-                    final msg = _messages[index];
-                    final isMe = msg['isMe'] ?? false;
-                    
-                    return Align(
-                      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-                      child: Container(
-                        margin: const EdgeInsets.only(bottom: 8),
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        constraints: BoxConstraints(
-                          maxWidth: MediaQuery.of(context).size.width * 0.7,
-                        ),
-                        decoration: BoxDecoration(
-                          color: isMe ? Colors.teal.shade100 : Colors.grey.shade200,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              msg['sender'],
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 11,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              msg['text'],
-                              style: const TextStyle(fontSize: 14),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
+      ),
+
+      // input
+      Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        decoration: BoxDecoration(color: Colors.white, boxShadow: [
+          BoxShadow(color: Colors.grey.shade300, blurRadius: 4,
+              offset: const Offset(0, -2)),
+        ]),
+        child: SafeArea(
+          top: false,
+          child: Row(children: [
+            Expanded(
+              child: TextField(
+                controller: _chatController,
+                decoration: InputDecoration(
+                  hintText: 'Message…',
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(24)),
+                  contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 8),
+                  isDense: true,
                 ),
-        ),
-        
-        // Input - more compact for mobile
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.shade300,
-                blurRadius: 4,
-                offset: const Offset(0, -2),
+                onSubmitted: (_) => _sendMessage(),
+                maxLines: 1,
               ),
-            ],
+            ),
+            const SizedBox(width: 8),
+            Container(
+              width: 40, height: 40,
+              decoration: const BoxDecoration(
+                  color: Colors.teal, shape: BoxShape.circle),
+              child: IconButton(
+                icon: const Icon(Icons.send, color: Colors.white, size: 20),
+                padding: EdgeInsets.zero,
+                onPressed: _sendMessage,
+              ),
+            ),
+          ]),
+        ),
+      ),
+    ]);
+  }
+
+  Widget _buildAudioControlSection() {
+    if (_currentAudioId == null) return const SizedBox.shrink();
+
+    final isPlaying = _isPlayingSessionAudio;
+    final barColor  = isPlaying ? Colors.deepPurple.shade700 : Colors.grey.shade800;
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 6),
+      color: barColor,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Title + speed + time
+          Row(children: [
+            Icon(
+              isPlaying ? Icons.music_note : Icons.audiotrack,
+              color: Colors.white, size: 20,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                _currentAudioTitle ?? 'Audio',
+                style: const TextStyle(
+                    color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: Colors.white24,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                '${_audioSpeed.toStringAsFixed(1)}×',
+                style: const TextStyle(
+                    color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              '${_formatDuration(_currentPosition)} / '
+              '${_audioDuration != null ? _formatDuration(_audioDuration!) : "--:--"}',
+              style: const TextStyle(color: Colors.white70, fontSize: 12),
+            ),
+          ]),
+
+          // Seek bar:
+          //   Teacher → interactive slider
+          //   Student → read-only LinearProgressIndicator
+          if (widget.isTeacher)
+            SliderTheme(
+              data: SliderThemeData(
+                trackHeight: 3,
+                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 7),
+                activeTrackColor: Colors.tealAccent,
+                inactiveTrackColor: Colors.white30,
+                thumbColor: Colors.tealAccent,
+                overlayColor: Colors.tealAccent.withOpacity(0.2),
+              ),
+              child: Slider(
+                value: (_audioDuration != null && _audioDuration! > 0)
+                    ? (_currentPosition / _audioDuration!).clamp(0.0, 1.0)
+                    : 0.0,
+                onChanged: _audioDuration != null
+                    ? (v) => setState(() => _currentPosition = v * _audioDuration!)
+                    : null,
+                onChangeEnd: _audioDuration != null
+                    ? (v) => _seekAudio(v * _audioDuration!)
+                    : null,
+              ),
+            )
+          else
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(3),
+                child: LinearProgressIndicator(
+                  value: (_audioDuration != null && _audioDuration! > 0)
+                      ? (_currentPosition / _audioDuration!).clamp(0.0, 1.0)
+                      : 0.0,
+                  backgroundColor: Colors.white24,
+                  color: Colors.tealAccent,
+                  minHeight: 4,
+                ),
+              ),
+            ),
+
+          // Transport controls (teacher only)
+          if (widget.isTeacher)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.fast_rewind, color: Colors.white70),
+                  tooltip: 'Slower',
+                  onPressed: _audioSpeed > 0.5
+                      ? () => _changeAudioSpeed((_audioSpeed - 0.25).clamp(0.5, 2.0))
+                      : null,
+                ),
+                IconButton(
+                  icon: const Icon(Icons.replay_10, color: Colors.white70),
+                  tooltip: 'Back 10s',
+                  onPressed: () =>
+                      _seekAudio((_currentPosition - 10).clamp(0.0, _audioDuration ?? 0.0)),
+                ),
+                ElevatedButton.icon(
+                  onPressed: isPlaying ? _pauseSessionAudio : _playSessionAudio,
+                  icon: Icon(isPlaying ? Icons.pause : Icons.play_arrow),
+                  label: Text(isPlaying ? 'Pause' : 'Play'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: isPlaying ? Colors.orange : Colors.green,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20)),
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.forward_10, color: Colors.white70),
+                  tooltip: 'Forward 10s',
+                  onPressed: () =>
+                      _seekAudio((_currentPosition + 10).clamp(0.0, _audioDuration ?? 0.0)),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.fast_forward, color: Colors.white70),
+                  tooltip: 'Faster',
+                  onPressed: _audioSpeed < 2.0
+                      ? () => _changeAudioSpeed((_audioSpeed + 0.25).clamp(0.5, 2.0))
+                      : null,
+                ),
+              ],
+            )
+          // Student status row
+          else
+            Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    isPlaying ? Icons.hearing : Icons.hearing_disabled,
+                    color: isPlaying ? Colors.tealAccent : Colors.white38,
+                    size: 16,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    isPlaying ? 'Playing — synced with teacher' : 'Paused by teacher',
+                    style: TextStyle(
+                      color: isPlaying ? Colors.tealAccent : Colors.white54,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  // ── Audio Library Panel (teacher only, toggled from action bar) ───────────
+
+  Widget _buildAudioLibraryPanel() {
+    if (!_showAudioPanel) return const SizedBox.shrink();
+
+    return Container(
+      height: 320,
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        border: Border(top: BorderSide(color: Colors.grey.shade300)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, -2),
           ),
-          child: SafeArea(
-            top: false,
+        ],
+      ),
+      child: Column(
+        children: [
+          // Panel header
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            color: Colors.teal.shade700,
             child: Row(
               children: [
-                Expanded(
-                  child: TextField(
-                    controller: _chatController,
-                    decoration: InputDecoration(
-                      hintText: "Message...",
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(24),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
-                      isDense: true,
-                    ),
-                    onSubmitted: (_) => _sendMessage(),
-                    style: const TextStyle(fontSize: 14),
-                    maxLines: 1,
+                const Icon(Icons.library_music, color: Colors.white, size: 18),
+                const SizedBox(width: 8),
+                const Expanded(
+                  child: Text('Audio Library',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15)),
+                ),
+                // Upload button
+                TextButton.icon(
+                  onPressed: _isUploadingAudio ? null : _uploadAudio,
+                  icon: _isUploadingAudio
+                      ? const SizedBox(
+                          width: 16, height: 16,
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: Colors.white))
+                      : const Icon(Icons.upload_file, color: Colors.white, size: 18),
+                  label: Text(
+                    _isUploadingAudio ? 'Uploading…' : 'Upload',
+                    style: const TextStyle(color: Colors.white),
                   ),
                 ),
-                const SizedBox(width: 8),
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: const BoxDecoration(
-                    color: Colors.teal,
-                    shape: BoxShape.circle,
-                  ),
-                  child: IconButton(
-                    icon: const Icon(Icons.send, color: Colors.white, size: 20),
-                    padding: EdgeInsets.zero,
-                    onPressed: _sendMessage,
-                  ),
+                // Refresh
+                IconButton(
+                  icon: const Icon(Icons.refresh, color: Colors.white, size: 20),
+                  tooltip: 'Refresh',
+                  onPressed: _loadAudioLibrary,
+                  constraints: const BoxConstraints(),
+                  padding: EdgeInsets.zero,
+                ),
+                // Close
+                IconButton(
+                  icon: const Icon(Icons.close, color: Colors.white, size: 20),
+                  onPressed: () => setState(() => _showAudioPanel = false),
+                  constraints: const BoxConstraints(),
+                  padding: const EdgeInsets.only(left: 8),
                 ),
               ],
             ),
           ),
-        ),
-      ],
+
+          // Upload progress
+          if (_isUploadingAudio)
+            const LinearProgressIndicator(color: Colors.teal, minHeight: 2),
+
+          // File list
+          Expanded(
+            child: !_audioLibraryLoaded
+                ? const Center(child: CircularProgressIndicator(color: Colors.teal))
+                : _audioFiles.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.audiotrack,
+                                size: 48, color: Colors.grey),
+                            const SizedBox(height: 8),
+                            const Text('No audio files yet',
+                                style: TextStyle(color: Colors.grey)),
+                            const SizedBox(height: 8),
+                            TextButton.icon(
+                              onPressed: _uploadAudio,
+                              icon: const Icon(Icons.upload_file),
+                              label: const Text('Upload your first file'),
+                            ),
+                          ],
+                        ),
+                      )
+                    : ListView.builder(
+                        padding: const EdgeInsets.all(8),
+                        itemCount: _audioFiles.length,
+                        itemBuilder: (_, i) {
+                          final audio    = _audioFiles[i];
+                          final audioId  = audio['audio_id'] ?? audio['id'] as int;
+                          final title    = audio['title']   as String? ?? 'Untitled';
+                          final desc     = audio['description'] as String? ?? '';
+                          final isPrev   = _previewingAudioId == audioId;
+                          final isActive = _currentAudioId    == audioId;
+
+                          return Card(
+                            margin: const EdgeInsets.only(bottom: 8),
+                            elevation: isActive ? 3 : 1,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              side: isActive
+                                  ? BorderSide(
+                                      color: Colors.teal.shade400, width: 2)
+                                  : BorderSide.none,
+                            ),
+                            child: ListTile(
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 4),
+                              leading: Container(
+                                width: 40, height: 40,
+                                decoration: BoxDecoration(
+                                  color: isActive
+                                      ? Colors.teal.shade50
+                                      : Colors.grey.shade100,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Icon(
+                                  isPrev ? Icons.graphic_eq : Icons.audiotrack,
+                                  color: isActive
+                                      ? Colors.teal.shade700
+                                      : Colors.grey.shade600,
+                                  size: 22,
+                                ),
+                              ),
+                              title: Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(title,
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 14),
+                                        overflow: TextOverflow.ellipsis),
+                                  ),
+                                  if (isActive)
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 6, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: Colors.teal.shade700,
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: const Text('ACTIVE',
+                                          style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 9,
+                                              fontWeight: FontWeight.bold)),
+                                    ),
+                                ],
+                              ),
+                              subtitle: desc.isNotEmpty
+                                  ? Text(desc,
+                                      style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.grey.shade600),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis)
+                                  : null,
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  // Preview (local, not broadcast)
+                                  IconButton(
+                                    icon: Icon(
+                                      isPrev ? Icons.stop_circle : Icons.play_circle,
+                                      color: isPrev
+                                          ? Colors.orange
+                                          : Colors.blue.shade600,
+                                      size: 26,
+                                    ),
+                                    tooltip: isPrev ? 'Stop preview' : 'Preview',
+                                    onPressed: () => _previewAudio(audioId, title),
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  // Select & broadcast to all
+                                  IconButton(
+                                    icon: Icon(
+                                      Icons.broadcast_on_personal,
+                                      color: Colors.green.shade600,
+                                      size: 26,
+                                    ),
+                                    tooltip: 'Select & Play for session',
+                                    onPressed: () =>
+                                        _selectAndPlayAudio(audioId, title),
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+          ),
+        ],
+      ),
     );
   }
 }

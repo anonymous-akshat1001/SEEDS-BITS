@@ -5,10 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 // Allows reading environment variables
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+// Allows building a websocket link
+import 'url_helper.dart';
 
 // Backend and websocket URL
 final baseUrl = dotenv.env['API_BASE_URL'];
-final wsBaseUrl = dotenv.env['WS_BASE_URL'];
+// final wsBaseUrl = dotenv.env['WS_BASE_URL'];
 
 // This creates a custom function type - any function that takes a Map and returns nothing
 typedef MsgHandler = void Function(Map);
@@ -36,7 +38,11 @@ class WsService {
     _channel = null;
 
     // Set the websocket URL
-    final wsUrl = '$wsBaseUrl/ws/sessions/$sessionId?user_id=$userId';
+    // final wsUrl = '$wsBaseUrl/ws/sessions/$sessionId?user_id=$userId';
+    final wsUrl = buildSessionWebSocketUrl(
+      sessionId: int.parse(sessionId!),
+      userId: int.parse(userId!),
+    );
 
     // Establish a new websocket connection
     _channel = WebSocketChannel.connect(

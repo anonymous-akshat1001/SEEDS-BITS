@@ -9,10 +9,12 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 // Allows reading environment variables
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+// Helps build the websocket link
+import 'url_helper.dart';
 
 // Backend and websocket URL
 final baseUrl = dotenv.env['API_BASE_URL'];
-final wsBaseUrl = dotenv.env['WS_BASE_URL'];
+// final wsBaseUrl = dotenv.env['WS_BASE_URL'];
 
 // Define a service class which handles all real time communication logic
 class RtcService {
@@ -53,7 +55,11 @@ class RtcService {
     });
 
     // Builds signalling URL
-    final wsUrl = '$wsBaseUrl/ws/sessions/$sessionId?user_id=$userId';
+    final wsUrl = buildSessionWebSocketUrl(
+      sessionId: sessionId,
+      userId: userId,
+    );
+    // final wsUrl = '$wsBaseUrl/ws/sessions/$sessionId?user_id=$userId';
 
     // opens websocket connection and keeps it open for real time signalling
     _ws = WebSocketChannel.connect(

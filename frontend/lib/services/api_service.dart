@@ -13,6 +13,8 @@ final wsBaseUrl = dotenv.env['WS_BASE_URL'];
 class ApiService {
   static const bool devMode = true; // Set to false for JWT mode
 
+  static String? cachedToken;   // set this right after reading from prefs
+
   // Build full URL for endpoint (synchronous)
   static Future<Uri> _buildUri(String path) async {
     String uri = '$baseUrl$path';
@@ -22,6 +24,7 @@ class ApiService {
       final prefs = await SharedPreferences.getInstance();
       // reads locally stored user id
       final userId = prefs.getInt('user_id');
+
       if (userId != null) {
         // Add ?user_id=123 or &user_id=123 depending on existing params
         uri += uri.contains('?') ? '&user_id=$userId' : '?user_id=$userId';
@@ -35,12 +38,16 @@ class ApiService {
   // Add Authorization header if token exists
   static Future<Map<String, String>> _buildHeaders({bool useAuth = false}) async {
     final prefs = await SharedPreferences.getInstance();
+    
     // tells backend the request body is JSON
     final headers = {'Content-Type': 'application/json'};
 
     // only attach token if auth required and production mode
     if (useAuth && !devMode) {
       final token = prefs.getString('token');
+
+      cachedToken = token;
+
       if (token != null && token.isNotEmpty) {
         // standard JWT auth header
         headers['Authorization'] = 'Bearer $token';
@@ -57,6 +64,8 @@ class ApiService {
 
 
   ////////////////////// POST /////////////////////////////
+
+
 
   // Sends POST request
   static Future<Map<String, dynamic>?> post(
@@ -194,6 +203,9 @@ class ApiService {
 
       if (useAuth && !devMode) {
         final token = prefs.getString('token');
+
+        cachedToken = token;
+
         if (token != null && token.isNotEmpty) {
           req.headers['Authorization'] = 'Bearer $token';
         }
@@ -339,6 +351,7 @@ class ApiService {
       
       if (!devMode) {
         final token = prefs.getString('token');
+        cachedToken = token;
         if (token != null) {
           req.headers['Authorization'] = 'Bearer $token';
         }
