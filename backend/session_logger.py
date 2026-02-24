@@ -39,10 +39,7 @@ class EventType:
 
 
 class SessionLogger:
-    """
-    Centralized session activity logger.
-    Creates log entries in the database for all session events.
-    """
+   
     
     @staticmethod
     async def log_event(
@@ -52,19 +49,7 @@ class SessionLogger:
         user_id: Optional[int] = None,
         details: Optional[dict] = None
     ) -> models.Log:
-        """
-        Log a session event to the database.
-        
-        Args:
-            db: Database session
-            session_id: ID of the session
-            event_type: Type of event (use EventType constants)
-            user_id: ID of the user who triggered the event (optional)
-            details: Additional event details as JSON (optional)
-        
-        Returns:
-            The created Log entry
-        """
+       
         log_entry = models.Log(
             session_id=session_id,
             user_id=user_id,
@@ -77,7 +62,6 @@ class SessionLogger:
         await db.refresh(log_entry)
         return log_entry
     
-    # ============ Session Lifecycle ============
     
     @staticmethod
     async def log_session_created(
@@ -106,7 +90,7 @@ class SessionLogger:
             details={"ended_at": datetime.utcnow().isoformat()}
         )
     
-    # ============ Participant Events ============
+    # Participant Events
     
     @staticmethod
     async def log_participant_joined(
@@ -182,7 +166,7 @@ class SessionLogger:
             }
         )
     
-    # ============ Participant Actions ============
+    # Participant Actions
     
     @staticmethod
     async def log_hand_raised(
@@ -252,7 +236,7 @@ class SessionLogger:
             }
         )
     
-    # ============ Audio Events ============
+    # Audio Events
     
     @staticmethod
     async def log_audio_selected(
@@ -328,7 +312,7 @@ class SessionLogger:
             }
         )
     
-    # ============ Chat Events ============
+    # Chat Events
     
     @staticmethod
     async def log_chat_message(
@@ -349,7 +333,7 @@ class SessionLogger:
             }
         )
     
-    # ============ Audio Upload Event ============
+    # Audio Upload Event
     
     @staticmethod
     async def log_audio_uploaded(
@@ -381,8 +365,6 @@ class SessionLogger:
         return log_entry
 
 
-# ============ Utility Functions ============
-
 async def get_session_logs(
     db: AsyncSession,
     session_id: int,
@@ -390,19 +372,7 @@ async def get_session_logs(
     user_id: Optional[int] = None,
     limit: int = 100
 ) -> list[models.Log]:
-    """
-    Retrieve logs for a session with optional filtering.
-    
-    Args:
-        db: Database session
-        session_id: ID of the session
-        event_type: Filter by event type (optional)
-        user_id: Filter by user ID (optional)
-        limit: Maximum number of logs to return
-    
-    Returns:
-        List of Log entries
-    """
+   
     query = select(models.Log).filter(models.Log.session_id == session_id)
     
     if event_type:
@@ -422,18 +392,7 @@ async def get_user_session_activity(
     session_id: Optional[int] = None,
     limit: int = 100
 ) -> list[models.Log]:
-    """
-    Retrieve all activity logs for a specific user.
     
-    Args:
-        db: Database session
-        user_id: ID of the user
-        session_id: Filter by session ID (optional)
-        limit: Maximum number of logs to return
-    
-    Returns:
-        List of Log entries
-    """
     query = select(models.Log).filter(models.Log.user_id == user_id)
     
     if session_id:
@@ -446,16 +405,7 @@ async def get_user_session_activity(
 
 
 async def get_session_summary(db: AsyncSession, session_id: int) -> dict:
-    """
-    Get a summary of session activity.
     
-    Args:
-        db: Database session
-        session_id: ID of the session
-    
-    Returns:
-        Dictionary with session activity summary
-    """
     logs = await get_session_logs(db, session_id, limit=1000)
     
     # Count events by type

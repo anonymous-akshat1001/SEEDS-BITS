@@ -505,6 +505,13 @@ async def mute_participant(session_id: int, participant_id: int, mute: bool = Tr
         background_tasks.add_task(ws_mgr.mute_participant, session_id, participant_id, mute)
     else:
         asyncio.create_task(ws_mgr.mute_participant(session_id, participant_id, mute))
+    
+    # Log mute/unmute
+    if mute:
+        await SessionLogger.log_participant_muted(db, session_id, p.user_id, current_user.user_id, participant_id)
+    else:
+        await SessionLogger.log_participant_unmuted(db, session_id, p.user_id, current_user.user_id, participant_id)
+        
     return {"ok": True, "muted": mute}
 
 
@@ -695,8 +702,13 @@ async def rest_play_audio(session_id: int,
 # Pause the audio playback for all
 @app.post("/sessions/{session_id}/audio/pause")
 async def rest_pause_audio(session_id: int,
-                           current_user: models.User = Depends(require_teacher)):
+                           current_user: models.User = Depends(require_teacher),
+                           db: AsyncSession = Depends(get_db)):
     await ws_mgr.audio_pause(session_id)
+    
+    # Log audio pause
+    await SessionLogger.log_audio_pause(db, session_id, current_user.user_id)
+    
     return {"ok": True}
 
 
@@ -765,6 +777,14 @@ async def control_audio_playback(
         "duration": audio_file.duration
     })
     
+    # Log audio event
+    if control.action == 'play':
+        await SessionLogger.log_audio_play(db, session_id, current_user.user_id, control.audio_id, control.position, control.speed)
+    elif control.action == 'pause':
+        await SessionLogger.log_audio_pause(db, session_id, current_user.user_id)
+    elif control.action == 'seek':
+        await SessionLogger.log_audio_seek(db, session_id, current_user.user_id, control.audio_id, control.position)
+
     return {
         "ok": True,
         "action": control.action,
@@ -1163,6 +1183,13 @@ async def session_ws(websocket: WebSocket, session_id: int, db: AsyncSession = D
                 is_muted = bool(msg.get("mute", True))
                 async with SESSION_LOCK:
                     SESSION_STATE[session_id]["participants"][participant_id]["is_muted"] = is_muted
+                
+                # Log self mute/unmute
+                if is_muted:
+                    await SessionLogger.log_participant_muted(db, session_id, user_id, user_id, participant_id, is_self_mute=True)
+                else:
+                    await SessionLogger.log_participant_unmuted(db, session_id, user_id, user_id, participant_id, is_self_unmute=True)
+
                 await ws_mgr.broadcast(session_id, {
                     "type": "participant_muted", "participant_id": participant_id, "is_muted": is_muted
                 })
@@ -1170,11 +1197,19 @@ async def session_ws(websocket: WebSocket, session_id: int, db: AsyncSession = D
             elif typ == "raise_hand":
                 async with SESSION_LOCK:
                     SESSION_STATE[session_id]["participants"][participant_id]["raised_hand"] = True
+                
+                # Log hand raise
+                await SessionLogger.log_hand_raised(db, session_id, user_id, participant_id)
+                
                 await ws_mgr.broadcast(session_id, {"type": "hand_raised", "participant_id": participant_id})
 
             elif typ == "lower_hand":
                 async with SESSION_LOCK:
                     SESSION_STATE[session_id]["participants"][participant_id]["raised_hand"] = False
+                
+                # Log hand lower
+                await SessionLogger.log_hand_lowered(db, session_id, user_id, participant_id)
+
                 await ws_mgr.broadcast(session_id, {"type": "hand_lowered", "participant_id": participant_id})
 
             elif typ == "mute_participant":
@@ -1185,6 +1220,11 @@ async def session_ws(websocket: WebSocket, session_id: int, db: AsyncSession = D
                 target = int(msg.get("target_participant_id"))
                 async with SESSION_LOCK:
                     SESSION_STATE[session_id]["participants"][target]["is_muted"] = True
+                    target_user_id = SESSION_STATE[session_id]["participants"][target]["user_id"]
+                
+                # Log mute (teacher muting student)
+                await SessionLogger.log_participant_muted(db, session_id, target_user_id, user_id, target)
+
                 await ws_mgr.broadcast(session_id, {"type": "participant_muted", "participant_id": target, "is_muted": True})
 
             elif typ == "unmute_participant":
@@ -1195,6 +1235,11 @@ async def session_ws(websocket: WebSocket, session_id: int, db: AsyncSession = D
                 target = int(msg.get("target_participant_id"))
                 async with SESSION_LOCK:
                     SESSION_STATE[session_id]["participants"][target]["is_muted"] = False
+                    target_user_id = SESSION_STATE[session_id]["participants"][target]["user_id"]
+                
+                # Log unmute (teacher unmuting student)
+                await SessionLogger.log_participant_unmuted(db, session_id, target_user_id, user_id, target)
+
                 await ws_mgr.broadcast(session_id, {"type": "participant_muted", "participant_id": target, "is_muted": False})
 
             elif typ == "kick_participant":
@@ -1213,6 +1258,10 @@ async def session_ws(websocket: WebSocket, session_id: int, db: AsyncSession = D
                 await ws_mgr.broadcast(session_id, {"type": "session_ending"})
                 # End websocket connection
                 await ws_mgr.close_session(session_id)
+                
+                # Log session ended
+                await SessionLogger.log_session_ended(db, session_id, user_id)
+                
                 break
 
             elif typ == "webrtc_signal":
@@ -1239,6 +1288,9 @@ async def session_ws(websocket: WebSocket, session_id: int, db: AsyncSession = D
         if participant_id:
             await ws_mgr.disconnect(session_id, participant_id)
             await ws_mgr.broadcast(session_id, {"type": "participant_left", "participant_id": participant_id})
+            
+            # Log participant left
+            await SessionLogger.log_participant_left(db, session_id, user_id, participant_id)
 
     except Exception as e:
         import traceback
@@ -1246,6 +1298,9 @@ async def session_ws(websocket: WebSocket, session_id: int, db: AsyncSession = D
         if participant_id:
             await ws_mgr.disconnect(session_id, participant_id)
             await ws_mgr.broadcast(session_id, {"type": "participant_left", "participant_id": participant_id})
+
+            # Log participant left
+            await SessionLogger.log_participant_left(db, session_id, user_id, participant_id)
         # Try to notify client before closing
         try:
             await websocket.close(code=1011)
