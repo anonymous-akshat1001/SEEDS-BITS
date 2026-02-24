@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import Optional, Any
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from . import models
+import models
 
 
 # Event type constants
