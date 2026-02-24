@@ -1,245 +1,263 @@
-# Code for WebSocketManager and session runtime state implementation. 
-# It keeps per-session connections, participant metadata (mute state, raised hand), and broadcasts events.
+"""
+ws_manager.py — SSE-based session manager (replaces WebSocket version)
 
-# A WebSocket is a long-lived, bi-directional connection between client (browser/mobile app) and server that 
-# lets both sides send messages at any time (unlike HTTP where the client requests and the server responds).
+Each connected client has an asyncio.Queue.
+The SSE endpoint drains its queue and streams events to the browser/app.
+Client→server actions arrive as plain HTTP POST requests.
+"""
 
 import asyncio
-from typing import Dict, Any, Set
+from typing import Dict, Any, Optional, Set
 
-from fastapi import WebSocket, logger
-
-# Runtime in-memory state for active sessions (kept while server runs and will be lost if the server restarts)
+# ─────────────────────────────────────────────────────────────────
+# Global in-memory session state (lives as long as the server does)
+#
 # Structure:
 # SESSION_STATE = {
 #   session_id: {
-#       "connections": { participant_id: websocket, ... },
-#       "participants": { participant_id: {"user_id":..., "is_muted": False, "raised_hand": False, "name": "..."} },
-#       "playback": {"audio_id": None, "status": "stopped"|"playing"|"paused", "speed": 1.0, "position": 0.0}
+#     "connections": { participant_id: asyncio.Queue, ... },
+#     "participants": {
+#        participant_id: {
+#           "user_id": int,
+#           "name": str,
+#           "is_muted": bool,
+#           "raised_hand": bool,
+#           "is_teacher": bool,   ← NEW: needed so Flutter renders role correctly
+#        }, ...
+#     },
+#     "playback": {
+#        "audio_id": int|None, "status": "stopped"|"playing"|"paused",
+#        "speed": float, "position": float, "title": str|None
+#     }
 #   }
 # }
+# ─────────────────────────────────────────────────────────────────
 
 SESSION_STATE: Dict[int, Dict[str, Any]] = {}
 SESSION_LOCK = asyncio.Lock()
 
-# Simple object to manage currently active WebSocket connections at runtime
+
 class WebSocketManager:
+    """
+    Name kept so existing imports in main.py don't need changing.
+    Internally uses asyncio.Queue instead of WebSocket objects.
+    """
 
     def __init__(self):
-        # map session_id -> {participant_id -> websocket}
-        # Similar to SESSION_STATE["connections"] but is local to the manager instance
-        self.active: Dict[int, Dict[int, WebSocket]] = {}
+        # session_id → { participant_id → asyncio.Queue }
+        self.active: Dict[int, Dict[int, asyncio.Queue]] = {}
 
-    
-    # Connects to the websocket
-    async def connect(self, session_id: int, participant_id: int, websocket: WebSocket):
-        # Note: websocket.accept() should be called BEFORE this method
-        # Acquire global lock
+    # ── connection lifecycle ──────────────────────────────────────────────
+
+    async def connect(
+        self,
+        session_id: int,
+        participant_id: int,
+        user_id: int,
+        name: str,
+        is_teacher: bool,
+    ) -> asyncio.Queue:
+        """
+        Register a new SSE client.
+        Returns the Queue the SSE generator should read from.
+
+        Stores is_teacher in SESSION_STATE so the initial session_state
+        snapshot sent to latecomers includes accurate role info.
+        """
+        q: asyncio.Queue = asyncio.Queue(maxsize=256)
+
         async with SESSION_LOCK:
-            # Local Structure
-            self.active.setdefault(session_id, {})                # Ensure self.active has a dict for this session_id
-            self.active[session_id][participant_id] = websocket   # Store the WebSocket object for this participant
-            # Ensure SESSION_STATE exists(global entry)
+            self.active.setdefault(session_id, {})[participant_id] = q
+
             s = SESSION_STATE.setdefault(
-                session_id, 
+                session_id,
                 {
                     "connections": {},
                     "participants": {},
-                    "playback": {"audio_id": None, "status": "stopped", "speed": 1.0, "position": 0.0}
-                }
+                    "playback": {
+                        "audio_id": None,
+                        "status": "stopped",
+                        "speed": 1.0,
+                        "position": 0.0,
+                        "title": None,
+                    },
+                },
             )
-            s["connections"][participant_id] = websocket
-            s["participants"].setdefault(participant_id, {"is_muted": False, "raised_hand": False})
-        
-        print(f"[WS MGR] Connected: Session={session_id}, Participant={participant_id}")
 
-    
-    # Disconnects from the websocket - can join later on hence metadata preserved
+            s["connections"][participant_id] = q
+
+            # setdefault preserves existing metadata on reconnect;
+            # we update name/is_teacher each time (they don't change).
+            existing = s["participants"].get(participant_id, {})
+            s["participants"][participant_id] = {
+                "user_id":    user_id,
+                "name":       name,
+                "is_muted":   existing.get("is_muted", False),
+                "raised_hand": existing.get("raised_hand", False),
+                "is_teacher": is_teacher,
+            }
+
+        print(f"[SSE MGR] Connected  session={session_id} participant={participant_id} "
+              f"name={name!r} teacher={is_teacher}")
+        return q
+
     async def disconnect(self, session_id: int, participant_id: int):
+        """Soft disconnect — removes queue but keeps participant metadata."""
         async with SESSION_LOCK:
-            # Remove from local instance
             self.active.get(session_id, {}).pop(participant_id, None)
-            # Keep participant metadata but mark connection removed
             if session_id in SESSION_STATE:
                 SESSION_STATE[session_id]["connections"].pop(participant_id, None)
-        
-        print(f"[WS MGR] Disconnected: Session={session_id}, Participant={participant_id}")
 
-    
-    # Sends a JSON message to a single participant via their WebSocket object using send_json()
-    async def send_personal(self, websocket: WebSocket, message: dict):
+        print(f"[SSE MGR] Disconnected session={session_id} participant={participant_id}")
+
+    # ── sending helpers ───────────────────────────────────────────────────
+
+    async def send_personal(self, queue: asyncio.Queue, message: dict):
+        """Push one message onto a specific client's queue."""
         try:
-            await websocket.send_json(message)
-        except Exception as e:
-            print(f"[WS MGR] Error sending personal message: {e}")
-    
-    
-    # Broadcasts (sends) the same message to all connected participants in a session
-    async def broadcast(self, session_id: int, message: dict, exclude: Set[int] | None = None):
-        # exclude allows skipping some participant IDs(for eg : the sender)
+            queue.put_nowait(message)
+        except asyncio.QueueFull:
+            print("[SSE MGR] Queue full — dropping personal message")
+
+    async def broadcast(
+        self,
+        session_id: int,
+        message: dict,
+        exclude: Optional[Set[int]] = None,
+    ):
+        """Push a message to every connected client in a session."""
         exclude = exclude or set()
-        # Takes a snapshot list of (pid, ws) pairs. Converts to a list so that while iterating we have a stable set
         conns = list(self.active.get(session_id, {}).items())
-        
+
         if not conns:
-            print(f"[WS MGR] No active connections for session {session_id}")
+            print(f"[SSE MGR] No connections for session {session_id} "
+                  f"(type={message.get('type')})")
             return
-        
-        print(f"[WS MGR] Broadcasting to session {session_id}: {message.get('type', 'unknown')} (excluding {exclude})")
-        
-        for pid, ws in conns:
+
+        print(f"[SSE MGR] Broadcast session={session_id} "
+              f"type={message.get('type')} excluding={exclude}")
+
+        for pid, q in conns:
             if pid in exclude:
                 continue
             try:
-                await ws.send_json(message)
-            except Exception as e:
-                print(f"[WS MGR] Error broadcasting to participant {pid}: {e}")
-                # Consider cleaning stale connections
-                pass
+                q.put_nowait(message)
+            except asyncio.QueueFull:
+                print(f"[SSE MGR] Queue full for participant {pid}")
 
-    
-    # Close all connections in case the session is ended
     async def close_session(self, session_id: int):
+        """Send session_ended to all clients, then wipe state."""
         async with SESSION_LOCK:
             conns = list(self.active.get(session_id, {}).items())
-            if not conns:
-                print(f"[WS MGR] No connections to close for session {session_id}")
-                return
-            
-            print(f"[WS MGR] Closing session {session_id} with {len(conns)} connections")
-            
-            for pid, ws in conns:
+
+            for _, q in conns:
                 try:
-                    await ws.send_json({"type": "session_ended"})
-                    await ws.close()
-                except Exception as e:
-                    print(f"[WS MGR] Error closing connection for participant {pid}: {e}")
-            
-            # Cleanup
+                    q.put_nowait({"type": "session_ended"})
+                    q.put_nowait(None)   # None = sentinel → SSE generator exits
+                except asyncio.QueueFull:
+                    pass
+
             self.active.pop(session_id, None)
             SESSION_STATE.pop(session_id, None)
-            
-            print(f"[WS MGR] Session {session_id} closed successfully")
 
+        print(f"[SSE MGR] Session {session_id} closed")
 
+    # ── participant actions ───────────────────────────────────────────────
 
-# -------------------- Participant Actions --------------------
-    
-    # Toggle mute for participant and broadcast
     async def mute_participant(self, session_id: int, participant_id: int, mute: bool):
         async with SESSION_LOCK:
-            # If session does not exist, return
             if session_id not in SESSION_STATE:
-                print(f"[WS MGR] Cannot mute - session {session_id} not found")
                 return
-            # Creates an entry if the participant metadata doesn't exist yet
-            p = SESSION_STATE[session_id]["participants"].setdefault(participant_id, {})
-            p["is_muted"] = mute
-        
+            SESSION_STATE[session_id]["participants"] \
+                .setdefault(participant_id, {})["is_muted"] = mute
+
         await self.broadcast(
             session_id,
             {"type": "participant_muted", "participant_id": participant_id, "is_muted": mute},
         )
-        print(f"[WS MGR] Participant {participant_id} muted={mute} in session {session_id}")
+        print(f"[SSE MGR] Muted participant={participant_id} mute={mute} session={session_id}")
 
-
-    # Kick a participant and close their WebSocket
-    async def kick_participant(self, session_id: int, participant_id: int, reason: str | None = None):
-        ws = None
+    async def kick_participant(
+        self, session_id: int, participant_id: int, reason: Optional[str] = None
+    ):
+        q = None
         async with SESSION_LOCK:
-            # Removes and returns the WebSocket object (if any) for that participant from the manager's active map
-            ws = self.active.get(session_id, {}).pop(participant_id, None)
-            # Remove participant metadata as well as connections
+            q = self.active.get(session_id, {}).pop(participant_id, None)
             if session_id in SESSION_STATE:
                 SESSION_STATE[session_id]["connections"].pop(participant_id, None)
                 SESSION_STATE[session_id]["participants"].pop(participant_id, None)
-        
-        if ws:
+
+        if q:
             try:
-                await ws.send_json({"type": "kicked", "reason": reason or "Removed by teacher"})
-                await ws.close()
-                print(f"[WS MGR] Kicked participant {participant_id} from session {session_id}")
-            except Exception as e:
-                print(f"[WS MGR] Error kicking participant {participant_id}: {e}")
-        
-        await self.broadcast(session_id, {"type": "participant_kicked", "participant_id": participant_id})
+                q.put_nowait({"type": "kicked", "reason": reason or "Removed by teacher"})
+                q.put_nowait(None)   # sentinel
+            except asyncio.QueueFull:
+                pass
+            print(f"[SSE MGR] Kicked participant={participant_id} session={session_id}")
 
+        await self.broadcast(
+            session_id,
+            {"type": "participant_kicked", "participant_id": participant_id},
+        )
 
-    # Disconnect a specific participant
-    async def disconnect_participant(self, session_id: int, participant_id: int, reason: str | None = None):
-        """Disconnect a participant without removing their metadata (softer than kick)"""
-        ws = None
+    async def disconnect_participant(
+        self, session_id: int, participant_id: int, reason: Optional[str] = None
+    ):
+        """Soft kick — closes stream but keeps metadata."""
+        q = None
         async with SESSION_LOCK:
-            ws = self.active.get(session_id, {}).pop(participant_id, None)
+            q = self.active.get(session_id, {}).pop(participant_id, None)
             if session_id in SESSION_STATE:
                 SESSION_STATE[session_id]["connections"].pop(participant_id, None)
-        
-        if ws:
+
+        if q:
             try:
-                await ws.send_json({"type": "disconnected", "reason": reason or "Connection closed"})
-                await ws.close()
-                print(f"[WS MGR] Disconnected participant {participant_id} from session {session_id}")
-            except Exception as e:
-                print(f"[WS MGR] Error disconnecting participant {participant_id}: {e}")
+                q.put_nowait({"type": "disconnected", "reason": reason or "Connection closed"})
+                q.put_nowait(None)
+            except asyncio.QueueFull:
+                pass
 
+    # ── audio playback controls ───────────────────────────────────────────
 
-# kick_participant completely removes participant metadata (so there's no trace), 
-# while disconnect only removes the connection but leaves metadata intact. 
-# Both are valid behaviors depending on whether you want to preserve metadata for later rejoin or to remove user entirely.
-
-# -------------------- Audio Playback Controls --------------------
-
-    # Set the selected audio track
-    async def audio_select(self, session_id: int, audio_id: int, title: str = None):
+    async def audio_select(self, session_id: int, audio_id: int, title: Optional[str] = None):
         async with SESSION_LOCK:
             s = SESSION_STATE.setdefault(
                 session_id,
-                {"connections": {}, "participants": {}, "playback": {}}
+                {"connections": {}, "participants": {}, "playback": {}},
             )
-            # Update playback metadata
             s["playback"].update(
                 {"audio_id": audio_id, "title": title, "status": "stopped", "position": 0.0}
             )
-        
-        await self.broadcast(session_id, {
-            "type": "audio_selected", 
-            "audio_id": audio_id,
-            "title": title
-        })
-        print(f"[WS MGR] Audio {audio_id} selected for session {session_id}")
 
+        await self.broadcast(
+            session_id,
+            {"type": "audio_selected", "audio_id": audio_id, "title": title},
+        )
 
-    # Start audio playback
-    async def audio_play(self, session_id: int, audio_id: int, speed: float = 1.0, position: float = 0.0):
+    async def audio_play(
+        self, session_id: int, audio_id: int, speed: float = 1.0, position: float = 0.0
+    ):
         async with SESSION_LOCK:
             if session_id not in SESSION_STATE:
-                print(f"[WS MGR] Cannot play - session {session_id} not found")
                 return
             SESSION_STATE[session_id]["playback"].update(
                 {"status": "playing", "audio_id": audio_id, "speed": speed, "position": position}
             )
-        
+
         await self.broadcast(
             session_id,
             {"type": "audio_play", "audio_id": audio_id, "speed": speed, "position": position},
         )
-        print(f"[WS MGR] Audio {audio_id} playing in session {session_id} at speed {speed} from position {position}s")
 
-
-    # Pause playback
     async def audio_pause(self, session_id: int, position: float = 0.0):
         async with SESSION_LOCK:
             if session_id not in SESSION_STATE:
-                print(f"[WS MGR] Cannot pause - session {session_id} not found")
                 return
             SESSION_STATE[session_id]["playback"]["status"] = "paused"
             SESSION_STATE[session_id]["playback"]["position"] = position
-        
+
         await self.broadcast(session_id, {"type": "audio_pause", "position": position})
-        print(f"[WS MGR] Audio paused in session {session_id} at position {position}s")
 
 
-
-
-# A single global instance of the manager is created for other modules to import and use (singleton pattern)
+# Singleton — imported everywhere
 ws_mgr = WebSocketManager()

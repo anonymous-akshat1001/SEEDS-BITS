@@ -3,13 +3,13 @@ from datetime import datetime, timedelta
 from jose import jwt, JWTError
 from passlib.context import CryptContext
 from fastapi import HTTPException, status
-from . import schemas, models
+import schemas, models
 import os
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from .database import get_db
+from database import get_db
 
 SECRET_KEY = os.getenv("JWT_SECRET")    # Acts as a seal which is verified each time a token is accessed
 ALGORITHM = "HS256"

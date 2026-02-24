@@ -8,21 +8,22 @@ import aiofiles
 import json
 import jwt
 from datetime import datetime, timedelta
+from pydantic import BaseModel
 
 from fastapi import FastAPI, Depends, WebSocket, WebSocketDisconnect, BackgroundTasks, Query, Form, HTTPException, status, UploadFile, File, APIRouter
+from fastapi.responses import StreamingResponse
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
-from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import update, func
 
-from . import models, schemas, auth, ws_manager
-from .database import engine, get_db
-from .notification_service import fcm_service
-from .ws_manager import ws_mgr, SESSION_STATE, SESSION_LOCK
-from .session_logger import SessionLogger, get_session_logs, get_session_summary
+import models, schemas, auth, ws_manager
+from database import engine, get_db
+from notification_service import fcm_service
+from ws_manager import ws_mgr, SESSION_STATE, SESSION_LOCK
+from session_logger import SessionLogger, get_session_logs, get_session_summary
 
 
 # Audio directory - store audio files locally
@@ -57,7 +58,7 @@ app.add_middleware(
 
 
 # Create temporary dependencies which bypass JWT Authentication : 
-async def get_user_by_id(user_id: int | None = Query(None), db: AsyncSession = Depends(get_db)):
+async def get_user_by_id(user_id: Optional[int] = Query(None), db: AsyncSession = Depends(get_db)):
     """
     Dev-only: fetch a user by user_id=123 (or will read from header X-User-Id if provided).
     This replaces JWT-based get_current_user during development.
@@ -531,7 +532,7 @@ ALLOWED_MIME_TYPES = {"audio/mpeg", "audio/wav", "audio/mp4", "audio/x-m4a", "au
 
 
 # Helper function to calculate audio duration during upload
-async def calculate_audio_duration(file_path: str) -> float | None:
+async def calculate_audio_duration(file_path: str) -> Optional[float]:
     """Calculate audio duration in seconds (requires ffprobe or similar)"""
     try:
         import subprocess
@@ -1062,247 +1063,638 @@ async def remove_fcm_token(
 
 
 
-# WEBSOCKETS ENDPOINTS
+
+
+####   SSE ENDPOINTS   ######
 
 
 
-# Websocket endpoint for signalling and controlling events : 
-# Websocket for session-level real-time events.
-# Client should first send a 'join' JSON message if necessary, but this endpoint also supports creating participant on connect
-@app.websocket("/ws/sessions/{session_id}")
-async def session_ws(websocket: WebSocket, session_id: int, db: AsyncSession = Depends(get_db)):
-    user_id = None
-    participant_id = None
-    
-    try:
-        # Read query params
-        qs = websocket.scope.get("query_string", b"").decode()
-        params = dict([p.split("=", 1) for p in qs.split("&") if "=" in p])
 
-        # Support both string and numeric IDs
-        user_id = params.get("user_id")
-        participant_id = params.get("participant_id")
 
-        if user_id and user_id.isdigit():
-            user_id = int(user_id)
-        if participant_id and participant_id.isdigit():
-            participant_id = int(participant_id)
+# SSE  (Server-Sent Events)  — replaces WebSocket transport
+# Works through port-80 proxies that strip Upgrade headers.
+#
+# Server → Client:  GET /sse/sessions/{session_id}   (long-lived HTTP stream)
+# Client → Server:  POST /sessions/{session_id}/action  (plain HTTP POST)
 
-        print(f"[WS INIT] Incoming connection → Session={session_id}, User={user_id}, Participant={participant_id}")
 
-        # Minimal check: require user_id or participant_id - hence returns error if not found
-        if not user_id and not participant_id:
-            await websocket.accept()
-            await websocket.send_json({"type": "error", "detail": "user_id or participant_id query param required"})
-            await websocket.close()
-            return
+# SSE endpoint  (Server → Client)
+# GET /sse/sessions/{session_id}?user_id=X
+#
+# Replaces the WebSocket /ws/sessions/{session_id} endpoint.
+# Works over plain HTTP/1.1 on port 80 through any reverse proxy.
+# Nginx/Apache must NOT buffer this response — the X-Accel-Buffering header
+# disables nginx buffering automatically.
 
-        # Accept WebSocket connection FIRST
-        await websocket.accept()
-        
-        # Send initial connected message
-        await websocket.send_json({
-            "type": "connected",
-            "session_id": session_id,
-            "user_id": user_id
-        })
 
-        # If only user_id provided, ensure we have/insert Participant record for this session+user
-        if participant_id is None and user_id is not None:
-            # This ensures the database has a participant row for this user in this session
-            q = await db.execute(select(models.Participant).filter(
-                models.Participant.session_id == session_id,
-                models.Participant.user_id == user_id
-            ))
-            p = q.scalar_one_or_none()
-            # Create participant row if not exists
-            if not p:
-                p = models.Participant(session_id=session_id, user_id=user_id, joined_at=datetime.utcnow())
-                db.add(p)
-                await db.commit()
-                await db.refresh(p)
-            participant_id = p.participant_id
-        else:
-            # If participant_id provided, fetch it to resolve user_id
-            q = await db.execute(select(models.Participant).filter(models.Participant.participant_id == participant_id))
-            p = q.scalar_one_or_none()
-            if not p:
-                await websocket.send_json({"type": "error", "detail": "Invalid participant_id"})
-                await websocket.close()
-                return
-            user_id = p.user_id
 
-        # Resolve user info - determine whether user is a teacher
-        q = await db.execute(select(models.User).filter(models.User.user_id == user_id))
-        user = q.scalar_one_or_none()
-        uname = user.name if user else f"user_{user_id}"
-        is_teacher = user and user.role.lower() == "teacher"
 
-        # Store participant metadata in SESSION_STATE
-        async with SESSION_LOCK:
-            s = SESSION_STATE.setdefault(session_id, {
-                "connections": {},
-                "participants": {},
-                "playback": {"audio_id": None, "status": "stopped", "speed": 1.0, "position": 0.0}
-            })
-            s["participants"].setdefault(participant_id, {
-                "user_id": user_id, 
-                "is_muted": False, 
-                "raised_hand": False, 
-                "name": uname
-            })
+def _sse_frame(event: str, data: dict) -> str:
+    """Format a single SSE frame as a string."""
+    return f"event: {event}\ndata: {json.dumps(data)}\n\n"
 
-        # Connect websocket via manager
-        await ws_mgr.connect(session_id, participant_id, websocket)
-        
-        # Notify others that this participant joined
-        await ws_mgr.broadcast(session_id, {
-            "type": "participant_joined", 
-            "participant_id": participant_id, 
-            "user_id": user_id, 
-            "name": uname,
-            "is_teacher": is_teacher
-        }, exclude={participant_id})
 
-        # Send current session state to the newly connected client - required for rendering UI
-        async with SESSION_LOCK:
-            state_snapshot = {
-                "type": "session_state",
-                "participants": SESSION_STATE[session_id]["participants"],
-                "playback": SESSION_STATE[session_id]["playback"]
+@app.get("/sse/sessions/{session_id}")
+async def session_sse(
+    session_id: int,
+    user_id: int = Query(...),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Long-lived SSE stream for one session participant.
+
+    On connect:
+      • Creates a Participant row if one doesn't exist yet.
+      • Registers an asyncio.Queue for this client.
+      • Immediately sends a 'connected' event and a full 'session_state' snapshot.
+      • Broadcasts 'participant_joined' to everyone else.
+
+    While running:
+      • Drains the queue and emits SSE frames.
+      • Sends ': keep-alive' comments every 25 s so the connection
+        isn't killed by idle-timeout proxies.
+
+    On disconnect / error:
+      • Removes the queue.
+      • Broadcasts 'participant_left' to remaining clients.
+    """
+
+    # ── resolve user ──────────────────────────────────────────────────────
+    q_user = await db.execute(
+        select(models.User).filter(models.User.user_id == user_id)
+    )
+    user = q_user.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    uname      = user.name
+    is_teacher = user.role.lower() == "teacher"
+
+    # ── resolve / create participant row ──────────────────────────────────
+    q_part = await db.execute(
+        select(models.Participant).filter(
+            models.Participant.session_id == session_id,
+            models.Participant.user_id   == user_id,
+        )
+    )
+    p = q_part.scalar_one_or_none()
+    if not p:
+        p = models.Participant(
+            session_id=session_id,
+            user_id=user_id,
+            joined_at=datetime.utcnow(),
+        )
+        db.add(p)
+        await db.commit()
+        await db.refresh(p)
+    participant_id = p.participant_id
+    await SessionLogger.log_participant_joined(db, session_id, user_id, participant_id, uname)
+
+    # ── register SSE queue (stores is_teacher in SESSION_STATE) ───────────
+    queue = await ws_mgr.connect(
+        session_id=session_id,
+        participant_id=participant_id,
+        user_id=user_id,
+        name=uname,
+        is_teacher=is_teacher,
+    )
+
+    # ── notify others ─────────────────────────────────────────────────────
+    await ws_mgr.broadcast(
+        session_id,
+        {
+            "type":           "participant_joined",
+            "participant_id": participant_id,
+            "user_id":        user_id,
+            "name":           uname,
+            "is_teacher":     is_teacher,
+        },
+        exclude={participant_id},
+    )
+
+    # ── build state snapshot for the new joiner ───────────────────────────
+    async with SESSION_LOCK:
+        raw_participants = SESSION_STATE[session_id]["participants"]
+        raw_playback     = SESSION_STATE[session_id]["playback"]
+
+        # Convert int keys → str keys so JSON serialisation is predictable
+        participants_out = {
+            str(pid): {
+                "user_id":    meta["user_id"],
+                "name":       meta["name"],
+                "is_muted":   meta["is_muted"],
+                "raised_hand": meta["raised_hand"],
+                "is_teacher": meta.get("is_teacher", False),
             }
-        await ws_mgr.send_personal(websocket, state_snapshot)
+            for pid, meta in raw_participants.items()
+        }
 
-        # Main receive loop
-        while True:
-            msg = await websocket.receive_json()
-            # Each message from the client has a type field telling what action it wants to perform
-            typ = msg.get("type")
+        state_snapshot = {
+            "type":           "session_state",
+            "participant_id": participant_id,   # tells Flutter "this is you"
+            "participants":   participants_out,
+            "playback":       dict(raw_playback),
+        }
 
-            if typ == "mute_self":
-                is_muted = bool(msg.get("mute", True))
-                async with SESSION_LOCK:
-                    SESSION_STATE[session_id]["participants"][participant_id]["is_muted"] = is_muted
-                
-                # Log self mute/unmute
-                if is_muted:
-                    await SessionLogger.log_participant_muted(db, session_id, user_id, user_id, participant_id, is_self_mute=True)
-                else:
-                    await SessionLogger.log_participant_unmuted(db, session_id, user_id, user_id, participant_id, is_self_unmute=True)
+    # ── SSE generator ─────────────────────────────────────────────────────
+    async def event_generator():
+        # Immediately push connected confirmation + full session state.
+        # These are yielded before the queue loop so they arrive first.
+        yield _sse_frame("connected", {
+            "session_id":     session_id,
+            "participant_id": participant_id,
+            "user_id":        user_id,
+        })
+        yield _sse_frame("session_state", state_snapshot)
 
-                await ws_mgr.broadcast(session_id, {
-                    "type": "participant_muted", "participant_id": participant_id, "is_muted": is_muted
-                })
-
-            elif typ == "raise_hand":
-                async with SESSION_LOCK:
-                    SESSION_STATE[session_id]["participants"][participant_id]["raised_hand"] = True
-                
-                # Log hand raise
-                await SessionLogger.log_hand_raised(db, session_id, user_id, participant_id)
-                
-                await ws_mgr.broadcast(session_id, {"type": "hand_raised", "participant_id": participant_id})
-
-            elif typ == "lower_hand":
-                async with SESSION_LOCK:
-                    SESSION_STATE[session_id]["participants"][participant_id]["raised_hand"] = False
-                
-                # Log hand lower
-                await SessionLogger.log_hand_lowered(db, session_id, user_id, participant_id)
-
-                await ws_mgr.broadcast(session_id, {"type": "hand_lowered", "participant_id": participant_id})
-
-            elif typ == "mute_participant":
-                if not is_teacher:
-                    await ws_mgr.send_personal(websocket, {"type": "error", "detail": "teacher permission required"})
-                    continue
-                # Get student who is to be muted
-                target = int(msg.get("target_participant_id"))
-                async with SESSION_LOCK:
-                    SESSION_STATE[session_id]["participants"][target]["is_muted"] = True
-                    target_user_id = SESSION_STATE[session_id]["participants"][target]["user_id"]
-                
-                # Log mute (teacher muting student)
-                await SessionLogger.log_participant_muted(db, session_id, target_user_id, user_id, target)
-
-                await ws_mgr.broadcast(session_id, {"type": "participant_muted", "participant_id": target, "is_muted": True})
-
-            elif typ == "unmute_participant":
-                if not is_teacher:
-                    await ws_mgr.send_personal(websocket, {"type": "error", "detail": "teacher permission required"})
-                    continue
-                # Get student who is to be unmuted
-                target = int(msg.get("target_participant_id"))
-                async with SESSION_LOCK:
-                    SESSION_STATE[session_id]["participants"][target]["is_muted"] = False
-                    target_user_id = SESSION_STATE[session_id]["participants"][target]["user_id"]
-                
-                # Log unmute (teacher unmuting student)
-                await SessionLogger.log_participant_unmuted(db, session_id, target_user_id, user_id, target)
-
-                await ws_mgr.broadcast(session_id, {"type": "participant_muted", "participant_id": target, "is_muted": False})
-
-            elif typ == "kick_participant":
-                if not is_teacher:
-                    await ws_mgr.send_personal(websocket, {"type": "error", "detail": "teacher permission required"})
-                    continue
-                # Get student who is to be kicked
-                target = int(msg.get("target_participant_id"))
-                await ws_mgr.kick_participant(session_id, target, reason="Removed by teacher")
-                await ws_mgr.broadcast(session_id, {"type": "participant_kicked", "participant_id": target})
-
-            elif typ == "end_session":
-                if not is_teacher:
-                    await ws_mgr.send_personal(websocket, {"type": "error", "detail": "teacher permission required"})
-                    continue
-                await ws_mgr.broadcast(session_id, {"type": "session_ending"})
-                # End websocket connection
-                await ws_mgr.close_session(session_id)
-                
-                # Log session ended
-                await SessionLogger.log_session_ended(db, session_id, user_id)
-                
-                break
-
-            elif typ == "webrtc_signal":
-                target = int(msg.get("target_participant_id"))
-                payload = msg.get("payload")
-                await ws_mgr.broadcast(session_id, {
-                    "type": "webrtc_signal", "from": participant_id, "to": target, "payload": payload
-                }, exclude={participant_id})
-
-            elif typ == "chat":
-                text = msg.get("text")
-                await ws_mgr.broadcast(session_id, {
-                    "type": "chat",
-                    "from": participant_id,
-                    "sender_name": uname,
-                    "text": text
-                })
-
-            else:
-                await ws_mgr.send_personal(websocket, {"type": "error", "detail": f"unknown message type {typ}"})
-
-    except WebSocketDisconnect:
-        print(f"[WS CLOSE] Disconnected: Session={session_id}, User={user_id}, Participant={participant_id}")
-        if participant_id:
-            await ws_mgr.disconnect(session_id, participant_id)
-            await ws_mgr.broadcast(session_id, {"type": "participant_left", "participant_id": participant_id})
-            
-            # Log participant left
-            await SessionLogger.log_participant_left(db, session_id, user_id, participant_id)
-
-    except Exception as e:
-        import traceback
-        print(f"[WS ERROR] {e}\n{traceback.format_exc()}")
-        if participant_id:
-            await ws_mgr.disconnect(session_id, participant_id)
-            await ws_mgr.broadcast(session_id, {"type": "participant_left", "participant_id": participant_id})
-
-            # Log participant left
-            await SessionLogger.log_participant_left(db, session_id, user_id, participant_id)
-        # Try to notify client before closing
         try:
-            await websocket.close(code=1011)
-        except Exception:
+            while True:
+                try:
+                    msg = await asyncio.wait_for(queue.get(), timeout=25.0)
+                except asyncio.TimeoutError:
+                    # Keep-alive comment — proxies won't buffer SSE comments
+                    yield ": keep-alive\n\n"
+                    continue
+
+                if msg is None:
+                    # Sentinel pushed by close_session / kick_participant
+                    break
+
+                yield _sse_frame(msg.get("type", "message"), msg)
+
+        except asyncio.CancelledError:
+            # Client disconnected
             pass
+        finally:
+            await ws_mgr.disconnect(session_id, participant_id)
+            # Remove from participants dict too so state is accurate
+            async with SESSION_LOCK:
+                if session_id in SESSION_STATE:
+                    SESSION_STATE[session_id]["participants"].pop(participant_id, None)
+            await ws_mgr.broadcast(
+                session_id,
+                {"type": "participant_left", "participant_id": participant_id},
+            )
+            await SessionLogger.log_participant_left(db, session_id, user_id, participant_id)
+            print(f"[SSE] Closed: session={session_id} participant={participant_id}")
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control":     "no-cache",
+            "X-Accel-Buffering": "no",        # disable nginx buffering
+            "Connection":        "keep-alive",
+        },
+    )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Action endpoint  (Client → Server)
+# POST /sessions/{session_id}/action
+#
+# Replaces ALL WebSocket message handlers.
+# Every user gesture (mute, raise hand, chat, webrtc signal …) is a POST here.
+# ─────────────────────────────────────────────────────────────────────────────
+
+class SessionAction(BaseModel):
+    type:                   str
+    # mute_self
+    mute:                   Optional[bool]  = None
+    # chat
+    text:                   Optional[str]   = None
+    # teacher actions targeting another participant
+    target_participant_id:  Optional[int]   = None
+    # webrtc signalling payload (offer, answer, ice_candidate)
+    payload:                Optional[dict]  = None
+
+
+@app.post("/sessions/{session_id}/action")
+async def session_action(
+    session_id:   int,
+    action:       SessionAction,
+    current_user: models.User = Depends(get_user_by_id),
+    db:           AsyncSession = Depends(get_db),
+):
+    """
+    Single HTTP endpoint for every client→server real-time action.
+    Returns immediately; the broadcast to other clients happens asynchronously
+    via their SSE queues.
+    """
+    user_id    = current_user.user_id
+    is_teacher = current_user.role.lower() == "teacher"
+    uname      = current_user.name
+    typ        = action.type
+
+    # Resolve this user's participant_id for this session
+    q_part = await db.execute(
+        select(models.Participant).filter(
+            models.Participant.session_id == session_id,
+            models.Participant.user_id   == user_id,
+        )
+    )
+    p = q_part.scalar_one_or_none()
+    if not p:
+        raise HTTPException(
+            status_code=404,
+            detail="You are not a participant in this session. "
+                   "Connect to the SSE stream first.",
+        )
+    participant_id = p.participant_id
+
+    # ── mute self ──────────────────────────────────────────────────────────
+    if typ == "mute_self":
+        is_muted = bool(action.mute)
+        async with SESSION_LOCK:
+            if session_id in SESSION_STATE:
+                SESSION_STATE[session_id]["participants"] \
+                    .setdefault(participant_id, {})["is_muted"] = is_muted
+        if is_muted:
+            await SessionLogger.log_participant_muted(
+                db, session_id, user_id, user_id, participant_id, is_self_mute=True
+            )
+        else:
+            await SessionLogger.log_participant_unmuted(
+                db, session_id, user_id, user_id, participant_id, is_self_unmute=True
+            )
+        # Broadcast to ALL including self so every client's UI updates
+        await ws_mgr.broadcast(
+            session_id,
+            {
+                "type":           "participant_muted",
+                "participant_id": participant_id,
+                "is_muted":       is_muted,
+            },
+        )
+
+    # ── raise / lower hand ────────────────────────────────────────────────
+    elif typ == "raise_hand":
+        async with SESSION_LOCK:
+            if session_id in SESSION_STATE:
+                SESSION_STATE[session_id]["participants"] \
+                    .setdefault(participant_id, {})["raised_hand"] = True
+        await SessionLogger.log_hand_raised(db, session_id, user_id, participant_id)
+        await ws_mgr.broadcast(
+            session_id,
+            {"type": "hand_raised", "participant_id": participant_id},
+        )
+
+    elif typ == "lower_hand":
+        async with SESSION_LOCK:
+            if session_id in SESSION_STATE:
+                SESSION_STATE[session_id]["participants"] \
+                    .setdefault(participant_id, {})["raised_hand"] = False
+        await SessionLogger.log_hand_lowered(db, session_id, user_id, participant_id)
+        await ws_mgr.broadcast(
+            session_id,
+            {"type": "hand_lowered", "participant_id": participant_id},
+        )
+
+    # ── chat ──────────────────────────────────────────────────────────────
+    elif typ == "chat":
+        text = (action.text or "").strip()
+        if not text:
+            raise HTTPException(status_code=400, detail="Empty message")
+
+        # Persist to DB
+        chat_msg = models.ChatMessage(
+            session_id=session_id,
+            participant_id=participant_id,
+            message=text,
+        )
+        db.add(chat_msg)
+        await db.commit()
+        await db.refresh(chat_msg)
+        await SessionLogger.log_chat_message(
+            db, session_id, user_id, participant_id, text
+        )
+
+        # Broadcast to ALL participants (including sender so they can confirm
+        # receipt; Flutter deduplicates using from_participant_id == own id).
+        await ws_mgr.broadcast(
+            session_id,
+            {
+                "type":             "chat",
+                "from":             participant_id,     # used by Flutter to detect own message
+                "sender_name":      uname,
+                "text":             text,
+                "timestamp":        chat_msg.timestamp.isoformat(),
+            },
+        )
+
+    # ── teacher: mute / unmute another participant ─────────────────────────
+    elif typ in ("mute_participant", "unmute_participant"):
+        if not is_teacher:
+            raise HTTPException(status_code=403, detail="Teacher permission required")
+        target = action.target_participant_id
+        if target is None:
+            raise HTTPException(status_code=400, detail="target_participant_id required")
+        q_target = await db.execute(
+            select(models.Participant).filter(
+                models.Participant.session_id == session_id,
+                models.Participant.participant_id == target,
+            )
+        )
+        target_participant = q_target.scalar_one_or_none()
+        if not target_participant:
+            raise HTTPException(status_code=404, detail="Target participant not found")
+        target_user_id = target_participant.user_id
+        mute_val = (typ == "mute_participant")
+        async with SESSION_LOCK:
+            if session_id in SESSION_STATE:
+                SESSION_STATE[session_id]["participants"] \
+                    .setdefault(target, {})["is_muted"] = mute_val
+        if mute_val:
+            await SessionLogger.log_participant_muted(
+                db, session_id, target_user_id, user_id, target
+            )
+        else:
+            await SessionLogger.log_participant_unmuted(
+                db, session_id, target_user_id, user_id, target
+            )
+        await ws_mgr.broadcast(
+            session_id,
+            {"type": "participant_muted", "participant_id": target, "is_muted": mute_val},
+        )
+
+    # ── teacher: kick participant ──────────────────────────────────────────
+    elif typ == "kick_participant":
+        if not is_teacher:
+            raise HTTPException(status_code=403, detail="Teacher permission required")
+        target = action.target_participant_id
+        if target is None:
+            raise HTTPException(status_code=400, detail="target_participant_id required")
+        await ws_mgr.kick_participant(session_id, target, reason="Removed by teacher")
+        q_target = await db.execute(
+            select(models.Participant).filter(
+                models.Participant.session_id == session_id,
+                models.Participant.participant_id == target,
+            )
+        )
+        target_participant = q_target.scalar_one_or_none()
+        if target_participant:
+            await SessionLogger.log_participant_kicked(
+                db,
+                session_id,
+                target_participant.user_id,
+                user_id,
+                target,
+                "Removed by teacher",
+            )
+
+    # ── teacher: end session ──────────────────────────────────────────────
+    elif typ == "end_session":
+        if not is_teacher:
+            raise HTTPException(status_code=403, detail="Teacher permission required")
+        await ws_mgr.broadcast(session_id, {"type": "session_ending"})
+        asyncio.create_task(ws_mgr.close_session(session_id))
+        await SessionLogger.log_session_ended(db, session_id, user_id)
+
+    # ── WebRTC signalling ─────────────────────────────────────────────────
+    # ICE candidates, offers, and answers are routed peer-to-peer through
+    # the server's SSE queues.  Each signal is delivered only to the target.
+    elif typ == "webrtc_signal":
+        target  = action.target_participant_id
+        payload = action.payload or {}
+        if target is None:
+            raise HTTPException(status_code=400, detail="target_participant_id required")
+
+        async with SESSION_LOCK:
+            target_q = (
+                SESSION_STATE
+                .get(session_id, {})
+                .get("connections", {})
+                .get(target)
+            )
+
+        if target_q is not None:
+            await ws_mgr.send_personal(
+                target_q,
+                {
+                    "type":    "webrtc_signal",
+                    "from":    participant_id,
+                    "to":      target,
+                    "payload": payload,
+                },
+            )
+        else:
+            # Target not connected — not an error, just drop the signal
+            print(f"[ACTION] webrtc_signal: target {target} not connected")
+
+    else:
+        raise HTTPException(status_code=400, detail=f"Unknown action type: {typ!r}")
+
+    return {"ok": True}
+
+
+
+
+# # WEBSOCKETS ENDPOINTS - Not needed anymore since Websockets replaced with SSE Endpoints
+
+
+
+# # Websocket endpoint for signalling and controlling events : 
+# # Websocket for session-level real-time events.
+# # Client should first send a 'join' JSON message if necessary, but this endpoint also supports creating participant on connect
+# @app.websocket("/ws/sessions/{session_id}")
+# async def session_ws(websocket: WebSocket, session_id: int, db: AsyncSession = Depends(get_db)):
+#     user_id = None
+#     participant_id = None
+    
+#     try:
+#         # Read query params
+#         qs = websocket.scope.get("query_string", b"").decode()
+#         params = dict([p.split("=", 1) for p in qs.split("&") if "=" in p])
+
+#         # Support both string and numeric IDs
+#         user_id = params.get("user_id")
+#         participant_id = params.get("participant_id")
+
+#         if user_id and user_id.isdigit():
+#             user_id = int(user_id)
+#         if participant_id and participant_id.isdigit():
+#             participant_id = int(participant_id)
+
+#         print(f"[WS INIT] Incoming connection → Session={session_id}, User={user_id}, Participant={participant_id}")
+
+#         # Minimal check: require user_id or participant_id - hence returns error if not found
+#         if not user_id and not participant_id:
+#             await websocket.accept()
+#             await websocket.send_json({"type": "error", "detail": "user_id or participant_id query param required"})
+#             await websocket.close()
+#             return
+
+#         # Accept WebSocket connection FIRST
+#         await websocket.accept()
+        
+#         # Send initial connected message
+#         await websocket.send_json({
+#             "type": "connected",
+#             "session_id": session_id,
+#             "user_id": user_id
+#         })
+
+#         # If only user_id provided, ensure we have/insert Participant record for this session+user
+#         if participant_id is None and user_id is not None:
+#             # This ensures the database has a participant row for this user in this session
+#             q = await db.execute(select(models.Participant).filter(
+#                 models.Participant.session_id == session_id,
+#                 models.Participant.user_id == user_id
+#             ))
+#             p = q.scalar_one_or_none()
+#             # Create participant row if not exists
+#             if not p:
+#                 p = models.Participant(session_id=session_id, user_id=user_id, joined_at=datetime.utcnow())
+#                 db.add(p)
+#                 await db.commit()
+#                 await db.refresh(p)
+#             participant_id = p.participant_id
+#         else:
+#             # If participant_id provided, fetch it to resolve user_id
+#             q = await db.execute(select(models.Participant).filter(models.Participant.participant_id == participant_id))
+#             p = q.scalar_one_or_none()
+#             if not p:
+#                 await websocket.send_json({"type": "error", "detail": "Invalid participant_id"})
+#                 await websocket.close()
+#                 return
+#             user_id = p.user_id
+
+#         # Resolve user info - determine whether user is a teacher
+#         q = await db.execute(select(models.User).filter(models.User.user_id == user_id))
+#         user = q.scalar_one_or_none()
+#         uname = user.name if user else f"user_{user_id}"
+#         is_teacher = user and user.role.lower() == "teacher"
+
+#         # Store participant metadata in SESSION_STATE
+#         async with SESSION_LOCK:
+#             s = SESSION_STATE.setdefault(session_id, {
+#                 "connections": {},
+#                 "participants": {},
+#                 "playback": {"audio_id": None, "status": "stopped", "speed": 1.0, "position": 0.0}
+#             })
+#             s["participants"].setdefault(participant_id, {
+#                 "user_id": user_id, 
+#                 "is_muted": False, 
+#                 "raised_hand": False, 
+#                 "name": uname
+#             })
+
+#         # Connect websocket via manager
+#         await ws_mgr.connect(session_id, participant_id, websocket)
+        
+#         # Notify others that this participant joined
+#         await ws_mgr.broadcast(session_id, {
+#             "type": "participant_joined", 
+#             "participant_id": participant_id, 
+#             "user_id": user_id, 
+#             "name": uname,
+#             "is_teacher": is_teacher
+#         }, exclude={participant_id})
+
+#         # Send current session state to the newly connected client - required for rendering UI
+#         async with SESSION_LOCK:
+#             state_snapshot = {
+#                 "type": "session_state",
+#                 "participants": SESSION_STATE[session_id]["participants"],
+#                 "playback": SESSION_STATE[session_id]["playback"]
+#             }
+#         await ws_mgr.send_personal(websocket, state_snapshot)
+
+#         # Main receive loop
+#         while True:
+#             msg = await websocket.receive_json()
+#             # Each message from the client has a type field telling what action it wants to perform
+#             typ = msg.get("type")
+
+#             if typ == "mute_self":
+#                 is_muted = bool(msg.get("mute", True))
+#                 async with SESSION_LOCK:
+#                     SESSION_STATE[session_id]["participants"][participant_id]["is_muted"] = is_muted
+#                 await ws_mgr.broadcast(session_id, {
+#                     "type": "participant_muted", "participant_id": participant_id, "is_muted": is_muted
+#                 })
+
+#             elif typ == "raise_hand":
+#                 async with SESSION_LOCK:
+#                     SESSION_STATE[session_id]["participants"][participant_id]["raised_hand"] = True
+#                 await ws_mgr.broadcast(session_id, {"type": "hand_raised", "participant_id": participant_id})
+
+#             elif typ == "lower_hand":
+#                 async with SESSION_LOCK:
+#                     SESSION_STATE[session_id]["participants"][participant_id]["raised_hand"] = False
+#                 await ws_mgr.broadcast(session_id, {"type": "hand_lowered", "participant_id": participant_id})
+
+#             elif typ == "mute_participant":
+#                 if not is_teacher:
+#                     await ws_mgr.send_personal(websocket, {"type": "error", "detail": "teacher permission required"})
+#                     continue
+#                 # Get student who is to be muted
+#                 target = int(msg.get("target_participant_id"))
+#                 async with SESSION_LOCK:
+#                     SESSION_STATE[session_id]["participants"][target]["is_muted"] = True
+#                 await ws_mgr.broadcast(session_id, {"type": "participant_muted", "participant_id": target, "is_muted": True})
+
+#             elif typ == "unmute_participant":
+#                 if not is_teacher:
+#                     await ws_mgr.send_personal(websocket, {"type": "error", "detail": "teacher permission required"})
+#                     continue
+#                 # Get student who is to be unmuted
+#                 target = int(msg.get("target_participant_id"))
+#                 async with SESSION_LOCK:
+#                     SESSION_STATE[session_id]["participants"][target]["is_muted"] = False
+#                 await ws_mgr.broadcast(session_id, {"type": "participant_muted", "participant_id": target, "is_muted": False})
+
+#             elif typ == "kick_participant":
+#                 if not is_teacher:
+#                     await ws_mgr.send_personal(websocket, {"type": "error", "detail": "teacher permission required"})
+#                     continue
+#                 # Get student who is to be kicked
+#                 target = int(msg.get("target_participant_id"))
+#                 await ws_mgr.kick_participant(session_id, target, reason="Removed by teacher")
+#                 await ws_mgr.broadcast(session_id, {"type": "participant_kicked", "participant_id": target})
+
+#             elif typ == "end_session":
+#                 if not is_teacher:
+#                     await ws_mgr.send_personal(websocket, {"type": "error", "detail": "teacher permission required"})
+#                     continue
+#                 await ws_mgr.broadcast(session_id, {"type": "session_ending"})
+#                 # End websocket connection
+#                 await ws_mgr.close_session(session_id)
+#                 break
+
+#             elif typ == "webrtc_signal":
+#                 target = int(msg.get("target_participant_id"))
+#                 payload = msg.get("payload")
+#                 await ws_mgr.broadcast(session_id, {
+#                     "type": "webrtc_signal", "from": participant_id, "to": target, "payload": payload
+#                 }, exclude={participant_id})
+
+#             elif typ == "chat":
+#                 text = msg.get("text")
+#                 await ws_mgr.broadcast(session_id, {
+#                     "type": "chat",
+#                     "from": participant_id,
+#                     "sender_name": uname,
+#                     "text": text
+#                 })
+
+#             else:
+#                 await ws_mgr.send_personal(websocket, {"type": "error", "detail": f"unknown message type {typ}"})
+
+#     except WebSocketDisconnect:
+#         print(f"[WS CLOSE] Disconnected: Session={session_id}, User={user_id}, Participant={participant_id}")
+#         if participant_id:
+#             await ws_mgr.disconnect(session_id, participant_id)
+#             await ws_mgr.broadcast(session_id, {"type": "participant_left", "participant_id": participant_id})
+
+#     except Exception as e:
+#         import traceback
+#         print(f"[WS ERROR] {e}\n{traceback.format_exc()}")
+#         if participant_id:
+#             await ws_mgr.disconnect(session_id, participant_id)
+#             await ws_mgr.broadcast(session_id, {"type": "participant_left", "participant_id": participant_id})
+#         # Try to notify client before closing
+#         try:
+#             await websocket.close(code=1011)
+#         except Exception:
+#             pass
