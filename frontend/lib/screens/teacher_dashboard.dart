@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_service.dart';
 import '../services/tts_service.dart';
+import 'package:flutter/services.dart';
 import 'session_screen.dart';
+import '../utils/ui_utils.dart';
+import '../widgets/key_instruction_wrapper.dart';
 
 // Create Teacher Dashboard Widget
 class TeacherDashboard extends StatefulWidget {
@@ -25,6 +28,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
   bool isLoading = true;
   // Controls text typed into session title field
   final TextEditingController _titleController = TextEditingController();
+  final FocusNode _screenFocusNode = FocusNode();
 
   // Called once when widget is created - ideal for API calls and reading local variables
   @override
@@ -32,6 +36,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     super.initState();
     // Starts loading user data immediately
     _loadUserData();
+    _screenFocusNode.requestFocus();
   }
 
   // Load user data( non blocking )
@@ -278,36 +283,51 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
   @override
   void dispose() {
     _titleController.dispose();
+    _screenFocusNode.dispose();
     super.dispose();
   }
 
   // Build UI
   @override
   Widget build(BuildContext context) {
-    // show spinner while loading
     if (isLoading) {
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
       );
     }
 
+    return KeypadInstructionWrapper(
+      audioAsset: 'audio/teacher_dashboard_instructions.mp3',
+      ttsInstructions: "Teacher Dashboard. Press 1 to refresh sessions, 2 to create a new session.",
+      actions: {
+        LogicalKeyboardKey.digit1: _loadSessions,
+        LogicalKeyboardKey.digit2: createSession,
+      },
+      child: _buildScaffold(context),
+    );
+  }
+
+  Widget _buildScaffold(BuildContext context) {
+    final bool tiny = UIUtils.isTiny(context);
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Teacher Dashboard"),
-        backgroundColor: Colors.indigo,
-        foregroundColor: Colors.white,
+        title: Text("Teacher Dashboard", style: TextStyle(fontSize: UIUtils.fontSize(context, 18), fontWeight: FontWeight.w600)),
+        backgroundColor: Colors.white,
+        foregroundColor: UIUtils.textColor,
+        toolbarHeight: tiny ? 40 : null,
         actions: [
-          if (currentUserName != null)
+          if (currentUserName != null && !tiny)
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              padding: UIUtils.paddingSymmetric(context, horizontal: 8, vertical: 8),
               child: Center(
                 child: Row(
                   children: [
-                    const Icon(Icons.person, size: 20),
-                    const SizedBox(width: 8),
+                    Icon(Icons.person, size: UIUtils.iconSize(context, 16)),
+                    SizedBox(width: UIUtils.spacing(context, 4)),
                     Text(
                       currentUserName!,
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                      style: TextStyle(fontSize: UIUtils.fontSize(context, 14), fontWeight: FontWeight.w500),
                     ),
                   ],
                 ),
@@ -316,13 +336,20 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
 
 
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: Icon(Icons.refresh_rounded, size: UIUtils.iconSize(context, 22), color: UIUtils.accentColor),
             tooltip: "Refresh Sessions",
             onPressed: () {
               TtsService.speak("Refreshing sessions");
               _loadSessions();
             },
           ),
+          if (UIUtils.isKeypad(context))
+            Padding(
+              padding: const EdgeInsets.only(right: 12.0),
+              child: Center(
+                child: Text("1", style: TextStyle(color: UIUtils.accentColor, fontSize: UIUtils.fontSize(context, 14), fontWeight: FontWeight.bold)),
+              ),
+            ),
         ],
       ),
 
@@ -330,125 +357,132 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
       body: SafeArea(
         child: SingleChildScrollView(  
           child: Padding(
-            padding: const EdgeInsets.all(12),
+            padding: UIUtils.paddingAll(context, 10),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 // Welcome Card
                 Card(
-                  elevation: 4,
-                  color: Colors.indigo.shade50,
+                  elevation: 0,
+                  color: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(color: Colors.grey.withOpacity(0.1)),
+                  ),
                   child: Padding(
-                    padding: const EdgeInsets.all(20),
+                    padding: UIUtils.paddingAll(context, 16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           "Welcome, ${currentUserName ?? 'Teacher'}!",
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.indigo,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        
-                        
-                        Text(
-                          "Manage your sessions and connect with students",
                           style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey.shade700,
+                            fontSize: UIUtils.fontSize(context, 20),
+                            fontWeight: FontWeight.w700,
+                            color: UIUtils.textColor,
                           ),
                         ),
+                        if (!tiny) ...[
+                          SizedBox(height: UIUtils.spacing(context, 4)),
+                          Text(
+                            "Manage your sessions and connect with students",
+                            style: TextStyle(
+                              fontSize: UIUtils.fontSize(context, 13),
+                              color: Colors.grey.shade700,
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ),
                 ),
                 
-                const SizedBox(height: 20),
+                SizedBox(height: UIUtils.spacing(context, 12)),
                 
                 // Create Session Button
                 ElevatedButton.icon(
                   onPressed: createSession,
-                  icon: const Icon(Icons.add_circle_outline, size: 28),
-                  label: const Text(
-                    "Create New Session",
-                    style: TextStyle(fontSize: 18),
+                  icon: Icon(Icons.add_circle_outline, size: UIUtils.iconSize(context, 22)),
+                  label: Text(
+                    "2: Create New Session",
+                    style: TextStyle(fontSize: UIUtils.fontSize(context, 15)),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.indigo,
+                    backgroundColor: UIUtils.primaryColor,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    padding: UIUtils.paddingSymmetric(context, vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
+                    elevation: 0,
                   ),
                 ),
                 
-                const SizedBox(height: 20),
+                SizedBox(height: UIUtils.spacing(context, 12)),
                 
                 // Sessions Header
                 Row(
                   children: [
-                    const Text(
+                    Text(
                       "Your Sessions",
                       style: TextStyle(
-                        fontSize: 20,
+                        fontSize: UIUtils.fontSize(context, 16),
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: UIUtils.spacing(context, 6)),
                     if (sessions.isNotEmpty)
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                        padding: UIUtils.paddingSymmetric(context, horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
                           color: Colors.indigo,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(10),
                         ),
                         child: Text(
                           '${sessions.length}',
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
-                            fontSize: 16,
+                            fontSize: UIUtils.fontSize(context, 13),
                           ),
                         ),
                       ),
                   ],
                 ),
                 
-                const SizedBox(height: 12),
+                SizedBox(height: UIUtils.spacing(context, 8)),
                 
-                // Sessions List - NO EXPANDED, just list items
+                // Sessions List
                 if (sessions.isEmpty)
                   Center(
                     child: Padding(
-                      padding: const EdgeInsets.all(40),
+                      padding: UIUtils.paddingAll(context, 24),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(
                             Icons.school_outlined,
-                            size: 80,
+                            size: UIUtils.iconSize(context, 56),
                             color: Colors.grey.shade400,
                           ),
-                          const SizedBox(height: 16),
+                          SizedBox(height: UIUtils.spacing(context, 10)),
                           Text(
                             "No active sessions yet",
                             style: TextStyle(
-                              fontSize: 18,
+                              fontSize: UIUtils.fontSize(context, 15),
                               color: Colors.grey.shade600,
                             ),
                           ),
-                          const SizedBox(height: 8),
-                          Text(
-                            "Create your first session to get started",
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey.shade500,
+                          if (!tiny) ...[
+                            SizedBox(height: UIUtils.spacing(context, 4)),
+                            Text(
+                              "Create your first session to get started",
+                              style: TextStyle(
+                                fontSize: UIUtils.fontSize(context, 12),
+                                color: Colors.grey.shade500,
+                              ),
                             ),
-                          ),
+                          ],
                         ],
                       ),
                     ),
@@ -461,39 +495,39 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                     final createdAt = s['created_at'] ?? '';
                     
                     return Card(
-                      margin: const EdgeInsets.only(bottom: 12),
+                      margin: EdgeInsets.only(bottom: UIUtils.spacing(context, 8)),
                       elevation: 3,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(10),
                       ),
                       child: InkWell(
                         onTap: () => _openSession(sessionId),
                         borderRadius: BorderRadius.circular(12),
                         child: Padding(
-                          padding: const EdgeInsets.all(16),
+                          padding: UIUtils.paddingAll(context, 12),
                           child: Row(
                             children: [
                               // Session Icon
                               Container(
-                                width: 60,
-                                height: 60,
+                                width: 40 * UIUtils.scale(context),
+                                height: 40 * UIUtils.scale(context),
                                 decoration: BoxDecoration(
-                                  color: Colors.indigo.shade100,
-                                  borderRadius: BorderRadius.circular(12),
+                                  color: UIUtils.backgroundColor,
+                                  borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Center(
                                   child: Text(
                                     '$sessionId',
                                     style: TextStyle(
-                                      fontSize: 20,
+                                      fontSize: UIUtils.fontSize(context, 14),
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.indigo.shade700,
+                                      color: UIUtils.primaryColor,
                                     ),
                                   ),
                                 ),
                               ),
                               
-                              const SizedBox(width: 16),
+                              SizedBox(width: UIUtils.spacing(context, 8)),
                               
                               // Session Details
                               Expanded(
@@ -502,67 +536,58 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                                   children: [
                                     Text(
                                       title,
-                                      style: const TextStyle(
-                                        fontSize: 18,
+                                      style: TextStyle(
+                                        fontSize: UIUtils.fontSize(context, 14),
                                         fontWeight: FontWeight.bold,
                                       ),
-                                      maxLines: 2,
+                                      maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                     ),
-                                    const SizedBox(height: 8),
+                                    SizedBox(height: UIUtils.spacing(context, 3)),
                                     Row(
                                       children: [
                                         Icon(
                                           Icons.people,
-                                          size: 16,
+                                          size: UIUtils.iconSize(context, 14),
                                           color: Colors.grey.shade600,
                                         ),
-                                        const SizedBox(width: 4),
+                                        SizedBox(width: UIUtils.spacing(context, 3)),
                                         Text(
                                           '$participantCount participant${participantCount != 1 ? 's' : ''}',
                                           style: TextStyle(
-                                            fontSize: 14,
+                                            fontSize: UIUtils.fontSize(context, 11),
                                             color: Colors.grey.shade600,
                                           ),
                                         ),
                                       ],
                                     ),
-                                    if (createdAt.isNotEmpty) ...[
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        'Created: $createdAt',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.grey.shade500,
-                                        ),
-                                      ),
-                                    ],
                                   ],
                                 ),
                               ),
                               
                               // Action Buttons
                               Column(
+                                mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  ElevatedButton.icon(
+                                  ElevatedButton(
                                     onPressed: () => _openSession(sessionId),
-                                    icon: const Icon(Icons.login, size: 18),
-                                    label: const Text("Open"),
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: Colors.green,
                                       foregroundColor: Colors.white,
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 16,
-                                        vertical: 8,
-                                      ),
+                                      padding: UIUtils.paddingSymmetric(context, horizontal: 10, vertical: 4),
+                                      minimumSize: Size.zero,
+                                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                                     ),
+                                    child: Text("Open", style: TextStyle(fontSize: UIUtils.fontSize(context, 12))),
                                   ),
-                                  const SizedBox(height: 8),
+                                  SizedBox(height: UIUtils.spacing(context, 4)),
                                   IconButton(
                                     onPressed: () => _deleteSession(sessionId, title),
-                                    icon: const Icon(Icons.delete),
+                                    icon: Icon(Icons.delete, size: UIUtils.iconSize(context, 18)),
                                     color: Colors.red,
                                     tooltip: "Delete Session",
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(),
                                   ),
                                 ],
                               ),
@@ -573,7 +598,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                     );
                   }).toList(),
                   
-                const SizedBox(height: 20), // Bottom padding
+                SizedBox(height: UIUtils.spacing(context, 12)), // Bottom padding
               ],
             ),
           ),

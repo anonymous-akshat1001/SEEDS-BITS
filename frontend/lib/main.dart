@@ -9,7 +9,11 @@ import 'screens/simple_session_screen.dart';
 import 'screens/audio_library_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/invite_students_screen.dart';
+import 'utils/ui_utils.dart';
 import 'services/notification_services.dart';
+import 'services/tts_service.dart';
+import 'widgets/key_instruction_wrapper.dart';
+import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'firebase_options.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -22,6 +26,28 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
+  // Load environment variables FIRST (must be before anything that reads dotenv)
+  // Try multiple paths, then fall back to hardcoded values so the app never crashes
+  try {
+    await dotenv.load(fileName: "assets/.env");
+    print('[MAIN] Loaded assets/.env');
+  } catch (e) {
+    print('[MAIN] Failed to load assets/.env: $e');
+    try {
+      await dotenv.load(fileName: ".env");
+      print('[MAIN] Loaded .env');
+    } catch (e2) {
+      print('[MAIN] Failed to load .env: $e2');
+      // Hardcode fallback values so the app still works
+      dotenv.testLoad(fileInput: '''
+API_BASE_URL=http://responsible-tech.bits-hyderabad.ac.in/seeds
+WS_BASE_URL=ws://responsible-tech.bits-hyderabad.ac.in/seeds
+WEB_VAPID_KEY=BOYVjb77moWEwSyBY-HxCkiAFBuNrCncK9oSobRL1TubgfGicL1JOiw_B0Nod74jEbsn-xd5URPyRwj0BNzc7LE
+      ''');
+      print('[MAIN] Using hardcoded fallback env values');
+    }
+  }
+  
   // Initialize Firebase with auto-generated config
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
@@ -30,9 +56,6 @@ void main() async {
   // Initialize notifications
   final notificationService = NotificationService();
   await notificationService.initialize();
-
-  // Load environment variables
-  await dotenv.load(fileName: ".env");
   
   // Set up notification tap handler
   notificationService.onNotificationTap = (data) async {
@@ -99,6 +122,9 @@ void main() async {
     // For example, using a SnackBar or custom overlay
   });
   
+  // Initialize TTS early
+  await TtsService.init();
+  
   runApp(const MyApp());
 }
 
@@ -113,12 +139,20 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       navigatorKey: navigatorKey,
       theme: ThemeData(
-        colorSchemeSeed: Colors.indigo,
+        colorSchemeSeed: UIUtils.accentColor,
         useMaterial3: true,
+        scaffoldBackgroundColor: UIUtils.backgroundColor,
         visualDensity: VisualDensity.adaptivePlatformDensity,
         appBarTheme: const AppBarTheme(
           centerTitle: true,
+          elevation: 0,
+          backgroundColor: UIUtils.backgroundColor,
+          foregroundColor: UIUtils.textColor,
+        ),
+        cardTheme: CardThemeData(
           elevation: 2,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          color: UIUtils.cardColor,
         ),
       ),
 
@@ -225,179 +259,196 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class WelcomeScreen extends StatelessWidget {
+class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
 
   @override
+  State<WelcomeScreen> createState() => _WelcomeScreenState();
+}
+
+class _WelcomeScreenState extends State<WelcomeScreen> {
+  final FocusNode _focusNode = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _focusNode.requestFocus();
+      TtsService.speak("Welcome to Accessible Conference. Press 1 for Login, 2 for Register.");
+    });
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Colors.indigo.shade600,
-              Colors.indigo.shade400,
-              Colors.teal.shade400,
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(32.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // App Icon/Logo
-                    Container(
-                      width: 120,
-                      height: 120,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
-                            blurRadius: 20,
-                            offset: const Offset(0, 10),
-                          ),
-                        ],
-                      ),
-                      child: const Icon(
-                        Icons.hearing,
-                        size: 64,
-                        color: Colors.indigo,
-                      ),
-                    ),
-                    
-                    const SizedBox(height: 32),
-                    
-                    // App Title
-                    const Text(
-                      "Accessible Conference",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 36,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        letterSpacing: 1.2,
-                      ),
-                    ),
-                    
-                    const SizedBox(height: 16),
-                    
-                    // Subtitle
-                    Text(
-                      "Audio sessions designed for everyone",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: Colors.white.withOpacity(0.9),
-                        fontWeight: FontWeight.w300,
-                      ),
-                    ),
-                    
-                    const SizedBox(height: 60),
-                    
-                    // Login Button
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: () => Navigator.pushNamed(context, '/login'),
-                        icon: const Icon(Icons.login, size: 24),
-                        label: const Text(
-                          "Login",
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+    final bool tiny = UIUtils.isTiny(context);
+    final bool isKeypad = UIUtils.isKeypad(context);
+    final s = UIUtils.scale(context);
+
+    return KeypadInstructionWrapper(
+      audioAsset: 'audio/welcome_instructions.mp3',
+      ttsInstructions: "Welcome to SEEDS. Press 1 for Login, 2 for Register.",
+      actions: {
+        LogicalKeyboardKey.digit1: () => Navigator.pushNamed(context, '/login'),
+        LogicalKeyboardKey.digit2: () => Navigator.pushNamed(context, '/register'),
+      },
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        body: Container(
+          color: Colors.white,
+          child: SafeArea(
+            child: Center(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: UIUtils.paddingAll(context, 32.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // App Icon/Logo
+                      Container(
+                        width: 120 * s,
+                        height: 120 * s,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              blurRadius: 20,
+                              offset: const Offset(0, 10),
+                            ),
+                          ],
                         ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: Colors.indigo,
-                          padding: const EdgeInsets.symmetric(vertical: 18),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          elevation: 8,
+                        child: Icon(
+                          Icons.hearing_rounded,
+                          size: UIUtils.iconSize(context, 64),
+                          color: UIUtils.accentColor,
                         ),
                       ),
-                    ),
-                    
-                    const SizedBox(height: 20),
-                    
-                    // Register Button
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton.icon(
-                        onPressed: () => Navigator.pushNamed(context, '/register'),
-                        icon: const Icon(Icons.app_registration, size: 24),
-                        label: const Text(
-                          "Register",
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-                        ),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.white,
-                          side: const BorderSide(color: Colors.white, width: 2),
-                          padding: const EdgeInsets.symmetric(vertical: 18),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                        ),
-                      ),
-                    ),
-                    
-                    const SizedBox(height: 40),
-                    
-                    // Settings button
-                    TextButton.icon(
-                      onPressed: () => Navigator.pushNamed(context, '/settings'),
-                      icon: const Icon(Icons.settings, color: Colors.white70),
-                      label: Text(
-                        'Settings & Accessibility',
+                      
+                      SizedBox(height: UIUtils.spacing(context, 24)),
+                      
+                      // App Title
+                      Text(
+                        "SEEDS",
+                        textAlign: TextAlign.center,
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.7),
-                          fontSize: 14,
+                          fontSize: UIUtils.fontSize(context, 42),
+                          fontWeight: FontWeight.w800,
+                          color: UIUtils.textColor,
+                          letterSpacing: 2.0,
                         ),
                       ),
-                    ),
-                    
-                    const SizedBox(height: 20),
-                    
-                    // Features
-                    Container(
-                      padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: Colors.white.withOpacity(0.3),
-                          width: 1,
+                      
+                      SizedBox(height: UIUtils.spacing(context, 12)),
+                      
+                      // Subtitle
+                      Text(
+                        "Connecting everyone, everywhere",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: UIUtils.fontSize(context, 16),
+                          color: UIUtils.subtextColor,
+                          fontWeight: FontWeight.w400,
                         ),
                       ),
-                      child: Column(
-                        children: [
-                          _buildFeature(
-                            Icons.mic,
-                            "Real-time Audio",
-                            "Crystal clear voice communication",
+                      
+                      SizedBox(height: UIUtils.spacing(context, 40)),
+                      
+                      // Login Button
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () => Navigator.pushNamed(context, '/login'),
+                          icon: Icon(Icons.login, size: UIUtils.iconSize(context, 24)),
+                          label: Text(
+                            isKeypad ? "1. Login" : "Login",
+                            style: TextStyle(fontSize: UIUtils.fontSize(context, 18), fontWeight: FontWeight.w600),
                           ),
-                          const Divider(color: Colors.white30, height: 24),
-                          _buildFeature(
-                            Icons.accessibility_new,
-                            "Fully Accessible",
-                            "TTS, large buttons & more",
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: UIUtils.primaryColor,
+                            foregroundColor: Colors.white,
+                            padding: UIUtils.paddingSymmetric(context, vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 0,
                           ),
-                          const Divider(color: Colors.white30, height: 24),
-                          _buildFeature(
-                            Icons.groups,
-                            "Interactive Sessions",
-                            "Raise hands, chat, and collaborate",
-                          ),
-                        ],
+                        ),
                       ),
-                    ),
-                  ],
+                      
+                      SizedBox(height: UIUtils.spacing(context, 14)),
+                      
+                      // Register Button
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          onPressed: () => Navigator.pushNamed(context, '/register'),
+                          icon: Icon(Icons.app_registration, size: UIUtils.iconSize(context, 24)),
+                          label: Text(
+                            isKeypad ? "2. Register" : "Register",
+                            style: TextStyle(fontSize: UIUtils.fontSize(context, 18), fontWeight: FontWeight.w600),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: UIUtils.primaryColor,
+                            side: const BorderSide(color: UIUtils.primaryColor, width: 1.5),
+                            padding: UIUtils.paddingSymmetric(context, vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
+                      ),
+                      
+                      SizedBox(height: UIUtils.spacing(context, 20)),
+                      
+                      // Settings button
+                      TextButton.icon(
+                        onPressed: () => Navigator.pushNamed(context, '/settings'),
+                        icon: Icon(Icons.settings_outlined, color: UIUtils.subtextColor, size: UIUtils.iconSize(context, 20)),
+                        label: Text(
+                          'Settings',
+                          style: TextStyle(
+                            color: UIUtils.subtextColor,
+                            fontSize: UIUtils.fontSize(context, 13),
+                          ),
+                        ),
+                      ),
+                      
+                      // Hide features section on tiny screens to save space
+                      if (!tiny) ...[
+                        SizedBox(height: UIUtils.spacing(context, 16)),
+                        Container(
+                          padding: UIUtils.paddingAll(context, 16),
+                          decoration: BoxDecoration(
+                            color: UIUtils.backgroundColor,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: Colors.grey.withOpacity(0.1),
+                              width: 1,
+                            ),
+                          ),
+                          child: Column(
+                            children: [
+                              _buildFeature(context, Icons.mic_none_rounded, "Real-time Audio",
+                                  "Crystal clear voice communication"),
+                              const Divider(color: Colors.black12, height: 24),
+                              _buildFeature(context, Icons.accessibility_new_rounded,
+                                  "Fully Accessible", "TTS, large buttons & more"),
+                              const Divider(color: Colors.black12, height: 24),
+                              _buildFeature(context, Icons.groups_outlined,
+                                  "Collaboration", "Raise hands and interact"),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -407,31 +458,34 @@ class WelcomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildFeature(IconData icon, String title, String description) {
+  Widget _buildFeature(BuildContext context, IconData icon, String title, String description) {
+    final bool tiny = UIUtils.isTiny(context);
     return Row(
       children: [
-        Icon(icon, color: Colors.white, size: 32),
-        const SizedBox(width: 16),
+        Icon(icon, color: UIUtils.accentColor, size: UIUtils.iconSize(context, 28)),
+        SizedBox(width: UIUtils.spacing(context, 12)),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 title,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                description,
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.8),
-                  fontSize: 14,
+                  color: UIUtils.textColor,
+                  fontSize: UIUtils.fontSize(context, 14),
+                  fontWeight: FontWeight.w600,
                 ),
               ),
+              if (!tiny) ...[
+                SizedBox(height: UIUtils.spacing(context, 2)),
+                Text(
+                  description,
+                  style: TextStyle(
+                    color: UIUtils.subtextColor,
+                    fontSize: UIUtils.fontSize(context, 12),
+                  ),
+                ),
+              ],
             ],
           ),
         ),

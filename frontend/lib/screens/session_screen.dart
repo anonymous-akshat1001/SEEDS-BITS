@@ -15,6 +15,9 @@ import '../services/api_service.dart';
 import '../services/sse_service.dart';
 import 'invite_students_screen.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter/services.dart';
+import '../utils/ui_utils.dart';
+
 
 
 final baseUrl = dotenv.env['API_BASE_URL'];
@@ -99,6 +102,7 @@ class _SessionScreenState extends State<SessionScreen> {
     ],
     'sdpSemantics': 'unified-plan',
   };
+  final FocusNode _screenFocusNode = FocusNode();
 
   // ── lifecycle ───────────────────────────────────────────────────────────
 
@@ -106,6 +110,7 @@ class _SessionScreenState extends State<SessionScreen> {
   void initState() {
     super.initState();
     _initialize();
+    _screenFocusNode.requestFocus();
 
     _sessionAudioPlayer.onPositionChanged.listen((pos) {
       if (mounted && !_isSeeking) {
@@ -1054,54 +1059,103 @@ class _SessionScreenState extends State<SessionScreen> {
     _previewPlayer.stop();
     _previewPlayer.dispose();
     _tts.stop();
+    _screenFocusNode.dispose();
     super.dispose();
   }
+
 
   // ── UI ───────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
+    return KeyboardListener(
+      focusNode: _screenFocusNode,
+      onKeyEvent: (KeyEvent event) {
+        if (event is KeyDownEvent) {
+          final key = event.logicalKey;
+          if (key == LogicalKeyboardKey.digit1 || key == LogicalKeyboardKey.numpad1) {
+            _toggleMute();
+          } else if (key == LogicalKeyboardKey.digit2 || key == LogicalKeyboardKey.numpad2) {
+            _toggleHandRaise();
+          } else if ((key == LogicalKeyboardKey.digit3 || key == LogicalKeyboardKey.numpad3) && widget.isTeacher) {
+            _openInviteScreen();
+          } else if ((key == LogicalKeyboardKey.digit4 || key == LogicalKeyboardKey.numpad4) && widget.isTeacher) {
+            setState(() => _showAudioPanel = !_showAudioPanel);
+          } else if (key == LogicalKeyboardKey.asterisk || key == LogicalKeyboardKey.numpadMultiply) {
+            _leaveSession();
+          }
+        }
+      },
+      child: _buildMainScaffold(context),
+    );
+  }
+
+  Widget _buildMainScaffold(BuildContext context) {
     if (_isInitializing) {
-      return const Scaffold(
-        body: Center(child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(),
-            SizedBox(height: 16),
-            Text('Joining session…'),
-          ],
-        )),
+      return Scaffold(
+        backgroundColor: Colors.grey.shade900,
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const CircularProgressIndicator(color: Colors.teal),
+              SizedBox(height: UIUtils.spacing(context, 12)),
+              Text(
+                'Initializing session...',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: UIUtils.fontSize(context, 14),
+                ),
+              ),
+            ],
+          ),
+        ),
       );
     }
 
+    final bool tiny = UIUtils.isTiny(context);
+    final List<Map<String, dynamic>> participantsList = _participants.values.toList();
+    final bool isMobile = MediaQuery.of(context).size.width < 600;
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.isTeacher ? 'Session (Teacher)' : 'Session'),
+        title: Text(
+          widget.isTeacher ? 'Session (Teacher)' : 'Session',
+          style: TextStyle(fontSize: UIUtils.fontSize(context, 16)),
+        ),
         backgroundColor: Colors.teal,
+        toolbarHeight: tiny ? 40 : null,
         actions: [
           // TTS toggle
           IconButton(
-            icon: Icon(_ttsEnabled ? Icons.volume_up : Icons.volume_off),
+            icon: Icon(_ttsEnabled ? Icons.volume_up : Icons.volume_off, size: UIUtils.iconSize(context, 20)),
             tooltip: 'Toggle TTS',
             onPressed: () => setState(() => _ttsEnabled = !_ttsEnabled),
           ),
           // Invite students — teacher only
           if (widget.isTeacher)
             IconButton(
-              icon: const Icon(Icons.person_add),
+              icon: Icon(Icons.person_add, size: UIUtils.iconSize(context, 20)),
               tooltip: 'Invite Students',
               onPressed: _openInviteScreen,
             ),
           // End session — teacher only
           if (widget.isTeacher)
             IconButton(
-              icon: const Icon(Icons.stop_circle, color: Colors.red),
+              icon: Icon(Icons.stop_circle, color: Colors.red, size: UIUtils.iconSize(context, 20)),
               tooltip: 'End session',
               onPressed: () => _sse.send({'type': 'end_session'}),
             ),
+          // Audio Library — teacher only
+          if (widget.isTeacher)
+            IconButton(
+              icon: Icon(Icons.library_music, size: UIUtils.iconSize(context, 20)),
+              tooltip: 'Audio Library',
+              onPressed: () => setState(() => _showAudioPanel = !_showAudioPanel),
+            ),
           // Leave
           IconButton(
-            icon: const Icon(Icons.exit_to_app),
+            icon: Icon(Icons.exit_to_app, size: UIUtils.iconSize(context, 20)),
             tooltip: 'Leave',
             onPressed: _leaveSession,
           ),
@@ -1114,38 +1168,13 @@ class _SessionScreenState extends State<SessionScreen> {
 
           // ── Main content ───────────────────────────────────────────────
           Expanded(
-            child: Row(
-              children: [
-                // Left: Participants list
-                SizedBox(
-                  width: 260,
-                  child: Column(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        color: Colors.teal.shade50,
-                        child: Row(children: [
-                          const Icon(Icons.people, color: Colors.teal),
-                          const SizedBox(width: 8),
-                          Text('Participants (${_participants.length})',
-                              style: const TextStyle(fontWeight: FontWeight.bold)),
-                        ]),
-                      ),
-                      Expanded(child: _buildParticipantsList(_participants.values.toList())),
-                    ],
-                  ),
-                ),
-
-                const VerticalDivider(width: 1),
-
-                // Right: Chat panel (always visible)
-                Expanded(child: _buildChatPanel()),
-              ],
-            ),
+            child: isMobile 
+                ? _buildMobileLayout(participantsList) 
+                : _buildDesktopLayout(participantsList),
           ),
 
           // ── Audio library panel (teacher only, slides in above action bar) ─
-          if (widget.isTeacher) _buildAudioLibraryPanel(),
+          if (widget.isTeacher && _showAudioPanel) _buildAudioLibraryPanel(),
 
           // ── Bottom action bar ──────────────────────────────────────────
           _buildActionBar(),
@@ -1154,111 +1183,179 @@ class _SessionScreenState extends State<SessionScreen> {
     );
   }
 
+
   Widget _buildActionBar() {
+    final bool isKeypad = UIUtils.isKeypad(context);
+    final bool tiny = UIUtils.isTiny(context);
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      padding: UIUtils.paddingSymmetric(context, horizontal: 4, vertical: 8),
       color: Colors.grey.shade900,
       child: SafeArea(
         top: false,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            // Mute
-            _actionBarBtn(
-              icon:  _muted ? Icons.mic_off : Icons.mic,
-              label: _muted ? 'Unmute' : 'Mute',
-              color: _muted ? Colors.red : Colors.green,
-              onTap: _toggleMute,
-            ),
-
-            // Raise / lower hand
-            _actionBarBtn(
-              icon:  _handRaised ? Icons.pan_tool : Icons.pan_tool_outlined,
-              label: _handRaised ? 'Lower' : 'Raise Hand',
-              color: _handRaised ? Colors.amber : Colors.grey.shade400,
-              onTap: _toggleHandRaise,
-            ),
-
-            // Invite students — teacher only
-            if (widget.isTeacher)
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              // Mute
               _actionBarBtn(
-                icon:  Icons.person_add,
-                label: 'Invite',
-                color: Colors.lightBlue,
-                onTap: _openInviteScreen,
+                icon: _muted ? Icons.mic_off : Icons.mic,
+                label: isKeypad ? '1:Mute' : 'Mute',
+                color: _muted ? Colors.red : Colors.green,
+                onTap: _toggleMute,
               ),
-
-            // Audio library — teacher only
-            if (widget.isTeacher)
+              SizedBox(width: UIUtils.spacing(context, 8)),
+              // Raise / lower hand
               _actionBarBtn(
-                icon:  Icons.library_music,
-                label: 'Audio',
-                color: Colors.purple.shade300,
-                onTap: () => setState(() => _showAudioPanel = !_showAudioPanel),
-                active: _showAudioPanel,
+                icon: _handRaised ? Icons.pan_tool : Icons.pan_tool_outlined,
+                label: isKeypad ? '2:Hand' : 'Raise',
+                color: _handRaised ? Colors.amber : Colors.grey.shade400,
+                onTap: _toggleHandRaise,
               ),
-
-            // Leave
-            _actionBarBtn(
-              icon:  Icons.call_end,
-              label: 'Leave',
-              color: Colors.red.shade400,
-              onTap: _leaveSession,
-            ),
-          ],
+              if (widget.isTeacher) ...[
+                SizedBox(width: UIUtils.spacing(context, 8)),
+                _actionBarBtn(
+                  icon: Icons.person_add,
+                  label: isKeypad ? '3:Invite' : 'Invite',
+                  color: Colors.lightBlue,
+                  onTap: _openInviteScreen,
+                ),
+                SizedBox(width: UIUtils.spacing(context, 8)),
+                _actionBarBtn(
+                  icon: Icons.library_music,
+                  label: isKeypad ? '4:Audio' : 'Audio',
+                  color: Colors.purple.shade300,
+                  onTap: () => setState(() => _showAudioPanel = !_showAudioPanel),
+                  active: _showAudioPanel,
+                ),
+              ],
+              SizedBox(width: UIUtils.spacing(context, 8)),
+              // Leave
+              _actionBarBtn(
+                icon: Icons.call_end,
+                label: isKeypad ? '*:Exit' : 'Leave',
+                color: Colors.red.shade400,
+                onTap: _leaveSession,
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
   Widget _actionBarBtn({
-    required IconData     icon,
-    required String       label,
-    required Color        color,
+    required IconData icon,
+    required String label,
+    required Color color,
     required VoidCallback onTap,
-    bool                  active = false,
+    bool active = false,
   }) {
-    return GestureDetector(
+    final bool isKeypad = UIUtils.isKeypad(context);
+    final double btnSize = isKeypad ? 40 : 48;
+
+    return InkWell(
       onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 48, height: 48,
-            decoration: BoxDecoration(
-              color: active ? color.withOpacity(0.3) : Colors.transparent,
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: active ? color : color.withOpacity(0.6),
-                width: 2,
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: UIUtils.scale(context) * btnSize,
+              height: UIUtils.scale(context) * btnSize,
+              decoration: BoxDecoration(
+                color: active ? color.withOpacity(0.3) : Colors.transparent,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: active ? color : color.withOpacity(0.6),
+                  width: 2,
+                ),
               ),
+              child: Icon(icon, color: color, size: UIUtils.iconSize(context, isKeypad ? 18 : 24)),
             ),
-            child: Icon(icon, color: color, size: 24),
+            SizedBox(height: UIUtils.spacing(context, 4)),
+            Text(label,
+                style: TextStyle(
+                    color: Colors.grey.shade400,
+                    fontSize: UIUtils.fontSize(context, 9),
+                    fontWeight: FontWeight.w500)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMobileLayout(List<Map<String, dynamic>> participantsList) {
+    final bool tiny = UIUtils.isTiny(context);
+    return DefaultTabController(
+      length: 2,
+      child: Column(
+        children: [
+          TabBar(
+            tabs: [
+              Tab(
+                text: 'Participants',
+                icon: Icon(Icons.people, size: UIUtils.iconSize(context, 16)),
+                height: tiny ? 36 : null,
+              ),
+              Tab(
+                text: 'Chat',
+                icon: Icon(Icons.chat, size: UIUtils.iconSize(context, 16)),
+                height: tiny ? 36 : null,
+              ),
+            ],
+            labelColor: Colors.teal,
+            labelStyle: TextStyle(fontSize: UIUtils.fontSize(context, 11)),
           ),
-          const SizedBox(height: 3),
-          Text(label,
-              style: TextStyle(
-                  color: Colors.grey.shade400,
-                  fontSize: 10,
-                  fontWeight: FontWeight.w500)),
+          Expanded(
+            child: TabBarView(
+              children: [
+                _buildParticipantsList(participantsList),
+                _buildChatPanel(),
+              ],
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildParticipantsList(List<Map<String, dynamic>> list) {
-    if (list.isEmpty) {
-      return const Center(
-        child: Text('Waiting for participants…',
-            style: TextStyle(color: Colors.grey)),
+  Widget _buildDesktopLayout(List<Map<String, dynamic>> participantsList) {
+    return Row(
+      children: [
+        Expanded(
+          flex: 2,
+          child: _buildParticipantsList(participantsList),
+        ),
+        const VerticalDivider(width: 1),
+        Expanded(
+          flex: 3,
+          child: _buildChatPanel(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildParticipantsList(List<Map<String, dynamic>> participantsList) {
+    if (participantsList.isEmpty) {
+      return Center(
+        child: Text(
+          'Waiting for participants...',
+          style: TextStyle(color: Colors.grey, fontSize: UIUtils.fontSize(context, 13)),
+        ),
       );
     }
 
+    final bool tiny = UIUtils.isTiny(context);
+
     return ListView.builder(
-      padding: const EdgeInsets.all(8),
-      itemCount: list.length,
+      padding: UIUtils.paddingAll(context, 8),
+      itemCount: participantsList.length,
       itemBuilder: (_, i) {
-        final p          = list[i];
+        final p          = participantsList[i];
         final pid        = p['id']        as int;
         final isSelf     = pid == _participantId;
         final isMuted    = p['is_muted']  as bool? ?? false;
@@ -1267,19 +1364,21 @@ class _SessionScreenState extends State<SessionScreen> {
         final name       = p['name']      as String? ?? '?';
 
         return Card(
-          margin: const EdgeInsets.only(bottom: 8),
+          margin: EdgeInsets.only(bottom: UIUtils.spacing(context, 4)),
           child: ListTile(
+            dense: tiny,
+            contentPadding: UIUtils.paddingSymmetric(context, horizontal: 8, vertical: 4),
             leading: CircleAvatar(
               backgroundColor: isMuted ? Colors.red : Colors.green,
-              radius: 20,
+              radius: UIUtils.iconSize(context, 18),
               child: Icon(isMuted ? Icons.mic_off : Icons.mic,
-                  color: Colors.white, size: 18),
+                  color: Colors.white, size: UIUtils.iconSize(context, 16)),
             ),
             title: Text(
               isSelf ? '$name (You)' : name,
               style: TextStyle(
                 fontWeight: isSelf ? FontWeight.bold : FontWeight.normal,
-                fontSize: 14,
+                fontSize: UIUtils.fontSize(context, 14),
               ),
               overflow: TextOverflow.ellipsis,
             ),
@@ -1287,31 +1386,34 @@ class _SessionScreenState extends State<SessionScreen> {
               isTeacher ? 'Teacher' : 'Student',
               style: TextStyle(
                 color: isTeacher ? Colors.teal : Colors.grey,
-                fontSize: 12,
+                fontSize: UIUtils.fontSize(context, 12),
               ),
             ),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (raisedHand)
-                  const Padding(
-                    padding: EdgeInsets.only(right: 4),
-                    child: Icon(Icons.pan_tool, color: Colors.amber, size: 20),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 4),
+                    child: Icon(Icons.pan_tool, color: Colors.amber, size: UIUtils.iconSize(context, 18)),
                   ),
                 if (widget.isTeacher && !isSelf) ...[
                   IconButton(
-                    icon: Icon(isMuted ? Icons.mic : Icons.mic_off, size: 20),
+                    icon: Icon(isMuted ? Icons.mic : Icons.mic_off, size: UIUtils.iconSize(context, 18)),
                     color: Colors.blue,
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
                     onPressed: () => _muteParticipant(pid, !isMuted),
+                    tooltip: isMuted ? 'Unmute' : 'Mute',
                   ),
+                  SizedBox(width: UIUtils.spacing(context, 2)),
                   IconButton(
-                    icon: const Icon(Icons.remove_circle, size: 20),
+                    icon: Icon(Icons.remove_circle, size: UIUtils.iconSize(context, 18)),
                     color: Colors.red,
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
                     onPressed: () => _kickParticipant(pid),
+                    tooltip: 'Kick',
                   ),
                 ],
               ],
@@ -1323,99 +1425,146 @@ class _SessionScreenState extends State<SessionScreen> {
   }
 
   Widget _buildChatPanel() {
-    return Column(children: [
-      // header
-      Container(
-        padding: const EdgeInsets.all(12),
-        color: Colors.teal.shade50,
-        child: const Row(children: [
-          Icon(Icons.chat, color: Colors.teal, size: 20),
-          SizedBox(width: 8),
-          Text('Chat', style: TextStyle(fontWeight: FontWeight.bold)),
-        ]),
-      ),
-
-      // messages
-      Expanded(
-        child: _messages.isEmpty
-            ? const Center(child: Text('No messages yet',
-                style: TextStyle(color: Colors.grey)))
-            : ListView.builder(
-                controller: _chatScrollController,
-                padding: const EdgeInsets.all(8),
-                itemCount: _messages.length,
-                itemBuilder: (_, i) {
-                  final msg  = _messages[i];
-                  final isMe = msg['isMe'] as bool? ?? false;
-                  return Align(
-                    alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-                    child: Container(
-                      margin: const EdgeInsets.only(bottom: 8),
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      constraints: BoxConstraints(
-                          maxWidth: MediaQuery.of(context).size.width * 0.65),
-                      decoration: BoxDecoration(
-                        color: isMe ? Colors.teal.shade100 : Colors.grey.shade200,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(msg['sender'] as String,
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 11)),
-                          const SizedBox(height: 4),
-                          Text(msg['text'] as String,
-                              style: const TextStyle(fontSize: 14)),
-                        ],
-                      ),
-                    ),
-                  );
+    final bool tiny = UIUtils.isTiny(context);
+    return Column(
+      children: [
+        // Header
+        Container(
+          padding: UIUtils.paddingAll(context, 8),
+          color: Colors.teal.shade50,
+          child: Row(
+            children: [
+              Icon(Icons.chat, color: Colors.teal, size: UIUtils.iconSize(context, 16)),
+              SizedBox(width: UIUtils.spacing(context, 4)),
+              Expanded(
+                child: Text(
+                  'Chat',
+                  style: TextStyle(fontSize: UIUtils.fontSize(context, 14), fontWeight: FontWeight.bold),
+                ),
+              ),
+              IconButton(
+                icon: Icon(_ttsEnabled ? Icons.volume_up : Icons.volume_off, size: UIUtils.iconSize(context, 16)),
+                tooltip: 'Toggle TTS',
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                onPressed: () {
+                  setState(() => _ttsEnabled = !_ttsEnabled);
+                  _speakIfEnabled(_ttsEnabled ? "TTS enabled" : "TTS disabled");
                 },
               ),
-      ),
-
-      // input
-      Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-        decoration: BoxDecoration(color: Colors.white, boxShadow: [
-          BoxShadow(color: Colors.grey.shade300, blurRadius: 4,
-              offset: const Offset(0, -2)),
-        ]),
-        child: SafeArea(
-          top: false,
-          child: Row(children: [
-            Expanded(
-              child: TextField(
-                controller: _chatController,
-                decoration: InputDecoration(
-                  hintText: 'Message…',
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(24)),
-                  contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 8),
-                  isDense: true,
-                ),
-                onSubmitted: (_) => _sendMessage(),
-                maxLines: 1,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Container(
-              width: 40, height: 40,
-              decoration: const BoxDecoration(
-                  color: Colors.teal, shape: BoxShape.circle),
-              child: IconButton(
-                icon: const Icon(Icons.send, color: Colors.white, size: 20),
-                padding: EdgeInsets.zero,
-                onPressed: _sendMessage,
-              ),
-            ),
-          ]),
+            ],
+          ),
         ),
-      ),
-    ]);
+        
+        // Messages
+        Expanded(
+          child: _messages.isEmpty
+              ? Center(
+                  child: Text(
+                    'No messages yet',
+                    style: TextStyle(color: Colors.grey, fontSize: UIUtils.fontSize(context, 12)),
+                  ),
+                )
+              : ListView.builder(
+                  controller: _chatScrollController,
+                  padding: UIUtils.paddingAll(context, 4),
+                  itemCount: _messages.length,
+                  itemBuilder: (context, index) {
+                    final msg = _messages[index];
+                    final isMe = msg['isMe'] ?? false;
+                    
+                    return Align(
+                      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+                      child: Container(
+                        margin: EdgeInsets.only(bottom: UIUtils.spacing(context, 4)),
+                        padding: UIUtils.paddingSymmetric(context, horizontal: 8, vertical: 4),
+                        constraints: BoxConstraints(
+                          maxWidth: MediaQuery.of(context).size.width * 0.7,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isMe ? Colors.teal.shade100 : Colors.grey.shade200,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              msg['sender'],
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: UIUtils.fontSize(context, 10),
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            SizedBox(height: UIUtils.spacing(context, 2)),
+                            Text(
+                              msg['text'],
+                              style: TextStyle(fontSize: UIUtils.fontSize(context, 12)),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+        ),
+        
+        // Input
+        Container(
+          padding: UIUtils.paddingSymmetric(context, horizontal: 8, vertical: 8),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.shade300,
+                blurRadius: 4,
+                offset: const Offset(0, -2),
+              ),
+            ],
+          ),
+          child: SafeArea(
+            top: false,
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _chatController,
+                    decoration: InputDecoration(
+                      hintText: "Message...",
+                      hintStyle: TextStyle(fontSize: UIUtils.fontSize(context, 12)),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      contentPadding: UIUtils.paddingSymmetric(context, horizontal: 10, vertical: 4),
+                      isDense: true,
+                    ),
+                    onSubmitted: (_) => _sendMessage(),
+                    style: TextStyle(fontSize: UIUtils.fontSize(context, 12)),
+                    maxLines: 1,
+                  ),
+                ),
+                SizedBox(width: UIUtils.spacing(context, 4)),
+                Container(
+                  width: 30 * UIUtils.scale(context),
+                  height: 30 * UIUtils.scale(context),
+                  decoration: const BoxDecoration(
+                    color: Colors.teal,
+                    shape: BoxShape.circle,
+                  ),
+                  child: IconButton(
+                    icon: Icon(Icons.send, color: Colors.white, size: UIUtils.iconSize(context, 14)),
+                    padding: EdgeInsets.zero,
+                    onPressed: _sendMessage,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   Widget _buildAudioControlSection() {
@@ -1514,9 +1663,9 @@ class _SessionScreenState extends State<SessionScreen> {
                 IconButton(
                   icon: const Icon(Icons.fast_rewind, color: Colors.white70),
                   tooltip: 'Slower',
-                  onPressed: _audioSpeed > 0.5
-                      ? () => _changeAudioSpeed((_audioSpeed - 0.25).clamp(0.5, 2.0))
-                      : null,
+                  onPressed: widget.isTeacher 
+                    ? (_audioSpeed > 0.5 ? () => _changeAudioSpeed((_audioSpeed - 0.25).clamp(0.5, 2.0)) : null)
+                    : () => _applyAudioSpeedLocally((_audioSpeed - 0.25).clamp(0.25, 3.0)),
                 ),
                 IconButton(
                   icon: const Icon(Icons.replay_10, color: Colors.white70),
@@ -1564,13 +1713,31 @@ class _SessionScreenState extends State<SessionScreen> {
                     size: 16,
                   ),
                   const SizedBox(width: 6),
-                  Text(
-                    isPlaying ? 'Playing — synced with teacher' : 'Paused by teacher',
-                    style: TextStyle(
-                      color: isPlaying ? Colors.tealAccent : Colors.white54,
-                      fontSize: 12,
+                    Text(
+                      isPlaying ? 'Playing — synced' : 'Paused by teacher',
+                      style: TextStyle(
+                        color: isPlaying ? Colors.tealAccent : Colors.white54,
+                        fontSize: 12,
+                      ),
                     ),
-                  ),
+                    if (isPlaying) ...[
+                      const SizedBox(width: 12),
+                      IconButton(
+                        icon: const Icon(Icons.fast_rewind_rounded, color: Colors.white, size: 18),
+                        onPressed: () => _applyAudioSpeedLocally((_audioSpeed - 0.25).clamp(0.25, 3.0)),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        tooltip: 'Slower',
+                      ),
+                      const SizedBox(width: 8),
+                      IconButton(
+                        icon: const Icon(Icons.fast_forward_rounded, color: Colors.white, size: 18),
+                        onPressed: () => _applyAudioSpeedLocally((_audioSpeed + 0.25).clamp(0.25, 3.0)),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        tooltip: 'Faster',
+                      ),
+                    ],
                 ],
               ),
             ),
@@ -1605,6 +1772,7 @@ class _SessionScreenState extends State<SessionScreen> {
             color: Colors.teal.shade700,
             child: Row(
               children: [
+
                 const Icon(Icons.library_music, color: Colors.white, size: 18),
                 const SizedBox(width: 8),
                 const Expanded(
@@ -1636,7 +1804,6 @@ class _SessionScreenState extends State<SessionScreen> {
                   constraints: const BoxConstraints(),
                   padding: EdgeInsets.zero,
                 ),
-                // Close
                 IconButton(
                   icon: const Icon(Icons.close, color: Colors.white, size: 20),
                   onPressed: () => setState(() => _showAudioPanel = false),

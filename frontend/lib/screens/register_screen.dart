@@ -10,6 +10,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 // import other files
 import '../services/api_service.dart';
 import '../services/tts_service.dart';
+import '../utils/ui_utils.dart';
+import '../widgets/key_instruction_wrapper.dart';
+import 'package:flutter/services.dart';
 // import 'login_screen.dart';
 
 
@@ -169,105 +172,151 @@ class _RegisterScreenState extends State<RegisterScreen> {
   // Describe UI as a tree like structure and reruns everytime setState is called
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Center(
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-
-                const Text(
-                  "Register",
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 32),
-                
-                
-                // Input text fields 
-                TextField(
-                  controller: nameCtrl,
-                  decoration: const InputDecoration(
-                    labelText: "Name",
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.person),
+    return KeypadInstructionWrapper(
+      audioAsset: 'audio/register_instructions.mp3',
+      ttsInstructions: "Registration Screen. Press 1 to register, 2 to go to login.",
+      actions: {
+        LogicalKeyboardKey.digit1: register,
+        LogicalKeyboardKey.digit2: () => Navigator.pushNamed(context, '/login'),
+      },
+      child: Scaffold(
+        backgroundColor: UIUtils.backgroundColor,
+        body: Padding(
+          padding: UIUtils.paddingAll(context, 16.0),
+          child: Center(
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  Text(
+                    "Register",
+                    style: TextStyle(fontSize: UIUtils.fontSize(context, 24), fontWeight: FontWeight.bold),
                   ),
-                  onTap: () => TtsService.speak("Enter name"),
-                ),
-                const SizedBox(height: 12),
-                
-                
-                // Input Text Fields
-                TextField(
-                  controller: phoneCtrl,
-                  decoration: const InputDecoration(
-                    labelText: "Phone number",
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.phone),
-                  ),
-                  keyboardType: TextInputType.phone,
-                  onTap: () => TtsService.speak("Enter phone number"),
-                ),
-                const SizedBox(height: 12),
-                
-                // Input Password
-                TextField(
-                  controller: passCtrl,
-                  obscureText: true,
-                  decoration: const InputDecoration(
-                    labelText: "Password",
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.lock),
-                  ),
-                  onTap: () => TtsService.speak("Enter password"),
-                ),
-                const SizedBox(height: 16),
-                
-                
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text("Register as Teacher?"),
-                    Switch(
-                      value: isTeacher,
-                      onChanged: (v) => setState(() => isTeacher = v),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                
-                
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: isLoading ? null : register,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.teal,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
+                  SizedBox(height: UIUtils.spacing(context, 20)),
+                  
+                  // Input text fields 
+                  TextField(
+                    controller: nameCtrl,
+                    style: TextStyle(fontSize: UIUtils.fontSize(context, 14), color: UIUtils.textColor),
+                    decoration: InputDecoration(
+                      labelText: "Name",
+                      labelStyle: TextStyle(fontSize: UIUtils.fontSize(context, 13), color: UIUtils.subtextColor),
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      prefixIcon: Icon(Icons.person_outline_rounded, size: UIUtils.iconSize(context, 18), color: UIUtils.accentColor),
+                      contentPadding: UIUtils.paddingSymmetric(context, horizontal: 16, vertical: 16),
+                      isDense: true,
+                    ),
+                    onTap: () => TtsService.speak("Enter name"),
+                  ),
+                  SizedBox(height: UIUtils.spacing(context, 12)),
+                  
+                  // Input Text Fields
+                  TextField(
+                    controller: phoneCtrl,
+                    style: TextStyle(fontSize: UIUtils.fontSize(context, 14), color: UIUtils.textColor),
+                    decoration: InputDecoration(
+                      labelText: "Phone number",
+                      labelStyle: TextStyle(fontSize: UIUtils.fontSize(context, 13), color: UIUtils.subtextColor),
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      prefixIcon: Icon(Icons.phone_iphone_rounded, size: UIUtils.iconSize(context, 18), color: UIUtils.accentColor),
+                      contentPadding: UIUtils.paddingSymmetric(context, horizontal: 16, vertical: 16),
+                      isDense: true,
+                    ),
+                    keyboardType: TextInputType.phone,
+                    onTap: () => TtsService.speak("Enter phone number"),
+                  ),
+                  SizedBox(height: UIUtils.spacing(context, 12)),
+                  
+                  // Input Password
+                  TextField(
+                    controller: passCtrl,
+                    obscureText: true,
+                    style: TextStyle(fontSize: UIUtils.fontSize(context, 14), color: UIUtils.textColor),
+                    decoration: InputDecoration(
+                      labelText: "Password",
+                      labelStyle: TextStyle(fontSize: UIUtils.fontSize(context, 13), color: UIUtils.subtextColor),
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      prefixIcon: Icon(Icons.lock_outline_rounded, size: UIUtils.iconSize(context, 18), color: UIUtils.accentColor),
+                      contentPadding: UIUtils.paddingSymmetric(context, horizontal: 16, vertical: 16),
+                      isDense: true,
+                    ),
+                    onTap: () => TtsService.speak("Enter password"),
+                  ),
+                  SizedBox(height: UIUtils.spacing(context, 10)),
+                  
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text("Register as Teacher?", style: TextStyle(fontSize: UIUtils.fontSize(context, 13))),
+                      Transform.scale(
+                        scale: UIUtils.scale(context),
+                        child: Switch(
+                          value: isTeacher,
+                          onChanged: (v) => setState(() => isTeacher = v),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: UIUtils.spacing(context, 12)),
+                  
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: isLoading ? null : register,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: UIUtils.primaryColor,
+                        padding: UIUtils.paddingSymmetric(context, vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: isLoading
+                          ? SizedBox(
+                              height: UIUtils.iconSize(context, 20),
+                              width: UIUtils.iconSize(context, 20),
+                              child: const CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                            )
+                          : Text(
+                              "1: Register",
+                              style: TextStyle(
+                                fontSize: UIUtils.fontSize(context, 16), 
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white
+                              ),
+                            ),
+                    ),
+                  ),
+                  SizedBox(height: UIUtils.spacing(context, 16)),
+
+                  // Add "Already have account" option
+                  TextButton(
+                    onPressed: () => Navigator.pushNamed(context, '/login'),
+                    child: Text(
+                      "2: Already have an account? Login",
+                      style: TextStyle(
+                        fontSize: UIUtils.fontSize(context, 14),
+                        color: UIUtils.accentColor,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
-                    child: isLoading
-                        ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text(
-                            "Register",
-                            style: TextStyle(fontSize: 18, color: Colors.white),
-                          ),
                   ),
-                ),
-                const SizedBox(height: 16),
-
-
-                // Add "Already have account" option
-                TextButton(
-                  onPressed: () => Navigator.pushNamed(context, '/login'),
-                  child: const Text(
-                    "Already have an account? Login",
-                    style: TextStyle(fontSize: 16),
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

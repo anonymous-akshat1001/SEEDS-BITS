@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import '../utils/ui_utils.dart';
 // Allows user to pick audio files
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_tts/flutter_tts.dart';
@@ -182,18 +183,34 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
                 
                 TextField(
                   controller: _titleController,
-                  decoration: const InputDecoration(
+                  style: TextStyle(fontSize: UIUtils.fontSize(context, 14), color: UIUtils.textColor),
+                  decoration: InputDecoration(
                     labelText: 'Title *',
-                    border: OutlineInputBorder(),
+                    labelStyle: TextStyle(color: UIUtils.subtextColor),
+                    filled: true,
+                    fillColor: UIUtils.backgroundColor,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: UIUtils.paddingSymmetric(context, horizontal: 16, vertical: 12),
                   ),
                 ),
                 const SizedBox(height: 12),
                 
                 TextField(
                   controller: _descriptionController,
-                  decoration: const InputDecoration(
+                  style: TextStyle(fontSize: UIUtils.fontSize(context, 14), color: UIUtils.textColor),
+                  decoration: InputDecoration(
                     labelText: 'Description',
-                    border: OutlineInputBorder(),
+                    labelStyle: TextStyle(color: UIUtils.subtextColor),
+                    filled: true,
+                    fillColor: UIUtils.backgroundColor,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: UIUtils.paddingSymmetric(context, horizontal: 16, vertical: 12),
                   ),
                   maxLines: 3,
                 ),
@@ -203,13 +220,19 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
+              child: Text('Cancel', style: TextStyle(color: UIUtils.subtextColor)),
             ),
             ElevatedButton(
               onPressed: () {
                 Navigator.pop(context);
                 _performUpload(file, _titleController.text, _descriptionController.text);
               },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: UIUtils.primaryColor,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                elevation: 0,
+              ),
               child: const Text('Upload'),
             ),
           ],
@@ -489,18 +512,22 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
   // Build Final UI for Audio Screen
   @override
   Widget build(BuildContext context) {
-    // Scaffold defines page structure
+    final bool tiny = UIUtils.isTiny(context);
     return Scaffold(
-      // Appbar displays the following - TTS toggle, title, pause session audio button
       appBar: AppBar(
-        title: Text(widget.sessionId != null 
-          ? 'Audio Library - Session ${widget.sessionId}'
-          : 'Audio Library'
+        title: Text(
+          widget.sessionId != null 
+            ? 'Audio - Session ${widget.sessionId}'
+            : 'Audio Library',
+          style: TextStyle(fontSize: UIUtils.fontSize(context, 16), fontWeight: FontWeight.w600),
         ),
-        backgroundColor: Colors.teal,
+        backgroundColor: Colors.white,
+        foregroundColor: UIUtils.textColor,
+        elevation: 0,
+        toolbarHeight: tiny ? 40 : null,
         actions: [
           IconButton(
-            icon: Icon(_ttsEnabled ? Icons.volume_up : Icons.volume_off),
+            icon: Icon(_ttsEnabled ? Icons.volume_up_rounded : Icons.volume_off_rounded, size: UIUtils.iconSize(context, 20), color: UIUtils.accentColor),
             tooltip: 'Toggle TTS',
             onPressed: () {
               setState(() => _ttsEnabled = !_ttsEnabled);
@@ -509,12 +536,13 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
           ),
           if (widget.sessionId != null)
             IconButton(
-              icon: const Icon(Icons.pause),
+              icon: Icon(Icons.pause_rounded, size: UIUtils.iconSize(context, 20), color: Colors.orange),
               tooltip: 'Pause Session Audio',
               onPressed: _pauseSessionAudio,
             ),
         ],
       ),
+      backgroundColor: UIUtils.backgroundColor,
       body: _isLoading
           ? const Center(
               child: CircularProgressIndicator(),
@@ -525,46 +553,49 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
                   const LinearProgressIndicator(),
                 
                 Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding: UIUtils.paddingAll(context, 10),
                   child: ElevatedButton.icon(
                     onPressed: _isUploading ? null : _uploadAudioFile,
-                    icon: const Icon(Icons.upload_file),
-                    label: const Text('Upload New Audio'),
+                    icon: Icon(Icons.upload_file_rounded, size: UIUtils.iconSize(context, 18)),
+                    label: Text('Upload New Audio', style: TextStyle(fontSize: UIUtils.fontSize(context, 14), fontWeight: FontWeight.w600)),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.teal,
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                      minimumSize: const Size(double.infinity, 50),
+                      backgroundColor: UIUtils.primaryColor,
+                      foregroundColor: Colors.white,
+                      padding: UIUtils.paddingSymmetric(context, vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      elevation: 0,
                     ),
                   ),
                 ),
                 
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: UIUtils.paddingSymmetric(context, horizontal: 10),
                   child: Text(
                     '${_audioFiles.length} Audio Files',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                    style: TextStyle(
+                      fontSize: UIUtils.fontSize(context, 14),
+                      fontWeight: FontWeight.w700,
+                      color: UIUtils.textColor,
                     ),
                   ),
                 ),
                 
-                const SizedBox(height: 8),
+                SizedBox(height: UIUtils.spacing(context, 4)),
                 
                 Expanded(
                   child: _audioFiles.isEmpty
-                      ? const Center(
+                      ? Center(
                           child: Text(
-                            'No audio files yet.\nUpload some to get started!',
+                            'No audio files yet.\nUpload some!',
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              fontSize: 16,
+                              fontSize: UIUtils.fontSize(context, 13),
                               color: Colors.grey,
                             ),
                           ),
                         )
-                      : ListView.builder(                 // Efficient scrolling list of audio files
-                          padding: const EdgeInsets.all(16),
+                      : ListView.builder(
+                          padding: UIUtils.paddingAll(context, 8),
                           itemCount: _audioFiles.length,
                           itemBuilder: (context, index) {
                             final audio = _audioFiles[index];
@@ -575,24 +606,27 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
                             final isPlaying = _playingAudioId == audioId;
                             final isSelected = _selectedAudioId == audioId;
 
-                            // Card represents the UI for each audio file card
                             return Card(
-                              margin: const EdgeInsets.only(bottom: 12),
-                              elevation: isSelected ? 4 : 2,
-                              color: isSelected ? Colors.teal.shade50 : null,
+                              margin: EdgeInsets.only(bottom: UIUtils.spacing(context, 10), left: 10, right: 10),
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                side: BorderSide(color: Colors.grey.withOpacity(0.1)),
+                              ),
+                              color: isSelected ? UIUtils.accentColor.withOpacity(0.05) : Colors.white,
                               child: Padding(
-                                padding: const EdgeInsets.all(16),
+                                padding: UIUtils.paddingAll(context, 12),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Row(
                                       children: [
                                         Icon(
-                                          isPlaying ? Icons.music_note : Icons.audiotrack,
-                                          color: isPlaying ? Colors.green : Colors.teal,
-                                          size: 32,
+                                          isPlaying ? Icons.music_note_rounded : Icons.audiotrack_rounded,
+                                          color: isPlaying ? Colors.green : UIUtils.accentColor,
+                                          size: UIUtils.iconSize(context, 24),
                                         ),
-                                        const SizedBox(width: 12),
+                                        SizedBox(width: UIUtils.spacing(context, 6)),
                                         Expanded(
                                           child: Column(
                                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -602,41 +636,39 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
                                                   Expanded(
                                                     child: Text(
                                                       title,
-                                                      style: const TextStyle(
-                                                        fontSize: 18,
-                                                        fontWeight: FontWeight.bold,
+                                                      style: TextStyle(
+                                                        fontSize: UIUtils.fontSize(context, 15),
+                                                        fontWeight: FontWeight.w700,
+                                                        color: UIUtils.textColor,
                                                       ),
                                                     ),
                                                   ),
                                                   if (isSelected)
                                                     Container(
-                                                      padding: const EdgeInsets.symmetric(
-                                                        horizontal: 8,
-                                                        vertical: 4,
-                                                      ),
+                                                      padding: UIUtils.paddingSymmetric(context, horizontal: 6, vertical: 2),
                                                       decoration: BoxDecoration(
-                                                        color: Colors.teal,
-                                                        borderRadius: BorderRadius.circular(12),
+                                                        color: UIUtils.primaryColor,
+                                                        borderRadius: BorderRadius.circular(8),
                                                       ),
-                                                      child: const Text(
+                                                      child: Text(
                                                         'SELECTED',
                                                         style: TextStyle(
                                                           color: Colors.white,
-                                                          fontSize: 10,
-                                                          fontWeight: FontWeight.bold,
+                                                          fontSize: UIUtils.fontSize(context, 9),
+                                                          fontWeight: FontWeight.w800,
                                                         ),
                                                       ),
                                                     ),
                                                 ],
                                               ),
-                                              if (description.isNotEmpty)
+                                              if (description.isNotEmpty && !tiny)
                                                 Text(
                                                   description,
                                                   style: TextStyle(
-                                                    fontSize: 14,
+                                                    fontSize: UIUtils.fontSize(context, 11),
                                                     color: Colors.grey[600],
                                                   ),
-                                                  maxLines: 2,
+                                                  maxLines: 1,
                                                   overflow: TextOverflow.ellipsis,
                                                 ),
                                             ],
@@ -645,40 +677,48 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
                                       ],
                                     ),
                                     
-                                    if (uploadedAt.isNotEmpty)
+                                    if (uploadedAt.isNotEmpty && !tiny)
                                       Padding(
-                                        padding: const EdgeInsets.only(top: 8, left: 44),
+                                        padding: EdgeInsets.only(top: UIUtils.spacing(context, 4), left: 30 * UIUtils.scale(context)),
                                         child: Text(
                                           'Uploaded: $uploadedAt',
                                           style: TextStyle(
-                                            fontSize: 12,
+                                            fontSize: UIUtils.fontSize(context, 10),
                                             color: Colors.grey[500],
                                           ),
                                         ),
                                       ),
                                     
-                                    const SizedBox(height: 12),
+                                    SizedBox(height: UIUtils.spacing(context, 6)),
                                     
                                     Row(
                                       mainAxisAlignment: MainAxisAlignment.end,
                                       children: [
                                         ElevatedButton.icon(
                                           onPressed: () => _playAudioLocally(audioId, title),
-                                          icon: Icon(isPlaying ? Icons.stop : Icons.play_arrow),
-                                          label: Text(isPlaying ? 'Stop' : 'Preview'),
+                                          icon: Icon(isPlaying ? Icons.stop_rounded : Icons.play_arrow_rounded, size: UIUtils.iconSize(context, 18)),
+                                          label: Text(isPlaying ? 'Stop' : 'Preview', style: TextStyle(fontSize: UIUtils.fontSize(context, 12))),
                                           style: ElevatedButton.styleFrom(
-                                            backgroundColor: isPlaying ? Colors.orange : Colors.blue,
+                                            backgroundColor: isPlaying ? Colors.orange : UIUtils.accentColor,
+                                            foregroundColor: Colors.white,
+                                            padding: UIUtils.paddingSymmetric(context, horizontal: 12, vertical: 6),
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                            elevation: 0,
                                           ),
                                         ),
                                         
                                         if (widget.sessionId != null) ...[
-                                          const SizedBox(width: 8),
+                                          SizedBox(width: UIUtils.spacing(context, 4)),
                                           ElevatedButton.icon(
                                             onPressed: () => _selectForSession(audioId, title),
-                                            icon: const Icon(Icons.check_circle),
-                                            label: const Text('Select & Play'),
+                                            icon: Icon(Icons.check_circle_outline_rounded, size: UIUtils.iconSize(context, 18)),
+                                            label: Text('Select', style: TextStyle(fontSize: UIUtils.fontSize(context, 12))),
                                             style: ElevatedButton.styleFrom(
-                                              backgroundColor: isSelected ? Colors.teal : Colors.green,
+                                              backgroundColor: isSelected ? UIUtils.primaryColor : Colors.green,
+                                              foregroundColor: Colors.white,
+                                              padding: UIUtils.paddingSymmetric(context, horizontal: 12, vertical: 6),
+                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                              elevation: 0,
                                             ),
                                           ),
                                         ],

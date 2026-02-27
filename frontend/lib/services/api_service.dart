@@ -11,6 +11,7 @@ final wsBaseUrl = dotenv.env['WS_BASE_URL'];
 
 // A static service class
 class ApiService {
+  static final String baseUrl = dotenv.env['API_BASE_URL'] ?? 'http://127.0.0.1:8000';
   static const bool devMode = true; // Set to false for JWT mode
 
   static String? cachedToken;   // set this right after reading from prefs

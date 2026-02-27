@@ -5,6 +5,10 @@ import '../services/api_service.dart';
 import '../services/tts_service.dart';
 import 'session_screen.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter/services.dart';
+import '../utils/ui_utils.dart';
+import '../widgets/key_instruction_wrapper.dart';
+
 
 // Backend URL
 final baseUrl = dotenv.env['API_BASE_URL'];
@@ -29,6 +33,9 @@ class _StudentDashboardState extends State<StudentDashboard> {
   // Stores the logged in users name
   String? currentUserName;
   bool isLoading = true;
+  final FocusNode _screenFocusNode = FocusNode();
+  final FocusNode _inputFocusNode = FocusNode();
+
 
   // Called once when widget is created
   @override
@@ -36,6 +43,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
     super.initState();
     // start loading the user data immediately
     _loadUserData();
+    _screenFocusNode.requestFocus();
   }
 
   // Function to load the user data 
@@ -182,6 +190,8 @@ class _StudentDashboardState extends State<StudentDashboard> {
   void dispose() {
     // Frees memory - crictical for low RAM devices like button phones
     sessionCtrl.dispose();
+    _screenFocusNode.dispose();
+    _inputFocusNode.dispose();
     // calls parent dispose class
     super.dispose();
   }
@@ -190,42 +200,64 @@ class _StudentDashboardState extends State<StudentDashboard> {
   // UI Build - reruns on every setState
   @override
   Widget build(BuildContext context) {
-    // show while spinner is loading
     if (isLoading) {
       return const Scaffold(
-        // simple loading screen
         body: Center(child: CircularProgressIndicator()),
       );
     }
 
+    return KeypadInstructionWrapper(
+      audioAsset: 'audio/student_dashboard_instructions.mp3',
+      ttsInstructions: "Student Dashboard. Press 1 to refresh sessions, 2 to join a session by ID.",
+      actions: {
+        LogicalKeyboardKey.digit1: _loadSessions,
+        LogicalKeyboardKey.digit2: () => _inputFocusNode.requestFocus(),
+      },
+      child: _buildScaffold(context),
+    );
+  }
+
+  Widget _buildScaffold(BuildContext context) {
+    final bool tiny = UIUtils.isTiny(context);
+
     return Scaffold(
       appBar: AppBar(
         // Screen Title
-        title: const Text("Student Dashboard"),
-        backgroundColor: Colors.teal,
-        // Right sodde appbar actions
+        title: Text("Student Dashboard", style: TextStyle(fontSize: UIUtils.fontSize(context, 18), fontWeight: FontWeight.w600)),
+        backgroundColor: Colors.white,
+        foregroundColor: UIUtils.textColor,
+        elevation: 0,
+        toolbarHeight: tiny ? 40 : null,
+        // Right side appbar actions
         actions: [
-          if (currentUserName != null)
+          if (currentUserName != null && !tiny)
             // show name of current logged in user
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              padding: UIUtils.paddingSymmetric(context, horizontal: 8, vertical: 8),
               child: Center(
                 child: Text(
                   currentUserName!,
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                  style: TextStyle(fontSize: UIUtils.fontSize(context, 14), fontWeight: FontWeight.w500),
                 ),
               ),
             ),
           
           // Refresh Button
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: Icon(Icons.refresh_rounded, size: UIUtils.iconSize(context, 22), color: UIUtils.accentColor),
             tooltip: "Refresh Sessions",
             onPressed: () {
               TtsService.speak("Refreshing sessions");
               _loadSessions();
             },
           ),
+          if (UIUtils.isKeypad(context))
+            Padding(
+              padding: const EdgeInsets.only(right: 12.0),
+              child: Center(
+                child: Text("1", style: TextStyle(color: UIUtils.accentColor, fontSize: UIUtils.fontSize(context, 14), fontWeight: FontWeight.bold)),
+              ),
+            ),
         ],
       ),
       
@@ -234,31 +266,36 @@ class _StudentDashboardState extends State<StudentDashboard> {
         // prevents overflow on smaller screens
         child: SingleChildScrollView( 
           child: Padding(
-            padding: const EdgeInsets.all(20),
+            padding: UIUtils.paddingAll(context, 12),
             // Column defines vertical alignment
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 // User Info Card
                 Card(
-                  elevation: 4,
+                  elevation: 0,
+                  color: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(color: Colors.grey.withOpacity(0.1)),
+                  ),
                   child: Padding(
-                    padding: const EdgeInsets.all(16),
+                    padding: UIUtils.paddingAll(context, 16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           "Welcome, ${currentUserName ?? 'Student'}!",
-                          style: const TextStyle(
-                            fontSize: 20,
+                          style: TextStyle(
+                            fontSize: UIUtils.fontSize(context, 16),
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: UIUtils.spacing(context, 4)),
                         Text(
                           "User ID: $currentUserId",
                           style: TextStyle(
-                            fontSize: 14,
+                            fontSize: UIUtils.fontSize(context, 12),
                             color: Colors.grey.shade600,
                           ),
                         ),
@@ -267,38 +304,53 @@ class _StudentDashboardState extends State<StudentDashboard> {
                   ),
                 ),
                 
-                const SizedBox(height: 20),
+                SizedBox(height: UIUtils.spacing(context, 12)),
                 
                 // Manual join section
                 Card(
-                  elevation: 2,
+                  elevation: 0,
+                  color: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(color: Colors.grey.withOpacity(0.1)),
+                  ),
                   child: Padding(
-                    padding: const EdgeInsets.all(16),
+                    padding: UIUtils.paddingAll(context, 16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           "Join Session by ID",
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: UIUtils.fontSize(context, 14),
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(height: 12),
+                        SizedBox(height: UIUtils.spacing(context, 8)),
                         Row(
                           children: [
                             Expanded(
                               child: TextField(
                                 controller: sessionCtrl,
+                                focusNode: _inputFocusNode,
                                 keyboardType: TextInputType.number,
-                                decoration: const InputDecoration(
-                                  labelText: "Session ID",
-                                  border: OutlineInputBorder(),
-                                  prefixIcon: Icon(Icons.meeting_room),
+                                style: TextStyle(fontSize: UIUtils.fontSize(context, 14)),
+                                decoration: InputDecoration(
+                                  labelText: "2. Session ID",
+                                  labelStyle: TextStyle(fontSize: UIUtils.fontSize(context, 12), color: UIUtils.subtextColor),
+                                  filled: true,
+                                  fillColor: UIUtils.backgroundColor,
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    borderSide: BorderSide.none,
+                                  ),
+                                  prefixIcon: Icon(Icons.meeting_room_rounded, size: UIUtils.iconSize(context, 18), color: UIUtils.accentColor),
+                                  contentPadding: UIUtils.paddingSymmetric(context, horizontal: 12, vertical: 12),
+                                  isDense: true,
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 12),
+                            SizedBox(width: UIUtils.spacing(context, 8)),
                             ElevatedButton.icon(
                               onPressed: () {
                                 final idText = sessionCtrl.text.trim();
@@ -325,14 +377,16 @@ class _StudentDashboardState extends State<StudentDashboard> {
                                 
                                 joinSession(sessionId);
                               },
-                              icon: const Icon(Icons.login),
-                              label: const Text("Join"),
+                              icon: Icon(Icons.login, size: UIUtils.iconSize(context, 16)),
+                              label: Text("Join", style: TextStyle(fontSize: UIUtils.fontSize(context, 13))),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.teal,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 24,
-                                  vertical: 16,
+                                backgroundColor: UIUtils.primaryColor,
+                                foregroundColor: Colors.white,
+                                padding: UIUtils.paddingSymmetric(context, horizontal: 16, vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
                                 ),
+                                elevation: 0,
                               ),
                             ),
                           ],
@@ -342,62 +396,63 @@ class _StudentDashboardState extends State<StudentDashboard> {
                   ),
                 ),
                 
-                const SizedBox(height: 20),
+                SizedBox(height: UIUtils.spacing(context, 12)),
                 
                 // Active sessions header
                 Row(
                   children: [
-                    const Text(
+                    Text(
                       "Active Sessions",
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: UIUtils.fontSize(context, 16)),
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: UIUtils.spacing(context, 6)),
                     if (sessions.isNotEmpty)
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: UIUtils.paddingSymmetric(context, horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
-                          color: Colors.teal,
-                          borderRadius: BorderRadius.circular(12),
+                          color: UIUtils.accentColor,
+                          borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
                           '${sessions.length}',
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
+                            fontSize: UIUtils.fontSize(context, 12),
                           ),
                         ),
                       ),
                   ],
                 ),
                 
-                const SizedBox(height: 12),
+                SizedBox(height: UIUtils.spacing(context, 8)),
                 
-                // Active sessions list - NO EXPANDED, just list items
+                // Active sessions list
                 if (sessions.isEmpty)
                   Center(
                     child: Padding(
-                      padding: const EdgeInsets.all(40),
+                      padding: UIUtils.paddingAll(context, 24),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(
                             Icons.event_busy,
-                            size: 64,
+                            size: UIUtils.iconSize(context, 48),
                             color: Colors.grey.shade400,
                           ),
-                          const SizedBox(height: 16),
+                          SizedBox(height: UIUtils.spacing(context, 10)),
                           Text(
-                            "No active sessions available",
+                            "No active sessions",
                             style: TextStyle(
-                              fontSize: 16,
+                              fontSize: UIUtils.fontSize(context, 14),
                               color: Colors.grey.shade600,
                             ),
                           ),
-                          const SizedBox(height: 8),
+                          SizedBox(height: UIUtils.spacing(context, 6)),
                           TextButton.icon(
                             onPressed: _loadSessions,
-                            icon: const Icon(Icons.refresh),
-                            label: const Text("Refresh"),
+                            icon: Icon(Icons.refresh, size: UIUtils.iconSize(context, 16)),
+                            label: Text("Refresh", style: TextStyle(fontSize: UIUtils.fontSize(context, 13))),
                           ),
                         ],
                       ),
@@ -414,68 +469,77 @@ class _StudentDashboardState extends State<StudentDashboard> {
                     final participantCount = s['participant_count'] ?? 0;
                     
                     return Card(
-                      margin: const EdgeInsets.only(bottom: 12),
+                      margin: EdgeInsets.only(bottom: UIUtils.spacing(context, 8)),
                       elevation: 2,
-                      child: ListTile(
-                        contentPadding: const EdgeInsets.all(16),
+                      child: InkWell(
+                        onTap: () => joinSession(sessionId),
+                        focusColor: Colors.teal.withOpacity(0.1),
+                        child: ListTile(
+                        dense: tiny,
+                        contentPadding: UIUtils.paddingAll(context, 10),
                         leading: CircleAvatar(
-                          backgroundColor: Colors.teal,
+                          radius: UIUtils.iconSize(context, 18),
+                          backgroundColor: UIUtils.backgroundColor,
                           child: Text(
                             '$sessionId',
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color: UIUtils.primaryColor,
                               fontWeight: FontWeight.bold,
+                              fontSize: UIUtils.fontSize(context, 12),
                             ),
                           ),
                         ),
                         title: Text(
                           title,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            fontSize: 16,
+                            fontSize: UIUtils.fontSize(context, 14),
                           ),
                         ),
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const SizedBox(height: 8),
+                            SizedBox(height: UIUtils.spacing(context, 4)),
                             Row(
                               children: [
-                                const Icon(Icons.person, size: 16),
-                                const SizedBox(width: 4),
+                                Icon(Icons.person, size: UIUtils.iconSize(context, 14)),
+                                SizedBox(width: UIUtils.spacing(context, 3)),
                                 Expanded(
-                                  child: Text('Teacher: $teacherName'),
+                                  child: Text('Teacher: $teacherName',
+                                      style: TextStyle(fontSize: UIUtils.fontSize(context, 11))),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 4),
+                            SizedBox(height: UIUtils.spacing(context, 2)),
                             Row(
                               children: [
-                                const Icon(Icons.people, size: 16),
-                                const SizedBox(width: 4),
-                                Text('$participantCount participants'),
+                                Icon(Icons.people, size: UIUtils.iconSize(context, 14)),
+                                SizedBox(width: UIUtils.spacing(context, 3)),
+                                Text('$participantCount participants',
+                                    style: TextStyle(fontSize: UIUtils.fontSize(context, 11))),
                               ],
                             ),
                           ],
                         ),
-                        trailing: ElevatedButton.icon(
+                        trailing: ElevatedButton(
                           onPressed: () => joinSession(sessionId),
-                          icon: const Icon(Icons.login, size: 18),
-                          label: const Text("Join"),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.teal,
+                            backgroundColor: UIUtils.primaryColor,
                             foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 12,
-                            ),
+                            padding: UIUtils.paddingSymmetric(context, horizontal: 12, vertical: 8),
+                            minimumSize: Size.zero,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            elevation: 0,
                           ),
+                          child: Text("Join", style: TextStyle(fontSize: UIUtils.fontSize(context, 12))),
                         ),
                       ),
-                    );
+                    ),
+                  );
                   }).toList(),
                   
-                const SizedBox(height: 20), // Bottom padding
+                SizedBox(height: UIUtils.spacing(context, 12)), // Bottom padding
               ],
             ),
           ),

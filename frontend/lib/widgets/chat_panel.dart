@@ -1,7 +1,8 @@
 // lib/widgets/chat_panel.dart
 import 'package:flutter/material.dart';
 import '../services/tts_service.dart';
-import '../services/sse_service.dart';   // ← was ws_service.dart
+import '../services/sse_service.dart';
+import '../utils/ui_utils.dart';
 
 class ChatPanel extends StatefulWidget {
   final SseService ws;                   // ← type changed from WsService
@@ -63,9 +64,9 @@ class _ChatPanelState extends State<ChatPanel> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 320,
+      width: UIUtils.scale(context) * 260,
       color: Colors.grey.shade100,
-      padding: const EdgeInsets.all(8),
+      padding: UIUtils.paddingAll(context, 6),
       child: Column(
         children: [
           Expanded(
@@ -77,8 +78,8 @@ class _ChatPanelState extends State<ChatPanel> {
                 return Align(
                   alignment: me ? Alignment.centerRight : Alignment.centerLeft,
                   child: Container(
-                    margin: const EdgeInsets.symmetric(vertical: 4),
-                    padding: const EdgeInsets.all(8),
+                    margin: UIUtils.paddingSymmetric(context, vertical: 2),
+                    padding: UIUtils.paddingAll(context, 6),
                     decoration: BoxDecoration(
                       color: me ? Colors.teal.shade200 : Colors.grey.shade700,
                       borderRadius: BorderRadius.circular(8),
@@ -87,6 +88,7 @@ class _ChatPanelState extends State<ChatPanel> {
                       m['text'] ?? '',
                       style: TextStyle(
                         color: me ? Colors.black : Colors.white,
+                        fontSize: UIUtils.fontSize(context, 12),
                       ),
                     ),
                   ),
@@ -99,11 +101,20 @@ class _ChatPanelState extends State<ChatPanel> {
               Expanded(
                 child: TextField(
                   controller: _ctrl,
-                  decoration: const InputDecoration(hintText: 'Message…'),
+                  style: TextStyle(fontSize: UIUtils.fontSize(context, 12)),
+                  decoration: InputDecoration(
+                    hintText: 'Message',
+                    hintStyle: TextStyle(fontSize: UIUtils.fontSize(context, 12)),
+                    isDense: true,
+                    contentPadding: UIUtils.paddingSymmetric(context, horizontal: 8, vertical: 6),
+                  ),
                   onSubmitted: (_) => _sendText(),
                 ),
               ),
-              IconButton(onPressed: _sendText, icon: const Icon(Icons.send)),
+              IconButton(
+                onPressed: _sendText,
+                icon: Icon(Icons.send, size: UIUtils.iconSize(context, 18)),
+              )
             ],
           ),
         ],

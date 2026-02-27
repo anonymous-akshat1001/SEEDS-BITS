@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 // import 'package:http/http.dart' as http;
 import '../services/api_service.dart';
+import '../utils/ui_utils.dart';
 // Allows reading environment variables
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
@@ -153,13 +154,17 @@ class _InviteStudentsScreenState extends State<InviteStudentsScreen> {
   // UI Build
   @override
   Widget build(BuildContext context) {
+    final bool tiny = UIUtils.isTiny(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Invite Students'),
-        backgroundColor: Colors.teal,
+        title: Text('Invite Students', style: TextStyle(fontSize: UIUtils.fontSize(context, 16), fontWeight: FontWeight.w600)),
+        backgroundColor: Colors.white,
+        foregroundColor: UIUtils.textColor,
+        elevation: 0,
+        toolbarHeight: tiny ? 40 : null,
         actions: [
           IconButton(
-            icon: Icon(_ttsEnabled ? Icons.volume_up : Icons.volume_off),
+            icon: Icon(_ttsEnabled ? Icons.volume_up_rounded : Icons.volume_off_rounded, size: UIUtils.iconSize(context, 20), color: UIUtils.accentColor),
             tooltip: 'Toggle TTS',
             onPressed: () {
               setState(() => _ttsEnabled = !_ttsEnabled);
@@ -167,79 +172,79 @@ class _InviteStudentsScreenState extends State<InviteStudentsScreen> {
           ),
         ],
       ),
-      body: _isLoading                  // Shows loader or contents
+      backgroundColor: UIUtils.backgroundColor,
+      body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
                 // Session info
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  color: Colors.teal.shade50,
+                  padding: UIUtils.paddingAll(context, 12),
+                  color: Colors.white,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'Inviting students to:',
                         style: TextStyle(
-                          fontSize: 14,
+                          fontSize: UIUtils.fontSize(context, 11),
                           color: Colors.grey,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      SizedBox(height: UIUtils.spacing(context, 2)),
                       Text(
                         widget.sessionTitle,
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.teal,
+                        style: TextStyle(
+                          fontSize: UIUtils.fontSize(context, 16),
+                          fontWeight: FontWeight.w700,
+                          color: UIUtils.textColor,
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: UIUtils.spacing(context, 4)),
                       Text(
                         '${_invitedStudents.length} of ${_students.length} invited',
                         style: TextStyle(
-                          fontSize: 14,
+                          fontSize: UIUtils.fontSize(context, 11),
                           color: Colors.grey.shade600,
                         ),
                       ),
                     ],
                   ),
                 ),
+                const Divider(height: 1),
                 
                 // Invite all button
                 Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: SizedBox(
-                    width: double.infinity,
+                  padding: UIUtils.paddingAll(context, 10),
                     child: ElevatedButton.icon(
                       onPressed: _students.length == _invitedStudents.length
                           ? null
                           : _inviteAll,
-                      icon: const Icon(Icons.send),
-                      label: const Text('Invite All Students'),
+                      icon: Icon(Icons.send_rounded, size: UIUtils.iconSize(context, 18)),
+                      label: Text('Invite All Students', style: TextStyle(fontSize: UIUtils.fontSize(context, 14), fontWeight: FontWeight.w600)),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.teal,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        minimumSize: const Size(double.infinity, 50),
+                        backgroundColor: UIUtils.primaryColor,
+                        foregroundColor: Colors.white,
+                        padding: UIUtils.paddingSymmetric(context, vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        elevation: 0,
                       ),
                     ),
-                  ),
                 ),
-                
                 const Divider(),
                 
                 // Student list
                 Expanded(
                   child: _students.isEmpty
-                      ? const Center(
+                      ? Center(
                           child: Text(
                             'No students found',
-                            style: TextStyle(color: Colors.grey, fontSize: 16),
+                            style: TextStyle(color: Colors.grey, fontSize: UIUtils.fontSize(context, 13)),
                           ),
                         )
                       : ListView.builder(
-                          padding: const EdgeInsets.all(16),
+                          padding: UIUtils.paddingAll(context, 8),
                           itemCount: _students.length,
                           itemBuilder: (context, index) {
                             final student = _students[index];
@@ -249,55 +254,66 @@ class _InviteStudentsScreenState extends State<InviteStudentsScreen> {
                             final isInvited = _invitedStudents.contains(studentId);
 
                             return Card(
-                              margin: const EdgeInsets.only(bottom: 12),
-                              elevation: isInvited ? 1 : 2,
-                              color: isInvited ? Colors.green.shade50 : null,
+                              margin: EdgeInsets.only(bottom: UIUtils.spacing(context, 8), left: 12, right: 12),
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                side: BorderSide(color: Colors.grey.withOpacity(0.1)),
+                              ),
+                              color: isInvited ? Colors.green.withOpacity(0.05) : Colors.white,
                               child: ListTile(
+                                dense: tiny,
+                                contentPadding: UIUtils.paddingSymmetric(context, horizontal: 8, vertical: 2),
                                 leading: CircleAvatar(
-                                  backgroundColor: isInvited ? Colors.green : Colors.teal,
+                                  backgroundColor: isInvited ? Colors.green : UIUtils.backgroundColor,
+                                  radius: UIUtils.iconSize(context, 18),
                                   child: Icon(
-                                    isInvited ? Icons.check : Icons.person,
-                                    color: Colors.white,
+                                    isInvited ? Icons.check_rounded : Icons.person_outline_rounded,
+                                    color: isInvited ? Colors.white : UIUtils.primaryColor,
+                                    size: UIUtils.iconSize(context, 18),
                                   ),
                                 ),
                                 title: Text(
                                   name,
                                   style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: isInvited ? Colors.green.shade700 : null,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: UIUtils.fontSize(context, 14),
+                                    color: isInvited ? Colors.green.shade700 : UIUtils.textColor,
                                   ),
                                 ),
                                 subtitle: Text(
                                   phone,
                                   style: TextStyle(
                                     color: isInvited ? Colors.green.shade600 : Colors.grey,
+                                    fontSize: UIUtils.fontSize(context, 11),
                                   ),
                                 ),
                                 trailing: isInvited
                                     ? Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 12,
-                                          vertical: 6,
-                                        ),
+                                        padding: UIUtils.paddingSymmetric(context, horizontal: 8, vertical: 3),
                                         decoration: BoxDecoration(
                                           color: Colors.green,
-                                          borderRadius: BorderRadius.circular(12),
+                                          borderRadius: BorderRadius.circular(10),
                                         ),
-                                        child: const Text(
+                                        child: Text(
                                           'INVITED',
                                           style: TextStyle(
                                             color: Colors.white,
-                                            fontSize: 10,
+                                            fontSize: UIUtils.fontSize(context, 9),
                                             fontWeight: FontWeight.bold,
                                           ),
                                         ),
                                       )
                                     : ElevatedButton.icon(
                                         onPressed: () => _inviteStudent(studentId, name),
-                                        icon: const Icon(Icons.send, size: 18),
-                                        label: const Text('Invite'),
+                                        icon: Icon(Icons.send_rounded, size: UIUtils.iconSize(context, 14)),
+                                        label: Text('Invite', style: TextStyle(fontSize: UIUtils.fontSize(context, 12))),
                                         style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.teal,
+                                          backgroundColor: UIUtils.accentColor,
+                                          foregroundColor: Colors.white,
+                                          padding: UIUtils.paddingSymmetric(context, horizontal: 10, vertical: 4),
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                          elevation: 0,
                                         ),
                                       ),
                               ),

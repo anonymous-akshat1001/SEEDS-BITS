@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../utils/ui_utils.dart';
 
 
 // Settings Screen Widget
@@ -153,25 +154,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
 // UI HELPERS (REUSABLE WIDGET BUILDERS)
 
   // Section Card
-  Widget _buildSettingSection(String title, List<Widget> children) {
+  Widget _buildSettingSection(BuildContext context, String title, List<Widget> children) {
     return Card(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: EdgeInsets.only(bottom: UIUtils.spacing(context, 10)),
       elevation: 2,
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: UIUtils.paddingAll(context, 10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               title,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.teal,
+              style: TextStyle(
+                fontSize: UIUtils.fontSize(context, 16),
+                fontWeight: FontWeight.w700,
+                color: UIUtils.primaryColor,
               ),
             ),
             const Divider(),
-            ...children,          // spread operator : Inserts multiple widgets into column
+            ...children,
           ],
         ),
       ),
@@ -179,30 +180,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   // Switch Tile : Reusable switch row
-  Widget _buildSwitchTile({
+  Widget _buildSwitchTile(BuildContext context, {
     required String title,
     required String subtitle,
     required bool value,
     required ValueChanged<bool> onChanged,
   }) {
-    // Automatically aligns text + switch
     return SwitchListTile(
+      dense: UIUtils.isTiny(context),
       title: Text(
         title,
-        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+        style: TextStyle(fontSize: UIUtils.fontSize(context, 14), fontWeight: FontWeight.w500),
       ),
-      subtitle: Text(subtitle),
+      subtitle: Text(subtitle, style: TextStyle(fontSize: UIUtils.fontSize(context, 11))),
       value: value,
       onChanged: (val) {
         onChanged(val);
         _speakIfEnabled("$title ${val ? 'enabled' : 'disabled'}");
       },
-      activeColor: Colors.teal,
+      activeColor: UIUtils.accentColor,
     );
   }
 
   // Reusable slider + label UI
-  Widget _buildSliderTile({
+  Widget _buildSliderTile(BuildContext context, {
     required String title,
     required String subtitle,
     required double value,
@@ -216,31 +217,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         ListTile(
+          dense: UIUtils.isTiny(context),
           contentPadding: EdgeInsets.zero,
           title: Text(
             title,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            style: TextStyle(fontSize: UIUtils.fontSize(context, 14), fontWeight: FontWeight.w500),
           ),
-          subtitle: Text(subtitle),
+          subtitle: Text(subtitle, style: TextStyle(fontSize: UIUtils.fontSize(context, 11))),
           trailing: Text(
             labelBuilder?.call(value) ?? value.toStringAsFixed(2),
-            style: const TextStyle(
-              fontSize: 16,
+            style: TextStyle(
               fontWeight: FontWeight.bold,
-              color: Colors.teal,
+              color: UIUtils.accentColor,
             ),
           ),
         ),
 
-        // Interactive horizontal slider
         Slider(
           value: value,
           min: min,
           max: max,
           divisions: divisions,
-          label: labelBuilder?.call(value) ?? value.toStringAsFixed(2),      // Optional function to format display text
+          label: labelBuilder?.call(value) ?? value.toStringAsFixed(2),
           onChanged: onChanged,
-          activeColor: Colors.teal,
+          activeColor: UIUtils.accentColor,
         ),
       ],
     );
@@ -257,37 +257,45 @@ class _SettingsScreenState extends State<SettingsScreen> {
   // Build UI Widgets
   @override
   Widget build(BuildContext context) {
+    final bool tiny = UIUtils.isTiny(context);
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Settings & Accessibility'),
-        backgroundColor: Colors.teal,
+        title: Text('Settings', style: TextStyle(fontSize: UIUtils.fontSize(context, 18), fontWeight: FontWeight.w600)),
+        backgroundColor: Colors.white,
+        foregroundColor: UIUtils.textColor,
+        elevation: 0,
+        toolbarHeight: tiny ? 40 : null,
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: Icon(Icons.refresh_rounded, size: UIUtils.iconSize(context, 22), color: UIUtils.subtextColor),
             tooltip: 'Reset to Defaults',
             onPressed: _resetToDefaults,
           ),
         ],
       ),
       
+      backgroundColor: UIUtils.backgroundColor,
+      
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: UIUtils.paddingAll(context, 10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Text-to-Speech Settings
             _buildSettingSection(
+              context,
               'Text-to-Speech',
               [
-                _buildSwitchTile(
+                _buildSwitchTile(context,
                   title: 'Enable TTS',
-                  subtitle: 'Read out messages and notifications',
+                  subtitle: 'Read out messages',
                   value: _ttsEnabled,
                   onChanged: (val) => setState(() => _ttsEnabled = val),
                 ),
-                _buildSliderTile(
+                _buildSliderTile(context,
                   title: 'Volume',
-                  subtitle: 'Adjust TTS volume level',
+                  subtitle: 'TTS volume level',
                   value: _ttsVolume,
                   min: 0.0,
                   max: 1.0,
@@ -295,9 +303,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   onChanged: (val) => setState(() => _ttsVolume = val),
                   labelBuilder: (val) => '${(val * 100).round()}%',
                 ),
-                _buildSliderTile(
+                _buildSliderTile(context,
                   title: 'Speech Rate',
-                  subtitle: 'Adjust how fast TTS speaks',
+                  subtitle: 'How fast TTS speaks',
                   value: _ttsSpeechRate,
                   min: 0.1,
                   max: 1.0,
@@ -305,13 +313,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   onChanged: (val) => setState(() => _ttsSpeechRate = val),
                   labelBuilder: (val) => '${(val * 2).toStringAsFixed(1)}x',
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: UIUtils.spacing(context, 4)),
                 ElevatedButton.icon(
                   onPressed: _testTTS,
-                  icon: const Icon(Icons.volume_up),
-                  label: const Text('Test TTS'),
+                  icon: Icon(Icons.volume_up, size: UIUtils.iconSize(context, 18)),
+                  label: Text('Test TTS', style: TextStyle(fontSize: UIUtils.fontSize(context, 13))),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
+                    backgroundColor: UIUtils.accentColor,
+                    foregroundColor: Colors.white,
+                    padding: UIUtils.paddingSymmetric(context, horizontal: 12, vertical: 8),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                   ),
                 ),
               ],
@@ -319,67 +331,68 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
             // Voice Commands
             _buildSettingSection(
+              context,
               'Voice Commands',
               [
-                _buildSwitchTile(
-                  title: 'Enable Voice Commands',
-                  subtitle: 'Control app with voice (experimental)',
+                _buildSwitchTile(context,
+                  title: 'Voice Commands',
+                  subtitle: 'Control app with voice',
                   value: _voiceCommandsEnabled,
                   onChanged: (val) => setState(() => _voiceCommandsEnabled = val),
                 ),
-                const Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Text(
-                    'Voice commands include: "mute", "unmute", "raise hand", "lower hand", "leave"',
-                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                if (!tiny)
+                  Padding(
+                    padding: UIUtils.paddingAll(context, 6),
+                    child: Text(
+                      'Commands: "mute", "unmute", "raise hand", "leave"',
+                      style: TextStyle(fontSize: UIUtils.fontSize(context, 11), color: Colors.grey),
+                    ),
                   ),
-                ),
               ],
             ),
 
             // Keyboard Shortcuts
             _buildSettingSection(
+              context,
               'Keyboard Shortcuts',
               [
-                _buildSwitchTile(
-                  title: 'Show Keyboard Shortcuts',
-                  subtitle: 'Display keyboard hints in UI',
+                _buildSwitchTile(context,
+                  title: 'Show Shortcuts',
+                  subtitle: 'Display keyboard hints',
                   value: _showKeyboardShortcuts,
                   onChanged: (val) => setState(() => _showKeyboardShortcuts = val),
                 ),
-                const SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(8),
+                if (!tiny) ...[
+                  SizedBox(height: UIUtils.spacing(context, 6)),
+                  Container(
+                    padding: UIUtils.paddingAll(context, 8),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade100,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Keyboard Shortcuts:',
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: UIUtils.fontSize(context, 12))),
+                        SizedBox(height: UIUtils.spacing(context, 4)),
+                        Text('• M - Mute  • H - Hand', style: TextStyle(fontSize: UIUtils.fontSize(context, 11))),
+                        Text('• L - Leave  • T - TTS', style: TextStyle(fontSize: UIUtils.fontSize(context, 11))),
+                      ],
+                    ),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      Text(
-                        'Keyboard Shortcuts:',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      SizedBox(height: 8),
-                      Text('• M - Toggle Mute'),
-                      Text('• H - Raise/Lower Hand'),
-                      Text('• L - Leave Session'),
-                      Text('• T - Toggle TTS'),
-                      Text('• Enter - Send Chat Message'),
-                    ],
-                  ),
-                ),
+                ],
               ],
             ),
 
             // Visual Settings
             _buildSettingSection(
+              context,
               'Visual Settings',
               [
-                _buildSwitchTile(
-                  title: 'High Contrast Mode',
-                  subtitle: 'Increase contrast for better visibility',
+                _buildSwitchTile(context,
+                  title: 'High Contrast',
+                  subtitle: 'Better visibility',
                   value: _highContrastMode,
                   onChanged: (val) => setState(() => _highContrastMode = val),
                 ),
@@ -388,11 +401,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
             // Audio Sync Settings
             _buildSettingSection(
+              context,
               'Advanced Audio',
               [
-                _buildSliderTile(
-                  title: 'Playback Sync Tolerance',
-                  subtitle: 'Audio synchronization precision',
+                _buildSliderTile(context,
+                  title: 'Sync Tolerance',
+                  subtitle: 'Audio sync precision',
                   value: _audioSyncTolerance,
                   min: 0.1,
                   max: 2.0,
@@ -400,34 +414,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   onChanged: (val) => setState(() => _audioSyncTolerance = val),
                   labelBuilder: (val) => '${val.toStringAsFixed(1)}s',
                 ),
-                const Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Text(
-                    'Lower values provide tighter sync but may cause stuttering on slow connections',
-                    style: TextStyle(fontSize: 12, color: Colors.grey),
-                  ),
-                ),
               ],
             ),
 
-            const SizedBox(height: 24),
+            SizedBox(height: UIUtils.spacing(context, 12)),
 
             // Save Button
             ElevatedButton.icon(
               onPressed: _saveSettings,
-              icon: const Icon(Icons.save, size: 28),
-              label: const Text(
+              icon: Icon(Icons.save_rounded, size: UIUtils.iconSize(context, 22)),
+              label: Text(
                 'Save Settings',
-                style: TextStyle(fontSize: 18),
+                style: TextStyle(fontSize: UIUtils.fontSize(context, 15), fontWeight: FontWeight.w600),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.teal,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                minimumSize: const Size(double.infinity, 60),
+                backgroundColor: UIUtils.primaryColor,
+                foregroundColor: Colors.white,
+                padding: UIUtils.paddingSymmetric(context, vertical: 14),
+                minimumSize: const Size(double.infinity, 48),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                elevation: 0,
               ),
             ),
 
-            const SizedBox(height: 16),
+            SizedBox(height: UIUtils.spacing(context, 10)),
           ],
         ),
       ),
