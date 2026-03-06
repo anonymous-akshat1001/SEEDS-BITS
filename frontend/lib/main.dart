@@ -8,6 +8,7 @@ import 'screens/session_screen.dart';
 import 'screens/simple_session_screen.dart';
 import 'screens/audio_library_screen.dart';
 import 'screens/settings_screen.dart';
+import 'screens/session_logs_screen.dart';
 import 'screens/invite_students_screen.dart';
 import 'services/notification_services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -209,6 +210,26 @@ class MyApp extends StatelessWidget {
             if (sessionId is int && sessionTitle is String) {
               return MaterialPageRoute(
                 builder: (_) => InviteStudentsScreen(
+                  sessionId: sessionId,
+                  sessionTitle: sessionTitle,
+                ),
+                settings: settings,
+              );
+            }
+          }
+          return MaterialPageRoute(builder: (_) => const TeacherDashboard());
+        }
+
+        // Session logs screen route
+        if (settings.name == '/session_logs') {
+          final args = settings.arguments;
+          if (args is Map<String, dynamic>) {
+            final sessionId = args['sessionId'];
+            final sessionTitle = args['sessionTitle'] ?? 'Session Logs';
+
+            if (sessionId is int) {
+              return MaterialPageRoute(
+                builder: (_) => SessionLogsScreen(
                   sessionId: sessionId,
                   sessionTitle: sessionTitle,
                 ),

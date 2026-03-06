@@ -627,6 +627,34 @@ class ApiService {
 
 
 
+
+
+  /////////////////////////// SESSION LOGS ENDPOINTS /////////////////////////
+
+
+
+  /// Get session activity logs
+  static Future<Map<String, dynamic>?> getSessionLogs(
+    int sessionId, {
+    String? eventType,
+    int? filterUserId,
+    int limit = 100,
+  }) async {
+    String path = '/sessions/$sessionId/logs?limit=$limit';
+    if (eventType != null) path += '&event_type=$eventType';
+    if (filterUserId != null) path += '&user_id=$filterUserId';
+    return await get(path, useAuth: true);
+  }
+
+  /// Get session logs summary (event counts, participant stats)
+  static Future<Map<String, dynamic>?> getSessionLogsSummary(
+    int sessionId,
+  ) async {
+    return await get('/sessions/$sessionId/logs/summary', useAuth: true);
+  }
+
+
+
   /////////////////////////// CHAT ENDPOINTS  /////////////////////////
 
 

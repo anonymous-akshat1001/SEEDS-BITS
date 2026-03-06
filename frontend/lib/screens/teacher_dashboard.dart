@@ -558,11 +558,29 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                                     ),
                                   ),
                                   const SizedBox(height: 8),
-                                  IconButton(
-                                    onPressed: () => _deleteSession(sessionId, title),
-                                    icon: const Icon(Icons.delete),
-                                    color: Colors.red,
-                                    tooltip: "Delete Session",
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      IconButton(
+                                        onPressed: () => Navigator.pushNamed(
+                                          context,
+                                          '/session_logs',
+                                          arguments: {
+                                            'sessionId': sessionId,
+                                            'sessionTitle': title,
+                                          },
+                                        ),
+                                        icon: const Icon(Icons.analytics),
+                                        color: Colors.indigo,
+                                        tooltip: "View Logs",
+                                      ),
+                                      IconButton(
+                                        onPressed: () => _deleteSession(sessionId, title),
+                                        icon: const Icon(Icons.delete),
+                                        color: Colors.red,
+                                        tooltip: "Delete Session",
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
