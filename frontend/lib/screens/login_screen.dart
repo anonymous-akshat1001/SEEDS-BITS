@@ -15,6 +15,7 @@ import 'package:mobile_number/mobile_number.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../utils/ui_utils.dart';
 import '../widgets/key_instruction_wrapper.dart';
+import '../utils/keypad_actions.dart';
 import 'package:flutter/services.dart';
 
 // Backend URL
@@ -369,11 +370,11 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return KeypadInstructionWrapper(
-      audioAsset: 'audio/login_instructions.mp3',
-      ttsInstructions: "Login Screen. Press 1 to login, 2 to go to registration.",
+      screenName: 'Login Screen',
+      labels: loginKeyLabels,
       actions: {
-        LogicalKeyboardKey.digit1: _login,
-        LogicalKeyboardKey.digit2: () => Navigator.pushNamed(context, '/register'),
+        1: _login,
+        2: () => Navigator.pushNamed(context, '/register'),
       },
       child: Scaffold(
         backgroundColor: UIUtils.backgroundColor,

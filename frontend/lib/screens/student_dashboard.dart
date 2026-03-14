@@ -8,6 +8,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/services.dart';
 import '../utils/ui_utils.dart';
 import '../widgets/key_instruction_wrapper.dart';
+import '../utils/keypad_actions.dart';
 
 
 // Backend URL
@@ -207,11 +208,11 @@ class _StudentDashboardState extends State<StudentDashboard> {
     }
 
     return KeypadInstructionWrapper(
-      audioAsset: 'audio/student_dashboard_instructions.mp3',
-      ttsInstructions: "Student Dashboard. Press 1 to refresh sessions, 2 to join a session by ID.",
+      screenName: 'Student Dashboard',
+      labels: studentDashboardKeyLabels,
       actions: {
-        LogicalKeyboardKey.digit1: _loadSessions,
-        LogicalKeyboardKey.digit2: () => _inputFocusNode.requestFocus(),
+        1: _loadSessions,
+        2: () => _inputFocusNode.requestFocus(),
       },
       child: _buildScaffold(context),
     );

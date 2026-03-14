@@ -13,6 +13,7 @@ import 'utils/ui_utils.dart';
 import 'services/notification_services.dart';
 import 'services/tts_service.dart';
 import 'widgets/key_instruction_wrapper.dart';
+import 'utils/keypad_actions.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'firebase_options.dart';
@@ -291,11 +292,11 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     final s = UIUtils.scale(context);
 
     return KeypadInstructionWrapper(
-      audioAsset: 'audio/welcome_instructions.mp3',
-      ttsInstructions: "Welcome to SEEDS. Press 1 for Login, 2 for Register.",
+      screenName: 'Welcome to SEEDS',
+      labels: welcomeKeyLabels,
       actions: {
-        LogicalKeyboardKey.digit1: () => Navigator.pushNamed(context, '/login'),
-        LogicalKeyboardKey.digit2: () => Navigator.pushNamed(context, '/register'),
+        1: () => Navigator.pushNamed(context, '/login'),
+        2: () => Navigator.pushNamed(context, '/register'),
       },
       child: Scaffold(
         backgroundColor: Colors.white,

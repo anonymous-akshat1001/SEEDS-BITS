@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'session_screen.dart';
 import '../utils/ui_utils.dart';
 import '../widgets/key_instruction_wrapper.dart';
+import '../utils/keypad_actions.dart';
 
 // Create Teacher Dashboard Widget
 class TeacherDashboard extends StatefulWidget {
@@ -297,11 +298,11 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     }
 
     return KeypadInstructionWrapper(
-      audioAsset: 'audio/teacher_dashboard_instructions.mp3',
-      ttsInstructions: "Teacher Dashboard. Press 1 to refresh sessions, 2 to create a new session.",
+      screenName: 'Teacher Dashboard',
+      labels: teacherDashboardKeyLabels,
       actions: {
-        LogicalKeyboardKey.digit1: _loadSessions,
-        LogicalKeyboardKey.digit2: createSession,
+        1: _loadSessions,
+        2: createSession,
       },
       child: _buildScaffold(context),
     );

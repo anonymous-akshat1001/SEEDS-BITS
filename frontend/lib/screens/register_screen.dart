@@ -12,6 +12,7 @@ import '../services/api_service.dart';
 import '../services/tts_service.dart';
 import '../utils/ui_utils.dart';
 import '../widgets/key_instruction_wrapper.dart';
+import '../utils/keypad_actions.dart';
 import 'package:flutter/services.dart';
 // import 'login_screen.dart';
 
@@ -173,11 +174,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return KeypadInstructionWrapper(
-      audioAsset: 'audio/register_instructions.mp3',
-      ttsInstructions: "Registration Screen. Press 1 to register, 2 to go to login.",
+      screenName: 'Registration Screen',
+      labels: registerKeyLabels,
       actions: {
-        LogicalKeyboardKey.digit1: register,
-        LogicalKeyboardKey.digit2: () => Navigator.pushNamed(context, '/login'),
+        1: register,
+        2: () => Navigator.pushNamed(context, '/login'),
       },
       child: Scaffold(
         backgroundColor: UIUtils.backgroundColor,

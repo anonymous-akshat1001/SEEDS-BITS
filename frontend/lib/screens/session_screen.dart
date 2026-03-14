@@ -17,6 +17,8 @@ import 'invite_students_screen.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/services.dart';
 import '../utils/ui_utils.dart';
+import '../utils/keypad_config.dart';
+import '../utils/keypad_actions.dart';
 
 
 
@@ -156,7 +158,10 @@ class _SessionScreenState extends State<SessionScreen> {
       if (widget.isTeacher) _loadAudioLibrary();
 
       setState(() => _isInitializing = false);
-      await _speakIfEnabled("Session ready");
+      // Speak key mappings for this screen
+      final labels = widget.isTeacher ? sessionTeacherKeyLabels : sessionStudentKeyLabels;
+      final instructions = buildTtsInstructions(labels, screenName: 'Session ready');
+      await _speakIfEnabled(instructions);
     } catch (e) {
       print('[INIT ERROR] $e');
       await _speakIfEnabled("Failed to initialize session");
@@ -1073,15 +1078,16 @@ class _SessionScreenState extends State<SessionScreen> {
       onKeyEvent: (KeyEvent event) {
         if (event is KeyDownEvent) {
           final key = event.logicalKey;
-          if (key == LogicalKeyboardKey.digit1 || key == LogicalKeyboardKey.numpad1) {
+          final digit = resolveKeyToDigit(key, event.character);
+          if (digit == 1) {
             _toggleMute();
-          } else if (key == LogicalKeyboardKey.digit2 || key == LogicalKeyboardKey.numpad2) {
+          } else if (digit == 2) {
             _toggleHandRaise();
-          } else if ((key == LogicalKeyboardKey.digit3 || key == LogicalKeyboardKey.numpad3) && widget.isTeacher) {
+          } else if (digit == 3 && widget.isTeacher) {
             _openInviteScreen();
-          } else if ((key == LogicalKeyboardKey.digit4 || key == LogicalKeyboardKey.numpad4) && widget.isTeacher) {
+          } else if (digit == 4 && widget.isTeacher) {
             setState(() => _showAudioPanel = !_showAudioPanel);
-          } else if (key == LogicalKeyboardKey.asterisk || key == LogicalKeyboardKey.numpadMultiply) {
+          } else if (isStarKey(key)) {
             _leaveSession();
           }
         }

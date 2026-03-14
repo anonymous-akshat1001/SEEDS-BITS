@@ -5,6 +5,7 @@ import 'dart:convert';
 import '../services/api_service.dart';
 import '../utils/ui_utils.dart';
 import '../widgets/key_instruction_wrapper.dart';
+import '../utils/keypad_actions.dart';
 import 'package:flutter/services.dart';
 import 'package:audioplayers/audioplayers.dart';
 
@@ -328,15 +329,15 @@ class _SimpleSessionScreenState extends State<SimpleSessionScreen> {
   Widget build(BuildContext context) {
     final bool tiny = UIUtils.isTiny(context);
     return KeypadInstructionWrapper(
-      audioAsset: 'audio/session_instructions.mp3',
-      ttsInstructions: "Session active. Press 1 for mute, 2 for hand, 3 for TTS, 4 to leave. Press 7 to slow down, 9 to speed up.",
+      screenName: 'Session active',
+      labels: simpleSessionKeyLabels,
       actions: {
-        LogicalKeyboardKey.digit1: _toggleMute,
-        LogicalKeyboardKey.digit2: _toggleHand,
-        LogicalKeyboardKey.digit3: _toggleTTS,
-        LogicalKeyboardKey.digit4: _leave,
-        LogicalKeyboardKey.digit7: _decreaseSpeed,
-        LogicalKeyboardKey.digit9: _increaseSpeed,
+        1: _toggleMute,
+        2: _toggleHand,
+        3: _toggleTTS,
+        4: _leave,
+        7: _decreaseSpeed,
+        9: _increaseSpeed,
       },
       child: Scaffold(
         backgroundColor: Colors.white,
