@@ -10,7 +10,7 @@ import jwt
 from datetime import datetime, timedelta
 from pydantic import BaseModel
 
-from fastapi import FastAPI, Depends, WebSocket, WebSocketDisconnect, BackgroundTasks, Query, Form, HTTPException, status, UploadFile, File, APIRouter
+from fastapi import FastAPI, Depends, WebSocket, WebSocketDisconnect, BackgroundTasks, Query, Form, HTTPException, status, UploadFile, File, APIRouter, Request
 from fastapi.responses import StreamingResponse
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -606,31 +606,155 @@ async def upload_audio(title: str = Form(...),
     return af
 
 
-# Get all audio files for a teacher
+# Get audio files:
+# - Teachers see only the files they uploaded
+# - Students see all available audio files (so they can self-listen like Spotify)
 @app.get("/audio/list", response_model=List[schemas.AudioFileOut])
 async def list_audio_files(
     current_user: models.User = Depends(get_user_by_id),
     db: AsyncSession = Depends(get_db)
 ):
-    """List all audio files uploaded by the current user (teacher)"""
-    q = await db.execute(
-        select(models.AudioFile).filter(
-            models.AudioFile.uploaded_by == current_user.user_id
-        ).order_by(models.AudioFile.uploaded_at.desc())
-    )
+    if current_user.role.lower() == "teacher":
+        # Teacher: only their own uploads
+        q = await db.execute(
+            select(models.AudioFile).filter(
+                models.AudioFile.uploaded_by == current_user.user_id
+            ).order_by(models.AudioFile.uploaded_at.desc())
+        )
+    else:
+        # Student: all available audio files
+        q = await db.execute(
+            select(models.AudioFile).order_by(models.AudioFile.uploaded_at.desc())
+        )
     files = q.scalars().all()
     return files
 
 
-# This finds an audio file in the database and returns it as a downloadable stream
+
+
+# Return this student's self-listen history — useful for "recently played" in Flutter.
+# IMPORTANT: This static path must be declared BEFORE /audio/{audio_id}/... routes
+# so FastAPI doesn't try to parse "self-listen" as an integer audio_id.
+@app.get("/audio/self-listen/history", response_model=List[schemas.SelfListenLogOut])
+async def get_self_listen_history(
+    limit: int = Query(default=50, le=200),
+    current_user: models.User = Depends(get_user_by_id),
+    db: AsyncSession = Depends(get_db)
+):
+    q = await db.execute(
+        select(models.Log)
+        .filter(
+            models.Log.user_id == current_user.user_id,
+            models.Log.event_type == "self_listen_play",
+        )
+        .order_by(models.Log.created_at.desc())
+        .limit(limit)
+    )
+    logs = q.scalars().all()
+
+    # Shape the logs into a friendlier response
+    result = []
+    for log in logs:
+        details = log.event_details or {}
+        result.append({
+            "log_id": log.log_id,
+            "audio_id": details.get("audio_id"),
+            "audio_title": details.get("audio_title"),
+            "listened_at": log.created_at,
+        })
+    return result
+
+
+
+
+
+# Stream audio with HTTP Range Request support.
+# Range requests allow Flutter's audio player to seek within a file without
+# downloading the whole thing first — essential for the self-listen (Spotify) model.
 @app.get("/audio/{audio_id}/stream")
-async def stream_audio(audio_id: int, db: AsyncSession = Depends(get_db)):
-    # Find the audio file in the database
+async def stream_audio(
+    audio_id: int,
+    request: Request,
+    db: AsyncSession = Depends(get_db)
+):
+    from fastapi.responses import Response
+
     q = await db.execute(select(models.AudioFile).filter(models.AudioFile.audio_id == audio_id))
     af = q.scalar_one_or_none()
     if not af:
         raise HTTPException(status_code=404, detail="Audio not found")
-    return FileResponse(path=af.file_path, filename=os.path.basename(af.file_path), media_type=af.mime_type)
+
+    file_path = af.file_path
+    file_size = os.path.getsize(file_path)
+    mime_type = af.mime_type
+
+    range_header = request.headers.get("Range")
+
+    if range_header:
+        # Parse "bytes=START-END"
+        try:
+            range_val = range_header.strip().replace("bytes=", "")
+            start_str, _, end_str = range_val.partition("-")
+            start = int(start_str) if start_str else 0
+            end = int(end_str) if end_str else file_size - 1
+        except ValueError:
+            raise HTTPException(status_code=416, detail="Invalid Range header")
+
+        # Clamp end to last byte
+        end = min(end, file_size - 1)
+
+        if start > end or start < 0:
+            raise HTTPException(status_code=416, detail="Range Not Satisfiable")
+
+        chunk_size = end - start + 1
+
+        async def ranged_file_sender():
+            async with aiofiles.open(file_path, "rb") as f:
+                await f.seek(start)
+                remaining = chunk_size
+                while remaining > 0:
+                    read_size = min(65536, remaining)  # 64 KB chunks
+                    data = await f.read(read_size)
+                    if not data:
+                        break
+                    remaining -= len(data)
+                    yield data
+
+        return StreamingResponse(
+            ranged_file_sender(),
+            status_code=206,
+            media_type=mime_type,
+            headers={
+                "Content-Range": f"bytes {start}-{end}/{file_size}",
+                "Accept-Ranges": "bytes",
+                "Content-Length": str(chunk_size),
+                "Content-Disposition": f'inline; filename="{os.path.basename(file_path)}"',
+            },
+        )
+
+    # No Range header — stream the whole file
+    async def full_file_sender():
+        async with aiofiles.open(file_path, "rb") as f:
+            while True:
+                data = await f.read(65536)
+                if not data:
+                    break
+                yield data
+
+    return StreamingResponse(
+        full_file_sender(),
+        status_code=200,
+        media_type=mime_type,
+        headers={
+            "Accept-Ranges": "bytes",
+            "Content-Length": str(file_size),
+            "Content-Disposition": f'inline; filename="{os.path.basename(file_path)}"',
+        },
+    )
+
+
+
+
 
 
 # Actually plays the audio stream by sending data chunks
@@ -646,6 +770,50 @@ async def play_audio(audio_id: int, db: AsyncSession = Depends(get_db)):
             yield from file_like
 
     return StreamingResponse(iterfile(), media_type=af.mime_type)
+
+
+
+
+
+
+###################### SELF-LISTEN (PULL MODEL) ENDPOINTS ####################333
+#
+# These endpoints power the student's personal "Spotify-like" listening mode.
+# No session, no teacher — the student browses files and plays them locally.
+# The backend's only role here is to serve the file and optionally record the
+# listening activity so teachers can see engagement stats later.
+
+
+# Log that a student started self-listening to an audio file.
+# Flutter calls this when the student presses Play in the library screen.
+# This is fire-and-forget from the app's perspective — failure is non-fatal.
+@app.post("/audio/{audio_id}/play-log")
+async def log_self_listen(
+    audio_id: int,
+    current_user: models.User = Depends(get_user_by_id),
+    db: AsyncSession = Depends(get_db)
+):
+    # Verify the audio file actually exists
+    q = await db.execute(select(models.AudioFile).filter(models.AudioFile.audio_id == audio_id))
+    af = q.scalar_one_or_none()
+    if not af:
+        raise HTTPException(status_code=404, detail="Audio file not found")
+
+    # Reuse the existing Log model — session_id is NULL for self-listen events
+    log_entry = models.Log(
+        session_id=None,            # Not tied to any teacher session
+        user_id=current_user.user_id,
+        event_type="self_listen_play",
+        event_details={
+            "audio_id": audio_id,
+            "audio_title": af.title,
+            "started_at": datetime.utcnow().isoformat(),
+        },
+    )
+    db.add(log_entry)
+    await db.commit()
+
+    return {"ok": True, "audio_id": audio_id, "title": af.title}
 
 
 

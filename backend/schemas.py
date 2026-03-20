@@ -320,3 +320,16 @@ class FCMTokenRequest(BaseModel):
 
 class FCMTokenDeleteRequest(BaseModel):
     token: str
+
+
+# ==================== SELF-LISTEN SCHEMAS ====================
+
+class SelfListenLogOut(BaseModel):
+    """One entry in a student's personal listening history."""
+    log_id: int
+    audio_id: Optional[int]
+    audio_title: Optional[str]
+    listened_at: datetime
+
+    class Config:
+        orm_mode = True
