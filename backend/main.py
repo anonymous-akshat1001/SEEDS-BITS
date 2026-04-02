@@ -246,7 +246,7 @@ async def get_active_sessions(
 
     sessions = q.scalars().all()
     
-    # Add participant count to each session
+    # Add participant count and teacher name to each session
     result = []
     for session in sessions:
         # Count active participants (not kicked, not left)
@@ -259,7 +259,17 @@ async def get_active_sessions(
         )
         participant_count = participant_count_q.scalar() or 0
         
-        # Convert to dict and add participant count
+        # Fetch teacher name
+        teacher_name = None
+        if session.created_by:
+            teacher_q = await db.execute(
+                select(models.User).filter(models.User.user_id == session.created_by)
+            )
+            teacher = teacher_q.scalar_one_or_none()
+            if teacher:
+                teacher_name = teacher.name
+        
+        # Convert to dict and add participant count + teacher name
         session_dict = {
             'session_id': session.session_id,
             'title': session.title,
@@ -267,7 +277,8 @@ async def get_active_sessions(
             'created_by': session.created_by,
             'created_at': session.created_at,
             'ended_at': session.ended_at,
-            'participant_count': participant_count
+            'participant_count': participant_count,
+            'teacher_name': teacher_name,
         }
         result.append(session_dict)
     

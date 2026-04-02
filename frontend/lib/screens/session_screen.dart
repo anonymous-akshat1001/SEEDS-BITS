@@ -30,6 +30,7 @@ class SessionScreen extends StatefulWidget {
   final int userId;
   final bool isTeacher;
   final String userName;
+  final String sessionTitle;
 
   const SessionScreen({
     super.key,
@@ -37,6 +38,7 @@ class SessionScreen extends StatefulWidget {
     required this.userId,
     this.isTeacher = false,
     required this.userName,
+    this.sessionTitle = 'Session',
   });
 
   @override
@@ -646,7 +648,7 @@ class _SessionScreenState extends State<SessionScreen> {
       MaterialPageRoute(
         builder: (_) => InviteStudentsScreen(
           sessionId:    widget.sessionId,
-          sessionTitle: 'Session ${widget.sessionId}',
+          sessionTitle: widget.sessionTitle,
         ),
       ),
     );
@@ -1126,7 +1128,7 @@ class _SessionScreenState extends State<SessionScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          widget.isTeacher ? 'Session (Teacher)' : 'Session',
+          widget.isTeacher ? '${widget.sessionTitle} (Teacher)' : widget.sessionTitle,
           style: TextStyle(fontSize: UIUtils.fontSize(context, 16)),
         ),
         backgroundColor: Colors.teal,

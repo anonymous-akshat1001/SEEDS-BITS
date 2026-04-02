@@ -4,6 +4,7 @@ import '../services/api_service.dart';
 import '../services/tts_service.dart';
 import 'package:flutter/services.dart';
 import 'session_screen.dart';
+import 'audio_library_screen.dart';
 import '../utils/ui_utils.dart';
 import '../widgets/key_instruction_wrapper.dart';
 import '../utils/keypad_actions.dart';
@@ -210,6 +211,15 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
       return;
     }
 
+    // Find the session title from the sessions list
+    String sessionTitle = 'Session';
+    for (final s in sessions) {
+      if (s['session_id'] == sessionId) {
+        sessionTitle = s['title'] ?? 'Session';
+        break;
+      }
+    }
+
     TtsService.speak("Opening session");
 
     // opens new screen
@@ -221,12 +231,24 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
           userId: currentUserId!,            // the ! claims that these fields are not null
           userName: currentUserName!,
           isTeacher: true,
+          sessionTitle: sessionTitle,
         ),
       ),
     ).then((_) {
       // Refresh sessions when returning
       _loadSessions();
     });
+  }
+
+  // Open offline audio library (no session context)
+  void _openOfflineAudioLibrary() {
+    TtsService.speak("Opening offline audio library");
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const OfflineAudioLibraryScreen(),
+      ),
+    );
   }
 
   // Function to delete the session created previously
@@ -303,6 +325,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
       actions: {
         1: _loadSessions,
         2: createSession,
+        3: _openOfflineAudioLibrary,
       },
       child: _buildScaffold(context),
     );
@@ -416,6 +439,26 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     elevation: 0,
+                  ),
+                ),
+                
+                SizedBox(height: UIUtils.spacing(context, 8)),
+                
+                // Offline Audio Library Button
+                OutlinedButton.icon(
+                  onPressed: _openOfflineAudioLibrary,
+                  icon: Icon(Icons.library_music_rounded, size: UIUtils.iconSize(context, 22)),
+                  label: Text(
+                    "3: Offline Audio Library",
+                    style: TextStyle(fontSize: UIUtils.fontSize(context, 15)),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: UIUtils.accentColor,
+                    side: BorderSide(color: UIUtils.accentColor, width: 1.5),
+                    padding: UIUtils.paddingSymmetric(context, vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                 ),
                 

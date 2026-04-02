@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 // Allows reading environment variables
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -467,10 +469,71 @@ class ApiService {
   
 
 
+  // Uploads file using bytes (for web support)
+  static Future<Map<String, dynamic>?> uploadFileBytes(
+    String path,
+    Uint8List fileBytes,
+    String filename, {
+    bool useAuth = false,
+    Map<String, String>? additionalFields,
+  }) async {
+    final uri = await _buildUri(path);
+    final prefs = await SharedPreferences.getInstance();
+
+    try {
+      var req = http.MultipartRequest("POST", uri);
+
+      if (useAuth && !devMode) {
+        final token = prefs.getString('token');
+        cachedToken = token;
+        if (token != null && token.isNotEmpty) {
+          req.headers['Authorization'] = 'Bearer $token';
+        }
+      }
+
+      if (additionalFields != null) {
+        additionalFields.forEach((key, value) {
+          req.fields[key] = value;
+        });
+      }
+
+      final ext = filename.split('.').last.toLowerCase();
+      String subType = 'mpeg';
+      switch (ext) {
+        case 'wav': subType = 'wav'; break;
+        case 'ogg': subType = 'ogg'; break;
+        case 'webm': subType = 'webm'; break;
+        case 'm4a': subType = 'x-m4a'; break;
+        case 'mp4': subType = 'mp4'; break;
+        case 'mp3':
+        default: subType = 'mpeg'; break;
+      }
+
+      req.files.add(http.MultipartFile.fromBytes(
+        "file",
+        fileBytes,
+        filename: filename,
+        contentType: MediaType('audio', subType),
+      ));
+      
+      var res = await req.send();
+      final body = await res.stream.bytesToString();
+
+      if (res.statusCode >= 200 && res.statusCode < 300) {
+        return jsonDecode(body);
+      } else {
+        print('UPLOAD BYTES $path failed: ${res.statusCode} $body');
+        return null;
+      }
+    } catch (e) {
+      print('UPLOAD BYTES $path error: $e');
+      return null;
+    }
+  }
+
   /////////////////////////// AUDIO ENDPOINTS /////////////////////////
 
-
-  /// Upload audio file (teacher only)
+  /// Upload audio file (teacher only) - works on mobile
   static Future<Map<String, dynamic>?> uploadAudio({
     required String filePath,
     required String title,
@@ -479,6 +542,25 @@ class ApiService {
     return await uploadFile(
       '/audio/upload',
       filePath,
+      useAuth: true,
+      additionalFields: {
+        'title': title,
+        'description': description,
+      },
+    );
+  }
+
+  /// Upload audio file using bytes (teacher only) - works on web
+  static Future<Map<String, dynamic>?> uploadAudioBytes({
+    required Uint8List fileBytes,
+    required String filename,
+    required String title,
+    String description = '',
+  }) async {
+    return await uploadFileBytes(
+      '/audio/upload',
+      fileBytes,
+      filename,
       useAuth: true,
       additionalFields: {
         'title': title,

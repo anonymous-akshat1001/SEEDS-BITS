@@ -30,12 +30,14 @@ const Map<int, String> registerKeyLabels = {
 const Map<int, String> studentDashboardKeyLabels = {
   1: 'Refresh Sessions',
   2: 'Join Session by ID',
+  3: 'Offline Audio Library',
 };
 
 // ─── Teacher Dashboard ──────────────────────────────────────────────────────
 const Map<int, String> teacherDashboardKeyLabels = {
   1: 'Refresh Sessions',
   2: 'Create Session',
+  3: 'Offline Audio Library',
 };
 
 // ─── Session Screen (Student) ───────────────────────────────────────────────

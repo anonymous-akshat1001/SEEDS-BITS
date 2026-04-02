@@ -64,6 +64,7 @@ class SessionOut(BaseModel):
     created_at: datetime
     ended_at: Optional[datetime] = None
     participant_count: Optional[int] = 0  # Added participant count
+    teacher_name: Optional[str] = None    # Added teacher name
     
     class Config:
         orm_mode = True

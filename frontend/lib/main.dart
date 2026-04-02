@@ -178,6 +178,7 @@ class MyApp extends StatelessWidget {
             final userId = args['userId'];
             final userName = args['userName'];
             final isTeacher = args['isTeacher'] ?? false;
+            final sessionTitle = args['sessionTitle'] ?? 'Session';
 
             if (sessionId is int && userId is int && userName is String) {
               return MaterialPageRoute(
@@ -186,6 +187,7 @@ class MyApp extends StatelessWidget {
                   userId: userId,
                   userName: userName,
                   isTeacher: isTeacher,
+                  sessionTitle: sessionTitle,
                 ),
                 settings: settings,
               );
@@ -252,6 +254,14 @@ class MyApp extends StatelessWidget {
             }
           }
           return MaterialPageRoute(builder: (_) => const TeacherDashboard());
+        }
+
+        // Offline audio library route
+        if (settings.name == '/offline_audio_library') {
+          return MaterialPageRoute(
+            builder: (_) => const AudioLibraryScreen(),
+            settings: settings,
+          );
         }
 
         return null;
