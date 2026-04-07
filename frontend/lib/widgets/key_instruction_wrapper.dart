@@ -22,6 +22,7 @@ import '../utils/keypad_actions.dart';
 ///   child: Scaffold(...),
 /// )
 /// ```
+
 class KeypadInstructionWrapper extends StatefulWidget {
   final Widget child;
 

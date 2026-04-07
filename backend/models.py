@@ -9,6 +9,7 @@ from sqlalchemy.orm import relationship
 from database import Base
 
 
+# Stores all teachers + users and helps distiguis between them
 class User(Base):
     __tablename__ = "users"
 
@@ -31,6 +32,7 @@ class User(Base):
     participants = relationship("Participant", back_populates="user")
 
 
+# Represents a live class created by a teacher
 class Session(Base):
     __tablename__ = "sessions"
 
@@ -49,8 +51,10 @@ class Session(Base):
     logs = relationship("Log", back_populates="session", cascade="all, delete-orphan")
     chat_messages = relationship("ChatMessage", back_populates="session", cascade="all, delete-orphan")
     audio_messages = relationship("AudioMessage", back_populates="session", cascade="all, delete-orphan")
+    session_audios = relationship("SessionAudio", back_populates="session", cascade="all, delete-orphan")
 
 
+# Represents a user inside a session(links User table with Session Table)
 class Participant(Base):
     __tablename__ = "participants"
 
@@ -59,7 +63,7 @@ class Participant(Base):
     user_id = Column(Integer, ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False)
     joined_at = Column(TIMESTAMP, server_default=func.now())
     left_at = Column(TIMESTAMP)
-    is_muted = Column(Boolean, server_default=text("false"))  # Changed default to false for better UX
+    is_muted = Column(Boolean, server_default=text("true"))  
     is_kicked = Column(Boolean, server_default=text("false"))
     hand_raised = Column(Boolean, server_default=text("false"))  # Added for raise hand feature
 
@@ -70,6 +74,7 @@ class Participant(Base):
     audio_messages = relationship("AudioMessage", back_populates="participant")
 
 
+# Represents audio file uploaded by teacher
 class AudioFile(Base):
     __tablename__ = "audio_files"
 
@@ -81,14 +86,15 @@ class AudioFile(Base):
     duration = Column(Float)  # Duration in seconds (optional)
     uploaded_by = Column(Integer, ForeignKey("users.user_id", ondelete="SET NULL"))
     uploaded_at = Column(TIMESTAMP, server_default=func.now())
-    duration = Column(Float)  # Duration in seconds (optional)
 
     # Relationships
-    uploader = relationship("User", back_populates="uploads")
-    playbacks = relationship("Playback", back_populates="audio")
+    uploader    = relationship("User",         back_populates="uploads")
+    playbacks   = relationship("Playback",     back_populates="audio")
     audio_messages = relationship("AudioMessage", back_populates="audio_file")
+    session_links = relationship("SessionAudio", back_populates="audio", cascade="all, delete-orphan")
 
 
+# Tracks when an audio file is played in a session
 class Playback(Base):
     __tablename__ = "playback"
 
@@ -106,21 +112,21 @@ class Playback(Base):
     starter = relationship("User")
 
 
-class Question(Base):
-    __tablename__ = "questions"
+# Table which creates a link between Audio file uploaded by a teacher and all the session created by this teacher
+class SessionAudio(Base):
+    __tablename__ = "session_audio"
 
-    question_id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True)
     session_id = Column(Integer, ForeignKey("sessions.session_id", ondelete="CASCADE"), nullable=False)
-    asked_by = Column(Integer, ForeignKey("users.user_id", ondelete="SET NULL"))
-    content = Column(Text, nullable=False)
-    asked_at = Column(TIMESTAMP, server_default=func.now())
-    is_answered = Column(Boolean, server_default=text("false"))
+    audio_id = Column(Integer, ForeignKey("audio_files.audio_id", ondelete="CASCADE"), nullable=False)
+    added_at = Column(TIMESTAMP, server_default=func.now())
 
     # Relationships
-    session = relationship("Session", back_populates="questions")
-    asker = relationship("User")
+    session = relationship("Session", back_populates="session_audios")
+    audio = relationship("AudioFile", back_populates="session_links")
 
 
+# Stores system events and logs them
 class Log(Base):
     __tablename__ = "logs"
 
@@ -136,6 +142,7 @@ class Log(Base):
     user = relationship("User")
 
 
+# Stores authentication tokens
 class JwtToken(Base):
     __tablename__ = "jwt_tokens"
 
@@ -150,6 +157,7 @@ class JwtToken(Base):
     user = relationship("User")
 
 
+# Stores chat messages sent in a particular session
 class ChatMessage(Base):
     __tablename__ = "chat_messages"
 
@@ -166,23 +174,7 @@ class ChatMessage(Base):
     participant = relationship("Participant", back_populates="chat_messages")
 
 
-class AudioMessage(Base):
-    __tablename__ = "audio_messages"
-
-    # Changed to Integer for consistency
-    audio_message_id = Column(Integer, primary_key=True, index=True)
-    session_id = Column(Integer, ForeignKey("sessions.session_id", ondelete="CASCADE"), nullable=False)
-    participant_id = Column(Integer, ForeignKey("participants.participant_id", ondelete="CASCADE"), nullable=False)
-    audio_file_id = Column(Integer, ForeignKey("audio_files.audio_id", ondelete="SET NULL"))
-    timestamp = Column(TIMESTAMP, server_default=func.now())
-    duration = Column(Float)  # Duration in seconds
-
-    # Relationships
-    session = relationship("Session", back_populates="audio_messages")
-    participant = relationship("Participant", back_populates="audio_messages")
-    audio_file = relationship("AudioFile", back_populates="audio_messages")
-
-
+# Stores device tokens for push notifications
 class FCMToken(Base):
     __tablename__ = "fcm_tokens"
     

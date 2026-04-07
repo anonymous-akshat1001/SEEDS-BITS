@@ -34,6 +34,7 @@ from typing import Dict, Any, Optional, Set
 # ─────────────────────────────────────────────────────────────────
 
 SESSION_STATE: Dict[int, Dict[str, Any]] = {}
+# Lock to avoid race conditions as multiple users are updating the session state continuously
 SESSION_LOCK = asyncio.Lock()
 
 
@@ -44,11 +45,10 @@ class WebSocketManager:
     """
 
     def __init__(self):
-        # session_id → { participant_id → asyncio.Queue }
+        # session_id : { participant_id : [Queue] } -> tracks active connections
         self.active: Dict[int, Dict[int, asyncio.Queue]] = {}
 
-    # ── connection lifecycle ──────────────────────────────────────────────
-
+    # connection lifecycle 
     async def connect(
         self,
         session_id: int,
@@ -58,17 +58,22 @@ class WebSocketManager:
         is_teacher: bool,
     ) -> asyncio.Queue:
         """
-        Register a new SSE client.
+        Register a new SSE client. Called when a user joins the session
         Returns the Queue the SSE generator should read from.
 
         Stores is_teacher in SESSION_STATE so the initial session_state
         snapshot sent to latecomers includes accurate role info.
         """
+
+        # Queue = message buffer , SSE messages are sent to client
         q: asyncio.Queue = asyncio.Queue(maxsize=256)
 
+        # Lock system while modifying shared state
         async with SESSION_LOCK:
+            # If session does not exist create it, and add participant to queue
             self.active.setdefault(session_id, {})[participant_id] = q
 
+            # Initialize the session if it does not exist
             s = SESSION_STATE.setdefault(
                 session_id,
                 {
@@ -84,41 +89,51 @@ class WebSocketManager:
                 },
             )
 
+            # Save the queue
             s["connections"][participant_id] = q
 
             # setdefault preserves existing metadata on reconnect;
             # we update name/is_teacher each time (they don't change).
-            existing = s["participants"].get(participant_id, {})
+            existing = s["participants"].get(participant_id, {})    # If reconnecting → preserve old data
+
             s["participants"][participant_id] = {
                 "user_id":    user_id,
                 "name":       name,
-                "is_muted":   existing.get("is_muted", False),
+                "is_muted":   existing.get("is_muted", True),
                 "raised_hand": existing.get("raised_hand", False),
                 "is_teacher": is_teacher,
             }
 
         print(f"[SSE MGR] Connected  session={session_id} participant={participant_id} "
               f"name={name!r} teacher={is_teacher}")
+        
+        # This queue is used by SSE endpoint
         return q
 
+
+    # Removes connection but keeps metadata
     async def disconnect(self, session_id: int, participant_id: int):
         """Soft disconnect — removes queue but keeps participant metadata."""
         async with SESSION_LOCK:
+            # Remove from active connections
             self.active.get(session_id, {}).pop(participant_id, None)
             if session_id in SESSION_STATE:
                 SESSION_STATE[session_id]["connections"].pop(participant_id, None)
 
         print(f"[SSE MGR] Disconnected session={session_id} participant={participant_id}")
 
-    # ── sending helpers ───────────────────────────────────────────────────
 
+
+    # sending helpers 
     async def send_personal(self, queue: asyncio.Queue, message: dict):
         """Push one message onto a specific client's queue."""
         try:
-            queue.put_nowait(message)
+            queue.put_nowait(message)   # Add message to queue
         except asyncio.QueueFull:
             print("[SSE MGR] Queue full — dropping personal message")
 
+
+    # Send message to ALL users in session
     async def broadcast(
         self,
         session_id: int,
@@ -126,7 +141,9 @@ class WebSocketManager:
         exclude: Optional[Set[int]] = None,
     ):
         """Push a message to every connected client in a session."""
-        exclude = exclude or set()
+        exclude = exclude or set()    # Optional to exclude some participants
+
+        # get all connected users
         conns = list(self.active.get(session_id, {}).items())
 
         if not conns:
@@ -137,14 +154,18 @@ class WebSocketManager:
         print(f"[SSE MGR] Broadcast session={session_id} "
               f"type={message.get('type')} excluding={exclude}")
 
+        # Loop through each participant
         for pid, q in conns:
             if pid in exclude:
                 continue
             try:
+                # Send message
                 q.put_nowait(message)
             except asyncio.QueueFull:
                 print(f"[SSE MGR] Queue full for participant {pid}")
 
+
+    # Ends session for all participants
     async def close_session(self, session_id: int):
         """Send session_ended to all clients, then wipe state."""
         async with SESSION_LOCK:
@@ -153,7 +174,7 @@ class WebSocketManager:
             for _, q in conns:
                 try:
                     q.put_nowait({"type": "session_ended"})
-                    q.put_nowait(None)   # None = sentinel → SSE generator exits
+                    q.put_nowait(None)   # None = sentinel , SSE generator exits
                 except asyncio.QueueFull:
                     pass
 
@@ -162,8 +183,13 @@ class WebSocketManager:
 
         print(f"[SSE MGR] Session {session_id} closed")
 
-    # ── participant actions ───────────────────────────────────────────────
 
+
+
+
+    ################   Participant actions   #####################
+
+    # Mute any participant - only accessible by teacher
     async def mute_participant(self, session_id: int, participant_id: int, mute: bool):
         async with SESSION_LOCK:
             if session_id not in SESSION_STATE:
@@ -177,6 +203,8 @@ class WebSocketManager:
         )
         print(f"[SSE MGR] Muted participant={participant_id} mute={mute} session={session_id}")
 
+
+    # Kick any participant - only accessible by teacher
     async def kick_participant(
         self, session_id: int, participant_id: int, reason: Optional[str] = None
     ):
@@ -200,6 +228,8 @@ class WebSocketManager:
             {"type": "participant_kicked", "participant_id": participant_id},
         )
 
+
+    # Just closes connection, keeps metadata
     async def disconnect_participant(
         self, session_id: int, participant_id: int, reason: Optional[str] = None
     ):
@@ -217,8 +247,14 @@ class WebSocketManager:
             except asyncio.QueueFull:
                 pass
 
-    # ── audio playback controls ───────────────────────────────────────────
 
+
+
+
+    ########################  Audio playback controls  #######################
+
+
+    # When teacher selects audio
     async def audio_select(self, session_id: int, audio_id: int, title: Optional[str] = None):
         async with SESSION_LOCK:
             s = SESSION_STATE.setdefault(
@@ -234,6 +270,8 @@ class WebSocketManager:
             {"type": "audio_selected", "audio_id": audio_id, "title": title},
         )
 
+
+    # When the selected audio is played
     async def audio_play(
         self, session_id: int, audio_id: int, speed: float = 1.0, position: float = 0.0
     ):
@@ -249,6 +287,8 @@ class WebSocketManager:
             {"type": "audio_play", "audio_id": audio_id, "speed": speed, "position": position},
         )
 
+
+    # The audio is paused for each participant
     async def audio_pause(self, session_id: int, position: float = 0.0):
         async with SESSION_LOCK:
             if session_id not in SESSION_STATE:

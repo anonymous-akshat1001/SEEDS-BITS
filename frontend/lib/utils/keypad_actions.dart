@@ -7,6 +7,7 @@
 ///
 /// The actual callbacks are defined in each screen widget (they need access
 /// to setState, Navigator, etc.) — this file only stores human-readable labels.
+library;
 
 // ─── Welcome Screen ─────────────────────────────────────────────────────────
 const Map<int, String> welcomeKeyLabels = {
