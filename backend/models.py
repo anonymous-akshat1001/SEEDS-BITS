@@ -47,10 +47,10 @@ class Session(Base):
     creator = relationship("User", back_populates="sessions_created")
     participants = relationship("Participant", back_populates="session", cascade="all, delete-orphan")
     playbacks = relationship("Playback", back_populates="session", cascade="all, delete-orphan")
-    questions = relationship("Question", back_populates="session", cascade="all, delete-orphan")
+    # questions = relationship("Question", back_populates="session", cascade="all, delete-orphan")
     logs = relationship("Log", back_populates="session", cascade="all, delete-orphan")
     chat_messages = relationship("ChatMessage", back_populates="session", cascade="all, delete-orphan")
-    audio_messages = relationship("AudioMessage", back_populates="session", cascade="all, delete-orphan")
+    # audio_messages = relationship("AudioMessage", back_populates="session", cascade="all, delete-orphan")
     session_audios = relationship("SessionAudio", back_populates="session", cascade="all, delete-orphan")
 
 
@@ -71,7 +71,7 @@ class Participant(Base):
     session = relationship("Session", back_populates="participants")
     user = relationship("User", back_populates="participants")
     chat_messages = relationship("ChatMessage", back_populates="participant")
-    audio_messages = relationship("AudioMessage", back_populates="participant")
+    # audio_messages = relationship("AudioMessage", back_populates="participant")
 
 
 # Represents audio file uploaded by teacher
@@ -90,7 +90,7 @@ class AudioFile(Base):
     # Relationships
     uploader    = relationship("User",         back_populates="uploads")
     playbacks   = relationship("Playback",     back_populates="audio")
-    audio_messages = relationship("AudioMessage", back_populates="audio_file")
+    # audio_messages = relationship("AudioMessage", back_populates="audio_file")
     session_links = relationship("SessionAudio", back_populates="audio", cascade="all, delete-orphan")
 
 
