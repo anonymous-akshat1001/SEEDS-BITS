@@ -91,6 +91,7 @@ class _SessionScreenState extends State<SessionScreen> {
 
   // ── Audio library (teacher only) ────────────────────────────────────────
   List<Map<String, dynamic>> _audioFiles        = [];
+  List<Map<String, dynamic>> _teacherSessions   = [];
   bool                       _audioLibraryLoaded = false;
   bool                       _isUploadingAudio   = false;
   int?                       _previewingAudioId;
@@ -158,6 +159,7 @@ class _SessionScreenState extends State<SessionScreen> {
 
       // Pre-load audio library for teacher so the panel is ready immediately
       if (widget.isTeacher) _loadAudioLibrary();
+      if (widget.isTeacher) _loadTeacherSessions();
 
       setState(() => _isInitializing = false);
       // Speak key mappings for this screen
@@ -170,6 +172,19 @@ class _SessionScreenState extends State<SessionScreen> {
       setState(() => _isInitializing = false);
     }
   }
+
+
+   Future<void> _loadTeacherSessions() async {
+    final sessions = await ApiService.getActiveSessions();
+    if (sessions != null && mounted) {
+      setState(() {
+        _teacherSessions = sessions
+            .map((e) => Map<String, dynamic>.from(e as Map))
+            .toList();
+      });
+    }
+  }
+
 
   Future<void> _initializeMedia() async {
     try {
@@ -739,6 +754,50 @@ class _SessionScreenState extends State<SessionScreen> {
 
       if (mounted) setState(() => _isUploadingAudio = true);
 
+      final selectedSessionIds = <int>{widget.sessionId};
+      if (_teacherSessions.isNotEmpty && mounted) {
+        final confirmedSessions = await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: const Text('Add audio to sessions'),
+            content: StatefulBuilder(
+              builder: (context, setLocalState) => SizedBox(
+                width: 360,
+                child: ListView(
+                  shrinkWrap: true,
+                  children: _teacherSessions.map((session) {
+                    final id = session['session_id'] as int;
+                    final title = session['title']?.toString() ?? 'Session $id';
+                    return CheckboxListTile(
+                      value: selectedSessionIds.contains(id),
+                      title: Text(title),
+                      subtitle: Text('Session #$id'),
+                      onChanged: (checked) {
+                        setLocalState(() {
+                          if (checked == true) {
+                            selectedSessionIds.add(id);
+                          } else {
+                            selectedSessionIds.remove(id);
+                          }
+                        });
+                      },
+                    );
+                  }).toList(),
+                ),
+              ),
+            ),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+              ElevatedButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Confirm')),
+            ],
+          ),
+        );
+        if (confirmedSessions != true || selectedSessionIds.isEmpty) {
+          if (mounted) setState(() => _isUploadingAudio = false);
+          return;
+        }
+      }
+
       final prefs  = await SharedPreferences.getInstance();
       final userId = prefs.getInt('user_id');
       final uri    = Uri.parse('$baseUrl/audio/upload?user_id=$userId');
@@ -747,7 +806,8 @@ class _SessionScreenState extends State<SessionScreen> {
       final request = http.MultipartRequest('POST', uri)
         ..headers.addAll(headers)
         ..fields['title']       = title
-        ..fields['description'] = _uploadDescCtrl.text.trim();
+        ..fields['description'] = _uploadDescCtrl.text.trim()
+        ..fields['session_ids'] = jsonEncode(selectedSessionIds.toList());
 
       final ext = file.extension?.toLowerCase() ?? '';
       final contentType = const {
@@ -1728,24 +1788,24 @@ class _SessionScreenState extends State<SessionScreen> {
                         fontSize: 12,
                       ),
                     ),
-                    if (isPlaying) ...[
-                      const SizedBox(width: 12),
-                      IconButton(
-                        icon: const Icon(Icons.fast_rewind_rounded, color: Colors.white, size: 18),
-                        onPressed: () => _applyAudioSpeedLocally((_audioSpeed - 0.25).clamp(0.25, 3.0)),
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                        tooltip: 'Slower',
-                      ),
-                      const SizedBox(width: 8),
-                      IconButton(
-                        icon: const Icon(Icons.fast_forward_rounded, color: Colors.white, size: 18),
-                        onPressed: () => _applyAudioSpeedLocally((_audioSpeed + 0.25).clamp(0.25, 3.0)),
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                        tooltip: 'Faster',
-                      ),
-                    ],
+                    // if (isPlaying) ...[
+                    //   const SizedBox(width: 12),
+                    //   IconButton(
+                    //     icon: const Icon(Icons.fast_rewind_rounded, color: Colors.white, size: 18),
+                    //     onPressed: () => _applyAudioSpeedLocally((_audioSpeed - 0.25).clamp(0.25, 3.0)),
+                    //     padding: EdgeInsets.zero,
+                    //     constraints: const BoxConstraints(),
+                    //     tooltip: 'Slower',
+                    //   ),
+                    //   const SizedBox(width: 8),
+                    //   IconButton(
+                    //     icon: const Icon(Icons.fast_forward_rounded, color: Colors.white, size: 18),
+                    //     onPressed: () => _applyAudioSpeedLocally((_audioSpeed + 0.25).clamp(0.25, 3.0)),
+                    //     padding: EdgeInsets.zero,
+                    //     constraints: const BoxConstraints(),
+                    //     tooltip: 'Faster',
+                    //   ),
+                    // ],
                 ],
               ),
             ),
@@ -1928,13 +1988,13 @@ class _SessionScreenState extends State<SessionScreen> {
                                   // Preview (local, not broadcast)
                                   IconButton(
                                     icon: Icon(
-                                      isPrev ? Icons.stop_circle : Icons.play_circle,
+                                      isPrev ? Icons.stop_circle : Icons.headphones_rounded,
                                       color: isPrev
                                           ? Colors.orange
                                           : Colors.blue.shade600,
                                       size: 26,
                                     ),
-                                    tooltip: isPrev ? 'Stop preview' : 'Preview',
+                                    tooltip: isPrev ? 'Stop preview (only you)' : 'Preview (only you)',
                                     onPressed: () => _previewAudio(audioId, title),
                                     padding: EdgeInsets.zero,
                                     constraints: const BoxConstraints(),
@@ -1943,7 +2003,7 @@ class _SessionScreenState extends State<SessionScreen> {
                                   // Select & broadcast to all
                                   IconButton(
                                     icon: Icon(
-                                      Icons.broadcast_on_personal,
+                                      Icons.campaign_rounded,
                                       color: Colors.green.shade600,
                                       size: 26,
                                     ),

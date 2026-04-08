@@ -696,10 +696,10 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
                                       children: [
                                         ElevatedButton.icon(
                                           onPressed: () => _playAudioLocally(audioId, title),
-                                          icon: Icon(isPlaying ? Icons.stop_rounded : Icons.play_arrow_rounded, size: UIUtils.iconSize(context, 18)),
-                                          label: Text(isPlaying ? 'Stop' : 'Preview', style: TextStyle(fontSize: UIUtils.fontSize(context, 12))),
+                                          icon: Icon(isPlaying ? Icons.stop_rounded : Icons.headphones_rounded, size: UIUtils.iconSize(context, 18)),
+                                          label: Text(isPlaying ? 'Stop Preview' : 'Preview (Only Me)', style: TextStyle(fontSize: UIUtils.fontSize(context, 12))),
                                           style: ElevatedButton.styleFrom(
-                                            backgroundColor: isPlaying ? Colors.orange : UIUtils.accentColor,
+                                            backgroundColor: isPlaying ? Colors.orange : Colors.indigo,
                                             foregroundColor: Colors.white,
                                             padding: UIUtils.paddingSymmetric(context, horizontal: 12, vertical: 6),
                                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -711,8 +711,8 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
                                           SizedBox(width: UIUtils.spacing(context, 4)),
                                           ElevatedButton.icon(
                                             onPressed: () => _selectForSession(audioId, title),
-                                            icon: Icon(Icons.check_circle_outline_rounded, size: UIUtils.iconSize(context, 18)),
-                                            label: Text('Select', style: TextStyle(fontSize: UIUtils.fontSize(context, 12))),
+                                            icon: Icon(Icons.campaign_rounded, size: UIUtils.iconSize(context, 18)),
+                                            label: Text('Play in Session', style: TextStyle(fontSize: UIUtils.fontSize(context, 12))),
                                             style: ElevatedButton.styleFrom(
                                               backgroundColor: isSelected ? UIUtils.primaryColor : Colors.green,
                                               foregroundColor: Colors.white,
@@ -814,43 +814,33 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
     );
   }
 
-  void _searchById() {
-    final idText = _searchController.text.trim();
-    if (idText.isEmpty) return;
+  void _searchByName() {
+    final query = _searchController.text.trim().toLowerCase();
+    if (query.isEmpty) return;
 
-    final sessionId = int.tryParse(idText);
-    if (sessionId == null) {
+    final exact = _sessions.where((s) {
+      final title = (s['title'] ?? '').toString().toLowerCase();
+      return title == query;
+    }).toList();
+
+    // Search in loaded sessions first
+    final partial = _sessions.where((s) {
+      final title = (s['title'] ?? '').toString().toLowerCase();
+      return title.contains(query);
+    }).toList();
+
+    
+    final matches = exact.isNotEmpty ? exact : partial;
+    if (matches.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a valid session number')),
+        const SnackBar(content: Text('No class found with this session name')),
       );
       return;
     }
 
-    // Search in loaded sessions first
-    final found = _sessions.firstWhere(
-      (s) => s['session_id'] == sessionId,
-      orElse: () => <String, dynamic>{},
-    );
-
-    if (found.isNotEmpty) {
-      _openClassAudio(found);
-    } else {
-      // Open directly even if not in the list (session might be inactive 
-      // but teacher's audio is still accessible)
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => ClassAudioScreen(
-            sessionId: sessionId,
-            sessionTitle: 'Session $sessionId',
-            teacherId: null, // will be fetched
-            isTeacher: _isTeacher,
-          ),
-        ),
-      );
-    }
+    _openClassAudio(matches.first);
     _searchController.clear();
-  }
+}
 
   @override
   void dispose() {
@@ -929,7 +919,7 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
 
                   SizedBox(height: UIUtils.spacing(context, 14)),
 
-                  // ── Search by Session ID ─────────────────────────────
+                  // ── Search by Session Name ─────────────────────────────
                   Container(
                     padding: UIUtils.paddingAll(context, 12),
                     decoration: BoxDecoration(
@@ -942,7 +932,7 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Search Class by ID',
+                          'Search Class by Name',
                           style: TextStyle(
                             fontWeight: FontWeight.w600,
                             fontSize: UIUtils.fontSize(context, 14),
@@ -955,9 +945,8 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
                             Expanded(
                               child: TextField(
                                 controller: _searchController,
-                                keyboardType: TextInputType.number,
                                 decoration: InputDecoration(
-                                  hintText: 'Enter Session/Class ID',
+                                  hintText: 'Enter Session/Class Name',
                                   hintStyle: TextStyle(
                                       fontSize:
                                           UIUtils.fontSize(context, 13)),
@@ -981,12 +970,12 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
                                         width: 1.5),
                                   ),
                                 ),
-                                onSubmitted: (_) => _searchById(),
+                                onSubmitted: (_) => _searchByName(),
                               ),
                             ),
                             SizedBox(width: UIUtils.spacing(context, 8)),
                             ElevatedButton.icon(
-                              onPressed: _searchById,
+                              onPressed: _searchByName,
                               icon: Icon(Icons.arrow_forward_rounded,
                                   size: UIUtils.iconSize(context, 16)),
                               label: Text("Go",
@@ -1134,7 +1123,7 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
                           SizedBox(
                               height: UIUtils.spacing(context, 6)),
                           Text(
-                            'Use "Search by ID" above to access a class directly.',
+                            'Use "Search by Session Name" above to access a class quickly.',
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               color: Colors.grey.shade500,
@@ -1150,8 +1139,6 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
                       final title =
                           session['title'] ?? 'Session ${session['session_id']}';
                       final sessionId = session['session_id'] ?? 0;
-                      final participantCount =
-                          session['participant_count'] ?? 0;
 
                       return Card(
                         margin: EdgeInsets.only(
@@ -1212,7 +1199,7 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
                                           height: UIUtils.spacing(
                                               context, 3)),
                                       Text(
-                                        'Session #$sessionId  •  $participantCount participants',
+                                        'Session #$sessionId',
                                         style: TextStyle(
                                           fontSize: UIUtils.fontSize(
                                               context, 11),
@@ -1274,6 +1261,7 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
   bool _isUploadingAudio = false;
   bool _ttsEnabled = true;
   int? _resolvedTeacherId;
+  List<Map<String, dynamic>> _teacherSessions = [];
 
   // Playback state
   int? _playingAudioId;
@@ -1287,9 +1275,25 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
   void initState() {
     super.initState();
     _resolvedTeacherId = widget.teacherId;
+    if (widget.isTeacher) {
+      _loadTeacherSessions();
+    }
     _loadAudioFiles();
     _setupAudioListeners();
   }
+
+
+  Future<void> _loadTeacherSessions() async {
+    final sessions = await ApiService.getActiveSessions();
+    if (sessions != null && mounted) {
+      setState(() {
+        _teacherSessions = sessions
+            .map((e) => Map<String, dynamic>.from(e as Map))
+            .toList();
+      });
+    }
+  }
+
 
   void _setupAudioListeners() {
     _audioPlayer.onPositionChanged.listen((pos) {
@@ -1329,12 +1333,29 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
         }
       }
 
-      // Get all audio files
-      print('[CLASS AUDIO] Fetching audio list... teacherId=$_resolvedTeacherId sessionId=${widget.sessionId}');
-      final result = await ApiService.getAudioList();
-      print('[CLASS AUDIO] getAudioList result type=${result?.runtimeType} count=${result?.length}');
       
-      if (result == null) {
+      print('[CLASS AUDIO] Fetching audio list... teacherId=$_resolvedTeacherId sessionId=${widget.sessionId}');
+      final result = widget.sessionId == 0
+          ? await ApiService.getAudioList()
+          : await ApiService.getAudioListBySession(widget.sessionId);
+      print('[CLASS AUDIO] getAudioList result type=${result?.runtimeType} count=${result?.length}');
+
+      
+      List<dynamic>? normalizedResult = result;
+      if (normalizedResult == null && widget.sessionId != 0) {
+        // If session-scoped API fails, fallback to global list and filter by teacher.
+        normalizedResult = await ApiService.getAudioList();
+        print('[CLASS AUDIO] Fallback to /audio/list count=${normalizedResult?.length}');
+        if ((normalizedResult == null || normalizedResult.isEmpty) &&
+            _resolvedTeacherId != null) {
+          normalizedResult =
+              await ApiService.getAudioListAsUser(_resolvedTeacherId!);
+          print(
+              '[CLASS AUDIO] Fallback to /audio/list as teacher=$_resolvedTeacherId count=${normalizedResult?.length}');
+        }
+      }
+
+      if (normalizedResult == null) {
         print('[CLASS AUDIO] API returned null - check backend connection and user_id param');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -1350,21 +1371,48 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
 
       if (mounted) {
         // Safely parse JSON to avoid List<dynamic> cast exceptions
-        List<Map<String, dynamic>> allFiles = result
+        List<Map<String, dynamic>> allFiles = normalizedResult
             .map((e) => Map<String, dynamic>.from(e as Map))
             .toList();
 
+        // Fallback for legacy uploads that were not explicitly linked to sessions
+        if (widget.sessionId != 0 && _resolvedTeacherId != null) {
+          allFiles = allFiles
+              .where((f) =>
+                  f['uploaded_by']?.toString() ==
+                  _resolvedTeacherId.toString())
+              .toList();
+        
+        }
+
         print('[CLASS AUDIO] Total files from API: ${allFiles.length}');
 
-        // Filter audio files to only those uploaded by this session's teacher
-        // If teacherId is null (e.g. student viewing "All Audio Files"), show everything
-        if (_resolvedTeacherId != null) {
+        if (widget.sessionId == 0 && _resolvedTeacherId != null){
           allFiles = allFiles
               .where((f) => f['uploaded_by']?.toString() == _resolvedTeacherId.toString())
               .toList();
-          print('[CLASS AUDIO] After filter by teacher=$_resolvedTeacherId: ${allFiles.length} files');
-        } else {
-          print('[CLASS AUDIO] No teacher filter - showing all ${allFiles.length} files');
+        }
+
+        // Student compatibility fallback for older backend behavior where
+        // /audio/list returns empty for student role.
+        if (widget.sessionId == 0 && !widget.isTeacher && allFiles.isEmpty) {
+          final sessions = await ApiService.getActiveSessions() ?? [];
+          final teacherIds = sessions
+              .map((s) => (s as Map)['created_by'])
+              .where((id) => id is int || id is num)
+              .map((id) => (id as num).toInt())
+              .toSet();
+          final merged = <int, Map<String, dynamic>>{};
+          for (final teacherId in teacherIds) {
+            final teacherFiles = await ApiService.getAudioListAsUser(teacherId);
+            if (teacherFiles == null) continue;
+            for (final raw in teacherFiles) {
+              final f = Map<String, dynamic>.from(raw as Map);
+              final audioId = f['audio_id'] as int?;
+              if (audioId != null) merged[audioId] = f;
+            }
+          }
+          allFiles = merged.values.toList();
         }
 
         setState(() {
@@ -1544,6 +1592,50 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
           ? titleController.text.trim()
           : file.name;
       final desc = descController.text.trim();
+      final selectedSessionIds = <int>{if (widget.sessionId != 0) widget.sessionId};
+
+      if (widget.isTeacher && _teacherSessions.isNotEmpty) {
+        final confirmedSessions = await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: const Text('Add audio to sessions'),
+            content: StatefulBuilder(
+              builder: (context, setLocalState) => SizedBox(
+                width: 360,
+                child: ListView(
+                  shrinkWrap: true,
+                  children: _teacherSessions.map((session) {
+                    final id = session['session_id'] as int;
+                    final title = session['title']?.toString() ?? 'Session $id';
+                    return CheckboxListTile(
+                      value: selectedSessionIds.contains(id),
+                      title: Text(title),
+                      subtitle: Text('Session #$id'),
+                      onChanged: (checked) {
+                        setLocalState(() {
+                          if (checked == true) {
+                            selectedSessionIds.add(id);
+                          } else {
+                            selectedSessionIds.remove(id);
+                          }
+                        });
+                      },
+                    );
+                  }).toList(),
+                ),
+              ),
+            ),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+              ElevatedButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Confirm')),
+            ],
+          ),
+        );
+        if (confirmedSessions != true || selectedSessionIds.isEmpty) {
+          _showError('Please select at least one session');
+          return;
+        }
+      }
 
       Map<String, dynamic>? uploadResult;
 
@@ -1553,12 +1645,14 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
           filename: file.name,
           title: title,
           description: desc,
+          sessionIds: selectedSessionIds.toList(),
         );
       } else if (file.path != null) {
         uploadResult = await ApiService.uploadAudio(
           filePath: file.path!,
           title: title,
           description: desc,
+          sessionIds: selectedSessionIds.toList(),
         );
       }
 

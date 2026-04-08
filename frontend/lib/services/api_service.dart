@@ -538,6 +538,7 @@ class ApiService {
     required String filePath,
     required String title,
     String description = '',
+    List<int> sessionIds = const [],
   }) async {
     return await uploadFile(
       '/audio/upload',
@@ -546,6 +547,7 @@ class ApiService {
       additionalFields: {
         'title': title,
         'description': description,
+        'session_ids': jsonEncode(sessionIds),
       },
     );
   }
@@ -556,6 +558,7 @@ class ApiService {
     required String filename,
     required String title,
     String description = '',
+    List<int> sessionIds = const [],
   }) async {
     return await uploadFileBytes(
       '/audio/upload',
@@ -565,6 +568,7 @@ class ApiService {
       additionalFields: {
         'title': title,
         'description': description,
+        'session_ids': jsonEncode(sessionIds),
       },
     );
   }
@@ -576,6 +580,35 @@ class ApiService {
       return result;
     } else if (result is Map && result.containsKey('files')) {
       return result['files'] as List?;
+    }
+    return null;
+  }
+
+  // Compatibility fallback for dev-auth deployments where user_id query param
+  // controls identity and student /audio/list may return empty.
+  static Future<List<dynamic>?> getAudioListAsUser(int userId) async {
+    String uri = '$baseUrl/audio/list?user_id=$userId';
+    final parsed = Uri.parse(uri);
+    final headers = await _buildHeaders(useAuth: true);
+    try {
+      final res = await http.get(parsed, headers: headers);
+      if (res.statusCode >= 200 && res.statusCode < 300) {
+        final data = jsonDecode(res.body);
+        if (data is List) return data;
+      } else {
+        print('GET /audio/list as user=$userId failed: ${res.statusCode} ${res.body}');
+      }
+    } catch (e) {
+      print('GET /audio/list as user=$userId error: $e');
+    }
+    return null;
+  }
+  
+
+  static Future<List<dynamic>?> getAudioListBySession(int sessionId) async {
+    final result = await get('/audio/session/$sessionId', useAuth: true);
+    if (result is List) {
+      return result;
     }
     return null;
   }

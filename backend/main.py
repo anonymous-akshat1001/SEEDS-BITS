@@ -563,12 +563,40 @@ async def calculate_audio_duration(file_path: str) -> Optional[float]:
 
 
 # Upload audio file - only by teachers
-@app.post("/audio/upload", response_model=schemas.AudioCreateResponse)
+@app.post("/audio/upload", response_model=schemas.AudioUploadWithSessionsResponse)
 async def upload_audio(title: str = Form(...),
                        description: str = Form(""),
+                       session_ids: str = Form(""),
                        file: UploadFile = File(...),
                        current_user: models.User = Depends(require_teacher),
                        db: AsyncSession = Depends(get_db)):
+
+    parsed_session_ids: List[int] = []
+    if session_ids.strip():
+        try:
+            if session_ids.strip().startswith("["):
+                parsed_session_ids = [int(x) for x in json.loads(session_ids)]
+            else:
+                parsed_session_ids = [int(x.strip()) for x in session_ids.split(",") if x.strip()]
+        except Exception:
+            raise HTTPException(status_code=400, detail="Invalid session_ids format")
+
+    parsed_session_ids = list(dict.fromkeys(parsed_session_ids))
+    allowed_session_ids: List[int] = []
+    if parsed_session_ids:
+        q = await db.execute(
+            select(models.Session.session_id).filter(
+                models.Session.created_by == current_user.user_id,
+                models.Session.session_id.in_(parsed_session_ids)
+            )
+        )
+        allowed_session_ids = [row[0] for row in q.all()]
+        if len(allowed_session_ids) != len(parsed_session_ids):
+            raise HTTPException(
+                status_code=403,
+                detail="One or more selected sessions do not belong to the current teacher"
+            )
+        
 
     # Validate extension
     ext = os.path.splitext(file.filename)[1].lower()
@@ -610,11 +638,19 @@ async def upload_audio(title: str = Form(...),
     db.add(af)
     await db.commit()
     await db.refresh(af)
+
+    if allowed_session_ids:
+        links = [
+            models.SessionAudio(session_id=session_id, audio_id=af.audio_id)
+            for session_id in allowed_session_ids
+        ]
+        db.add_all(links)
+        await db.commit()
     
     # Log audio upload
     await SessionLogger.log_audio_uploaded(db, current_user.user_id, af.audio_id, title, file_path, duration)
     
-    return af
+    return {"audio": af, "session_ids": allowed_session_ids}
 
 
 # Get audio files:
@@ -639,6 +675,48 @@ async def list_audio_files(
         )
     files = q.scalars().all()
     return files
+
+
+
+@app.get("/audio/session/{session_id}", response_model=List[schemas.AudioFileOut])
+async def list_audio_files_by_session(
+    session_id: int,
+    current_user: models.User = Depends(get_user_by_id),
+    db: AsyncSession = Depends(get_db),
+):
+    session = await db.get(models.Session, session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    if current_user.role.lower() == "teacher" and session.created_by != current_user.user_id:
+        raise HTTPException(status_code=403, detail="Not your session")
+
+    q = await db.execute(
+        select(models.AudioFile)
+        .join(models.SessionAudio, models.SessionAudio.audio_id == models.AudioFile.audio_id)
+        .filter(models.SessionAudio.session_id == session_id)
+        .order_by(models.AudioFile.uploaded_at.desc())
+    )
+    linked_files = q.scalars().all()
+
+    # Backward compatibility:
+    # if a teacher uploaded audio before session-audio linking was introduced,
+    # those files should still appear in that teacher's class library.
+    if session.created_by is not None:
+        fallback_q = await db.execute(
+            select(models.AudioFile).filter(
+                models.AudioFile.uploaded_by == session.created_by
+            ).order_by(models.AudioFile.uploaded_at.desc())
+        )
+        fallback_files = fallback_q.scalars().all()
+    else:
+        fallback_files = []
+
+    merged = {f.audio_id: f for f in linked_files}
+    for f in fallback_files:
+        merged.setdefault(f.audio_id, f)
+
+    return list(merged.values())
 
 
 

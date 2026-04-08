@@ -535,7 +535,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                   ...sessions.map((s) {
                     final sessionId = s['session_id'] ?? 0;
                     final title = s['title'] ?? 'Untitled Session';
-                    final participantCount = s['participant_count'] ?? 0;
+                    // final participantCount = s['participant_count'] ?? 0;
                     final createdAt = s['created_at'] ?? '';
                     
                     return Card(
@@ -587,24 +587,24 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                     ),
-                                    SizedBox(height: UIUtils.spacing(context, 3)),
-                                    Row(
-                                      children: [
-                                        Icon(
-                                          Icons.people,
-                                          size: UIUtils.iconSize(context, 14),
-                                          color: Colors.grey.shade600,
-                                        ),
-                                        SizedBox(width: UIUtils.spacing(context, 3)),
-                                        Text(
-                                          '$participantCount participant${participantCount != 1 ? 's' : ''}',
-                                          style: TextStyle(
-                                            fontSize: UIUtils.fontSize(context, 11),
-                                            color: Colors.grey.shade600,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
+                                    // SizedBox(height: UIUtils.spacing(context, 3)),
+                                    // Row(
+                                    //   children: [
+                                    //     Icon(
+                                    //       Icons.people,
+                                    //       size: UIUtils.iconSize(context, 14),
+                                    //       color: Colors.grey.shade600,
+                                    //     ),
+                                    //     SizedBox(width: UIUtils.spacing(context, 3)),
+                                    //     Text(
+                                    //       '$participantCount participant${participantCount != 1 ? 's' : ''}',
+                                    //       style: TextStyle(
+                                    //         fontSize: UIUtils.fontSize(context, 11),
+                                    //         color: Colors.grey.shade600,
+                                    //       ),
+                                    //     ),
+                                    //   ],
+                                    // ),
                                   ],
                                 ),
                               ),

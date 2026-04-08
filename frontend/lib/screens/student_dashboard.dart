@@ -510,7 +510,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
                     final sessionId = s['session_id'] ?? 0;
                     final title = s['title'] ?? 'Untitled Session';
                     final teacherName = s['teacher_name'] ?? 'Unknown';
-                    final participantCount = s['participant_count'] ?? 0;
+                    // final participantCount = s['participant_count'] ?? 0;
                     
                     return Card(
                       margin: EdgeInsets.only(bottom: UIUtils.spacing(context, 8)),
@@ -554,15 +554,15 @@ class _StudentDashboardState extends State<StudentDashboard> {
                                 ),
                               ],
                             ),
-                            SizedBox(height: UIUtils.spacing(context, 2)),
-                            Row(
-                              children: [
-                                Icon(Icons.people, size: UIUtils.iconSize(context, 14)),
-                                SizedBox(width: UIUtils.spacing(context, 3)),
-                                Text('$participantCount participants',
-                                    style: TextStyle(fontSize: UIUtils.fontSize(context, 11))),
-                              ],
-                            ),
+                            // SizedBox(height: UIUtils.spacing(context, 2)),
+                            // Row(
+                            //   children: [
+                            //     Icon(Icons.people, size: UIUtils.iconSize(context, 14)),
+                            //     SizedBox(width: UIUtils.spacing(context, 3)),
+                            //     Text('$participantCount participants',
+                            //         style: TextStyle(fontSize: UIUtils.fontSize(context, 11))),
+                            //   ],
+                            // ),
                           ],
                         ),
                         trailing: ElevatedButton(
