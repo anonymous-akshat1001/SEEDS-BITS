@@ -653,6 +653,16 @@ class ApiService {
     return await get('/sessions/$sessionId/logs/summary', useAuth: true);
   }
 
+  /// Ask AI about session logs
+  static Future<Map<String, dynamic>?> askAiAboutSession(
+    int sessionId,
+    String question,
+  ) async {
+    return await post('/sessions/$sessionId/ai/ask/local', {
+      'question': question,
+    }, useAuth: true);
+  }
+
 
 
   /////////////////////////// CHAT ENDPOINTS  /////////////////////////

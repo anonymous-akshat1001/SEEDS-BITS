@@ -320,3 +320,18 @@ class FCMTokenRequest(BaseModel):
 
 class FCMTokenDeleteRequest(BaseModel):
     token: str
+
+
+# ==================== AI ANALYSIS SCHEMAS ====================
+
+class AIAnalysisRequest(BaseModel):
+    """Request body for AI session analysis"""
+    question: str = Field(..., min_length=1, max_length=1000)
+
+
+class AIAnalysisResponse(BaseModel):
+    """Response from AI session analysis"""
+    session_id: int
+    question: str
+    answer: str
+    log_count: int

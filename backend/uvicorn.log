@@ -1,0 +1,1063 @@
+INFO:     Will watch for changes in these directories: ['/home/kshitij/Documents/sem2/deep/temp/SEEDS-BITS/backend']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [10212] using WatchFiles
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+INFO:     Started server process [10214]
+INFO:     Waiting for application startup.
+[FCM] Error loading credentials: [Errno 2] No such file or directory: ''
+2026-03-27 12:03:43,217 INFO sqlalchemy.engine.Engine select version()
+2026-03-27 12:03:43,218 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-27 12:03:43,219 INFO sqlalchemy.engine.Engine select current_schema()
+2026-03-27 12:03:43,219 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-27 12:03:43,219 INFO sqlalchemy.engine.Engine show standard_conforming_strings
+2026-03-27 12:03:43,219 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-27 12:03:43,220 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-03-27 12:03:43,220 INFO sqlalchemy.engine.Engine select relname from pg_class c join pg_namespace n on n.oid=c.relnamespace where pg_catalog.pg_table_is_visible(c.oid) and relname=%s
+2026-03-27 12:03:43,220 INFO sqlalchemy.engine.Engine [generated in 0.00009s] ('users',)
+2026-03-27 12:03:43,222 INFO sqlalchemy.engine.Engine select relname from pg_class c join pg_namespace n on n.oid=c.relnamespace where pg_catalog.pg_table_is_visible(c.oid) and relname=%s
+2026-03-27 12:03:43,222 INFO sqlalchemy.engine.Engine [cached since 0.001675s ago] ('sessions',)
+2026-03-27 12:03:43,222 INFO sqlalchemy.engine.Engine select relname from pg_class c join pg_namespace n on n.oid=c.relnamespace where pg_catalog.pg_table_is_visible(c.oid) and relname=%s
+2026-03-27 12:03:43,223 INFO sqlalchemy.engine.Engine [cached since 0.002134s ago] ('participants',)
+2026-03-27 12:03:43,223 INFO sqlalchemy.engine.Engine select relname from pg_class c join pg_namespace n on n.oid=c.relnamespace where pg_catalog.pg_table_is_visible(c.oid) and relname=%s
+2026-03-27 12:03:43,223 INFO sqlalchemy.engine.Engine [cached since 0.002475s ago] ('audio_files',)
+2026-03-27 12:03:43,223 INFO sqlalchemy.engine.Engine select relname from pg_class c join pg_namespace n on n.oid=c.relnamespace where pg_catalog.pg_table_is_visible(c.oid) and relname=%s
+2026-03-27 12:03:43,223 INFO sqlalchemy.engine.Engine [cached since 0.002793s ago] ('playback',)
+2026-03-27 12:03:43,223 INFO sqlalchemy.engine.Engine select relname from pg_class c join pg_namespace n on n.oid=c.relnamespace where pg_catalog.pg_table_is_visible(c.oid) and relname=%s
+2026-03-27 12:03:43,224 INFO sqlalchemy.engine.Engine [cached since 0.003163s ago] ('questions',)
+2026-03-27 12:03:43,224 INFO sqlalchemy.engine.Engine select relname from pg_class c join pg_namespace n on n.oid=c.relnamespace where pg_catalog.pg_table_is_visible(c.oid) and relname=%s
+2026-03-27 12:03:43,224 INFO sqlalchemy.engine.Engine [cached since 0.003522s ago] ('logs',)
+2026-03-27 12:03:43,224 INFO sqlalchemy.engine.Engine select relname from pg_class c join pg_namespace n on n.oid=c.relnamespace where pg_catalog.pg_table_is_visible(c.oid) and relname=%s
+2026-03-27 12:03:43,224 INFO sqlalchemy.engine.Engine [cached since 0.004063s ago] ('jwt_tokens',)
+2026-03-27 12:03:43,225 INFO sqlalchemy.engine.Engine select relname from pg_class c join pg_namespace n on n.oid=c.relnamespace where pg_catalog.pg_table_is_visible(c.oid) and relname=%s
+2026-03-27 12:03:43,225 INFO sqlalchemy.engine.Engine [cached since 0.004367s ago] ('chat_messages',)
+2026-03-27 12:03:43,225 INFO sqlalchemy.engine.Engine select relname from pg_class c join pg_namespace n on n.oid=c.relnamespace where pg_catalog.pg_table_is_visible(c.oid) and relname=%s
+2026-03-27 12:03:43,225 INFO sqlalchemy.engine.Engine [cached since 0.004686s ago] ('audio_messages',)
+2026-03-27 12:03:43,225 INFO sqlalchemy.engine.Engine select relname from pg_class c join pg_namespace n on n.oid=c.relnamespace where pg_catalog.pg_table_is_visible(c.oid) and relname=%s
+2026-03-27 12:03:43,225 INFO sqlalchemy.engine.Engine [cached since 0.004965s ago] ('fcm_tokens',)
+2026-03-27 12:03:43,226 INFO sqlalchemy.engine.Engine COMMIT
+INFO:     Application startup complete.
+INFO:     127.0.0.1:44674 - "GET /docs HTTP/1.1" 200 OK
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+INFO:     127.0.0.1:44674 - "GET /openapi.json HTTP/1.1" 200 OK
+2026-03-27 12:10:00,875 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-03-27 12:10:00,876 INFO sqlalchemy.engine.Engine SELECT users.user_id, users.name, users.phone_number, users.role, users.password_hash, users.created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:10:00,876 INFO sqlalchemy.engine.Engine [generated in 0.00011s] (1,)
+2026-03-27 12:10:00,879 INFO sqlalchemy.engine.Engine SELECT sessions.session_id AS sessions_session_id, sessions.title AS sessions_title, sessions.created_by AS sessions_created_by, sessions.is_active AS sessions_is_active, sessions.created_at AS sessions_created_at, sessions.ended_at AS sessions_ended_at 
+FROM sessions 
+WHERE sessions.session_id = %s
+2026-03-27 12:10:00,879 INFO sqlalchemy.engine.Engine [generated in 0.00015s] (1,)
+2026-03-27 12:10:01,159 INFO sqlalchemy.engine.Engine SELECT logs.log_id, logs.session_id, logs.user_id, logs.event_type, logs.event_details, logs.created_at 
+FROM logs 
+WHERE logs.session_id = %s ORDER BY logs.created_at DESC 
+ LIMIT %s
+2026-03-27 12:10:01,160 INFO sqlalchemy.engine.Engine [generated in 0.00018s] (1, 1000)
+2026-03-27 12:10:01,162 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:10:01,162 INFO sqlalchemy.engine.Engine [generated in 0.00011s] (2,)
+2026-03-27 12:10:01,163 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:10:01,163 INFO sqlalchemy.engine.Engine [cached since 0.0007736s ago] (3,)
+2026-03-27 12:10:01,163 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:10:01,163 INFO sqlalchemy.engine.Engine [cached since 0.00123s ago] (4,)
+2026-03-27 12:10:01,164 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:10:01,164 INFO sqlalchemy.engine.Engine [cached since 0.001696s ago] (5,)
+2026-03-27 12:10:01,164 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:10:01,164 INFO sqlalchemy.engine.Engine [cached since 0.002097s ago] (6,)
+2026-03-27 12:10:01,164 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:10:01,164 INFO sqlalchemy.engine.Engine [cached since 0.002459s ago] (7,)
+2026-03-27 12:10:01,165 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:10:01,165 INFO sqlalchemy.engine.Engine [cached since 0.00283s ago] (8,)
+2026-03-27 12:10:01,165 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:10:01,165 INFO sqlalchemy.engine.Engine [cached since 0.003166s ago] (9,)
+2026-03-27 12:10:01,165 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:10:01,165 INFO sqlalchemy.engine.Engine [cached since 0.003521s ago] (10,)
+2026-03-27 12:10:01,166 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:10:01,166 INFO sqlalchemy.engine.Engine [cached since 0.003862s ago] (11,)
+2026-03-27 12:10:01,167 INFO sqlalchemy.engine.Engine SELECT participants.participant_id, participants.session_id, participants.user_id, participants.joined_at, participants.left_at, participants.is_muted, participants.is_kicked, participants.hand_raised 
+FROM participants 
+WHERE participants.session_id = %s
+2026-03-27 12:10:01,167 INFO sqlalchemy.engine.Engine [generated in 0.00009s] (1,)
+INFO:     127.0.0.1:39048 - "POST /sessions/1/ai/ask?user_id=1 HTTP/1.1" 200 OK
+2026-03-27 12:10:05,189 INFO sqlalchemy.engine.Engine ROLLBACK
+2026-03-27 12:10:45,220 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-03-27 12:10:45,220 INFO sqlalchemy.engine.Engine SELECT users.user_id, users.name, users.phone_number, users.role, users.password_hash, users.created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:10:45,220 INFO sqlalchemy.engine.Engine [cached since 44.34s ago] (1,)
+2026-03-27 12:10:45,221 INFO sqlalchemy.engine.Engine SELECT sessions.session_id AS sessions_session_id, sessions.title AS sessions_title, sessions.created_by AS sessions_created_by, sessions.is_active AS sessions_is_active, sessions.created_at AS sessions_created_at, sessions.ended_at AS sessions_ended_at 
+FROM sessions 
+WHERE sessions.session_id = %s
+2026-03-27 12:10:45,221 INFO sqlalchemy.engine.Engine [cached since 44.34s ago] (1,)
+2026-03-27 12:10:45,228 INFO sqlalchemy.engine.Engine SELECT logs.log_id, logs.session_id, logs.user_id, logs.event_type, logs.event_details, logs.created_at 
+FROM logs 
+WHERE logs.session_id = %s ORDER BY logs.created_at DESC 
+ LIMIT %s
+2026-03-27 12:10:45,228 INFO sqlalchemy.engine.Engine [cached since 44.07s ago] (1, 1000)
+2026-03-27 12:10:45,229 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:10:45,229 INFO sqlalchemy.engine.Engine [cached since 44.07s ago] (2,)
+2026-03-27 12:10:45,229 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:10:45,229 INFO sqlalchemy.engine.Engine [cached since 44.07s ago] (3,)
+2026-03-27 12:10:45,230 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:10:45,230 INFO sqlalchemy.engine.Engine [cached since 44.07s ago] (4,)
+2026-03-27 12:10:45,230 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:10:45,230 INFO sqlalchemy.engine.Engine [cached since 44.07s ago] (5,)
+2026-03-27 12:10:45,230 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:10:45,230 INFO sqlalchemy.engine.Engine [cached since 44.07s ago] (6,)
+2026-03-27 12:10:45,231 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:10:45,231 INFO sqlalchemy.engine.Engine [cached since 44.07s ago] (7,)
+2026-03-27 12:10:45,231 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:10:45,232 INFO sqlalchemy.engine.Engine [cached since 44.07s ago] (8,)
+2026-03-27 12:10:45,232 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:10:45,232 INFO sqlalchemy.engine.Engine [cached since 44.07s ago] (9,)
+2026-03-27 12:10:45,232 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:10:45,232 INFO sqlalchemy.engine.Engine [cached since 44.07s ago] (10,)
+2026-03-27 12:10:45,233 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:10:45,233 INFO sqlalchemy.engine.Engine [cached since 44.07s ago] (11,)
+2026-03-27 12:10:45,233 INFO sqlalchemy.engine.Engine SELECT participants.participant_id, participants.session_id, participants.user_id, participants.joined_at, participants.left_at, participants.is_muted, participants.is_kicked, participants.hand_raised 
+FROM participants 
+WHERE participants.session_id = %s
+2026-03-27 12:10:45,233 INFO sqlalchemy.engine.Engine [cached since 44.07s ago] (1,)
+INFO:     127.0.0.1:58304 - "POST /sessions/1/ai/ask?user_id=1 HTTP/1.1" 200 OK
+2026-03-27 12:10:47,163 INFO sqlalchemy.engine.Engine ROLLBACK
+2026-03-27 12:11:20,706 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-03-27 12:11:20,706 INFO sqlalchemy.engine.Engine SELECT users.user_id, users.name, users.phone_number, users.role, users.password_hash, users.created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:11:20,706 INFO sqlalchemy.engine.Engine [cached since 79.83s ago] (1,)
+2026-03-27 12:11:20,707 INFO sqlalchemy.engine.Engine SELECT sessions.session_id AS sessions_session_id, sessions.title AS sessions_title, sessions.created_by AS sessions_created_by, sessions.is_active AS sessions_is_active, sessions.created_at AS sessions_created_at, sessions.ended_at AS sessions_ended_at 
+FROM sessions 
+WHERE sessions.session_id = %s
+2026-03-27 12:11:20,707 INFO sqlalchemy.engine.Engine [cached since 79.83s ago] (1,)
+2026-03-27 12:11:20,713 INFO sqlalchemy.engine.Engine SELECT logs.log_id, logs.session_id, logs.user_id, logs.event_type, logs.event_details, logs.created_at 
+FROM logs 
+WHERE logs.session_id = %s ORDER BY logs.created_at DESC 
+ LIMIT %s
+2026-03-27 12:11:20,713 INFO sqlalchemy.engine.Engine [cached since 79.55s ago] (1, 1000)
+2026-03-27 12:11:20,714 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:11:20,714 INFO sqlalchemy.engine.Engine [cached since 79.55s ago] (2,)
+2026-03-27 12:11:20,715 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:11:20,715 INFO sqlalchemy.engine.Engine [cached since 79.55s ago] (3,)
+2026-03-27 12:11:20,716 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:11:20,716 INFO sqlalchemy.engine.Engine [cached since 79.55s ago] (4,)
+2026-03-27 12:11:20,716 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:11:20,716 INFO sqlalchemy.engine.Engine [cached since 79.55s ago] (5,)
+2026-03-27 12:11:20,716 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:11:20,716 INFO sqlalchemy.engine.Engine [cached since 79.55s ago] (6,)
+2026-03-27 12:11:20,717 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:11:20,717 INFO sqlalchemy.engine.Engine [cached since 79.56s ago] (7,)
+2026-03-27 12:11:20,717 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:11:20,717 INFO sqlalchemy.engine.Engine [cached since 79.56s ago] (8,)
+2026-03-27 12:11:20,718 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:11:20,718 INFO sqlalchemy.engine.Engine [cached since 79.56s ago] (9,)
+2026-03-27 12:11:20,718 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:11:20,718 INFO sqlalchemy.engine.Engine [cached since 79.56s ago] (10,)
+2026-03-27 12:11:20,718 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:11:20,718 INFO sqlalchemy.engine.Engine [cached since 79.56s ago] (11,)
+2026-03-27 12:11:20,719 INFO sqlalchemy.engine.Engine SELECT participants.participant_id, participants.session_id, participants.user_id, participants.joined_at, participants.left_at, participants.is_muted, participants.is_kicked, participants.hand_raised 
+FROM participants 
+WHERE participants.session_id = %s
+2026-03-27 12:11:20,719 INFO sqlalchemy.engine.Engine [cached since 79.55s ago] (1,)
+INFO:     127.0.0.1:36682 - "POST /sessions/1/ai/ask?user_id=1 HTTP/1.1" 200 OK
+2026-03-27 12:11:26,591 INFO sqlalchemy.engine.Engine ROLLBACK
+WARNING:  WatchFiles detected changes in 'simulate_two_sessions.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [10214]
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+INFO:     Started server process [20537]
+INFO:     Waiting for application startup.
+[FCM] Error loading credentials: [Errno 2] No such file or directory: ''
+2026-03-27 12:41:29,967 INFO sqlalchemy.engine.Engine select version()
+2026-03-27 12:41:29,967 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-27 12:41:29,968 INFO sqlalchemy.engine.Engine select current_schema()
+2026-03-27 12:41:29,968 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-27 12:41:29,969 INFO sqlalchemy.engine.Engine show standard_conforming_strings
+2026-03-27 12:41:29,969 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-27 12:41:29,969 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-03-27 12:41:29,970 INFO sqlalchemy.engine.Engine select relname from pg_class c join pg_namespace n on n.oid=c.relnamespace where pg_catalog.pg_table_is_visible(c.oid) and relname=%s
+2026-03-27 12:41:29,970 INFO sqlalchemy.engine.Engine [generated in 0.00008s] ('users',)
+2026-03-27 12:41:29,971 INFO sqlalchemy.engine.Engine select relname from pg_class c join pg_namespace n on n.oid=c.relnamespace where pg_catalog.pg_table_is_visible(c.oid) and relname=%s
+2026-03-27 12:41:29,971 INFO sqlalchemy.engine.Engine [cached since 0.001215s ago] ('sessions',)
+2026-03-27 12:41:29,971 INFO sqlalchemy.engine.Engine select relname from pg_class c join pg_namespace n on n.oid=c.relnamespace where pg_catalog.pg_table_is_visible(c.oid) and relname=%s
+2026-03-27 12:41:29,971 INFO sqlalchemy.engine.Engine [cached since 0.001612s ago] ('participants',)
+2026-03-27 12:41:29,972 INFO sqlalchemy.engine.Engine select relname from pg_class c join pg_namespace n on n.oid=c.relnamespace where pg_catalog.pg_table_is_visible(c.oid) and relname=%s
+2026-03-27 12:41:29,972 INFO sqlalchemy.engine.Engine [cached since 0.001952s ago] ('audio_files',)
+2026-03-27 12:41:29,972 INFO sqlalchemy.engine.Engine select relname from pg_class c join pg_namespace n on n.oid=c.relnamespace where pg_catalog.pg_table_is_visible(c.oid) and relname=%s
+2026-03-27 12:41:29,972 INFO sqlalchemy.engine.Engine [cached since 0.002262s ago] ('playback',)
+2026-03-27 12:41:29,972 INFO sqlalchemy.engine.Engine select relname from pg_class c join pg_namespace n on n.oid=c.relnamespace where pg_catalog.pg_table_is_visible(c.oid) and relname=%s
+2026-03-27 12:41:29,972 INFO sqlalchemy.engine.Engine [cached since 0.002556s ago] ('questions',)
+2026-03-27 12:41:29,972 INFO sqlalchemy.engine.Engine select relname from pg_class c join pg_namespace n on n.oid=c.relnamespace where pg_catalog.pg_table_is_visible(c.oid) and relname=%s
+2026-03-27 12:41:29,972 INFO sqlalchemy.engine.Engine [cached since 0.00286s ago] ('logs',)
+2026-03-27 12:41:29,973 INFO sqlalchemy.engine.Engine select relname from pg_class c join pg_namespace n on n.oid=c.relnamespace where pg_catalog.pg_table_is_visible(c.oid) and relname=%s
+2026-03-27 12:41:29,973 INFO sqlalchemy.engine.Engine [cached since 0.003308s ago] ('jwt_tokens',)
+2026-03-27 12:41:29,973 INFO sqlalchemy.engine.Engine select relname from pg_class c join pg_namespace n on n.oid=c.relnamespace where pg_catalog.pg_table_is_visible(c.oid) and relname=%s
+2026-03-27 12:41:29,973 INFO sqlalchemy.engine.Engine [cached since 0.003552s ago] ('chat_messages',)
+2026-03-27 12:41:29,973 INFO sqlalchemy.engine.Engine select relname from pg_class c join pg_namespace n on n.oid=c.relnamespace where pg_catalog.pg_table_is_visible(c.oid) and relname=%s
+2026-03-27 12:41:29,973 INFO sqlalchemy.engine.Engine [cached since 0.00379s ago] ('audio_messages',)
+2026-03-27 12:41:29,974 INFO sqlalchemy.engine.Engine select relname from pg_class c join pg_namespace n on n.oid=c.relnamespace where pg_catalog.pg_table_is_visible(c.oid) and relname=%s
+2026-03-27 12:41:29,974 INFO sqlalchemy.engine.Engine [cached since 0.00401s ago] ('fcm_tokens',)
+2026-03-27 12:41:29,974 INFO sqlalchemy.engine.Engine COMMIT
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'demo_suite.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [20537]
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+INFO:     Started server process [23478]
+INFO:     Waiting for application startup.
+[FCM] Error loading credentials: [Errno 2] No such file or directory: ''
+2026-03-27 12:51:48,688 INFO sqlalchemy.engine.Engine select version()
+2026-03-27 12:51:48,688 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-27 12:51:48,689 INFO sqlalchemy.engine.Engine select current_schema()
+2026-03-27 12:51:48,689 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-27 12:51:48,690 INFO sqlalchemy.engine.Engine show standard_conforming_strings
+2026-03-27 12:51:48,690 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-27 12:51:48,690 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-03-27 12:51:48,691 INFO sqlalchemy.engine.Engine select relname from pg_class c join pg_namespace n on n.oid=c.relnamespace where pg_catalog.pg_table_is_visible(c.oid) and relname=%s
+2026-03-27 12:51:48,691 INFO sqlalchemy.engine.Engine [generated in 0.00007s] ('users',)
+2026-03-27 12:51:48,692 INFO sqlalchemy.engine.Engine select relname from pg_class c join pg_namespace n on n.oid=c.relnamespace where pg_catalog.pg_table_is_visible(c.oid) and relname=%s
+2026-03-27 12:51:48,692 INFO sqlalchemy.engine.Engine [cached since 0.001122s ago] ('sessions',)
+2026-03-27 12:51:48,692 INFO sqlalchemy.engine.Engine select relname from pg_class c join pg_namespace n on n.oid=c.relnamespace where pg_catalog.pg_table_is_visible(c.oid) and relname=%s
+2026-03-27 12:51:48,692 INFO sqlalchemy.engine.Engine [cached since 0.00144s ago] ('participants',)
+2026-03-27 12:51:48,692 INFO sqlalchemy.engine.Engine select relname from pg_class c join pg_namespace n on n.oid=c.relnamespace where pg_catalog.pg_table_is_visible(c.oid) and relname=%s
+2026-03-27 12:51:48,692 INFO sqlalchemy.engine.Engine [cached since 0.00174s ago] ('audio_files',)
+2026-03-27 12:51:48,693 INFO sqlalchemy.engine.Engine select relname from pg_class c join pg_namespace n on n.oid=c.relnamespace where pg_catalog.pg_table_is_visible(c.oid) and relname=%s
+2026-03-27 12:51:48,693 INFO sqlalchemy.engine.Engine [cached since 0.002018s ago] ('playback',)
+2026-03-27 12:51:48,693 INFO sqlalchemy.engine.Engine select relname from pg_class c join pg_namespace n on n.oid=c.relnamespace where pg_catalog.pg_table_is_visible(c.oid) and relname=%s
+2026-03-27 12:51:48,693 INFO sqlalchemy.engine.Engine [cached since 0.00229s ago] ('questions',)
+2026-03-27 12:51:48,693 INFO sqlalchemy.engine.Engine select relname from pg_class c join pg_namespace n on n.oid=c.relnamespace where pg_catalog.pg_table_is_visible(c.oid) and relname=%s
+2026-03-27 12:51:48,693 INFO sqlalchemy.engine.Engine [cached since 0.002562s ago] ('logs',)
+2026-03-27 12:51:48,694 INFO sqlalchemy.engine.Engine select relname from pg_class c join pg_namespace n on n.oid=c.relnamespace where pg_catalog.pg_table_is_visible(c.oid) and relname=%s
+2026-03-27 12:51:48,694 INFO sqlalchemy.engine.Engine [cached since 0.003008s ago] ('jwt_tokens',)
+2026-03-27 12:51:48,694 INFO sqlalchemy.engine.Engine select relname from pg_class c join pg_namespace n on n.oid=c.relnamespace where pg_catalog.pg_table_is_visible(c.oid) and relname=%s
+2026-03-27 12:51:48,694 INFO sqlalchemy.engine.Engine [cached since 0.003228s ago] ('chat_messages',)
+2026-03-27 12:51:48,694 INFO sqlalchemy.engine.Engine select relname from pg_class c join pg_namespace n on n.oid=c.relnamespace where pg_catalog.pg_table_is_visible(c.oid) and relname=%s
+2026-03-27 12:51:48,694 INFO sqlalchemy.engine.Engine [cached since 0.003451s ago] ('audio_messages',)
+2026-03-27 12:51:48,694 INFO sqlalchemy.engine.Engine select relname from pg_class c join pg_namespace n on n.oid=c.relnamespace where pg_catalog.pg_table_is_visible(c.oid) and relname=%s
+2026-03-27 12:51:48,694 INFO sqlalchemy.engine.Engine [cached since 0.003663s ago] ('fcm_tokens',)
+2026-03-27 12:51:48,695 INFO sqlalchemy.engine.Engine COMMIT
+INFO:     Application startup complete.
+2026-03-27 12:52:13,727 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-03-27 12:52:13,729 INFO sqlalchemy.engine.Engine SELECT users.user_id, users.name, users.phone_number, users.role, users.password_hash, users.created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:52:13,729 INFO sqlalchemy.engine.Engine [generated in 0.00011s] (1,)
+2026-03-27 12:52:13,731 INFO sqlalchemy.engine.Engine SELECT sessions.session_id AS sessions_session_id, sessions.title AS sessions_title, sessions.created_by AS sessions_created_by, sessions.is_active AS sessions_is_active, sessions.created_at AS sessions_created_at, sessions.ended_at AS sessions_ended_at 
+FROM sessions 
+WHERE sessions.session_id = %s
+2026-03-27 12:52:13,732 INFO sqlalchemy.engine.Engine [generated in 0.00011s] (1,)
+2026-03-27 12:52:13,980 INFO sqlalchemy.engine.Engine SELECT logs.log_id, logs.session_id, logs.user_id, logs.event_type, logs.event_details, logs.created_at 
+FROM logs 
+WHERE logs.session_id = %s ORDER BY logs.created_at DESC 
+ LIMIT %s
+2026-03-27 12:52:13,980 INFO sqlalchemy.engine.Engine [generated in 0.00015s] (1, 1000)
+2026-03-27 12:52:13,982 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:52:13,982 INFO sqlalchemy.engine.Engine [generated in 0.00009s] (2,)
+2026-03-27 12:52:13,983 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:52:13,983 INFO sqlalchemy.engine.Engine [cached since 0.0008191s ago] (3,)
+2026-03-27 12:52:13,983 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:52:13,984 INFO sqlalchemy.engine.Engine [cached since 0.001321s ago] (4,)
+2026-03-27 12:52:13,984 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:52:13,984 INFO sqlalchemy.engine.Engine [cached since 0.001785s ago] (5,)
+2026-03-27 12:52:13,984 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:52:13,984 INFO sqlalchemy.engine.Engine [cached since 0.002234s ago] (6,)
+2026-03-27 12:52:13,985 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:52:13,985 INFO sqlalchemy.engine.Engine [cached since 0.002646s ago] (7,)
+2026-03-27 12:52:13,985 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:52:13,985 INFO sqlalchemy.engine.Engine [cached since 0.003048s ago] (8,)
+2026-03-27 12:52:13,986 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:52:13,986 INFO sqlalchemy.engine.Engine [cached since 0.003443s ago] (9,)
+2026-03-27 12:52:13,986 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:52:13,986 INFO sqlalchemy.engine.Engine [cached since 0.003847s ago] (10,)
+2026-03-27 12:52:13,986 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:52:13,986 INFO sqlalchemy.engine.Engine [cached since 0.004285s ago] (11,)
+2026-03-27 12:52:13,987 INFO sqlalchemy.engine.Engine SELECT participants.participant_id, participants.session_id, participants.user_id, participants.joined_at, participants.left_at, participants.is_muted, participants.is_kicked, participants.hand_raised 
+FROM participants 
+WHERE participants.session_id = %s
+2026-03-27 12:52:13,987 INFO sqlalchemy.engine.Engine [generated in 0.00008s] (1,)
+INFO:     127.0.0.1:36386 - "POST /sessions/1/ai/ask?user_id=1 HTTP/1.1" 200 OK
+2026-03-27 12:52:24,213 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:52318 - "GET /docs HTTP/1.1" 200 OK
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+/home/kshitij/.local/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+INFO:     127.0.0.1:52318 - "GET /openapi.json HTTP/1.1" 200 OK
+2026-03-27 12:54:47,338 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-03-27 12:54:47,338 INFO sqlalchemy.engine.Engine SELECT users.user_id, users.name, users.phone_number, users.role, users.password_hash, users.created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:54:47,338 INFO sqlalchemy.engine.Engine [cached since 153.6s ago] (1,)
+2026-03-27 12:54:47,339 INFO sqlalchemy.engine.Engine SELECT sessions.session_id AS sessions_session_id, sessions.title AS sessions_title, sessions.created_by AS sessions_created_by, sessions.is_active AS sessions_is_active, sessions.created_at AS sessions_created_at, sessions.ended_at AS sessions_ended_at 
+FROM sessions 
+WHERE sessions.session_id = %s
+2026-03-27 12:54:47,339 INFO sqlalchemy.engine.Engine [cached since 153.6s ago] (1,)
+2026-03-27 12:54:47,345 INFO sqlalchemy.engine.Engine SELECT logs.log_id, logs.session_id, logs.user_id, logs.event_type, logs.event_details, logs.created_at 
+FROM logs 
+WHERE logs.session_id = %s ORDER BY logs.created_at DESC 
+ LIMIT %s
+2026-03-27 12:54:47,345 INFO sqlalchemy.engine.Engine [cached since 153.4s ago] (1, 1000)
+2026-03-27 12:54:47,346 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:54:47,346 INFO sqlalchemy.engine.Engine [cached since 153.4s ago] (2,)
+2026-03-27 12:54:47,346 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:54:47,346 INFO sqlalchemy.engine.Engine [cached since 153.4s ago] (3,)
+2026-03-27 12:54:47,346 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:54:47,346 INFO sqlalchemy.engine.Engine [cached since 153.4s ago] (4,)
+2026-03-27 12:54:47,347 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:54:47,347 INFO sqlalchemy.engine.Engine [cached since 153.4s ago] (5,)
+2026-03-27 12:54:47,347 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:54:47,347 INFO sqlalchemy.engine.Engine [cached since 153.4s ago] (6,)
+2026-03-27 12:54:47,348 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:54:47,348 INFO sqlalchemy.engine.Engine [cached since 153.4s ago] (7,)
+2026-03-27 12:54:47,348 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:54:47,348 INFO sqlalchemy.engine.Engine [cached since 153.4s ago] (8,)
+2026-03-27 12:54:47,348 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:54:47,348 INFO sqlalchemy.engine.Engine [cached since 153.4s ago] (9,)
+2026-03-27 12:54:47,349 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:54:47,349 INFO sqlalchemy.engine.Engine [cached since 153.4s ago] (10,)
+2026-03-27 12:54:47,349 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:54:47,349 INFO sqlalchemy.engine.Engine [cached since 153.4s ago] (11,)
+2026-03-27 12:54:47,350 INFO sqlalchemy.engine.Engine SELECT participants.participant_id, participants.session_id, participants.user_id, participants.joined_at, participants.left_at, participants.is_muted, participants.is_kicked, participants.hand_raised 
+FROM participants 
+WHERE participants.session_id = %s
+2026-03-27 12:54:47,350 INFO sqlalchemy.engine.Engine [cached since 153.4s ago] (1,)
+INFO:     127.0.0.1:35078 - "POST /sessions/1/ai/ask?user_id=1 HTTP/1.1" 200 OK
+2026-03-27 12:54:59,448 INFO sqlalchemy.engine.Engine ROLLBACK
+2026-03-27 12:55:32,801 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-03-27 12:55:32,802 INFO sqlalchemy.engine.Engine SELECT users.user_id, users.name, users.phone_number, users.role, users.password_hash, users.created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:55:32,802 INFO sqlalchemy.engine.Engine [cached since 199.1s ago] (1,)
+2026-03-27 12:55:32,803 INFO sqlalchemy.engine.Engine SELECT sessions.session_id AS sessions_session_id, sessions.title AS sessions_title, sessions.created_by AS sessions_created_by, sessions.is_active AS sessions_is_active, sessions.created_at AS sessions_created_at, sessions.ended_at AS sessions_ended_at 
+FROM sessions 
+WHERE sessions.session_id = %s
+2026-03-27 12:55:32,803 INFO sqlalchemy.engine.Engine [cached since 199.1s ago] (1,)
+2026-03-27 12:55:32,810 INFO sqlalchemy.engine.Engine SELECT logs.log_id, logs.session_id, logs.user_id, logs.event_type, logs.event_details, logs.created_at 
+FROM logs 
+WHERE logs.session_id = %s ORDER BY logs.created_at DESC 
+ LIMIT %s
+2026-03-27 12:55:32,810 INFO sqlalchemy.engine.Engine [cached since 198.8s ago] (1, 1000)
+2026-03-27 12:55:32,811 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:55:32,811 INFO sqlalchemy.engine.Engine [cached since 198.8s ago] (2,)
+2026-03-27 12:55:32,811 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:55:32,811 INFO sqlalchemy.engine.Engine [cached since 198.8s ago] (3,)
+2026-03-27 12:55:32,812 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:55:32,812 INFO sqlalchemy.engine.Engine [cached since 198.8s ago] (4,)
+2026-03-27 12:55:32,812 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:55:32,812 INFO sqlalchemy.engine.Engine [cached since 198.8s ago] (5,)
+2026-03-27 12:55:32,812 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:55:32,812 INFO sqlalchemy.engine.Engine [cached since 198.8s ago] (6,)
+2026-03-27 12:55:32,813 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:55:32,813 INFO sqlalchemy.engine.Engine [cached since 198.8s ago] (7,)
+2026-03-27 12:55:32,813 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:55:32,813 INFO sqlalchemy.engine.Engine [cached since 198.8s ago] (8,)
+2026-03-27 12:55:32,814 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:55:32,814 INFO sqlalchemy.engine.Engine [cached since 198.8s ago] (9,)
+2026-03-27 12:55:32,814 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:55:32,814 INFO sqlalchemy.engine.Engine [cached since 198.8s ago] (10,)
+2026-03-27 12:55:32,815 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 12:55:32,815 INFO sqlalchemy.engine.Engine [cached since 198.8s ago] (11,)
+2026-03-27 12:55:32,815 INFO sqlalchemy.engine.Engine SELECT participants.participant_id, participants.session_id, participants.user_id, participants.joined_at, participants.left_at, participants.is_muted, participants.is_kicked, participants.hand_raised 
+FROM participants 
+WHERE participants.session_id = %s
+2026-03-27 12:55:32,815 INFO sqlalchemy.engine.Engine [cached since 198.8s ago] (1,)
+INFO:     127.0.0.1:52214 - "POST /sessions/1/ai/ask?user_id=1 HTTP/1.1" 200 OK
+2026-03-27 12:55:34,682 INFO sqlalchemy.engine.Engine ROLLBACK
+2026-03-27 13:11:01,801 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-03-27 13:11:01,801 INFO sqlalchemy.engine.Engine SELECT users.user_id, users.name, users.phone_number, users.role, users.password_hash, users.created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 13:11:01,801 INFO sqlalchemy.engine.Engine [cached since 1128s ago] (1,)
+2026-03-27 13:11:01,802 INFO sqlalchemy.engine.Engine SELECT sessions.session_id AS sessions_session_id, sessions.title AS sessions_title, sessions.created_by AS sessions_created_by, sessions.is_active AS sessions_is_active, sessions.created_at AS sessions_created_at, sessions.ended_at AS sessions_ended_at 
+FROM sessions 
+WHERE sessions.session_id = %s
+2026-03-27 13:11:01,802 INFO sqlalchemy.engine.Engine [cached since 1128s ago] (1,)
+2026-03-27 13:11:01,809 INFO sqlalchemy.engine.Engine SELECT logs.log_id, logs.session_id, logs.user_id, logs.event_type, logs.event_details, logs.created_at 
+FROM logs 
+WHERE logs.session_id = %s ORDER BY logs.created_at DESC 
+ LIMIT %s
+2026-03-27 13:11:01,809 INFO sqlalchemy.engine.Engine [cached since 1128s ago] (1, 1000)
+2026-03-27 13:11:01,810 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 13:11:01,810 INFO sqlalchemy.engine.Engine [cached since 1128s ago] (2,)
+2026-03-27 13:11:01,810 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 13:11:01,810 INFO sqlalchemy.engine.Engine [cached since 1128s ago] (3,)
+2026-03-27 13:11:01,811 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 13:11:01,811 INFO sqlalchemy.engine.Engine [cached since 1128s ago] (4,)
+2026-03-27 13:11:01,811 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 13:11:01,811 INFO sqlalchemy.engine.Engine [cached since 1128s ago] (5,)
+2026-03-27 13:11:01,811 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 13:11:01,811 INFO sqlalchemy.engine.Engine [cached since 1128s ago] (6,)
+2026-03-27 13:11:01,812 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 13:11:01,812 INFO sqlalchemy.engine.Engine [cached since 1128s ago] (7,)
+2026-03-27 13:11:01,812 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 13:11:01,812 INFO sqlalchemy.engine.Engine [cached since 1128s ago] (8,)
+2026-03-27 13:11:01,812 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 13:11:01,812 INFO sqlalchemy.engine.Engine [cached since 1128s ago] (9,)
+2026-03-27 13:11:01,813 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 13:11:01,813 INFO sqlalchemy.engine.Engine [cached since 1128s ago] (10,)
+2026-03-27 13:11:01,813 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 13:11:01,813 INFO sqlalchemy.engine.Engine [cached since 1128s ago] (11,)
+2026-03-27 13:11:01,813 INFO sqlalchemy.engine.Engine SELECT participants.participant_id, participants.session_id, participants.user_id, participants.joined_at, participants.left_at, participants.is_muted, participants.is_kicked, participants.hand_raised 
+FROM participants 
+WHERE participants.session_id = %s
+2026-03-27 13:11:01,813 INFO sqlalchemy.engine.Engine [cached since 1128s ago] (1,)
+INFO:     127.0.0.1:38362 - "POST /sessions/1/ai/ask?user_id=1 HTTP/1.1" 200 OK
+2026-03-27 13:11:03,446 INFO sqlalchemy.engine.Engine ROLLBACK
+2026-03-27 13:30:24,811 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-03-27 13:30:24,811 INFO sqlalchemy.engine.Engine SELECT users.user_id, users.name, users.phone_number, users.role, users.password_hash, users.created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 13:30:24,811 INFO sqlalchemy.engine.Engine [cached since 2291s ago] (1,)
+2026-03-27 13:30:24,812 INFO sqlalchemy.engine.Engine SELECT sessions.session_id AS sessions_session_id, sessions.title AS sessions_title, sessions.created_by AS sessions_created_by, sessions.is_active AS sessions_is_active, sessions.created_at AS sessions_created_at, sessions.ended_at AS sessions_ended_at 
+FROM sessions 
+WHERE sessions.session_id = %s
+2026-03-27 13:30:24,812 INFO sqlalchemy.engine.Engine [cached since 2291s ago] (1,)
+2026-03-27 13:30:24,818 INFO sqlalchemy.engine.Engine SELECT logs.log_id, logs.session_id, logs.user_id, logs.event_type, logs.event_details, logs.created_at 
+FROM logs 
+WHERE logs.session_id = %s ORDER BY logs.created_at DESC 
+ LIMIT %s
+2026-03-27 13:30:24,818 INFO sqlalchemy.engine.Engine [cached since 2291s ago] (1, 1000)
+2026-03-27 13:30:24,819 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 13:30:24,819 INFO sqlalchemy.engine.Engine [cached since 2291s ago] (2,)
+2026-03-27 13:30:24,820 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 13:30:24,820 INFO sqlalchemy.engine.Engine [cached since 2291s ago] (3,)
+2026-03-27 13:30:24,820 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 13:30:24,820 INFO sqlalchemy.engine.Engine [cached since 2291s ago] (4,)
+2026-03-27 13:30:24,820 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 13:30:24,820 INFO sqlalchemy.engine.Engine [cached since 2291s ago] (5,)
+2026-03-27 13:30:24,821 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 13:30:24,821 INFO sqlalchemy.engine.Engine [cached since 2291s ago] (6,)
+2026-03-27 13:30:24,821 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 13:30:24,821 INFO sqlalchemy.engine.Engine [cached since 2291s ago] (7,)
+2026-03-27 13:30:24,821 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 13:30:24,821 INFO sqlalchemy.engine.Engine [cached since 2291s ago] (8,)
+2026-03-27 13:30:24,822 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 13:30:24,822 INFO sqlalchemy.engine.Engine [cached since 2291s ago] (9,)
+2026-03-27 13:30:24,822 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 13:30:24,822 INFO sqlalchemy.engine.Engine [cached since 2291s ago] (10,)
+2026-03-27 13:30:24,822 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 13:30:24,823 INFO sqlalchemy.engine.Engine [cached since 2291s ago] (11,)
+2026-03-27 13:30:24,823 INFO sqlalchemy.engine.Engine SELECT participants.participant_id, participants.session_id, participants.user_id, participants.joined_at, participants.left_at, participants.is_muted, participants.is_kicked, participants.hand_raised 
+FROM participants 
+WHERE participants.session_id = %s
+2026-03-27 13:30:24,823 INFO sqlalchemy.engine.Engine [cached since 2291s ago] (1,)
+INFO:     127.0.0.1:60618 - "POST /sessions/1/ai/ask?user_id=1 HTTP/1.1" 200 OK
+2026-03-27 13:30:30,918 INFO sqlalchemy.engine.Engine ROLLBACK
+2026-03-27 13:30:57,316 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-03-27 13:30:57,316 INFO sqlalchemy.engine.Engine SELECT users.user_id, users.name, users.phone_number, users.role, users.password_hash, users.created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 13:30:57,317 INFO sqlalchemy.engine.Engine [cached since 2324s ago] (1,)
+2026-03-27 13:30:57,317 INFO sqlalchemy.engine.Engine SELECT sessions.session_id AS sessions_session_id, sessions.title AS sessions_title, sessions.created_by AS sessions_created_by, sessions.is_active AS sessions_is_active, sessions.created_at AS sessions_created_at, sessions.ended_at AS sessions_ended_at 
+FROM sessions 
+WHERE sessions.session_id = %s
+2026-03-27 13:30:57,317 INFO sqlalchemy.engine.Engine [cached since 2324s ago] (1,)
+2026-03-27 13:30:57,324 INFO sqlalchemy.engine.Engine SELECT logs.log_id, logs.session_id, logs.user_id, logs.event_type, logs.event_details, logs.created_at 
+FROM logs 
+WHERE logs.session_id = %s ORDER BY logs.created_at DESC 
+ LIMIT %s
+2026-03-27 13:30:57,324 INFO sqlalchemy.engine.Engine [cached since 2323s ago] (1, 1000)
+2026-03-27 13:30:57,325 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 13:30:57,325 INFO sqlalchemy.engine.Engine [cached since 2323s ago] (2,)
+2026-03-27 13:30:57,325 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 13:30:57,325 INFO sqlalchemy.engine.Engine [cached since 2323s ago] (3,)
+2026-03-27 13:30:57,326 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 13:30:57,326 INFO sqlalchemy.engine.Engine [cached since 2323s ago] (4,)
+2026-03-27 13:30:57,326 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 13:30:57,326 INFO sqlalchemy.engine.Engine [cached since 2323s ago] (5,)
+2026-03-27 13:30:57,326 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 13:30:57,326 INFO sqlalchemy.engine.Engine [cached since 2323s ago] (6,)
+2026-03-27 13:30:57,327 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 13:30:57,327 INFO sqlalchemy.engine.Engine [cached since 2323s ago] (7,)
+2026-03-27 13:30:57,327 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 13:30:57,327 INFO sqlalchemy.engine.Engine [cached since 2323s ago] (8,)
+2026-03-27 13:30:57,328 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 13:30:57,328 INFO sqlalchemy.engine.Engine [cached since 2323s ago] (9,)
+2026-03-27 13:30:57,328 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 13:30:57,328 INFO sqlalchemy.engine.Engine [cached since 2323s ago] (10,)
+2026-03-27 13:30:57,329 INFO sqlalchemy.engine.Engine SELECT users.user_id AS users_user_id, users.name AS users_name, users.phone_number AS users_phone_number, users.role AS users_role, users.password_hash AS users_password_hash, users.created_at AS users_created_at 
+FROM users 
+WHERE users.user_id = %s
+2026-03-27 13:30:57,329 INFO sqlalchemy.engine.Engine [cached since 2323s ago] (11,)
+2026-03-27 13:30:57,329 INFO sqlalchemy.engine.Engine SELECT participants.participant_id, participants.session_id, participants.user_id, participants.joined_at, participants.left_at, participants.is_muted, participants.is_kicked, participants.hand_raised 
+FROM participants 
+WHERE participants.session_id = %s
+2026-03-27 13:30:57,329 INFO sqlalchemy.engine.Engine [cached since 2323s ago] (1,)
+INFO:     127.0.0.1:40516 - "POST /sessions/1/ai/ask?user_id=1 HTTP/1.1" 200 OK
+2026-03-27 13:30:59,009 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [23478]
+INFO:     Stopping reloader process [10212]

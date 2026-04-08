@@ -13,3 +13,7 @@ aiofiles
 aiortc
 python-dotenv
 firebase-admin
+cohere
+transformers
+torch
+accelerate

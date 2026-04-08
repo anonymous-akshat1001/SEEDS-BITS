@@ -575,6 +575,19 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                                         tooltip: "View Logs",
                                       ),
                                       IconButton(
+                                        onPressed: () => Navigator.pushNamed(
+                                          context,
+                                          '/ai_chat',
+                                          arguments: {
+                                            'sessionId': sessionId,
+                                            'sessionTitle': title,
+                                          },
+                                        ),
+                                        icon: const Icon(Icons.smart_toy),
+                                        color: Colors.indigo,
+                                        tooltip: "Ask AI",
+                                      ),
+                                      IconButton(
                                         onPressed: () => _deleteSession(sessionId, title),
                                         icon: const Icon(Icons.delete),
                                         color: Colors.red,
