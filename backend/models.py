@@ -42,7 +42,6 @@ class Session(Base):
     is_active = Column(Boolean, server_default=text("true"))
     created_at = Column(TIMESTAMP, server_default=func.now())
     ended_at = Column(TIMESTAMP)
-
     # Relationships
     creator = relationship("User", back_populates="sessions_created")
     participants = relationship("Participant", back_populates="session", cascade="all, delete-orphan")

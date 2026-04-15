@@ -143,13 +143,13 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(),
     token_data = {"user_id": user.user_id, "role": user.role}
     access_token = auth.create_access_token(token_data, expires_delta=timedelta(days=7))
     
-    # RETURN USER NAME IN RESPONSE (CRITICAL FIX)
+    # RETURN USER NAME IN RESPONSE
     return {
         "access_token": access_token,
         "token_type": "bearer",
         "user_id": user.user_id,
         "role": user.role,
-        "name": user.name  # ← ADD THIS LINE
+        "name": user.name  
     }
 
 
@@ -699,24 +699,9 @@ async def list_audio_files_by_session(
     )
     linked_files = q.scalars().all()
 
-    # Backward compatibility:
-    # if a teacher uploaded audio before session-audio linking was introduced,
-    # those files should still appear in that teacher's class library.
-    if session.created_by is not None:
-        fallback_q = await db.execute(
-            select(models.AudioFile).filter(
-                models.AudioFile.uploaded_by == session.created_by
-            ).order_by(models.AudioFile.uploaded_at.desc())
-        )
-        fallback_files = fallback_q.scalars().all()
-    else:
-        fallback_files = []
-
-    merged = {f.audio_id: f for f in linked_files}
-    for f in fallback_files:
-        merged.setdefault(f.audio_id, f)
-
-    return list(merged.values())
+    # Session-scoped library must only include files explicitly linked
+    # to this session at upload time.
+    return linked_files
 
 
 

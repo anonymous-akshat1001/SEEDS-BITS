@@ -673,7 +673,7 @@ class _SessionScreenState extends State<SessionScreen> {
 
   Future<void> _loadAudioLibrary() async {
     try {
-      final result = await ApiService.get('/audio/list', useAuth: true);
+      final result = await ApiService.get('/audio/session/${widget.sessionId}', useAuth: true);
       if (result != null && mounted) {
         setState(() {
           _audioLibraryLoaded = true;

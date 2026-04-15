@@ -117,7 +117,10 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
     
     try {
       // fetch audio list from backend
-      final result = await ApiService.get('/audio/list', useAuth: true);
+      final path = widget.sessionId != null
+          ? '/audio/session/${widget.sessionId}'
+          : '/audio/list';
+      final result = await ApiService.get(path, useAuth: true);
       
       if (result != null) {
         
@@ -265,6 +268,9 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
       request.headers.addAll(headers);
       request.fields['title'] = title;
       request.fields['description'] = description;
+      if (widget.sessionId != null) {
+        request.fields['session_ids'] = jsonEncode([widget.sessionId]);
+      }
 
       // Determine MIME type from file extension
       String contentType = 'audio/mpeg'; // Default
@@ -1324,14 +1330,6 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
     setState(() => _isLoading = true);
 
     try {
-      // If we don't have the teacherId yet, try to get session info
-      if (_resolvedTeacherId == null && widget.sessionId != 0) {
-        final sessionState =
-            await ApiService.getSessionState(widget.sessionId);
-        if (sessionState != null) {
-          _resolvedTeacherId = sessionState['created_by'] as int?;
-        }
-      }
 
       
       print('[CLASS AUDIO] Fetching audio list... teacherId=$_resolvedTeacherId sessionId=${widget.sessionId}');
@@ -1340,22 +1338,8 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
           : await ApiService.getAudioListBySession(widget.sessionId);
       print('[CLASS AUDIO] getAudioList result type=${result?.runtimeType} count=${result?.length}');
 
-      
-      List<dynamic>? normalizedResult = result;
-      if (normalizedResult == null && widget.sessionId != 0) {
-        // If session-scoped API fails, fallback to global list and filter by teacher.
-        normalizedResult = await ApiService.getAudioList();
-        print('[CLASS AUDIO] Fallback to /audio/list count=${normalizedResult?.length}');
-        if ((normalizedResult == null || normalizedResult.isEmpty) &&
-            _resolvedTeacherId != null) {
-          normalizedResult =
-              await ApiService.getAudioListAsUser(_resolvedTeacherId!);
-          print(
-              '[CLASS AUDIO] Fallback to /audio/list as teacher=$_resolvedTeacherId count=${normalizedResult?.length}');
-        }
-      }
 
-      if (normalizedResult == null) {
+      if (result == null) {
         print('[CLASS AUDIO] API returned null - check backend connection and user_id param');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -1371,19 +1355,9 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
 
       if (mounted) {
         // Safely parse JSON to avoid List<dynamic> cast exceptions
-        List<Map<String, dynamic>> allFiles = normalizedResult
+        List<Map<String, dynamic>> allFiles = result
             .map((e) => Map<String, dynamic>.from(e as Map))
             .toList();
-
-        // Fallback for legacy uploads that were not explicitly linked to sessions
-        if (widget.sessionId != 0 && _resolvedTeacherId != null) {
-          allFiles = allFiles
-              .where((f) =>
-                  f['uploaded_by']?.toString() ==
-                  _resolvedTeacherId.toString())
-              .toList();
-        
-        }
 
         print('[CLASS AUDIO] Total files from API: ${allFiles.length}');
 
@@ -1391,28 +1365,6 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
           allFiles = allFiles
               .where((f) => f['uploaded_by']?.toString() == _resolvedTeacherId.toString())
               .toList();
-        }
-
-        // Student compatibility fallback for older backend behavior where
-        // /audio/list returns empty for student role.
-        if (widget.sessionId == 0 && !widget.isTeacher && allFiles.isEmpty) {
-          final sessions = await ApiService.getActiveSessions() ?? [];
-          final teacherIds = sessions
-              .map((s) => (s as Map)['created_by'])
-              .where((id) => id is int || id is num)
-              .map((id) => (id as num).toInt())
-              .toSet();
-          final merged = <int, Map<String, dynamic>>{};
-          for (final teacherId in teacherIds) {
-            final teacherFiles = await ApiService.getAudioListAsUser(teacherId);
-            if (teacherFiles == null) continue;
-            for (final raw in teacherFiles) {
-              final f = Map<String, dynamic>.from(raw as Map);
-              final audioId = f['audio_id'] as int?;
-              if (audioId != null) merged[audioId] = f;
-            }
-          }
-          allFiles = merged.values.toList();
         }
 
         setState(() {
