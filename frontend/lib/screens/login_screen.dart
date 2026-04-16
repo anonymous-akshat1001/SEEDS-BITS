@@ -34,7 +34,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   // store text typed by user
   final phoneCtrl = TextEditingController();
-  final passCtrl = TextEditingController();
+  final passCtrl = TextEditingController(text: '123456');
 
   // state variables
   bool isTeacher = false;

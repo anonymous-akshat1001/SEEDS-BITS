@@ -130,6 +130,10 @@ WEB_VAPID_KEY=BOYVjb77moWEwSyBY-HxCkiAFBuNrCncK9oSobRL1TubgfGicL1JOiw_B0Nod74jEb
 }
 
 
+/// Global route observer — allows widgets (like KeypadInstructionWrapper)
+/// to detect when they become visible again after a pushed route is popped.
+final RouteObserver<ModalRoute<void>> routeObserver = RouteObserver<ModalRoute<void>>();
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -139,6 +143,7 @@ class MyApp extends StatelessWidget {
       title: 'Accessible Conference',
       debugShowCheckedModeBanner: false,
       navigatorKey: navigatorKey,
+      navigatorObservers: [routeObserver],
       theme: ThemeData(
         colorSchemeSeed: UIUtils.accentColor,
         useMaterial3: true,

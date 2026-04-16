@@ -4,9 +4,9 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/services.dart';
 import 'package:audioplayers/audioplayers.dart';
 import '../services/tts_service.dart';
-import '../utils/ui_utils.dart';
 import '../utils/keypad_config.dart';
 import '../utils/keypad_actions.dart';
+import '../main.dart' show routeObserver;
 
 /// A wrapper widget that:
 ///   1. Auto-speaks key-mapping instructions via TTS on page load
@@ -71,7 +71,8 @@ class KeypadInstructionWrapper extends StatefulWidget {
       _KeypadInstructionWrapperState();
 }
 
-class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper> {
+class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
+    with RouteAware {
   late AudioPlayer _audioPlayer;
   final FocusNode _focusNode = FocusNode();
 
@@ -98,6 +99,37 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _focusNode.requestFocus();
     });
+  }
+
+  // ── RouteAware subscription ─────────────────────────────────────────────
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Subscribe to route observer so we get didPopNext / didPushNext callbacks
+    final route = ModalRoute.of(context);
+    if (route is ModalRoute) {
+      routeObserver.subscribe(this, route);
+    }
+  }
+
+  /// Called when a route that was pushed on top of this one is now popped.
+  /// This is the fix for the "listener freeze" bug: re-request focus and
+  /// re-announce instructions so keypad mappings become active again.
+  @override
+  void didPopNext() {
+    // The pushed screen has been popped — we are now the top route again.
+    // Re-request focus so key events are captured by THIS wrapper.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && !_focusNode.hasFocus) {
+        _focusNode.requestFocus();
+        debugPrint('[KEYPAD] Focus re-acquired after navigation back');
+      }
+    });
+
+    // Re-speak instructions so the user knows which keys are active
+    if (widget.autoPlay) {
+      _playInstructions();
+    }
   }
 
   static bool _userInteracted = false;
@@ -152,6 +184,7 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper> {
 
   @override
   void dispose() {
+    routeObserver.unsubscribe(this);
     _audioPlayer.dispose();
     _focusNode.dispose();
     super.dispose();

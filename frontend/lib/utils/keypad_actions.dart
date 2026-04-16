@@ -65,6 +65,50 @@ const Map<int, String> simpleSessionKeyLabels = {
   9: 'Speed Up Audio',
 };
 
+// ─── Offline Audio Library (both roles) ─────────────────────────────────────
+const Map<int, String> offlineAudioLibraryKeyLabels = {
+  1: 'Refresh Classes',
+  2: 'Search Class by Name',
+  3: 'All Audio Files',
+  0: 'Go Back',
+};
+
+// ─── Class Audio Screen (Student) ───────────────────────────────────────────
+const Map<int, String> classAudioStudentKeyLabels = {
+  1: 'Refresh Files',
+  2: 'Play or Pause',
+  3: 'Stop Playback',
+  4: 'Toggle T T S',
+  7: 'Slow Down Audio',
+  9: 'Speed Up Audio',
+  0: 'Go Back',
+};
+
+// ─── Class Audio Screen (Teacher) ───────────────────────────────────────────
+const Map<int, String> classAudioTeacherKeyLabels = {
+  1: 'Refresh Files',
+  2: 'Add Audio File',
+  3: 'Play or Pause',
+  4: 'Stop Playback',
+  5: 'Toggle T T S',
+  7: 'Slow Down Audio',
+  9: 'Speed Up Audio',
+  0: 'Go Back',
+};
+
+// ─── Add Audio Options Screen (Teacher) ──────────────────────────────────
+const Map<int, String> addAudioOptionsKeyLabels = {
+  1: 'Upload New File',
+  2: 'Select from Existing Library',
+  0: 'Go Back',
+};
+
+// ─── Select Existing Audio Screen (Teacher) ──────────────────────────────
+const Map<int, String> selectExistingAudioKeyLabels = {
+  1: 'Refresh List',
+  0: 'Go Back',
+};
+
 /// Builds a TTS-friendly instruction string from a labels map.
 ///
 /// Example output: "Press 1 for Login. Press 2 for Register."

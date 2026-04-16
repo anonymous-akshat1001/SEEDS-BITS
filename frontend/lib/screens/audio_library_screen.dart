@@ -16,6 +16,8 @@ import 'dart:convert';
 import '../services/api_service.dart';
 // Allows reading environment variables
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import '../widgets/key_instruction_wrapper.dart';
+import '../utils/keypad_actions.dart';
 
 
 // Backend and websocket URL
@@ -765,6 +767,7 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
   bool _userInfoLoaded = false;
   bool _sessionsLoaded = false;
   final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
   bool _isTeacher = false;
   int? _currentUserId;
 
@@ -848,9 +851,25 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
     _searchController.clear();
 }
 
+  /// Opens the personal (teacher) or global (student) audio library.
+  void _openAllAudioFiles() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ClassAudioScreen(
+          sessionId: 0,
+          sessionTitle: _isTeacher ? 'My Audio Library' : 'All Audio Files',
+          teacherId: _isTeacher ? _currentUserId : null,
+          isTeacher: _isTeacher,
+        ),
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _searchController.dispose();
+    _searchFocusNode.dispose();
     super.dispose();
   }
 
@@ -858,7 +877,22 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
   Widget build(BuildContext context) {
     final bool tiny = UIUtils.isTiny(context);
 
-    return Scaffold(
+    return KeypadInstructionWrapper(
+      screenName: 'Offline Audio Library',
+      labels: offlineAudioLibraryKeyLabels,
+      actions: {
+        1: () {
+          setState(() {
+            _sessionsLoaded = false;
+            _isLoading = true;
+          });
+          _loadSessions();
+        },
+        2: () => _searchFocusNode.requestFocus(),
+        3: _openAllAudioFiles,
+        0: () => Navigator.of(context).pop(),
+      },
+      child: Scaffold(
       appBar: AppBar(
         title: Text(
           'Offline Audio Library',
@@ -951,6 +985,7 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
                             Expanded(
                               child: TextField(
                                 controller: _searchController,
+                                focusNode: _searchFocusNode,
                                 decoration: InputDecoration(
                                   hintText: 'Enter Session/Class Name',
                                   hintStyle: TextStyle(
@@ -1228,6 +1263,7 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
                 ],
               ),
             ),
+      ),
     );
   }
 }
@@ -1628,6 +1664,54 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
     }
   }
 
+  /// Keypad helper: toggle play/pause on the currently playing audio,
+  /// or start playing the first file if nothing is playing.
+  void _togglePlayPause() {
+    if (_playingAudioId != null) {
+      _playOrPauseAudio(_playingAudioId!, _playingAudioTitle ?? 'Audio');
+    } else if (_audioFiles.isNotEmpty) {
+      final first = _audioFiles.first;
+      final id = first['audio_id'] ?? first['id'] ?? 0;
+      final title = first['title'] ?? 'Untitled';
+      _playOrPauseAudio(id, title);
+    }
+  }
+
+  void _handleAddAudio() {
+    if (widget.sessionId == 0) {
+      _uploadAudio();
+    } else {
+      showDialog(
+        context: context,
+        builder: (context) => Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+          child: AddAudioOptionsScreen(
+            sessionId: widget.sessionId,
+            onUploadNew: () {
+              Navigator.pop(context); // Close Dialog
+              _uploadAudio();         // Start normal upload
+            },
+            onAddExisting: () {
+              Navigator.pop(context); // Close Dialog
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => SelectExistingAudioScreen(
+                    sessionId: widget.sessionId,
+                    currentAudioIds: _audioFiles.map((e) => (e['audio_id'] ?? e['id']) as int).toSet(),
+                    onAudioAdded: () {
+                      _loadAudioFiles();
+                    },
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      );
+    }
+  }
+
   @override
   void dispose() {
     _audioPlayer.stop();
@@ -1640,7 +1724,43 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
   Widget build(BuildContext context) {
     final bool tiny = UIUtils.isTiny(context);
 
-    return Scaffold(
+    // Role-aware key mappings
+    final labels = widget.isTeacher
+        ? classAudioTeacherKeyLabels
+        : classAudioStudentKeyLabels;
+
+    final actions = widget.isTeacher
+        ? <int, VoidCallback>{
+            1: _loadAudioFiles,
+            2: _handleAddAudio,
+            3: _togglePlayPause,
+            4: _stopAudio,
+            5: () {
+              setState(() => _ttsEnabled = !_ttsEnabled);
+              _speakIfEnabled(_ttsEnabled ? 'TTS enabled' : 'TTS disabled');
+            },
+            7: () => _changeSpeed(-0.25),
+            9: () => _changeSpeed(0.25),
+            0: () { _stopAudio(); Navigator.of(context).pop(); },
+          }
+        : <int, VoidCallback>{
+            1: _loadAudioFiles,
+            2: _togglePlayPause,
+            3: _stopAudio,
+            4: () {
+              setState(() => _ttsEnabled = !_ttsEnabled);
+              _speakIfEnabled(_ttsEnabled ? 'TTS enabled' : 'TTS disabled');
+            },
+            7: () => _changeSpeed(-0.25),
+            9: () => _changeSpeed(0.25),
+            0: () { _stopAudio(); Navigator.of(context).pop(); },
+          };
+
+    return KeypadInstructionWrapper(
+      screenName: 'Class Audio Library',
+      labels: labels,
+      actions: actions,
+      child: Scaffold(
       appBar: AppBar(
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -1695,7 +1815,7 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
       // Upload FAB for teachers only
       floatingActionButton: widget.isTeacher
           ? FloatingActionButton.extended(
-              onPressed: _isUploadingAudio ? null : _uploadAudio,
+              onPressed: _isUploadingAudio ? null : _handleAddAudio,
               icon: _isUploadingAudio
                   ? const SizedBox(
                       width: 18,
@@ -1990,6 +2110,7 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
                 ),
               ],
             ),
+      ),
     );
   }
 
@@ -2150,4 +2271,187 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
   }
 }
 
+class AddAudioOptionsScreen extends StatelessWidget {
+  final int sessionId;
+  final VoidCallback onUploadNew;
+  final VoidCallback onAddExisting;
 
+  const AddAudioOptionsScreen({
+    super.key,
+    required this.sessionId,
+    required this.onUploadNew,
+    required this.onAddExisting,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return KeypadInstructionWrapper(
+      screenName: 'Add Audio Options',
+      labels: addAudioOptionsKeyLabels,
+      actions: {
+        1: onUploadNew,
+        2: onAddExisting,
+        0: () => Navigator.of(context).pop(),
+      },
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 320, maxHeight: 220),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: Theme.of(context).primaryColor,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(4),
+                  topRight: Radius.circular(4),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Add Audio', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                  IconButton(
+                    icon: const Icon(Icons.close, color: Colors.white),
+                    onPressed: () => Navigator.of(context).pop(),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.all(8),
+                children: [
+                  ListTile(
+                    leading: const Icon(Icons.upload_file),
+                    title: const Text('1. Upload New File'),
+                    onTap: onUploadNew,
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.library_music),
+                    title: const Text('2. Select from Existing Library'),
+                    onTap: onAddExisting,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class SelectExistingAudioScreen extends StatefulWidget {
+  final int sessionId;
+  final Set<int> currentAudioIds;
+  final VoidCallback onAudioAdded;
+
+  const SelectExistingAudioScreen({
+    super.key,
+    required this.sessionId,
+    required this.currentAudioIds,
+    required this.onAudioAdded,
+  });
+
+  @override
+  State<SelectExistingAudioScreen> createState() => _SelectExistingAudioScreenState();
+}
+
+class _SelectExistingAudioScreenState extends State<SelectExistingAudioScreen> {
+  bool _isLoading = true;
+  List<Map<String, dynamic>> _availableAudio = [];
+  bool _linking = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAvailableAudio();
+  }
+
+  Future<void> _loadAvailableAudio() async {
+    setState(() => _isLoading = true);
+    final allAudio = await ApiService.getAudioList();
+    if (allAudio != null && mounted) {
+      final available = allAudio.where((audio) {
+        final id = (audio['audio_id'] ?? audio['id']) as int;
+        return !widget.currentAudioIds.contains(id);
+      }).map((e) => Map<String, dynamic>.from(e as Map)).toList();
+      
+      setState(() {
+        _availableAudio = available;
+        _isLoading = false;
+      });
+    } else {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _linkAudio(int audioId) async {
+    setState(() => _linking = true);
+    final result = await ApiService.linkAudioToSession(widget.sessionId, audioId);
+    if (!mounted) return;
+    setState(() => _linking = false);
+    
+    if (result != null) {
+      widget.onAudioAdded();
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Audio linked successfully!')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to link audio')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Generate dynamic actions where keys 1-9 map to the first available items
+    final actions = <int, VoidCallback>{
+      1: _loadAvailableAudio,
+      0: () => Navigator.of(context).pop(),
+    };
+    
+    for (int i = 0; i < _availableAudio.length && i < 8; i++) {
+        actions[i + 2] = () {
+             if (!_linking) _linkAudio(_availableAudio[i]['audio_id'] ?? _availableAudio[i]['id'] as int);
+        };
+    }
+
+    return KeypadInstructionWrapper(
+      screenName: 'Select Existing Audio',
+      labels: selectExistingAudioKeyLabels, 
+      actions: actions,
+      child: Scaffold(
+        appBar: AppBar(title: const Text('Select Audio')),
+        body: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : _availableAudio.isEmpty
+                ? const Center(child: Text('No unlinked audio available.', style: TextStyle(fontSize: 16)))
+                : ListView.builder(
+                    itemCount: _availableAudio.length,
+                    itemBuilder: (context, index) {
+                      final item = _availableAudio[index];
+                      final title = item['title'] ?? 'Untitled';
+                      final keyNum = index < 8 ? index + 2 : null;
+                      
+                      return ListTile(
+                        leading: CircleAvatar(
+                          child: Text(keyNum != null ? '$keyNum' : '-'),
+                        ),
+                        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+                        onTap: () {
+                          if (!_linking) _linkAudio(item['audio_id'] ?? item['id'] as int);
+                        },
+                      );
+                    },
+                  ),
+      ),
+    );
+  }
+}

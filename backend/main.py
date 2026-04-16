@@ -704,6 +704,48 @@ async def list_audio_files_by_session(
     return linked_files
 
 
+@app.post("/sessions/{session_id}/audio/{audio_id}/link")
+async def link_audio_to_session(
+    session_id: int,
+    audio_id: int,
+    current_user: models.User = Depends(require_teacher),
+    db: AsyncSession = Depends(get_db)
+):
+    session = await db.get(models.Session, session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+        
+    if session.created_by != current_user.user_id:
+        raise HTTPException(status_code=403, detail="Not your session")
+        
+    audio = await db.get(models.AudioFile, audio_id)
+    if not audio:
+        raise HTTPException(status_code=404, detail="Audio file not found")
+        
+    # Verify if audio belongs to this teacher or if it's public. For now, restrict to teacher's own audio
+    if audio.uploaded_by != current_user.user_id:
+        raise HTTPException(status_code=403, detail="You can only link your own audio files")
+
+    # Check if already linked
+    q = await db.execute(
+        select(models.SessionAudio).filter(
+            models.SessionAudio.session_id == session_id,
+            models.SessionAudio.audio_id == audio_id
+        )
+    )
+    existing_link = q.scalar_one_or_none()
+    
+    if existing_link:
+        return {"ok": True, "message": "Audio is already linked to this session"}
+        
+    new_link = models.SessionAudio(session_id=session_id, audio_id=audio_id)
+    db.add(new_link)
+    await db.commit()
+    
+    # Optionally log the action
+    await SessionLogger.log_audio_uploaded(db, current_user.user_id, audio_id, audio.title, audio.file_path, audio.duration)
+    
+    return {"ok": True, "message": "Audio linked successfully"}
 
 
 # Return this student's self-listen history — useful for "recently played" in Flutter.

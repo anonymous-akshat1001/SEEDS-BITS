@@ -613,6 +613,14 @@ class ApiService {
     return null;
   }
 
+  /// Link an already existing audio file to a session
+  static Future<Map<String, dynamic>?> linkAudioToSession(
+    int sessionId,
+    int audioId,
+  ) async {
+    return await post('/sessions/$sessionId/audio/$audioId/link', {}, useAuth: true);
+  }
+
   /// Select audio for playback (teacher only)
   static Future<Map<String, dynamic>?> selectAudio(
     int sessionId,
