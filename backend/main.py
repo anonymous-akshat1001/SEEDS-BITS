@@ -30,11 +30,17 @@ from session_logger import SessionLogger, get_session_logs, get_session_summary
 AUDIO_DIR = os.getenv("AUDIO_DIR", "./data/audio")
 os.makedirs(AUDIO_DIR, exist_ok=True)
 
+from ai_analysis import preload_local_llm
+
 # Create tables on startup
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
         await conn.run_sync(models.Base.metadata.create_all)
+    
+    # Preload the local LLM in a background thread so Uvicorn can finish startup without timing out
+    asyncio.create_task(asyncio.to_thread(preload_local_llm))
+    
     yield
 
 

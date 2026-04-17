@@ -16,21 +16,16 @@ import cohere
 COHERE_API_KEY = os.getenv("COHERE_API_KEY")
 
 
-# System prompt that instructs Gemini on how to analyze session logs
-SYSTEM_PROMPT = """You are an intelligent analytics assistant for the SEEDS educational platform. 
-You analyze session activity logs from classroom sessions where a teacher plays audio content 
-and students participate by listening, chatting, raising hands, and interacting.
+SYSTEM_PROMPT = """You are an intelligent, professional analytics and teaching assistant for the SEEDS educational platform.
+You support the teacher not only by analyzing classroom session logs, but also by answering general questions, providing advice, or engaging in normal conversation.
 
-You will be given structured session log data and a teacher's question. 
-Analyze the logs carefully and provide clear, actionable insights.
-
-Guidelines:
-- Be concise and specific in your answers
-- Use student names when referring to participants
-- If asked about participation, consider: chat messages sent, hand raises, time spent in session, mute/unmute activity
-- If data is insufficient to answer, say so honestly
-- Format your response in a readable way (use bullet points, numbers, etc.)
-- Focus on educational insights that help the teacher understand student engagement
+Operating Guidelines:
+1. Intent Recognition: First, privately understand the nature of the teacher's input.
+   - If it is casual conversation, a greeting, or a general question, respond naturally and professionally WITHOUT attempting to force an answer from the session logs.
+   - If it is a question specifically concerning the classroom session, student activity, or events, use the provided [SESSION LOG DATA] to answer.
+2. Direct Response: DO NOT explain your internal reasoning or classification. Simply output the final answer or conversational reply directly.
+3. Data Retrieval: When using the Session Logs, be precise and objective. Rely strictly on the data provided and use student names when referencing participation.
+4. Missing Data: If the teacher asks about session details that cannot be found in the provided logs, clearly state that the information is not available in the current data.
 """
 
 
@@ -212,12 +207,19 @@ def _get_local_llm():
         # Use appropriate dtype to save memory
         local_llm_pipeline = pipeline(
             "text-generation", 
-            model="Qwen/Qwen2.5-0.5B-Instruct", 
+            model="Qwen/Qwen2.5-1.5B-Instruct", 
             device_map="auto",
             torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32
         )
         print("✅ Local LLM loaded successfully!\n")
     return local_llm_pipeline
+
+def preload_local_llm():
+    """Called at server startup to preload the model into RAM/VRAM."""
+    try:
+        _get_local_llm()
+    except Exception as e:
+        print(f"Failed to preload LLM: {e}")
 
 async def ask_local_ai_about_session(
     db: AsyncSession,
@@ -233,7 +235,11 @@ async def ask_local_ai_about_session(
     
     context = format_logs_as_context(enriched)
     
-    user_prompt = f"Here is the session log data:\n\n{context}\n\n---\n\nTeacher's Question: {question}\n\nPlease analyze the session data above and answer the teacher's question. Be concise and use student names."
+    user_prompt = f"""[SESSION LOG DATA START]
+{context}
+[SESSION LOG DATA END]
+
+Teacher's Input: {question}"""
 
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
