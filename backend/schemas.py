@@ -334,3 +334,15 @@ class SelfListenLogOut(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+# ==================== AI ANALYSIS SCHEMAS ====================
+
+class AIAnalysisRequest(BaseModel):
+    question: str = Field(..., min_length=1, max_length=1000)
+
+class AIAnalysisResponse(BaseModel):
+    session_id: int
+    question: str
+    answer: str
+    log_count: int

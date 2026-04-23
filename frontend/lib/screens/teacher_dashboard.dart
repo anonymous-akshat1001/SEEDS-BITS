@@ -3,6 +3,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_service.dart';
 import '../services/tts_service.dart';
 import 'package:flutter/services.dart';
+import 'session_logs_screen.dart';
+import 'ai_chat_screen.dart';
+
 import 'session_screen.dart';
 import 'audio_library_screen.dart';
 import '../utils/ui_utils.dart';
@@ -626,6 +629,38 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                                   ),
                                   SizedBox(height: UIUtils.spacing(context, 4)),
                                   IconButton(
+                                    onPressed: () => Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => SessionLogsScreen(
+                                          sessionId: sessionId,
+                                          sessionTitle: title,
+                                        ),
+                                      ),
+                                    ),
+                                    icon: Icon(Icons.bar_chart, size: UIUtils.iconSize(context, 18)),
+                                    color: Colors.indigo,
+                                    tooltip: "View Logs",
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(),
+                                  ),
+                                  IconButton(
+                                    onPressed: () => Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => AiChatScreen(
+                                          sessionId: sessionId,
+                                          sessionTitle: title,
+                                        ),
+                                      ),
+                                    ),
+                                    icon: Icon(Icons.smart_toy, size: UIUtils.iconSize(context, 18)),
+                                    color: Colors.teal,
+                                    tooltip: "Ask AI",
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(),
+                                  ),
+                                  IconButton(
                                     onPressed: () => _deleteSession(sessionId, title),
                                     icon: Icon(Icons.delete, size: UIUtils.iconSize(context, 18)),
                                     color: Colors.red,
@@ -633,6 +668,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                                     padding: EdgeInsets.zero,
                                     constraints: const BoxConstraints(),
                                   ),
+
                                 ],
                               ),
                             ],

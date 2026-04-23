@@ -35,6 +35,10 @@ os.makedirs(AUDIO_DIR, exist_ok=True)
 async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
         await conn.run_sync(models.Base.metadata.create_all)
+    # Preload the local Qwen LLM in a background thread so server starts immediately
+    from ai_analysis import preload_local_llm
+    import asyncio
+    asyncio.create_task(asyncio.to_thread(preload_local_llm))
     yield
 
 
@@ -1980,5 +1984,68 @@ async def session_action(
 #         # Try to notify client before closing
 #         try:
 #             await websocket.close(code=1011)
-#         except Exception:
 #             pass
+
+
+# ============ AI SESSION ANALYSIS ENDPOINTS ============
+
+from ai_analysis import ask_ai_about_session, ask_local_ai_about_session
+
+@app.post("/sessions/{session_id}/ai/ask")
+async def ai_ask_about_session(
+    session_id: int,
+    request: schemas.AIAnalysisRequest,
+    current_user: models.User = Depends(get_user_by_id),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Ask an AI-powered question about session activity logs.
+    Uses Google Gemini to analyze session data and provide insights.
+    
+    Example questions:
+    - "Which student participated the least?"
+    - "Who just joined but never sent a message?"
+    - "Give me a summary of student engagement"
+    - "Which students raised their hand?"
+    """
+    # Verify session exists and user has access
+    session = await db.get(models.Session, session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    
+    # Only session creator (teacher) can use AI analysis
+    if session.created_by != current_user.user_id and current_user.role.lower() != "teacher":
+        raise HTTPException(status_code=403, detail="Only the session creator can use AI analysis")
+    
+    try:
+        result = await ask_ai_about_session(db, session_id, request.question)
+        return result
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"AI analysis failed: {str(e)}")
+
+@app.post("/sessions/{session_id}/ai/ask/local")
+async def ai_ask_about_session_local(
+    session_id: int,
+    request: schemas.AIAnalysisRequest,
+    current_user: models.User = Depends(get_user_by_id),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Ask an AI-powered question using purely local, privacy-preserving LLMs.
+    """
+    session = await db.get(models.Session, session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    
+    if session.created_by != current_user.user_id and current_user.role.lower() != "teacher":
+        raise HTTPException(status_code=403, detail="Only the session creator can use AI analysis")
+    
+    try:
+        result = await ask_local_ai_about_session(db, session_id, request.question)
+        return result
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Local AI analysis failed: {str(e)}")
