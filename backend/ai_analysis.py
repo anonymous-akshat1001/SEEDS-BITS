@@ -203,15 +203,14 @@ local_llm_pipeline = None
 def _get_local_llm():
     global local_llm_pipeline
     if local_llm_pipeline is None:
-        print("\n⏳ Loading Local LLM (this will take a moment the first time)...")
-        # Use appropriate dtype to save memory
+        print("\nLoading Local LLM (this will take a moment the first time)...")
         local_llm_pipeline = pipeline(
             "text-generation", 
             model="Qwen/Qwen2.5-1.5B-Instruct", 
             device_map="auto",
             torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32
         )
-        print("✅ Local LLM loaded successfully!\n")
+        print("Local LLM loaded successfully!\n")
     return local_llm_pipeline
 
 def preload_local_llm():
