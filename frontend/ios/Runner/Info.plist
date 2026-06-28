@@ -24,6 +24,10 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>SEEDS uses the microphone for live session audio and voice commands.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>SEEDS uses speech recognition to let users control sessions with voice commands.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

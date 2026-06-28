@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_tts/flutter_tts.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'dart:convert';
 import '../services/api_service.dart';
+import '../services/tts_service.dart';
 import '../utils/ui_utils.dart';
 import '../widgets/key_instruction_wrapper.dart';
 import '../utils/keypad_actions.dart';
 import 'package:flutter/services.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
 
 /// Simplified UI optimized for button/keypad phones and low-resolution screens
 /// Focuses on essential controls with large buttons
@@ -30,12 +32,13 @@ class SimpleSessionScreen extends StatefulWidget {
 }
 
 class _SimpleSessionScreenState extends State<SimpleSessionScreen> {
-  final FlutterTts _tts = FlutterTts();
-  
   WebSocketChannel? _wsChannel;
+  final stt.SpeechToText _speech = stt.SpeechToText();
   bool _muted = false;
   bool _handRaised = false;
   bool _ttsEnabled = true;
+  bool _voiceCommandsEnabled = false;
+  bool _voiceCommandsAvailable = false;
   String _statusText = "Connecting...";
   String _currentSpeaker = "None";
   int _participantCount = 0;
@@ -55,9 +58,33 @@ class _SimpleSessionScreenState extends State<SimpleSessionScreen> {
   }
 
   Future<void> _initialize() async {
+    await _loadAccessibilitySettings();
     await _joinSession();
     await _connectWebSocket();
     await _speak("Connected to session ${widget.sessionId}");
+    if (_voiceCommandsEnabled) {
+      _startVoiceCommands();
+    }
+  }
+
+  Future<void> _loadAccessibilitySettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    final ttsEnabled = prefs.getBool('tts_enabled') ?? true;
+    final voiceEnabled = prefs.getBool('voice_commands_enabled') ?? false;
+    final volume = prefs.getDouble('tts_volume') ?? 1.0;
+    final speechRate = prefs.getDouble('tts_speech_rate') ?? 0.5;
+
+    await TtsService.configure(
+      enabled: ttsEnabled,
+      volume: volume,
+      speechRate: speechRate,
+    );
+
+    if (!mounted) return;
+    setState(() {
+      _ttsEnabled = ttsEnabled;
+      _voiceCommandsEnabled = voiceEnabled;
+    });
   }
 
   Future<void> _joinSession() async {
@@ -139,7 +166,9 @@ class _SimpleSessionScreenState extends State<SimpleSessionScreen> {
           _speak("You have been removed");
           Navigator.pop(context);
           break;
-          
+
+        case 'session_ended':
+        case 'session_ending':
           _speak("Session ended");
           Navigator.pop(context);
           break;
@@ -184,11 +213,122 @@ class _SimpleSessionScreenState extends State<SimpleSessionScreen> {
   Future<void> _speak(String text) async {
     if (_ttsEnabled) {
       try {
-        await _tts.speak(text);
+        await TtsService.speak(text);
       } catch (e) {
         print('[TTS ERROR] $e');
       }
     }
+  }
+
+  Future<void> _startVoiceCommands() async {
+    try {
+      final available = await _speech.initialize(
+        onStatus: _handleSpeechStatus,
+        onError: _handleSpeechError,
+      );
+      if (!mounted) return;
+      setState(() => _voiceCommandsAvailable = available);
+      if (available) {
+        await _listenForVoiceCommand();
+        await _speak("Voice commands ready");
+      } else {
+        await _speak("Voice commands are not available on this device");
+      }
+    } catch (e) {
+      print('[VOICE COMMAND ERROR] $e');
+    }
+  }
+
+  Future<void> _listenForVoiceCommand() async {
+    if (!_voiceCommandsEnabled ||
+        !_voiceCommandsAvailable ||
+        !mounted ||
+        _speech.isListening) {
+      return;
+    }
+
+    await _speech.listen(
+      listenMode: stt.ListenMode.confirmation,
+      partialResults: false,
+      listenFor: const Duration(seconds: 12),
+      pauseFor: const Duration(seconds: 3),
+      onResult: (result) {
+        if (result.finalResult) {
+          _handleVoiceCommand(result.recognizedWords);
+        }
+      },
+    );
+  }
+
+  void _handleSpeechStatus(String status) {
+    if (!_voiceCommandsEnabled || !mounted) return;
+    if (status == 'done' || status == 'notListening') {
+      Future.delayed(const Duration(milliseconds: 700), () {
+        if (mounted && _voiceCommandsEnabled) _listenForVoiceCommand();
+      });
+    }
+  }
+
+  void _handleSpeechError(dynamic error) {
+    print('[VOICE COMMAND SPEECH ERROR] $error');
+    if (_voiceCommandsEnabled && mounted) {
+      Future.delayed(const Duration(milliseconds: 700), () {
+        if (mounted && _voiceCommandsEnabled) _listenForVoiceCommand();
+      });
+    }
+  }
+
+  void _handleVoiceCommand(String words) {
+    final command = words.toLowerCase().trim();
+    if (command.isEmpty) return;
+
+    if (command.contains('unmute')) {
+      if (_muted) {
+        _toggleMute();
+      } else {
+        _speak("Already unmuted");
+      }
+      return;
+    }
+
+    if (command.contains('mute')) {
+      if (!_muted) {
+        _toggleMute();
+      } else {
+        _speak("Already muted");
+      }
+      return;
+    }
+
+    if (command.contains('lower hand')) {
+      if (_handRaised) {
+        _toggleHand();
+      } else {
+        _speak("Hand is already lowered");
+      }
+      return;
+    }
+
+    if (command.contains('raise hand')) {
+      if (!_handRaised) {
+        _toggleHand();
+      } else {
+        _speak("Hand is already raised");
+      }
+      return;
+    }
+
+    if (command.contains('repeat') || command.contains('instructions')) {
+      _speak(buildTtsInstructions(simpleSessionKeyLabels, screenName: 'Session active'));
+      return;
+    }
+
+    if (command.contains('leave') || command.contains('exit')) {
+      _leave();
+      return;
+    }
+
+    _speak("Command not recognized");
   }
 
   // Audio helper methods
@@ -206,7 +346,7 @@ class _SimpleSessionScreenState extends State<SimpleSessionScreen> {
       await _sessionAudioPlayer.stop();
       // Apply our local speed preference
       await _sessionAudioPlayer.setPlaybackRate(_audioSpeed);
-      await _sessionAudioPlayer.play(UrlSource('$baseUrl/audio/$audioId/stream'));
+      await _sessionAudioPlayer.play(UrlSource('${ApiService.baseUrl}/audio/$audioId/stream'));
       if (position > 0) {
         await _sessionAudioPlayer.seek(Duration(seconds: position.toInt()));
       }
@@ -269,6 +409,7 @@ class _SimpleSessionScreenState extends State<SimpleSessionScreen> {
 
   void _toggleTTS() {
     setState(() => _ttsEnabled = !_ttsEnabled);
+    TtsService.configure(enabled: _ttsEnabled);
     _speak(_ttsEnabled ? "TTS on" : "TTS off");
   }
 
@@ -279,10 +420,13 @@ class _SimpleSessionScreenState extends State<SimpleSessionScreen> {
 
   @override
   void dispose() {
+    _voiceCommandsEnabled = false;
+    if (_speech.isListening) {
+      _speech.stop();
+    }
     _wsChannel?.sink.close();
     _sessionAudioPlayer.stop();
     _sessionAudioPlayer.dispose();
-    _tts.stop();
     super.dispose();
   }
 
@@ -339,14 +483,15 @@ class _SimpleSessionScreenState extends State<SimpleSessionScreen> {
         7: _decreaseSpeed,
         9: _increaseSpeed,
       },
+      onHashKey: _leave,
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: UIUtils.backgroundColor,
         appBar: AppBar(
           title: Text(
             'Session ${widget.sessionId}',
             style: TextStyle(fontSize: UIUtils.fontSize(context, 16), fontWeight: FontWeight.w600),
           ),
-          backgroundColor: Colors.white,
+          backgroundColor: UIUtils.cardColor,
           foregroundColor: UIUtils.textColor,
           elevation: 0,
           toolbarHeight: tiny ? 40 : null,

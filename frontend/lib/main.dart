@@ -123,8 +123,9 @@ WEB_VAPID_KEY=BOYVjb77moWEwSyBY-HxCkiAFBuNrCncK9oSobRL1TubgfGicL1JOiw_B0Nod74jEb
     // For example, using a SnackBar or custom overlay
   });
   
-  // Initialize TTS early
-  await TtsService.init();
+  final prefs = await SharedPreferences.getInstance();
+  UIUtils.setHighContrastMode(prefs.getBool('high_contrast_mode') ?? false);
+  await TtsService.loadFromPreferences();
   
   runApp(const MyApp());
 }
@@ -137,44 +138,71 @@ final RouteObserver<ModalRoute<void>> routeObserver = RouteObserver<ModalRoute<v
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Accessible Conference',
-      debugShowCheckedModeBanner: false,
-      navigatorKey: navigatorKey,
-      navigatorObservers: [routeObserver],
-      theme: ThemeData(
-        colorSchemeSeed: UIUtils.accentColor,
-        useMaterial3: true,
-        scaffoldBackgroundColor: UIUtils.backgroundColor,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-        appBarTheme: const AppBarTheme(
-          centerTitle: true,
-          elevation: 0,
-          backgroundColor: UIUtils.backgroundColor,
-          foregroundColor: UIUtils.textColor,
+  ThemeData _buildTheme(bool highContrast) {
+    final brightness = highContrast ? Brightness.dark : Brightness.light;
+    return ThemeData(
+      brightness: brightness,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: UIUtils.accentColor,
+        brightness: brightness,
+      ),
+      useMaterial3: true,
+      scaffoldBackgroundColor: UIUtils.backgroundColor,
+      visualDensity: VisualDensity.adaptivePlatformDensity,
+      appBarTheme: AppBarTheme(
+        centerTitle: true,
+        elevation: 0,
+        backgroundColor: UIUtils.backgroundColor,
+        foregroundColor: UIUtils.textColor,
+      ),
+      cardTheme: CardThemeData(
+        elevation: highContrast ? 0 : 2,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        color: UIUtils.cardColor,
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: highContrast ? const Color(0xFF111111) : Colors.white,
+        labelStyle: TextStyle(color: UIUtils.subtextColor),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+            color: highContrast ? UIUtils.accentColor : Colors.transparent,
+          ),
         ),
-        cardTheme: CardThemeData(
-          elevation: 2,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          color: UIUtils.cardColor,
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: UIUtils.accentColor, width: 2),
         ),
       ),
+    );
+  }
 
-      // Start with a welcome screen (choice between login/register)
-      initialRoute: '/welcome',
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<bool>(
+      valueListenable: UIUtils.highContrastListenable,
+      builder: (context, highContrast, _) {
+        return MaterialApp(
+          title: 'Accessible Conference',
+          debugShowCheckedModeBanner: false,
+          navigatorKey: navigatorKey,
+          navigatorObservers: [routeObserver],
+          theme: _buildTheme(highContrast),
 
-      routes: {
-        '/welcome': (context) => const WelcomeScreen(),
-        '/login': (context) => const LoginScreen(),
-        '/register': (context) => const RegisterScreen(),
-        '/teacher_dashboard': (context) => const TeacherDashboard(),
-        '/student_dashboard': (context) => const StudentDashboard(),
-        '/settings': (context) => const SettingsScreen(),
-      },
+          // Start with a welcome screen (choice between login/register)
+          initialRoute: '/welcome',
 
-      onGenerateRoute: (settings) {
+          routes: {
+            '/welcome': (context) => const WelcomeScreen(),
+            '/login': (context) => const LoginScreen(),
+            '/register': (context) => const RegisterScreen(),
+            '/teacher_dashboard': (context) => const TeacherDashboard(),
+            '/student_dashboard': (context) => const StudentDashboard(),
+            '/settings': (context) => const SettingsScreen(),
+          },
+
+          onGenerateRoute: (settings) {
         // Session screen route
         if (settings.name == '/session') {
           final args = settings.arguments;
@@ -269,7 +297,9 @@ class MyApp extends StatelessWidget {
           );
         }
 
-        return null;
+            return null;
+          },
+        );
       },
     );
   }
@@ -290,7 +320,6 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _focusNode.requestFocus();
-      TtsService.speak("Welcome to Accessible Conference. Press 1 for Login, 2 for Register.");
     });
   }
 
@@ -314,9 +343,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
         2: () => Navigator.pushNamed(context, '/register'),
       },
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: UIUtils.backgroundColor,
         body: Container(
-          color: Colors.white,
+          color: UIUtils.backgroundColor,
           child: SafeArea(
             child: Center(
               child: SingleChildScrollView(
@@ -412,7 +441,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                           ),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: UIUtils.primaryColor,
-                            side: const BorderSide(color: UIUtils.primaryColor, width: 1.5),
+                            side: BorderSide(color: UIUtils.primaryColor, width: 1.5),
                             padding: UIUtils.paddingSymmetric(context, vertical: 16),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
@@ -476,36 +505,44 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
   Widget _buildFeature(BuildContext context, IconData icon, String title, String description) {
     final bool tiny = UIUtils.isTiny(context);
-    return Row(
-      children: [
-        Icon(icon, color: UIUtils.accentColor, size: UIUtils.iconSize(context, 28)),
-        SizedBox(width: UIUtils.spacing(context, 12)),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: TextStyle(
-                  color: UIUtils.textColor,
-                  fontSize: UIUtils.fontSize(context, 14),
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              if (!tiny) ...[
-                SizedBox(height: UIUtils.spacing(context, 2)),
-                Text(
-                  description,
-                  style: TextStyle(
-                    color: UIUtils.subtextColor,
-                    fontSize: UIUtils.fontSize(context, 12),
+    return Semantics(
+      button: true,
+      label: '$title. $description',
+      child: InkWell(
+        onTap: () => TtsService.speak('$title. $description'),
+        borderRadius: BorderRadius.circular(8),
+        child: Row(
+          children: [
+            Icon(icon, color: UIUtils.accentColor, size: UIUtils.iconSize(context, 28)),
+            SizedBox(width: UIUtils.spacing(context, 12)),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      color: UIUtils.textColor,
+                      fontSize: UIUtils.fontSize(context, 14),
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                ),
-              ],
-            ],
-          ),
+                  if (!tiny) ...[
+                    SizedBox(height: UIUtils.spacing(context, 2)),
+                    Text(
+                      description,
+                      style: TextStyle(
+                        color: UIUtils.subtextColor,
+                        fontSize: UIUtils.fontSize(context, 12),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }

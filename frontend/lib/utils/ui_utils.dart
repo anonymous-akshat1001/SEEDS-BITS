@@ -6,6 +6,16 @@ import 'dart:math' as math;
 /// like the Blackzone Winx 4G (240x320) while still looking
 /// good on normal phones.
 class UIUtils {
+  static final ValueNotifier<bool> highContrastListenable = ValueNotifier(false);
+
+  static bool get isHighContrast => highContrastListenable.value;
+
+  static void setHighContrastMode(bool enabled) {
+    if (highContrastListenable.value != enabled) {
+      highContrastListenable.value = enabled;
+    }
+  }
+
   /// Base design width (standard small phone)
   static const double _baseWidth = 360.0;
 
@@ -76,10 +86,16 @@ class UIUtils {
   }
 
   // --- Modern Minimal Theme Colors ---
-  static const Color primaryColor = Color(0xFF2D3436); // Deep charcoal
-  static const Color accentColor = Color(0xFF0984E3);  // Professional blue
-  static const Color backgroundColor = Color(0xFFF5F6FA); // Light grey/white
-  static const Color cardColor = Colors.white;
-  static const Color textColor = Color(0xFF2D3436);
-  static const Color subtextColor = Color(0xFF636E72);
+  static Color get primaryColor =>
+      isHighContrast ? const Color(0xFF005BBB) : const Color(0xFF2D3436);
+  static Color get accentColor =>
+      isHighContrast ? const Color(0xFFFFD600) : const Color(0xFF0984E3);
+  static Color get backgroundColor =>
+      isHighContrast ? Colors.black : const Color(0xFFF5F6FA);
+  static Color get cardColor =>
+      isHighContrast ? const Color(0xFF111111) : Colors.white;
+  static Color get textColor =>
+      isHighContrast ? Colors.white : const Color(0xFF2D3436);
+  static Color get subtextColor =>
+      isHighContrast ? const Color(0xFFFFF176) : const Color(0xFF636E72);
 }

@@ -4,15 +4,16 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
-import 'package:flutter_tts/flutter_tts.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
 import '../services/api_service.dart';
 import '../services/sse_service.dart';
+import '../services/tts_service.dart';
 import 'invite_students_screen.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/services.dart';
@@ -59,14 +60,17 @@ class _SessionScreenState extends State<SessionScreen> {
   final SseService _sse = SseService();
 
   // ── audio ──────────────────────────────────────────────────────────────
-  final FlutterTts   _tts              = FlutterTts();
   final AudioPlayer  _sessionAudioPlayer = AudioPlayer();
+  final stt.SpeechToText _speech = stt.SpeechToText();
 
   // ── UI state ───────────────────────────────────────────────────────────
   bool    _muted                = false;
   bool    _handRaised           = false;
   bool    _ttsEnabled           = true;
+  bool    _voiceCommandsEnabled = false;
+  bool    _voiceCommandsAvailable = false;
   bool    _isInitializing       = true;
+  Timer?  _voiceRestartTimer;
 
   // Set from the SSE 'connected' event — authoritative server-assigned id
   int?    _participantId;
@@ -146,6 +150,7 @@ class _SessionScreenState extends State<SessionScreen> {
   Future<void> _initialize() async {
     try {
       print('[INIT] Starting…');
+      await _loadAccessibilitySettings();
       await _initializeMedia();
 
       // Join the session HTTP-side so a Participant row exists before SSE connects.
@@ -163,14 +168,35 @@ class _SessionScreenState extends State<SessionScreen> {
 
       setState(() => _isInitializing = false);
       // Speak key mappings for this screen
-      final labels = widget.isTeacher ? sessionTeacherKeyLabels : sessionStudentKeyLabels;
-      final instructions = buildTtsInstructions(labels, screenName: 'Session ready');
-      await _speakIfEnabled(instructions);
+      await _repeatSessionInstructions();
+      if (_voiceCommandsEnabled) {
+        await _startVoiceCommands();
+      }
     } catch (e) {
       print('[INIT ERROR] $e');
       await _speakIfEnabled("Failed to initialize session");
       setState(() => _isInitializing = false);
     }
+  }
+
+  Future<void> _loadAccessibilitySettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    final ttsEnabled = prefs.getBool('tts_enabled') ?? true;
+    final voiceEnabled = prefs.getBool('voice_commands_enabled') ?? false;
+    final volume = prefs.getDouble('tts_volume') ?? 1.0;
+    final speechRate = prefs.getDouble('tts_speech_rate') ?? 0.5;
+
+    await TtsService.configure(
+      enabled: ttsEnabled,
+      volume: volume,
+      speechRate: speechRate,
+    );
+
+    if (!mounted) return;
+    setState(() {
+      _ttsEnabled = ttsEnabled;
+      _voiceCommandsEnabled = voiceEnabled;
+    });
   }
 
 
@@ -614,6 +640,147 @@ class _SessionScreenState extends State<SessionScreen> {
     setState(() => _handRaised = !_handRaised);
     await _sse.send({'type': _handRaised ? 'raise_hand' : 'lower_hand'});
     await _speakIfEnabled(_handRaised ? 'Hand raised' : 'Hand lowered');
+  }
+
+  Future<void> _startVoiceCommands() async {
+    if (!_voiceCommandsEnabled) return;
+
+    try {
+      final available = await _speech.initialize(
+        onStatus: _handleSpeechStatus,
+        onError: _handleSpeechError,
+      );
+
+      if (!mounted) return;
+      setState(() => _voiceCommandsAvailable = available);
+
+      if (!available) {
+        await _speakIfEnabled('Voice commands are not available on this device');
+        return;
+      }
+
+      await _listenForVoiceCommand();
+      await _speakIfEnabled('Voice commands ready');
+    } catch (e) {
+      print('[VOICE COMMAND ERROR] $e');
+      await _speakIfEnabled('Voice commands could not start');
+    }
+  }
+
+  Future<void> _listenForVoiceCommand() async {
+    if (!_voiceCommandsEnabled ||
+        !_voiceCommandsAvailable ||
+        !mounted ||
+        _speech.isListening) {
+      return;
+    }
+
+    await _speech.listen(
+      listenMode: stt.ListenMode.confirmation,
+      partialResults: false,
+      listenFor: const Duration(seconds: 12),
+      pauseFor: const Duration(seconds: 3),
+      onResult: (result) {
+        if (result.finalResult) {
+          _handleVoiceCommand(result.recognizedWords);
+        }
+      },
+    );
+  }
+
+  void _handleSpeechStatus(String status) {
+    if (!_voiceCommandsEnabled || !mounted) return;
+    if (status == 'done' || status == 'notListening') {
+      _scheduleVoiceRestart();
+    }
+  }
+
+  void _handleSpeechError(dynamic error) {
+    print('[VOICE COMMAND SPEECH ERROR] $error');
+    if (_voiceCommandsEnabled && mounted) {
+      _scheduleVoiceRestart();
+    }
+  }
+
+  void _scheduleVoiceRestart() {
+    _voiceRestartTimer?.cancel();
+    _voiceRestartTimer = Timer(const Duration(milliseconds: 700), () {
+      if (mounted && _voiceCommandsEnabled) {
+        _listenForVoiceCommand();
+      }
+    });
+  }
+
+  void _handleVoiceCommand(String words) {
+    final command = words.toLowerCase().trim();
+    if (command.isEmpty) return;
+
+    print('[VOICE COMMAND] $command');
+
+    if (command.contains('unmute')) {
+      if (_muted) {
+        _toggleMute();
+      } else {
+        _speakIfEnabled('Already unmuted');
+      }
+      return;
+    }
+
+    if (command.contains('mute')) {
+      if (!_muted) {
+        _toggleMute();
+      } else {
+        _speakIfEnabled('Already muted');
+      }
+      return;
+    }
+
+    if (command.contains('lower hand') || command.contains('lower my hand')) {
+      if (_handRaised) {
+        _toggleHandRaise();
+      } else {
+        _speakIfEnabled('Hand is already lowered');
+      }
+      return;
+    }
+
+    if (command.contains('raise hand') || command.contains('raise my hand')) {
+      if (!_handRaised) {
+        _toggleHandRaise();
+      } else {
+        _speakIfEnabled('Hand is already raised');
+      }
+      return;
+    }
+
+    if (command.contains('repeat') || command.contains('instructions')) {
+      _repeatSessionInstructions();
+      return;
+    }
+
+    if (widget.isTeacher && command.contains('invite')) {
+      _openInviteScreen();
+      return;
+    }
+
+    if (widget.isTeacher && command.contains('audio')) {
+      setState(() => _showAudioPanel = !_showAudioPanel);
+      _speakIfEnabled(_showAudioPanel ? 'Audio library opened' : 'Audio library closed');
+      return;
+    }
+
+    if (command.contains('leave') || command.contains('exit')) {
+      _leaveSession();
+      return;
+    }
+
+    _speakIfEnabled('Command not recognized');
+  }
+
+  Future<void> _repeatSessionInstructions() async {
+    final labels = widget.isTeacher ? sessionTeacherKeyLabels : sessionStudentKeyLabels;
+    final instructions = buildTtsInstructions(labels, screenName: 'Session ready');
+    await _speakIfEnabled('$instructions Press hash to leave the session.');
   }
 
   /// Chat send: add to UI immediately (optimistic) then POST to server.
@@ -1073,7 +1240,7 @@ class _SessionScreenState extends State<SessionScreen> {
 
   Future<void> _speakIfEnabled(String text) async {
     if (_ttsEnabled && mounted) {
-      try { await _tts.speak(text); } catch (_) {}
+      try { await TtsService.speak(text); } catch (_) {}
     }
   }
 
@@ -1114,6 +1281,11 @@ class _SessionScreenState extends State<SessionScreen> {
     _chatScrollController.dispose();
     _uploadTitleCtrl.dispose();
     _uploadDescCtrl.dispose();
+    _voiceCommandsEnabled = false;
+    _voiceRestartTimer?.cancel();
+    if (_speech.isListening) {
+      _speech.stop();
+    }
 
     _sse.close();
 
@@ -1125,7 +1297,6 @@ class _SessionScreenState extends State<SessionScreen> {
     _sessionAudioPlayer.dispose();
     _previewPlayer.stop();
     _previewPlayer.dispose();
-    _tts.stop();
     _screenFocusNode.dispose();
     super.dispose();
   }
@@ -1150,6 +1321,8 @@ class _SessionScreenState extends State<SessionScreen> {
           } else if (digit == 4 && widget.isTeacher) {
             setState(() => _showAudioPanel = !_showAudioPanel);
           } else if (isStarKey(key)) {
+            _repeatSessionInstructions();
+          } else if (isHashKey(key)) {
             _leaveSession();
           }
         }
@@ -1198,7 +1371,11 @@ class _SessionScreenState extends State<SessionScreen> {
           IconButton(
             icon: Icon(_ttsEnabled ? Icons.volume_up : Icons.volume_off, size: UIUtils.iconSize(context, 20)),
             tooltip: 'Toggle TTS',
-            onPressed: () => setState(() => _ttsEnabled = !_ttsEnabled),
+            onPressed: () {
+              setState(() => _ttsEnabled = !_ttsEnabled);
+              TtsService.configure(enabled: _ttsEnabled);
+              _speakIfEnabled(_ttsEnabled ? 'TTS enabled' : 'TTS disabled');
+            },
           ),
           // Invite students — teacher only
           if (widget.isTeacher)
@@ -1302,7 +1479,7 @@ class _SessionScreenState extends State<SessionScreen> {
               // Leave
               _actionBarBtn(
                 icon: Icons.call_end,
-                label: isKeypad ? '*:Exit' : 'Leave',
+                label: isKeypad ? '#:Exit' : 'Leave',
                 color: Colors.red.shade400,
                 onTap: _leaveSession,
               ),
@@ -1517,6 +1694,7 @@ class _SessionScreenState extends State<SessionScreen> {
                 constraints: const BoxConstraints(),
                 onPressed: () {
                   setState(() => _ttsEnabled = !_ttsEnabled);
+                  TtsService.configure(enabled: _ttsEnabled);
                   _speakIfEnabled(_ttsEnabled ? "TTS enabled" : "TTS disabled");
                 },
               ),

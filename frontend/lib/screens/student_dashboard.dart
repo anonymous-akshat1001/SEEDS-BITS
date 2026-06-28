@@ -248,7 +248,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
       appBar: AppBar(
         // Screen Title
         title: Text("Student Dashboard", style: TextStyle(fontSize: UIUtils.fontSize(context, 18), fontWeight: FontWeight.w600)),
-        backgroundColor: Colors.white,
+        backgroundColor: UIUtils.cardColor,
         foregroundColor: UIUtils.textColor,
         elevation: 0,
         toolbarHeight: tiny ? 40 : null,

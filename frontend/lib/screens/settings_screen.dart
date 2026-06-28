@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_tts/flutter_tts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../services/tts_service.dart';
 import '../utils/ui_utils.dart';
+import '../utils/keypad_actions.dart';
+import '../widgets/key_instruction_wrapper.dart';
 
 
 // Settings Screen Widget
@@ -15,9 +17,6 @@ class SettingsScreen extends StatefulWidget {
 
 // Define the Settings State Class
 class _SettingsScreenState extends State<SettingsScreen> {
-  // Creates an instance of the TTS engine
-  final FlutterTts _tts = FlutterTts();
-  
   // Default values of the settings/shortcuts
   bool _ttsEnabled = true;
   bool _voiceCommandsEnabled = false;
@@ -51,6 +50,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _audioSyncTolerance = prefs.getDouble('audio_sync_tolerance') ?? 0.5;
     });
 
+    UIUtils.setHighContrastMode(_highContrastMode);
     // Applies volume & speech rate to TTS engine
     await _configureTTS();
     // Speaks confirmation only if TTS is enabled
@@ -70,6 +70,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     await prefs.setDouble('tts_speech_rate', _ttsSpeechRate);
     await prefs.setDouble('audio_sync_tolerance', _audioSyncTolerance);
 
+    UIUtils.setHighContrastMode(_highContrastMode);
     // apply changes to TTS
     await _configureTTS();
     await _speakIfEnabled("Settings saved");
@@ -87,9 +88,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _configureTTS() async {
     // apply volume, speech rate and pitch
     try {
-      await _tts.setVolume(_ttsVolume);
-      await _tts.setSpeechRate(_ttsSpeechRate);
-      await _tts.setPitch(1.0);
+      await TtsService.configure(
+        enabled: _ttsEnabled,
+        volume: _ttsVolume,
+        speechRate: _ttsSpeechRate,
+      );
     } catch (e) {
       print('[TTS CONFIG] Error: $e');
     }
@@ -100,7 +103,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     // Give audio feedback only if TTS is enabled
     if (_ttsEnabled) {
       try {
-        await _tts.speak(text);
+        await TtsService.speak(text);
       } catch (e) {
         print('[TTS] Error: $e');
       }
@@ -110,7 +113,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   // Function to test the TTS setting applied
   Future<void> _testTTS() async {
     await _configureTTS();
-    await _tts.speak("This is a test of the text to speech system. Volume is ${(_ttsVolume * 100).round()} percent. Speech rate is ${(_ttsSpeechRate * 2).toStringAsFixed(1)}.");
+    await TtsService.speak("This is a test of the text to speech system. Volume is ${(_ttsVolume * 100).round()} percent. Speech rate is ${(_ttsSpeechRate * 2).toStringAsFixed(1)}.");
   }
 
   // Function to restore the original values
@@ -149,6 +152,43 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
       await _saveSettings();
     }
+  }
+
+  void _toggleTts() {
+    setState(() => _ttsEnabled = !_ttsEnabled);
+    _saveBoolSetting('tts_enabled', _ttsEnabled);
+    _configureTTS();
+    _speakIfEnabled(_ttsEnabled ? "TTS enabled" : "TTS disabled");
+  }
+
+  void _toggleVoiceCommands() {
+    setState(() => _voiceCommandsEnabled = !_voiceCommandsEnabled);
+    _saveBoolSetting('voice_commands_enabled', _voiceCommandsEnabled);
+    _speakIfEnabled(
+      _voiceCommandsEnabled ? "Voice commands enabled" : "Voice commands disabled",
+    );
+  }
+
+  void _toggleHighContrast() {
+    setState(() => _highContrastMode = !_highContrastMode);
+    _saveBoolSetting('high_contrast_mode', _highContrastMode);
+    UIUtils.setHighContrastMode(_highContrastMode);
+    _speakIfEnabled(
+      _highContrastMode ? "High contrast enabled" : "High contrast disabled",
+    );
+  }
+
+  void _toggleKeyboardShortcuts() {
+    setState(() => _showKeyboardShortcuts = !_showKeyboardShortcuts);
+    _saveBoolSetting('show_keyboard_shortcuts', _showKeyboardShortcuts);
+    _speakIfEnabled(
+      _showKeyboardShortcuts ? "Keyboard shortcuts shown" : "Keyboard shortcuts hidden",
+    );
+  }
+
+  Future<void> _saveBoolSetting(String key, bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(key, value);
   }
 
 // UI HELPERS (REUSABLE WIDGET BUILDERS)
@@ -249,8 +289,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
   // saves memory since it is called when screen is destroyed
   @override
   void dispose() {
-    // Stops any ongoing speech
-    _tts.stop();
     super.dispose();
   }
 
@@ -259,10 +297,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     final bool tiny = UIUtils.isTiny(context);
 
-    return Scaffold(
-      appBar: AppBar(
+    return KeypadInstructionWrapper(
+      screenName: 'Settings',
+      labels: settingsKeyLabels,
+      actions: {
+        0: () => Navigator.maybePop(context),
+        1: _toggleTts,
+        2: _toggleVoiceCommands,
+        3: _toggleKeyboardShortcuts,
+        4: _toggleHighContrast,
+        5: _testTTS,
+        6: _saveSettings,
+      },
+      child: Scaffold(
+        appBar: AppBar(
         title: Text('Settings', style: TextStyle(fontSize: UIUtils.fontSize(context, 18), fontWeight: FontWeight.w600)),
-        backgroundColor: Colors.white,
+        backgroundColor: UIUtils.cardColor,
         foregroundColor: UIUtils.textColor,
         elevation: 0,
         toolbarHeight: tiny ? 40 : null,
@@ -273,11 +323,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
             onPressed: _resetToDefaults,
           ),
         ],
-      ),
+        ),
       
-      backgroundColor: UIUtils.backgroundColor,
+        backgroundColor: UIUtils.backgroundColor,
       
-      body: SingleChildScrollView(
+        body: SingleChildScrollView(
         padding: UIUtils.paddingAll(context, 10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -291,7 +341,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   title: 'Enable TTS',
                   subtitle: 'Read out messages',
                   value: _ttsEnabled,
-                  onChanged: (val) => setState(() => _ttsEnabled = val),
+                  onChanged: (_) => _toggleTts(),
                 ),
                 _buildSliderTile(context,
                   title: 'Volume',
@@ -338,14 +388,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   title: 'Voice Commands',
                   subtitle: 'Control app with voice',
                   value: _voiceCommandsEnabled,
-                  onChanged: (val) => setState(() => _voiceCommandsEnabled = val),
+                  onChanged: (_) => _toggleVoiceCommands(),
                 ),
                 if (!tiny)
-                  Padding(
-                    padding: UIUtils.paddingAll(context, 6),
-                    child: Text(
-                      'Commands: "mute", "unmute", "raise hand", "leave"',
-                      style: TextStyle(fontSize: UIUtils.fontSize(context, 11), color: Colors.grey),
+                  Semantics(
+                    button: true,
+                    label: 'Voice commands. Say mute, unmute, raise hand, lower hand, leave, or repeat instructions.',
+                    child: InkWell(
+                      onTap: () => _speakIfEnabled('Voice commands are mute, unmute, raise hand, lower hand, leave, and repeat instructions.'),
+                      borderRadius: BorderRadius.circular(6),
+                      child: Padding(
+                        padding: UIUtils.paddingAll(context, 6),
+                        child: Text(
+                          'Commands: "mute", "unmute", "raise hand", "lower hand", "leave", "repeat"',
+                          style: TextStyle(fontSize: UIUtils.fontSize(context, 11), color: UIUtils.subtextColor),
+                        ),
+                      ),
                     ),
                   ),
               ],
@@ -360,15 +418,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   title: 'Show Shortcuts',
                   subtitle: 'Display keyboard hints',
                   value: _showKeyboardShortcuts,
-                  onChanged: (val) => setState(() => _showKeyboardShortcuts = val),
+                  onChanged: (_) => _toggleKeyboardShortcuts(),
                 ),
                 if (!tiny) ...[
                   SizedBox(height: UIUtils.spacing(context, 6)),
                   Container(
                     padding: UIUtils.paddingAll(context, 8),
                     decoration: BoxDecoration(
-                      color: Colors.grey.shade100,
+                      color: UIUtils.backgroundColor,
                       borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: UIUtils.accentColor.withOpacity(0.35)),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -394,7 +453,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   title: 'High Contrast',
                   subtitle: 'Better visibility',
                   value: _highContrastMode,
-                  onChanged: (val) => setState(() => _highContrastMode = val),
+                  onChanged: (_) => _toggleHighContrast(),
                 ),
               ],
             ),
@@ -439,6 +498,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
             SizedBox(height: UIUtils.spacing(context, 10)),
           ],
+        ),
         ),
       ),
     );

@@ -113,7 +113,7 @@ async def register(user_in: schemas.UserCreate, db: AsyncSession = Depends(get_d
     user = models.User(
         name=user_in.name,
         phone_number=user_in.phone_number,
-        role=user_in.role,
+        role=role,
         password_hash=auth.get_password_hash(user_in.password)    # Hashes the password to maintain security in Database
     )
 
@@ -140,7 +140,8 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(),
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
 
     # If user is valid, create a JWT token
-    token_data = {"user_id": user.user_id, "role": user.role}
+    role = user.role.lower()
+    token_data = {"user_id": user.user_id, "role": role}
     access_token = auth.create_access_token(token_data, expires_delta=timedelta(days=7))
     
     # RETURN USER NAME IN RESPONSE
@@ -148,7 +149,7 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(),
         "access_token": access_token,
         "token_type": "bearer",
         "user_id": user.user_id,
-        "role": user.role,
+        "role": role,
         "name": user.name  
     }
 

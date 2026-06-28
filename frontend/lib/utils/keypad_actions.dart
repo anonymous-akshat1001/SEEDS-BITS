@@ -19,12 +19,25 @@ const Map<int, String> welcomeKeyLabels = {
 const Map<int, String> loginKeyLabels = {
   1: 'Login',
   2: 'Register',
+  3: 'Toggle Teacher Account Check',
 };
 
 // ─── Register Screen ────────────────────────────────────────────────────────
 const Map<int, String> registerKeyLabels = {
   1: 'Register',
   2: 'Go to Login',
+  3: 'Toggle Teacher Registration',
+};
+
+// ─── Settings Screen ────────────────────────────────────────────────────────
+const Map<int, String> settingsKeyLabels = {
+  0: 'Go Back',
+  1: 'Toggle T T S',
+  2: 'Toggle Voice Commands',
+  3: 'Show or Hide Shortcuts',
+  4: 'Toggle High Contrast',
+  5: 'Test T T S',
+  6: 'Save Settings',
 };
 
 // ─── Student Dashboard ──────────────────────────────────────────────────────
@@ -112,14 +125,20 @@ const Map<int, String> selectExistingAudioKeyLabels = {
 /// Builds a TTS-friendly instruction string from a labels map.
 ///
 /// Example output: "Press 1 for Login. Press 2 for Register."
-String buildTtsInstructions(Map<int, String> labels, {String? screenName}) {
+String buildTtsInstructions(
+  Map<int, String> labels, {
+  String? screenName,
+  bool includeRepeatHint = true,
+}) {
   final sorted = labels.entries.toList()
     ..sort((a, b) => a.key.compareTo(b.key));
 
   final parts = sorted.map((e) => 'Press ${e.key} for ${e.value}').join('. ');
 
+  final repeatHint = includeRepeatHint ? ' Press star to repeat these instructions.' : '';
+
   if (screenName != null && screenName.isNotEmpty) {
-    return '$screenName. $parts.';
+    return '$screenName. $parts.$repeatHint';
   }
-  return '$parts.';
+  return '$parts.$repeatHint';
 }

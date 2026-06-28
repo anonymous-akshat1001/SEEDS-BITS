@@ -337,7 +337,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     return Scaffold(
       appBar: AppBar(
         title: Text("Teacher Dashboard", style: TextStyle(fontSize: UIUtils.fontSize(context, 18), fontWeight: FontWeight.w600)),
-        backgroundColor: Colors.white,
+        backgroundColor: UIUtils.cardColor,
         foregroundColor: UIUtils.textColor,
         toolbarHeight: tiny ? 40 : null,
         actions: [

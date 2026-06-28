@@ -38,6 +38,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   bool isTeacher = false;
   bool isLoading = false;
+  bool _passwordVisible = false;
 
   // Register Function which is Future(operation takes time) and async(non-blocking)
   Future<void> register() async {
@@ -87,18 +88,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
       // Opens local storage
       final prefs = await SharedPreferences.getInstance();
 
-      final userId = int.tryParse(res['id'].toString());
+      final userId = int.tryParse((res['user_id'] ?? res['id']).toString());
+      final registeredRole = (res['role'] ?? data['role']).toString().toLowerCase();
 
       if (userId != null) {
         // Saves data permanently
         await prefs.setInt('user_id', userId);
-        await prefs.setString('role', isTeacher ? 'teacher' : 'student');
+        await prefs.setString('role', registeredRole);
         
         // SAVE THE NAME HERE
         await prefs.setString('user_name', userName);
         await prefs.setString('name', userName); // Fallback key
         
-        debugPrint("User registered with ID: $userId, Name: $userName");
+        debugPrint("User registered with ID: $userId, Name: $userName, Role: $registeredRole");
         
         // Register FCM token after registration (non-blocking)
         _registerFCMTokenIfAvailable();
@@ -134,6 +136,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
         setState(() => isLoading = false);
       }
     }
+  }
+
+  void _toggleRole() {
+    setState(() => isTeacher = !isTeacher);
+    TtsService.speak(isTeacher ? "Registering as teacher" : "Registering as student");
   }
 
   // Register FCM token with backend after registration - private function
@@ -179,6 +186,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       actions: {
         1: register,
         2: () => Navigator.pushNamed(context, '/login'),
+        3: _toggleRole,
       },
       child: Scaffold(
         backgroundColor: UIUtils.backgroundColor,
@@ -202,7 +210,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       labelText: "Name",
                       labelStyle: TextStyle(fontSize: UIUtils.fontSize(context, 13), color: UIUtils.subtextColor),
                       filled: true,
-                      fillColor: Colors.white,
+                      fillColor: UIUtils.cardColor,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
@@ -223,7 +231,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       labelText: "Phone number",
                       labelStyle: TextStyle(fontSize: UIUtils.fontSize(context, 13), color: UIUtils.subtextColor),
                       filled: true,
-                      fillColor: Colors.white,
+                      fillColor: UIUtils.cardColor,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
@@ -240,18 +248,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   // Input Password
                   TextField(
                     controller: passCtrl,
-                    obscureText: true,
+                    obscureText: !_passwordVisible,
                     style: TextStyle(fontSize: UIUtils.fontSize(context, 14), color: UIUtils.textColor),
                     decoration: InputDecoration(
                       labelText: "Password",
                       labelStyle: TextStyle(fontSize: UIUtils.fontSize(context, 13), color: UIUtils.subtextColor),
                       filled: true,
-                      fillColor: Colors.white,
+                      fillColor: UIUtils.cardColor,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
                       ),
                       prefixIcon: Icon(Icons.lock_outline_rounded, size: UIUtils.iconSize(context, 18), color: UIUtils.accentColor),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _passwordVisible ? Icons.visibility_off : Icons.visibility,
+                          size: UIUtils.iconSize(context, 18),
+                          color: UIUtils.subtextColor,
+                        ),
+                        tooltip: _passwordVisible ? 'Hide password' : 'Show password',
+                        onPressed: () => setState(() => _passwordVisible = !_passwordVisible),
+                      ),
                       contentPadding: UIUtils.paddingSymmetric(context, horizontal: 16, vertical: 16),
                       isDense: true,
                     ),
@@ -267,7 +284,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         scale: UIUtils.scale(context),
                         child: Switch(
                           value: isTeacher,
-                          onChanged: (v) => setState(() => isTeacher = v),
+                          onChanged: (_) => _toggleRole(),
                         ),
                       ),
                     ],

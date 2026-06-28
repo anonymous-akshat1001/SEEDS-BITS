@@ -34,11 +34,13 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   // store text typed by user
   final phoneCtrl = TextEditingController();
-  final passCtrl = TextEditingController(text: '123456');
+  final passCtrl = TextEditingController();
 
   // state variables
   bool isTeacher = false;
   bool isLoading = false;
+  bool _passwordVisible = false;
+  String? _errorMessage;
 
   // SIM detection state
   List<SimCard> _simCards = [];
@@ -238,12 +240,15 @@ class _LoginScreenState extends State<LoginScreen> {
     final password = passCtrl.text.trim();
 
     if (phone.isEmpty || password.isEmpty) {
-      TtsService.speak("Please fill all fields");
+      _setLoginError("Please fill both phone number and password");
       return;
     }
 
     // State changed → rebuild UI
-    setState(() => isLoading = true);
+    setState(() {
+      isLoading = true;
+      _errorMessage = null;
+    });
 
     try {
       // send http POST request and wait for backend response
@@ -269,8 +274,15 @@ class _LoginScreenState extends State<LoginScreen> {
         final userName = data['name']; 
 
         if (accessToken == null || userId == null || role == null) {
-          TtsService.speak("Invalid response from server");
+          _setLoginError("Invalid response from server");
           debugPrint("Login response missing keys: $data");
+          return;
+        }
+
+        final roleText = role.toString().trim().toLowerCase();
+
+        if (isTeacher && roleText != 'teacher') {
+          _setLoginError("This phone number is registered as a student account");
           return;
         }
 
@@ -280,7 +292,7 @@ class _LoginScreenState extends State<LoginScreen> {
         // save login session
         await prefs.setString('token', accessToken);
         await prefs.setInt('user_id', userId);
-        await prefs.setString('role', role);
+        await prefs.setString('role', roleText);
         
         // SAVE USER NAME 
         if (userName != null) {
@@ -302,7 +314,7 @@ class _LoginScreenState extends State<LoginScreen> {
         }
         
         // navigate to different dashboard based on the role
-        if (role.toLowerCase() == 'teacher') {
+        if (roleText == 'teacher') {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (_) => const TeacherDashboard()),
@@ -316,20 +328,29 @@ class _LoginScreenState extends State<LoginScreen> {
         }
       } 
       else if (res.statusCode == 401) {
-        TtsService.speak("Invalid credentials");
+        _setLoginError("Invalid phone number or password");
       } 
       else {
-        TtsService.speak("Login failed: ${res.statusCode}");
+        _setLoginError("Login failed: ${res.statusCode}");
         debugPrint("Login response: ${res.body}");
       }
     } catch (e) {
-      TtsService.speak("Login failed. Check network or credentials.");
+      _setLoginError("Login failed. Check network or credentials.");
       debugPrint("Login error: $e");
     } finally {
       if (mounted) {
         setState(() => isLoading = false);
       }
     }
+  }
+
+  void _setLoginError(String message) {
+    if (!mounted) return;
+    setState(() {
+      _errorMessage = message;
+      isLoading = false;
+    });
+    TtsService.speak(message);
   }
 
   // Register FCM token with backend after login
@@ -375,6 +396,10 @@ class _LoginScreenState extends State<LoginScreen> {
       actions: {
         1: _login,
         2: () => Navigator.pushNamed(context, '/register'),
+        3: () {
+          setState(() => isTeacher = !isTeacher);
+          TtsService.speak(isTeacher ? "Teacher account expected" : "Student account expected");
+        },
       },
       child: Scaffold(
         backgroundColor: UIUtils.backgroundColor,
@@ -461,6 +486,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   TextField(
                     controller: phoneCtrl,
+                    onChanged: (_) {
+                      if (_errorMessage != null) setState(() => _errorMessage = null);
+                    },
                     style: TextStyle(
                       fontSize: UIUtils.fontSize(context, 14),
                       color: UIUtils.textColor,
@@ -469,7 +497,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       labelText: "Phone number",
                       labelStyle: TextStyle(fontSize: UIUtils.fontSize(context, 13), color: UIUtils.subtextColor),
                       filled: true,
-                      fillColor: Colors.white,
+                      fillColor: UIUtils.cardColor,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
@@ -486,7 +514,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   
                   TextField(
                     controller: passCtrl,
-                    obscureText: true,
+                    obscureText: !_passwordVisible,
+                    onChanged: (_) {
+                      if (_errorMessage != null) setState(() => _errorMessage = null);
+                    },
                     style: TextStyle(
                       fontSize: UIUtils.fontSize(context, 14),
                       color: UIUtils.textColor,
@@ -495,12 +526,23 @@ class _LoginScreenState extends State<LoginScreen> {
                       labelText: "Password",
                       labelStyle: TextStyle(fontSize: UIUtils.fontSize(context, 13), color: UIUtils.subtextColor),
                       filled: true,
-                      fillColor: Colors.white,
+                      fillColor: UIUtils.cardColor,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
                       ),
                       prefixIcon: Icon(Icons.lock_outline_rounded, size: UIUtils.iconSize(context, 18), color: UIUtils.accentColor),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _passwordVisible ? Icons.visibility_off : Icons.visibility,
+                          size: UIUtils.iconSize(context, 18),
+                          color: UIUtils.subtextColor,
+                        ),
+                        tooltip: _passwordVisible ? 'Hide password' : 'Show password',
+                        onPressed: () => setState(() => _passwordVisible = !_passwordVisible),
+                      ),
+                      errorText: _errorMessage,
+                      errorMaxLines: 2,
                       contentPadding: UIUtils.paddingSymmetric(context, horizontal: 16, vertical: 16),
                       isDense: true,
                     ),
@@ -511,12 +553,15 @@ class _LoginScreenState extends State<LoginScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text("Login as Teacher?", style: TextStyle(fontSize: UIUtils.fontSize(context, 13))),
+                      Text("Teacher account?", style: TextStyle(fontSize: UIUtils.fontSize(context, 13))),
                       Transform.scale(
                         scale: UIUtils.scale(context),
                         child: Switch(
                           value: isTeacher,
-                          onChanged: (v) => setState(() => isTeacher = v),
+                          onChanged: (v) {
+                            setState(() => isTeacher = v);
+                            TtsService.speak(v ? "Teacher account expected" : "Student account expected");
+                          },
                         ),
                       ),
                     ],

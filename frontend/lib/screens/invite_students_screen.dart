@@ -146,7 +146,6 @@ class _InviteStudentsScreenState extends State<InviteStudentsScreen> {
   // Cleanup
   @override
   void dispose() {
-    _tts.stop();
     super.dispose();
   }
 
@@ -158,7 +157,7 @@ class _InviteStudentsScreenState extends State<InviteStudentsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Invite Students', style: TextStyle(fontSize: UIUtils.fontSize(context, 16), fontWeight: FontWeight.w600)),
-        backgroundColor: Colors.white,
+        backgroundColor: UIUtils.cardColor,
         foregroundColor: UIUtils.textColor,
         elevation: 0,
         toolbarHeight: tiny ? 40 : null,

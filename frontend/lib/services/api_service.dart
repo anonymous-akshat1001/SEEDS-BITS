@@ -93,7 +93,21 @@ class ApiService {
       } 
       else {
         print('POST $path failed: ${res.statusCode} ${res.body}');
-        return null;
+        try {
+          final decoded = jsonDecode(res.body);
+          if (decoded is Map<String, dynamic>) {
+            return {
+              ...decoded,
+              'status_code': res.statusCode,
+            };
+          }
+        } catch (_) {
+          // Fall through to a plain error message below.
+        }
+        return {
+          'detail': res.body.isNotEmpty ? res.body : 'Request failed',
+          'status_code': res.statusCode,
+        };
       }
     } 
     catch (e) {

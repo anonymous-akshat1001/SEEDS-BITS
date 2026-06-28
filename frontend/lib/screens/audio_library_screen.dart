@@ -510,9 +510,6 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
     _audioPlayer.stop();
     _audioPlayer.dispose();
     
-    // Stop TTS
-    _tts.stop();
-    
     // Call super.dispose last
     super.dispose();
   }
@@ -529,7 +526,7 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
             : 'Audio Library',
           style: TextStyle(fontSize: UIUtils.fontSize(context, 16), fontWeight: FontWeight.w600),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: UIUtils.cardColor,
         foregroundColor: UIUtils.textColor,
         elevation: 0,
         toolbarHeight: tiny ? 40 : null,
@@ -901,7 +898,7 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
             fontWeight: FontWeight.w600,
           ),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: UIUtils.cardColor,
         foregroundColor: UIUtils.textColor,
         elevation: 0,
         toolbarHeight: tiny ? 40 : null,
@@ -1716,7 +1713,6 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
   void dispose() {
     _audioPlayer.stop();
     _audioPlayer.dispose();
-    _tts.stop();
     super.dispose();
   }
 
@@ -1782,7 +1778,7 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
             ),
           ],
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: UIUtils.cardColor,
         foregroundColor: UIUtils.textColor,
         elevation: 0,
         toolbarHeight: tiny ? 48 : 56,

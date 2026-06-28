@@ -126,9 +126,11 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
       }
     });
 
-    // Re-speak instructions so the user knows which keys are active
+    // Re-speak instructions after the previous route has fully disposed.
     if (widget.autoPlay) {
-      _playInstructions();
+      Future.delayed(const Duration(milliseconds: 250), () {
+        if (mounted) _playInstructions();
+      });
     }
   }
 
@@ -150,29 +152,40 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
       }
 
       // Auto-generate TTS from labels
-      if (widget.labels.isNotEmpty) {
-        final instructions = buildTtsInstructions(
-          widget.labels,
-          screenName: widget.screenName,
-        );
+      final instructions = _instructionText();
+      if (instructions.isNotEmpty) {
         debugPrint('[TTS] Speaking: $instructions');
         await TtsService.speak(instructions);
       }
     } catch (e) {
       debugPrint('[AUDIO ERROR] $e');
       // Fallback: try TTS even if audio failed
-      if (widget.labels.isNotEmpty) {
+      final instructions = _instructionText();
+      if (instructions.isNotEmpty) {
         try {
-          final instructions = buildTtsInstructions(
-            widget.labels,
-            screenName: widget.screenName,
-          );
           await TtsService.speak(instructions);
         } catch (ttsErr) {
           debugPrint('[TTS FALLBACK ERROR] $ttsErr');
         }
       }
     }
+  }
+
+  String _instructionText() {
+    if (widget.labels.isNotEmpty) {
+      return buildTtsInstructions(
+        widget.labels,
+        screenName: widget.screenName,
+        includeRepeatHint: widget.onStarKey == null,
+      );
+    }
+    if ((widget.screenName ?? '').isNotEmpty) {
+      final repeatHint = widget.onStarKey == null
+          ? ' Press star to repeat these instructions.'
+          : '';
+      return '${widget.screenName}.$repeatHint';
+    }
+    return '';
   }
 
   void _onInteraction() {
@@ -234,8 +247,12 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
     final character = event.character;
 
     // ── Special keys (* and #) ────────────────────────────────────────────
-    if (isStarKey(key) && widget.onStarKey != null) {
-      widget.onStarKey!();
+    if (isStarKey(key)) {
+      if (widget.onStarKey != null) {
+        widget.onStarKey!();
+      } else {
+        _playInstructions();
+      }
       _updateDebug(key.keyLabel, character, null, true, isStar: true);
       return KeyEventResult.handled;
     }
