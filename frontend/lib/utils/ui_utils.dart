@@ -34,6 +34,11 @@ class UIUtils {
     return width < 260 || (width < 320 && height < 500);
   }
 
+  /// Whether vertical space is tight enough to use compact controls.
+  static bool isShort(BuildContext context) {
+    return MediaQuery.of(context).size.height < 520;
+  }
+
   /// Whether this device likely has a physical keypad (estimated by aspect ratio and size)
   static bool isKeypad(BuildContext context) {
     final width = MediaQuery.of(context).size.width;

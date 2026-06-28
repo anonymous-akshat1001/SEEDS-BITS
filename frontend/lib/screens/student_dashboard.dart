@@ -241,8 +241,35 @@ class _StudentDashboardState extends State<StudentDashboard> {
     );
   }
 
+  void _joinSessionFromInput() {
+    final idText = sessionCtrl.text.trim();
+    if (idText.isEmpty) {
+      TtsService.speak("Please enter a session ID");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Please enter a session ID"),
+        ),
+      );
+      return;
+    }
+
+    final sessionId = int.tryParse(idText);
+    if (sessionId == null) {
+      TtsService.speak("Invalid session ID");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Please enter a valid number"),
+        ),
+      );
+      return;
+    }
+
+    joinSession(sessionId);
+  }
+
   Widget _buildScaffold(BuildContext context) {
     final bool tiny = UIUtils.isTiny(context);
+    final bool compact = tiny || UIUtils.isShort(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -375,44 +402,38 @@ class _StudentDashboardState extends State<StudentDashboard> {
                               ),
                             ),
                             SizedBox(width: UIUtils.spacing(context, 8)),
-                            ElevatedButton.icon(
-                              onPressed: () {
-                                final idText = sessionCtrl.text.trim();
-                                if (idText.isEmpty) {
-                                  TtsService.speak("Please enter a session ID");
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text("Please enter a session ID"),
+                            compact
+                                ? SizedBox(
+                                    width: 40,
+                                    height: 40,
+                                    child: ElevatedButton(
+                                      onPressed: _joinSessionFromInput,
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: UIUtils.primaryColor,
+                                        foregroundColor: Colors.white,
+                                        padding: EdgeInsets.zero,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(10),
+                                        ),
+                                        elevation: 0,
+                                      ),
+                                      child: Icon(Icons.login, size: UIUtils.iconSize(context, 18)),
                                     ),
-                                  );
-                                  return;
-                                }
-                                
-                                final sessionId = int.tryParse(idText);
-                                if (sessionId == null) {
-                                  TtsService.speak("Invalid session ID");
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text("Please enter a valid number"),
+                                  )
+                                : ElevatedButton.icon(
+                                    onPressed: _joinSessionFromInput,
+                                    icon: Icon(Icons.login, size: UIUtils.iconSize(context, 16)),
+                                    label: Text("Join", style: TextStyle(fontSize: UIUtils.fontSize(context, 13))),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: UIUtils.primaryColor,
+                                      foregroundColor: Colors.white,
+                                      padding: UIUtils.paddingSymmetric(context, horizontal: 16, vertical: 12),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      elevation: 0,
                                     ),
-                                  );
-                                  return;
-                                }
-                                
-                                joinSession(sessionId);
-                              },
-                              icon: Icon(Icons.login, size: UIUtils.iconSize(context, 16)),
-                              label: Text("Join", style: TextStyle(fontSize: UIUtils.fontSize(context, 13))),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: UIUtils.primaryColor,
-                                foregroundColor: Colors.white,
-                                padding: UIUtils.paddingSymmetric(context, horizontal: 16, vertical: 12),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                elevation: 0,
-                              ),
-                            ),
+                                  ),
                           ],
                         ),
                       ],

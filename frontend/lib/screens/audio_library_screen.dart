@@ -518,6 +518,7 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
   @override
   Widget build(BuildContext context) {
     final bool tiny = UIUtils.isTiny(context);
+    final bool compact = tiny || UIUtils.isShort(context);
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -558,16 +559,19 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
                   const LinearProgressIndicator(),
                 
                 Padding(
-                  padding: UIUtils.paddingAll(context, 10),
+                  padding: UIUtils.paddingAll(context, compact ? 6 : 10),
                   child: ElevatedButton.icon(
                     onPressed: _isUploading ? null : _uploadAudioFile,
                     icon: Icon(Icons.upload_file_rounded, size: UIUtils.iconSize(context, 18)),
-                    label: Text('Upload New Audio', style: TextStyle(fontSize: UIUtils.fontSize(context, 14), fontWeight: FontWeight.w600)),
+                    label: Text(
+                      compact ? 'Upload Audio' : 'Upload New Audio',
+                      style: TextStyle(fontSize: UIUtils.fontSize(context, compact ? 12 : 14), fontWeight: FontWeight.w600),
+                    ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: UIUtils.primaryColor,
                       foregroundColor: Colors.white,
-                      padding: UIUtils.paddingSymmetric(context, vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      padding: UIUtils.paddingSymmetric(context, vertical: compact ? 10 : 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(compact ? 8 : 12)),
                       elevation: 0,
                     ),
                   ),
@@ -585,7 +589,7 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
                   ),
                 ),
                 
-                SizedBox(height: UIUtils.spacing(context, 4)),
+                SizedBox(height: UIUtils.spacing(context, compact ? 2 : 4)),
                 
                 Expanded(
                   child: _audioFiles.isEmpty
@@ -600,7 +604,7 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
                           ),
                         )
                       : ListView.builder(
-                          padding: UIUtils.paddingAll(context, 8),
+                          padding: UIUtils.paddingAll(context, compact ? 4 : 8),
                           itemCount: _audioFiles.length,
                           itemBuilder: (context, index) {
                             final audio = _audioFiles[index];
@@ -612,7 +616,11 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
                             final isSelected = _selectedAudioId == audioId;
 
                             return Card(
-                              margin: EdgeInsets.only(bottom: UIUtils.spacing(context, 10), left: 10, right: 10),
+                              margin: EdgeInsets.only(
+                                bottom: UIUtils.spacing(context, compact ? 6 : 10),
+                                left: compact ? 4 : 10,
+                                right: compact ? 4 : 10,
+                              ),
                               elevation: 0,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
@@ -620,7 +628,7 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
                               ),
                               color: isSelected ? UIUtils.accentColor.withOpacity(0.05) : Colors.white,
                               child: Padding(
-                                padding: UIUtils.paddingAll(context, 12),
+	                                padding: UIUtils.paddingAll(context, compact ? 8 : 12),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -629,7 +637,7 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
                                         Icon(
                                           isPlaying ? Icons.music_note_rounded : Icons.audiotrack_rounded,
                                           color: isPlaying ? Colors.green : UIUtils.accentColor,
-                                          size: UIUtils.iconSize(context, 24),
+                                          size: UIUtils.iconSize(context, compact ? 20 : 24),
                                         ),
                                         SizedBox(width: UIUtils.spacing(context, 6)),
                                         Expanded(
@@ -694,40 +702,52 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
                                         ),
                                       ),
                                     
-                                    SizedBox(height: UIUtils.spacing(context, 6)),
-                                    
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.end,
-                                      children: [
+                                    SizedBox(height: UIUtils.spacing(context, compact ? 4 : 6)),
+
+                                    Align(
+                                      alignment: Alignment.centerRight,
+                                      child: Wrap(
+                                        alignment: WrapAlignment.end,
+                                        spacing: UIUtils.spacing(context, 4),
+                                        runSpacing: UIUtils.spacing(context, 4),
+                                        children: [
                                         ElevatedButton.icon(
                                           onPressed: () => _playAudioLocally(audioId, title),
                                           icon: Icon(isPlaying ? Icons.stop_rounded : Icons.headphones_rounded, size: UIUtils.iconSize(context, 18)),
-                                          label: Text(isPlaying ? 'Stop Preview' : 'Preview (Only Me)', style: TextStyle(fontSize: UIUtils.fontSize(context, 12))),
+                                          label: Text(
+                                            compact
+                                                ? (isPlaying ? 'Stop' : 'Preview')
+                                                : (isPlaying ? 'Stop Preview' : 'Preview (Only Me)'),
+                                            style: TextStyle(fontSize: UIUtils.fontSize(context, compact ? 11 : 12)),
+                                          ),
                                           style: ElevatedButton.styleFrom(
                                             backgroundColor: isPlaying ? Colors.orange : Colors.indigo,
                                             foregroundColor: Colors.white,
-                                            padding: UIUtils.paddingSymmetric(context, horizontal: 12, vertical: 6),
+                                            padding: UIUtils.paddingSymmetric(context, horizontal: compact ? 8 : 12, vertical: compact ? 5 : 6),
                                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                                             elevation: 0,
                                           ),
                                         ),
                                         
                                         if (widget.sessionId != null) ...[
-                                          SizedBox(width: UIUtils.spacing(context, 4)),
                                           ElevatedButton.icon(
                                             onPressed: () => _selectForSession(audioId, title),
                                             icon: Icon(Icons.campaign_rounded, size: UIUtils.iconSize(context, 18)),
-                                            label: Text('Play in Session', style: TextStyle(fontSize: UIUtils.fontSize(context, 12))),
+                                            label: Text(
+                                              compact ? 'Session' : 'Play in Session',
+                                              style: TextStyle(fontSize: UIUtils.fontSize(context, compact ? 11 : 12)),
+                                            ),
                                             style: ElevatedButton.styleFrom(
                                               backgroundColor: isSelected ? UIUtils.primaryColor : Colors.green,
                                               foregroundColor: Colors.white,
-                                              padding: UIUtils.paddingSymmetric(context, horizontal: 12, vertical: 6),
+                                              padding: UIUtils.paddingSymmetric(context, horizontal: compact ? 8 : 12, vertical: compact ? 5 : 6),
                                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                                               elevation: 0,
                                             ),
                                           ),
                                         ],
-                                      ],
+                                        ],
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -1719,6 +1739,7 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
   @override
   Widget build(BuildContext context) {
     final bool tiny = UIUtils.isTiny(context);
+    final bool compact = tiny || UIUtils.isShort(context);
 
     // Role-aware key mappings
     final labels = widget.isTeacher
@@ -1761,21 +1782,25 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Text(
-              widget.sessionTitle,
-              style: TextStyle(
-                fontSize: UIUtils.fontSize(context, 16),
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            Text(
-              'Audio Library • Session #${widget.sessionId}',
+	            Text(
+	              widget.sessionTitle,
+	              style: TextStyle(
+	                fontSize: UIUtils.fontSize(context, 16),
+	                fontWeight: FontWeight.w700,
+	              ),
+	              maxLines: 1,
+	              overflow: TextOverflow.ellipsis,
+	            ),
+	            Text(
+	              'Audio Library • Session #${widget.sessionId}',
               style: TextStyle(
                 fontSize: UIUtils.fontSize(context, 11),
-                color: Colors.grey.shade600,
-                fontWeight: FontWeight.w400,
-              ),
-            ),
+	                color: Colors.grey.shade600,
+	                fontWeight: FontWeight.w400,
+	              ),
+	              maxLines: 1,
+	              overflow: TextOverflow.ellipsis,
+	            ),
           ],
         ),
         backgroundColor: UIUtils.cardColor,
@@ -1809,11 +1834,25 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
       ),
       backgroundColor: UIUtils.backgroundColor,
       // Upload FAB for teachers only
-      floatingActionButton: widget.isTeacher
-          ? FloatingActionButton.extended(
-              onPressed: _isUploadingAudio ? null : _handleAddAudio,
-              icon: _isUploadingAudio
-                  ? const SizedBox(
+	      floatingActionButton: widget.isTeacher
+	          ? compact
+	              ? FloatingActionButton(
+	                  onPressed: _isUploadingAudio ? null : _handleAddAudio,
+	                  backgroundColor: UIUtils.accentColor,
+	                  foregroundColor: Colors.white,
+	                  tooltip: _isUploadingAudio ? 'Uploading audio' : 'Upload Audio',
+	                  child: _isUploadingAudio
+	                      ? const SizedBox(
+	                          width: 18,
+	                          height: 18,
+	                          child: CircularProgressIndicator(
+	                              strokeWidth: 2, color: Colors.white))
+	                      : const Icon(Icons.upload_file_rounded),
+	                )
+	              : FloatingActionButton.extended(
+	              onPressed: _isUploadingAudio ? null : _handleAddAudio,
+	              icon: _isUploadingAudio
+	                  ? const SizedBox(
                       width: 18,
                       height: 18,
                       child: CircularProgressIndicator(
@@ -1822,8 +1861,8 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
               label: Text(_isUploadingAudio ? 'Uploading…' : 'Upload Audio'),
               backgroundColor: UIUtils.accentColor,
               foregroundColor: Colors.white,
-            )
-          : null,
+	            )
+	          : null,
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : Column(
@@ -1837,22 +1876,26 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
                       color: Colors.teal, minHeight: 3),
 
                 // ── Header ──────────────────────────────────────────
-                Padding(
-                  padding: UIUtils.paddingAll(context, 12),
-                  child: Row(
+	                Padding(
+	                  padding: UIUtils.paddingAll(context, compact ? 8 : 12),
+	                  child: Row(
                     children: [
                       Icon(Icons.audiotrack_rounded,
                           size: UIUtils.iconSize(context, 20),
                           color: UIUtils.accentColor),
                       SizedBox(width: UIUtils.spacing(context, 6)),
-                      Text(
-                        '${_audioFiles.length} Audio Files',
-                        style: TextStyle(
-                          fontSize: UIUtils.fontSize(context, 15),
-                          fontWeight: FontWeight.w700,
-                          color: UIUtils.textColor,
-                        ),
-                      ),
+	                      Expanded(
+	                        child: Text(
+	                          '${_audioFiles.length} Audio Files',
+	                          style: TextStyle(
+	                            fontSize: UIUtils.fontSize(context, compact ? 13 : 15),
+	                            fontWeight: FontWeight.w700,
+	                            color: UIUtils.textColor,
+	                          ),
+	                          maxLines: 1,
+	                          overflow: TextOverflow.ellipsis,
+	                        ),
+	                      ),
                     ],
                   ),
                 ),
@@ -1860,31 +1903,34 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
                 // ── Audio list ──────────────────────────────────────
                 Expanded(
                   child: _audioFiles.isEmpty
-                      ? Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.audiotrack_rounded,
-                                  size: UIUtils.iconSize(context, 52),
-                                  color: Colors.grey.shade400),
-                              SizedBox(
-                                  height:
-                                      UIUtils.spacing(context, 10)),
-                              Text(
-                                widget.isTeacher
-                                    ? 'No audio files for this class yet.'
+	                      ? Center(
+	                          child: SingleChildScrollView(
+	                            padding: UIUtils.paddingAll(context, compact ? 8 : 16),
+	                            child: Column(
+	                              mainAxisSize: MainAxisSize.min,
+	                              mainAxisAlignment: MainAxisAlignment.center,
+	                            children: [
+	                              Icon(Icons.audiotrack_rounded,
+	                                  size: UIUtils.iconSize(context, compact ? 36 : 52),
+	                                  color: Colors.grey.shade400),
+	                              SizedBox(
+	                                  height:
+	                                      UIUtils.spacing(context, compact ? 6 : 10)),
+	                              Text(
+	                                widget.isTeacher
+	                                    ? 'No audio files for this class yet.'
                                     : 'No audio files available yet.\nAsk your teacher to upload some!',
                                 textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize:
-                                      UIUtils.fontSize(context, 15),
-                                  color: Colors.grey.shade600,
-                                ),
-                              ),
-                              if (widget.isTeacher) ...[
-                                SizedBox(
-                                    height:
-                                        UIUtils.spacing(context, 10)),
+	                                style: TextStyle(
+	                                  fontSize:
+	                                      UIUtils.fontSize(context, compact ? 13 : 15),
+	                                  color: Colors.grey.shade600,
+	                                ),
+	                              ),
+	                              if (widget.isTeacher && !compact) ...[
+	                                SizedBox(
+	                                    height:
+	                                        UIUtils.spacing(context, 10)),
                                 ElevatedButton.icon(
                                   onPressed: _uploadAudio,
                                   icon: const Icon(
@@ -1901,15 +1947,16 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
                               SizedBox(
                                   height:
                                       UIUtils.spacing(context, 6)),
-                              TextButton.icon(
-                                onPressed: _loadAudioFiles,
-                                icon: const Icon(Icons.refresh,
-                                    size: 16),
-                                label: const Text("Refresh"),
-                              ),
-                            ],
-                          ),
-                        )
+	                              TextButton.icon(
+	                                onPressed: _loadAudioFiles,
+	                                icon: const Icon(Icons.refresh,
+	                                    size: 16),
+	                                label: const Text("Refresh"),
+	                              ),
+	                            ],
+	                            ),
+	                          ),
+	                        )
                       : ListView.builder(
                           padding: UIUtils.paddingAll(context, 8),
                           itemCount: _audioFiles.length,
@@ -2112,11 +2159,17 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
 
   /// Now-playing bar with seek, speed, and transport controls.
   Widget _buildNowPlayingBar() {
+    final bool compact = UIUtils.isTiny(context) || UIUtils.isShort(context);
     final barColor =
         _isPlaying ? Colors.deepPurple.shade700 : Colors.grey.shade800;
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 10, 16, 6),
+      padding: EdgeInsets.fromLTRB(
+        compact ? 10 : 16,
+        compact ? 6 : 10,
+        compact ? 10 : 16,
+        compact ? 4 : 6,
+      ),
       color: barColor,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -2128,14 +2181,14 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
               color: Colors.white,
               size: 18,
             ),
-            const SizedBox(width: 6),
+            SizedBox(width: compact ? 4 : 6),
             Expanded(
               child: Text(
                 _playingAudioTitle ?? 'Audio',
-                style: const TextStyle(
+                style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
-                  fontSize: 14,
+                  fontSize: compact ? 12 : 14,
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
@@ -2156,21 +2209,23 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
                 ),
               ),
             ),
-            const SizedBox(width: 6),
-            Text(
-              '${_formatDuration(_currentPosition)} / '
-              '${_totalDuration != null ? _formatDuration(_totalDuration!) : "--:--"}',
-              style:
-                  const TextStyle(color: Colors.white70, fontSize: 11),
-            ),
+            if (!compact) ...[
+              const SizedBox(width: 6),
+              Text(
+                '${_formatDuration(_currentPosition)} / '
+                '${_totalDuration != null ? _formatDuration(_totalDuration!) : "--:--"}',
+                style:
+                    const TextStyle(color: Colors.white70, fontSize: 11),
+              ),
+            ],
           ]),
 
           // Seek bar
           SliderTheme(
             data: SliderThemeData(
-              trackHeight: 3,
-              thumbShape:
-                  const RoundSliderThumbShape(enabledThumbRadius: 6),
+	              trackHeight: compact ? 2.0 : 3.0,
+	              thumbShape:
+	                  RoundSliderThumbShape(enabledThumbRadius: compact ? 5.0 : 6.0),
               activeTrackColor: Colors.tealAccent,
               inactiveTrackColor: Colors.white30,
               thumbColor: Colors.tealAccent,
@@ -2192,75 +2247,91 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
           ),
 
           // Transport controls
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              IconButton(
-                icon: const Icon(Icons.fast_rewind,
-                    color: Colors.white70, size: 22),
-                tooltip: 'Slower',
-                onPressed: _audioSpeed > 0.25
-                    ? () => _changeSpeed(-0.25)
-                    : null,
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-              ),
-              const SizedBox(width: 8),
-              IconButton(
-                icon: const Icon(Icons.replay_10,
-                    color: Colors.white70, size: 22),
-                tooltip: 'Back 10s',
-                onPressed: () => _seekTo((_currentPosition - 10)
-                    .clamp(0.0, _totalDuration ?? 0.0)),
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-              ),
-              const SizedBox(width: 8),
-              ElevatedButton.icon(
-                onPressed: _playingAudioId != null
-                    ? () => _playOrPauseAudio(
-                        _playingAudioId!,
-                        _playingAudioTitle ?? 'Audio')
-                    : null,
-                icon: Icon(
-                    _isPlaying ? Icons.pause : Icons.play_arrow,
-                    size: 20),
-                label: Text(_isPlaying ? 'Pause' : 'Play',
-                    style: const TextStyle(fontSize: 13)),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor:
-                      _isPlaying ? Colors.orange : Colors.green,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 6),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(18)),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: Icon(Icons.fast_rewind,
+                      color: Colors.white70, size: compact ? 20 : 22),
+                  tooltip: 'Slower',
+                  onPressed: _audioSpeed > 0.25
+                      ? () => _changeSpeed(-0.25)
+                      : null,
+                  padding: EdgeInsets.zero,
+                  constraints: BoxConstraints.tightFor(
+                    width: compact ? 30 : 34,
+                    height: compact ? 28 : 32,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              IconButton(
-                icon: const Icon(Icons.forward_10,
-                    color: Colors.white70, size: 22),
-                tooltip: 'Forward 10s',
-                onPressed: () => _seekTo((_currentPosition + 10)
-                    .clamp(0.0, _totalDuration ?? 0.0)),
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-              ),
-              const SizedBox(width: 8),
-              IconButton(
-                icon: const Icon(Icons.fast_forward,
-                    color: Colors.white70, size: 22),
-                tooltip: 'Faster',
-                onPressed: _audioSpeed < 3.0
-                    ? () => _changeSpeed(0.25)
-                    : null,
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-              ),
-            ],
+                SizedBox(width: compact ? 4 : 8),
+                IconButton(
+                  icon: Icon(Icons.replay_10,
+                      color: Colors.white70, size: compact ? 20 : 22),
+                  tooltip: 'Back 10s',
+                  onPressed: () => _seekTo((_currentPosition - 10)
+                      .clamp(0.0, _totalDuration ?? 0.0)),
+                  padding: EdgeInsets.zero,
+                  constraints: BoxConstraints.tightFor(
+                    width: compact ? 30 : 34,
+                    height: compact ? 28 : 32,
+                  ),
+                ),
+                SizedBox(width: compact ? 4 : 8),
+                ElevatedButton.icon(
+                  onPressed: _playingAudioId != null
+                      ? () => _playOrPauseAudio(
+                          _playingAudioId!,
+                          _playingAudioTitle ?? 'Audio')
+                      : null,
+                  icon: Icon(
+                      _isPlaying ? Icons.pause : Icons.play_arrow,
+                      size: compact ? 18 : 20),
+                  label: Text(_isPlaying ? 'Pause' : 'Play',
+                      style: TextStyle(fontSize: compact ? 12 : 13)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor:
+                        _isPlaying ? Colors.orange : Colors.green,
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(
+                        horizontal: compact ? 10 : 16,
+                        vertical: compact ? 5 : 6),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18)),
+                  ),
+                ),
+                SizedBox(width: compact ? 4 : 8),
+                IconButton(
+                  icon: Icon(Icons.forward_10,
+                      color: Colors.white70, size: compact ? 20 : 22),
+                  tooltip: 'Forward 10s',
+                  onPressed: () => _seekTo((_currentPosition + 10)
+                      .clamp(0.0, _totalDuration ?? 0.0)),
+                  padding: EdgeInsets.zero,
+                  constraints: BoxConstraints.tightFor(
+                    width: compact ? 30 : 34,
+                    height: compact ? 28 : 32,
+                  ),
+                ),
+                SizedBox(width: compact ? 4 : 8),
+                IconButton(
+                  icon: Icon(Icons.fast_forward,
+                      color: Colors.white70, size: compact ? 20 : 22),
+                  tooltip: 'Faster',
+                  onPressed: _audioSpeed < 3.0
+                      ? () => _changeSpeed(0.25)
+                      : null,
+                  padding: EdgeInsets.zero,
+                  constraints: BoxConstraints.tightFor(
+                    width: compact ? 30 : 34,
+                    height: compact ? 28 : 32,
+                  ),
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: compact ? 2 : 4),
         ],
       ),
     );

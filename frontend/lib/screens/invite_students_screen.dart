@@ -154,6 +154,7 @@ class _InviteStudentsScreenState extends State<InviteStudentsScreen> {
   @override
   Widget build(BuildContext context) {
     final bool tiny = UIUtils.isTiny(context);
+    final bool compact = tiny || UIUtils.isShort(context);
     return Scaffold(
       appBar: AppBar(
         title: Text('Invite Students', style: TextStyle(fontSize: UIUtils.fontSize(context, 16), fontWeight: FontWeight.w600)),
@@ -179,7 +180,7 @@ class _InviteStudentsScreenState extends State<InviteStudentsScreen> {
                 // Session info
                 Container(
                   width: double.infinity,
-                  padding: UIUtils.paddingAll(context, 12),
+                  padding: UIUtils.paddingAll(context, compact ? 8 : 12),
                   color: Colors.white,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -195,12 +196,14 @@ class _InviteStudentsScreenState extends State<InviteStudentsScreen> {
                       Text(
                         widget.sessionTitle,
                         style: TextStyle(
-                          fontSize: UIUtils.fontSize(context, 16),
+                          fontSize: UIUtils.fontSize(context, compact ? 14 : 16),
                           fontWeight: FontWeight.w700,
                           color: UIUtils.textColor,
                         ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      SizedBox(height: UIUtils.spacing(context, 4)),
+                      SizedBox(height: UIUtils.spacing(context, compact ? 2 : 4)),
                       Text(
                         '${_invitedStudents.length} of ${_students.length} invited',
                         style: TextStyle(
@@ -215,18 +218,23 @@ class _InviteStudentsScreenState extends State<InviteStudentsScreen> {
                 
                 // Invite all button
                 Padding(
-                  padding: UIUtils.paddingAll(context, 10),
+                  padding: UIUtils.paddingAll(context, compact ? 6 : 10),
                     child: ElevatedButton.icon(
                       onPressed: _students.length == _invitedStudents.length
                           ? null
                           : _inviteAll,
                       icon: Icon(Icons.send_rounded, size: UIUtils.iconSize(context, 18)),
-                      label: Text('Invite All Students', style: TextStyle(fontSize: UIUtils.fontSize(context, 14), fontWeight: FontWeight.w600)),
+                      label: Text(
+                        compact ? 'Invite All' : 'Invite All Students',
+                        style: TextStyle(fontSize: UIUtils.fontSize(context, compact ? 12 : 14), fontWeight: FontWeight.w600),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: UIUtils.primaryColor,
                         foregroundColor: Colors.white,
-                        padding: UIUtils.paddingSymmetric(context, vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        padding: UIUtils.paddingSymmetric(context, vertical: compact ? 10 : 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(compact ? 8 : 12)),
                         elevation: 0,
                       ),
                     ),
@@ -243,7 +251,7 @@ class _InviteStudentsScreenState extends State<InviteStudentsScreen> {
                           ),
                         )
                       : ListView.builder(
-                          padding: UIUtils.paddingAll(context, 8),
+                          padding: UIUtils.paddingAll(context, compact ? 4 : 8),
                           itemCount: _students.length,
                           itemBuilder: (context, index) {
                             final student = _students[index];
@@ -253,7 +261,11 @@ class _InviteStudentsScreenState extends State<InviteStudentsScreen> {
                             final isInvited = _invitedStudents.contains(studentId);
 
                             return Card(
-                              margin: EdgeInsets.only(bottom: UIUtils.spacing(context, 8), left: 12, right: 12),
+                              margin: EdgeInsets.only(
+                                bottom: UIUtils.spacing(context, compact ? 5 : 8),
+                                left: compact ? 4 : 12,
+                                right: compact ? 4 : 12,
+                              ),
                               elevation: 0,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
@@ -261,8 +273,8 @@ class _InviteStudentsScreenState extends State<InviteStudentsScreen> {
                               ),
                               color: isInvited ? Colors.green.withOpacity(0.05) : Colors.white,
                               child: ListTile(
-                                dense: tiny,
-                                contentPadding: UIUtils.paddingSymmetric(context, horizontal: 8, vertical: 2),
+                                dense: compact,
+                                contentPadding: UIUtils.paddingSymmetric(context, horizontal: compact ? 6 : 8, vertical: compact ? 0 : 2),
                                 leading: CircleAvatar(
                                   backgroundColor: isInvited ? Colors.green : UIUtils.backgroundColor,
                                   radius: UIUtils.iconSize(context, 18),
@@ -279,6 +291,8 @@ class _InviteStudentsScreenState extends State<InviteStudentsScreen> {
                                     fontSize: UIUtils.fontSize(context, 14),
                                     color: isInvited ? Colors.green.shade700 : UIUtils.textColor,
                                   ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                                 subtitle: Text(
                                   phone,
@@ -288,7 +302,9 @@ class _InviteStudentsScreenState extends State<InviteStudentsScreen> {
                                   ),
                                 ),
                                 trailing: isInvited
-                                    ? Container(
+                                    ? compact
+                                        ? Icon(Icons.check_circle_rounded, color: Colors.green, size: UIUtils.iconSize(context, 22))
+                                        : Container(
                                         padding: UIUtils.paddingSymmetric(context, horizontal: 8, vertical: 3),
                                         decoration: BoxDecoration(
                                           color: Colors.green,
@@ -303,7 +319,19 @@ class _InviteStudentsScreenState extends State<InviteStudentsScreen> {
                                           ),
                                         ),
                                       )
-                                    : ElevatedButton.icon(
+                                    : compact
+                                        ? IconButton(
+                                            onPressed: () => _inviteStudent(studentId, name),
+                                            icon: Icon(Icons.send_rounded, size: UIUtils.iconSize(context, 18)),
+                                            color: UIUtils.accentColor,
+                                            tooltip: 'Invite',
+                                            padding: EdgeInsets.zero,
+                                            constraints: BoxConstraints.tightFor(
+                                              width: UIUtils.iconSize(context, 34),
+                                              height: UIUtils.iconSize(context, 34),
+                                            ),
+                                          )
+                                        : ElevatedButton.icon(
                                         onPressed: () => _inviteStudent(studentId, name),
                                         icon: Icon(Icons.send_rounded, size: UIUtils.iconSize(context, 14)),
                                         label: Text('Invite', style: TextStyle(fontSize: UIUtils.fontSize(context, 12))),

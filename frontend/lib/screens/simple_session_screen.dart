@@ -437,6 +437,8 @@ class _SimpleSessionScreenState extends State<SimpleSessionScreen> {
     Color? color,
     bool isActive = false,
   }) {
+    final bool compact = UIUtils.isTiny(context) || UIUtils.isShort(context);
+
     return ElevatedButton(
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
@@ -444,7 +446,11 @@ class _SimpleSessionScreenState extends State<SimpleSessionScreen> {
             ? Colors.orange 
             : (color ?? Colors.teal),
         foregroundColor: Colors.white,
-        padding: UIUtils.paddingSymmetric(context, vertical: 16, horizontal: 8),
+        padding: UIUtils.paddingSymmetric(
+          context,
+          vertical: compact ? 8 : 16,
+          horizontal: compact ? 6 : 8,
+        ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
@@ -454,15 +460,17 @@ class _SimpleSessionScreenState extends State<SimpleSessionScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: UIUtils.iconSize(context, 32)),
-          SizedBox(height: UIUtils.spacing(context, 6)),
+          Icon(icon, size: UIUtils.iconSize(context, compact ? 22 : 32)),
+          SizedBox(height: UIUtils.spacing(context, compact ? 3 : 6)),
           Text(
             label,
             style: TextStyle(
-              fontSize: UIUtils.fontSize(context, 14),
+              fontSize: UIUtils.fontSize(context, compact ? 11 : 14),
               fontWeight: FontWeight.bold,
             ),
             textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
@@ -472,6 +480,7 @@ class _SimpleSessionScreenState extends State<SimpleSessionScreen> {
   @override
   Widget build(BuildContext context) {
     final bool tiny = UIUtils.isTiny(context);
+    final bool compact = tiny || UIUtils.isShort(context);
     return KeypadInstructionWrapper(
       screenName: 'Session active',
       labels: simpleSessionKeyLabels,
@@ -502,7 +511,7 @@ class _SimpleSessionScreenState extends State<SimpleSessionScreen> {
             // Status bar
             Container(
               width: double.infinity,
-              padding: UIUtils.paddingAll(context, 16),
+              padding: UIUtils.paddingAll(context, compact ? 8 : 16),
               color: UIUtils.backgroundColor,
               child: Column(
                 children: [
@@ -510,19 +519,21 @@ class _SimpleSessionScreenState extends State<SimpleSessionScreen> {
                     _statusText,
                     style: TextStyle(
                       color: UIUtils.textColor,
-                      fontSize: UIUtils.fontSize(context, 20),
+                      fontSize: UIUtils.fontSize(context, compact ? 16 : 20),
                       fontWeight: FontWeight.w700,
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  SizedBox(height: UIUtils.spacing(context, 6)),
+                  SizedBox(height: UIUtils.spacing(context, compact ? 2 : 6)),
                   Text(
                     'Participants: $_participantCount',
                     style: TextStyle(
                       color: UIUtils.subtextColor,
-                      fontSize: UIUtils.fontSize(context, 14),
+                      fontSize: UIUtils.fontSize(context, compact ? 11 : 14),
                     ),
                   ),
-                  if (_currentSpeaker != "None" && !tiny) ...[
+                  if (_currentSpeaker != "None" && !compact) ...[
                     SizedBox(height: UIUtils.spacing(context, 4)),
                     Text(
                       'Speaking: $_currentSpeaker',
@@ -533,7 +544,7 @@ class _SimpleSessionScreenState extends State<SimpleSessionScreen> {
                       ),
                     ),
                   ],
-                  if (_isPlayingSessionAudio) ...[
+                  if (_isPlayingSessionAudio && !compact) ...[
                     SizedBox(height: UIUtils.spacing(context, 8)),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -555,46 +566,46 @@ class _SimpleSessionScreenState extends State<SimpleSessionScreen> {
               ),
             ),
             
-            SizedBox(height: UIUtils.spacing(context, 12)),
+            SizedBox(height: UIUtils.spacing(context, compact ? 4 : 12)),
             
             // Large mic indicator
             Container(
-              width: 80 * UIUtils.scale(context),
-              height: 80 * UIUtils.scale(context),
+              width: (compact ? 52 : 80) * UIUtils.scale(context),
+              height: (compact ? 52 : 80) * UIUtils.scale(context),
               decoration: BoxDecoration(
                 color: _muted ? Colors.red : Colors.green,
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 _muted ? Icons.mic_off : Icons.mic,
-                size: UIUtils.iconSize(context, 40),
+                size: UIUtils.iconSize(context, compact ? 26 : 40),
                 color: Colors.white,
               ),
             ),
             
-            SizedBox(height: UIUtils.spacing(context, 8)),
+            SizedBox(height: UIUtils.spacing(context, compact ? 3 : 8)),
             
             Text(
               _muted ? 'MUTED' : 'LIVE',
               style: TextStyle(
                 color: _muted ? Colors.red : Colors.green,
-                fontSize: UIUtils.fontSize(context, 24),
+                fontSize: UIUtils.fontSize(context, compact ? 16 : 24),
                 fontWeight: FontWeight.w800,
-                letterSpacing: 1.5,
+                letterSpacing: compact ? 0 : 1.5,
               ),
             ),
             
-            SizedBox(height: UIUtils.spacing(context, 16)),
+            SizedBox(height: UIUtils.spacing(context, compact ? 4 : 16)),
             
             // Button grid
             Expanded(
               child: Padding(
-                padding: UIUtils.paddingAll(context, 10),
+                padding: UIUtils.paddingAll(context, compact ? 6 : 10),
                 child: GridView.count(
                   crossAxisCount: 2,
-                  mainAxisSpacing: UIUtils.spacing(context, 10),
-                  crossAxisSpacing: UIUtils.spacing(context, 10),
-                  childAspectRatio: tiny ? 1.3 : 1.1,
+                  mainAxisSpacing: UIUtils.spacing(context, compact ? 6 : 10),
+                  crossAxisSpacing: UIUtils.spacing(context, compact ? 6 : 10),
+                  childAspectRatio: compact ? 1.55 : 1.1,
                   children: [
                     _buildBigButton(context,
                       label: _muted ? '1: Unmute' : '1: Mute',
@@ -643,16 +654,18 @@ class _SimpleSessionScreenState extends State<SimpleSessionScreen> {
             // Info footer
             Container(
               width: double.infinity,
-              padding: UIUtils.paddingAll(context, 12),
+              padding: UIUtils.paddingAll(context, compact ? 6 : 12),
               color: UIUtils.backgroundColor,
               child: Text(
                 'Keypad: 1:Mute, 2:Hand, 3:TTS, 4:Exit, 7:Slow, 9:Fast',
                 style: TextStyle(
                   color: UIUtils.subtextColor,
-                  fontSize: UIUtils.fontSize(context, 10),
+                  fontSize: UIUtils.fontSize(context, compact ? 9 : 10),
                   fontWeight: FontWeight.w600,
                 ),
                 textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],

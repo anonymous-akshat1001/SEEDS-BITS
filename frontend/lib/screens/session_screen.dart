@@ -1431,10 +1431,10 @@ class _SessionScreenState extends State<SessionScreen> {
 
   Widget _buildActionBar() {
     final bool isKeypad = UIUtils.isKeypad(context);
-    final bool tiny = UIUtils.isTiny(context);
+    final bool short = UIUtils.isShort(context);
 
     return Container(
-      padding: UIUtils.paddingSymmetric(context, horizontal: 4, vertical: 8),
+      padding: UIUtils.paddingSymmetric(context, horizontal: 4, vertical: short ? 4 : 8),
       color: Colors.grey.shade900,
       child: SafeArea(
         top: false,
@@ -1498,7 +1498,8 @@ class _SessionScreenState extends State<SessionScreen> {
     bool active = false,
   }) {
     final bool isKeypad = UIUtils.isKeypad(context);
-    final double btnSize = isKeypad ? 40 : 48;
+    final bool short = UIUtils.isShort(context);
+    final double btnSize = short ? 34 : (isKeypad ? 40 : 48);
 
     return InkWell(
       onTap: onTap,
@@ -1519,13 +1520,13 @@ class _SessionScreenState extends State<SessionScreen> {
                   width: 2,
                 ),
               ),
-              child: Icon(icon, color: color, size: UIUtils.iconSize(context, isKeypad ? 18 : 24)),
+              child: Icon(icon, color: color, size: UIUtils.iconSize(context, short || isKeypad ? 18 : 24)),
             ),
-            SizedBox(height: UIUtils.spacing(context, 4)),
+            SizedBox(height: UIUtils.spacing(context, short ? 2 : 4)),
             Text(label,
                 style: TextStyle(
                     color: Colors.grey.shade400,
-                    fontSize: UIUtils.fontSize(context, 9),
+                    fontSize: UIUtils.fontSize(context, short ? 8 : 9),
                     fontWeight: FontWeight.w500)),
           ],
         ),
@@ -1670,146 +1671,221 @@ class _SessionScreenState extends State<SessionScreen> {
   }
 
   Widget _buildChatPanel() {
-    final bool tiny = UIUtils.isTiny(context);
-    return Column(
-      children: [
-        // Header
-        Container(
-          padding: UIUtils.paddingAll(context, 8),
-          color: Colors.teal.shade50,
-          child: Row(
-            children: [
-              Icon(Icons.chat, color: Colors.teal, size: UIUtils.iconSize(context, 16)),
-              SizedBox(width: UIUtils.spacing(context, 4)),
-              Expanded(
-                child: Text(
-                  'Chat',
-                  style: TextStyle(fontSize: UIUtils.fontSize(context, 14), fontWeight: FontWeight.bold),
-                ),
-              ),
-              IconButton(
-                icon: Icon(_ttsEnabled ? Icons.volume_up : Icons.volume_off, size: UIUtils.iconSize(context, 16)),
-                tooltip: 'Toggle TTS',
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-                onPressed: () {
-                  setState(() => _ttsEnabled = !_ttsEnabled);
-                  TtsService.configure(enabled: _ttsEnabled);
-                  _speakIfEnabled(_ttsEnabled ? "TTS enabled" : "TTS disabled");
-                },
-              ),
-            ],
-          ),
-        ),
-        
-        // Messages
-        Expanded(
-          child: _messages.isEmpty
-              ? Center(
-                  child: Text(
-                    'No messages yet',
-                    style: TextStyle(color: Colors.grey, fontSize: UIUtils.fontSize(context, 12)),
-                  ),
-                )
-              : ListView.builder(
-                  controller: _chatScrollController,
-                  padding: UIUtils.paddingAll(context, 4),
-                  itemCount: _messages.length,
-                  itemBuilder: (context, index) {
-                    final msg = _messages[index];
-                    final isMe = msg['isMe'] ?? false;
-                    
-                    return Align(
-                      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-                      child: Container(
-                        margin: EdgeInsets.only(bottom: UIUtils.spacing(context, 4)),
-                        padding: UIUtils.paddingSymmetric(context, horizontal: 8, vertical: 4),
-                        constraints: BoxConstraints(
-                          maxWidth: MediaQuery.of(context).size.width * 0.7,
-                        ),
-                        decoration: BoxDecoration(
-                          color: isMe ? Colors.teal.shade100 : Colors.grey.shade200,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              msg['sender'],
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: UIUtils.fontSize(context, 10),
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            SizedBox(height: UIUtils.spacing(context, 2)),
-                            Text(
-                              msg['text'],
-                              style: TextStyle(fontSize: UIUtils.fontSize(context, 12)),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                ),
-        ),
-        
-        // Input
-        Container(
-          padding: UIUtils.paddingSymmetric(context, horizontal: 8, vertical: 8),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.shade300,
-                blurRadius: 4,
-                offset: const Offset(0, -2),
-              ),
-            ],
-          ),
-          child: SafeArea(
-            top: false,
-            child: Row(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxHeight < 180;
+
+        if (compact) {
+          return SingleChildScrollView(
+            padding: EdgeInsets.zero,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Expanded(
-                  child: TextField(
-                    controller: _chatController,
-                    decoration: InputDecoration(
-                      hintText: "Message...",
-                      hintStyle: TextStyle(fontSize: UIUtils.fontSize(context, 12)),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      contentPadding: UIUtils.paddingSymmetric(context, horizontal: 10, vertical: 4),
-                      isDense: true,
-                    ),
-                    onSubmitted: (_) => _sendMessage(),
-                    style: TextStyle(fontSize: UIUtils.fontSize(context, 12)),
-                    maxLines: 1,
+                if (constraints.maxHeight >= 120) _buildChatHeader(compact: true),
+                ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: constraints.maxHeight >= 120 ? 34 : 24,
+                    maxHeight: constraints.maxHeight >= 120 ? 72 : 42,
                   ),
+                  child: _buildMessagesList(compact: true),
                 ),
-                SizedBox(width: UIUtils.spacing(context, 4)),
-                Container(
-                  width: 30 * UIUtils.scale(context),
-                  height: 30 * UIUtils.scale(context),
-                  decoration: const BoxDecoration(
-                    color: Colors.teal,
-                    shape: BoxShape.circle,
+                _buildChatInput(compact: true),
+              ],
+            ),
+          );
+        }
+
+        return Column(
+          children: [
+            _buildChatHeader(),
+            Expanded(child: _buildMessagesList()),
+            _buildChatInput(),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildChatHeader({bool compact = false}) {
+    return Container(
+      padding: UIUtils.paddingSymmetric(
+        context,
+        horizontal: compact ? 6 : 8,
+        vertical: compact ? 4 : 8,
+      ),
+      color: UIUtils.isHighContrast ? UIUtils.cardColor : Colors.teal.shade50,
+      child: Row(
+        children: [
+          Icon(Icons.chat, color: UIUtils.accentColor, size: UIUtils.iconSize(context, compact ? 14 : 16)),
+          SizedBox(width: UIUtils.spacing(context, 4)),
+          Expanded(
+            child: Text(
+              'Chat',
+              style: TextStyle(
+                fontSize: UIUtils.fontSize(context, compact ? 12 : 14),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          IconButton(
+            icon: Icon(_ttsEnabled ? Icons.volume_up : Icons.volume_off, size: UIUtils.iconSize(context, compact ? 14 : 16)),
+            tooltip: 'Toggle TTS',
+            padding: EdgeInsets.zero,
+            constraints: BoxConstraints.tightFor(
+              width: UIUtils.iconSize(context, compact ? 24 : 28),
+              height: UIUtils.iconSize(context, compact ? 24 : 28),
+            ),
+            onPressed: () {
+              setState(() => _ttsEnabled = !_ttsEnabled);
+              TtsService.configure(enabled: _ttsEnabled);
+              _speakIfEnabled(_ttsEnabled ? "TTS enabled" : "TTS disabled");
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMessagesList({bool compact = false}) {
+    if (_messages.isEmpty) {
+      return Center(
+        child: Text(
+          'No messages yet',
+          style: TextStyle(color: UIUtils.subtextColor, fontSize: UIUtils.fontSize(context, compact ? 10 : 12)),
+        ),
+      );
+    }
+
+    final itemCount = compact ? (_messages.length > 2 ? 2 : _messages.length) : _messages.length;
+    final startIndex = compact ? _messages.length - itemCount : 0;
+
+    return ListView.builder(
+      controller: compact ? null : _chatScrollController,
+      shrinkWrap: compact,
+      physics: compact ? const NeverScrollableScrollPhysics() : null,
+      padding: UIUtils.paddingAll(context, compact ? 2 : 4),
+      itemCount: itemCount,
+      itemBuilder: (context, index) {
+        final msg = _messages[startIndex + index];
+        final isMe = msg['isMe'] ?? false;
+
+        return Align(
+          alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+          child: Container(
+            margin: EdgeInsets.only(bottom: UIUtils.spacing(context, compact ? 2 : 4)),
+            padding: UIUtils.paddingSymmetric(
+              context,
+              horizontal: compact ? 6 : 8,
+              vertical: compact ? 3 : 4,
+            ),
+            constraints: BoxConstraints(
+              maxWidth: MediaQuery.of(context).size.width * 0.7,
+            ),
+            decoration: BoxDecoration(
+              color: isMe
+                  ? (UIUtils.isHighContrast ? UIUtils.primaryColor : Colors.teal.shade100)
+                  : (UIUtils.isHighContrast ? UIUtils.cardColor : Colors.grey.shade200),
+              borderRadius: BorderRadius.circular(compact ? 8 : 10),
+              border: UIUtils.isHighContrast ? Border.all(color: UIUtils.accentColor.withOpacity(0.5)) : null,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  msg['sender'],
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: UIUtils.fontSize(context, compact ? 9 : 10),
+                    color: UIUtils.textColor,
                   ),
-                  child: IconButton(
-                    icon: Icon(Icons.send, color: Colors.white, size: UIUtils.iconSize(context, 14)),
-                    padding: EdgeInsets.zero,
-                    onPressed: _sendMessage,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (!compact) SizedBox(height: UIUtils.spacing(context, 2)),
+                Text(
+                  msg['text'],
+                  style: TextStyle(
+                    fontSize: UIUtils.fontSize(context, compact ? 10 : 12),
+                    color: UIUtils.textColor,
                   ),
+                  maxLines: compact ? 1 : null,
+                  overflow: compact ? TextOverflow.ellipsis : null,
                 ),
               ],
             ),
           ),
+        );
+      },
+    );
+  }
+
+  Widget _buildChatInput({bool compact = false}) {
+    return Container(
+      padding: UIUtils.paddingSymmetric(
+        context,
+        horizontal: compact ? 6 : 8,
+        vertical: compact ? 4 : 8,
+      ),
+      decoration: BoxDecoration(
+        color: UIUtils.cardColor,
+        boxShadow: compact
+            ? null
+            : [
+                BoxShadow(
+                  color: Colors.grey.shade300,
+                  blurRadius: 4,
+                  offset: const Offset(0, -2),
+                ),
+              ],
+      ),
+      child: SafeArea(
+        top: false,
+        child: Row(
+          children: [
+            Expanded(
+              child: SizedBox(
+                height: compact ? 32 : null,
+                child: TextField(
+                  controller: _chatController,
+                  decoration: InputDecoration(
+                    hintText: "Message...",
+                    hintStyle: TextStyle(fontSize: UIUtils.fontSize(context, compact ? 10 : 12)),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    contentPadding: UIUtils.paddingSymmetric(
+                      context,
+                      horizontal: compact ? 8 : 10,
+                      vertical: compact ? 2 : 4,
+                    ),
+                    isDense: true,
+                  ),
+                  onSubmitted: (_) => _sendMessage(),
+                  style: TextStyle(fontSize: UIUtils.fontSize(context, compact ? 10 : 12)),
+                  maxLines: 1,
+                ),
+              ),
+            ),
+            SizedBox(width: UIUtils.spacing(context, 4)),
+            SizedBox(
+              width: UIUtils.iconSize(context, compact ? 28 : 30),
+              height: UIUtils.iconSize(context, compact ? 28 : 30),
+              child: DecoratedBox(
+                decoration: const BoxDecoration(
+                  color: Colors.teal,
+                  shape: BoxShape.circle,
+                ),
+                child: IconButton(
+                  icon: Icon(Icons.send, color: Colors.white, size: UIUtils.iconSize(context, compact ? 12 : 14)),
+                  padding: EdgeInsets.zero,
+                  onPressed: _sendMessage,
+                ),
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 
@@ -1818,9 +1894,10 @@ class _SessionScreenState extends State<SessionScreen> {
 
     final isPlaying = _isPlayingSessionAudio;
     final barColor  = isPlaying ? Colors.deepPurple.shade700 : Colors.grey.shade800;
+    final compact = UIUtils.isTiny(context) || UIUtils.isShort(context);
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 10, 16, 6),
+      padding: EdgeInsets.fromLTRB(12, compact ? 6 : 10, 12, compact ? 4 : 6),
       color: barColor,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1829,41 +1906,43 @@ class _SessionScreenState extends State<SessionScreen> {
           Row(children: [
             Icon(
               isPlaying ? Icons.music_note : Icons.audiotrack,
-              color: Colors.white, size: 20,
+              color: Colors.white, size: compact ? 16 : 20,
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: compact ? 6 : 8),
             Expanded(
               child: Text(
                 _currentAudioTitle ?? 'Audio',
-                style: const TextStyle(
-                    color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
+                style: TextStyle(
+                    color: Colors.white, fontWeight: FontWeight.bold, fontSize: compact ? 12 : 15),
                 overflow: TextOverflow.ellipsis,
               ),
             ),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              padding: EdgeInsets.symmetric(horizontal: compact ? 6 : 8, vertical: compact ? 2 : 3),
               decoration: BoxDecoration(
                 color: Colors.white24,
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
                 '${_audioSpeed.toStringAsFixed(1)}×',
-                style: const TextStyle(
-                    color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                style: TextStyle(
+                    color: Colors.white, fontWeight: FontWeight.bold, fontSize: compact ? 10 : 12),
               ),
             ),
-            const SizedBox(width: 8),
-            Text(
-              '${_formatDuration(_currentPosition)} / '
-              '${_audioDuration != null ? _formatDuration(_audioDuration!) : "--:--"}',
-              style: const TextStyle(color: Colors.white70, fontSize: 12),
-            ),
+            if (!compact) ...[
+              const SizedBox(width: 8),
+              Text(
+                '${_formatDuration(_currentPosition)} / '
+                '${_audioDuration != null ? _formatDuration(_audioDuration!) : "--:--"}',
+                style: const TextStyle(color: Colors.white70, fontSize: 12),
+              ),
+            ],
           ]),
 
           // Seek bar:
           //   Teacher → interactive slider
           //   Student → read-only LinearProgressIndicator
-          if (widget.isTeacher)
+          if (widget.isTeacher && !compact)
             SliderTheme(
               data: SliderThemeData(
                 trackHeight: 3,
@@ -1885,6 +1964,21 @@ class _SessionScreenState extends State<SessionScreen> {
                     : null,
               ),
             )
+          else if (compact)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 3),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(2),
+                child: LinearProgressIndicator(
+                  value: (_audioDuration != null && _audioDuration! > 0)
+                      ? (_currentPosition / _audioDuration!).clamp(0.0, 1.0)
+                      : 0.0,
+                  backgroundColor: Colors.white24,
+                  color: Colors.tealAccent,
+                  minHeight: 2,
+                ),
+              ),
+            )
           else
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
@@ -1903,51 +1997,70 @@ class _SessionScreenState extends State<SessionScreen> {
 
           // Transport controls (teacher only)
           if (widget.isTeacher)
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.fast_rewind, color: Colors.white70),
-                  tooltip: 'Slower',
-                  onPressed: widget.isTeacher 
-                    ? (_audioSpeed > 0.5 ? () => _changeAudioSpeed((_audioSpeed - 0.25).clamp(0.5, 2.0)) : null)
-                    : () => _applyAudioSpeedLocally((_audioSpeed - 0.25).clamp(0.25, 3.0)),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.replay_10, color: Colors.white70),
-                  tooltip: 'Back 10s',
-                  onPressed: () =>
-                      _seekAudio((_currentPosition - 10).clamp(0.0, _audioDuration ?? 0.0)),
-                ),
-                ElevatedButton.icon(
-                  onPressed: isPlaying ? _pauseSessionAudio : _playSessionAudio,
-                  icon: Icon(isPlaying ? Icons.pause : Icons.play_arrow),
-                  label: Text(isPlaying ? 'Pause' : 'Play'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: isPlaying ? Colors.orange : Colors.green,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20)),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  IconButton(
+                    icon: Icon(Icons.fast_rewind, color: Colors.white70, size: compact ? 18 : 24),
+                    tooltip: 'Slower',
+                    constraints: compact ? const BoxConstraints.tightFor(width: 32, height: 30) : null,
+                    padding: EdgeInsets.zero,
+                    onPressed: widget.isTeacher
+                      ? (_audioSpeed > 0.5 ? () => _changeAudioSpeed((_audioSpeed - 0.25).clamp(0.5, 2.0)) : null)
+                      : () => _applyAudioSpeedLocally((_audioSpeed - 0.25).clamp(0.25, 3.0)),
                   ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.forward_10, color: Colors.white70),
-                  tooltip: 'Forward 10s',
-                  onPressed: () =>
-                      _seekAudio((_currentPosition + 10).clamp(0.0, _audioDuration ?? 0.0)),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.fast_forward, color: Colors.white70),
-                  tooltip: 'Faster',
-                  onPressed: _audioSpeed < 2.0
-                      ? () => _changeAudioSpeed((_audioSpeed + 0.25).clamp(0.5, 2.0))
-                      : null,
-                ),
-              ],
-            )
+                  IconButton(
+                    icon: Icon(Icons.replay_10, color: Colors.white70, size: compact ? 18 : 24),
+                    tooltip: 'Back 10s',
+                    constraints: compact ? const BoxConstraints.tightFor(width: 32, height: 30) : null,
+                    padding: EdgeInsets.zero,
+                    onPressed: () =>
+                        _seekAudio((_currentPosition - 10).clamp(0.0, _audioDuration ?? 0.0)),
+                  ),
+                  compact
+                      ? IconButton(
+                          icon: Icon(isPlaying ? Icons.pause_circle : Icons.play_circle, color: Colors.white, size: 24),
+                          tooltip: isPlaying ? 'Pause' : 'Play',
+                          constraints: const BoxConstraints.tightFor(width: 36, height: 30),
+                          padding: EdgeInsets.zero,
+                          onPressed: isPlaying ? _pauseSessionAudio : _playSessionAudio,
+                        )
+                      : ElevatedButton.icon(
+                          onPressed: isPlaying ? _pauseSessionAudio : _playSessionAudio,
+                          icon: Icon(isPlaying ? Icons.pause : Icons.play_arrow),
+                          label: Text(isPlaying ? 'Pause' : 'Play'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: isPlaying ? Colors.orange : Colors.green,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20)),
+                          ),
+                        ),
+                  IconButton(
+                    icon: Icon(Icons.forward_10, color: Colors.white70, size: compact ? 18 : 24),
+                    tooltip: 'Forward 10s',
+                    constraints: compact ? const BoxConstraints.tightFor(width: 32, height: 30) : null,
+                    padding: EdgeInsets.zero,
+                    onPressed: () =>
+                        _seekAudio((_currentPosition + 10).clamp(0.0, _audioDuration ?? 0.0)),
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.fast_forward, color: Colors.white70, size: compact ? 18 : 24),
+                    tooltip: 'Faster',
+                    constraints: compact ? const BoxConstraints.tightFor(width: 32, height: 30) : null,
+                    padding: EdgeInsets.zero,
+                    onPressed: _audioSpeed < 2.0
+                        ? () => _changeAudioSpeed((_audioSpeed + 0.25).clamp(0.5, 2.0))
+                        : null,
+                  ),
+                ],
+              ),
+            ),
           // Student status row
-          else
+          if (!widget.isTeacher && !compact)
             Padding(
               padding: const EdgeInsets.only(bottom: 4),
               child: Row(
@@ -1959,31 +2072,13 @@ class _SessionScreenState extends State<SessionScreen> {
                     size: 16,
                   ),
                   const SizedBox(width: 6),
-                    Text(
-                      isPlaying ? 'Playing — synced' : 'Paused by teacher',
-                      style: TextStyle(
-                        color: isPlaying ? Colors.tealAccent : Colors.white54,
-                        fontSize: 12,
-                      ),
+                  Text(
+                    isPlaying ? 'Playing — synced' : 'Paused by teacher',
+                    style: TextStyle(
+                      color: isPlaying ? Colors.tealAccent : Colors.white54,
+                      fontSize: 12,
                     ),
-                    // if (isPlaying) ...[
-                    //   const SizedBox(width: 12),
-                    //   IconButton(
-                    //     icon: const Icon(Icons.fast_rewind_rounded, color: Colors.white, size: 18),
-                    //     onPressed: () => _applyAudioSpeedLocally((_audioSpeed - 0.25).clamp(0.25, 3.0)),
-                    //     padding: EdgeInsets.zero,
-                    //     constraints: const BoxConstraints(),
-                    //     tooltip: 'Slower',
-                    //   ),
-                    //   const SizedBox(width: 8),
-                    //   IconButton(
-                    //     icon: const Icon(Icons.fast_forward_rounded, color: Colors.white, size: 18),
-                    //     onPressed: () => _applyAudioSpeedLocally((_audioSpeed + 0.25).clamp(0.25, 3.0)),
-                    //     padding: EdgeInsets.zero,
-                    //     constraints: const BoxConstraints(),
-                    //     tooltip: 'Faster',
-                    //   ),
-                    // ],
+                  ),
                 ],
               ),
             ),
@@ -1996,9 +2091,13 @@ class _SessionScreenState extends State<SessionScreen> {
 
   Widget _buildAudioLibraryPanel() {
     if (!_showAudioPanel) return const SizedBox.shrink();
+    final screenHeight = MediaQuery.of(context).size.height;
+    final panelHeight = (screenHeight < 520
+        ? (screenHeight * 0.36).clamp(120.0, 220.0)
+        : (screenHeight * 0.4).clamp(240.0, 320.0)).toDouble();
 
     return Container(
-      height: 320,
+      height: panelHeight,
       decoration: BoxDecoration(
         color: Colors.grey.shade50,
         border: Border(top: BorderSide(color: Colors.grey.shade300)),
