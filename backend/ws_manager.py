@@ -187,7 +187,9 @@ class WebSocketManager:
 
 
 
-    ################   Participant actions   #####################
+    # ---------------  Participant actions ----------------- 
+
+
 
     # Mute any participant - only accessible by teacher
     async def mute_participant(self, session_id: int, participant_id: int, mute: bool):
@@ -251,7 +253,8 @@ class WebSocketManager:
 
 
 
-    ########################  Audio playback controls  #######################
+    # ------------------ Audio playback controls ------------------
+
 
 
     # When teacher selects audio

@@ -9,7 +9,7 @@ from sqlalchemy.orm import relationship
 from database import Base
 
 
-# Stores all teachers + users and helps distiguis between them
+# Stores all teachers + users and helps distiguinsh between them
 class User(Base):
     __tablename__ = "users"
 

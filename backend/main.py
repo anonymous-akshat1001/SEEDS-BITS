@@ -1404,7 +1404,7 @@ async def session_sse(
       • Broadcasts 'participant_left' to remaining clients.
     """
 
-    # ── resolve user ──────────────────────────────────────────────────────
+    # resolve user 
     q_user = await db.execute(
         select(models.User).filter(models.User.user_id == user_id)
     )
@@ -1415,7 +1415,7 @@ async def session_sse(
     uname      = user.name
     is_teacher = user.role.lower() == "teacher"
 
-    # ── resolve / create participant row ──────────────────────────────────
+    # resolve / create participant row 
     q_part = await db.execute(
         select(models.Participant).filter(
             models.Participant.session_id == session_id,
@@ -1435,7 +1435,7 @@ async def session_sse(
     participant_id = p.participant_id
     await SessionLogger.log_participant_joined(db, session_id, user_id, participant_id, uname)
 
-    # ── register SSE queue (stores is_teacher in SESSION_STATE) ───────────
+    #  register SSE queue (stores is_teacher in SESSION_STATE) 
     queue = await ws_mgr.connect(
         session_id=session_id,
         participant_id=participant_id,
@@ -1444,7 +1444,7 @@ async def session_sse(
         is_teacher=is_teacher,
     )
 
-    # ── notify others ─────────────────────────────────────────────────────
+    # notify others 
     await ws_mgr.broadcast(
         session_id,
         {
@@ -1457,7 +1457,7 @@ async def session_sse(
         exclude={participant_id},
     )
 
-    # ── build state snapshot for the new joiner ───────────────────────────
+    # build state snapshot for the new joiner 
     async with SESSION_LOCK:
         raw_participants = SESSION_STATE[session_id]["participants"]
         raw_playback     = SESSION_STATE[session_id]["playback"]
@@ -1481,7 +1481,7 @@ async def session_sse(
             "playback":       dict(raw_playback),
         }
 
-    # ── SSE generator ─────────────────────────────────────────────────────
+    # SSE generator 
     async def event_generator():
         # Immediately push connected confirmation + full session state.
         # These are yielded before the queue loop so they arrive first.
@@ -1534,13 +1534,13 @@ async def session_sse(
     )
 
 
-# ─────────────────────────────────────────────────────────────────────────────
+
 # Action endpoint  (Client → Server)
 # POST /sessions/{session_id}/action
 #
 # Replaces ALL WebSocket message handlers.
 # Every user gesture (mute, raise hand, chat, webrtc signal …) is a POST here.
-# ─────────────────────────────────────────────────────────────────────────────
+
 
 class SessionAction(BaseModel):
     type:                   str
@@ -1587,7 +1587,7 @@ async def session_action(
         )
     participant_id = p.participant_id
 
-    # ── mute self ──────────────────────────────────────────────────────────
+    # mute self 
     if typ == "mute_self":
         is_muted = bool(action.mute)
         async with SESSION_LOCK:
@@ -1612,7 +1612,7 @@ async def session_action(
             },
         )
 
-    # ── raise / lower hand ────────────────────────────────────────────────
+    # raise / lower hand 
     elif typ == "raise_hand":
         async with SESSION_LOCK:
             if session_id in SESSION_STATE:
@@ -1635,7 +1635,7 @@ async def session_action(
             {"type": "hand_lowered", "participant_id": participant_id},
         )
 
-    # ── chat ──────────────────────────────────────────────────────────────
+    # chat 
     elif typ == "chat":
         text = (action.text or "").strip()
         if not text:
@@ -1667,7 +1667,7 @@ async def session_action(
             },
         )
 
-    # ── teacher: mute / unmute another participant ─────────────────────────
+    # teacher: mute / unmute another participant 
     elif typ in ("mute_participant", "unmute_participant"):
         if not is_teacher:
             raise HTTPException(status_code=403, detail="Teacher permission required")
@@ -1702,7 +1702,7 @@ async def session_action(
             {"type": "participant_muted", "participant_id": target, "is_muted": mute_val},
         )
 
-    # ── teacher: kick participant ──────────────────────────────────────────
+    # teacher: kick participant 
     elif typ == "kick_participant":
         if not is_teacher:
             raise HTTPException(status_code=403, detail="Teacher permission required")
@@ -1727,7 +1727,7 @@ async def session_action(
                 "Removed by teacher",
             )
 
-    # ── teacher: end session ──────────────────────────────────────────────
+    # teacher: end session 
     elif typ == "end_session":
         if not is_teacher:
             raise HTTPException(status_code=403, detail="Teacher permission required")
@@ -1735,7 +1735,7 @@ async def session_action(
         asyncio.create_task(ws_mgr.close_session(session_id))
         await SessionLogger.log_session_ended(db, session_id, user_id)
 
-    # ── WebRTC signalling ─────────────────────────────────────────────────
+    # WebRTC signalling 
     # ICE candidates, offers, and answers are routed peer-to-peer through
     # the server's SSE queues.  Each signal is delivered only to the target.
     elif typ == "webrtc_signal":
