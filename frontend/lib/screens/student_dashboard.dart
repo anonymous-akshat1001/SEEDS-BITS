@@ -1,19 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_service.dart';
 import '../services/tts_service.dart';
 import 'session_screen.dart';
 import 'audio_library_screen.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/services.dart';
 import '../utils/ui_utils.dart';
 import '../widgets/key_instruction_wrapper.dart';
 import '../utils/keypad_actions.dart';
-
-
-// Backend URL
-final baseUrl = dotenv.env['API_BASE_URL'];
+import '../services/auth_session_service.dart';
+import '../utils/session_search.dart';
 
 // Define the Student Dashboard as a Stateful Widget
 class StudentDashboard extends StatefulWidget {
@@ -35,9 +31,17 @@ class _StudentDashboardState extends State<StudentDashboard> {
   // Stores the logged in users name
   String? currentUserName;
   bool isLoading = true;
-  final FocusNode _screenFocusNode = FocusNode();
-  final FocusNode _inputFocusNode = FocusNode();
-
+  bool _isRefreshing = false;
+  final KeypadNavigationController _keypadController =
+      KeypadNavigationController();
+  final FocusNode _refreshFocusNode = FocusNode(debugLabel: 'student-refresh');
+  final FocusNode _inputFocusNode = FocusNode(debugLabel: 'student-search');
+  final FocusNode _joinFocusNode = FocusNode(
+    debugLabel: 'student-search-results',
+  );
+  final FocusNode _libraryFocusNode = FocusNode(debugLabel: 'student-library');
+  final FocusNode _logoutFocusNode = FocusNode(debugLabel: 'student-logout');
+  final Map<int, FocusNode> _sessionFocusNodes = {};
 
   // Called once when widget is created
   @override
@@ -45,19 +49,19 @@ class _StudentDashboardState extends State<StudentDashboard> {
     super.initState();
     // start loading the user data immediately
     _loadUserData();
-    _screenFocusNode.requestFocus();
   }
 
-  // Function to load the user data 
+  // Function to load the user data
   Future<void> _loadUserData() async {
     // open local storage and read login data
     final prefs = await SharedPreferences.getInstance();
     final id = prefs.getInt('user_id');
     // ?? means “if null, try next”
-    final name = prefs.getString('user_name') 
-    ?? prefs.getString('name') 
-    ?? 'Student $id';
-    
+    final name =
+        prefs.getString('user_name') ??
+        prefs.getString('name') ??
+        'Student $id';
+
     // saves data into state and rebuild UI
     setState(() {
       currentUserId = id;
@@ -65,20 +69,46 @@ class _StudentDashboardState extends State<StudentDashboard> {
     });
 
     // Load session only if user exists
-    if (currentUserId != null){
+    if (currentUserId != null) {
       await _loadSessions();
     }
 
     // data loading finished and the loading spinner is removed
+    if (!mounted) return;
     setState(() => isLoading = false);
   }
 
   // Fetch active sessions from backend
   Future<void> _loadSessions() async {
-    final res = await ApiService.get('/sessions/active', useAuth: true);
-    if (res != null && res is List) {
-      setState(() => sessions = res);
+    final previousFocus = FocusManager.instance.primaryFocus;
+    if (mounted) setState(() => _isRefreshing = true);
+    await TtsService.speak('Refreshing sessions');
+    final result = await ApiService.getResult(
+      '/sessions/active',
+      useAuth: true,
+      context: 'session list',
+    );
+    if (!mounted) return;
+    if (result.isSuccess && result.data is List) {
+      setState(() {
+        sessions = result.data as List;
+        _isRefreshing = false;
+      });
+      await TtsService.speak(
+        sessions.isEmpty
+            ? 'No active sessions found'
+            : '${sessions.length} active sessions found',
+      );
+    } else {
+      setState(() => _isRefreshing = false);
+      final message = result.failure!.message;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
+      await TtsService.speak(message);
     }
+    if (previousFocus != null && previousFocus.canRequestFocus)
+      previousFocus.requestFocus();
   }
 
   // Join a session using form data
@@ -86,63 +116,29 @@ class _StudentDashboardState extends State<StudentDashboard> {
     if (currentUserId == null) {
       TtsService.speak("User not logged in");
       // Visual feedback, appears at bottom
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please log in first")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Please log in first")));
       return;
     }
 
     if (currentUserName == null) {
       TtsService.speak("User name not found");
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("User name not found. Please log in again.")),
+        const SnackBar(
+          content: Text("User name not found. Please log in again."),
+        ),
       );
       return;
     }
 
-    // Show loading indicator
-    showDialog(
-      context: context,
-      // user cannot close dialog box by accident
-      barrierDismissible: false,
-      // create a spinner which shows request in progress
-      builder: (context) => const Center(
-        child: CircularProgressIndicator(),
-      ),
-    );
-
     try {
-      // Read the auth token
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token');
-
-      // Construct URL
-      final uri = Uri.parse(ApiService.devMode
-          ? '$baseUrl/sessions/$sessionId/join?user_id=$currentUserId'
-          : '$baseUrl/sessions/$sessionId/join');
-
-      // Send POST request
-      final res = await http.post(
-        uri,
-        // backend expects form type data
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          // Adds auth header in production
-          if (!ApiService.devMode && token != null)
-            'Authorization': 'Bearer $token',
-        },
-        // Must be a string for Form(...)
-        body: {
-          'user_id': currentUserId.toString(), 
-        },
+      await TtsService.speak('Joining session');
+      final result = await ApiService.joinSessionResult(
+        sessionId,
+        userId: currentUserId,
       );
-
-      // Close loading dialog
-      if (mounted){
-        Navigator.pop(context);
-      }
-
-      if (res.statusCode >= 200 && res.statusCode < 300) {
+      if (result.isSuccess) {
         TtsService.speak("Joined session $sessionId");
 
         // Navigate to Session Screen once the session has been joined
@@ -173,26 +169,24 @@ class _StudentDashboardState extends State<StudentDashboard> {
           });
         }
       } else {
-        TtsService.speak("Failed to join session");
-        debugPrint("Join failed: ${res.statusCode} -> ${res.body}");
-        
+        final message = result.failure!.message;
+        await TtsService.speak(message);
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Failed to join session: ${res.statusCode}")),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(message)));
         }
       }
     } catch (e) {
-      // Close loading dialog if still open
-      if (mounted) Navigator.pop(context);
-      
-      TtsService.speak("Error joining session");
-      debugPrint("Join session error: $e");
-      
+      final message = ApiService.mapFailure(
+        error: e,
+        context: 'session join',
+      ).message;
+      await TtsService.speak(message);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error: ${e.toString()}")),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(message)));
       }
     }
   }
@@ -202,8 +196,14 @@ class _StudentDashboardState extends State<StudentDashboard> {
   void dispose() {
     // Frees memory - crictical for low RAM devices like button phones
     sessionCtrl.dispose();
-    _screenFocusNode.dispose();
+    _refreshFocusNode.dispose();
     _inputFocusNode.dispose();
+    _joinFocusNode.dispose();
+    _libraryFocusNode.dispose();
+    _logoutFocusNode.dispose();
+    for (final node in _sessionFocusNodes.values) {
+      node.dispose();
+    }
     // calls parent dispose class
     super.dispose();
   }
@@ -213,19 +213,112 @@ class _StudentDashboardState extends State<StudentDashboard> {
     TtsService.speak("Opening offline audio library");
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => const OfflineAudioLibraryScreen(),
-      ),
+      MaterialPageRoute(builder: (_) => const OfflineAudioLibraryScreen()),
     );
   }
 
+  void _focusSessionInput() {
+    _keypadController.exitTextEditing();
+    _inputFocusNode.requestFocus();
+    TtsService.speak(
+      'Session search. Press OK to edit, then enter a session name or ID. '
+      'Use up or down to leave the field and browse results.',
+    );
+  }
+
+  List get _filteredSessions =>
+      filterSessionsByNameOrId(sessions, sessionCtrl.text);
+
+  void _showSearchResults() {
+    _keypadController.exitTextEditing();
+    FocusScope.of(context).unfocus();
+    final results = _filteredSessions;
+    final query = sessionCtrl.text.trim();
+    final message = results.isEmpty
+        ? 'No sessions match $query'
+        : query.isEmpty
+        ? 'Showing all ${results.length} active sessions. Use down to browse.'
+        : '${results.length} sessions match $query. Use down to browse.';
+    TtsService.speak(message);
+    if (results.isNotEmpty) {
+      final id = int.tryParse((results.first['session_id'] ?? '').toString());
+      if (id != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) _sessionFocusNodes[id]?.requestFocus();
+        });
+      }
+    }
+  }
+
+  Future<void> _logout() => AuthSessionService.logoutFrom(context);
+
+  List<KeypadFocusTarget> _dashboardFocusTargets() {
+    final targets = <KeypadFocusTarget>[
+      KeypadFocusTarget(
+        node: _refreshFocusNode,
+        label: 'Refresh sessions',
+        onActivate: _loadSessions,
+        isEnabled: () => !_isRefreshing,
+      ),
+      KeypadFocusTarget(
+        node: _inputFocusNode,
+        label: 'Search sessions by name or ID',
+        isTextField: true,
+      ),
+      KeypadFocusTarget(
+        node: _joinFocusNode,
+        label: 'Show matching sessions',
+        onActivate: _showSearchResults,
+      ),
+      KeypadFocusTarget(
+        node: _libraryFocusNode,
+        label: 'Offline audio library',
+        onActivate: _openOfflineAudioLibrary,
+      ),
+    ];
+    for (final session in _filteredSessions) {
+      final id = int.tryParse((session['session_id'] ?? '').toString()) ?? 0;
+      final node = _sessionFocusNodes.putIfAbsent(
+        id,
+        () => FocusNode(debugLabel: 'student-session-$id'),
+      );
+      targets.add(
+        KeypadFocusTarget(
+          node: node,
+          label:
+              'Session $id, ${session['title'] ?? 'untitled'}, teacher ${session['teacher_name'] ?? 'unknown'}. Press OK to join',
+          onActivate: () => joinSession(id),
+        ),
+      );
+    }
+    targets.add(
+      KeypadFocusTarget(
+        node: _logoutFocusNode,
+        label: 'Log out',
+        onActivate: _logout,
+      ),
+    );
+    return targets;
+  }
 
   // UI Build - reruns on every setState
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
+      return PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, _) {
+          if (!didPop) SystemNavigator.pop();
+        },
+        child: Scaffold(
+          body: Center(
+            child: Semantics(
+              liveRegion: true,
+              label: 'Student dashboard is loading',
+              child: const CircularProgressIndicator(),
+            ),
+          ),
+        ),
       );
     }
 
@@ -233,38 +326,21 @@ class _StudentDashboardState extends State<StudentDashboard> {
       screenName: 'Student Dashboard',
       labels: studentDashboardKeyLabels,
       actions: {
+        0: _logout,
         1: _loadSessions,
-        2: () => _inputFocusNode.requestFocus(),
+        2: _focusSessionInput,
         3: _openOfflineAudioLibrary,
       },
-      child: _buildScaffold(context),
+      navigationController: _keypadController,
+      focusTargets: _dashboardFocusTargets(),
+      child: PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, _) {
+          if (!didPop) SystemNavigator.pop();
+        },
+        child: _buildScaffold(context),
+      ),
     );
-  }
-
-  void _joinSessionFromInput() {
-    final idText = sessionCtrl.text.trim();
-    if (idText.isEmpty) {
-      TtsService.speak("Please enter a session ID");
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Please enter a session ID"),
-        ),
-      );
-      return;
-    }
-
-    final sessionId = int.tryParse(idText);
-    if (sessionId == null) {
-      TtsService.speak("Invalid session ID");
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Please enter a valid number"),
-        ),
-      );
-      return;
-    }
-
-    joinSession(sessionId);
   }
 
   Widget _buildScaffold(BuildContext context) {
@@ -274,7 +350,13 @@ class _StudentDashboardState extends State<StudentDashboard> {
     return Scaffold(
       appBar: AppBar(
         // Screen Title
-        title: Text("Student Dashboard", style: TextStyle(fontSize: UIUtils.fontSize(context, 18), fontWeight: FontWeight.w600)),
+        title: Text(
+          "Student Dashboard",
+          style: TextStyle(
+            fontSize: UIUtils.fontSize(context, 18),
+            fontWeight: FontWeight.w600,
+          ),
+        ),
         backgroundColor: UIUtils.cardColor,
         foregroundColor: UIUtils.textColor,
         elevation: 0,
@@ -284,51 +366,87 @@ class _StudentDashboardState extends State<StudentDashboard> {
           if (currentUserName != null && !tiny)
             // show name of current logged in user
             Padding(
-              padding: UIUtils.paddingSymmetric(context, horizontal: 8, vertical: 8),
+              padding: UIUtils.paddingSymmetric(
+                context,
+                horizontal: 8,
+                vertical: 8,
+              ),
               child: Center(
                 child: Text(
                   currentUserName!,
-                  style: TextStyle(fontSize: UIUtils.fontSize(context, 14), fontWeight: FontWeight.w500),
+                  style: TextStyle(
+                    fontSize: UIUtils.fontSize(context, 14),
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
             ),
-          
+
           // Refresh Button
           IconButton(
-            icon: Icon(Icons.refresh_rounded, size: UIUtils.iconSize(context, 22), color: UIUtils.accentColor),
+            focusNode: _refreshFocusNode,
+            icon: Icon(
+              Icons.refresh_rounded,
+              size: UIUtils.iconSize(context, 22),
+              color: UIUtils.accentColor,
+            ),
             tooltip: "Refresh Sessions",
             onPressed: () {
               TtsService.speak("Refreshing sessions");
               _loadSessions();
             },
           ),
+          IconButton(
+            focusNode: _logoutFocusNode,
+            tooltip: 'Log out',
+            onPressed: _logout,
+            icon: Icon(Icons.logout, color: UIUtils.accentColor),
+          ),
           if (UIUtils.isKeypad(context))
             Padding(
               padding: const EdgeInsets.only(right: 12.0),
               child: Center(
-                child: Text("1", style: TextStyle(color: UIUtils.accentColor, fontSize: UIUtils.fontSize(context, 14), fontWeight: FontWeight.bold)),
+                child: Text(
+                  "1",
+                  style: TextStyle(
+                    color: UIUtils.accentColor,
+                    fontSize: UIUtils.fontSize(context, 14),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ),
         ],
       ),
-      
-      
+
       body: SafeArea(
         // prevents overflow on smaller screens
-        child: SingleChildScrollView( 
+        child: SingleChildScrollView(
           child: Padding(
             padding: UIUtils.paddingAll(context, 12),
             // Column defines vertical alignment
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                if (_isRefreshing) ...[
+                  Semantics(
+                    liveRegion: true,
+                    label: 'Refreshing sessions',
+                    child: LinearProgressIndicator(),
+                  ),
+                  SizedBox(height: UIUtils.spacing(context, 8)),
+                ],
                 // User Info Card
                 Card(
                   elevation: 0,
-                  color: Colors.white,
+                  color: UIUtils.cardColor,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(color: Colors.grey.withOpacity(0.1)),
+                    side: BorderSide(
+                      color: UIUtils.isHighContrast
+                          ? UIUtils.accentColor
+                          : Colors.grey.withOpacity(0.1),
+                    ),
                   ),
                   child: Padding(
                     padding: UIUtils.paddingAll(context, 16),
@@ -347,23 +465,27 @@ class _StudentDashboardState extends State<StudentDashboard> {
                           "User ID: $currentUserId",
                           style: TextStyle(
                             fontSize: UIUtils.fontSize(context, 12),
-                            color: Colors.grey.shade600,
+                            color: UIUtils.subtextColor,
                           ),
                         ),
                       ],
                     ),
                   ),
                 ),
-                
+
                 SizedBox(height: UIUtils.spacing(context, 12)),
-                
-                // Manual join section
+
+                // Search and browse section
                 Card(
                   elevation: 0,
-                  color: Colors.white,
+                  color: UIUtils.cardColor,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(color: Colors.grey.withOpacity(0.1)),
+                    side: BorderSide(
+                      color: UIUtils.isHighContrast
+                          ? UIUtils.accentColor
+                          : Colors.grey.withOpacity(0.1),
+                    ),
                   ),
                   child: Padding(
                     padding: UIUtils.paddingAll(context, 16),
@@ -371,7 +493,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "Join Session by ID",
+                          "Find a Session",
                           style: TextStyle(
                             fontSize: UIUtils.fontSize(context, 14),
                             fontWeight: FontWeight.bold,
@@ -384,19 +506,39 @@ class _StudentDashboardState extends State<StudentDashboard> {
                               child: TextField(
                                 controller: sessionCtrl,
                                 focusNode: _inputFocusNode,
-                                keyboardType: TextInputType.number,
-                                style: TextStyle(fontSize: UIUtils.fontSize(context, 14)),
+                                onTap: () => _keypadController.enterTextEditing(
+                                  _inputFocusNode,
+                                ),
+                                onChanged: (_) => setState(() {}),
+                                onSubmitted: (_) {
+                                  _showSearchResults();
+                                },
+                                keyboardType: TextInputType.text,
+                                style: TextStyle(
+                                  fontSize: UIUtils.fontSize(context, 14),
+                                ),
                                 decoration: InputDecoration(
-                                  labelText: "2. Session ID",
-                                  labelStyle: TextStyle(fontSize: UIUtils.fontSize(context, 12), color: UIUtils.subtextColor),
+                                  labelText: "2. Session name or ID",
+                                  labelStyle: TextStyle(
+                                    fontSize: UIUtils.fontSize(context, 12),
+                                    color: UIUtils.subtextColor,
+                                  ),
                                   filled: true,
                                   fillColor: UIUtils.backgroundColor,
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(10),
                                     borderSide: BorderSide.none,
                                   ),
-                                  prefixIcon: Icon(Icons.meeting_room_rounded, size: UIUtils.iconSize(context, 18), color: UIUtils.accentColor),
-                                  contentPadding: UIUtils.paddingSymmetric(context, horizontal: 12, vertical: 12),
+                                  prefixIcon: Icon(
+                                    Icons.meeting_room_rounded,
+                                    size: UIUtils.iconSize(context, 18),
+                                    color: UIUtils.accentColor,
+                                  ),
+                                  contentPadding: UIUtils.paddingSymmetric(
+                                    context,
+                                    horizontal: 12,
+                                    vertical: 12,
+                                  ),
                                   isDense: true,
                                 ),
                               ),
@@ -407,27 +549,46 @@ class _StudentDashboardState extends State<StudentDashboard> {
                                     width: 40,
                                     height: 40,
                                     child: ElevatedButton(
-                                      onPressed: _joinSessionFromInput,
+                                      focusNode: _joinFocusNode,
+                                      onPressed: _showSearchResults,
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: UIUtils.primaryColor,
                                         foregroundColor: Colors.white,
                                         padding: EdgeInsets.zero,
                                         shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(10),
+                                          borderRadius: BorderRadius.circular(
+                                            10,
+                                          ),
                                         ),
                                         elevation: 0,
                                       ),
-                                      child: Icon(Icons.login, size: UIUtils.iconSize(context, 18)),
+                                      child: Icon(
+                                        Icons.search,
+                                        size: UIUtils.iconSize(context, 18),
+                                      ),
                                     ),
                                   )
                                 : ElevatedButton.icon(
-                                    onPressed: _joinSessionFromInput,
-                                    icon: Icon(Icons.login, size: UIUtils.iconSize(context, 16)),
-                                    label: Text("Join", style: TextStyle(fontSize: UIUtils.fontSize(context, 13))),
+                                    focusNode: _joinFocusNode,
+                                    onPressed: _showSearchResults,
+                                    icon: Icon(
+                                      Icons.search,
+                                      size: UIUtils.iconSize(context, 16),
+                                    ),
+                                    label: Text(
+                                      "Results",
+                                      style: TextStyle(
+                                        fontSize: UIUtils.fontSize(context, 13),
+                                      ),
+                                    ),
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: UIUtils.primaryColor,
                                       foregroundColor: Colors.white,
-                                      padding: UIUtils.paddingSymmetric(context, horizontal: 16, vertical: 12),
+                                      padding: UIUtils.paddingSymmetric(
+                                        context,
+                                        horizontal: 16,
+                                        vertical: 12,
+                                      ),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(10),
                                       ),
@@ -440,13 +601,17 @@ class _StudentDashboardState extends State<StudentDashboard> {
                     ),
                   ),
                 ),
-                
+
                 SizedBox(height: UIUtils.spacing(context, 8)),
-                
+
                 // Offline Audio Library Button
                 OutlinedButton.icon(
+                  focusNode: _libraryFocusNode,
                   onPressed: _openOfflineAudioLibrary,
-                  icon: Icon(Icons.library_music_rounded, size: UIUtils.iconSize(context, 22)),
+                  icon: Icon(
+                    Icons.library_music_rounded,
+                    size: UIUtils.iconSize(context, 22),
+                  ),
                   label: Text(
                     "3: Offline Audio Library",
                     style: TextStyle(fontSize: UIUtils.fontSize(context, 15)),
@@ -460,26 +625,33 @@ class _StudentDashboardState extends State<StudentDashboard> {
                     ),
                   ),
                 ),
-                
+
                 SizedBox(height: UIUtils.spacing(context, 12)),
-                
+
                 // Active sessions header
                 Row(
                   children: [
                     Text(
                       "Active Sessions",
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: UIUtils.fontSize(context, 16)),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: UIUtils.fontSize(context, 16),
+                      ),
                     ),
                     SizedBox(width: UIUtils.spacing(context, 6)),
-                    if (sessions.isNotEmpty)
+                    if (_filteredSessions.isNotEmpty)
                       Container(
-                        padding: UIUtils.paddingSymmetric(context, horizontal: 8, vertical: 3),
+                        padding: UIUtils.paddingSymmetric(
+                          context,
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
                         decoration: BoxDecoration(
                           color: UIUtils.accentColor,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          '${sessions.length}',
+                          '${_filteredSessions.length}',
                           style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
@@ -489,11 +661,11 @@ class _StudentDashboardState extends State<StudentDashboard> {
                       ),
                   ],
                 ),
-                
+
                 SizedBox(height: UIUtils.spacing(context, 8)),
-                
+
                 // Active sessions list
-                if (sessions.isEmpty)
+                if (_filteredSessions.isEmpty)
                   Center(
                     child: Padding(
                       padding: UIUtils.paddingAll(context, 24),
@@ -503,108 +675,144 @@ class _StudentDashboardState extends State<StudentDashboard> {
                           Icon(
                             Icons.event_busy,
                             size: UIUtils.iconSize(context, 48),
-                            color: Colors.grey.shade400,
+                            color: UIUtils.subtextColor,
                           ),
                           SizedBox(height: UIUtils.spacing(context, 10)),
                           Text(
-                            "No active sessions",
+                            sessionCtrl.text.trim().isEmpty
+                                ? "No active sessions"
+                                : "No matching sessions",
                             style: TextStyle(
                               fontSize: UIUtils.fontSize(context, 14),
-                              color: Colors.grey.shade600,
+                              color: UIUtils.subtextColor,
                             ),
                           ),
                           SizedBox(height: UIUtils.spacing(context, 6)),
                           TextButton.icon(
                             onPressed: _loadSessions,
-                            icon: Icon(Icons.refresh, size: UIUtils.iconSize(context, 16)),
-                            label: Text("Refresh", style: TextStyle(fontSize: UIUtils.fontSize(context, 13))),
+                            icon: Icon(
+                              Icons.refresh,
+                              size: UIUtils.iconSize(context, 16),
+                            ),
+                            label: Text(
+                              "Refresh",
+                              style: TextStyle(
+                                fontSize: UIUtils.fontSize(context, 13),
+                              ),
+                            ),
                           ),
                         ],
                       ),
                     ),
                   )
-                
                 else
-
                   // Converts list → widgets using ... operator
-                  ...sessions.map((s) {
+                  ..._filteredSessions.map((s) {
                     final sessionId = s['session_id'] ?? 0;
                     final title = s['title'] ?? 'Untitled Session';
                     final teacherName = s['teacher_name'] ?? 'Unknown';
                     // final participantCount = s['participant_count'] ?? 0;
-                    
+
                     return Card(
-                      margin: EdgeInsets.only(bottom: UIUtils.spacing(context, 8)),
+                      margin: EdgeInsets.only(
+                        bottom: UIUtils.spacing(context, 8),
+                      ),
                       elevation: 2,
                       child: InkWell(
                         onTap: () => joinSession(sessionId),
                         focusColor: Colors.teal.withOpacity(0.1),
                         child: ListTile(
-                        dense: tiny,
-                        contentPadding: UIUtils.paddingAll(context, 10),
-                        leading: CircleAvatar(
-                          radius: UIUtils.iconSize(context, 18),
-                          backgroundColor: UIUtils.backgroundColor,
-                          child: Text(
-                            '$sessionId',
+                          dense: tiny,
+                          contentPadding: UIUtils.paddingAll(context, 10),
+                          leading: CircleAvatar(
+                            radius: UIUtils.iconSize(context, 18),
+                            backgroundColor: UIUtils.backgroundColor,
+                            child: Text(
+                              '$sessionId',
+                              style: TextStyle(
+                                color: UIUtils.primaryColor,
+                                fontWeight: FontWeight.bold,
+                                fontSize: UIUtils.fontSize(context, 12),
+                              ),
+                            ),
+                          ),
+                          title: Text(
+                            title,
                             style: TextStyle(
-                              color: UIUtils.primaryColor,
                               fontWeight: FontWeight.bold,
-                              fontSize: UIUtils.fontSize(context, 12),
+                              fontSize: UIUtils.fontSize(context, 14),
                             ),
                           ),
-                        ),
-                        title: Text(
-                          title,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: UIUtils.fontSize(context, 14),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              SizedBox(height: UIUtils.spacing(context, 4)),
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.person,
+                                    size: UIUtils.iconSize(context, 14),
+                                  ),
+                                  SizedBox(width: UIUtils.spacing(context, 3)),
+                                  Expanded(
+                                    child: Text(
+                                      'Teacher: $teacherName',
+                                      style: TextStyle(
+                                        fontSize: UIUtils.fontSize(context, 11),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              // SizedBox(height: UIUtils.spacing(context, 2)),
+                              // Row(
+                              //   children: [
+                              //     Icon(Icons.people, size: UIUtils.iconSize(context, 14)),
+                              //     SizedBox(width: UIUtils.spacing(context, 3)),
+                              //     Text('$participantCount participants',
+                              //         style: TextStyle(fontSize: UIUtils.fontSize(context, 11))),
+                              //   ],
+                              // ),
+                            ],
                           ),
-                        ),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            SizedBox(height: UIUtils.spacing(context, 4)),
-                            Row(
-                              children: [
-                                Icon(Icons.person, size: UIUtils.iconSize(context, 14)),
-                                SizedBox(width: UIUtils.spacing(context, 3)),
-                                Expanded(
-                                  child: Text('Teacher: $teacherName',
-                                      style: TextStyle(fontSize: UIUtils.fontSize(context, 11))),
-                                ),
-                              ],
+                          trailing: ElevatedButton(
+                            focusNode: _sessionFocusNodes.putIfAbsent(
+                              sessionId as int,
+                              () => FocusNode(
+                                debugLabel: 'student-session-$sessionId',
+                              ),
                             ),
-                            // SizedBox(height: UIUtils.spacing(context, 2)),
-                            // Row(
-                            //   children: [
-                            //     Icon(Icons.people, size: UIUtils.iconSize(context, 14)),
-                            //     SizedBox(width: UIUtils.spacing(context, 3)),
-                            //     Text('$participantCount participants',
-                            //         style: TextStyle(fontSize: UIUtils.fontSize(context, 11))),
-                            //   ],
-                            // ),
-                          ],
-                        ),
-                        trailing: ElevatedButton(
-                          onPressed: () => joinSession(sessionId),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: UIUtils.primaryColor,
-                            foregroundColor: Colors.white,
-                            padding: UIUtils.paddingSymmetric(context, horizontal: 12, vertical: 8),
-                            minimumSize: Size.zero,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            elevation: 0,
+                            onPressed: () => joinSession(sessionId),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: UIUtils.primaryColor,
+                              foregroundColor: Colors.white,
+                              padding: UIUtils.paddingSymmetric(
+                                context,
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
+                              minimumSize: Size.zero,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              elevation: 0,
+                            ),
+                            child: Text(
+                              "Join",
+                              style: TextStyle(
+                                fontSize: UIUtils.fontSize(context, 12),
+                              ),
+                            ),
                           ),
-                          child: Text("Join", style: TextStyle(fontSize: UIUtils.fontSize(context, 12))),
                         ),
                       ),
-                    ),
-                  );
+                    );
                   }).toList(),
-                  
-                SizedBox(height: UIUtils.spacing(context, 12)), // Bottom padding
+
+                SizedBox(
+                  height: UIUtils.spacing(context, 12),
+                ), // Bottom padding
               ],
             ),
           ),

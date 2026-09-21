@@ -5,6 +5,7 @@ import '../services/api_service.dart';
 import '../services/tts_service.dart';
 import '../utils/ui_utils.dart';
 import '../widgets/key_instruction_wrapper.dart';
+import '../widgets/keypad_confirmation_dialog.dart';
 import '../utils/keypad_actions.dart';
 import 'package:flutter/services.dart';
 import 'package:audioplayers/audioplayers.dart';
@@ -42,7 +43,7 @@ class _SimpleSessionScreenState extends State<SimpleSessionScreen> {
   String _statusText = "Connecting...";
   String _currentSpeaker = "None";
   int _participantCount = 0;
-  
+
   // Audio state
   final AudioPlayer _sessionAudioPlayer = AudioPlayer();
   double _audioSpeed = 1.0;
@@ -50,6 +51,7 @@ class _SimpleSessionScreenState extends State<SimpleSessionScreen> {
   String? _currentAudioTitle;
   bool _isPlayingSessionAudio = false;
   double _currentPosition = 0.0;
+  bool _isReturningToDashboard = false;
 
   @override
   void initState() {
@@ -99,15 +101,16 @@ class _SimpleSessionScreenState extends State<SimpleSessionScreen> {
 
   Future<void> _connectWebSocket() async {
     try {
-      final wsUrl = 'ws://127.0.0.1:8000/ws/sessions/${widget.sessionId}?user_id=${widget.userId}';
+      final wsUrl =
+          'ws://127.0.0.1:8000/ws/sessions/${widget.sessionId}?user_id=${widget.userId}';
       _wsChannel = WebSocketChannel.connect(Uri.parse(wsUrl));
-      
+
       _wsChannel!.stream.listen(
         (message) => _handleWebSocketMessage(message),
         onError: (error) => _reconnect(),
         onDone: () => _reconnect(),
       );
-      
+
       setState(() => _statusText = "Connected");
     } catch (e) {
       setState(() => _statusText = "Connection failed");
@@ -137,11 +140,12 @@ class _SimpleSessionScreenState extends State<SimpleSessionScreen> {
 
       switch (type) {
         case 'session_state':
-          final participants = data['participants'] as Map<String, dynamic>? ?? {};
+          final participants =
+              data['participants'] as Map<String, dynamic>? ?? {};
           setState(() => _participantCount = participants.length);
           _speak("${participants.length} participants in session");
           break;
-          
+
         case 'participant_joined':
           final name = data['name'] ?? 'Someone';
           setState(() {
@@ -150,29 +154,27 @@ class _SimpleSessionScreenState extends State<SimpleSessionScreen> {
           });
           _speak("$name joined");
           break;
-          
+
         case 'participant_left':
           setState(() => _participantCount--);
           _speak("Someone left");
           break;
-          
+
         case 'chat':
           final sender = data['sender_name'] ?? 'Someone';
           final text = data['text'] ?? '';
           _speak("$sender says: $text");
           break;
-          
+
         case 'kicked':
-          _speak("You have been removed");
-          Navigator.pop(context);
+          _returnToDashboard();
           break;
 
         case 'session_ended':
         case 'session_ending':
-          _speak("Session ended");
-          Navigator.pop(context);
+          _returnToDashboard();
           break;
-          
+
         case 'audio_selected':
           final audioId = data['audio_id'] as int?;
           final title = data['title'] as String?;
@@ -184,22 +186,22 @@ class _SimpleSessionScreenState extends State<SimpleSessionScreen> {
             _speak("Audio selected: ${title ?? 'Unknown'}");
           }
           break;
-          
+
         case 'audio_play':
           final audioId = data['audio_id'] as int?;
           final speed = (data['speed'] as num?)?.toDouble() ?? 1.0;
           final position = (data['position'] as num?)?.toDouble() ?? 0.0;
           final title = data['title'] as String?;
-          
+
           if (audioId != null) {
             _onAudioPlay(audioId, title, speed, position);
           }
           break;
-          
+
         case 'audio_pause':
           _onAudioPause();
           break;
-          
+
         case 'audio_seek':
           final position = (data['position'] as num?)?.toDouble() ?? 0.0;
           _onAudioSeek(position);
@@ -319,7 +321,12 @@ class _SimpleSessionScreenState extends State<SimpleSessionScreen> {
     }
 
     if (command.contains('repeat') || command.contains('instructions')) {
-      _speak(buildTtsInstructions(simpleSessionKeyLabels, screenName: 'Session active'));
+      _speak(
+        buildTtsInstructions(
+          simpleSessionKeyLabels,
+          screenName: 'Session active',
+        ),
+      );
       return;
     }
 
@@ -332,7 +339,12 @@ class _SimpleSessionScreenState extends State<SimpleSessionScreen> {
   }
 
   // Audio helper methods
-  Future<void> _onAudioPlay(int audioId, String? title, double speed, double position) async {
+  Future<void> _onAudioPlay(
+    int audioId,
+    String? title,
+    double speed,
+    double position,
+  ) async {
     try {
       setState(() {
         _currentAudioId = audioId;
@@ -346,7 +358,9 @@ class _SimpleSessionScreenState extends State<SimpleSessionScreen> {
       await _sessionAudioPlayer.stop();
       // Apply our local speed preference
       await _sessionAudioPlayer.setPlaybackRate(_audioSpeed);
-      await _sessionAudioPlayer.play(UrlSource('${ApiService.baseUrl}/audio/$audioId/stream'));
+      await _sessionAudioPlayer.play(
+        UrlSource('${ApiService.baseUrl}/audio/$audioId/stream'),
+      );
       if (position > 0) {
         await _sessionAudioPlayer.seek(Duration(seconds: position.toInt()));
       }
@@ -413,9 +427,36 @@ class _SimpleSessionScreenState extends State<SimpleSessionScreen> {
     _speak(_ttsEnabled ? "TTS on" : "TTS off");
   }
 
-  void _leave() {
-    _speak("Leaving");
-    Navigator.pop(context);
+  Future<void> _returnToDashboard() async {
+    if (_isReturningToDashboard || !mounted) return;
+    _isReturningToDashboard = true;
+    await _sessionAudioPlayer.stop();
+    await TtsService.stop();
+    if (!mounted) return;
+    Navigator.of(context).pushNamedAndRemoveUntil(
+      widget.isTeacher ? '/teacher_dashboard' : '/student_dashboard',
+      (route) => false,
+    );
+  }
+
+  Future<void> _leave() async {
+    if (!mounted) return;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const KeypadConfirmationDialog(
+        title: 'Leave session?',
+        message:
+            'You will leave this session and return to your dashboard. You will remain logged in.',
+        cancelLabel: 'Stay in session',
+        confirmLabel: 'Leave session',
+        cancelKey: 0,
+        confirmKey: 1,
+      ),
+    );
+    if (confirmed == true && mounted) {
+      await _returnToDashboard();
+    }
   }
 
   @override
@@ -430,7 +471,8 @@ class _SimpleSessionScreenState extends State<SimpleSessionScreen> {
     super.dispose();
   }
 
-  Widget _buildBigButton(BuildContext context, {
+  Widget _buildBigButton(
+    BuildContext context, {
     required String label,
     required VoidCallback onPressed,
     required IconData icon,
@@ -442,18 +484,14 @@ class _SimpleSessionScreenState extends State<SimpleSessionScreen> {
     return ElevatedButton(
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
-        backgroundColor: isActive 
-            ? Colors.orange 
-            : (color ?? Colors.teal),
+        backgroundColor: isActive ? Colors.orange : (color ?? Colors.teal),
         foregroundColor: Colors.white,
         padding: UIUtils.paddingSymmetric(
           context,
           vertical: compact ? 8 : 16,
           horizontal: compact ? 6 : 8,
         ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         elevation: 4,
       ),
       child: Column(
@@ -498,7 +536,10 @@ class _SimpleSessionScreenState extends State<SimpleSessionScreen> {
         appBar: AppBar(
           title: Text(
             'Session ${widget.sessionId}',
-            style: TextStyle(fontSize: UIUtils.fontSize(context, 16), fontWeight: FontWeight.w600),
+            style: TextStyle(
+              fontSize: UIUtils.fontSize(context, 16),
+              fontWeight: FontWeight.w600,
+            ),
           ),
           backgroundColor: UIUtils.cardColor,
           foregroundColor: UIUtils.textColor,
@@ -549,7 +590,11 @@ class _SimpleSessionScreenState extends State<SimpleSessionScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.speed_rounded, size: UIUtils.iconSize(context, 16), color: UIUtils.accentColor),
+                        Icon(
+                          Icons.speed_rounded,
+                          size: UIUtils.iconSize(context, 16),
+                          color: UIUtils.accentColor,
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           'Playback Speed: ${_audioSpeed}x',
@@ -565,9 +610,9 @@ class _SimpleSessionScreenState extends State<SimpleSessionScreen> {
                 ],
               ),
             ),
-            
+
             SizedBox(height: UIUtils.spacing(context, compact ? 4 : 12)),
-            
+
             // Large mic indicator
             Container(
               width: (compact ? 52 : 80) * UIUtils.scale(context),
@@ -582,9 +627,9 @@ class _SimpleSessionScreenState extends State<SimpleSessionScreen> {
                 color: Colors.white,
               ),
             ),
-            
+
             SizedBox(height: UIUtils.spacing(context, compact ? 3 : 8)),
-            
+
             Text(
               _muted ? 'MUTED' : 'LIVE',
               style: TextStyle(
@@ -594,9 +639,9 @@ class _SimpleSessionScreenState extends State<SimpleSessionScreen> {
                 letterSpacing: compact ? 0 : 1.5,
               ),
             ),
-            
+
             SizedBox(height: UIUtils.spacing(context, compact ? 4 : 16)),
-            
+
             // Button grid
             Expanded(
               child: Padding(
@@ -607,40 +652,48 @@ class _SimpleSessionScreenState extends State<SimpleSessionScreen> {
                   crossAxisSpacing: UIUtils.spacing(context, compact ? 6 : 10),
                   childAspectRatio: compact ? 1.55 : 1.1,
                   children: [
-                    _buildBigButton(context,
+                    _buildBigButton(
+                      context,
                       label: _muted ? '1: Unmute' : '1: Mute',
                       icon: _muted ? Icons.mic : Icons.mic_off,
                       onPressed: _toggleMute,
                       color: _muted ? Colors.green : Colors.red,
                       isActive: !_muted,
                     ),
-                    _buildBigButton(context,
+                    _buildBigButton(
+                      context,
                       label: _handRaised ? '2: Lower' : '2: Raise',
-                      icon: _handRaised ? Icons.pan_tool : Icons.pan_tool_outlined,
+                      icon: _handRaised
+                          ? Icons.pan_tool
+                          : Icons.pan_tool_outlined,
                       onPressed: _toggleHand,
                       color: Colors.amber,
                       isActive: _handRaised,
                     ),
-                    _buildBigButton(context,
+                    _buildBigButton(
+                      context,
                       label: '3: TTS',
                       icon: _ttsEnabled ? Icons.volume_up : Icons.volume_off,
                       onPressed: _toggleTTS,
                       color: Colors.blue,
                       isActive: _ttsEnabled,
                     ),
-                    _buildBigButton(context,
+                    _buildBigButton(
+                      context,
                       label: '4: Leave',
                       icon: Icons.call_end,
                       onPressed: _leave,
                       color: Colors.red.shade700,
                     ),
-                    _buildBigButton(context,
+                    _buildBigButton(
+                      context,
                       label: '7: Slower',
                       icon: Icons.fast_rewind_rounded,
                       onPressed: _decreaseSpeed,
                       color: Colors.blueGrey,
                     ),
-                    _buildBigButton(context,
+                    _buildBigButton(
+                      context,
                       label: '9: Faster',
                       icon: Icons.fast_forward_rounded,
                       onPressed: _increaseSpeed,
@@ -650,7 +703,7 @@ class _SimpleSessionScreenState extends State<SimpleSessionScreen> {
                 ),
               ),
             ),
-            
+
             // Info footer
             Container(
               width: double.infinity,

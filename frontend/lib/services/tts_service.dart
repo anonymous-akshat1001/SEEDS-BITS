@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -12,15 +13,16 @@ class TtsService {
   static double _speechRate = 0.5;
   static double _volume = 1.0;
   static double _pitch = 1.0;
+  // Invalidates speech which was queued before a route/focus change.
+  static int _speechGeneration = 0;
 
   /// Initialize TTS with default settings
   static Future<void> init() async {
-    
     // If TTS is already set up → do nothing
-    if (_isInitialized){
+    if (_isInitialized) {
       return;
     }
-    
+
     await _tts.setLanguage("en-IN");
     await _applyVoiceSettings();
 
@@ -60,21 +62,36 @@ class TtsService {
 
   /// Speak text if TTS is enabled
   static Future<void> speak(String text) async {
-
     // If TTS disabled → silent return
-    if (!_enabled){
+    if (!_enabled) {
       return;
     }
 
-    // Ensures TTS is initialized only when needed, first call initializes it
-    await init();
-    // converts text to speech, also async hence UI does not freeze
-    await _tts.speak(text);
+    final generation = ++_speechGeneration;
+    try {
+      // Ensures TTS is initialized only when needed, first call initializes it
+      await init();
+      // Every announcement replaces the previous one. This prevents a page or
+      // control announcement continuing over the destination screen.
+      await _tts.stop();
+      if (generation != _speechGeneration || !_enabled) return;
+      // converts text to speech, also async hence UI does not freeze
+      await _tts.speak(text);
+    } catch (error) {
+      // TTS availability differs across low-cost devices. Accessibility
+      // feedback must degrade gracefully rather than crash a user journey.
+      debugPrint('[TTS] Unable to speak: $error');
+    }
   }
 
   /// Stop current speech
   static Future<void> stop() async {
-    await _tts.stop();
+    _speechGeneration++;
+    try {
+      await _tts.stop();
+    } catch (error) {
+      debugPrint('[TTS] Unable to stop speech: $error');
+    }
   }
 
   /// Enable or disable TTS

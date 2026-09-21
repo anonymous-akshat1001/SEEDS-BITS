@@ -15,7 +15,7 @@
     <uses-permission android:name="android.permission.READ_SMS" />
     
     <application
-        android:label="frontend"
+        android:label="SEEDS"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:usesCleartextTraffic="true">
@@ -47,16 +47,8 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        <!-- ADD THESE - Firebase Messaging Service -->
-        <service
-            android:name="com.google.firebase.messaging.FirebaseMessagingService"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT" />
-            </intent-filter>
-        </service>
-        
-        <!-- ADD THESE - Default notification settings -->
+        <!-- Firebase Messaging services/receivers are contributed by the
+             FlutterFire plugin through manifest merging. -->
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
             android:resource="@mipmap/ic_launcher" />

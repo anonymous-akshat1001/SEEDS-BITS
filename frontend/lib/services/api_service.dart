@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -10,13 +10,295 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 final baseUrl = dotenv.env['API_BASE_URL'];
 final wsBaseUrl = dotenv.env['WS_BASE_URL'];
 
+enum ApiFailureKind {
+  validation,
+  unauthorized,
+  notFound,
+  server,
+  network,
+  unknown,
+}
+
+class ApiFailure {
+  const ApiFailure({
+    required this.kind,
+    required this.message,
+    this.statusCode,
+    this.debugDetails,
+  });
+
+  final ApiFailureKind kind;
+  final String message;
+  final int? statusCode;
+  final String? debugDetails;
+}
+
+class ApiResult<T> {
+  const ApiResult.success(this.data) : failure = null;
+  const ApiResult.failure(this.failure) : data = null;
+
+  final T? data;
+  final ApiFailure? failure;
+  bool get isSuccess => failure == null;
+}
 
 // A static service class
 class ApiService {
-  static final String baseUrl = dotenv.env['API_BASE_URL'] ?? 'http://127.0.0.1:8000';
+  static final String baseUrl =
+      dotenv.env['API_BASE_URL'] ?? 'http://127.0.0.1:8000';
   static const bool devMode = true; // Set to false for JWT mode
 
-  static String? cachedToken;   // set this right after reading from prefs
+  static String? cachedToken; // set this right after reading from prefs
+
+  /// Converts HTTP and transport failures into text safe for UI and TTS.
+  /// Raw response details remain available only for debug logging.
+  static ApiFailure mapFailure({
+    int? statusCode,
+    Object? responseBody,
+    Object? error,
+    String context = '',
+  }) {
+    final raw = responseBody?.toString() ?? error?.toString() ?? '';
+    final normalized = raw.toLowerCase();
+    final normalizedContext = context.toLowerCase();
+
+    if (statusCode == 422 || statusCode == 400) {
+      if (normalizedContext.contains('password') ||
+          (normalized.contains('password') &&
+              (normalized.contains('6') || normalized.contains('too_short')))) {
+        return ApiFailure(
+          kind: ApiFailureKind.validation,
+          statusCode: statusCode,
+          message: 'Password must be at least 6 characters.',
+          debugDetails: raw,
+        );
+      }
+      return ApiFailure(
+        kind: ApiFailureKind.validation,
+        statusCode: statusCode,
+        message: 'Please check the information and try again.',
+        debugDetails: raw,
+      );
+    }
+    if (statusCode == 401 || statusCode == 403) {
+      return ApiFailure(
+        kind: ApiFailureKind.unauthorized,
+        statusCode: statusCode,
+        message: normalizedContext.contains('login')
+            ? 'Invalid phone number or password.'
+            : 'You do not have permission to do that.',
+        debugDetails: raw,
+      );
+    }
+    if (statusCode == 404) {
+      return ApiFailure(
+        kind: ApiFailureKind.notFound,
+        statusCode: statusCode,
+        message: normalizedContext.contains('session')
+            ? 'Session not found. Check the session ID and try again.'
+            : 'The requested item was not found.',
+        debugDetails: raw,
+      );
+    }
+    if (statusCode != null && statusCode >= 500) {
+      return ApiFailure(
+        kind: ApiFailureKind.server,
+        statusCode: statusCode,
+        message: 'The service is temporarily unavailable. Please try again.',
+        debugDetails: raw,
+      );
+    }
+    if (error != null || statusCode == null) {
+      return ApiFailure(
+        kind: ApiFailureKind.network,
+        statusCode: statusCode,
+        message:
+            'We could not complete that request. Check your connection and try again.',
+        debugDetails: raw,
+      );
+    }
+    return ApiFailure(
+      kind: ApiFailureKind.unknown,
+      statusCode: statusCode,
+      message: 'We could not complete that request. Please try again.',
+      debugDetails: raw,
+    );
+  }
+
+  static void _debugFailure(String operation, ApiFailure failure) {
+    if (kDebugMode) {
+      debugPrint(
+        '[API] $operation failed (${failure.statusCode}): ${failure.debugDetails}',
+      );
+    }
+  }
+
+  static Object? _decodeBody(String body) {
+    if (body.isEmpty) return null;
+    try {
+      return jsonDecode(body);
+    } catch (_) {
+      return body;
+    }
+  }
+
+  static Future<ApiResult<dynamic>> getResult(
+    String path, {
+    bool useAuth = false,
+    String context = '',
+  }) async {
+    final uri = await _buildUri(path);
+    final headers = await _buildHeaders(useAuth: useAuth);
+    try {
+      final response = await http.get(uri, headers: headers);
+      final body = _decodeBody(response.body);
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        return ApiResult<dynamic>.success(body ?? <String, dynamic>{});
+      }
+      final failure = mapFailure(
+        statusCode: response.statusCode,
+        responseBody: body,
+        context: context,
+      );
+      _debugFailure('GET $path', failure);
+      return ApiResult<dynamic>.failure(failure);
+    } catch (error) {
+      final failure = mapFailure(error: error, context: context);
+      _debugFailure('GET $path', failure);
+      return ApiResult<dynamic>.failure(failure);
+    }
+  }
+
+  static Future<ApiResult<Map<String, dynamic>>> postResult(
+    String path,
+    Map<String, dynamic> data, {
+    bool useAuth = false,
+    String context = '',
+  }) async {
+    final uri = await _buildUri(path);
+    final headers = await _buildHeaders(useAuth: useAuth);
+    try {
+      final response = await http.post(
+        uri,
+        headers: headers,
+        body: jsonEncode(data),
+      );
+      final body = _decodeBody(response.body);
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        return ApiResult<Map<String, dynamic>>.success(
+          body is Map<String, dynamic> ? body : <String, dynamic>{'ok': true},
+        );
+      }
+      final failure = mapFailure(
+        statusCode: response.statusCode,
+        responseBody: body,
+        context: context,
+      );
+      _debugFailure('POST $path', failure);
+      return ApiResult<Map<String, dynamic>>.failure(failure);
+    } catch (error) {
+      final failure = mapFailure(error: error, context: context);
+      _debugFailure('POST $path', failure);
+      return ApiResult<Map<String, dynamic>>.failure(failure);
+    }
+  }
+
+  static Future<ApiResult<void>> deleteResult(
+    String path, {
+    bool useAuth = false,
+    String context = '',
+    Map<String, dynamic>? data,
+  }) async {
+    final uri = await _buildUri(path);
+    final headers = await _buildHeaders(useAuth: useAuth);
+    try {
+      final response = await http.delete(
+        uri,
+        headers: headers,
+        body: data == null ? null : jsonEncode(data),
+      );
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        return const ApiResult<void>.success(null);
+      }
+      final failure = mapFailure(
+        statusCode: response.statusCode,
+        responseBody: _decodeBody(response.body),
+        context: context,
+      );
+      _debugFailure('DELETE $path', failure);
+      return ApiResult<void>.failure(failure);
+    } catch (error) {
+      final failure = mapFailure(error: error, context: context);
+      _debugFailure('DELETE $path', failure);
+      return ApiResult<void>.failure(failure);
+    }
+  }
+
+  static Future<ApiResult<Map<String, dynamic>>> loginResult({
+    required String phoneNumber,
+    required String password,
+  }) async {
+    final uri = await _buildUri('/auth/login');
+    try {
+      final response = await http.post(
+        uri,
+        headers: const {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: {'username': phoneNumber, 'password': password},
+      );
+      final body = _decodeBody(response.body);
+      if (response.statusCode >= 200 &&
+          response.statusCode < 300 &&
+          body is Map<String, dynamic>) {
+        return ApiResult<Map<String, dynamic>>.success(body);
+      }
+      final failure = mapFailure(
+        statusCode: response.statusCode,
+        responseBody: body,
+        context: 'login',
+      );
+      _debugFailure('LOGIN', failure);
+      return ApiResult<Map<String, dynamic>>.failure(failure);
+    } catch (error) {
+      final failure = mapFailure(error: error, context: 'login');
+      _debugFailure('LOGIN', failure);
+      return ApiResult<Map<String, dynamic>>.failure(failure);
+    }
+  }
+
+  static Future<ApiResult<Map<String, dynamic>>> joinSessionResult(
+    int sessionId, {
+    int? userId,
+  }) async {
+    final uri = await _buildUri('/sessions/$sessionId/join');
+    final prefs = await SharedPreferences.getInstance();
+    try {
+      final request = http.MultipartRequest('POST', uri);
+      if (userId != null) request.fields['user_id'] = userId.toString();
+      if (!devMode) {
+        final token = prefs.getString('token');
+        if (token != null) request.headers['Authorization'] = 'Bearer $token';
+      }
+      final streamed = await request.send();
+      final responseBody = await streamed.stream.bytesToString();
+      final body = _decodeBody(responseBody);
+      if (streamed.statusCode >= 200 &&
+          streamed.statusCode < 300 &&
+          body is Map<String, dynamic>) {
+        return ApiResult<Map<String, dynamic>>.success(body);
+      }
+      final failure = mapFailure(
+        statusCode: streamed.statusCode,
+        responseBody: body,
+        context: 'session join',
+      );
+      _debugFailure('JOIN SESSION', failure);
+      return ApiResult<Map<String, dynamic>>.failure(failure);
+    } catch (error) {
+      final failure = mapFailure(error: error, context: 'session join');
+      _debugFailure('JOIN SESSION', failure);
+      return ApiResult<Map<String, dynamic>>.failure(failure);
+    }
+  }
 
   // Build full URL for endpoint (synchronous)
   static Future<Uri> _buildUri(String path) async {
@@ -39,9 +321,11 @@ class ApiService {
   }
 
   // Add Authorization header if token exists
-  static Future<Map<String, String>> _buildHeaders({bool useAuth = false}) async {
+  static Future<Map<String, String>> _buildHeaders({
+    bool useAuth = false,
+  }) async {
     final prefs = await SharedPreferences.getInstance();
-    
+
     // tells backend the request body is JSON
     final headers = {'Content-Type': 'application/json'};
 
@@ -65,10 +349,7 @@ class ApiService {
     return await _buildHeaders();
   }
 
-
   ////////////////////// POST /////////////////////////////
-
-
 
   // Sends POST request
   static Future<Map<String, dynamic>?> post(
@@ -82,24 +363,24 @@ class ApiService {
 
     try {
       // converts Dart map to JSON and sends request
-      final res = await http.post(uri, headers: headers, body: jsonEncode(data));
+      final res = await http.post(
+        uri,
+        headers: headers,
+        body: jsonEncode(data),
+      );
 
       if (res.statusCode >= 200 && res.statusCode < 300) {
-        if (res.body.isEmpty){
+        if (res.body.isEmpty) {
           return {'ok': true};
         }
         // Converts response JSON → Dart map
         return jsonDecode(res.body);
-      } 
-      else {
+      } else {
         print('POST $path failed: ${res.statusCode} ${res.body}');
         try {
           final decoded = jsonDecode(res.body);
           if (decoded is Map<String, dynamic>) {
-            return {
-              ...decoded,
-              'status_code': res.statusCode,
-            };
+            return {...decoded, 'status_code': res.statusCode};
           }
         } catch (_) {
           // Fall through to a plain error message below.
@@ -109,17 +390,14 @@ class ApiService {
           'status_code': res.statusCode,
         };
       }
-    } 
-    catch (e) {
+    } catch (e) {
       print('POST $path error: $e');
       return null;
     }
   }
 
-
   ////////////////  GET  /////////////////////////
-  
-  
+
   // Fetches data
   static Future<dynamic> get(String path, {bool useAuth = false}) async {
     final uri = await _buildUri(path);
@@ -131,23 +409,17 @@ class ApiService {
         if (res.body.isEmpty) return {};
         // Converts JSON array/object automatically
         return jsonDecode(res.body);
-      } 
-      else {
+      } else {
         print('GET $path failed: ${res.statusCode} ${res.body}');
         return null;
       }
-    } 
-    catch (e) {
+    } catch (e) {
       print('GET $path error: $e');
       return null;
     }
   }
 
-
-  
   /////////////////////////// DELETE /////////////////////////
-  
-
 
   // deletes resources
   static Future<bool> delete(String path, {bool useAuth = false}) async {
@@ -168,10 +440,7 @@ class ApiService {
     }
   }
 
-
-  
   /////////////////////////// PUT  /////////////////////////
-  
 
   // updates resources
   static Future<Map<String, dynamic>?> put(
@@ -187,22 +456,17 @@ class ApiService {
 
       if (res.statusCode >= 200 && res.statusCode < 300) {
         return jsonDecode(res.body);
-      } 
-      else {
+      } else {
         print('PUT $path failed: ${res.statusCode} ${res.body}');
         return null;
       }
-    } 
-    catch (e) {
+    } catch (e) {
       print('PUT $path error: $e');
       return null;
     }
   }
 
-
-  
   /////////////////////////// FILE UPLOAD  /////////////////////////
-  
 
   // Uploads file using multipart/form-data
   static Future<Map<String, dynamic>?> uploadFile(
@@ -237,29 +501,23 @@ class ApiService {
 
       // Reads file from device and attaches it to request
       req.files.add(await http.MultipartFile.fromPath("file", filePath));
-      
+
       var res = await req.send();
       final body = await res.stream.bytesToString();
 
       if (res.statusCode >= 200 && res.statusCode < 300) {
         return jsonDecode(body);
-      } 
-      else {
+      } else {
         print('UPLOAD $path failed: ${res.statusCode} $body');
         return null;
       }
-    } 
-    catch (e) {
+    } catch (e) {
       print('UPLOAD $path error: $e');
       return null;
     }
   }
 
-
-
   /////////////////////////// AUTHENTICATION ENDPOINTS /////////////////////////
-
-
 
   /// Register a new user
   static Future<Map<String, dynamic>?> register({
@@ -283,44 +541,35 @@ class ApiService {
   }) async {
     // Using OAuth2 form format
     final uri = await _buildUri('/auth/login');
-    
+
     try {
       final res = await http.post(
         uri,
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: {
-          'username': phoneNumber,
-          'password': password,
-        },
+        body: {'username': phoneNumber, 'password': password},
       );
 
       if (res.statusCode >= 200 && res.statusCode < 300) {
         final data = jsonDecode(res.body);
-        
+
         // Store token and user info
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('token', data['access_token'] ?? '');
         await prefs.setInt('user_id', data['user_id'] ?? 0);
         await prefs.setString('role', data['role'] ?? '');
-        
+
         return data;
-      } 
-      else {
+      } else {
         print('LOGIN failed: ${res.statusCode} ${res.body}');
         return null;
       }
-    } 
-    catch (e) {
+    } catch (e) {
       print('LOGIN error: $e');
       return null;
     }
   }
 
-
-
   /////////////////////////// SESSION ENDPOINTS /////////////////////////
-
-
 
   /// Create a new session (teacher only)
   static Future<Map<String, dynamic>?> createSession(String title) async {
@@ -346,26 +595,23 @@ class ApiService {
     return await get('/sessions/$sessionId/state', useAuth: true);
   }
 
-
-
-
-
   /////////////////////////// PARTICIPANT ENDPOINTS /////////////////////////
 
-
-
   /// Join a session as a participant
-  static Future<Map<String, dynamic>?> joinSession(int sessionId, {int? userId}) async {
+  static Future<Map<String, dynamic>?> joinSession(
+    int sessionId, {
+    int? userId,
+  }) async {
     final uri = await _buildUri('/sessions/$sessionId/join');
     final prefs = await SharedPreferences.getInstance();
-    
+
     try {
       var req = http.MultipartRequest("POST", uri);
-      
+
       if (userId != null) {
         req.fields['user_id'] = userId.toString();
       }
-      
+
       if (!devMode) {
         final token = prefs.getString('token');
         cachedToken = token;
@@ -373,24 +619,21 @@ class ApiService {
           req.headers['Authorization'] = 'Bearer $token';
         }
       }
-      
+
       var res = await req.send();
       final body = await res.stream.bytesToString();
 
       if (res.statusCode >= 200 && res.statusCode < 300) {
         return jsonDecode(body);
-      } 
-      else {
+      } else {
         print('JOIN SESSION failed: ${res.statusCode} $body');
         return null;
       }
-    } 
-    catch (e) {
+    } catch (e) {
       print('JOIN SESSION error: $e');
       return null;
     }
   }
-
 
   /// Add a student to a session (teacher only)
   static Future<Map<String, dynamic>?> addStudentToSession(
@@ -399,18 +642,18 @@ class ApiService {
   ) async {
     final uri = await _buildUri('/sessions/$sessionId/join');
     final prefs = await SharedPreferences.getInstance();
-    
+
     try {
       var req = http.MultipartRequest("POST", uri);
       req.fields['user_id'] = studentId.toString();
-      
+
       if (!devMode) {
         final token = prefs.getString('token');
         if (token != null) {
           req.headers['Authorization'] = 'Bearer $token';
         }
       }
-      
+
       var res = await req.send();
       final body = await res.stream.bytesToString();
 
@@ -418,13 +661,11 @@ class ApiService {
         return jsonDecode(body);
       }
       return null;
-    } 
-    catch (e) {
+    } catch (e) {
       print('ADD STUDENT error: $e');
       return null;
     }
   }
-
 
   /// Mute/unmute a participant (teacher only)
   static Future<Map<String, dynamic>?> muteParticipant(
@@ -437,12 +678,13 @@ class ApiService {
     }, useAuth: true);
   }
 
-
   /// Remove a participant from session (teacher only)
   static Future<bool> kickParticipant(int sessionId, int participantId) async {
-    return await delete('/sessions/$sessionId/participants/$participantId', useAuth: true);
+    return await delete(
+      '/sessions/$sessionId/participants/$participantId',
+      useAuth: true,
+    );
   }
-
 
   /// Invite student to session (teacher only)
   static Future<Map<String, dynamic>?> inviteStudent(
@@ -451,13 +693,13 @@ class ApiService {
   ) async {
     final uri = await _buildUri('/sessions/$sessionId/invite');
     final prefs = await SharedPreferences.getInstance();
-    
+
     try {
       var req = http.MultipartRequest("POST", uri);
-      
+
       // Add student_id as form field
       req.fields['student_id'] = studentId.toString();
-      
+
       // Add auth if not in dev mode
       if (!devMode) {
         final token = prefs.getString('token');
@@ -465,7 +707,7 @@ class ApiService {
           req.headers['Authorization'] = 'Bearer $token';
         }
       }
-      
+
       var res = await req.send();
       final body = await res.stream.bytesToString();
 
@@ -480,8 +722,6 @@ class ApiService {
       return null;
     }
   }
-  
-
 
   // Uploads file using bytes (for web support)
   static Future<Map<String, dynamic>?> uploadFileBytes(
@@ -514,22 +754,36 @@ class ApiService {
       final ext = filename.split('.').last.toLowerCase();
       String subType = 'mpeg';
       switch (ext) {
-        case 'wav': subType = 'wav'; break;
-        case 'ogg': subType = 'ogg'; break;
-        case 'webm': subType = 'webm'; break;
-        case 'm4a': subType = 'x-m4a'; break;
-        case 'mp4': subType = 'mp4'; break;
+        case 'wav':
+          subType = 'wav';
+          break;
+        case 'ogg':
+          subType = 'ogg';
+          break;
+        case 'webm':
+          subType = 'webm';
+          break;
+        case 'm4a':
+          subType = 'x-m4a';
+          break;
+        case 'mp4':
+          subType = 'mp4';
+          break;
         case 'mp3':
-        default: subType = 'mpeg'; break;
+        default:
+          subType = 'mpeg';
+          break;
       }
 
-      req.files.add(http.MultipartFile.fromBytes(
-        "file",
-        fileBytes,
-        filename: filename,
-        contentType: MediaType('audio', subType),
-      ));
-      
+      req.files.add(
+        http.MultipartFile.fromBytes(
+          "file",
+          fileBytes,
+          filename: filename,
+          contentType: MediaType('audio', subType),
+        ),
+      );
+
       var res = await req.send();
       final body = await res.stream.bytesToString();
 
@@ -610,14 +864,15 @@ class ApiService {
         final data = jsonDecode(res.body);
         if (data is List) return data;
       } else {
-        print('GET /audio/list as user=$userId failed: ${res.statusCode} ${res.body}');
+        print(
+          'GET /audio/list as user=$userId failed: ${res.statusCode} ${res.body}',
+        );
       }
     } catch (e) {
       print('GET /audio/list as user=$userId error: $e');
     }
     return null;
   }
-  
 
   static Future<List<dynamic>?> getAudioListBySession(int sessionId) async {
     final result = await get('/audio/session/$sessionId', useAuth: true);
@@ -632,7 +887,11 @@ class ApiService {
     int sessionId,
     int audioId,
   ) async {
-    return await post('/sessions/$sessionId/audio/$audioId/link', {}, useAuth: true);
+    return await post(
+      '/sessions/$sessionId/audio/$audioId/link',
+      {},
+      useAuth: true,
+    );
   }
 
   /// Select audio for playback (teacher only)
@@ -642,47 +901,42 @@ class ApiService {
   ) async {
     // Build base path first
     String path = '/sessions/$sessionId/audio/select';
-    
+
     // Manually construct the full URI with query params
     String fullUri = '$baseUrl$path';
-    
+
     // Add user_id if in dev mode
     if (devMode) {
       final prefs = await SharedPreferences.getInstance();
       final userId = prefs.getInt('user_id');
       if (userId != null) {
         fullUri += '?user_id=$userId';
-        fullUri += '&audio_id=$audioId';  // Add audio_id after user_id
-      } 
-      else {
+        fullUri += '&audio_id=$audioId'; // Add audio_id after user_id
+      } else {
         fullUri += '?audio_id=$audioId';
       }
-    } 
-    else {
+    } else {
       fullUri += '?audio_id=$audioId';
     }
-    
+
     final uri = Uri.parse(fullUri);
     final headers = await _buildHeaders(useAuth: true);
 
     try {
       final res = await http.post(uri, headers: headers);
-      
+
       if (res.statusCode >= 200 && res.statusCode < 300) {
         if (res.body.isEmpty) return {'ok': true};
         return jsonDecode(res.body);
-      } 
-      else {
+      } else {
         print('SELECT AUDIO failed: ${res.statusCode} ${res.body}');
         return null;
       }
-    } 
-    catch (e) {
+    } catch (e) {
       print('SELECT AUDIO error: $e');
       return null;
     }
   }
-
 
   /// Unified audio control endpoint
   static Future<Map<String, dynamic>?> controlAudio(
@@ -693,16 +947,12 @@ class ApiService {
     double position = 0.0,
   }) async {
     try {
-      final result = await post(
-        '/sessions/$sessionId/audio/control',
-        {
-          'audio_id': audioId,
-          'speed': speed,
-          'position': position,
-          'action': action,
-        },
-        useAuth: true,
-      );
+      final result = await post('/sessions/$sessionId/audio/control', {
+        'audio_id': audioId,
+        'speed': speed,
+        'position': position,
+        'action': action,
+      }, useAuth: true);
       return result;
     } catch (e) {
       print('[API] Error controlling audio: $e');
@@ -711,16 +961,20 @@ class ApiService {
   }
 
   /// Get current audio playback state
-  static Future<Map<String, dynamic>?> getAudioPlaybackState(int sessionId) async {
+  static Future<Map<String, dynamic>?> getAudioPlaybackState(
+    int sessionId,
+  ) async {
     try {
-      final result = await get('/sessions/$sessionId/audio/state', useAuth: true);
+      final result = await get(
+        '/sessions/$sessionId/audio/state',
+        useAuth: true,
+      );
       return result;
     } catch (e) {
       print('[API] Error getting playback state: $e');
       return null;
     }
   }
-
 
   // Update the existing playAudio method to use the new unified endpoint:
   static Future<Map<String, dynamic>?> playAudio(
@@ -743,11 +997,7 @@ class ApiService {
     int sessionId, {
     double position = 0.0,
   }) async {
-    return await controlAudio(
-      sessionId,
-      action: 'pause',
-      position: position,
-    );
+    return await controlAudio(sessionId, action: 'pause', position: position);
   }
 
   /// Seek to a specific position in the audio
@@ -755,19 +1005,10 @@ class ApiService {
     int sessionId,
     double position,
   ) async {
-    return await controlAudio(
-      sessionId,
-      action: 'seek',
-      position: position,
-    );
+    return await controlAudio(sessionId, action: 'seek', position: position);
   }
 
-
-
-
   /////////////////////////// CHAT ENDPOINTS  /////////////////////////
-
-
 
   /// Send chat message to backend and disributed via websocket
   static Future<Map<String, dynamic>?> sendChatMessage(

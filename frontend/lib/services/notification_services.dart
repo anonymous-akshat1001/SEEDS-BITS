@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kDebugMode, kIsWeb;
 // Required to initialize Firebase
 import 'package:firebase_core/firebase_core.dart';
 // Firebase Cloud Messaging (FCM)
@@ -44,47 +44,57 @@ class NotificationService {
   NotificationService._internal();
 
   // Plugin for showing local notifications
-  final FlutterLocalNotificationsPlugin _localNotifications = FlutterLocalNotificationsPlugin();
-  
+  final FlutterLocalNotificationsPlugin _localNotifications =
+      FlutterLocalNotificationsPlugin();
+
   // Firebase messaging instance - nullable becuase initialized later
   FirebaseMessaging? _messaging;
   // variable to prevent multiple initializations
   bool _initialized = false;
-  
+
   // Callback for when notification is tapped
   Function(Map<String, dynamic>)? onNotificationTap;
-  
+
   // Stream for real-time notifications - creates boradcast stream where multiple listeners allowed
-  final StreamController<Map<String, dynamic>> _notificationController = 
-    StreamController<Map<String, dynamic>>.broadcast();
-  
+  final StreamController<Map<String, dynamic>> _notificationController =
+      StreamController<Map<String, dynamic>>.broadcast();
+
   // Public getter
-  Stream<Map<String, dynamic>> get notificationStream => 
+  Stream<Map<String, dynamic>> get notificationStream =>
       _notificationController.stream;
+
+  /// Checks authorization without triggering an operating-system prompt.
+  Future<bool> hasNotificationPermission() async {
+    _messaging ??= FirebaseMessaging.instance;
+    final settings = await _messaging!.getNotificationSettings();
+    return settings.authorizationStatus == AuthorizationStatus.authorized ||
+        settings.authorizationStatus == AuthorizationStatus.provisional;
+  }
 
   /// Initialize notification service
   Future<void> initialize() async {
-    
     // prevents duplicate setup
-    if (_initialized){
+    if (_initialized) {
       return;
     }
-    
+
     try {
-      // Initialize Firebase
-      await Firebase.initializeApp();
-      
+      if (Firebase.apps.isEmpty) {
+        await Firebase.initializeApp(
+          options: DefaultFirebaseOptions.currentPlatform,
+        );
+      }
+
       // platform specific setup
       if (kIsWeb) {
         await _initializeWeb();
       } else {
         await _initializeMobile();
       }
-      
+
       _initialized = true;
       print('[NOTIFICATIONS] Initialized successfully');
-    } 
-    catch (e) {
+    } catch (e) {
       print('[NOTIFICATIONS] Initialization error: $e');
     }
   }
@@ -93,6 +103,7 @@ class NotificationService {
   Future<void> _initializeMobile() async {
     // get FCM instance
     _messaging = FirebaseMessaging.instance;
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
     // Request notif permission
     NotificationSettings settings = await _messaging!.requestPermission(
@@ -105,50 +116,53 @@ class NotificationService {
     // user allowed notifs
     if (settings.authorizationStatus == AuthorizationStatus.authorized) {
       print('[NOTIFICATIONS] User granted permission');
-      
+
       // Get FCM token - unique device token, used by backend to send notfs
       String? token = await _messaging!.getToken();
-      print('[NOTIFICATIONS] FCM Token: $token');
-      
+      if (kDebugMode && token != null) {
+        print(
+          '[NOTIFICATIONS] FCM token received: ${token.substring(0, 20)}...',
+        );
+      }
+
       if (token != null) {
         // Send token to backend
         await _registerTokenWithBackend(token, 'mobile');
       }
-      
+
       // Listen for token refresh
       _messaging!.onTokenRefresh.listen((newToken) {
         print('[NOTIFICATIONS] Token refreshed: $newToken');
         _registerTokenWithBackend(newToken, 'mobile');
       });
-      
+
       // Configure local notifications
-      const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+      const androidSettings = AndroidInitializationSettings(
+        '@mipmap/ic_launcher',
+      );
       const iosSettings = DarwinInitializationSettings(
         requestAlertPermission: true,
         requestBadgePermission: true,
         requestSoundPermission: true,
       );
-      
+
       const initSettings = InitializationSettings(
         android: androidSettings,
         iOS: iosSettings,
       );
-      
+
       // Initializes local notification system and registers tap handler
       await _localNotifications.initialize(
         initSettings,
         onDidReceiveNotificationResponse: _onNotificationTapped,
       );
 
-      // Set up background message handler
-      FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-
       // Handle foreground messages when app open
       FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
-      
+
       // Handle notification tap when app is in background
       FirebaseMessaging.onMessageOpenedApp.listen(_handleNotificationTap);
-      
+
       // Handle notification tap when app was terminated
       _messaging!.getInitialMessage().then((message) {
         if (message != null) {
@@ -164,13 +178,13 @@ class NotificationService {
   Future<void> _initializeWeb() async {
     try {
       _messaging = FirebaseMessaging.instance;
-      
+
       // Request permission for web
       NotificationSettings settings = await _messaging!.requestPermission();
-      
+
       if (settings.authorizationStatus == AuthorizationStatus.authorized) {
         print('[NOTIFICATIONS] Web notification permission granted');
-        
+
         // Get web FCM token with VAPID key
         // You need to get this from Firebase Console -> Project Settings -> Cloud Messaging
         String? token = await _messaging!.getToken(
@@ -182,60 +196,59 @@ class NotificationService {
           print('[NOTIFICATIONS] Web FCM Token: $token');
           await _registerTokenWithBackend(token, 'web');
         }
-        
+
         // Listen for token refresh and register token with backend
         _messaging!.onTokenRefresh.listen((newToken) {
           print('[NOTIFICATIONS] Web token refreshed: $newToken');
           _registerTokenWithBackend(newToken, 'web');
         });
-        
+
         // Handle foreground messages
         FirebaseMessaging.onMessage.listen(_handleForegroundMessageWeb);
-        
+
         // Handle notification tap
         FirebaseMessaging.onMessageOpenedApp.listen(_handleNotificationTap);
-      } 
-      else {
+      } else {
         print('[NOTIFICATIONS] Web notification permission denied');
       }
-    } 
-    catch (e) {
+    } catch (e) {
       print('[NOTIFICATIONS] Web init error: $e');
     }
   }
 
   /// Register FCM token with backend
-  Future<void> _registerTokenWithBackend(String token, String deviceType) async {
+  Future<void> _registerTokenWithBackend(
+    String token,
+    String deviceType,
+  ) async {
     try {
       // open local storage
       final prefs = await SharedPreferences.getInstance();
-      
+
       // Save token locally first
       await prefs.setString('fcm_token', token);
       print('[FCM] Token saved locally: ${token.substring(0, 20)}...');
-      
+
       // Check if user is logged in
       final userId = prefs.getInt('user_id');
       if (userId == null) {
         print('[FCM] User not logged in yet - will register token after login');
         return; // Skip registration for now
       }
-      
+
       // Send to backend
       try {
-        final result = await ApiService.post(
-          '/users/fcm-token',
-          {'token': token, 'device_type': deviceType},
-          useAuth: true,
-        );
-        
+        final result = await ApiService.post('/users/fcm-token', {
+          'token': token,
+          'device_type': deviceType,
+        }, useAuth: true);
+
         if (result != null && result['ok'] == true) {
           print('[FCM] Token registered with backend successfully');
         } else {
           print('[FCM] Token registration returned: $result');
         }
-      } 
-      catch (e) {
+      } catch (e) {
         print('[FCM] Error registering token with backend: $e');
         // Don't throw - token is saved locally, will retry after login
       }
@@ -247,25 +260,27 @@ class NotificationService {
   // Handle foreground message on mobile - called when app is open
   void _handleForegroundMessage(RemoteMessage message) {
     print('[NOTIFICATIONS] Foreground message: ${message.notification?.title}');
-    
+
     // Show local notification manually - firebase doesn't auto show in foreground
     _showLocalNotification(
       title: message.notification?.title ?? 'New Notification',
       body: message.notification?.body ?? '',
       payload: message.data,
     );
-    
+
     // Emits event to stream(app listeners)
     _notificationController.add(message.data);
   }
 
   /// Handle foreground message on web
   void _handleForegroundMessageWeb(RemoteMessage message) {
-    print('[NOTIFICATIONS] Web foreground message: ${message.notification?.title}');
-    
+    print(
+      '[NOTIFICATIONS] Web foreground message: ${message.notification?.title}',
+    );
+
     // Show browser notification (if supported)
     // Note: Browser notifications might not work in foreground depending on browser
-    
+
     // Emit to stream
     _notificationController.add(message.data);
   }
@@ -288,18 +303,18 @@ class NotificationService {
       playSound: true,
       icon: '@mipmap/ic_launcher',
     );
-    
+
     const iosDetails = DarwinNotificationDetails(
       presentAlert: true,
       presentBadge: true,
       presentSound: true,
     );
-    
+
     const details = NotificationDetails(
       android: androidDetails,
       iOS: iosDetails,
     );
-    
+
     // displays notification
     await _localNotifications.show(
       DateTime.now().millisecondsSinceEpoch ~/ 1000,
@@ -310,31 +325,29 @@ class NotificationService {
     );
   }
 
-
   // Handle notification tap from system tray
   void _handleNotificationTap(RemoteMessage message) {
     print('[NOTIFICATIONS] Notification tapped: ${message.data}');
-    
+
     if (onNotificationTap != null) {
       // delegates to UI callback
       onNotificationTap!(message.data);
     }
-    
+
     // emits event
     _notificationController.add(message.data);
   }
-
 
   // Handle local notification tap
   void _onNotificationTapped(NotificationResponse response) {
     if (response.payload != null) {
       // convert string to map(payload)
       final data = _decodePayload(response.payload!);
-      
+
       if (onNotificationTap != null) {
         onNotificationTap!(data);
       }
-      
+
       _notificationController.add(data);
     }
   }
@@ -367,8 +380,18 @@ class NotificationService {
     try {
       final token = await getToken();
       if (token != null) {
-        await ApiService.delete('/users/fcm-token?token=$token', useAuth: true);
-        
+        final result = await ApiService.deleteResult(
+          '/users/fcm-token',
+          useAuth: true,
+          context: 'notification token removal',
+          data: {'token': token},
+        );
+        if (!result.isSuccess && kDebugMode) {
+          print(
+            '[FCM] Backend token removal will be cleaned up after token invalidation',
+          );
+        }
+        await (_messaging ?? FirebaseMessaging.instance).deleteToken();
         final prefs = await SharedPreferences.getInstance();
         await prefs.remove('fcm_token');
       }

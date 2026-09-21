@@ -1,4 +1,4 @@
-// this import provides JSON encoding/decoding 
+// this import provides JSON encoding/decoding
 import 'dart:convert';
 import 'dart:async';
 // Flutter WebRTC library
@@ -37,7 +37,7 @@ class RtcService {
       // STUN server helps peers discover public IPs and connect across NATs
       {'urls': 'stun:stun.l.google.com:19302'},
       // Google's STUN serever is free, reliable
-    ]
+    ],
   };
 
   // TTS instance
@@ -62,9 +62,7 @@ class RtcService {
     // final wsUrl = '$wsBaseUrl/ws/sessions/$sessionId?user_id=$userId';
 
     // opens websocket connection and keeps it open for real time signalling
-    _ws = WebSocketChannel.connect(
-      Uri.parse(wsUrl),
-    );
+    _ws = WebSocketChannel.connect(Uri.parse(wsUrl));
 
     // Continuosly listen for messages
     _ws.stream.listen(
@@ -72,7 +70,7 @@ class RtcService {
         // Converts JSON string → Map
         final data = jsonDecode(event);
         // this method handles incoming WS events
-        _onWsMessage(data); 
+        _onWsMessage(data);
       },
       // Triggered when WebSocket closes
       onDone: () => _tts.speak("Connection closed."),
@@ -135,9 +133,8 @@ class RtcService {
 
   // Peer Connection Management - creates a peer connection with one participant
   Future<void> _createPeer(int remoteId) async {
-    
     // Prevents duplicate connections
-    if (_peers.containsKey(remoteId)){
+    if (_peers.containsKey(remoteId)) {
       return;
     }
 
@@ -166,15 +163,17 @@ class RtcService {
     // Handle ICE - candidates which are network paths
     pc.onIceCandidate = (RTCIceCandidate candidate) {
       // Sends ICE data to backend which forwards it to other peer
-      _ws.sink.add(jsonEncode({
-        'type': 'ice',
-        'to': remoteId,
-        'candidate': {
-          'candidate': candidate.candidate,
-          'sdpMid': candidate.sdpMid,
-          'sdpMLineIndex': candidate.sdpMLineIndex,
-        },
-      }));
+      _ws.sink.add(
+        jsonEncode({
+          'type': 'ice',
+          'to': remoteId,
+          'candidate': {
+            'candidate': candidate.candidate,
+            'sdpMid': candidate.sdpMid,
+            'sdpMLineIndex': candidate.sdpMLineIndex,
+          },
+        }),
+      );
     };
 
     // Create offer - WebRTC offer = “I want to connect like this”
@@ -183,12 +182,14 @@ class RtcService {
     // saves offer locally
     await pc.setLocalDescription(offer);
     // Sends offer to remote peer via backend
-    _ws.sink.add(jsonEncode({
-      'type': 'offer',
-      'to': remoteId,
-      'from': userId,
-      'sdp': offer.sdp,
-    }));
+    _ws.sink.add(
+      jsonEncode({
+        'type': 'offer',
+        'to': remoteId,
+        'from': userId,
+        'sdp': offer.sdp,
+      }),
+    );
   }
 
   // Close peer connection - called when participant leaves
@@ -219,10 +220,6 @@ class RtcService {
   // send chat via websocket
   void sendChatMessage(String text) {
     // encodes message and backend distibutes to participants
-    _ws.sink.add(jsonEncode({
-      'type': 'chat',
-      'message': text,
-      'from': userId,
-    }));
+    _ws.sink.add(jsonEncode({'type': 'chat', 'message': text, 'from': userId}));
   }
 }

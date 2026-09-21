@@ -13,6 +13,7 @@ library;
 const Map<int, String> welcomeKeyLabels = {
   1: 'Login',
   2: 'Register',
+  3: 'Settings',
 };
 
 // ─── Login Screen ───────────────────────────────────────────────────────────
@@ -42,22 +43,27 @@ const Map<int, String> settingsKeyLabels = {
 
 // ─── Student Dashboard ──────────────────────────────────────────────────────
 const Map<int, String> studentDashboardKeyLabels = {
+  0: 'Log out',
   1: 'Refresh Sessions',
-  2: 'Join Session by ID',
+  2: 'Search Sessions by Name or ID',
   3: 'Offline Audio Library',
 };
 
 // ─── Teacher Dashboard ──────────────────────────────────────────────────────
 const Map<int, String> teacherDashboardKeyLabels = {
+  0: 'Log out',
   1: 'Refresh Sessions',
   2: 'Create Session',
   3: 'Offline Audio Library',
+  4: 'Search Sessions by Name or ID',
 };
 
 // ─── Session Screen (Student) ───────────────────────────────────────────────
 const Map<int, String> sessionStudentKeyLabels = {
   1: 'Toggle Mute',
   2: 'Raise or Lower Hand',
+  3: 'Toggle Text to Speech',
+  4: 'Edit Chat Message',
 };
 
 // ─── Session Screen (Teacher) ───────────────────────────────────────────────
@@ -66,6 +72,12 @@ const Map<int, String> sessionTeacherKeyLabels = {
   2: 'Raise or Lower Hand',
   3: 'Invite Students',
   4: 'Audio Library',
+  5: 'Upload Audio',
+  6: 'Refresh Audio Library',
+  7: 'Back Ten Seconds',
+  8: 'Play or Pause Audio',
+  9: 'Forward Ten Seconds',
+  0: 'End Session',
 };
 
 // ─── Simple Session Screen ──────────────────────────────────────────────────
@@ -135,7 +147,9 @@ String buildTtsInstructions(
 
   final parts = sorted.map((e) => 'Press ${e.key} for ${e.value}').join('. ');
 
-  final repeatHint = includeRepeatHint ? ' Press star to repeat these instructions.' : '';
+  final repeatHint = includeRepeatHint
+      ? ' Press star to repeat these instructions.'
+      : '';
 
   if (screenName != null && screenName.isNotEmpty) {
     return '$screenName. $parts.$repeatHint';

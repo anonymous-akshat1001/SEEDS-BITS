@@ -3,7 +3,6 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import '../utils/ui_utils.dart';
 // Allows user to pick audio files
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter_tts/flutter_tts.dart';
 // Audio playback library
 import 'package:audioplayers/audioplayers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -14,40 +13,33 @@ import 'package:http_parser/http_parser.dart';
 // JSON encode/decode
 import 'dart:convert';
 import '../services/api_service.dart';
+import '../services/tts_service.dart';
 // Allows reading environment variables
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../widgets/key_instruction_wrapper.dart';
 import '../utils/keypad_actions.dart';
 
-
 // Backend and websocket URL
 final baseUrl = dotenv.env['API_BASE_URL'];
 final wsBaseUrl = dotenv.env['WS_BASE_URL'];
 
-
 // Widget definition which allows the screen to change with time
 class AudioLibraryScreen extends StatefulWidget {
-  final int? sessionId; // Optional - if provided, allows selecting audio for session
+  final int?
+  sessionId; // Optional - if provided, allows selecting audio for session
 
   // Constructor
-  const AudioLibraryScreen({
-    super.key,
-    this.sessionId,
-  });
+  const AudioLibraryScreen({super.key, this.sessionId});
 
   @override
   State<AudioLibraryScreen> createState() => _AudioLibraryScreenState();
 }
 
-
 // State Class where the logic lives
 class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
-  // Flutter TTS Engine
-  final FlutterTts _tts = FlutterTts();
-
   // Handles audio playback
   final AudioPlayer _audioPlayer = AudioPlayer();
-  
+
   // Stores audio file metadata from backend
   List<Map<String, dynamic>> _audioFiles = [];
 
@@ -58,13 +50,23 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
   // tracks which audio file is playing
   int? _playingAudioId;
   // Currently selected for session playback
-  int? _selectedAudioId; 
+  int? _selectedAudioId;
   // global TTS toggle for this screen
   bool _ttsEnabled = true;
 
   // Controllers for upload dialog input fields
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
+
+  void _toggleTts() {
+    setState(() => _ttsEnabled = !_ttsEnabled);
+    TtsService.configure(enabled: _ttsEnabled);
+    if (_ttsEnabled) {
+      _speakIfEnabled('Text to speech enabled');
+    } else {
+      TtsService.stop();
+    }
+  }
 
   // Called once when the screen is created
   @override
@@ -80,75 +82,67 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
   void _setupAudioPlayer() {
     // Triggered when audio finishes playing
     _audioPlayer.onPlayerComplete.listen((_) {
-      
-      if (!mounted){
+      if (!mounted) {
         return;
       }
-      
+
       // Clear playing state
       setState(() => _playingAudioId = null);
-      
+
       _speakIfEnabled("Playback finished");
     });
 
     // Triggered when player state changes
     _audioPlayer.onPlayerStateChanged.listen((state) {
-      
-      if (!mounted){
+      if (!mounted) {
         return;
       }
-      
+
       // Detect stop and reset UI state
       if (state == PlayerState.stopped) {
         setState(() => _playingAudioId = null);
       }
-    
     });
   }
 
-  
   // Function to load audio files from the backend(aysnc because network request)
   Future<void> _loadAudioFiles() async {
     // Prevents calling setState after widget is destroyed
-    if (!mounted){
+    if (!mounted) {
       return;
-    } 
+    }
 
     // show loading spinner
     setState(() => _isLoading = true);
-    
+
     try {
       // fetch audio list from backend
       final path = widget.sessionId != null
           ? '/audio/session/${widget.sessionId}'
           : '/audio/list';
       final result = await ApiService.get(path, useAuth: true);
-      
+
       if (result != null) {
-        
-        if (!mounted){
+        if (!mounted) {
           return;
         }
-        
+
         setState(() {
           // backend may return a direct list or list wrapped { files: [...] }
           if (result is List) {
             _audioFiles = result.cast<Map<String, dynamic>>();
-          } 
-          else if (result is Map && result.containsKey('files')) {
-            _audioFiles = (result['files'] as List).cast<Map<String, dynamic>>();
+          } else if (result is Map && result.containsKey('files')) {
+            _audioFiles = (result['files'] as List)
+                .cast<Map<String, dynamic>>();
           }
         });
-        
+
         await _speakIfEnabled("Loaded ${_audioFiles.length} audio files");
-      
       }
-    } 
-    catch (e) {
+    } catch (e) {
       print('[AUDIO LIBRARY] Error loading files: $e');
       _showError("Failed to load audio files");
-    } 
-    finally {  
+    } finally {
       if (!mounted) {
         return;
       }
@@ -160,6 +154,7 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
   // Function to upload audio files - only by teacher
   Future<void> _uploadAudioFile() async {
     try {
+      await TtsService.stop();
       // Opens system file picker - restricted to only audio files
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: FileType.audio,
@@ -173,77 +168,161 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
       // Extract selected file
       final file = result.files.first;
 
+      final titleNode = FocusNode(debugLabel: 'library-upload-title');
+      final descriptionNode = FocusNode(
+        debugLabel: 'library-upload-description',
+      );
+      final cancelNode = FocusNode(debugLabel: 'library-upload-cancel');
+      final uploadNode = FocusNode(debugLabel: 'library-upload-confirm');
+      final keypadController = KeypadNavigationController();
+
+      void submit(BuildContext dialogContext) {
+        if (_titleController.text.trim().isEmpty) {
+          _showError('Title is required');
+          keypadController.enterTextEditing(titleNode);
+          return;
+        }
+        final title = _titleController.text;
+        final description = _descriptionController.text;
+        Navigator.pop(dialogContext);
+        _performUpload(file, title, description);
+      }
+
       // Show upload dialog
       await showDialog(
         context: context,
-        builder: (context) => AlertDialog(
-          // Asks user for title and description
-          title: const Text('Upload Audio'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('File: ${file.name}'),
-                const SizedBox(height: 16),
-                
-                TextField(
-                  controller: _titleController,
-                  style: TextStyle(fontSize: UIUtils.fontSize(context, 14), color: UIUtils.textColor),
-                  decoration: InputDecoration(
-                    labelText: 'Title *',
-                    labelStyle: TextStyle(color: UIUtils.subtextColor),
-                    filled: true,
-                    fillColor: UIUtils.backgroundColor,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
-                    ),
-                    contentPadding: UIUtils.paddingSymmetric(context, horizontal: 16, vertical: 12),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                
-                TextField(
-                  controller: _descriptionController,
-                  style: TextStyle(fontSize: UIUtils.fontSize(context, 14), color: UIUtils.textColor),
-                  decoration: InputDecoration(
-                    labelText: 'Description',
-                    labelStyle: TextStyle(color: UIUtils.subtextColor),
-                    filled: true,
-                    fillColor: UIUtils.backgroundColor,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
-                    ),
-                    contentPadding: UIUtils.paddingSymmetric(context, horizontal: 16, vertical: 12),
-                  ),
-                  maxLines: 3,
-                ),
-              ],
+        builder: (dialogContext) => KeypadInstructionWrapper(
+          screenName: 'Upload audio',
+          labels: const {
+            1: 'Edit Title',
+            2: 'Edit Description',
+            3: 'Upload',
+            0: 'Cancel',
+          },
+          actions: {
+            1: () => keypadController.enterTextEditing(titleNode),
+            2: () => keypadController.enterTextEditing(descriptionNode),
+            3: () => submit(dialogContext),
+            0: () => Navigator.pop(dialogContext),
+          },
+          navigationController: keypadController,
+          focusTargets: [
+            KeypadFocusTarget(
+              node: titleNode,
+              label: 'Audio title, required',
+              isTextField: true,
             ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text('Cancel', style: TextStyle(color: UIUtils.subtextColor)),
+            KeypadFocusTarget(
+              node: descriptionNode,
+              label: 'Audio description, optional',
+              isTextField: true,
             ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-                _performUpload(file, _titleController.text, _descriptionController.text);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: UIUtils.primaryColor,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                elevation: 0,
-              ),
-              child: const Text('Upload'),
+            KeypadFocusTarget(
+              node: cancelNode,
+              label: 'Cancel upload',
+              onActivate: () => Navigator.pop(dialogContext),
+            ),
+            KeypadFocusTarget(
+              node: uploadNode,
+              label: 'Upload audio',
+              onActivate: () => submit(dialogContext),
             ),
           ],
+          child: AlertDialog(
+            // Asks user for title and description
+            title: const Text('Upload Audio'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('File: ${file.name}'),
+                  const SizedBox(height: 16),
+
+                  TextField(
+                    controller: _titleController,
+                    focusNode: titleNode,
+                    onTap: () => keypadController.enterTextEditing(titleNode),
+                    style: TextStyle(
+                      fontSize: UIUtils.fontSize(context, 14),
+                      color: UIUtils.textColor,
+                    ),
+                    decoration: InputDecoration(
+                      labelText: 'Title *',
+                      labelStyle: TextStyle(color: UIUtils.subtextColor),
+                      filled: true,
+                      fillColor: UIUtils.backgroundColor,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      contentPadding: UIUtils.paddingSymmetric(
+                        context,
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  TextField(
+                    controller: _descriptionController,
+                    focusNode: descriptionNode,
+                    onTap: () =>
+                        keypadController.enterTextEditing(descriptionNode),
+                    style: TextStyle(
+                      fontSize: UIUtils.fontSize(context, 14),
+                      color: UIUtils.textColor,
+                    ),
+                    decoration: InputDecoration(
+                      labelText: 'Description',
+                      labelStyle: TextStyle(color: UIUtils.subtextColor),
+                      filled: true,
+                      fillColor: UIUtils.backgroundColor,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      contentPadding: UIUtils.paddingSymmetric(
+                        context,
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                    ),
+                    maxLines: 3,
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                focusNode: cancelNode,
+                onPressed: () => Navigator.pop(dialogContext),
+                child: Text(
+                  'Cancel (0)',
+                  style: TextStyle(color: UIUtils.subtextColor),
+                ),
+              ),
+              ElevatedButton(
+                focusNode: uploadNode,
+                onPressed: () => submit(dialogContext),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: UIUtils.primaryColor,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  elevation: 0,
+                ),
+                child: const Text('Upload (3)'),
+              ),
+            ],
+          ),
         ),
       );
-
+      titleNode.dispose();
+      descriptionNode.dispose();
+      cancelNode.dispose();
+      uploadNode.dispose();
     } catch (e) {
       print('[UPLOAD] Error: $e');
       _showError("Failed to pick file");
@@ -251,7 +330,11 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
   }
 
   // Actual upload happens separately
-  Future<void> _performUpload(PlatformFile file, String title, String description) async {
+  Future<void> _performUpload(
+    PlatformFile file,
+    String title,
+    String description,
+  ) async {
     if (title.trim().isEmpty) {
       _showError("Title is required");
       return;
@@ -262,8 +345,10 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
 
     try {
       final headers = await ApiService.getHeaders();
-      final uri = Uri.parse('$baseUrl/audio/upload?user_id=${await _getUserId()}');
-      
+      final uri = Uri.parse(
+        '$baseUrl/audio/upload?user_id=${await _getUserId()}',
+      );
+
       // Multipart request support files and form fields
       var request = http.MultipartRequest('POST', uri);
       // Adds metadata fields
@@ -277,7 +362,7 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
       // Determine MIME type from file extension
       String contentType = 'audio/mpeg'; // Default
       final extension = file.extension?.toLowerCase() ?? '';
-      
+
       switch (extension) {
         case 'mp3':
           contentType = 'audio/mpeg';
@@ -298,7 +383,6 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
           contentType = 'audio/webm';
           break;
         default:
-          
       }
 
       print('[UPLOAD] File: ${file.name}');
@@ -309,24 +393,27 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
       if (kIsWeb) {
         // Web uses bytes (no file path)
         if (file.bytes != null) {
-          request.files.add(http.MultipartFile.fromBytes(
-            'file',
-            file.bytes!,
-            filename: file.name,
-            // Determine correct file type for backend
-            contentType: MediaType.parse(contentType),
-          ));
+          request.files.add(
+            http.MultipartFile.fromBytes(
+              'file',
+              file.bytes!,
+              filename: file.name,
+              // Determine correct file type for backend
+              contentType: MediaType.parse(contentType),
+            ),
+          );
         }
-      } 
-      else {
+      } else {
         // Mobile uses filesystem path
         if (file.path != null) {
-          request.files.add(await http.MultipartFile.fromPath(
-            'file',
-            file.path!,
-            filename: file.name,
-            contentType: MediaType.parse(contentType),
-          ));
+          request.files.add(
+            await http.MultipartFile.fromPath(
+              'file',
+              file.path!,
+              filename: file.name,
+              contentType: MediaType.parse(contentType),
+            ),
+          );
         }
       }
 
@@ -339,17 +426,22 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
         _descriptionController.clear();
         // Refresh list after upload
         await _loadAudioFiles();
-      } 
-      else {
+      } else {
         print('[UPLOAD] Error: ${response.statusCode} $responseBody');
-        _showError("Upload failed: ${jsonDecode(responseBody)['detail'] ?? 'Unknown error'}");
+        _showError(
+          ApiService.mapFailure(
+            statusCode: response.statusCode,
+            responseBody: responseBody,
+            context: 'audio upload',
+          ).message,
+        );
       }
-    } 
-    catch (e) {
+    } catch (e) {
       print('[UPLOAD] Error: $e');
-      _showError("Upload failed: $e");
-    } 
-    finally {
+      _showError(
+        ApiService.mapFailure(error: e, context: 'audio upload').message,
+      );
+    } finally {
       setState(() => _isUploading = false);
     }
   }
@@ -359,7 +451,6 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getInt('user_id');
   }
-
 
   // Local Audio Preview
   Future<void> _playAudioLocally(int audioId, String title) async {
@@ -377,21 +468,16 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
       // Streams audio directly from backend
       await _audioPlayer.play(UrlSource(url));
       // updates UI state
-      setState(
-        () => _playingAudioId = audioId
-        );
+      setState(() => _playingAudioId = audioId);
       await _speakIfEnabled("Playing $title");
-    } 
-    catch (e) {
+    } catch (e) {
       print('[PLAY] Error: $e');
       _showError("Failed to play audio");
     }
   }
 
-
   // Select audio for current session
   Future<void> _selectForSession(int audioId, String title) async {
-
     if (widget.sessionId == null) {
       _showError("No active session");
       return;
@@ -405,35 +491,43 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
         // update UI
         setState(() => _selectedAudioId = audioId);
         await _speakIfEnabled("Selected $title for session");
-        
+
         // Ask if they want to play immediately
         final play = await showDialog<bool>(
           context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('Audio Selected'),
-            content: Text('Do you want to start playing "$title" for all participants now?'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text('Not Yet'),
+          builder: (dialogContext) => KeypadInstructionWrapper(
+            screenName: 'Audio selected. Play $title for everyone now?',
+            labels: const {0: 'Not Yet', 1: 'Play Now'},
+            actions: {
+              0: () => Navigator.pop(dialogContext, false),
+              1: () => Navigator.pop(dialogContext, true),
+            },
+            child: AlertDialog(
+              title: const Text('Audio Selected'),
+              content: Text(
+                'Do you want to start playing "$title" for all participants now?',
               ),
-              ElevatedButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: const Text('Play Now'),
-              ),
-            ],
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext, false),
+                  child: const Text('Not Yet (0)'),
+                ),
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(dialogContext, true),
+                  child: const Text('Play Now (1)'),
+                ),
+              ],
+            ),
           ),
         );
 
         if (play == true) {
           await _playForSession(audioId);
         }
-      } 
-      else {
+      } else {
         _showError("Failed to select audio");
       }
-    } 
-    catch (e) {
+    } catch (e) {
       print('[SELECT] Error: $e');
       _showError("Failed to select audio");
     }
@@ -481,21 +575,14 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
   void _showError(String message) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-      ),
+      SnackBar(content: Text(message), backgroundColor: Colors.red),
     );
     _speakIfEnabled(message);
   }
 
   Future<void> _speakIfEnabled(String text) async {
     if (_ttsEnabled) {
-      try {
-        await _tts.speak(text);
-      } catch (e) {
-        print('[TTS] Error: $e');
-      }
+      await TtsService.speak(text);
     }
   }
 
@@ -505,11 +592,12 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
     // Cancel any pending operations
     _titleController.dispose();
     _descriptionController.dispose();
-    
+
     // Stop and dispose audio player BEFORE disposing
     _audioPlayer.stop();
     _audioPlayer.dispose();
-    
+    TtsService.stop();
+
     // Call super.dispose last
     super.dispose();
   }
@@ -519,249 +607,419 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
   Widget build(BuildContext context) {
     final bool tiny = UIUtils.isTiny(context);
     final bool compact = tiny || UIUtils.isShort(context);
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          widget.sessionId != null 
-            ? 'Audio - Session ${widget.sessionId}'
-            : 'Audio Library',
-          style: TextStyle(fontSize: UIUtils.fontSize(context, 16), fontWeight: FontWeight.w600),
-        ),
-        backgroundColor: UIUtils.cardColor,
-        foregroundColor: UIUtils.textColor,
-        elevation: 0,
-        toolbarHeight: tiny ? 40 : null,
-        actions: [
-          IconButton(
-            icon: Icon(_ttsEnabled ? Icons.volume_up_rounded : Icons.volume_off_rounded, size: UIUtils.iconSize(context, 20), color: UIUtils.accentColor),
-            tooltip: 'Toggle TTS',
-            onPressed: () {
-              setState(() => _ttsEnabled = !_ttsEnabled);
-              _speakIfEnabled(_ttsEnabled ? "TTS enabled" : "TTS disabled");
-            },
-          ),
-          if (widget.sessionId != null)
-            IconButton(
-              icon: Icon(Icons.pause_rounded, size: UIUtils.iconSize(context, 20), color: Colors.orange),
-              tooltip: 'Pause Session Audio',
-              onPressed: _pauseSessionAudio,
+    return KeypadInstructionWrapper(
+      screenName: 'Audio library',
+      labels: {
+        0: 'Back',
+        1: 'Refresh Audio Files',
+        2: 'Upload Audio',
+        3: 'Toggle Text to Speech',
+        if (widget.sessionId != null) 4: 'Pause Session Audio',
+      },
+      actions: {
+        0: () => Navigator.pop(context),
+        1: _loadAudioFiles,
+        2: _uploadAudioFile,
+        3: _toggleTts,
+        if (widget.sessionId != null) 4: _pauseSessionAudio,
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(
+            widget.sessionId != null
+                ? 'Audio - Session ${widget.sessionId}'
+                : 'Audio Library',
+            style: TextStyle(
+              fontSize: UIUtils.fontSize(context, 16),
+              fontWeight: FontWeight.w600,
             ),
-        ],
-      ),
-      backgroundColor: UIUtils.backgroundColor,
-      body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(),
-            )
-          : Column(
-              children: [
-                if (_isUploading)
-                  const LinearProgressIndicator(),
-                
-                Padding(
-                  padding: UIUtils.paddingAll(context, compact ? 6 : 10),
-                  child: ElevatedButton.icon(
-                    onPressed: _isUploading ? null : _uploadAudioFile,
-                    icon: Icon(Icons.upload_file_rounded, size: UIUtils.iconSize(context, 18)),
-                    label: Text(
-                      compact ? 'Upload Audio' : 'Upload New Audio',
-                      style: TextStyle(fontSize: UIUtils.fontSize(context, compact ? 12 : 14), fontWeight: FontWeight.w600),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: UIUtils.primaryColor,
-                      foregroundColor: Colors.white,
-                      padding: UIUtils.paddingSymmetric(context, vertical: compact ? 10 : 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(compact ? 8 : 12)),
-                      elevation: 0,
-                    ),
-                  ),
+          ),
+          backgroundColor: UIUtils.cardColor,
+          foregroundColor: UIUtils.textColor,
+          elevation: 0,
+          toolbarHeight: tiny ? 40 : null,
+          actions: [
+            IconButton(
+              icon: Icon(
+                _ttsEnabled
+                    ? Icons.volume_up_rounded
+                    : Icons.volume_off_rounded,
+                size: UIUtils.iconSize(context, 20),
+                color: UIUtils.accentColor,
+              ),
+              tooltip: _ttsEnabled
+                  ? 'Turn text-to-speech off'
+                  : 'Turn text-to-speech on',
+              onPressed: _toggleTts,
+            ),
+            if (widget.sessionId != null)
+              IconButton(
+                icon: Icon(
+                  Icons.pause_rounded,
+                  size: UIUtils.iconSize(context, 20),
+                  color: Colors.orange,
                 ),
-                
-                Padding(
-                  padding: UIUtils.paddingSymmetric(context, horizontal: 10),
-                  child: Text(
-                    '${_audioFiles.length} Audio Files',
-                    style: TextStyle(
-                      fontSize: UIUtils.fontSize(context, 14),
-                      fontWeight: FontWeight.w700,
-                      color: UIUtils.textColor,
-                    ),
-                  ),
-                ),
-                
-                SizedBox(height: UIUtils.spacing(context, compact ? 2 : 4)),
-                
-                Expanded(
-                  child: _audioFiles.isEmpty
-                      ? Center(
-                          child: Text(
-                            'No audio files yet.\nUpload some!',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: UIUtils.fontSize(context, 13),
-                              color: Colors.grey,
-                            ),
-                          ),
-                        )
-                      : ListView.builder(
-                          padding: UIUtils.paddingAll(context, compact ? 4 : 8),
-                          itemCount: _audioFiles.length,
-                          itemBuilder: (context, index) {
-                            final audio = _audioFiles[index];
-                            final audioId = audio['audio_id'] ?? audio['id'];
-                            final title = audio['title'] ?? 'Untitled';
-                            final description = audio['description'] ?? '';
-                            final uploadedAt = audio['uploaded_at'] ?? '';
-                            final isPlaying = _playingAudioId == audioId;
-                            final isSelected = _selectedAudioId == audioId;
+                tooltip: 'Pause Session Audio',
+                onPressed: _pauseSessionAudio,
+              ),
+          ],
+        ),
+        backgroundColor: UIUtils.backgroundColor,
+        body: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : Column(
+                children: [
+                  if (_isUploading) const LinearProgressIndicator(),
 
-                            return Card(
-                              margin: EdgeInsets.only(
-                                bottom: UIUtils.spacing(context, compact ? 6 : 10),
-                                left: compact ? 4 : 10,
-                                right: compact ? 4 : 10,
+                  Padding(
+                    padding: UIUtils.paddingAll(context, compact ? 6 : 10),
+                    child: ElevatedButton.icon(
+                      onPressed: _isUploading ? null : _uploadAudioFile,
+                      icon: Icon(
+                        Icons.upload_file_rounded,
+                        size: UIUtils.iconSize(context, 18),
+                      ),
+                      label: Text(
+                        compact ? 'Upload Audio' : 'Upload New Audio',
+                        style: TextStyle(
+                          fontSize: UIUtils.fontSize(
+                            context,
+                            compact ? 12 : 14,
+                          ),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: UIUtils.primaryColor,
+                        foregroundColor: Colors.white,
+                        padding: UIUtils.paddingSymmetric(
+                          context,
+                          vertical: compact ? 10 : 14,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(compact ? 8 : 12),
+                        ),
+                        elevation: 0,
+                      ),
+                    ),
+                  ),
+
+                  Padding(
+                    padding: UIUtils.paddingSymmetric(context, horizontal: 10),
+                    child: Text(
+                      '${_audioFiles.length} Audio Files',
+                      style: TextStyle(
+                        fontSize: UIUtils.fontSize(context, 14),
+                        fontWeight: FontWeight.w700,
+                        color: UIUtils.textColor,
+                      ),
+                    ),
+                  ),
+
+                  SizedBox(height: UIUtils.spacing(context, compact ? 2 : 4)),
+
+                  Expanded(
+                    child: _audioFiles.isEmpty
+                        ? Center(
+                            child: Text(
+                              'No audio files yet.\nUpload some!',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: UIUtils.fontSize(context, 13),
+                                color: UIUtils.subtextColor,
                               ),
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                side: BorderSide(color: Colors.grey.withOpacity(0.1)),
-                              ),
-                              color: isSelected ? UIUtils.accentColor.withOpacity(0.05) : Colors.white,
-                              child: Padding(
-	                                padding: UIUtils.paddingAll(context, compact ? 8 : 12),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Icon(
-                                          isPlaying ? Icons.music_note_rounded : Icons.audiotrack_rounded,
-                                          color: isPlaying ? Colors.green : UIUtils.accentColor,
-                                          size: UIUtils.iconSize(context, compact ? 20 : 24),
-                                        ),
-                                        SizedBox(width: UIUtils.spacing(context, 6)),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              Row(
-                                                children: [
-                                                  Expanded(
-                                                    child: Text(
-                                                      title,
-                                                      style: TextStyle(
-                                                        fontSize: UIUtils.fontSize(context, 15),
-                                                        fontWeight: FontWeight.w700,
-                                                        color: UIUtils.textColor,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  if (isSelected)
-                                                    Container(
-                                                      padding: UIUtils.paddingSymmetric(context, horizontal: 6, vertical: 2),
-                                                      decoration: BoxDecoration(
-                                                        color: UIUtils.primaryColor,
-                                                        borderRadius: BorderRadius.circular(8),
-                                                      ),
+                            ),
+                          )
+                        : ListView.builder(
+                            padding: UIUtils.paddingAll(
+                              context,
+                              compact ? 4 : 8,
+                            ),
+                            itemCount: _audioFiles.length,
+                            itemBuilder: (context, index) {
+                              final audio = _audioFiles[index];
+                              final audioId = audio['audio_id'] ?? audio['id'];
+                              final title = audio['title'] ?? 'Untitled';
+                              final description = audio['description'] ?? '';
+                              final uploadedAt = audio['uploaded_at'] ?? '';
+                              final isPlaying = _playingAudioId == audioId;
+                              final isSelected = _selectedAudioId == audioId;
+
+                              return Card(
+                                margin: EdgeInsets.only(
+                                  bottom: UIUtils.spacing(
+                                    context,
+                                    compact ? 6 : 10,
+                                  ),
+                                  left: compact ? 4 : 10,
+                                  right: compact ? 4 : 10,
+                                ),
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  side: BorderSide(
+                                    color: Colors.grey.withOpacity(0.1),
+                                  ),
+                                ),
+                                color: isSelected
+                                    ? UIUtils.accentColor.withOpacity(0.12)
+                                    : UIUtils.cardColor,
+                                child: Padding(
+                                  padding: UIUtils.paddingAll(
+                                    context,
+                                    compact ? 8 : 12,
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Icon(
+                                            isPlaying
+                                                ? Icons.music_note_rounded
+                                                : Icons.audiotrack_rounded,
+                                            color: isPlaying
+                                                ? Colors.green
+                                                : UIUtils.accentColor,
+                                            size: UIUtils.iconSize(
+                                              context,
+                                              compact ? 20 : 24,
+                                            ),
+                                          ),
+                                          SizedBox(
+                                            width: UIUtils.spacing(context, 6),
+                                          ),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Row(
+                                                  children: [
+                                                    Expanded(
                                                       child: Text(
-                                                        'SELECTED',
+                                                        title,
                                                         style: TextStyle(
-                                                          color: Colors.white,
-                                                          fontSize: UIUtils.fontSize(context, 9),
-                                                          fontWeight: FontWeight.w800,
+                                                          fontSize:
+                                                              UIUtils.fontSize(
+                                                                context,
+                                                                15,
+                                                              ),
+                                                          fontWeight:
+                                                              FontWeight.w700,
+                                                          color:
+                                                              UIUtils.textColor,
                                                         ),
                                                       ),
                                                     ),
-                                                ],
-                                              ),
-                                              if (description.isNotEmpty && !tiny)
-                                                Text(
-                                                  description,
-                                                  style: TextStyle(
-                                                    fontSize: UIUtils.fontSize(context, 11),
-                                                    color: Colors.grey[600],
-                                                  ),
-                                                  maxLines: 1,
-                                                  overflow: TextOverflow.ellipsis,
+                                                    if (isSelected)
+                                                      Container(
+                                                        padding:
+                                                            UIUtils.paddingSymmetric(
+                                                              context,
+                                                              horizontal: 6,
+                                                              vertical: 2,
+                                                            ),
+                                                        decoration: BoxDecoration(
+                                                          color: UIUtils
+                                                              .primaryColor,
+                                                          borderRadius:
+                                                              BorderRadius.circular(
+                                                                8,
+                                                              ),
+                                                        ),
+                                                        child: Text(
+                                                          'SELECTED',
+                                                          style: TextStyle(
+                                                            color: Colors.white,
+                                                            fontSize:
+                                                                UIUtils.fontSize(
+                                                                  context,
+                                                                  9,
+                                                                ),
+                                                            fontWeight:
+                                                                FontWeight.w800,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                  ],
                                                 ),
-                                            ],
+                                                if (description.isNotEmpty &&
+                                                    !tiny)
+                                                  Text(
+                                                    description,
+                                                    style: TextStyle(
+                                                      fontSize:
+                                                          UIUtils.fontSize(
+                                                            context,
+                                                            11,
+                                                          ),
+                                                      color:
+                                                          UIUtils.subtextColor,
+                                                    ),
+                                                    maxLines: 1,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                  ),
+                                              ],
+                                            ),
                                           ),
-                                        ),
-                                      ],
-                                    ),
-                                    
-                                    if (uploadedAt.isNotEmpty && !tiny)
-                                      Padding(
-                                        padding: EdgeInsets.only(top: UIUtils.spacing(context, 4), left: 30 * UIUtils.scale(context)),
-                                        child: Text(
-                                          'Uploaded: $uploadedAt',
-                                          style: TextStyle(
-                                            fontSize: UIUtils.fontSize(context, 10),
-                                            color: Colors.grey[500],
-                                          ),
-                                        ),
+                                        ],
                                       ),
-                                    
-                                    SizedBox(height: UIUtils.spacing(context, compact ? 4 : 6)),
 
-                                    Align(
-                                      alignment: Alignment.centerRight,
-                                      child: Wrap(
-                                        alignment: WrapAlignment.end,
-                                        spacing: UIUtils.spacing(context, 4),
-                                        runSpacing: UIUtils.spacing(context, 4),
-                                        children: [
-                                        ElevatedButton.icon(
-                                          onPressed: () => _playAudioLocally(audioId, title),
-                                          icon: Icon(isPlaying ? Icons.stop_rounded : Icons.headphones_rounded, size: UIUtils.iconSize(context, 18)),
-                                          label: Text(
-                                            compact
-                                                ? (isPlaying ? 'Stop' : 'Preview')
-                                                : (isPlaying ? 'Stop Preview' : 'Preview (Only Me)'),
-                                            style: TextStyle(fontSize: UIUtils.fontSize(context, compact ? 11 : 12)),
+                                      if (uploadedAt.isNotEmpty && !tiny)
+                                        Padding(
+                                          padding: EdgeInsets.only(
+                                            top: UIUtils.spacing(context, 4),
+                                            left: 30 * UIUtils.scale(context),
                                           ),
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: isPlaying ? Colors.orange : Colors.indigo,
-                                            foregroundColor: Colors.white,
-                                            padding: UIUtils.paddingSymmetric(context, horizontal: compact ? 8 : 12, vertical: compact ? 5 : 6),
-                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                            elevation: 0,
+                                          child: Text(
+                                            'Uploaded: $uploadedAt',
+                                            style: TextStyle(
+                                              fontSize: UIUtils.fontSize(
+                                                context,
+                                                10,
+                                              ),
+                                              color: UIUtils.subtextColor,
+                                            ),
                                           ),
                                         ),
-                                        
-                                        if (widget.sessionId != null) ...[
-                                          ElevatedButton.icon(
-                                            onPressed: () => _selectForSession(audioId, title),
-                                            icon: Icon(Icons.campaign_rounded, size: UIUtils.iconSize(context, 18)),
-                                            label: Text(
-                                              compact ? 'Session' : 'Play in Session',
-                                              style: TextStyle(fontSize: UIUtils.fontSize(context, compact ? 11 : 12)),
-                                            ),
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor: isSelected ? UIUtils.primaryColor : Colors.green,
-                                              foregroundColor: Colors.white,
-                                              padding: UIUtils.paddingSymmetric(context, horizontal: compact ? 8 : 12, vertical: compact ? 5 : 6),
-                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                              elevation: 0,
-                                            ),
-                                          ),
-                                        ],
-                                        ],
+
+                                      SizedBox(
+                                        height: UIUtils.spacing(
+                                          context,
+                                          compact ? 4 : 6,
+                                        ),
                                       ),
-                                    ),
-                                  ],
+
+                                      Align(
+                                        alignment: Alignment.centerRight,
+                                        child: Wrap(
+                                          alignment: WrapAlignment.end,
+                                          spacing: UIUtils.spacing(context, 4),
+                                          runSpacing: UIUtils.spacing(
+                                            context,
+                                            4,
+                                          ),
+                                          children: [
+                                            ElevatedButton.icon(
+                                              onPressed: () =>
+                                                  _playAudioLocally(
+                                                    audioId,
+                                                    title,
+                                                  ),
+                                              icon: Icon(
+                                                isPlaying
+                                                    ? Icons.stop_rounded
+                                                    : Icons.headphones_rounded,
+                                                size: UIUtils.iconSize(
+                                                  context,
+                                                  18,
+                                                ),
+                                              ),
+                                              label: Text(
+                                                compact
+                                                    ? (isPlaying
+                                                          ? 'Stop'
+                                                          : 'Preview')
+                                                    : (isPlaying
+                                                          ? 'Stop Preview'
+                                                          : 'Preview (Only Me)'),
+                                                style: TextStyle(
+                                                  fontSize: UIUtils.fontSize(
+                                                    context,
+                                                    compact ? 11 : 12,
+                                                  ),
+                                                ),
+                                              ),
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: isPlaying
+                                                    ? Colors.orange
+                                                    : Colors.indigo,
+                                                foregroundColor: Colors.white,
+                                                padding:
+                                                    UIUtils.paddingSymmetric(
+                                                      context,
+                                                      horizontal: compact
+                                                          ? 8
+                                                          : 12,
+                                                      vertical: compact ? 5 : 6,
+                                                    ),
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                ),
+                                                elevation: 0,
+                                              ),
+                                            ),
+
+                                            if (widget.sessionId != null) ...[
+                                              ElevatedButton.icon(
+                                                onPressed: () =>
+                                                    _selectForSession(
+                                                      audioId,
+                                                      title,
+                                                    ),
+                                                icon: Icon(
+                                                  Icons.campaign_rounded,
+                                                  size: UIUtils.iconSize(
+                                                    context,
+                                                    18,
+                                                  ),
+                                                ),
+                                                label: Text(
+                                                  compact
+                                                      ? 'Session'
+                                                      : 'Play in Session',
+                                                  style: TextStyle(
+                                                    fontSize: UIUtils.fontSize(
+                                                      context,
+                                                      compact ? 11 : 12,
+                                                    ),
+                                                  ),
+                                                ),
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor: isSelected
+                                                      ? UIUtils.primaryColor
+                                                      : Colors.green,
+                                                  foregroundColor: Colors.white,
+                                                  padding:
+                                                      UIUtils.paddingSymmetric(
+                                                        context,
+                                                        horizontal: compact
+                                                            ? 8
+                                                            : 12,
+                                                        vertical: compact
+                                                            ? 5
+                                                            : 6,
+                                                      ),
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          8,
+                                                        ),
+                                                  ),
+                                                  elevation: 0,
+                                                ),
+                                              ),
+                                            ],
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            );
-                          },
-                        ),
-                ),
-              ],
-            ),
+                              );
+                            },
+                          ),
+                  ),
+                ],
+              ),
+      ),
     );
   }
 }
-
 
 /// ──────────────────────────────────────────────────────────────────────────────
 /// Offline Audio Library – Sessions/Classes List
@@ -802,7 +1060,8 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
       _isTeacher = (prefs.getString('role') ?? '').toLowerCase() == 'teacher';
       _currentUserId = prefs.getInt('user_id');
       _userInfoLoaded = true;
-      _isLoading = !_sessionsLoaded; // hide spinner only if sessions are also done
+      _isLoading =
+          !_sessionsLoaded; // hide spinner only if sessions are also done
     });
   }
 
@@ -813,16 +1072,20 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
       final result = await ApiService.getActiveSessions();
       if (result != null && mounted) {
         setState(() {
-          _sessions = result.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+          _sessions = result
+              .map((e) => Map<String, dynamic>.from(e as Map))
+              .toList();
         });
       }
     } catch (e) {
       print('[OFFLINE LIB] Error loading sessions: $e');
     } finally {
-      if (mounted) setState(() {
-        _sessionsLoaded = true;
-        _isLoading = !_userInfoLoaded; // hide spinner only if user info is also done
-      });
+      if (mounted)
+        setState(() {
+          _sessionsLoaded = true;
+          _isLoading =
+              !_userInfoLoaded; // hide spinner only if user info is also done
+        });
     }
   }
 
@@ -855,7 +1118,6 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
       return title.contains(query);
     }).toList();
 
-    
     final matches = exact.isNotEmpty ? exact : partial;
     if (matches.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -866,7 +1128,7 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
 
     _openClassAudio(matches.first);
     _searchController.clear();
-}
+  }
 
   /// Opens the personal (teacher) or global (student) audio library.
   void _openAllAudioFiles() {
@@ -910,381 +1172,423 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
         0: () => Navigator.of(context).pop(),
       },
       child: Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Offline Audio Library',
-          style: TextStyle(
-            fontSize: UIUtils.fontSize(context, 18),
-            fontWeight: FontWeight.w600,
+        appBar: AppBar(
+          title: Text(
+            'Offline Audio Library',
+            style: TextStyle(
+              fontSize: UIUtils.fontSize(context, 18),
+              fontWeight: FontWeight.w600,
+            ),
           ),
-        ),
-        backgroundColor: UIUtils.cardColor,
-        foregroundColor: UIUtils.textColor,
-        elevation: 0,
-        toolbarHeight: tiny ? 40 : null,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.refresh_rounded,
+          backgroundColor: UIUtils.cardColor,
+          foregroundColor: UIUtils.textColor,
+          elevation: 0,
+          toolbarHeight: tiny ? 40 : null,
+          actions: [
+            IconButton(
+              icon: Icon(
+                Icons.refresh_rounded,
                 size: UIUtils.iconSize(context, 20),
-                color: UIUtils.accentColor),
-            tooltip: 'Refresh',
-            onPressed: () {
+                color: UIUtils.accentColor,
+              ),
+              tooltip: 'Refresh',
+              onPressed: () {
                 setState(() {
                   _sessionsLoaded = false;
                   _isLoading = true;
                 });
                 _loadSessions();
               },
-          ),
-        ],
-      ),
-      backgroundColor: UIUtils.backgroundColor,
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: UIUtils.paddingAll(context, 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // ── Instruction ──────────────────────────────────────
-                  Container(
-                    padding: UIUtils.paddingAll(context, 12),
-                    decoration: BoxDecoration(
-                      color: UIUtils.accentColor.withOpacity(0.08),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                          color: UIUtils.accentColor.withOpacity(0.2)),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(Icons.info_outline_rounded,
-                            color: UIUtils.accentColor,
-                            size: UIUtils.iconSize(context, 20)),
-                        SizedBox(width: UIUtils.spacing(context, 8)),
-                        Expanded(
-                          child: Text(
-                            'Select a class to view and play its audio files.',
-                            style: TextStyle(
-                              fontSize: UIUtils.fontSize(context, 13),
-                              color: UIUtils.textColor,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  SizedBox(height: UIUtils.spacing(context, 14)),
-
-                  // ── Search by Session Name ─────────────────────────────
-                  Container(
-                    padding: UIUtils.paddingAll(context, 12),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      border:
-                          Border.all(color: Colors.grey.withOpacity(0.15)),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Search Class by Name',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: UIUtils.fontSize(context, 14),
-                            color: UIUtils.textColor,
-                          ),
-                        ),
-                        SizedBox(height: UIUtils.spacing(context, 8)),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: TextField(
-                                controller: _searchController,
-                                focusNode: _searchFocusNode,
-                                decoration: InputDecoration(
-                                  hintText: 'Enter Session/Class Name',
-                                  hintStyle: TextStyle(
-                                      fontSize:
-                                          UIUtils.fontSize(context, 13)),
-                                  prefixIcon: const Icon(Icons.search,
-                                      size: 18),
-                                  isDense: true,
-                                  contentPadding:
-                                      const EdgeInsets.symmetric(
-                                          vertical: 10, horizontal: 12),
-                                  border: OutlineInputBorder(
-                                    borderRadius:
-                                        BorderRadius.circular(10),
-                                    borderSide: BorderSide(
-                                        color: Colors.grey.shade300),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius:
-                                        BorderRadius.circular(10),
-                                    borderSide: BorderSide(
-                                        color: UIUtils.accentColor,
-                                        width: 1.5),
-                                  ),
-                                ),
-                                onSubmitted: (_) => _searchByName(),
-                              ),
-                            ),
-                            SizedBox(width: UIUtils.spacing(context, 8)),
-                            ElevatedButton.icon(
-                              onPressed: _searchByName,
-                              icon: Icon(Icons.arrow_forward_rounded,
-                                  size: UIUtils.iconSize(context, 16)),
-                              label: Text("Go",
-                                  style: TextStyle(
-                                      fontSize:
-                                          UIUtils.fontSize(context, 13))),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: UIUtils.primaryColor,
-                                foregroundColor: Colors.white,
-                                padding: UIUtils.paddingSymmetric(context,
-                                    horizontal: 16, vertical: 12),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                elevation: 0,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  SizedBox(height: UIUtils.spacing(context, 16)),
-
-                  // ── Personal / All Audio Library ──────────────────
-                  Card(
-                    margin: EdgeInsets.only(bottom: UIUtils.spacing(context, 16)),
-                    color: UIUtils.accentColor.withOpacity(0.08),
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      side: BorderSide(color: UIUtils.accentColor.withOpacity(0.3)),
-                    ),
-                    child: InkWell(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => ClassAudioScreen(
-                              sessionId: 0, // 0 simply means 'Not a specific class'
-                              sessionTitle: _isTeacher ? 'My Audio Library' : 'All Audio Files',
-                              teacherId: _isTeacher ? _currentUserId : null,
-                              isTeacher: _isTeacher,
-                            ),
-                          ),
-                        );
-                      },
-                      borderRadius: BorderRadius.circular(12),
-                      child: Padding(
-                        padding: UIUtils.paddingAll(context, 14),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 44 * UIUtils.scale(context),
-                              height: 44 * UIUtils.scale(context),
-                              decoration: BoxDecoration(
-                                color: UIUtils.accentColor.withOpacity(0.15),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Icon(Icons.library_music_rounded,
-                                  color: UIUtils.accentColor,
-                                  size: UIUtils.iconSize(context, 22)),
-                            ),
-                            SizedBox(width: UIUtils.spacing(context, 12)),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    _isTeacher ? 'My Audio Library' : 'All Audio Files',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: UIUtils.fontSize(context, 15),
-                                      color: UIUtils.textColor,
-                                    ),
-                                  ),
-                                  SizedBox(height: UIUtils.spacing(context, 3)),
-                                  Text(
-                                    _isTeacher ? 'Manage and upload your audio files' : 'Browse all uploaded audio files',
-                                    style: TextStyle(
-                                      fontSize: UIUtils.fontSize(context, 12),
-                                      color: Colors.grey.shade700,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Icon(Icons.arrow_forward_ios_rounded,
-                                color: UIUtils.accentColor,
-                                size: UIUtils.iconSize(context, 16)),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  // ── Classes / Sessions Header ────────────────────────
-                  Row(
-                    children: [
-                      Icon(Icons.class_rounded,
-                          size: UIUtils.iconSize(context, 20),
-                          color: UIUtils.accentColor),
-                      SizedBox(width: UIUtils.spacing(context, 6)),
-                      Text(
-                        'Active Classes',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: UIUtils.fontSize(context, 16),
-                          color: UIUtils.textColor,
-                        ),
-                      ),
-                      const Spacer(),
-                      Text(
-                        '${_sessions.length} found',
-                        style: TextStyle(
-                          fontSize: UIUtils.fontSize(context, 12),
-                          color: UIUtils.subtextColor,
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  SizedBox(height: UIUtils.spacing(context, 10)),
-
-                  // ── Sessions List ────────────────────────────────────
-                  if (_sessions.isEmpty)
+            ),
+          ],
+        ),
+        backgroundColor: UIUtils.backgroundColor,
+        body: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : SingleChildScrollView(
+                padding: UIUtils.paddingAll(context, 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // ── Instruction ──────────────────────────────────────
                     Container(
-                      padding: UIUtils.paddingAll(context, 32),
-                      alignment: Alignment.center,
-                      child: Column(
+                      padding: UIUtils.paddingAll(context, 12),
+                      decoration: BoxDecoration(
+                        color: UIUtils.accentColor.withOpacity(0.08),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: UIUtils.accentColor.withOpacity(0.2),
+                        ),
+                      ),
+                      child: Row(
                         children: [
-                          Icon(Icons.school_outlined,
-                              size: UIUtils.iconSize(context, 48),
-                              color: Colors.grey.shade400),
-                          SizedBox(
-                              height: UIUtils.spacing(context, 8)),
-                          Text(
-                            'No active classes found.',
-                            style: TextStyle(
-                              color: Colors.grey.shade600,
-                              fontSize: UIUtils.fontSize(context, 14),
-                            ),
+                          Icon(
+                            Icons.info_outline_rounded,
+                            color: UIUtils.accentColor,
+                            size: UIUtils.iconSize(context, 20),
                           ),
-                          SizedBox(
-                              height: UIUtils.spacing(context, 6)),
-                          Text(
-                            'Use "Search by Session Name" above to access a class quickly.',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: Colors.grey.shade500,
-                              fontSize: UIUtils.fontSize(context, 12),
+                          SizedBox(width: UIUtils.spacing(context, 8)),
+                          Expanded(
+                            child: Text(
+                              'Select a class to view and play its audio files.',
+                              style: TextStyle(
+                                fontSize: UIUtils.fontSize(context, 13),
+                                color: UIUtils.textColor,
+                              ),
                             ),
                           ),
                         ],
                       ),
-                    )
-                  else
-                    ...List.generate(_sessions.length, (i) {
-                      final session = _sessions[i];
-                      final title =
-                          session['title'] ?? 'Session ${session['session_id']}';
-                      final sessionId = session['session_id'] ?? 0;
+                    ),
 
-                      return Card(
-                        margin: EdgeInsets.only(
-                            bottom: UIUtils.spacing(context, 8)),
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          side: BorderSide(
-                              color: Colors.grey.withOpacity(0.12)),
+                    SizedBox(height: UIUtils.spacing(context, 14)),
+
+                    // ── Search by Session Name ─────────────────────────────
+                    Container(
+                      padding: UIUtils.paddingAll(context, 12),
+                      decoration: BoxDecoration(
+                        color: UIUtils.cardColor,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: UIUtils.isHighContrast
+                              ? UIUtils.accentColor
+                              : Colors.grey.withOpacity(0.15),
                         ),
-                        color: Colors.white,
-                        child: InkWell(
-                          onTap: () => _openClassAudio(session),
-                          borderRadius: BorderRadius.circular(12),
-                          child: Padding(
-                            padding: UIUtils.paddingAll(context, 14),
-                            child: Row(
-                              children: [
-                                // Icon
-                                Container(
-                                  width: 44 * UIUtils.scale(context),
-                                  height: 44 * UIUtils.scale(context),
-                                  decoration: BoxDecoration(
-                                    color: UIUtils.accentColor
-                                        .withOpacity(0.1),
-                                    borderRadius:
-                                        BorderRadius.circular(10),
-                                  ),
-                                  child: Icon(
-                                    Icons.library_music_rounded,
-                                    color: UIUtils.accentColor,
-                                    size:
-                                        UIUtils.iconSize(context, 22),
-                                  ),
-                                ),
-                                SizedBox(
-                                    width:
-                                        UIUtils.spacing(context, 12)),
-                                // Info
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        title,
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w700,
-                                          fontSize: UIUtils.fontSize(
-                                              context, 15),
-                                          color: UIUtils.textColor,
-                                        ),
-                                        maxLines: 1,
-                                        overflow:
-                                            TextOverflow.ellipsis,
-                                      ),
-                                      SizedBox(
-                                          height: UIUtils.spacing(
-                                              context, 3)),
-                                      Text(
-                                        'Session #$sessionId',
-                                        style: TextStyle(
-                                          fontSize: UIUtils.fontSize(
-                                              context, 11),
-                                          color: Colors.grey.shade600,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Icon(Icons.chevron_right_rounded,
-                                    color: Colors.grey.shade400,
-                                    size:
-                                        UIUtils.iconSize(context, 22)),
-                              ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Search Class by Name',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: UIUtils.fontSize(context, 14),
+                              color: UIUtils.textColor,
                             ),
                           ),
+                          SizedBox(height: UIUtils.spacing(context, 8)),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: TextField(
+                                  controller: _searchController,
+                                  focusNode: _searchFocusNode,
+                                  decoration: InputDecoration(
+                                    hintText: 'Enter Session/Class Name',
+                                    hintStyle: TextStyle(
+                                      fontSize: UIUtils.fontSize(context, 13),
+                                    ),
+                                    prefixIcon: const Icon(
+                                      Icons.search,
+                                      size: 18,
+                                    ),
+                                    isDense: true,
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      vertical: 10,
+                                      horizontal: 12,
+                                    ),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                      borderSide: BorderSide(
+                                        color: Colors.grey.shade300,
+                                      ),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                      borderSide: BorderSide(
+                                        color: UIUtils.accentColor,
+                                        width: 1.5,
+                                      ),
+                                    ),
+                                  ),
+                                  onSubmitted: (_) => _searchByName(),
+                                ),
+                              ),
+                              SizedBox(width: UIUtils.spacing(context, 8)),
+                              ElevatedButton.icon(
+                                onPressed: _searchByName,
+                                icon: Icon(
+                                  Icons.arrow_forward_rounded,
+                                  size: UIUtils.iconSize(context, 16),
+                                ),
+                                label: Text(
+                                  "Go",
+                                  style: TextStyle(
+                                    fontSize: UIUtils.fontSize(context, 13),
+                                  ),
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: UIUtils.primaryColor,
+                                  foregroundColor: Colors.white,
+                                  padding: UIUtils.paddingSymmetric(
+                                    context,
+                                    horizontal: 16,
+                                    vertical: 12,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  elevation: 0,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    SizedBox(height: UIUtils.spacing(context, 16)),
+
+                    // ── Personal / All Audio Library ──────────────────
+                    Card(
+                      margin: EdgeInsets.only(
+                        bottom: UIUtils.spacing(context, 16),
+                      ),
+                      color: UIUtils.accentColor.withOpacity(0.08),
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: BorderSide(
+                          color: UIUtils.accentColor.withOpacity(0.3),
                         ),
-                      );
-                    }),
-                ],
+                      ),
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => ClassAudioScreen(
+                                sessionId:
+                                    0, // 0 simply means 'Not a specific class'
+                                sessionTitle: _isTeacher
+                                    ? 'My Audio Library'
+                                    : 'All Audio Files',
+                                teacherId: _isTeacher ? _currentUserId : null,
+                                isTeacher: _isTeacher,
+                              ),
+                            ),
+                          );
+                        },
+                        borderRadius: BorderRadius.circular(12),
+                        child: Padding(
+                          padding: UIUtils.paddingAll(context, 14),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 44 * UIUtils.scale(context),
+                                height: 44 * UIUtils.scale(context),
+                                decoration: BoxDecoration(
+                                  color: UIUtils.accentColor.withOpacity(0.15),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Icon(
+                                  Icons.library_music_rounded,
+                                  color: UIUtils.accentColor,
+                                  size: UIUtils.iconSize(context, 22),
+                                ),
+                              ),
+                              SizedBox(width: UIUtils.spacing(context, 12)),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      _isTeacher
+                                          ? 'My Audio Library'
+                                          : 'All Audio Files',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: UIUtils.fontSize(context, 15),
+                                        color: UIUtils.textColor,
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      height: UIUtils.spacing(context, 3),
+                                    ),
+                                    Text(
+                                      _isTeacher
+                                          ? 'Manage and upload your audio files'
+                                          : 'Browse all uploaded audio files',
+                                      style: TextStyle(
+                                        fontSize: UIUtils.fontSize(context, 12),
+                                        color: UIUtils.subtextColor,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Icon(
+                                Icons.arrow_forward_ios_rounded,
+                                color: UIUtils.accentColor,
+                                size: UIUtils.iconSize(context, 16),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // ── Classes / Sessions Header ────────────────────────
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.class_rounded,
+                          size: UIUtils.iconSize(context, 20),
+                          color: UIUtils.accentColor,
+                        ),
+                        SizedBox(width: UIUtils.spacing(context, 6)),
+                        Text(
+                          'Active Classes',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: UIUtils.fontSize(context, 16),
+                            color: UIUtils.textColor,
+                          ),
+                        ),
+                        const Spacer(),
+                        Text(
+                          '${_sessions.length} found',
+                          style: TextStyle(
+                            fontSize: UIUtils.fontSize(context, 12),
+                            color: UIUtils.subtextColor,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    SizedBox(height: UIUtils.spacing(context, 10)),
+
+                    // ── Sessions List ────────────────────────────────────
+                    if (_sessions.isEmpty)
+                      Container(
+                        padding: UIUtils.paddingAll(context, 32),
+                        alignment: Alignment.center,
+                        child: Column(
+                          children: [
+                            Icon(
+                              Icons.school_outlined,
+                              size: UIUtils.iconSize(context, 48),
+                              color: UIUtils.subtextColor,
+                            ),
+                            SizedBox(height: UIUtils.spacing(context, 8)),
+                            Text(
+                              'No active classes found.',
+                              style: TextStyle(
+                                color: UIUtils.subtextColor,
+                                fontSize: UIUtils.fontSize(context, 14),
+                              ),
+                            ),
+                            SizedBox(height: UIUtils.spacing(context, 6)),
+                            Text(
+                              'Use "Search by Session Name" above to access a class quickly.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: UIUtils.subtextColor,
+                                fontSize: UIUtils.fontSize(context, 12),
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    else
+                      ...List.generate(_sessions.length, (i) {
+                        final session = _sessions[i];
+                        final title =
+                            session['title'] ??
+                            'Session ${session['session_id']}';
+                        final sessionId = session['session_id'] ?? 0;
+
+                        return Card(
+                          margin: EdgeInsets.only(
+                            bottom: UIUtils.spacing(context, 8),
+                          ),
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            side: BorderSide(
+                              color: UIUtils.isHighContrast
+                                  ? UIUtils.accentColor
+                                  : Colors.grey.withOpacity(0.12),
+                            ),
+                          ),
+                          color: UIUtils.cardColor,
+                          child: InkWell(
+                            onTap: () => _openClassAudio(session),
+                            borderRadius: BorderRadius.circular(12),
+                            child: Padding(
+                              padding: UIUtils.paddingAll(context, 14),
+                              child: Row(
+                                children: [
+                                  // Icon
+                                  Container(
+                                    width: 44 * UIUtils.scale(context),
+                                    height: 44 * UIUtils.scale(context),
+                                    decoration: BoxDecoration(
+                                      color: UIUtils.accentColor.withOpacity(
+                                        0.1,
+                                      ),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: Icon(
+                                      Icons.library_music_rounded,
+                                      color: UIUtils.accentColor,
+                                      size: UIUtils.iconSize(context, 22),
+                                    ),
+                                  ),
+                                  SizedBox(width: UIUtils.spacing(context, 12)),
+                                  // Info
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          title,
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: UIUtils.fontSize(
+                                              context,
+                                              15,
+                                            ),
+                                            color: UIUtils.textColor,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        SizedBox(
+                                          height: UIUtils.spacing(context, 3),
+                                        ),
+                                        Text(
+                                          'Session #$sessionId',
+                                          style: TextStyle(
+                                            fontSize: UIUtils.fontSize(
+                                              context,
+                                              11,
+                                            ),
+                                            color: UIUtils.subtextColor,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Icon(
+                                    Icons.chevron_right_rounded,
+                                    color: UIUtils.subtextColor,
+                                    size: UIUtils.iconSize(context, 22),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      }),
+                  ],
+                ),
               ),
-            ),
       ),
     );
   }
 }
-
 
 /// ──────────────────────────────────────────────────────────────────────────────
 /// Class Audio Screen
@@ -1312,7 +1616,6 @@ class ClassAudioScreen extends StatefulWidget {
 }
 
 class _ClassAudioScreenState extends State<ClassAudioScreen> {
-  final FlutterTts _tts = FlutterTts();
   final AudioPlayer _audioPlayer = AudioPlayer();
 
   List<Map<String, dynamic>> _audioFiles = [];
@@ -1341,7 +1644,6 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
     _setupAudioListeners();
   }
 
-
   Future<void> _loadTeacherSessions() async {
     final sessions = await ApiService.getActiveSessions();
     if (sessions != null && mounted) {
@@ -1352,7 +1654,6 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
       });
     }
   }
-
 
   void _setupAudioListeners() {
     _audioPlayer.onPositionChanged.listen((pos) {
@@ -1383,21 +1684,26 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
     setState(() => _isLoading = true);
 
     try {
-
-      
-      print('[CLASS AUDIO] Fetching audio list... teacherId=$_resolvedTeacherId sessionId=${widget.sessionId}');
+      print(
+        '[CLASS AUDIO] Fetching audio list... teacherId=$_resolvedTeacherId sessionId=${widget.sessionId}',
+      );
       final result = widget.sessionId == 0
           ? await ApiService.getAudioList()
           : await ApiService.getAudioListBySession(widget.sessionId);
-      print('[CLASS AUDIO] getAudioList result type=${result?.runtimeType} count=${result?.length}');
-
+      print(
+        '[CLASS AUDIO] getAudioList result type=${result?.runtimeType} count=${result?.length}',
+      );
 
       if (result == null) {
-        print('[CLASS AUDIO] API returned null - check backend connection and user_id param');
+        print(
+          '[CLASS AUDIO] API returned null - check backend connection and user_id param',
+        );
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Could not load audio files. Check network & login.'),
+              content: Text(
+                'Could not load audio files. Check network & login.',
+              ),
               backgroundColor: Colors.orange,
               duration: Duration(seconds: 5),
             ),
@@ -1414,9 +1720,13 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
 
         print('[CLASS AUDIO] Total files from API: ${allFiles.length}');
 
-        if (widget.sessionId == 0 && _resolvedTeacherId != null){
+        if (widget.sessionId == 0 && _resolvedTeacherId != null) {
           allFiles = allFiles
-              .where((f) => f['uploaded_by']?.toString() == _resolvedTeacherId.toString())
+              .where(
+                (f) =>
+                    f['uploaded_by']?.toString() ==
+                    _resolvedTeacherId.toString(),
+              )
               .toList();
         }
 
@@ -1424,11 +1734,14 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
           _audioFiles = allFiles;
         });
         await _speakIfEnabled(
-            "Found ${_audioFiles.length} audio files for ${widget.sessionTitle}");
+          "Found ${_audioFiles.length} audio files for ${widget.sessionTitle}",
+        );
       }
     } catch (e) {
       print('[CLASS AUDIO] Error loading files: $e');
-      _showError("Failed to load audio files: $e");
+      _showError(
+        ApiService.mapFailure(error: e, context: 'audio list').message,
+      );
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -1514,9 +1827,17 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
 
   Future<void> _speakIfEnabled(String text) async {
     if (_ttsEnabled) {
-      try {
-        await _tts.speak(text);
-      } catch (_) {}
+      await TtsService.speak(text);
+    }
+  }
+
+  void _toggleTts() {
+    setState(() => _ttsEnabled = !_ttsEnabled);
+    TtsService.configure(enabled: _ttsEnabled);
+    if (_ttsEnabled) {
+      _speakIfEnabled('Text to speech enabled');
+    } else {
+      TtsService.stop();
     }
   }
 
@@ -1525,11 +1846,13 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message), backgroundColor: Colors.red),
     );
+    _speakIfEnabled(message);
   }
 
   // ── Upload Audio (teacher only) ────────────────────────────────────────────
   Future<void> _uploadAudio() async {
     try {
+      await TtsService.stop();
       final result = await FilePicker.platform.pickFiles(
         type: FileType.audio,
         allowMultiple: false,
@@ -1538,7 +1861,7 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
 
       if (result == null || result.files.isEmpty) return;
       final file = result.files.first;
-      
+
       // On web, file.path is null but file.bytes is not.
       if (file.path == null && file.bytes == null) {
         _showError("Failed to read file data.");
@@ -1547,46 +1870,101 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
 
       // Show title input dialog
       final titleController = TextEditingController(
-          text: file.name.replaceAll(RegExp(r'\.[^.]+$'), ''));
+        text: file.name.replaceAll(RegExp(r'\.[^.]+$'), ''),
+      );
       final descController = TextEditingController();
+      final titleNode = FocusNode(debugLabel: 'class-upload-title');
+      final descriptionNode = FocusNode(debugLabel: 'class-upload-description');
+      final cancelNode = FocusNode(debugLabel: 'class-upload-cancel');
+      final uploadNode = FocusNode(debugLabel: 'class-upload-confirm');
+      final keypadController = KeypadNavigationController();
 
       final confirmed = await showDialog<bool>(
         context: context,
-        builder: (ctx) => AlertDialog(
-          title: const Text('Upload Audio'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: titleController,
-                decoration: const InputDecoration(
-                  labelText: 'Title',
-                  border: OutlineInputBorder(),
+        builder: (dialogContext) => KeypadInstructionWrapper(
+          screenName: 'Upload audio',
+          labels: const {
+            1: 'Edit Title',
+            2: 'Edit Description',
+            3: 'Upload',
+            0: 'Cancel',
+          },
+          actions: {
+            1: () => keypadController.enterTextEditing(titleNode),
+            2: () => keypadController.enterTextEditing(descriptionNode),
+            3: () => Navigator.pop(dialogContext, true),
+            0: () => Navigator.pop(dialogContext, false),
+          },
+          navigationController: keypadController,
+          focusTargets: [
+            KeypadFocusTarget(
+              node: titleNode,
+              label: 'Audio title',
+              isTextField: true,
+            ),
+            KeypadFocusTarget(
+              node: descriptionNode,
+              label: 'Audio description, optional',
+              isTextField: true,
+            ),
+            KeypadFocusTarget(
+              node: cancelNode,
+              label: 'Cancel upload',
+              onActivate: () => Navigator.pop(dialogContext, false),
+            ),
+            KeypadFocusTarget(
+              node: uploadNode,
+              label: 'Upload audio',
+              onActivate: () => Navigator.pop(dialogContext, true),
+            ),
+          ],
+          child: AlertDialog(
+            title: const Text('Upload Audio'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: titleController,
+                  focusNode: titleNode,
+                  onTap: () => keypadController.enterTextEditing(titleNode),
+                  decoration: const InputDecoration(
+                    labelText: 'Title',
+                    border: OutlineInputBorder(),
+                  ),
                 ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: descController,
+                  focusNode: descriptionNode,
+                  onTap: () =>
+                      keypadController.enterTextEditing(descriptionNode),
+                  decoration: const InputDecoration(
+                    labelText: 'Description (optional)',
+                    border: OutlineInputBorder(),
+                  ),
+                  maxLines: 2,
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                focusNode: cancelNode,
+                onPressed: () => Navigator.pop(dialogContext, false),
+                child: const Text('Cancel (0)'),
               ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: descController,
-                decoration: const InputDecoration(
-                  labelText: 'Description (optional)',
-                  border: OutlineInputBorder(),
-                ),
-                maxLines: 2,
+              ElevatedButton(
+                focusNode: uploadNode,
+                onPressed: () => Navigator.pop(dialogContext, true),
+                child: const Text('Upload (3)'),
               ),
             ],
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Upload'),
-            ),
-          ],
         ),
       );
+      titleNode.dispose();
+      descriptionNode.dispose();
+      cancelNode.dispose();
+      uploadNode.dispose();
 
       if (confirmed != true) return;
 
@@ -1597,43 +1975,60 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
           ? titleController.text.trim()
           : file.name;
       final desc = descController.text.trim();
-      final selectedSessionIds = <int>{if (widget.sessionId != 0) widget.sessionId};
+      final selectedSessionIds = <int>{
+        if (widget.sessionId != 0) widget.sessionId,
+      };
 
       if (widget.isTeacher && _teacherSessions.isNotEmpty) {
         final confirmedSessions = await showDialog<bool>(
           context: context,
-          builder: (ctx) => AlertDialog(
-            title: const Text('Add audio to sessions'),
-            content: StatefulBuilder(
-              builder: (context, setLocalState) => SizedBox(
-                width: 360,
-                child: ListView(
-                  shrinkWrap: true,
-                  children: _teacherSessions.map((session) {
-                    final id = session['session_id'] as int;
-                    final title = session['title']?.toString() ?? 'Session $id';
-                    return CheckboxListTile(
-                      value: selectedSessionIds.contains(id),
-                      title: Text(title),
-                      subtitle: Text('Session #$id'),
-                      onChanged: (checked) {
-                        setLocalState(() {
-                          if (checked == true) {
-                            selectedSessionIds.add(id);
-                          } else {
-                            selectedSessionIds.remove(id);
-                          }
-                        });
-                      },
-                    );
-                  }).toList(),
+          builder: (ctx) => KeypadInstructionWrapper(
+            screenName: 'Choose sessions for this audio',
+            labels: const {0: 'Cancel', 1: 'Confirm Selected Sessions'},
+            actions: {
+              0: () => Navigator.pop(ctx, false),
+              1: () => Navigator.pop(ctx, true),
+            },
+            child: AlertDialog(
+              title: const Text('Add audio to sessions'),
+              content: StatefulBuilder(
+                builder: (context, setLocalState) => SizedBox(
+                  width: 360,
+                  child: ListView(
+                    shrinkWrap: true,
+                    children: _teacherSessions.map((session) {
+                      final id = session['session_id'] as int;
+                      final title =
+                          session['title']?.toString() ?? 'Session $id';
+                      return CheckboxListTile(
+                        value: selectedSessionIds.contains(id),
+                        title: Text(title),
+                        subtitle: Text('Session #$id'),
+                        onChanged: (checked) {
+                          setLocalState(() {
+                            if (checked == true) {
+                              selectedSessionIds.add(id);
+                            } else {
+                              selectedSessionIds.remove(id);
+                            }
+                          });
+                        },
+                      );
+                    }).toList(),
+                  ),
                 ),
               ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx, false),
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(ctx, true),
+                  child: const Text('Confirm'),
+                ),
+              ],
             ),
-            actions: [
-              TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-              ElevatedButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Confirm')),
-            ],
           ),
         );
         if (confirmedSessions != true || selectedSessionIds.isEmpty) {
@@ -1675,7 +2070,9 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
       }
     } catch (e) {
       print('[UPLOAD] Error: $e');
-      _showError("Upload failed: $e");
+      _showError(
+        ApiService.mapFailure(error: e, context: 'audio upload').message,
+      );
     } finally {
       if (mounted) setState(() => _isUploadingAudio = false);
     }
@@ -1706,7 +2103,7 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
             sessionId: widget.sessionId,
             onUploadNew: () {
               Navigator.pop(context); // Close Dialog
-              _uploadAudio();         // Start normal upload
+              _uploadAudio(); // Start normal upload
             },
             onAddExisting: () {
               Navigator.pop(context); // Close Dialog
@@ -1715,7 +2112,9 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
                 MaterialPageRoute(
                   builder: (_) => SelectExistingAudioScreen(
                     sessionId: widget.sessionId,
-                    currentAudioIds: _audioFiles.map((e) => (e['audio_id'] ?? e['id']) as int).toSet(),
+                    currentAudioIds: _audioFiles
+                        .map((e) => (e['audio_id'] ?? e['id']) as int)
+                        .toSet(),
                     onAudioAdded: () {
                       _loadAudioFiles();
                     },
@@ -1733,6 +2132,7 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
   void dispose() {
     _audioPlayer.stop();
     _audioPlayer.dispose();
+    TtsService.stop();
     super.dispose();
   }
 
@@ -1752,25 +2152,25 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
             2: _handleAddAudio,
             3: _togglePlayPause,
             4: _stopAudio,
-            5: () {
-              setState(() => _ttsEnabled = !_ttsEnabled);
-              _speakIfEnabled(_ttsEnabled ? 'TTS enabled' : 'TTS disabled');
-            },
+            5: _toggleTts,
             7: () => _changeSpeed(-0.25),
             9: () => _changeSpeed(0.25),
-            0: () { _stopAudio(); Navigator.of(context).pop(); },
+            0: () {
+              _stopAudio();
+              Navigator.of(context).pop();
+            },
           }
         : <int, VoidCallback>{
             1: _loadAudioFiles,
             2: _togglePlayPause,
             3: _stopAudio,
-            4: () {
-              setState(() => _ttsEnabled = !_ttsEnabled);
-              _speakIfEnabled(_ttsEnabled ? 'TTS enabled' : 'TTS disabled');
-            },
+            4: _toggleTts,
             7: () => _changeSpeed(-0.25),
             9: () => _changeSpeed(0.25),
-            0: () { _stopAudio(); Navigator.of(context).pop(); },
+            0: () {
+              _stopAudio();
+              Navigator.of(context).pop();
+            },
           };
 
     return KeypadInstructionWrapper(
@@ -1778,381 +2178,366 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
       labels: labels,
       actions: actions,
       child: Scaffold(
-      appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-	            Text(
-	              widget.sessionTitle,
-	              style: TextStyle(
-	                fontSize: UIUtils.fontSize(context, 16),
-	                fontWeight: FontWeight.w700,
-	              ),
-	              maxLines: 1,
-	              overflow: TextOverflow.ellipsis,
-	            ),
-	            Text(
-	              'Audio Library • Session #${widget.sessionId}',
-              style: TextStyle(
-                fontSize: UIUtils.fontSize(context, 11),
-	                color: Colors.grey.shade600,
-	                fontWeight: FontWeight.w400,
-	              ),
-	              maxLines: 1,
-	              overflow: TextOverflow.ellipsis,
-	            ),
+        appBar: AppBar(
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                widget.sessionTitle,
+                style: TextStyle(
+                  fontSize: UIUtils.fontSize(context, 16),
+                  fontWeight: FontWeight.w700,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              Text(
+                'Audio Library • Session #${widget.sessionId}',
+                style: TextStyle(
+                  fontSize: UIUtils.fontSize(context, 11),
+                  color: UIUtils.subtextColor,
+                  fontWeight: FontWeight.w400,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+          backgroundColor: UIUtils.cardColor,
+          foregroundColor: UIUtils.textColor,
+          elevation: 0,
+          toolbarHeight: tiny ? 48 : 56,
+          actions: [
+            IconButton(
+              icon: Icon(
+                _ttsEnabled
+                    ? Icons.volume_up_rounded
+                    : Icons.volume_off_rounded,
+                size: UIUtils.iconSize(context, 20),
+                color: UIUtils.accentColor,
+              ),
+              tooltip: _ttsEnabled
+                  ? 'Turn text-to-speech off'
+                  : 'Turn text-to-speech on',
+              onPressed: _toggleTts,
+            ),
+            IconButton(
+              icon: Icon(
+                Icons.refresh_rounded,
+                size: UIUtils.iconSize(context, 20),
+                color: UIUtils.accentColor,
+              ),
+              tooltip: 'Refresh',
+              onPressed: _loadAudioFiles,
+            ),
           ],
         ),
-        backgroundColor: UIUtils.cardColor,
-        foregroundColor: UIUtils.textColor,
-        elevation: 0,
-        toolbarHeight: tiny ? 48 : 56,
-        actions: [
-          IconButton(
-            icon: Icon(
-              _ttsEnabled
-                  ? Icons.volume_up_rounded
-                  : Icons.volume_off_rounded,
-              size: UIUtils.iconSize(context, 20),
-              color: UIUtils.accentColor,
-            ),
-            tooltip: 'Toggle TTS',
-            onPressed: () {
-              setState(() => _ttsEnabled = !_ttsEnabled);
-              _speakIfEnabled(
-                  _ttsEnabled ? "TTS enabled" : "TTS disabled");
-            },
-          ),
-          IconButton(
-            icon: Icon(Icons.refresh_rounded,
-                size: UIUtils.iconSize(context, 20),
-                color: UIUtils.accentColor),
-            tooltip: 'Refresh',
-            onPressed: _loadAudioFiles,
-          ),
-        ],
-      ),
-      backgroundColor: UIUtils.backgroundColor,
-      // Upload FAB for teachers only
-	      floatingActionButton: widget.isTeacher
-	          ? compact
-	              ? FloatingActionButton(
-	                  onPressed: _isUploadingAudio ? null : _handleAddAudio,
-	                  backgroundColor: UIUtils.accentColor,
-	                  foregroundColor: Colors.white,
-	                  tooltip: _isUploadingAudio ? 'Uploading audio' : 'Upload Audio',
-	                  child: _isUploadingAudio
-	                      ? const SizedBox(
-	                          width: 18,
-	                          height: 18,
-	                          child: CircularProgressIndicator(
-	                              strokeWidth: 2, color: Colors.white))
-	                      : const Icon(Icons.upload_file_rounded),
-	                )
-	              : FloatingActionButton.extended(
-	              onPressed: _isUploadingAudio ? null : _handleAddAudio,
-	              icon: _isUploadingAudio
-	                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(
-                          strokeWidth: 2, color: Colors.white))
-                  : const Icon(Icons.upload_file_rounded),
-              label: Text(_isUploadingAudio ? 'Uploading…' : 'Upload Audio'),
-              backgroundColor: UIUtils.accentColor,
-              foregroundColor: Colors.white,
-	            )
-	          : null,
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Column(
-              children: [
-                // ── Now-Playing bar ─────────────────────────────────
-                if (_playingAudioId != null) _buildNowPlayingBar(),
+        backgroundColor: UIUtils.backgroundColor,
+        // Upload FAB for teachers only
+        floatingActionButton: widget.isTeacher
+            ? compact
+                  ? FloatingActionButton(
+                      onPressed: _isUploadingAudio ? null : _handleAddAudio,
+                      backgroundColor: UIUtils.accentColor,
+                      foregroundColor: Colors.white,
+                      tooltip: _isUploadingAudio
+                          ? 'Uploading audio'
+                          : 'Upload Audio',
+                      child: _isUploadingAudio
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Icon(Icons.upload_file_rounded),
+                    )
+                  : FloatingActionButton.extended(
+                      onPressed: _isUploadingAudio ? null : _handleAddAudio,
+                      icon: _isUploadingAudio
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Icon(Icons.upload_file_rounded),
+                      label: Text(
+                        _isUploadingAudio ? 'Uploading…' : 'Upload Audio',
+                      ),
+                      backgroundColor: UIUtils.accentColor,
+                      foregroundColor: Colors.white,
+                    )
+            : null,
+        body: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : Column(
+                children: [
+                  // ── Now-Playing bar ─────────────────────────────────
+                  if (_playingAudioId != null) _buildNowPlayingBar(),
 
-                // ── Upload progress ─────────────────────────────────
-                if (_isUploadingAudio)
-                  const LinearProgressIndicator(
-                      color: Colors.teal, minHeight: 3),
+                  // ── Upload progress ─────────────────────────────────
+                  if (_isUploadingAudio)
+                    const LinearProgressIndicator(
+                      color: Colors.teal,
+                      minHeight: 3,
+                    ),
 
-                // ── Header ──────────────────────────────────────────
-	                Padding(
-	                  padding: UIUtils.paddingAll(context, compact ? 8 : 12),
-	                  child: Row(
-                    children: [
-                      Icon(Icons.audiotrack_rounded,
+                  // ── Header ──────────────────────────────────────────
+                  Padding(
+                    padding: UIUtils.paddingAll(context, compact ? 8 : 12),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.audiotrack_rounded,
                           size: UIUtils.iconSize(context, 20),
-                          color: UIUtils.accentColor),
-                      SizedBox(width: UIUtils.spacing(context, 6)),
-	                      Expanded(
-	                        child: Text(
-	                          '${_audioFiles.length} Audio Files',
-	                          style: TextStyle(
-	                            fontSize: UIUtils.fontSize(context, compact ? 13 : 15),
-	                            fontWeight: FontWeight.w700,
-	                            color: UIUtils.textColor,
-	                          ),
-	                          maxLines: 1,
-	                          overflow: TextOverflow.ellipsis,
-	                        ),
-	                      ),
-                    ],
+                          color: UIUtils.accentColor,
+                        ),
+                        SizedBox(width: UIUtils.spacing(context, 6)),
+                        Expanded(
+                          child: Text(
+                            '${_audioFiles.length} Audio Files',
+                            style: TextStyle(
+                              fontSize: UIUtils.fontSize(
+                                context,
+                                compact ? 13 : 15,
+                              ),
+                              fontWeight: FontWeight.w700,
+                              color: UIUtils.textColor,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
 
-                // ── Audio list ──────────────────────────────────────
-                Expanded(
-                  child: _audioFiles.isEmpty
-	                      ? Center(
-	                          child: SingleChildScrollView(
-	                            padding: UIUtils.paddingAll(context, compact ? 8 : 16),
-	                            child: Column(
-	                              mainAxisSize: MainAxisSize.min,
-	                              mainAxisAlignment: MainAxisAlignment.center,
-	                            children: [
-	                              Icon(Icons.audiotrack_rounded,
-	                                  size: UIUtils.iconSize(context, compact ? 36 : 52),
-	                                  color: Colors.grey.shade400),
-	                              SizedBox(
-	                                  height:
-	                                      UIUtils.spacing(context, compact ? 6 : 10)),
-	                              Text(
-	                                widget.isTeacher
-	                                    ? 'No audio files for this class yet.'
-                                    : 'No audio files available yet.\nAsk your teacher to upload some!',
-                                textAlign: TextAlign.center,
-	                                style: TextStyle(
-	                                  fontSize:
-	                                      UIUtils.fontSize(context, compact ? 13 : 15),
-	                                  color: Colors.grey.shade600,
-	                                ),
-	                              ),
-	                              if (widget.isTeacher && !compact) ...[
-	                                SizedBox(
-	                                    height:
-	                                        UIUtils.spacing(context, 10)),
-                                ElevatedButton.icon(
-                                  onPressed: _uploadAudio,
-                                  icon: const Icon(
-                                      Icons.upload_file_rounded),
-                                  label:
-                                      const Text('Upload first audio'),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor:
-                                        UIUtils.accentColor,
-                                    foregroundColor: Colors.white,
+                  // ── Audio list ──────────────────────────────────────
+                  Expanded(
+                    child: _audioFiles.isEmpty
+                        ? Center(
+                            child: SingleChildScrollView(
+                              padding: UIUtils.paddingAll(
+                                context,
+                                compact ? 8 : 16,
+                              ),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.audiotrack_rounded,
+                                    size: UIUtils.iconSize(
+                                      context,
+                                      compact ? 36 : 52,
+                                    ),
+                                    color: UIUtils.subtextColor,
                                   ),
-                                ),
-                              ],
-                              SizedBox(
-                                  height:
-                                      UIUtils.spacing(context, 6)),
-	                              TextButton.icon(
-	                                onPressed: _loadAudioFiles,
-	                                icon: const Icon(Icons.refresh,
-	                                    size: 16),
-	                                label: const Text("Refresh"),
-	                              ),
-	                            ],
-	                            ),
-	                          ),
-	                        )
-                      : ListView.builder(
-                          padding: UIUtils.paddingAll(context, 8),
-                          itemCount: _audioFiles.length,
-                          itemBuilder: (context, index) {
-                            final audio = _audioFiles[index];
-                            final audioId = audio['audio_id'] ??
-                                audio['id'] ??
-                                0;
-                            final title =
-                                audio['title'] ?? 'Untitled';
-                            final description =
-                                audio['description'] ?? '';
-                            final duration =
-                                audio['duration'] as double?;
-                            final isCurrentlyPlaying =
-                                _playingAudioId == audioId;
-
-                            return Card(
-                              margin: EdgeInsets.only(
-                                bottom:
-                                    UIUtils.spacing(context, 8),
-                                left: 4,
-                                right: 4,
-                              ),
-                              elevation:
-                                  isCurrentlyPlaying ? 3 : 0,
-                              shape: RoundedRectangleBorder(
-                                borderRadius:
-                                    BorderRadius.circular(12),
-                                side: isCurrentlyPlaying
-                                    ? BorderSide(
-                                        color:
-                                            UIUtils.accentColor,
-                                        width: 2)
-                                    : BorderSide(
-                                        color: Colors.grey
-                                            .withOpacity(0.1)),
-                              ),
-                              color: isCurrentlyPlaying
-                                  ? UIUtils.accentColor
-                                      .withOpacity(0.05)
-                                  : Colors.white,
-                              child: InkWell(
-                                onTap: () => _playOrPauseAudio(
-                                    audioId, title),
-                                borderRadius:
-                                    BorderRadius.circular(12),
-                                child: Padding(
-                                  padding: UIUtils.paddingAll(
-                                      context, 12),
-                                  child: Row(
-                                    children: [
-                                      // Play/Pause icon
-                                      Container(
-                                        width: 46 *
-                                            UIUtils.scale(
-                                                context),
-                                        height: 46 *
-                                            UIUtils.scale(
-                                                context),
-                                        decoration: BoxDecoration(
-                                          color:
-                                              isCurrentlyPlaying
-                                                  ? (_isPlaying
-                                                      ? Colors
-                                                          .orange
-                                                      : Colors
-                                                          .green)
-                                                  : UIUtils
-                                                      .accentColor,
-                                          shape:
-                                              BoxShape.circle,
-                                        ),
-                                        child: Icon(
-                                          isCurrentlyPlaying &&
-                                                  _isPlaying
-                                              ? Icons
-                                                  .pause_rounded
-                                              : Icons
-                                                  .play_arrow_rounded,
-                                          color: Colors.white,
-                                          size:
-                                              UIUtils.iconSize(
-                                                  context, 24),
-                                        ),
+                                  SizedBox(
+                                    height: UIUtils.spacing(
+                                      context,
+                                      compact ? 6 : 10,
+                                    ),
+                                  ),
+                                  Text(
+                                    widget.isTeacher
+                                        ? 'No audio files for this class yet.'
+                                        : 'No audio files available yet.\nAsk your teacher to upload some!',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: UIUtils.fontSize(
+                                        context,
+                                        compact ? 13 : 15,
                                       ),
+                                      color: UIUtils.subtextColor,
+                                    ),
+                                  ),
+                                  if (widget.isTeacher && !compact) ...[
+                                    SizedBox(
+                                      height: UIUtils.spacing(context, 10),
+                                    ),
+                                    ElevatedButton.icon(
+                                      onPressed: _uploadAudio,
+                                      icon: const Icon(
+                                        Icons.upload_file_rounded,
+                                      ),
+                                      label: const Text('Upload first audio'),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: UIUtils.accentColor,
+                                        foregroundColor: Colors.white,
+                                      ),
+                                    ),
+                                  ],
+                                  SizedBox(height: UIUtils.spacing(context, 6)),
+                                  TextButton.icon(
+                                    onPressed: _loadAudioFiles,
+                                    icon: const Icon(Icons.refresh, size: 16),
+                                    label: const Text("Refresh"),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          )
+                        : ListView.builder(
+                            padding: UIUtils.paddingAll(context, 8),
+                            itemCount: _audioFiles.length,
+                            itemBuilder: (context, index) {
+                              final audio = _audioFiles[index];
+                              final audioId =
+                                  audio['audio_id'] ?? audio['id'] ?? 0;
+                              final title = audio['title'] ?? 'Untitled';
+                              final description = audio['description'] ?? '';
+                              final duration = audio['duration'] as double?;
+                              final isCurrentlyPlaying =
+                                  _playingAudioId == audioId;
 
-                                      SizedBox(
-                                          width:
-                                              UIUtils.spacing(
-                                                  context,
-                                                  10)),
+                              return Card(
+                                margin: EdgeInsets.only(
+                                  bottom: UIUtils.spacing(context, 8),
+                                  left: 4,
+                                  right: 4,
+                                ),
+                                elevation: isCurrentlyPlaying ? 3 : 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  side: isCurrentlyPlaying
+                                      ? BorderSide(
+                                          color: UIUtils.accentColor,
+                                          width: 2,
+                                        )
+                                      : BorderSide(
+                                          color: Colors.grey.withOpacity(0.1),
+                                        ),
+                                ),
+                                color: isCurrentlyPlaying
+                                    ? UIUtils.accentColor.withOpacity(0.12)
+                                    : UIUtils.cardColor,
+                                child: InkWell(
+                                  onTap: () =>
+                                      _playOrPauseAudio(audioId, title),
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Padding(
+                                    padding: UIUtils.paddingAll(context, 12),
+                                    child: Row(
+                                      children: [
+                                        // Play/Pause icon
+                                        Container(
+                                          width: 46 * UIUtils.scale(context),
+                                          height: 46 * UIUtils.scale(context),
+                                          decoration: BoxDecoration(
+                                            color: isCurrentlyPlaying
+                                                ? (_isPlaying
+                                                      ? Colors.orange
+                                                      : Colors.green)
+                                                : UIUtils.accentColor,
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: Icon(
+                                            isCurrentlyPlaying && _isPlaying
+                                                ? Icons.pause_rounded
+                                                : Icons.play_arrow_rounded,
+                                            color: Colors.white,
+                                            size: UIUtils.iconSize(context, 24),
+                                          ),
+                                        ),
 
-                                      // Title + description
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment
-                                                  .start,
-                                          children: [
-                                            Text(
-                                              title,
-                                              style: TextStyle(
-                                                fontSize: UIUtils
-                                                    .fontSize(
-                                                        context,
-                                                        14),
-                                                fontWeight:
-                                                    FontWeight
-                                                        .w700,
-                                                color: UIUtils
-                                                    .textColor,
-                                              ),
-                                              maxLines: 1,
-                                              overflow:
-                                                  TextOverflow
-                                                      .ellipsis,
-                                            ),
-                                            if (description
-                                                    .isNotEmpty &&
-                                                !tiny) ...[
-                                              SizedBox(
-                                                  height: UIUtils
-                                                      .spacing(
-                                                          context,
-                                                          2)),
+                                        SizedBox(
+                                          width: UIUtils.spacing(context, 10),
+                                        ),
+
+                                        // Title + description
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
                                               Text(
-                                                description,
-                                                style:
-                                                    TextStyle(
-                                                  fontSize: UIUtils
-                                                      .fontSize(
-                                                          context,
-                                                          11),
-                                                  color: Colors
-                                                          .grey[
-                                                      600],
+                                                title,
+                                                style: TextStyle(
+                                                  fontSize: UIUtils.fontSize(
+                                                    context,
+                                                    14,
+                                                  ),
+                                                  fontWeight: FontWeight.w700,
+                                                  color: UIUtils.textColor,
                                                 ),
                                                 maxLines: 1,
-                                                overflow:
-                                                    TextOverflow
-                                                        .ellipsis,
+                                                overflow: TextOverflow.ellipsis,
                                               ),
-                                            ],
-                                            if (duration !=
-                                                    null &&
-                                                !tiny) ...[
-                                              SizedBox(
-                                                  height: UIUtils
-                                                      .spacing(
-                                                          context,
-                                                          2)),
-                                              Text(
-                                                'Duration: ${_formatDuration(duration)}',
-                                                style:
-                                                    TextStyle(
-                                                  fontSize: UIUtils
-                                                      .fontSize(
-                                                          context,
-                                                          10),
-                                                  color: Colors
-                                                          .grey[
-                                                      500],
+                                              if (description.isNotEmpty &&
+                                                  !tiny) ...[
+                                                SizedBox(
+                                                  height: UIUtils.spacing(
+                                                    context,
+                                                    2,
+                                                  ),
                                                 ),
-                                              ),
-                                            ],
-                                          ],
-                                        ),
-                                      ),
-
-                                      // Stop button
-                                      if (isCurrentlyPlaying)
-                                        IconButton(
-                                          icon: Icon(
-                                              Icons
-                                                  .stop_rounded,
-                                              color:
-                                                  Colors.red,
-                                              size: UIUtils
-                                                  .iconSize(
+                                                Text(
+                                                  description,
+                                                  style: TextStyle(
+                                                    fontSize: UIUtils.fontSize(
                                                       context,
-                                                      24)),
-                                          tooltip: 'Stop',
-                                          onPressed:
-                                              _stopAudio,
+                                                      11,
+                                                    ),
+                                                    color: UIUtils.subtextColor,
+                                                  ),
+                                                  maxLines: 1,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                              ],
+                                              if (duration != null &&
+                                                  !tiny) ...[
+                                                SizedBox(
+                                                  height: UIUtils.spacing(
+                                                    context,
+                                                    2,
+                                                  ),
+                                                ),
+                                                Text(
+                                                  'Duration: ${_formatDuration(duration)}',
+                                                  style: TextStyle(
+                                                    fontSize: UIUtils.fontSize(
+                                                      context,
+                                                      10,
+                                                    ),
+                                                    color: UIUtils.subtextColor,
+                                                  ),
+                                                ),
+                                              ],
+                                            ],
+                                          ),
                                         ),
-                                    ],
+
+                                        // Stop button
+                                        if (isCurrentlyPlaying)
+                                          IconButton(
+                                            icon: Icon(
+                                              Icons.stop_rounded,
+                                              color: Colors.red,
+                                              size: UIUtils.iconSize(
+                                                context,
+                                                24,
+                                              ),
+                                            ),
+                                            tooltip: 'Stop',
+                                            onPressed: _stopAudio,
+                                          ),
+                                      ],
+                                    ),
                                   ),
                                 ),
-                              ),
-                            );
-                          },
-                        ),
-                ),
-              ],
-            ),
+                              );
+                            },
+                          ),
+                  ),
+                ],
+              ),
       ),
     );
   }
@@ -2160,8 +2545,9 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
   /// Now-playing bar with seek, speed, and transport controls.
   Widget _buildNowPlayingBar() {
     final bool compact = UIUtils.isTiny(context) || UIUtils.isShort(context);
-    final barColor =
-        _isPlaying ? Colors.deepPurple.shade700 : Colors.grey.shade800;
+    final barColor = _isPlaying
+        ? Colors.deepPurple.shade700
+        : Colors.grey.shade800;
 
     return Container(
       padding: EdgeInsets.fromLTRB(
@@ -2175,57 +2561,58 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Title + speed + time
-          Row(children: [
-            Icon(
-              _isPlaying ? Icons.music_note : Icons.audiotrack,
-              color: Colors.white,
-              size: 18,
-            ),
-            SizedBox(width: compact ? 4 : 6),
-            Expanded(
-              child: Text(
-                _playingAudioTitle ?? 'Audio',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: compact ? 12 : 14,
-                ),
-                overflow: TextOverflow.ellipsis,
+          Row(
+            children: [
+              Icon(
+                _isPlaying ? Icons.music_note : Icons.audiotrack,
+                color: Colors.white,
+                size: 18,
               ),
-            ),
-            Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-              decoration: BoxDecoration(
-                color: Colors.white24,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                '${_audioSpeed.toStringAsFixed(1)}×',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 11,
+              SizedBox(width: compact ? 4 : 6),
+              Expanded(
+                child: Text(
+                  _playingAudioTitle ?? 'Audio',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: compact ? 12 : 14,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
-            ),
-            if (!compact) ...[
-              const SizedBox(width: 6),
-              Text(
-                '${_formatDuration(_currentPosition)} / '
-                '${_totalDuration != null ? _formatDuration(_totalDuration!) : "--:--"}',
-                style:
-                    const TextStyle(color: Colors.white70, fontSize: 11),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.white24,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  '${_audioSpeed.toStringAsFixed(1)}×',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 11,
+                  ),
+                ),
               ),
+              if (!compact) ...[
+                const SizedBox(width: 6),
+                Text(
+                  '${_formatDuration(_currentPosition)} / '
+                  '${_totalDuration != null ? _formatDuration(_totalDuration!) : "--:--"}',
+                  style: const TextStyle(color: Colors.white70, fontSize: 11),
+                ),
+              ],
             ],
-          ]),
+          ),
 
           // Seek bar
           SliderTheme(
             data: SliderThemeData(
-	              trackHeight: compact ? 2.0 : 3.0,
-	              thumbShape:
-	                  RoundSliderThumbShape(enabledThumbRadius: compact ? 5.0 : 6.0),
+              trackHeight: compact ? 2.0 : 3.0,
+              thumbShape: RoundSliderThumbShape(
+                enabledThumbRadius: compact ? 5.0 : 6.0,
+              ),
               activeTrackColor: Colors.tealAccent,
               inactiveTrackColor: Colors.white30,
               thumbColor: Colors.tealAccent,
@@ -2233,12 +2620,11 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
             ),
             child: Slider(
               value: (_totalDuration != null && _totalDuration! > 0)
-                  ? (_currentPosition / _totalDuration!)
-                      .clamp(0.0, 1.0)
+                  ? (_currentPosition / _totalDuration!).clamp(0.0, 1.0)
                   : 0.0,
               onChanged: _totalDuration != null
-                  ? (v) => setState(
-                      () => _currentPosition = v * _totalDuration!)
+                  ? (v) =>
+                        setState(() => _currentPosition = v * _totalDuration!)
                   : null,
               onChangeEnd: _totalDuration != null
                   ? (v) => _seekTo(v * _totalDuration!)
@@ -2253,8 +2639,11 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 IconButton(
-                  icon: Icon(Icons.fast_rewind,
-                      color: Colors.white70, size: compact ? 20 : 22),
+                  icon: Icon(
+                    Icons.fast_rewind,
+                    color: Colors.white70,
+                    size: compact ? 20 : 22,
+                  ),
                   tooltip: 'Slower',
                   onPressed: _audioSpeed > 0.25
                       ? () => _changeSpeed(-0.25)
@@ -2267,11 +2656,15 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
                 ),
                 SizedBox(width: compact ? 4 : 8),
                 IconButton(
-                  icon: Icon(Icons.replay_10,
-                      color: Colors.white70, size: compact ? 20 : 22),
+                  icon: Icon(
+                    Icons.replay_10,
+                    color: Colors.white70,
+                    size: compact ? 20 : 22,
+                  ),
                   tooltip: 'Back 10s',
-                  onPressed: () => _seekTo((_currentPosition - 10)
-                      .clamp(0.0, _totalDuration ?? 0.0)),
+                  onPressed: () => _seekTo(
+                    (_currentPosition - 10).clamp(0.0, _totalDuration ?? 0.0),
+                  ),
                   padding: EdgeInsets.zero,
                   constraints: BoxConstraints.tightFor(
                     width: compact ? 30 : 34,
@@ -2283,31 +2676,40 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
                   onPressed: _playingAudioId != null
                       ? () => _playOrPauseAudio(
                           _playingAudioId!,
-                          _playingAudioTitle ?? 'Audio')
+                          _playingAudioTitle ?? 'Audio',
+                        )
                       : null,
                   icon: Icon(
-                      _isPlaying ? Icons.pause : Icons.play_arrow,
-                      size: compact ? 18 : 20),
-                  label: Text(_isPlaying ? 'Pause' : 'Play',
-                      style: TextStyle(fontSize: compact ? 12 : 13)),
+                    _isPlaying ? Icons.pause : Icons.play_arrow,
+                    size: compact ? 18 : 20,
+                  ),
+                  label: Text(
+                    _isPlaying ? 'Pause' : 'Play',
+                    style: TextStyle(fontSize: compact ? 12 : 13),
+                  ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor:
-                        _isPlaying ? Colors.orange : Colors.green,
+                    backgroundColor: _isPlaying ? Colors.orange : Colors.green,
                     foregroundColor: Colors.white,
                     padding: EdgeInsets.symmetric(
-                        horizontal: compact ? 10 : 16,
-                        vertical: compact ? 5 : 6),
+                      horizontal: compact ? 10 : 16,
+                      vertical: compact ? 5 : 6,
+                    ),
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(18)),
+                      borderRadius: BorderRadius.circular(18),
+                    ),
                   ),
                 ),
                 SizedBox(width: compact ? 4 : 8),
                 IconButton(
-                  icon: Icon(Icons.forward_10,
-                      color: Colors.white70, size: compact ? 20 : 22),
+                  icon: Icon(
+                    Icons.forward_10,
+                    color: Colors.white70,
+                    size: compact ? 20 : 22,
+                  ),
                   tooltip: 'Forward 10s',
-                  onPressed: () => _seekTo((_currentPosition + 10)
-                      .clamp(0.0, _totalDuration ?? 0.0)),
+                  onPressed: () => _seekTo(
+                    (_currentPosition + 10).clamp(0.0, _totalDuration ?? 0.0),
+                  ),
                   padding: EdgeInsets.zero,
                   constraints: BoxConstraints.tightFor(
                     width: compact ? 30 : 34,
@@ -2316,8 +2718,11 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
                 ),
                 SizedBox(width: compact ? 4 : 8),
                 IconButton(
-                  icon: Icon(Icons.fast_forward,
-                      color: Colors.white70, size: compact ? 20 : 22),
+                  icon: Icon(
+                    Icons.fast_forward,
+                    color: Colors.white70,
+                    size: compact ? 20 : 22,
+                  ),
                   tooltip: 'Faster',
                   onPressed: _audioSpeed < 3.0
                       ? () => _changeSpeed(0.25)
@@ -2378,7 +2783,14 @@ class AddAudioOptionsScreen extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('Add Audio', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                  const Text(
+                    'Add Audio',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   IconButton(
                     icon: const Icon(Icons.close, color: Colors.white),
                     onPressed: () => Navigator.of(context).pop(),
@@ -2425,7 +2837,8 @@ class SelectExistingAudioScreen extends StatefulWidget {
   });
 
   @override
-  State<SelectExistingAudioScreen> createState() => _SelectExistingAudioScreenState();
+  State<SelectExistingAudioScreen> createState() =>
+      _SelectExistingAudioScreenState();
 }
 
 class _SelectExistingAudioScreenState extends State<SelectExistingAudioScreen> {
@@ -2443,11 +2856,14 @@ class _SelectExistingAudioScreenState extends State<SelectExistingAudioScreen> {
     setState(() => _isLoading = true);
     final allAudio = await ApiService.getAudioList();
     if (allAudio != null && mounted) {
-      final available = allAudio.where((audio) {
-        final id = (audio['audio_id'] ?? audio['id']) as int;
-        return !widget.currentAudioIds.contains(id);
-      }).map((e) => Map<String, dynamic>.from(e as Map)).toList();
-      
+      final available = allAudio
+          .where((audio) {
+            final id = (audio['audio_id'] ?? audio['id']) as int;
+            return !widget.currentAudioIds.contains(id);
+          })
+          .map((e) => Map<String, dynamic>.from(e as Map))
+          .toList();
+
       setState(() {
         _availableAudio = available;
         _isLoading = false;
@@ -2459,10 +2875,13 @@ class _SelectExistingAudioScreenState extends State<SelectExistingAudioScreen> {
 
   Future<void> _linkAudio(int audioId) async {
     setState(() => _linking = true);
-    final result = await ApiService.linkAudioToSession(widget.sessionId, audioId);
+    final result = await ApiService.linkAudioToSession(
+      widget.sessionId,
+      audioId,
+    );
     if (!mounted) return;
     setState(() => _linking = false);
-    
+
     if (result != null) {
       widget.onAudioAdded();
       Navigator.of(context).pop();
@@ -2470,9 +2889,9 @@ class _SelectExistingAudioScreenState extends State<SelectExistingAudioScreen> {
         const SnackBar(content: Text('Audio linked successfully!')),
       );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to link audio')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Failed to link audio')));
     }
   }
 
@@ -2483,41 +2902,53 @@ class _SelectExistingAudioScreenState extends State<SelectExistingAudioScreen> {
       1: _loadAvailableAudio,
       0: () => Navigator.of(context).pop(),
     };
-    
+
     for (int i = 0; i < _availableAudio.length && i < 8; i++) {
-        actions[i + 2] = () {
-             if (!_linking) _linkAudio(_availableAudio[i]['audio_id'] ?? _availableAudio[i]['id'] as int);
-        };
+      actions[i + 2] = () {
+        if (!_linking)
+          _linkAudio(
+            _availableAudio[i]['audio_id'] ?? _availableAudio[i]['id'] as int,
+          );
+      };
     }
 
     return KeypadInstructionWrapper(
       screenName: 'Select Existing Audio',
-      labels: selectExistingAudioKeyLabels, 
+      labels: selectExistingAudioKeyLabels,
       actions: actions,
       child: Scaffold(
         appBar: AppBar(title: const Text('Select Audio')),
         body: _isLoading
             ? const Center(child: CircularProgressIndicator())
             : _availableAudio.isEmpty
-                ? const Center(child: Text('No unlinked audio available.', style: TextStyle(fontSize: 16)))
-                : ListView.builder(
-                    itemCount: _availableAudio.length,
-                    itemBuilder: (context, index) {
-                      final item = _availableAudio[index];
-                      final title = item['title'] ?? 'Untitled';
-                      final keyNum = index < 8 ? index + 2 : null;
-                      
-                      return ListTile(
-                        leading: CircleAvatar(
-                          child: Text(keyNum != null ? '$keyNum' : '-'),
-                        ),
-                        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-                        onTap: () {
-                          if (!_linking) _linkAudio(item['audio_id'] ?? item['id'] as int);
-                        },
-                      );
+            ? const Center(
+                child: Text(
+                  'No unlinked audio available.',
+                  style: TextStyle(fontSize: 16),
+                ),
+              )
+            : ListView.builder(
+                itemCount: _availableAudio.length,
+                itemBuilder: (context, index) {
+                  final item = _availableAudio[index];
+                  final title = item['title'] ?? 'Untitled';
+                  final keyNum = index < 8 ? index + 2 : null;
+
+                  return ListTile(
+                    leading: CircleAvatar(
+                      child: Text(keyNum != null ? '$keyNum' : '-'),
+                    ),
+                    title: Text(
+                      title,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    onTap: () {
+                      if (!_linking)
+                        _linkAudio(item['audio_id'] ?? item['id'] as int);
                     },
-                  ),
+                  );
+                },
+              ),
       ),
     );
   }

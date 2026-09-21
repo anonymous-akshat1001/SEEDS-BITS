@@ -28,7 +28,8 @@ class ParticipantTile extends StatefulWidget {
   State<ParticipantTile> createState() => _ParticipantTileState();
 }
 
-class _ParticipantTileState extends State<ParticipantTile> with SingleTickerProviderStateMixin {
+class _ParticipantTileState extends State<ParticipantTile>
+    with SingleTickerProviderStateMixin {
   late AnimationController _pulseController;
   bool _showingConfirmKick = false;
 
@@ -58,7 +59,10 @@ class _ParticipantTileState extends State<ParticipantTile> with SingleTickerProv
       builder: (context) => AlertDialog(
         title: Text(
           "Confirm Removal",
-          style: TextStyle(fontSize: UIUtils.fontSize(context, 16), fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontSize: UIUtils.fontSize(context, 16),
+            fontWeight: FontWeight.bold,
+          ),
         ),
         content: Text(
           "Remove ${widget.name}?",
@@ -67,7 +71,10 @@ class _ParticipantTileState extends State<ParticipantTile> with SingleTickerProv
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: Text("Cancel", style: TextStyle(fontSize: UIUtils.fontSize(context, 13))),
+            child: Text(
+              "Cancel",
+              style: TextStyle(fontSize: UIUtils.fontSize(context, 13)),
+            ),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
@@ -75,7 +82,10 @@ class _ParticipantTileState extends State<ParticipantTile> with SingleTickerProv
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
             ),
-            child: Text("Remove", style: TextStyle(fontSize: UIUtils.fontSize(context, 13))),
+            child: Text(
+              "Remove",
+              style: TextStyle(fontSize: UIUtils.fontSize(context, 13)),
+            ),
           ),
         ],
       ),
@@ -91,7 +101,8 @@ class _ParticipantTileState extends State<ParticipantTile> with SingleTickerProv
   @override
   Widget build(BuildContext context) {
     final bool tiny = UIUtils.isTiny(context);
-    final semanticLabel = '${widget.name}. '
+    final semanticLabel =
+        '${widget.name}. '
         '${widget.isMuted ? "Muted" : "Unmuted"}. '
         '${widget.raisedHand ? "Hand raised" : "Hand not raised"}. '
         '${widget.isTeacherView ? "Double tap to see options" : ""}';
@@ -102,17 +113,21 @@ class _ParticipantTileState extends State<ParticipantTile> with SingleTickerProv
       enabled: true,
       child: GestureDetector(
         onTap: () {
-          final announcement = '${widget.name}, ${widget.isMuted ? "muted" : "unmuted"}';
+          final announcement =
+              '${widget.name}, ${widget.isMuted ? "muted" : "unmuted"}';
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(announcement, style: TextStyle(fontSize: UIUtils.fontSize(context, 12))),
+              content: Text(
+                announcement,
+                style: TextStyle(fontSize: UIUtils.fontSize(context, 12)),
+              ),
               duration: const Duration(seconds: 1),
               behavior: SnackBarBehavior.floating,
             ),
           );
         },
-        onLongPress: widget.isTeacherView && widget.onKick != null 
-            ? _handleKickConfirmation 
+        onLongPress: widget.isTeacherView && widget.onKick != null
+            ? _handleKickConfirmation
             : null,
         child: Container(
           margin: UIUtils.paddingSymmetric(context, horizontal: 6, vertical: 3),
@@ -140,7 +155,9 @@ class _ParticipantTileState extends State<ParticipantTile> with SingleTickerProv
                     alignment: Alignment.center,
                     children: [
                       // Pulsing circle for speaking indicator
-                      if (!widget.isMuted && widget.micLevel != null && widget.micLevel! > 0.1)
+                      if (!widget.isMuted &&
+                          widget.micLevel != null &&
+                          widget.micLevel! > 0.1)
                         AnimatedBuilder(
                           animation: _pulseController,
                           builder: (context, child) {
@@ -150,7 +167,9 @@ class _ParticipantTileState extends State<ParticipantTile> with SingleTickerProv
                               width: pulseSize + (14 * _pulseController.value),
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: Colors.greenAccent.withOpacity(0.3 * (1 - _pulseController.value)),
+                                color: Colors.greenAccent.withOpacity(
+                                  0.3 * (1 - _pulseController.value),
+                                ),
                               ),
                             );
                           },
@@ -158,9 +177,13 @@ class _ParticipantTileState extends State<ParticipantTile> with SingleTickerProv
                       // Main avatar
                       CircleAvatar(
                         radius: UIUtils.iconSize(context, 18),
-                        backgroundColor: widget.isMuted ? Colors.grey : Colors.teal,
+                        backgroundColor: widget.isMuted
+                            ? Colors.grey
+                            : Colors.teal,
                         child: Text(
-                          widget.name.isNotEmpty ? widget.name[0].toUpperCase() : '?',
+                          widget.name.isNotEmpty
+                              ? widget.name[0].toUpperCase()
+                              : '?',
                           style: TextStyle(
                             fontSize: UIUtils.fontSize(context, 16),
                             fontWeight: FontWeight.bold,
@@ -178,7 +201,10 @@ class _ParticipantTileState extends State<ParticipantTile> with SingleTickerProv
                             decoration: BoxDecoration(
                               color: Colors.red,
                               shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white, width: 1.5),
+                              border: Border.all(
+                                color: Colors.white,
+                                width: 1.5,
+                              ),
                             ),
                             child: Icon(
                               Icons.mic_off,
@@ -189,9 +215,9 @@ class _ParticipantTileState extends State<ParticipantTile> with SingleTickerProv
                         ),
                     ],
                   ),
-                  
+
                   SizedBox(width: UIUtils.spacing(context, 8)),
-                  
+
                   // Name and status
                   Expanded(
                     child: Column(
@@ -214,14 +240,18 @@ class _ParticipantTileState extends State<ParticipantTile> with SingleTickerProv
                               Icon(
                                 widget.isMuted ? Icons.mic_off : Icons.mic,
                                 size: UIUtils.iconSize(context, 12),
-                                color: widget.isMuted ? Colors.red : Colors.green,
+                                color: widget.isMuted
+                                    ? Colors.red
+                                    : Colors.green,
                               ),
                               SizedBox(width: UIUtils.spacing(context, 3)),
                               Text(
                                 widget.isMuted ? 'Muted' : 'Active',
                                 style: TextStyle(
                                   fontSize: UIUtils.fontSize(context, 11),
-                                  color: widget.isMuted ? Colors.red.shade300 : Colors.green.shade300,
+                                  color: widget.isMuted
+                                      ? Colors.red.shade300
+                                      : Colors.green.shade300,
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
@@ -231,11 +261,13 @@ class _ParticipantTileState extends State<ParticipantTile> with SingleTickerProv
                       ],
                     ),
                   ),
-                  
+
                   // Raised hand indicator
                   if (widget.raisedHand)
                     Padding(
-                      padding: EdgeInsets.only(right: UIUtils.spacing(context, 4)),
+                      padding: EdgeInsets.only(
+                        right: UIUtils.spacing(context, 4),
+                      ),
                       child: Semantics(
                         label: 'Hand raised',
                         child: AnimatedBuilder(
@@ -253,17 +285,21 @@ class _ParticipantTileState extends State<ParticipantTile> with SingleTickerProv
                         ),
                       ),
                     ),
-                  
+
                   // Mute button (always visible for teacher)
                   if (widget.onMute != null)
                     Semantics(
-                      label: widget.isMuted ? 'Unmute participant' : 'Mute participant',
+                      label: widget.isMuted
+                          ? 'Unmute participant'
+                          : 'Mute participant',
                       button: true,
                       child: IconButton(
                         onPressed: widget.onMute,
                         icon: Icon(
                           widget.isMuted ? Icons.mic_off : Icons.mic,
-                          color: widget.isMuted ? Colors.red.shade300 : Colors.green.shade300,
+                          color: widget.isMuted
+                              ? Colors.red.shade300
+                              : Colors.green.shade300,
                         ),
                         iconSize: UIUtils.iconSize(context, 20),
                         tooltip: widget.isMuted ? 'Unmute' : 'Mute',
@@ -274,7 +310,7 @@ class _ParticipantTileState extends State<ParticipantTile> with SingleTickerProv
                         ),
                       ),
                     ),
-                  
+
                   // Kick button (teacher only)
                   if (widget.isTeacherView && widget.onKick != null)
                     Semantics(
@@ -297,7 +333,7 @@ class _ParticipantTileState extends State<ParticipantTile> with SingleTickerProv
                     ),
                 ],
               ),
-              
+
               // Mic level visualizer (if provided)
               if (widget.micLevel != null && !widget.isMuted && !tiny)
                 Padding(
@@ -324,7 +360,7 @@ class _ParticipantTileState extends State<ParticipantTile> with SingleTickerProv
                     ],
                   ),
                 ),
-              
+
               // Remote audio widget placeholder
               if (widget.remoteAudioWidget != null)
                 Padding(

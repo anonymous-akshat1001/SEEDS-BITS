@@ -1,70 +1,91 @@
 import 'dart:async';
-import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:flutter/services.dart';
+
 import 'package:audioplayers/audioplayers.dart';
-import '../services/tts_service.dart';
-import '../utils/keypad_config.dart';
-import '../utils/keypad_actions.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
 import '../main.dart' show routeObserver;
+import '../services/tts_service.dart';
+import '../utils/keypad_actions.dart';
+import '../utils/keypad_config.dart';
 
-/// A wrapper widget that:
-///   1. Auto-speaks key-mapping instructions via TTS on page load
-///   2. Resolves keypad letter keys (T9 multi-tap) to digit actions
-///   3. Debounces rapid key events (300 ms per digit)
-///   4. Optionally shows a debug overlay for on-device testing
+/// Explicit navigation state shared by a screen and its keypad wrapper.
+/// Text fields enter edit mode only after OK/Enter (or a direct touch).
+class KeypadNavigationController {
+  FocusNode? _editingNode;
+
+  bool get isEditing => _editingNode != null;
+  bool isEditingNode(FocusNode node) => identical(_editingNode, node);
+
+  void enterTextEditing(FocusNode node) {
+    _editingNode = node;
+    node.requestFocus();
+  }
+
+  void exitTextEditing() {
+    _editingNode = null;
+  }
+}
+
+/// One item in a screen's deterministic D-pad reading order.
+class KeypadFocusTarget {
+  const KeypadFocusTarget({
+    required this.node,
+    required this.label,
+    this.onActivate,
+    this.isTextField = false,
+    this.onDecrease,
+    this.onIncrease,
+    this.isEnabled,
+  });
+
+  final FocusNode node;
+  final String label;
+  final VoidCallback? onActivate;
+  final bool isTextField;
+  final VoidCallback? onDecrease;
+  final VoidCallback? onIncrease;
+  final bool Function()? isEnabled;
+
+  bool get enabled =>
+      node.context != null &&
+      node.canRequestFocus &&
+      (isEnabled?.call() ?? true);
+}
+
+/// Shared physical-keypad layer.
 ///
-/// Usage:
-/// ```dart
-/// KeypadInstructionWrapper(
-///   actions: { 1: _login, 2: _goToRegister },
-///   labels:  { 1: 'Login', 2: 'Register' },
-///   child: Scaffold(...),
-/// )
-/// ```
-
+/// D-pad traverses [focusTargets], OK/Enter activates the selected target or
+/// enters text editing, Up/Down exits editing, digits are screen shortcuts
+/// only in navigation mode, and star repeats the current instructions.
 class KeypadInstructionWrapper extends StatefulWidget {
-  final Widget child;
-
-  /// Optional audio asset to play on load (fallback if TTS is unavailable).
-  final String? audioAsset;
-
-  /// Digit → callback mapping.  Keys are digits 0-9.
-  final Map<int, VoidCallback> actions;
-
-  /// Digit → human-readable label.  Used to auto-build TTS instructions
-  /// like "Press 1 for Login. Press 2 for Register."
-  final Map<int, String> labels;
-
-  /// Optional screen name spoken before the key instructions,
-  /// e.g. "Login Screen. Press 1 for ..."
-  final String? screenName;
-
-  /// Whether to auto-play instructions on load.
-  final bool autoPlay;
-
-  /// Show a debug overlay that displays raw key events and resolved digits.
-  /// Enable this when testing on the physical keypad phone, then set to false.
-  final bool showDebugOverlay;
-
-  /// Optional: callback for the * (star) key.
-  final VoidCallback? onStarKey;
-
-  /// Optional: callback for the # (hash) key.
-  final VoidCallback? onHashKey;
-
   const KeypadInstructionWrapper({
     super.key,
     required this.child,
-    this.audioAsset,
     required this.actions,
+    this.audioAsset,
     this.labels = const {},
     this.screenName,
     this.autoPlay = true,
-    this.showDebugOverlay = false,
+    this.showDebugOverlay = const bool.fromEnvironment('SEEDS_KEYPAD_QA'),
     this.onStarKey,
     this.onHashKey,
+    this.focusTargets = const [],
+    this.navigationController,
   });
+
+  final Widget child;
+  final String? audioAsset;
+  final Map<int, VoidCallback> actions;
+  final Map<int, String> labels;
+  final String? screenName;
+  final bool autoPlay;
+  final bool showDebugOverlay;
+  final VoidCallback? onStarKey;
+  final VoidCallback? onHashKey;
+  final List<KeypadFocusTarget> focusTargets;
+  final KeypadNavigationController? navigationController;
 
   @override
   State<KeypadInstructionWrapper> createState() =>
@@ -73,15 +94,17 @@ class KeypadInstructionWrapper extends StatefulWidget {
 
 class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
     with RouteAware {
-  late AudioPlayer _audioPlayer;
-  final FocusNode _focusNode = FocusNode();
-
-  // ── Debounce state ──────────────────────────────────────────────────────
-  // Prevents multiple firings when a keypad button cycles through letters.
+  late final AudioPlayer _audioPlayer;
+  late final KeypadNavigationController _navigationController;
+  final FocusNode _scopeFocusNode = FocusNode(debugLabel: 'keypad-scope');
+  final Map<FocusNode, VoidCallback> _focusListeners = {};
   final Map<int, DateTime> _lastFiredAt = {};
+  FocusNode? _navigationOnlyTextNode;
+  Timer? _instructionTimer;
+  ModalRoute<void>? _subscribedRoute;
   static const _debounceDuration = Duration(milliseconds: 300);
+  static bool _userInteracted = false;
 
-  // ── Debug overlay state ─────────────────────────────────────────────────
   String _debugLastKey = '';
   String _debugLastChar = '';
   int? _debugResolvedDigit;
@@ -91,168 +114,233 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
   void initState() {
     super.initState();
     _audioPlayer = AudioPlayer();
-
-    if (widget.autoPlay) {
-      _playInstructions();
-    }
+    _navigationController =
+        widget.navigationController ?? KeypadNavigationController();
+    _attachFocusListeners();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _focusNode.requestFocus();
+      if (!mounted) return;
+      _scopeFocusNode.requestFocus();
+      if (widget.autoPlay) {
+        _scheduleInstructions(const Duration(milliseconds: 350));
+      }
     });
   }
 
-  // ── RouteAware subscription ─────────────────────────────────────────────
+  @override
+  void didUpdateWidget(covariant KeypadInstructionWrapper oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _detachFocusListeners();
+    _attachFocusListeners();
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Subscribe to route observer so we get didPopNext / didPushNext callbacks
     final route = ModalRoute.of(context);
-    if (route is ModalRoute) {
+    if (route is ModalRoute<void> && !identical(route, _subscribedRoute)) {
+      if (_subscribedRoute != null) {
+        routeObserver.unsubscribe(this);
+      }
+      _subscribedRoute = route;
       routeObserver.subscribe(this, route);
     }
   }
 
-  /// Called when a route that was pushed on top of this one is now popped.
-  /// This is the fix for the "listener freeze" bug: re-request focus and
-  /// re-announce instructions so keypad mappings become active again.
   @override
   void didPopNext() {
-    // The pushed screen has been popped — we are now the top route again.
-    // Re-request focus so key events are captured by THIS wrapper.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted && !_focusNode.hasFocus) {
-        _focusNode.requestFocus();
-        debugPrint('[KEYPAD] Focus re-acquired after navigation back');
+      if (mounted) {
+        _navigationController.exitTextEditing();
+        _scopeFocusNode.requestFocus();
       }
     });
-
-    // Re-speak instructions after the previous route has fully disposed.
     if (widget.autoPlay) {
-      Future.delayed(const Duration(milliseconds: 250), () {
-        if (mounted) _playInstructions();
-      });
+      _scheduleInstructions(const Duration(milliseconds: 400));
     }
   }
 
-  static bool _userInteracted = false;
+  @override
+  void didPushNext() {
+    _instructionTimer?.cancel();
+    _navigationController.exitTextEditing();
+    _navigationOnlyTextNode = null;
+    unawaited(_audioPlayer.stop());
+    unawaited(TtsService.stop());
+  }
 
-  Future<void> _playInstructions() async {
-    // On Web, browsers block audio/TTS until user interaction
-    if (kIsWeb && !_userInteracted) {
-      debugPrint('[AUDIO] Web auto-play blocked. Waiting for first interaction.');
-      return;
-    }
+  @override
+  void didPop() {
+    _instructionTimer?.cancel();
+    unawaited(_audioPlayer.stop());
+    unawaited(TtsService.stop());
+  }
 
-    try {
-      // Try audio asset first
-      if (widget.audioAsset != null) {
-        debugPrint('[AUDIO] Playing asset: ${widget.audioAsset}');
-        await _audioPlayer.play(AssetSource(widget.audioAsset!));
-        return; // audio played OK, don't also speak TTS
-      }
-
-      // Auto-generate TTS from labels
-      final instructions = _instructionText();
-      if (instructions.isNotEmpty) {
-        debugPrint('[TTS] Speaking: $instructions');
-        await TtsService.speak(instructions);
-      }
-    } catch (e) {
-      debugPrint('[AUDIO ERROR] $e');
-      // Fallback: try TTS even if audio failed
-      final instructions = _instructionText();
-      if (instructions.isNotEmpty) {
-        try {
-          await TtsService.speak(instructions);
-        } catch (ttsErr) {
-          debugPrint('[TTS FALLBACK ERROR] $ttsErr');
+  void _attachFocusListeners() {
+    for (final target in widget.focusTargets) {
+      void listener() {
+        if (target.node.hasFocus && target.enabled) {
+          _speakSafely(target.label);
         }
       }
+
+      _focusListeners[target.node] = listener;
+      target.node.addListener(listener);
     }
+  }
+
+  void _detachFocusListeners() {
+    for (final entry in _focusListeners.entries) {
+      entry.key.removeListener(entry.value);
+    }
+    _focusListeners.clear();
+  }
+
+  Future<void> _playInstructions() async {
+    if (kIsWeb && !_userInteracted) return;
+    final route = ModalRoute.of(context);
+    if (route != null && !route.isCurrent) return;
+    try {
+      await TtsService.stop();
+      if (widget.audioAsset != null) {
+        await _audioPlayer.stop();
+        await _audioPlayer.play(AssetSource(widget.audioAsset!));
+        return;
+      }
+      // Stopping a platform audio player can complete late on some devices.
+      // Do not let that delay or suppress the destination screen's TTS.
+      unawaited(_audioPlayer.stop());
+      final instructions = _instructionText();
+      if (instructions.isNotEmpty) await TtsService.speak(instructions);
+    } catch (error) {
+      debugPrint('[KEYPAD INSTRUCTIONS] $error');
+    }
+  }
+
+  void _scheduleInstructions(Duration delay) {
+    _instructionTimer?.cancel();
+    // Stop the outgoing screen now, then speak only after the destination
+    // route has completed its first frame. This avoids a late route-transition
+    // stop cancelling the destination screen's announcement.
+    unawaited(_audioPlayer.stop());
+    unawaited(TtsService.stop());
+    _instructionTimer = Timer(delay, () {
+      if (!mounted) return;
+      final route = ModalRoute.of(context);
+      if (route == null || route.isCurrent) {
+        unawaited(_playInstructions());
+      }
+    });
+  }
+
+  void _speakSafely(String text) {
+    unawaited(
+      TtsService.speak(text).catchError((Object error) {
+        debugPrint('[KEYPAD TTS] $error');
+      }),
+    );
   }
 
   String _instructionText() {
     if (widget.labels.isNotEmpty) {
-      return buildTtsInstructions(
-        widget.labels,
-        screenName: widget.screenName,
-        includeRepeatHint: widget.onStarKey == null,
-      );
+      return '${buildTtsInstructions(widget.labels, screenName: widget.screenName)} '
+          'Use the direction keys to move. Press OK to activate a control or edit a field. '
+          'While editing, use up or down to leave the field.';
     }
     if ((widget.screenName ?? '').isNotEmpty) {
-      final repeatHint = widget.onStarKey == null
-          ? ' Press star to repeat these instructions.'
-          : '';
-      return '${widget.screenName}.$repeatHint';
+      return '${widget.screenName}. Use the direction keys to move and OK to select. '
+          'Press star to repeat these instructions.';
     }
     return '';
   }
 
   void _onInteraction() {
-    if (!_userInteracted) {
-      _userInteracted = true;
+    if (_userInteracted) return;
+    _userInteracted = true;
+    if (kIsWeb) {
       _playInstructions();
     }
   }
 
-  @override
-  void dispose() {
-    routeObserver.unsubscribe(this);
-    _audioPlayer.dispose();
-    _focusNode.dispose();
-    super.dispose();
+  KeypadFocusTarget? get _currentTarget {
+    final primary = FocusManager.instance.primaryFocus;
+    if (primary == null) return null;
+    for (final target in widget.focusTargets) {
+      if (identical(primary, target.node) || target.node.hasFocus)
+        return target;
+    }
+    return null;
   }
 
-  /// Returns true if the currently-focused widget is a text input field.
-  /// In that case we should NOT intercept key presses — let the user type.
-  bool _isTextInputFocused() {
-    final focus = FocusManager.instance.primaryFocus;
-    if (focus == null || !focus.hasPrimaryFocus) return false;
-    if (focus == _focusNode) return false;
-
-    final context = focus.context;
-    if (context == null) return false;
-
-    final widgetType = context.widget.runtimeType.toString();
-    if (widgetType.contains('EditableText') ||
-        widgetType.contains('TextField') ||
-        widgetType.contains('TextFormField')) {
-      return true;
+  bool _isEditableInputFocused() {
+    final primary = FocusManager.instance.primaryFocus;
+    final focusContext = primary?.context;
+    if (primary == null || focusContext == null || primary == _scopeFocusNode) {
+      return false;
     }
+    if (focusContext.widget is EditableText) return true;
 
-    bool foundInput = false;
-    context.visitAncestorElements((element) {
-      final t = element.widget.runtimeType.toString();
-      if (t.contains('EditableText') ||
-          t.contains('TextField') ||
-          t.contains('TextFormField')) {
-        foundInput = true;
+    var found = false;
+    focusContext.visitAncestorElements((element) {
+      if (element.widget is EditableText) {
+        found = true;
         return false;
       }
       return true;
     });
+    return found;
+  }
 
-    return foundInput;
+  void _moveFocus(int direction) {
+    final targets = widget.focusTargets
+        .where((target) => target.enabled)
+        .toList();
+    if (targets.isEmpty) {
+      _navigationController.exitTextEditing();
+      _navigationOnlyTextNode = null;
+      direction > 0
+          ? FocusScope.of(context).nextFocus()
+          : FocusScope.of(context).previousFocus();
+      return;
+    }
+
+    final current = _currentTarget;
+    var index = current == null
+        ? (direction > 0 ? -1 : 0)
+        : targets.indexOf(current);
+    if (index < 0) index = direction > 0 ? -1 : 0;
+    index = (index + direction) % targets.length;
+    if (index < 0) index += targets.length;
+
+    _navigationController.exitTextEditing();
+    final next = targets[index];
+    _navigationOnlyTextNode = next.isTextField ? next.node : null;
+    next.node.requestFocus();
+    final targetContext = next.node.context;
+    if (targetContext != null) {
+      Scrollable.ensureVisible(
+        targetContext,
+        alignment: 0.45,
+        duration: const Duration(milliseconds: 160),
+      );
+    }
+  }
+
+  bool _isEnterKey(LogicalKeyboardKey key) {
+    return key == LogicalKeyboardKey.enter ||
+        key == LogicalKeyboardKey.numpadEnter ||
+        key == LogicalKeyboardKey.select;
   }
 
   KeyEventResult _handleKeyEvent(FocusNode node, KeyEvent event) {
     if (event is! KeyDownEvent) return KeyEventResult.ignored;
-
-    // Don't intercept when the user is typing in a text field
-    if (_isTextInputFocused()) return KeyEventResult.ignored;
-
     _onInteraction();
 
     final key = event.logicalKey;
     final character = event.character;
 
-    // ── Special keys (* and #) ────────────────────────────────────────────
     if (isStarKey(key)) {
-      if (widget.onStarKey != null) {
-        widget.onStarKey!();
-      } else {
-        _playInstructions();
-      }
+      (widget.onStarKey ?? _playInstructions).call();
       _updateDebug(key.keyLabel, character, null, true, isStar: true);
       return KeyEventResult.handled;
     }
@@ -262,19 +350,80 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
       return KeyEventResult.handled;
     }
 
-    // ── Resolve key to digit ──────────────────────────────────────────────
-    final digit = resolveKeyToDigit(key, character);
+    final current = _currentTarget;
+    final unregisteredEditable = current == null && _isEditableInputFocused();
+    // A text field reached by D-pad remains a selectable control until Enter.
+    // A field focused by touch or by a screen shortcut is already an editing
+    // surface, so digits must never leak through to numeric screen shortcuts.
+    final editing =
+        current != null &&
+        current.isTextField &&
+        (_navigationController.isEditingNode(current.node) ||
+            !identical(_navigationOnlyTextNode, current.node));
 
+    if (unregisteredEditable) {
+      if (key == LogicalKeyboardKey.arrowUp) {
+        _moveFocus(-1);
+        return KeyEventResult.handled;
+      }
+      if (key == LogicalKeyboardKey.arrowDown) {
+        _moveFocus(1);
+        return KeyEventResult.handled;
+      }
+      return KeyEventResult.ignored;
+    }
+
+    if (editing) {
+      if (key == LogicalKeyboardKey.arrowUp) {
+        _moveFocus(-1);
+        return KeyEventResult.handled;
+      }
+      if (key == LogicalKeyboardKey.arrowDown) {
+        _moveFocus(1);
+        return KeyEventResult.handled;
+      }
+      return KeyEventResult.ignored;
+    }
+
+    if (key == LogicalKeyboardKey.arrowUp) {
+      _moveFocus(-1);
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.arrowDown) {
+      _moveFocus(1);
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.arrowLeft) {
+      current?.onDecrease != null ? current!.onDecrease!() : _moveFocus(-1);
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.arrowRight) {
+      current?.onIncrease != null ? current!.onIncrease!() : _moveFocus(1);
+      return KeyEventResult.handled;
+    }
+    if (_isEnterKey(key)) {
+      if (current == null) {
+        _moveFocus(1);
+      } else if (current.isTextField) {
+        _navigationOnlyTextNode = null;
+        _navigationController.enterTextEditing(current.node);
+        _speakSafely(
+          '${current.label}. Editing. Use up or down to leave this field.',
+        );
+      } else {
+        current.onActivate?.call();
+      }
+      return KeyEventResult.handled;
+    }
+
+    final digit = resolveKeyToDigit(key, character);
     if (digit != null && widget.actions.containsKey(digit)) {
-      // Debounce: skip if we fired this digit less than 300ms ago
       final now = DateTime.now();
       final lastFired = _lastFiredAt[digit];
-      if (lastFired != null &&
-          now.difference(lastFired) < _debounceDuration) {
+      if (lastFired != null && now.difference(lastFired) < _debounceDuration) {
         _updateDebug(key.keyLabel, character, digit, false);
-        return KeyEventResult.handled; // consume but don't fire again
+        return KeyEventResult.handled;
       }
-
       _lastFiredAt[digit] = now;
       widget.actions[digit]!();
       _updateDebug(key.keyLabel, character, digit, true);
@@ -297,82 +446,63 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
     setState(() {
       _debugLastKey = keyLabel;
       _debugLastChar = character ?? '(null)';
-      _debugResolvedDigit = digit;
+      _debugResolvedDigit = isStar ? -1 : (isHash ? -2 : digit);
       _debugActionFired = fired;
-      if (isStar) _debugResolvedDigit = -1; // sentinel for display
-      if (isHash) _debugResolvedDigit = -2;
     });
   }
 
   @override
+  void dispose() {
+    _instructionTimer?.cancel();
+    if (_subscribedRoute != null) routeObserver.unsubscribe(this);
+    _detachFocusListeners();
+    unawaited(_audioPlayer.stop());
+    _audioPlayer.dispose();
+    unawaited(TtsService.stop());
+    _scopeFocusNode.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    Widget child = Focus(
-      focusNode: _focusNode,
-      onKeyEvent: _handleKeyEvent,
-      autofocus: true,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: _onInteraction,
-        child: widget.child,
+    Widget result = FocusTraversalGroup(
+      policy: OrderedTraversalPolicy(),
+      child: Focus(
+        focusNode: _scopeFocusNode,
+        onKeyEvent: _handleKeyEvent,
+        autofocus: true,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: _onInteraction,
+          child: widget.child,
+        ),
       ),
     );
 
     if (widget.showDebugOverlay) {
-      child = Stack(
+      result = Stack(
         children: [
-          child,
+          result,
           Positioned(
-            bottom: 0,
             left: 0,
             right: 0,
-            child: _buildDebugOverlay(context),
+            bottom: 0,
+            child: Container(
+              color: Colors.black.withValues(alpha: 0.88),
+              padding: const EdgeInsets.all(8),
+              child: DefaultTextStyle(
+                style: const TextStyle(color: Colors.greenAccent, fontSize: 11),
+                child: Text(
+                  'Key: $_debugLastKey  Char: $_debugLastChar  '
+                  'Digit: ${_debugResolvedDigit ?? 'none'}  '
+                  'Fired: ${_debugActionFired ? 'yes' : 'no'}',
+                ),
+              ),
+            ),
           ),
         ],
       );
     }
-
-    return child;
-  }
-
-  Widget _buildDebugOverlay(BuildContext context) {
-    String digitDisplay;
-    if (_debugResolvedDigit == null) {
-      digitDisplay = 'none';
-    } else if (_debugResolvedDigit == -1) {
-      digitDisplay = '* (star)';
-    } else if (_debugResolvedDigit == -2) {
-      digitDisplay = '# (hash)';
-    } else {
-      digitDisplay = '$_debugResolvedDigit';
-    }
-
-    return Container(
-      color: Colors.black.withOpacity(0.85),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      child: DefaultTextStyle(
-        style: const TextStyle(
-          color: Colors.greenAccent,
-          fontFamily: 'monospace',
-          fontSize: 11,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('─── KEYPAD DEBUG ───',
-                style: TextStyle(fontWeight: FontWeight.bold)),
-            Text('Key:      $_debugLastKey'),
-            Text('Char:     $_debugLastChar'),
-            Text('Digit:    $digitDisplay'),
-            Text(
-              'Fired:    ${_debugActionFired ? "YES ✓" : "no"}',
-              style: TextStyle(
-                color: _debugActionFired ? Colors.greenAccent : Colors.grey,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+    return result;
   }
 }

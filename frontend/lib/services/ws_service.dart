@@ -24,7 +24,7 @@ class WsService {
   // stores the user ID
   String? userId;
   // main message handler (e.g., session screen) - called for each incoming message
-  MsgHandler? onMessage; 
+  MsgHandler? onMessage;
   // Small registry for chat handlers - allows chat UI, logging, notifs
   final List<MsgHandler> _chatHandlers = [];
 
@@ -45,47 +45,45 @@ class WsService {
     );
 
     // Establish a new websocket connection
-    _channel = WebSocketChannel.connect(
-      Uri.parse(wsUrl),
-    );
-
+    _channel = WebSocketChannel.connect(Uri.parse(wsUrl));
 
     // saves the callback function, used later when message arrives
     onMessage = onMsg;
 
     // Listens continuously to incoming WebSocket messages, event is a JSON string
-    _channel!.stream.listen((event) {
-      try {
-        // convert JSON string to Dart map
-        final data = jsonDecode(event);
-        // check the message type
-        if (data['type'] == 'chat') {
-          // send chat message to all registered listeners
-          for (final h in _chatHandlers){
-            h(data);
+    _channel!.stream.listen(
+      (event) {
+        try {
+          // convert JSON string to Dart map
+          final data = jsonDecode(event);
+          // check the message type
+          if (data['type'] == 'chat') {
+            // send chat message to all registered listeners
+            for (final h in _chatHandlers) {
+              h(data);
+            }
           }
+          // Calls the main handler(the ? prevents crash if NULL)
+          onMessage?.call(data);
+        } catch (e) {
+          debugPrint("[WS PARSE ERROR] $e");
         }
-        // Calls the main handler(the ? prevents crash if NULL)
-        onMessage?.call(data);
-      } 
-      catch (e) {
-        debugPrint("[WS PARSE ERROR] $e");
-      }
-    }, 
-    // Auto reconnect logic, triggered when connection closes
-    onDone: () {
-      // waits 2 seconds before reconnecting
-      Future.delayed(const Duration(seconds: 2), () {
-        if (sessionId != null && userId != null) {
-          // reuses the stored values
-          connect(sessionId!, int.parse(userId!), onMsg);
-        }
-      });
-    }, 
-    // logs connection errors
-    onError: (e) {
-      debugPrint("[WS ERROR] $e");
-    });
+      },
+      // Auto reconnect logic, triggered when connection closes
+      onDone: () {
+        // waits 2 seconds before reconnecting
+        Future.delayed(const Duration(seconds: 2), () {
+          if (sessionId != null && userId != null) {
+            // reuses the stored values
+            connect(sessionId!, int.parse(userId!), onMsg);
+          }
+        });
+      },
+      // logs connection errors
+      onError: (e) {
+        debugPrint("[WS ERROR] $e");
+      },
+    );
   }
 
   // Send a message to backend

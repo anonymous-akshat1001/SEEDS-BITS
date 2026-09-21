@@ -6,13 +6,23 @@ import 'dart:math' as math;
 /// like the Blackzone Winx 4G (240x320) while still looking
 /// good on normal phones.
 class UIUtils {
-  static final ValueNotifier<bool> highContrastListenable = ValueNotifier(false);
+  static final ValueNotifier<bool> highContrastListenable = ValueNotifier(
+    false,
+  );
+  static final ValueNotifier<double> textScaleListenable = ValueNotifier(1.0);
 
   static bool get isHighContrast => highContrastListenable.value;
 
   static void setHighContrastMode(bool enabled) {
     if (highContrastListenable.value != enabled) {
       highContrastListenable.value = enabled;
+    }
+  }
+
+  static void setTextScale(double scale) {
+    final normalized = scale.clamp(0.9, 1.5).toDouble();
+    if (textScaleListenable.value != normalized) {
+      textScaleListenable.value = normalized;
     }
   }
 
@@ -45,17 +55,17 @@ class UIUtils {
     final height = MediaQuery.of(context).size.height;
     // Classic keypad phone ratio is roughly 3:4. Normal phones are 9:16 or 9:19.
     final ratio = width / height;
-    return isTiny(context) && ratio > 0.6; 
+    return isTiny(context) && ratio > 0.6;
   }
 
   /// Scaled font size
   static double fontSize(BuildContext context, double base) {
     final s = scale(context);
-    // On keypad devices, we actually want text slightly LARGER than pure scale 
+    // On keypad devices, we actually want text slightly LARGER than pure scale
     // because the screen is physically small and far from the eye.
     final factor = isKeypad(context) ? s * 1.1 : s;
     final v = base * factor;
-    return math.min(math.max(v, 9.0), base * 1.8);
+    return math.min(math.max(v, 10.0), base * 1.8);
   }
 
   /// Scaled padding value
@@ -83,7 +93,11 @@ class UIUtils {
   }
 
   /// Scaled symmetric padding
-  static EdgeInsets paddingSymmetric(BuildContext context, {double horizontal = 0, double vertical = 0}) {
+  static EdgeInsets paddingSymmetric(
+    BuildContext context, {
+    double horizontal = 0,
+    double vertical = 0,
+  }) {
     return EdgeInsets.symmetric(
       horizontal: padding(context, horizontal),
       vertical: padding(context, vertical),
@@ -102,5 +116,5 @@ class UIUtils {
   static Color get textColor =>
       isHighContrast ? Colors.white : const Color(0xFF2D3436);
   static Color get subtextColor =>
-      isHighContrast ? const Color(0xFFFFF176) : const Color(0xFF636E72);
+      isHighContrast ? const Color(0xFFFFF176) : const Color(0xFF455A64);
 }

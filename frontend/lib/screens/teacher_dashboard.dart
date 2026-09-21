@@ -7,7 +7,10 @@ import 'session_screen.dart';
 import 'audio_library_screen.dart';
 import '../utils/ui_utils.dart';
 import '../widgets/key_instruction_wrapper.dart';
+import '../widgets/keypad_confirmation_dialog.dart';
 import '../utils/keypad_actions.dart';
+import '../services/auth_session_service.dart';
+import '../utils/session_search.dart';
 
 // Create Teacher Dashboard Widget
 class TeacherDashboard extends StatefulWidget {
@@ -28,9 +31,20 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
   String? currentUserName;
   // Controls loading spinner
   bool isLoading = true;
-  // Controls text typed into session title field
-  final TextEditingController _titleController = TextEditingController();
-  final FocusNode _screenFocusNode = FocusNode();
+  bool _isRefreshing = false;
+  final TextEditingController _searchController = TextEditingController();
+  final KeypadNavigationController _keypadController =
+      KeypadNavigationController();
+  final FocusNode _refreshFocusNode = FocusNode(debugLabel: 'teacher-refresh');
+  final FocusNode _createFocusNode = FocusNode(debugLabel: 'teacher-create');
+  final FocusNode _libraryFocusNode = FocusNode(debugLabel: 'teacher-library');
+  final FocusNode _searchFocusNode = FocusNode(debugLabel: 'teacher-search');
+  final FocusNode _searchResultsFocusNode = FocusNode(
+    debugLabel: 'teacher-search-results',
+  );
+  final FocusNode _logoutFocusNode = FocusNode(debugLabel: 'teacher-logout');
+  final Map<int, FocusNode> _sessionOpenFocusNodes = {};
+  final Map<int, FocusNode> _sessionDeleteFocusNodes = {};
 
   // Called once when widget is created - ideal for API calls and reading local variables
   @override
@@ -38,7 +52,6 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     super.initState();
     // Starts loading user data immediately
     _loadUserData();
-    _screenFocusNode.requestFocus();
   }
 
   // Load user data( non blocking )
@@ -48,10 +61,11 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     // get user id
     final id = prefs.getInt('user_id');
     // fetch user name
-    final name = prefs.getString('user_name') 
-    ?? prefs.getString('name') 
-    ?? 'Teacher $id';
-    
+    final name =
+        prefs.getString('user_name') ??
+        prefs.getString('name') ??
+        'Teacher $id';
+
     // saves value into state and forces UI rebuild
     setState(() {
       currentUserId = id;
@@ -64,32 +78,51 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     }
 
     // data loading complete
+    if (!mounted) return;
     setState(() {
       // spinner removed
       isLoading = false;
     });
-
   }
 
   // Fetch all active sessions for this teacher
   Future<void> _loadSessions() async {
-    final res = await ApiService.get(
+    final previousFocus = FocusManager.instance.primaryFocus;
+    if (mounted) setState(() => _isRefreshing = true);
+    await TtsService.speak('Refreshing sessions');
+    final result = await ApiService.getResult(
       '/sessions/active',
       useAuth: true,
+      context: 'session list',
     );
 
-    if (res != null && res is List) {
+    if (!mounted) return;
+    if (result.isSuccess && result.data is List) {
       // Filter sessions created by this teacher
-      final teacherSessions = res.where(
-        (s) => s['created_by'] == currentUserId
-      ).toList();
+      final teacherSessions = (result.data as List)
+          .where((s) => s['created_by'] == currentUserId)
+          .toList();
 
       // saves filtered sessions and updates UI
       setState(() {
         sessions = teacherSessions;
+        _isRefreshing = false;
       });
-
+      await TtsService.speak(
+        sessions.isEmpty
+            ? 'No active sessions found'
+            : '${sessions.length} active sessions found',
+      );
+    } else {
+      setState(() => _isRefreshing = false);
+      final message = result.failure!.message;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
+      await TtsService.speak(message);
     }
+    if (previousFocus != null && previousFocus.canRequestFocus)
+      previousFocus.requestFocus();
   }
 
   // Funtion to create a new session by the teacher
@@ -97,9 +130,9 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     // If user not logged in
     if (currentUserId == null || currentUserName == null) {
       TtsService.speak("User not logged in");
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please log in first")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Please log in first")));
       // stop execution
       return;
     }
@@ -107,38 +140,14 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     // Show dialog to input session title, waits for input and returns a String
     final title = await showDialog<String>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Create New Session'),
-        content: TextField(
-          controller: _titleController,         // input for session title
-          decoration: const InputDecoration(
-            labelText: 'Session Title',
-            hintText: 'e.g., English Class - Unit 5',
-            border: OutlineInputBorder(),
-          ),
-          autofocus: true,                     // keyboard opens automatically
-        ),
-
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-
-          ElevatedButton(
-            onPressed: () {
-              final text = _titleController.text.trim();
-              Navigator.pop(context, text.isEmpty ? 'New Session' : text);
-            },
-            child: const Text('Create'),
-          ),
-        ],
-      ),
+      barrierDismissible: false,
+      builder: (_) => const _CreateSessionDialog(),
     );
 
-    if (title == null){
+    if (title == null) {
       return; // User cancelled
     }
+    if (!mounted) return;
 
     // Show loading
     showDialog(
@@ -149,43 +158,37 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     );
 
     // send session creation request to backend
-    final res = await ApiService.post(
+    final result = await ApiService.postResult(
       '/sessions',
       {'title': title},
       useAuth: true,
+      context: 'session creation',
     );
 
     // Close loading dialog
-    if (mounted){
+    if (mounted) {
       Navigator.pop(context);
     }
 
     // Success case
-    if (res != null && res['session_id'] != null) {
+    if (result.isSuccess && result.data!['session_id'] != null) {
+      final res = result.data!;
       // adds new session to the list
       setState(() => sessions.add(res));
       TtsService.speak("Session $title created successfully");
-      
-      // clears input for session title
-      _titleController.clear();
-      
+
       // Ask if they want to start the session now
       if (mounted) {
         final startNow = await showDialog<bool>(
           context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('Session Created'),
-            content: Text('Do you want to start "$title" now?'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text('Later'),
-              ),
-              ElevatedButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: const Text('Start Now'),
-              ),
-            ],
+          barrierDismissible: false,
+          builder: (_) => KeypadConfirmationDialog(
+            title: 'Session created',
+            message: 'Do you want to start "$title" now?',
+            cancelLabel: 'Later',
+            confirmLabel: 'Start now',
+            cancelKey: 0,
+            confirmKey: 1,
           ),
         );
 
@@ -193,17 +196,18 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
           _openSession(res['session_id']);
         }
       }
-    } 
-    else {
-      TtsService.speak("Failed to create session");
+    } else {
+      final message =
+          result.failure?.message ??
+          'We could not complete that request. Check your connection and try again.';
+      TtsService.speak(message);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Failed to create session")),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(message)));
       }
     }
   }
-
 
   void _openSession(int sessionId) {
     if (currentUserId == null || currentUserName == null) {
@@ -228,7 +232,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
       MaterialPageRoute(
         builder: (_) => SessionScreen(
           sessionId: sessionId,
-          userId: currentUserId!,            // the ! claims that these fields are not null
+          userId: currentUserId!, // the ! claims that these fields are not null
           userName: currentUserName!,
           isTeacher: true,
           sessionTitle: sessionTitle,
@@ -245,10 +249,106 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     TtsService.speak("Opening offline audio library");
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => const OfflineAudioLibraryScreen(),
+      MaterialPageRoute(builder: (_) => const OfflineAudioLibraryScreen()),
+    );
+  }
+
+  Future<void> _logout() => AuthSessionService.logoutFrom(context);
+
+  List get _filteredSessions =>
+      filterSessionsByNameOrId(sessions, _searchController.text);
+
+  void _focusSessionSearch() {
+    _keypadController.exitTextEditing();
+    _searchFocusNode.requestFocus();
+    TtsService.speak(
+      'Session search. Press OK to edit, then enter a session name or ID. '
+      'Use up or down to leave the field and browse results.',
+    );
+  }
+
+  void _showSearchResults() {
+    _keypadController.exitTextEditing();
+    FocusScope.of(context).unfocus();
+    final results = _filteredSessions;
+    final query = _searchController.text.trim();
+    final message = results.isEmpty
+        ? 'No sessions match $query'
+        : query.isEmpty
+        ? 'Showing all ${results.length} sessions. Use down to browse.'
+        : '${results.length} sessions match $query. Use down to browse.';
+    TtsService.speak(message);
+    if (results.isNotEmpty) {
+      final id = int.tryParse((results.first['session_id'] ?? '').toString());
+      if (id != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) _sessionOpenFocusNodes[id]?.requestFocus();
+        });
+      }
+    }
+  }
+
+  List<KeypadFocusTarget> _dashboardFocusTargets() {
+    final targets = <KeypadFocusTarget>[
+      KeypadFocusTarget(
+        node: _refreshFocusNode,
+        label: 'Refresh sessions',
+        onActivate: _loadSessions,
+        isEnabled: () => !_isRefreshing,
+      ),
+      KeypadFocusTarget(
+        node: _createFocusNode,
+        label: 'Create new session',
+        onActivate: createSession,
+      ),
+      KeypadFocusTarget(
+        node: _libraryFocusNode,
+        label: 'Offline audio library',
+        onActivate: _openOfflineAudioLibrary,
+      ),
+      KeypadFocusTarget(
+        node: _searchFocusNode,
+        label: 'Search sessions by name or ID',
+        isTextField: true,
+      ),
+      KeypadFocusTarget(
+        node: _searchResultsFocusNode,
+        label: 'Show matching sessions',
+        onActivate: _showSearchResults,
+      ),
+    ];
+    for (final session in _filteredSessions) {
+      final id = int.tryParse((session['session_id'] ?? '').toString()) ?? 0;
+      final title = session['title'] ?? 'session';
+      targets.add(
+        KeypadFocusTarget(
+          node: _sessionOpenFocusNodes.putIfAbsent(
+            id,
+            () => FocusNode(debugLabel: 'teacher-open-$id'),
+          ),
+          label: 'Session $id, $title. Press OK to open',
+          onActivate: () => _openSession(id),
+        ),
+      );
+      targets.add(
+        KeypadFocusTarget(
+          node: _sessionDeleteFocusNodes.putIfAbsent(
+            id,
+            () => FocusNode(debugLabel: 'teacher-delete-$id'),
+          ),
+          label: 'Delete $title',
+          onActivate: () => _deleteSession(id, title),
+        ),
+      );
+    }
+    targets.add(
+      KeypadFocusTarget(
+        node: _logoutFocusNode,
+        label: 'Log out',
+        onActivate: _logout,
       ),
     );
+    return targets;
   }
 
   // Function to delete the session created previously
@@ -274,14 +374,18 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     );
 
     // cancel deletion
-    if (confirmed != true){
+    if (confirmed != true) {
       return;
     }
 
     // sends deletion request to backend
-    final success = await ApiService.delete('/sessions/$sessionId');
-    
-    if (success) {
+    final result = await ApiService.deleteResult(
+      '/sessions/$sessionId',
+      useAuth: true,
+      context: 'session deletion',
+    );
+
+    if (result.isSuccess) {
       setState(() {
         sessions.removeWhere((s) => s['session_id'] == sessionId);
       });
@@ -291,13 +395,13 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
           const SnackBar(content: Text("Session deleted successfully")),
         );
       }
-    } 
-    else {
-      TtsService.speak("Failed to delete session");
+    } else {
+      final message = result.failure!.message;
+      TtsService.speak(message);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Failed to delete session")),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(message)));
       }
     }
   }
@@ -305,8 +409,19 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
   // Frees memory
   @override
   void dispose() {
-    _titleController.dispose();
-    _screenFocusNode.dispose();
+    _searchController.dispose();
+    _refreshFocusNode.dispose();
+    _createFocusNode.dispose();
+    _libraryFocusNode.dispose();
+    _searchFocusNode.dispose();
+    _searchResultsFocusNode.dispose();
+    _logoutFocusNode.dispose();
+    for (final node in _sessionOpenFocusNodes.values) {
+      node.dispose();
+    }
+    for (final node in _sessionDeleteFocusNodes.values) {
+      node.dispose();
+    }
     super.dispose();
   }
 
@@ -314,8 +429,20 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
+      return PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, _) {
+          if (!didPop) SystemNavigator.pop();
+        },
+        child: Scaffold(
+          body: Center(
+            child: Semantics(
+              liveRegion: true,
+              label: 'Teacher dashboard is loading',
+              child: const CircularProgressIndicator(),
+            ),
+          ),
+        ),
       );
     }
 
@@ -323,11 +450,21 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
       screenName: 'Teacher Dashboard',
       labels: teacherDashboardKeyLabels,
       actions: {
+        0: _logout,
         1: _loadSessions,
         2: createSession,
         3: _openOfflineAudioLibrary,
+        4: _focusSessionSearch,
       },
-      child: _buildScaffold(context),
+      navigationController: _keypadController,
+      focusTargets: _dashboardFocusTargets(),
+      child: PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, _) {
+          if (!didPop) SystemNavigator.pop();
+        },
+        child: _buildScaffold(context),
+      ),
     );
   }
 
@@ -336,14 +473,24 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("Teacher Dashboard", style: TextStyle(fontSize: UIUtils.fontSize(context, 18), fontWeight: FontWeight.w600)),
+        title: Text(
+          "Teacher Dashboard",
+          style: TextStyle(
+            fontSize: UIUtils.fontSize(context, 18),
+            fontWeight: FontWeight.w600,
+          ),
+        ),
         backgroundColor: UIUtils.cardColor,
         foregroundColor: UIUtils.textColor,
         toolbarHeight: tiny ? 40 : null,
         actions: [
           if (currentUserName != null && !tiny)
             Padding(
-              padding: UIUtils.paddingSymmetric(context, horizontal: 8, vertical: 8),
+              padding: UIUtils.paddingSymmetric(
+                context,
+                horizontal: 8,
+                vertical: 8,
+              ),
               child: Center(
                 child: Row(
                   children: [
@@ -351,47 +498,78 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                     SizedBox(width: UIUtils.spacing(context, 4)),
                     Text(
                       currentUserName!,
-                      style: TextStyle(fontSize: UIUtils.fontSize(context, 14), fontWeight: FontWeight.w500),
+                      style: TextStyle(
+                        fontSize: UIUtils.fontSize(context, 14),
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ],
                 ),
               ),
             ),
 
-
           IconButton(
-            icon: Icon(Icons.refresh_rounded, size: UIUtils.iconSize(context, 22), color: UIUtils.accentColor),
+            focusNode: _refreshFocusNode,
+            icon: Icon(
+              Icons.refresh_rounded,
+              size: UIUtils.iconSize(context, 22),
+              color: UIUtils.accentColor,
+            ),
             tooltip: "Refresh Sessions",
             onPressed: () {
               TtsService.speak("Refreshing sessions");
               _loadSessions();
             },
           ),
+          IconButton(
+            focusNode: _logoutFocusNode,
+            tooltip: 'Log out',
+            onPressed: _logout,
+            icon: Icon(Icons.logout, color: UIUtils.accentColor),
+          ),
           if (UIUtils.isKeypad(context))
             Padding(
               padding: const EdgeInsets.only(right: 12.0),
               child: Center(
-                child: Text("1", style: TextStyle(color: UIUtils.accentColor, fontSize: UIUtils.fontSize(context, 14), fontWeight: FontWeight.bold)),
+                child: Text(
+                  "1",
+                  style: TextStyle(
+                    color: UIUtils.accentColor,
+                    fontSize: UIUtils.fontSize(context, 14),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ),
         ],
       ),
 
-
       body: SafeArea(
-        child: SingleChildScrollView(  
+        child: SingleChildScrollView(
           child: Padding(
             padding: UIUtils.paddingAll(context, 10),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                if (_isRefreshing) ...[
+                  Semantics(
+                    liveRegion: true,
+                    label: 'Refreshing sessions',
+                    child: LinearProgressIndicator(),
+                  ),
+                  SizedBox(height: UIUtils.spacing(context, 8)),
+                ],
                 // Welcome Card
                 Card(
                   elevation: 0,
-                  color: Colors.white,
+                  color: UIUtils.cardColor,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(color: Colors.grey.withOpacity(0.1)),
+                    side: BorderSide(
+                      color: UIUtils.isHighContrast
+                          ? UIUtils.accentColor
+                          : Colors.grey.withOpacity(0.1),
+                    ),
                   ),
                   child: Padding(
                     padding: UIUtils.paddingAll(context, 16),
@@ -412,7 +590,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                             "Manage your sessions and connect with students",
                             style: TextStyle(
                               fontSize: UIUtils.fontSize(context, 13),
-                              color: Colors.grey.shade700,
+                              color: UIUtils.subtextColor,
                             ),
                           ),
                         ],
@@ -420,13 +598,17 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                     ),
                   ),
                 ),
-                
+
                 SizedBox(height: UIUtils.spacing(context, 12)),
-                
+
                 // Create Session Button
                 ElevatedButton.icon(
+                  focusNode: _createFocusNode,
                   onPressed: createSession,
-                  icon: Icon(Icons.add_circle_outline, size: UIUtils.iconSize(context, 22)),
+                  icon: Icon(
+                    Icons.add_circle_outline,
+                    size: UIUtils.iconSize(context, 22),
+                  ),
                   label: Text(
                     "2: Create New Session",
                     style: TextStyle(fontSize: UIUtils.fontSize(context, 15)),
@@ -441,13 +623,17 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                     elevation: 0,
                   ),
                 ),
-                
+
                 SizedBox(height: UIUtils.spacing(context, 8)),
-                
+
                 // Offline Audio Library Button
                 OutlinedButton.icon(
+                  focusNode: _libraryFocusNode,
                   onPressed: _openOfflineAudioLibrary,
-                  icon: Icon(Icons.library_music_rounded, size: UIUtils.iconSize(context, 22)),
+                  icon: Icon(
+                    Icons.library_music_rounded,
+                    size: UIUtils.iconSize(context, 22),
+                  ),
                   label: Text(
                     "3: Offline Audio Library",
                     style: TextStyle(fontSize: UIUtils.fontSize(context, 15)),
@@ -461,9 +647,53 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                     ),
                   ),
                 ),
-                
+
                 SizedBox(height: UIUtils.spacing(context, 12)),
-                
+
+                Card(
+                  elevation: 0,
+                  color: UIUtils.cardColor,
+                  child: Padding(
+                    padding: UIUtils.paddingAll(context, 10),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _searchController,
+                            focusNode: _searchFocusNode,
+                            keyboardType: TextInputType.text,
+                            textInputAction: TextInputAction.search,
+                            onTap: () => _keypadController.enterTextEditing(
+                              _searchFocusNode,
+                            ),
+                            onChanged: (_) => setState(() {}),
+                            onSubmitted: (_) => _showSearchResults(),
+                            decoration: const InputDecoration(
+                              labelText: '4. Session name or ID',
+                              hintText: 'Leave empty to list all sessions',
+                              prefixIcon: Icon(Icons.search),
+                              border: OutlineInputBorder(),
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: UIUtils.spacing(context, 8)),
+                        Semantics(
+                          button: true,
+                          label: 'Show matching sessions',
+                          child: IconButton.filled(
+                            focusNode: _searchResultsFocusNode,
+                            onPressed: _showSearchResults,
+                            tooltip: 'Show matching sessions',
+                            icon: const Icon(Icons.manage_search),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                SizedBox(height: UIUtils.spacing(context, 12)),
+
                 // Sessions Header
                 Row(
                   children: [
@@ -475,15 +705,19 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                       ),
                     ),
                     SizedBox(width: UIUtils.spacing(context, 6)),
-                    if (sessions.isNotEmpty)
+                    if (_filteredSessions.isNotEmpty)
                       Container(
-                        padding: UIUtils.paddingSymmetric(context, horizontal: 8, vertical: 2),
+                        padding: UIUtils.paddingSymmetric(
+                          context,
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.indigo,
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Text(
-                          '${sessions.length}',
+                          '${_filteredSessions.length}',
                           style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
@@ -493,11 +727,11 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                       ),
                   ],
                 ),
-                
+
                 SizedBox(height: UIUtils.spacing(context, 8)),
-                
+
                 // Sessions List
-                if (sessions.isEmpty)
+                if (_filteredSessions.isEmpty)
                   Center(
                     child: Padding(
                       padding: UIUtils.paddingAll(context, 24),
@@ -507,23 +741,26 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                           Icon(
                             Icons.school_outlined,
                             size: UIUtils.iconSize(context, 56),
-                            color: Colors.grey.shade400,
+                            color: UIUtils.subtextColor,
                           ),
                           SizedBox(height: UIUtils.spacing(context, 10)),
                           Text(
-                            "No active sessions yet",
+                            _searchController.text.trim().isEmpty
+                                ? "No active sessions yet"
+                                : "No matching sessions",
                             style: TextStyle(
                               fontSize: UIUtils.fontSize(context, 15),
-                              color: Colors.grey.shade600,
+                              color: UIUtils.subtextColor,
                             ),
                           ),
-                          if (!tiny) ...[
+                          if (!tiny &&
+                              _searchController.text.trim().isEmpty) ...[
                             SizedBox(height: UIUtils.spacing(context, 4)),
                             Text(
                               "Create your first session to get started",
                               style: TextStyle(
                                 fontSize: UIUtils.fontSize(context, 12),
-                                color: Colors.grey.shade500,
+                                color: UIUtils.subtextColor,
                               ),
                             ),
                           ],
@@ -532,14 +769,16 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                     ),
                   )
                 else
-                  ...sessions.map((s) {
+                  ..._filteredSessions.map((s) {
                     final sessionId = s['session_id'] ?? 0;
                     final title = s['title'] ?? 'Untitled Session';
                     // final participantCount = s['participant_count'] ?? 0;
                     final createdAt = s['created_at'] ?? '';
-                    
+
                     return Card(
-                      margin: EdgeInsets.only(bottom: UIUtils.spacing(context, 8)),
+                      margin: EdgeInsets.only(
+                        bottom: UIUtils.spacing(context, 8),
+                      ),
                       elevation: 3,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
@@ -570,9 +809,9 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                                   ),
                                 ),
                               ),
-                              
+
                               SizedBox(width: UIUtils.spacing(context, 8)),
-                              
+
                               // Session Details
                               Expanded(
                                 child: Column(
@@ -608,26 +847,56 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                                   ],
                                 ),
                               ),
-                              
+
                               // Action Buttons
                               Column(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   ElevatedButton(
+                                    focusNode: _sessionOpenFocusNodes
+                                        .putIfAbsent(
+                                          sessionId as int,
+                                          () => FocusNode(
+                                            debugLabel:
+                                                'teacher-open-$sessionId',
+                                          ),
+                                        ),
                                     onPressed: () => _openSession(sessionId),
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: Colors.green,
                                       foregroundColor: Colors.white,
-                                      padding: UIUtils.paddingSymmetric(context, horizontal: 10, vertical: 4),
+                                      padding: UIUtils.paddingSymmetric(
+                                        context,
+                                        horizontal: 10,
+                                        vertical: 4,
+                                      ),
                                       minimumSize: Size.zero,
-                                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                      tapTargetSize:
+                                          MaterialTapTargetSize.shrinkWrap,
                                     ),
-                                    child: Text("Open", style: TextStyle(fontSize: UIUtils.fontSize(context, 12))),
+                                    child: Text(
+                                      "Open",
+                                      style: TextStyle(
+                                        fontSize: UIUtils.fontSize(context, 12),
+                                      ),
+                                    ),
                                   ),
                                   SizedBox(height: UIUtils.spacing(context, 4)),
                                   IconButton(
-                                    onPressed: () => _deleteSession(sessionId, title),
-                                    icon: Icon(Icons.delete, size: UIUtils.iconSize(context, 18)),
+                                    focusNode: _sessionDeleteFocusNodes
+                                        .putIfAbsent(
+                                          sessionId as int,
+                                          () => FocusNode(
+                                            debugLabel:
+                                                'teacher-delete-$sessionId',
+                                          ),
+                                        ),
+                                    onPressed: () =>
+                                        _deleteSession(sessionId, title),
+                                    icon: Icon(
+                                      Icons.delete,
+                                      size: UIUtils.iconSize(context, 18),
+                                    ),
                                     color: Colors.red,
                                     tooltip: "Delete Session",
                                     padding: EdgeInsets.zero,
@@ -641,12 +910,97 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                       ),
                     );
                   }).toList(),
-                  
-                SizedBox(height: UIUtils.spacing(context, 12)), // Bottom padding
+
+                SizedBox(
+                  height: UIUtils.spacing(context, 12),
+                ), // Bottom padding
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _CreateSessionDialog extends StatefulWidget {
+  const _CreateSessionDialog();
+
+  @override
+  State<_CreateSessionDialog> createState() => _CreateSessionDialogState();
+}
+
+class _CreateSessionDialogState extends State<_CreateSessionDialog> {
+  final TextEditingController _titleController = TextEditingController();
+  final KeypadNavigationController _keypadController =
+      KeypadNavigationController();
+  final FocusNode _titleFocus = FocusNode(debugLabel: 'create-session-title');
+  final FocusNode _cancelFocus = FocusNode(debugLabel: 'create-session-cancel');
+  final FocusNode _createFocus = FocusNode(debugLabel: 'create-session-create');
+
+  void _create() {
+    final title = _titleController.text.trim();
+    Navigator.pop(context, title.isEmpty ? 'New Session' : title);
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _titleFocus.dispose();
+    _cancelFocus.dispose();
+    _createFocus.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return KeypadInstructionWrapper(
+      screenName: 'Create new session',
+      labels: const {0: 'Cancel', 1: 'Create session'},
+      actions: {0: () => Navigator.pop(context), 1: _create},
+      navigationController: _keypadController,
+      focusTargets: [
+        KeypadFocusTarget(
+          node: _titleFocus,
+          label: 'Session title field',
+          isTextField: true,
+        ),
+        KeypadFocusTarget(
+          node: _cancelFocus,
+          label: 'Cancel session creation',
+          onActivate: () => Navigator.pop(context),
+        ),
+        KeypadFocusTarget(
+          node: _createFocus,
+          label: 'Create session',
+          onActivate: _create,
+        ),
+      ],
+      child: AlertDialog(
+        title: const Text('Create New Session'),
+        content: TextField(
+          controller: _titleController,
+          focusNode: _titleFocus,
+          decoration: const InputDecoration(
+            labelText: 'Session Title',
+            hintText: 'e.g., English Class - Unit 5',
+            border: OutlineInputBorder(),
+          ),
+          onTap: () => _keypadController.enterTextEditing(_titleFocus),
+          onSubmitted: (_) => _create(),
+        ),
+        actions: [
+          TextButton(
+            focusNode: _cancelFocus,
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel (0)'),
+          ),
+          ElevatedButton(
+            focusNode: _createFocus,
+            onPressed: _create,
+            child: const Text('Create (1)'),
+          ),
+        ],
       ),
     );
   }

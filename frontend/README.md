@@ -1,5 +1,11 @@
 # frontend
 
+Release Android artifacts must be named `SEEDS-v<version>.apk` (for example,
+`SEEDS-v1.0.0.apk`) after `flutter build apk --release`.
+
+Firebase Cloud Messaging setup and verification steps are documented in
+[FCM_SETUP.md](FCM_SETUP.md).
+
 A new Flutter project.
 
 ## Getting Started

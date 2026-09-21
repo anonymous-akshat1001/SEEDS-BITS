@@ -5,7 +5,6 @@
 // The public API is intentionally close to the old WsService so that
 // call-sites need minimal changes.
 
-
 // Architecture:
 //   Server → Client : GET /sse/sessions/{id}?user_id={uid}  (SSE stream)
 //   Client → Server : POST /sessions/{id}/action             (plain HTTP POST)
@@ -23,16 +22,16 @@ typedef MsgHandler = void Function(Map<String, dynamic>);
 
 class SseService {
   // ── public state ─────────────────────────────────────────────────────────
-  int?    sessionId;
-  int?    userId;
+  int? sessionId;
+  int? userId;
   MsgHandler? onMessage;
 
   // ── private ──────────────────────────────────────────────────────────────
-  http.Client?              _client;
+  http.Client? _client;
   StreamSubscription<String>? _sub;
-  final List<MsgHandler>    _chatHandlers = [];
-  bool                      _disposed     = false;
-  bool                      _reconnecting = false;
+  final List<MsgHandler> _chatHandlers = [];
+  bool _disposed = false;
+  bool _reconnecting = false;
 
   // Parsed from the server's 'connected' event.
   // Used to detect own chat messages (avoid showing duplicates).
@@ -46,7 +45,7 @@ class SseService {
   /// [onMsg] receives every inbound server event as a Map.
   void connect(String sessionId_, int userId_, MsgHandler onMsg) {
     sessionId = int.parse(sessionId_);
-    userId    = userId_;
+    userId = userId_;
     onMessage = onMsg;
     _disposed = false;
 
@@ -66,64 +65,70 @@ class SseService {
     _client = http.Client();
 
     final request = http.Request('GET', Uri.parse(url));
-    request.headers['Accept']        = 'text/event-stream';
+    request.headers['Accept'] = 'text/event-stream';
     request.headers['Cache-Control'] = 'no-cache';
 
     // SSE state machine
-    String eventType     = 'message';
-    final  dataBuffer    = StringBuffer();
+    String eventType = 'message';
+    final dataBuffer = StringBuffer();
 
-    _client!.send(request).then((response) {
-      if (_disposed) { _client?.close(); return; }
-
-      if (response.statusCode != 200) {
-        debugPrint('[SSE] HTTP ${response.statusCode} — will retry');
-        _client?.close();
-        _scheduleReconnect();
-        return;
-      }
-
-      debugPrint('[SSE] Stream opened (HTTP ${response.statusCode})');
-
-      final lineStream = response.stream
-          .transform(utf8.decoder)
-          .transform(const LineSplitter());
-
-      _sub = lineStream.listen(
-        (line) {
-          // SSE keep-alive comments start with ':'
-          if (line.startsWith(':')) return;
-
-          if (line.startsWith('event:')) {
-            eventType = line.substring(6).trim();
-          } else if (line.startsWith('data:')) {
-            dataBuffer.write(line.substring(5).trim());
-          } else if (line.isEmpty) {
-            // Blank line → dispatch accumulated event
-            final raw = dataBuffer.toString();
-            dataBuffer.clear();
-            if (raw.isNotEmpty) {
-              _dispatch(eventType, raw);
-            }
-            eventType = 'message';   // reset for next event
+    _client!
+        .send(request)
+        .then((response) {
+          if (_disposed) {
+            _client?.close();
+            return;
           }
-        },
-        onError: (e) {
-          debugPrint('[SSE ERROR] $e');
-          _client?.close();
+
+          if (response.statusCode != 200) {
+            debugPrint('[SSE] HTTP ${response.statusCode} — will retry');
+            _client?.close();
+            _scheduleReconnect();
+            return;
+          }
+
+          debugPrint('[SSE] Stream opened (HTTP ${response.statusCode})');
+
+          final lineStream = response.stream
+              .transform(utf8.decoder)
+              .transform(const LineSplitter());
+
+          _sub = lineStream.listen(
+            (line) {
+              // SSE keep-alive comments start with ':'
+              if (line.startsWith(':')) return;
+
+              if (line.startsWith('event:')) {
+                eventType = line.substring(6).trim();
+              } else if (line.startsWith('data:')) {
+                dataBuffer.write(line.substring(5).trim());
+              } else if (line.isEmpty) {
+                // Blank line → dispatch accumulated event
+                final raw = dataBuffer.toString();
+                dataBuffer.clear();
+                if (raw.isNotEmpty) {
+                  _dispatch(eventType, raw);
+                }
+                eventType = 'message'; // reset for next event
+              }
+            },
+            onError: (e) {
+              debugPrint('[SSE ERROR] $e');
+              _client?.close();
+              _scheduleReconnect();
+            },
+            onDone: () {
+              debugPrint('[SSE] Stream ended — reconnecting');
+              _client?.close();
+              _scheduleReconnect();
+            },
+            cancelOnError: true,
+          );
+        })
+        .catchError((e) {
+          debugPrint('[SSE CONNECT ERROR] $e');
           _scheduleReconnect();
-        },
-        onDone: () {
-          debugPrint('[SSE] Stream ended — reconnecting');
-          _client?.close();
-          _scheduleReconnect();
-        },
-        cancelOnError: true,
-      );
-    }).catchError((e) {
-      debugPrint('[SSE CONNECT ERROR] $e');
-      _scheduleReconnect();
-    });
+        });
   }
 
   void _dispatch(String eventType, String rawData) {
@@ -145,7 +150,9 @@ class SseService {
       if (type == 'chat') {
         final fromId = data['from'] as int?;
         data['is_own'] = (fromId != null && fromId == _myParticipantId);
-        for (final h in _chatHandlers) { h(data); }
+        for (final h in _chatHandlers) {
+          h(data);
+        }
       }
 
       onMessage?.call(data);
@@ -188,7 +195,9 @@ class SseService {
       );
 
       if (response.statusCode < 200 || response.statusCode >= 300) {
-        debugPrint('[SSE SEND] POST failed ${response.statusCode}: ${response.body}');
+        debugPrint(
+          '[SSE SEND] POST failed ${response.statusCode}: ${response.body}',
+        );
       }
     } catch (e) {
       debugPrint('[SSE SEND ERROR] $e');
@@ -197,7 +206,7 @@ class SseService {
 
   // ── chat helpers ─────────────────────────────────────────────────────────
 
-  void registerChatHandler(MsgHandler h)   => _chatHandlers.add(h);
+  void registerChatHandler(MsgHandler h) => _chatHandlers.add(h);
   void unregisterChatHandler(MsgHandler h) => _chatHandlers.remove(h);
 
   // ── close ─────────────────────────────────────────────────────────────────

@@ -1,13 +1,7 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-String buildSessionWebSocketUrl({
-  required int sessionId,
-  required int userId,
-}) {
-  return buildSessionWebSocketUrls(
-    sessionId: sessionId,
-    userId: userId,
-  ).first;
+String buildSessionWebSocketUrl({required int sessionId, required int userId}) {
+  return buildSessionWebSocketUrls(sessionId: sessionId, userId: userId).first;
 }
 
 List<String> buildSessionWebSocketUrls({

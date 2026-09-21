@@ -5,7 +5,7 @@ import '../services/sse_service.dart';
 import '../utils/ui_utils.dart';
 
 class ChatPanel extends StatefulWidget {
-  final SseService ws;                   // ← type changed from WsService
+  final SseService ws; // ← type changed from WsService
   final String sessionId;
   final String participantId;
 
@@ -39,9 +39,8 @@ class _ChatPanelState extends State<ChatPanel> {
   void onReceive(Map<String, dynamic> msg) {
     if (msg['type'] == 'chat') {
       final text = msg['text'] ?? msg['message'] ?? '';
-      final from = msg['sender_name'] ??
-                   msg['participant_id']?.toString() ??
-                   'unknown';
+      final from =
+          msg['sender_name'] ?? msg['participant_id']?.toString() ?? 'unknown';
       if (text.toString().isEmpty) return;
       setState(() => messages.add({'from': from, 'text': text.toString()}));
       TtsService.speak(text.toString());
@@ -65,7 +64,7 @@ class _ChatPanelState extends State<ChatPanel> {
   Widget build(BuildContext context) {
     return Container(
       width: UIUtils.scale(context) * 260,
-      color: Colors.grey.shade100,
+      color: UIUtils.cardColor,
       padding: UIUtils.paddingAll(context, 6),
       child: Column(
         children: [
@@ -73,7 +72,7 @@ class _ChatPanelState extends State<ChatPanel> {
             child: ListView.builder(
               itemCount: messages.length,
               itemBuilder: (_, i) {
-                final m  = messages[i];
+                final m = messages[i];
                 final me = m['from'] == 'me';
                 return Align(
                   alignment: me ? Alignment.centerRight : Alignment.centerLeft,
@@ -104,9 +103,15 @@ class _ChatPanelState extends State<ChatPanel> {
                   style: TextStyle(fontSize: UIUtils.fontSize(context, 12)),
                   decoration: InputDecoration(
                     hintText: 'Message',
-                    hintStyle: TextStyle(fontSize: UIUtils.fontSize(context, 12)),
+                    hintStyle: TextStyle(
+                      fontSize: UIUtils.fontSize(context, 12),
+                    ),
                     isDense: true,
-                    contentPadding: UIUtils.paddingSymmetric(context, horizontal: 8, vertical: 6),
+                    contentPadding: UIUtils.paddingSymmetric(
+                      context,
+                      horizontal: 8,
+                      vertical: 6,
+                    ),
                   ),
                   onSubmitted: (_) => _sendText(),
                 ),
@@ -114,7 +119,7 @@ class _ChatPanelState extends State<ChatPanel> {
               IconButton(
                 onPressed: _sendText,
                 icon: Icon(Icons.send, size: UIUtils.iconSize(context, 18)),
-              )
+              ),
             ],
           ),
         ],

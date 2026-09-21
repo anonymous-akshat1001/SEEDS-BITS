@@ -14,17 +14,14 @@ import 'package:speech_to_text/speech_to_text.dart' as stt;
 import '../services/api_service.dart';
 import '../services/sse_service.dart';
 import '../services/tts_service.dart';
+import '../widgets/key_instruction_wrapper.dart';
+import '../widgets/keypad_confirmation_dialog.dart';
 import 'invite_students_screen.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter/services.dart';
 import '../utils/ui_utils.dart';
-import '../utils/keypad_config.dart';
 import '../utils/keypad_actions.dart';
 
-
-
 final baseUrl = dotenv.env['API_BASE_URL'];
-
 
 class SessionScreen extends StatefulWidget {
   final int sessionId;
@@ -48,60 +45,60 @@ class SessionScreen extends StatefulWidget {
 
 class _SessionScreenState extends State<SessionScreen> {
   // ── WebRTC ─────────────────────────────────────────────────────────────
-  MediaStream?                         _localStream;
-  final Map<int, RTCPeerConnection>    _peerConnections  = {};
-  final Map<int, RTCVideoRenderer>     _remoteRenderers  = {};
+  MediaStream? _localStream;
+  final Map<int, RTCPeerConnection> _peerConnections = {};
+  final Map<int, RTCVideoRenderer> _remoteRenderers = {};
 
   // ICE candidate batching — collect candidates for 150 ms then send as one POST
   final Map<int, List<Map<String, dynamic>>> _pendingIceCandidates = {};
-  final Map<int, Timer>                      _iceTimers            = {};
+  final Map<int, Timer> _iceTimers = {};
 
   // ── SSE transport ──────────────────────────────────────────────────────
   final SseService _sse = SseService();
 
   // ── audio ──────────────────────────────────────────────────────────────
-  final AudioPlayer  _sessionAudioPlayer = AudioPlayer();
+  final AudioPlayer _sessionAudioPlayer = AudioPlayer();
   final stt.SpeechToText _speech = stt.SpeechToText();
 
   // ── UI state ───────────────────────────────────────────────────────────
-  bool    _muted                = false;
-  bool    _handRaised           = false;
-  bool    _ttsEnabled           = true;
-  bool    _voiceCommandsEnabled = false;
-  bool    _voiceCommandsAvailable = false;
-  bool    _isInitializing       = true;
-  Timer?  _voiceRestartTimer;
+  bool _muted = false;
+  bool _handRaised = false;
+  bool _ttsEnabled = true;
+  bool _voiceCommandsEnabled = false;
+  bool _voiceCommandsAvailable = false;
+  bool _isInitializing = true;
+  Timer? _voiceRestartTimer;
 
   // Set from the SSE 'connected' event — authoritative server-assigned id
-  int?    _participantId;
+  int? _participantId;
 
   // Audio
-  int?    _currentAudioId;
+  int? _currentAudioId;
   String? _currentAudioTitle;
-  bool    _isPlayingSessionAudio = false;
-  double  _audioSpeed            = 1.0;
+  bool _isPlayingSessionAudio = false;
+  double _audioSpeed = 1.0;
   double? _audioDuration;
-  double  _currentPosition       = 0.0;
-  bool    _isSeeking             = false;
+  double _currentPosition = 0.0;
+  bool _isSeeking = false;
 
   // Chat & participants
-  final TextEditingController          _chatController    = TextEditingController();
-  final List<Map<String, dynamic>>     _messages          = [];
-  final Map<int, Map<String, dynamic>> _participants      = {};
-  final ScrollController               _chatScrollController = ScrollController();
+  final TextEditingController _chatController = TextEditingController();
+  final List<Map<String, dynamic>> _messages = [];
+  final Map<int, Map<String, dynamic>> _participants = {};
+  final ScrollController _chatScrollController = ScrollController();
 
   // ── Audio library panel toggle (teacher) ───────────────────────────────
   bool _showAudioPanel = false;
 
   // ── Audio library (teacher only) ────────────────────────────────────────
-  List<Map<String, dynamic>> _audioFiles        = [];
-  List<Map<String, dynamic>> _teacherSessions   = [];
-  bool                       _audioLibraryLoaded = false;
-  bool                       _isUploadingAudio   = false;
-  int?                       _previewingAudioId;
-  final AudioPlayer          _previewPlayer      = AudioPlayer();
-  final TextEditingController _uploadTitleCtrl   = TextEditingController();
-  final TextEditingController _uploadDescCtrl    = TextEditingController();
+  List<Map<String, dynamic>> _audioFiles = [];
+  List<Map<String, dynamic>> _teacherSessions = [];
+  bool _audioLibraryLoaded = false;
+  bool _isUploadingAudio = false;
+  int? _previewingAudioId;
+  final AudioPlayer _previewPlayer = AudioPlayer();
+  final TextEditingController _uploadTitleCtrl = TextEditingController();
+  final TextEditingController _uploadDescCtrl = TextEditingController();
 
   // WebRTC config
   final Map<String, dynamic> _iceServers = {
@@ -111,7 +108,65 @@ class _SessionScreenState extends State<SessionScreen> {
     ],
     'sdpSemantics': 'unified-plan',
   };
-  final FocusNode _screenFocusNode = FocusNode();
+  final KeypadNavigationController _keypadController =
+      KeypadNavigationController();
+  final FocusNode _ttsFocusNode = FocusNode(debugLabel: 'session-tts');
+  final FocusNode _inviteFocusNode = FocusNode(debugLabel: 'session-invite');
+  final FocusNode _endFocusNode = FocusNode(debugLabel: 'session-end');
+  final FocusNode _audioPanelFocusNode = FocusNode(
+    debugLabel: 'session-audio-panel',
+  );
+  final FocusNode _leaveFocusNode = FocusNode(debugLabel: 'session-leave');
+  final FocusNode _muteFocusNode = FocusNode(debugLabel: 'session-mute');
+  final FocusNode _handFocusNode = FocusNode(debugLabel: 'session-hand');
+  final FocusNode _bottomInviteFocusNode = FocusNode(
+    debugLabel: 'session-bottom-invite',
+  );
+  final FocusNode _bottomAudioFocusNode = FocusNode(
+    debugLabel: 'session-bottom-audio',
+  );
+  final FocusNode _bottomLeaveFocusNode = FocusNode(
+    debugLabel: 'session-bottom-leave',
+  );
+  final FocusNode _participantsTabFocusNode = FocusNode(
+    debugLabel: 'session-participants-tab',
+  );
+  final FocusNode _chatTabFocusNode = FocusNode(debugLabel: 'session-chat-tab');
+  final FocusNode _chatTtsFocusNode = FocusNode(debugLabel: 'session-chat-tts');
+  final FocusNode _chatFieldFocusNode = FocusNode(
+    debugLabel: 'session-chat-field',
+  );
+  final FocusNode _chatSendFocusNode = FocusNode(
+    debugLabel: 'session-chat-send',
+  );
+  final FocusNode _seekFocusNode = FocusNode(debugLabel: 'session-audio-seek');
+  final FocusNode _slowerFocusNode = FocusNode(
+    debugLabel: 'session-audio-slower',
+  );
+  final FocusNode _rewindFocusNode = FocusNode(
+    debugLabel: 'session-audio-rewind',
+  );
+  final FocusNode _playFocusNode = FocusNode(debugLabel: 'session-audio-play');
+  final FocusNode _forwardFocusNode = FocusNode(
+    debugLabel: 'session-audio-forward',
+  );
+  final FocusNode _fasterFocusNode = FocusNode(
+    debugLabel: 'session-audio-faster',
+  );
+  final FocusNode _uploadFocusNode = FocusNode(
+    debugLabel: 'session-audio-upload',
+  );
+  final FocusNode _refreshAudioFocusNode = FocusNode(
+    debugLabel: 'session-audio-refresh',
+  );
+  final FocusNode _closeAudioFocusNode = FocusNode(
+    debugLabel: 'session-audio-close',
+  );
+  final Map<int, FocusNode> _participantMuteFocusNodes = {};
+  final Map<int, FocusNode> _participantKickFocusNodes = {};
+  final Map<int, FocusNode> _previewAudioFocusNodes = {};
+  final Map<int, FocusNode> _selectAudioFocusNodes = {};
+  bool _isReturningToDashboard = false;
 
   // ── lifecycle ───────────────────────────────────────────────────────────
 
@@ -119,7 +174,6 @@ class _SessionScreenState extends State<SessionScreen> {
   void initState() {
     super.initState();
     _initialize();
-    _screenFocusNode.requestFocus();
 
     _sessionAudioPlayer.onPositionChanged.listen((pos) {
       if (mounted && !_isSeeking) {
@@ -131,7 +185,10 @@ class _SessionScreenState extends State<SessionScreen> {
     });
     _sessionAudioPlayer.onPlayerComplete.listen((_) {
       if (mounted) {
-        setState(() { _isPlayingSessionAudio = false; _currentPosition = 0; });
+        setState(() {
+          _isPlayingSessionAudio = false;
+          _currentPosition = 0;
+        });
         _speakIfEnabled("Playback finished");
       }
     });
@@ -199,8 +256,7 @@ class _SessionScreenState extends State<SessionScreen> {
     });
   }
 
-
-   Future<void> _loadTeacherSessions() async {
+  Future<void> _loadTeacherSessions() async {
     final sessions = await ApiService.getActiveSessions();
     if (sessions != null && mounted) {
       setState(() {
@@ -211,15 +267,39 @@ class _SessionScreenState extends State<SessionScreen> {
     }
   }
 
-
   Future<void> _initializeMedia() async {
+    final prefs = await SharedPreferences.getInstance();
+    final explanationSeen =
+        prefs.getBool('microphone_permission_explained') ?? false;
+    if (!explanationSeen) {
+      if (!mounted) return;
+      final confirmed = await showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => const KeypadConfirmationDialog(
+          title: 'Microphone access',
+          message:
+              'SEEDS uses the microphone only during an active session for live audio and enabled voice commands. You can stay in the session without microphone access, but others will not hear you.',
+          confirmLabel: 'Continue to session',
+        ),
+      );
+      if (confirmed != true) {
+        _muted = true;
+        _showSnackError(
+          'Microphone access was skipped. You joined the session muted.',
+        );
+        return;
+      }
+      await prefs.setBool('microphone_permission_explained', true);
+    }
+
     try {
       _localStream = await navigator.mediaDevices.getUserMedia({
         'audio': {
           'mandatory': {
             'googEchoCancellation': true,
             'googNoiseSuppression': true,
-            'googAutoGainControl':  true,
+            'googAutoGainControl': true,
           },
           'optional': [],
         },
@@ -229,7 +309,10 @@ class _SessionScreenState extends State<SessionScreen> {
       print('[MEDIA] Local stream ready');
     } catch (e) {
       print('[MEDIA ERROR] $e');
-      throw Exception('Microphone permission denied');
+      _muted = true;
+      _showSnackError(
+        'Microphone access is unavailable. You joined the session muted.',
+      );
     }
   }
 
@@ -251,11 +334,7 @@ class _SessionScreenState extends State<SessionScreen> {
   // ── SSE connection ──────────────────────────────────────────────────────
 
   void _connectSse() {
-    _sse.connect(
-      widget.sessionId.toString(),
-      widget.userId,
-      _handleSseMessage,
-    );
+    _sse.connect(widget.sessionId.toString(), widget.userId, _handleSseMessage);
   }
 
   void _handleSseMessage(Map<String, dynamic> data) {
@@ -336,7 +415,9 @@ class _SessionScreenState extends State<SessionScreen> {
 
       case 'error':
         print('[SSE SERVER ERROR] ${data['detail']}');
-        _showSnackError(data['detail']?.toString() ?? 'Server error');
+        _showSnackError(
+          'We could not complete that request. Please try again.',
+        );
 
       default:
         print('[SSE] Unhandled type: $type');
@@ -353,18 +434,18 @@ class _SessionScreenState extends State<SessionScreen> {
       _participants.clear();
 
       participants.forEach((key, value) {
-        final pid  = int.tryParse(key);
+        final pid = int.tryParse(key);
         if (pid == null || pid == 0) return;
 
         final meta = value as Map<String, dynamic>;
         _participants[pid] = {
-          'id':         pid,
-          'user_id':    meta['user_id'],
-          'name':       meta['name'] ?? 'User ${meta['user_id']}',
-          'is_muted':   meta['is_muted']   ?? false,
+          'id': pid,
+          'user_id': meta['user_id'],
+          'name': meta['name'] ?? 'User ${meta['user_id']}',
+          'is_muted': meta['is_muted'] ?? false,
           'raised_hand': meta['raised_hand'] ?? false,
           // is_teacher is now stored server-side and included in the snapshot
-          'is_teacher': meta['is_teacher']  ?? false,
+          'is_teacher': meta['is_teacher'] ?? false,
         };
       });
     });
@@ -374,15 +455,15 @@ class _SessionScreenState extends State<SessionScreen> {
     // Also restore audio playback state if the session was already playing
     final playback = data['playback'] as Map<String, dynamic>?;
     if (playback != null && playback['status'] == 'playing') {
-      final audioId  = playback['audio_id'] as int?;
-      final speed    = (playback['speed']   as num?)?.toDouble() ?? 1.0;
+      final audioId = playback['audio_id'] as int?;
+      final speed = (playback['speed'] as num?)?.toDouble() ?? 1.0;
       final position = (playback['position'] as num?)?.toDouble() ?? 0.0;
       if (audioId != null) {
         _onAudioPlay({
           'audio_id': audioId,
-          'speed':    speed,
+          'speed': speed,
           'position': position,
-          'title':    playback['title'],
+          'title': playback['title'],
         });
       }
     }
@@ -400,10 +481,10 @@ class _SessionScreenState extends State<SessionScreen> {
   // ── participant events ──────────────────────────────────────────────────
 
   void _onParticipantJoined(Map<String, dynamic> data) {
-    final pid       = data['participant_id'] as int?;
-    final uid       = data['user_id']       as int?;
-    final name      = data['name']          as String? ?? 'User $uid';
-    final isTeacher = data['is_teacher']    as bool?   ?? false;
+    final pid = data['participant_id'] as int?;
+    final uid = data['user_id'] as int?;
+    final name = data['name'] as String? ?? 'User $uid';
+    final isTeacher = data['is_teacher'] as bool? ?? false;
 
     if (pid == null || pid == _participantId) return;
 
@@ -411,10 +492,10 @@ class _SessionScreenState extends State<SessionScreen> {
 
     setState(() {
       _participants[pid] = {
-        'id':         pid,
-        'user_id':    uid,
-        'name':       name,
-        'is_muted':   false,
+        'id': pid,
+        'user_id': uid,
+        'name': name,
+        'is_muted': false,
         'raised_hand': false,
         'is_teacher': isTeacher,
       };
@@ -445,8 +526,8 @@ class _SessionScreenState extends State<SessionScreen> {
   }
 
   void _onParticipantMuted(Map<String, dynamic> data) {
-    final pid     = data['participant_id'] as int?;
-    final isMuted = data['is_muted']       as bool? ?? false;
+    final pid = data['participant_id'] as int?;
+    final isMuted = data['is_muted'] as bool? ?? false;
     if (pid == null) return;
 
     setState(() {
@@ -478,8 +559,8 @@ class _SessionScreenState extends State<SessionScreen> {
 
   void _onChatMessage(Map<String, dynamic> data) {
     final senderName = data['sender_name'] as String? ?? 'Unknown';
-    final text       = data['text']        as String? ?? '';
-    final isOwn      = data['is_own']      as bool?   ?? false;
+    final text = data['text'] as String? ?? '';
+    final isOwn = data['is_own'] as bool? ?? false;
 
     if (text.isEmpty) return;
 
@@ -490,10 +571,10 @@ class _SessionScreenState extends State<SessionScreen> {
 
     setState(() {
       _messages.add({
-        'sender':    senderName,
-        'text':      text,
+        'sender': senderName,
+        'text': text,
         'timestamp': DateTime.now(),
-        'isMe':      false,
+        'isMe': false,
       });
     });
 
@@ -502,47 +583,50 @@ class _SessionScreenState extends State<SessionScreen> {
   }
 
   void _onKicked(Map<String, dynamic> data) {
-    _speakIfEnabled('You have been removed from the session');
-    if (mounted) Navigator.pop(context);
+    _returnToDashboard();
   }
 
   void _onSessionEnded() {
-    _speakIfEnabled('Session ended');
-    if (mounted) Navigator.pop(context);
+    _returnToDashboard();
   }
 
   // ── audio playback ──────────────────────────────────────────────────────
 
   void _onAudioSelected(Map<String, dynamic> data) {
     final audioId = data['audio_id'] as int?;
-    final title   = data['title']   as String?;
+    final title = data['title'] as String?;
     if (audioId == null) return;
-    setState(() { _currentAudioId = audioId; _currentAudioTitle = title; });
+    setState(() {
+      _currentAudioId = audioId;
+      _currentAudioTitle = title;
+    });
     _speakIfEnabled('Audio selected: ${title ?? "Unknown"}');
   }
 
   Future<void> _onAudioPlay(Map<String, dynamic> data) async {
-    final audioId  = data['audio_id'] as int?;
-    final speed    = (data['speed']   as num?)?.toDouble() ?? 1.0;
+    final audioId = data['audio_id'] as int?;
+    final speed = (data['speed'] as num?)?.toDouble() ?? 1.0;
     final position = (data['position'] as num?)?.toDouble() ?? 0.0;
-    final title    = data['title']    as String?;
+    final title = data['title'] as String?;
     final duration = (data['duration'] as num?)?.toDouble();
 
     if (audioId == null) return;
 
     try {
       setState(() {
-        _currentAudioId        = audioId;
-        _currentAudioTitle     = title ?? _currentAudioTitle;
+        _currentAudioId = audioId;
+        _currentAudioTitle = title ?? _currentAudioTitle;
         _isPlayingSessionAudio = true;
-        _audioSpeed            = speed;
-        _currentPosition       = position;
+        _audioSpeed = speed;
+        _currentPosition = position;
         if (duration != null) _audioDuration = duration;
       });
 
       await _sessionAudioPlayer.stop();
       await _sessionAudioPlayer.setPlaybackRate(speed);
-      await _sessionAudioPlayer.play(UrlSource('$baseUrl/audio/$audioId/stream'));
+      await _sessionAudioPlayer.play(
+        UrlSource('$baseUrl/audio/$audioId/stream'),
+      );
       if (position > 0) {
         await _sessionAudioPlayer.seek(Duration(seconds: position.toInt()));
       }
@@ -562,7 +646,7 @@ class _SessionScreenState extends State<SessionScreen> {
   }
 
   Future<void> _onAudioSeek(Map<String, dynamic> data) async {
-    final position     = (data['position']      as num?)?.toDouble() ?? 0.0;
+    final position = (data['position'] as num?)?.toDouble() ?? 0.0;
     final resumePlaying = data['resume_playing'] as bool? ?? false;
     await _sessionAudioPlayer.seek(Duration(seconds: position.toInt()));
     setState(() => _currentPosition = position);
@@ -583,9 +667,9 @@ class _SessionScreenState extends State<SessionScreen> {
     if (_currentAudioId == null) return;
     final result = await ApiService.controlAudio(
       widget.sessionId,
-      action:   'play',
-      audioId:  _currentAudioId!,
-      speed:    _audioSpeed,
+      action: 'play',
+      audioId: _currentAudioId!,
+      speed: _audioSpeed,
       position: _currentPosition,
     );
     if (result != null && result['ok'] == true) {
@@ -596,16 +680,27 @@ class _SessionScreenState extends State<SessionScreen> {
   Future<void> _pauseSessionAudio() async {
     final pos = await _sessionAudioPlayer.getCurrentPosition();
     final posSeconds = pos?.inSeconds.toDouble() ?? _currentPosition;
-    setState(() { _currentPosition = posSeconds; _isPlayingSessionAudio = false; });
+    setState(() {
+      _currentPosition = posSeconds;
+      _isPlayingSessionAudio = false;
+    });
     await _sessionAudioPlayer.pause();
-    await ApiService.controlAudio(widget.sessionId, action: 'pause', position: posSeconds);
+    await ApiService.controlAudio(
+      widget.sessionId,
+      action: 'pause',
+      position: posSeconds,
+    );
   }
 
   Future<void> _seekAudio(double position) async {
     if (!widget.isTeacher) return;
     setState(() => _isSeeking = true);
     try {
-      await ApiService.controlAudio(widget.sessionId, action: 'seek', position: position);
+      await ApiService.controlAudio(
+        widget.sessionId,
+        action: 'seek',
+        position: position,
+      );
       await _sessionAudioPlayer.seek(Duration(seconds: position.toInt()));
       setState(() => _currentPosition = position);
     } finally {
@@ -620,9 +715,9 @@ class _SessionScreenState extends State<SessionScreen> {
     final pos = await _sessionAudioPlayer.getCurrentPosition();
     await ApiService.controlAudio(
       widget.sessionId,
-      action:   'play',
-      audioId:  _currentAudioId!,
-      speed:    newSpeed,
+      action: 'play',
+      audioId: _currentAudioId!,
+      speed: newSpeed,
       position: pos?.inSeconds.toDouble() ?? _currentPosition,
     );
   }
@@ -655,7 +750,9 @@ class _SessionScreenState extends State<SessionScreen> {
       setState(() => _voiceCommandsAvailable = available);
 
       if (!available) {
-        await _speakIfEnabled('Voice commands are not available on this device');
+        await _speakIfEnabled(
+          'Voice commands are not available on this device',
+        );
         return;
       }
 
@@ -765,7 +862,9 @@ class _SessionScreenState extends State<SessionScreen> {
 
     if (widget.isTeacher && command.contains('audio')) {
       setState(() => _showAudioPanel = !_showAudioPanel);
-      _speakIfEnabled(_showAudioPanel ? 'Audio library opened' : 'Audio library closed');
+      _speakIfEnabled(
+        _showAudioPanel ? 'Audio library opened' : 'Audio library closed',
+      );
       return;
     }
 
@@ -778,9 +877,119 @@ class _SessionScreenState extends State<SessionScreen> {
   }
 
   Future<void> _repeatSessionInstructions() async {
-    final labels = widget.isTeacher ? sessionTeacherKeyLabels : sessionStudentKeyLabels;
-    final instructions = buildTtsInstructions(labels, screenName: 'Session ready');
-    await _speakIfEnabled('$instructions Press hash to leave the session.');
+    final labels = widget.isTeacher
+        ? sessionTeacherKeyLabels
+        : sessionStudentKeyLabels;
+    final instructions = buildTtsInstructions(
+      labels,
+      screenName: 'Session ready',
+    );
+    await _speakIfEnabled(
+      '$instructions Use up and down to move through every session control. '
+      'Press OK to activate a control or edit chat. While editing chat, numbers '
+      'are typed into the message. Press hash to leave the session.',
+    );
+  }
+
+  void _toggleTts() {
+    setState(() => _ttsEnabled = !_ttsEnabled);
+    TtsService.configure(enabled: _ttsEnabled);
+    if (_ttsEnabled) {
+      _speakIfEnabled('Text to speech enabled');
+    } else {
+      TtsService.stop();
+    }
+  }
+
+  void _toggleAudioPanel() {
+    if (!widget.isTeacher) return;
+    setState(() => _showAudioPanel = !_showAudioPanel);
+    _speakIfEnabled(
+      _showAudioPanel ? 'Audio library opened' : 'Audio library closed',
+    );
+    if (_showAudioPanel) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || !_showAudioPanel) return;
+        if (_audioFiles.isNotEmpty) {
+          final firstId = int.tryParse(
+            (_audioFiles.first['audio_id'] ?? _audioFiles.first['id'] ?? '')
+                .toString(),
+          );
+          if (firstId != null) {
+            _previewAudioFocusNodes[firstId]?.requestFocus();
+            return;
+          }
+        }
+        _uploadFocusNode.requestFocus();
+      });
+    }
+  }
+
+  void _focusChat() {
+    _keypadController.enterTextEditing(_chatFieldFocusNode);
+    _speakIfEnabled(
+      'Chat message. Editing. Use up or down to leave the field.',
+    );
+  }
+
+  void _uploadAudioShortcut() {
+    if (!_showAudioPanel) {
+      setState(() => _showAudioPanel = true);
+    }
+    if (!_isUploadingAudio) _uploadAudio();
+  }
+
+  Future<void> _confirmEndSession() async {
+    if (!widget.isTeacher || !mounted) return;
+    final cancelNode = FocusNode(debugLabel: 'cancel-end-session');
+    final confirmNode = FocusNode(debugLabel: 'confirm-end-session');
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => KeypadInstructionWrapper(
+        screenName: 'End session confirmation',
+        labels: const {0: 'Cancel', 1: 'End Session for Everyone'},
+        actions: {
+          0: () => Navigator.pop(dialogContext, false),
+          1: () => Navigator.pop(dialogContext, true),
+        },
+        focusTargets: [
+          KeypadFocusTarget(
+            node: cancelNode,
+            label: 'Cancel. Return to the session',
+            onActivate: () => Navigator.pop(dialogContext, false),
+          ),
+          KeypadFocusTarget(
+            node: confirmNode,
+            label: 'End session for everyone',
+            onActivate: () => Navigator.pop(dialogContext, true),
+          ),
+        ],
+        child: AlertDialog(
+          title: const Text('End session?'),
+          content: const Text(
+            'This stops the session for every participant and returns everyone '
+            'to their dashboard. Nobody will be logged out.',
+          ),
+          actions: [
+            TextButton(
+              focusNode: cancelNode,
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Cancel (0)'),
+            ),
+            ElevatedButton(
+              focusNode: confirmNode,
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('End for everyone (1)'),
+            ),
+          ],
+        ),
+      ),
+    );
+    cancelNode.dispose();
+    confirmNode.dispose();
+    if (confirmed == true && mounted) {
+      await _sse.send({'type': 'end_session'});
+    }
   }
 
   /// Chat send: add to UI immediately (optimistic) then POST to server.
@@ -793,14 +1002,15 @@ class _SessionScreenState extends State<SessionScreen> {
     // Optimistic local insert
     setState(() {
       _messages.add({
-        'sender':    widget.userName,
-        'text':      text,
+        'sender': widget.userName,
+        'text': text,
         'timestamp': DateTime.now(),
-        'isMe':      true,
+        'isMe': true,
       });
     });
     _chatController.clear();
     _scrollChatToBottom();
+    _speakIfEnabled('${widget.userName}: $text');
 
     // Fire-and-forget POST
     _sse.send({'type': 'chat', 'text': text});
@@ -808,18 +1018,49 @@ class _SessionScreenState extends State<SessionScreen> {
 
   void _muteParticipant(int participantId, bool mute) {
     _sse.send({
-      'type':                  mute ? 'mute_participant' : 'unmute_participant',
+      'type': mute ? 'mute_participant' : 'unmute_participant',
       'target_participant_id': participantId,
     });
   }
 
   void _kickParticipant(int participantId) {
-    _sse.send({'type': 'kick_participant', 'target_participant_id': participantId});
+    _sse.send({
+      'type': 'kick_participant',
+      'target_participant_id': participantId,
+    });
   }
 
-  void _leaveSession() async {
-    await _speakIfEnabled('Leaving session');
-    if (mounted) Navigator.pop(context);
+  Future<void> _returnToDashboard() async {
+    if (_isReturningToDashboard || !mounted) return;
+    _isReturningToDashboard = true;
+    await _sessionAudioPlayer.stop();
+    await _previewPlayer.stop();
+    await TtsService.stop();
+    if (!mounted) return;
+    Navigator.of(context).pushNamedAndRemoveUntil(
+      widget.isTeacher ? '/teacher_dashboard' : '/student_dashboard',
+      (route) => false,
+    );
+  }
+
+  Future<void> _leaveSession() async {
+    if (!mounted) return;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const KeypadConfirmationDialog(
+        title: 'Leave session?',
+        message:
+            'You will leave this session and return to your dashboard. You will remain logged in.',
+        cancelLabel: 'Stay in session',
+        confirmLabel: 'Leave session',
+        cancelKey: 0,
+        confirmKey: 1,
+      ),
+    );
+    if (confirmed == true && mounted) {
+      await _returnToDashboard();
+    }
   }
 
   // ── Invite participants (teacher only) ───────────────────────────────────
@@ -829,7 +1070,7 @@ class _SessionScreenState extends State<SessionScreen> {
       context,
       MaterialPageRoute(
         builder: (_) => InviteStudentsScreen(
-          sessionId:    widget.sessionId,
+          sessionId: widget.sessionId,
           sessionTitle: widget.sessionTitle,
         ),
       ),
@@ -840,14 +1081,18 @@ class _SessionScreenState extends State<SessionScreen> {
 
   Future<void> _loadAudioLibrary() async {
     try {
-      final result = await ApiService.get('/audio/session/${widget.sessionId}', useAuth: true);
+      final result = await ApiService.get(
+        '/audio/session/${widget.sessionId}',
+        useAuth: true,
+      );
       if (result != null && mounted) {
         setState(() {
           _audioLibraryLoaded = true;
           if (result is List) {
             _audioFiles = result.cast<Map<String, dynamic>>();
           } else if (result is Map && result.containsKey('files')) {
-            _audioFiles = (result['files'] as List).cast<Map<String, dynamic>>();
+            _audioFiles = (result['files'] as List)
+                .cast<Map<String, dynamic>>();
           }
         });
       }
@@ -856,8 +1101,242 @@ class _SessionScreenState extends State<SessionScreen> {
     }
   }
 
+  Future<bool?> _showUploadMetadataDialog(String fileName) async {
+    final titleNode = FocusNode(debugLabel: 'upload-audio-title');
+    final descriptionNode = FocusNode(debugLabel: 'upload-audio-description');
+    final cancelNode = FocusNode(debugLabel: 'upload-audio-cancel');
+    final uploadNode = FocusNode(debugLabel: 'upload-audio-confirm');
+    final controller = KeypadNavigationController();
+
+    void submit(BuildContext dialogContext) {
+      if (_uploadTitleCtrl.text.trim().isEmpty) {
+        _speakIfEnabled('Title is required');
+        titleNode.requestFocus();
+        controller.enterTextEditing(titleNode);
+        return;
+      }
+      Navigator.pop(dialogContext, true);
+    }
+
+    try {
+      return await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => KeypadInstructionWrapper(
+          screenName: 'Upload audio details',
+          labels: const {
+            1: 'Edit Title',
+            2: 'Edit Description',
+            3: 'Upload',
+            0: 'Cancel',
+          },
+          actions: {
+            1: () => controller.enterTextEditing(titleNode),
+            2: () => controller.enterTextEditing(descriptionNode),
+            3: () => submit(dialogContext),
+            0: () => Navigator.pop(dialogContext, false),
+          },
+          navigationController: controller,
+          focusTargets: [
+            KeypadFocusTarget(
+              node: titleNode,
+              label: 'Audio title, required',
+              isTextField: true,
+            ),
+            KeypadFocusTarget(
+              node: descriptionNode,
+              label: 'Audio description, optional',
+              isTextField: true,
+            ),
+            KeypadFocusTarget(
+              node: cancelNode,
+              label: 'Cancel upload',
+              onActivate: () => Navigator.pop(dialogContext, false),
+            ),
+            KeypadFocusTarget(
+              node: uploadNode,
+              label: 'Upload audio',
+              onActivate: () => submit(dialogContext),
+            ),
+          ],
+          child: AlertDialog(
+            title: const Text('Upload Audio'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'File: $fileName',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: _uploadTitleCtrl,
+                    focusNode: titleNode,
+                    onTap: () => controller.enterTextEditing(titleNode),
+                    decoration: const InputDecoration(
+                      labelText: 'Title *',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: _uploadDescCtrl,
+                    focusNode: descriptionNode,
+                    onTap: () => controller.enterTextEditing(descriptionNode),
+                    decoration: const InputDecoration(
+                      labelText: 'Description',
+                      border: OutlineInputBorder(),
+                    ),
+                    maxLines: 2,
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                focusNode: cancelNode,
+                onPressed: () => Navigator.pop(dialogContext, false),
+                child: const Text('Cancel (0)'),
+              ),
+              ElevatedButton(
+                focusNode: uploadNode,
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.teal),
+                onPressed: () => submit(dialogContext),
+                child: const Text(
+                  'Upload (3)',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    } finally {
+      titleNode.dispose();
+      descriptionNode.dispose();
+      cancelNode.dispose();
+      uploadNode.dispose();
+    }
+  }
+
+  Future<bool?> _showSessionSelectionDialog(Set<int> selectedSessionIds) async {
+    final cancelNode = FocusNode(debugLabel: 'audio-sessions-cancel');
+    final confirmNode = FocusNode(debugLabel: 'audio-sessions-confirm');
+    final sessionNodes = <int, FocusNode>{
+      for (final session in _teacherSessions)
+        session['session_id'] as int: FocusNode(
+          debugLabel: 'audio-session-${session['session_id']}',
+        ),
+    };
+    StateSetter? updateDialog;
+
+    void toggle(int id) {
+      if (selectedSessionIds.contains(id)) {
+        selectedSessionIds.remove(id);
+      } else {
+        selectedSessionIds.add(id);
+      }
+      updateDialog?.call(() {});
+      _speakIfEnabled(
+        selectedSessionIds.contains(id)
+            ? 'Session selected'
+            : 'Session unselected',
+      );
+    }
+
+    void confirm(BuildContext dialogContext) {
+      if (selectedSessionIds.isEmpty) {
+        _speakIfEnabled('Select at least one session');
+        return;
+      }
+      Navigator.pop(dialogContext, true);
+    }
+
+    try {
+      return await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => StatefulBuilder(
+          builder: (context, setLocalState) {
+            updateDialog = setLocalState;
+            return KeypadInstructionWrapper(
+              screenName: 'Choose sessions for this audio',
+              labels: const {0: 'Cancel', 1: 'Confirm Selected Sessions'},
+              actions: {
+                0: () => Navigator.pop(dialogContext, false),
+                1: () => confirm(dialogContext),
+              },
+              focusTargets: [
+                for (final session in _teacherSessions)
+                  KeypadFocusTarget(
+                    node: sessionNodes[session['session_id'] as int]!,
+                    label:
+                        '${selectedSessionIds.contains(session['session_id']) ? 'Selected' : 'Not selected'}, ${session['title'] ?? 'Session ${session['session_id']}'}',
+                    onActivate: () => toggle(session['session_id'] as int),
+                  ),
+                KeypadFocusTarget(
+                  node: cancelNode,
+                  label: 'Cancel audio upload',
+                  onActivate: () => Navigator.pop(dialogContext, false),
+                ),
+                KeypadFocusTarget(
+                  node: confirmNode,
+                  label: 'Confirm selected sessions',
+                  onActivate: () => confirm(dialogContext),
+                ),
+              ],
+              child: AlertDialog(
+                title: const Text('Add audio to sessions'),
+                content: SizedBox(
+                  width: 360,
+                  child: ListView(
+                    shrinkWrap: true,
+                    children: _teacherSessions.map((session) {
+                      final id = session['session_id'] as int;
+                      final title =
+                          session['title']?.toString() ?? 'Session $id';
+                      return Focus(
+                        focusNode: sessionNodes[id],
+                        child: ExcludeFocus(
+                          child: CheckboxListTile(
+                            value: selectedSessionIds.contains(id),
+                            title: Text(title),
+                            subtitle: Text('Session #$id'),
+                            onChanged: (_) => toggle(id),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+                actions: [
+                  TextButton(
+                    focusNode: cancelNode,
+                    onPressed: () => Navigator.pop(dialogContext, false),
+                    child: const Text('Cancel (0)'),
+                  ),
+                  ElevatedButton(
+                    focusNode: confirmNode,
+                    onPressed: () => confirm(dialogContext),
+                    child: const Text('Confirm (1)'),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      );
+    } finally {
+      cancelNode.dispose();
+      confirmNode.dispose();
+      for (final node in sessionNodes.values) {
+        node.dispose();
+      }
+    }
+  }
+
   Future<void> _uploadAudio() async {
     try {
+      await TtsService.stop();
       final picked = await FilePicker.platform.pickFiles(
         type: FileType.audio,
         allowMultiple: false,
@@ -868,49 +1347,7 @@ class _SessionScreenState extends State<SessionScreen> {
       _uploadTitleCtrl.clear();
       _uploadDescCtrl.clear();
 
-      final confirmed = await showDialog<bool>(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: const Text('Upload Audio'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('File: ${file.name}',
-                    style: const TextStyle(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: _uploadTitleCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'Title *',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: _uploadDescCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'Description',
-                    border: OutlineInputBorder(),
-                  ),
-                  maxLines: 2,
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.teal),
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('Upload', style: TextStyle(color: Colors.white)),
-            ),
-          ],
-        ),
-      );
+      final confirmed = await _showUploadMetadataDialog(file.name);
       if (confirmed != true) return;
 
       final title = _uploadTitleCtrl.text.trim();
@@ -923,41 +1360,8 @@ class _SessionScreenState extends State<SessionScreen> {
 
       final selectedSessionIds = <int>{widget.sessionId};
       if (_teacherSessions.isNotEmpty && mounted) {
-        final confirmedSessions = await showDialog<bool>(
-          context: context,
-          builder: (ctx) => AlertDialog(
-            title: const Text('Add audio to sessions'),
-            content: StatefulBuilder(
-              builder: (context, setLocalState) => SizedBox(
-                width: 360,
-                child: ListView(
-                  shrinkWrap: true,
-                  children: _teacherSessions.map((session) {
-                    final id = session['session_id'] as int;
-                    final title = session['title']?.toString() ?? 'Session $id';
-                    return CheckboxListTile(
-                      value: selectedSessionIds.contains(id),
-                      title: Text(title),
-                      subtitle: Text('Session #$id'),
-                      onChanged: (checked) {
-                        setLocalState(() {
-                          if (checked == true) {
-                            selectedSessionIds.add(id);
-                          } else {
-                            selectedSessionIds.remove(id);
-                          }
-                        });
-                      },
-                    );
-                  }).toList(),
-                ),
-              ),
-            ),
-            actions: [
-              TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-              ElevatedButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Confirm')),
-            ],
-          ),
+        final confirmedSessions = await _showSessionSelectionDialog(
+          selectedSessionIds,
         );
         if (confirmedSessions != true || selectedSessionIds.isEmpty) {
           if (mounted) setState(() => _isUploadingAudio = false);
@@ -965,53 +1369,69 @@ class _SessionScreenState extends State<SessionScreen> {
         }
       }
 
-      final prefs  = await SharedPreferences.getInstance();
+      final prefs = await SharedPreferences.getInstance();
       final userId = prefs.getInt('user_id');
-      final uri    = Uri.parse('$baseUrl/audio/upload?user_id=$userId');
+      final uri = Uri.parse('$baseUrl/audio/upload?user_id=$userId');
       final headers = await ApiService.getHeaders();
 
       final request = http.MultipartRequest('POST', uri)
         ..headers.addAll(headers)
-        ..fields['title']       = title
+        ..fields['title'] = title
         ..fields['description'] = _uploadDescCtrl.text.trim()
         ..fields['session_ids'] = jsonEncode(selectedSessionIds.toList());
 
       final ext = file.extension?.toLowerCase() ?? '';
-      final contentType = const {
-        'mp3':  'audio/mpeg',
-        'wav':  'audio/wav',
-        'm4a':  'audio/x-m4a',
-        'mp4':  'audio/mp4',
-        'ogg':  'audio/ogg',
-        'webm': 'audio/webm',
-      }[ext] ?? 'audio/mpeg';
+      final contentType =
+          const {
+            'mp3': 'audio/mpeg',
+            'wav': 'audio/wav',
+            'm4a': 'audio/x-m4a',
+            'mp4': 'audio/mp4',
+            'ogg': 'audio/ogg',
+            'webm': 'audio/webm',
+          }[ext] ??
+          'audio/mpeg';
 
       if (kIsWeb && file.bytes != null) {
-        request.files.add(http.MultipartFile.fromBytes(
-          'file', file.bytes!,
-          filename: file.name,
-          contentType: MediaType.parse(contentType),
-        ));
+        request.files.add(
+          http.MultipartFile.fromBytes(
+            'file',
+            file.bytes!,
+            filename: file.name,
+            contentType: MediaType.parse(contentType),
+          ),
+        );
       } else if (!kIsWeb && file.path != null) {
-        request.files.add(await http.MultipartFile.fromPath(
-          'file', file.path!,
-          filename: file.name,
-          contentType: MediaType.parse(contentType),
-        ));
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            'file',
+            file.path!,
+            filename: file.name,
+            contentType: MediaType.parse(contentType),
+          ),
+        );
       }
 
-      final response     = await request.send();
+      final response = await request.send();
       final responseBody = await response.stream.bytesToString();
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
         _speakIfEnabled('Upload successful');
         await _loadAudioLibrary();
       } else {
-        final detail = (jsonDecode(responseBody) as Map)['detail'] ?? 'Upload failed';
-        _showSnackError(detail.toString());
+        _showSnackError(
+          ApiService.mapFailure(
+            statusCode: response.statusCode,
+            responseBody: responseBody,
+            context: 'audio upload',
+          ).message,
+        );
       }
     } catch (e) {
-      _showSnackError('Upload error: $e');
+      print('[AUDIO UPLOAD ERROR] $e');
+      _showSnackError(
+        ApiService.mapFailure(error: e, context: 'audio upload').message,
+      );
     } finally {
       if (mounted) setState(() => _isUploadingAudio = false);
     }
@@ -1029,6 +1449,59 @@ class _SessionScreenState extends State<SessionScreen> {
     _speakIfEnabled('Previewing $title');
   }
 
+  Future<bool?> _confirmPlayAudio(String title) async {
+    final notYetNode = FocusNode(debugLabel: 'audio-not-yet');
+    final playNode = FocusNode(debugLabel: 'audio-play-now');
+    try {
+      return await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => KeypadInstructionWrapper(
+          screenName: 'Audio selected. Play $title for everyone now?',
+          labels: const {0: 'Not Yet', 1: 'Play Now'},
+          actions: {
+            0: () => Navigator.pop(dialogContext, false),
+            1: () => Navigator.pop(dialogContext, true),
+          },
+          focusTargets: [
+            KeypadFocusTarget(
+              node: notYetNode,
+              label: 'Not yet. Keep the audio selected',
+              onActivate: () => Navigator.pop(dialogContext, false),
+            ),
+            KeypadFocusTarget(
+              node: playNode,
+              label: 'Play now for all participants',
+              onActivate: () => Navigator.pop(dialogContext, true),
+            ),
+          ],
+          child: AlertDialog(
+            title: const Text('Audio Selected'),
+            content: Text('Play "$title" for all participants now?'),
+            actions: [
+              TextButton(
+                focusNode: notYetNode,
+                onPressed: () => Navigator.pop(dialogContext, false),
+                child: const Text('Not Yet (0)'),
+              ),
+              ElevatedButton(
+                focusNode: playNode,
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                onPressed: () => Navigator.pop(dialogContext, true),
+                child: const Text(
+                  'Play Now (1)',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    } finally {
+      notYetNode.dispose();
+      playNode.dispose();
+    }
+  }
+
   Future<void> _selectAndPlayAudio(int audioId, String title) async {
     // Tell server which audio is selected — broadcasts audio_selected to all
     final selected = await ApiService.selectAudio(widget.sessionId, audioId);
@@ -1036,28 +1509,15 @@ class _SessionScreenState extends State<SessionScreen> {
       _showSnackError('Failed to select audio');
       return;
     }
-    if (mounted) setState(() { _currentAudioId = audioId; _currentAudioTitle = title; });
+    if (mounted)
+      setState(() {
+        _currentAudioId = audioId;
+        _currentAudioTitle = title;
+      });
 
     // Ask teacher whether to play now
     if (!mounted) return;
-    final play = await showDialog<bool>(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Audio Selected'),
-        content: Text('Play "$title" for all participants now?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Not Yet'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Play Now', style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
-    );
+    final play = await _confirmPlayAudio(title);
 
     if (play == true) {
       await ApiService.controlAudio(
@@ -1073,7 +1533,10 @@ class _SessionScreenState extends State<SessionScreen> {
 
   // ── WebRTC ──────────────────────────────────────────────────────────────
 
-  Future<void> _createPeerConnection(int participantId, bool createOffer) async {
+  Future<void> _createPeerConnection(
+    int participantId,
+    bool createOffer,
+  ) async {
     if (_peerConnections.containsKey(participantId)) return;
 
     print('[WebRTC] Creating connection pid=$participantId offer=$createOffer');
@@ -1081,22 +1544,23 @@ class _SessionScreenState extends State<SessionScreen> {
     final pc = await createPeerConnection(_iceServers);
     _peerConnections[participantId] = pc;
 
-    _localStream?.getTracks().forEach((track) => pc.addTrack(track, _localStream!));
+    _localStream?.getTracks().forEach(
+      (track) => pc.addTrack(track, _localStream!),
+    );
 
     pc.onTrack = (event) {
-      if (event.streams.isNotEmpty) _handleRemoteStream(participantId, event.streams[0]);
+      if (event.streams.isNotEmpty)
+        _handleRemoteStream(participantId, event.streams[0]);
     };
 
     // Batch ICE candidates: collect for 150 ms then send as a single POST
     pc.onIceCandidate = (candidate) {
       if (candidate == null) return;
-      _pendingIceCandidates
-          .putIfAbsent(participantId, () => [])
-          .add({
-            'candidate':     candidate.candidate,
-            'sdpMid':        candidate.sdpMid,
-            'sdpMLineIndex': candidate.sdpMLineIndex,
-          });
+      _pendingIceCandidates.putIfAbsent(participantId, () => []).add({
+        'candidate': candidate.candidate,
+        'sdpMid': candidate.sdpMid,
+        'sdpMLineIndex': candidate.sdpMLineIndex,
+      });
 
       // Reset or start the flush timer
       _iceTimers[participantId]?.cancel();
@@ -1118,7 +1582,7 @@ class _SessionScreenState extends State<SessionScreen> {
       final offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
       await _sse.send({
-        'type':                  'webrtc_signal',
+        'type': 'webrtc_signal',
         'target_participant_id': participantId,
         'payload': {'type': 'offer', 'sdp': offer.sdp},
       });
@@ -1132,10 +1596,12 @@ class _SessionScreenState extends State<SessionScreen> {
     _iceTimers.remove(participantId);
     if (candidates == null || candidates.isEmpty) return;
 
-    print('[WebRTC] Flushing ${candidates.length} ICE candidates to pid=$participantId');
+    print(
+      '[WebRTC] Flushing ${candidates.length} ICE candidates to pid=$participantId',
+    );
 
     await _sse.send({
-      'type':                  'webrtc_signal',
+      'type': 'webrtc_signal',
       'target_participant_id': participantId,
       'payload': {'type': 'ice_candidates_batch', 'candidates': candidates},
     });
@@ -1154,9 +1620,9 @@ class _SessionScreenState extends State<SessionScreen> {
   }
 
   Future<void> _handleWebRTCSignal(Map<String, dynamic> data) async {
-    final fromPid  = data['from']    as int?;
-    final toPid    = data['to']      as int?;
-    final payload  = data['payload'] as Map<String, dynamic>?;
+    final fromPid = data['from'] as int?;
+    final toPid = data['to'] as int?;
+    final payload = data['payload'] as Map<String, dynamic>?;
 
     if (fromPid == null || payload == null) return;
     // Ignore signals not addressed to us
@@ -1188,7 +1654,7 @@ class _SessionScreenState extends State<SessionScreen> {
     final answer = await pc.createAnswer();
     await pc.setLocalDescription(answer);
     await _sse.send({
-      'type':                  'webrtc_signal',
+      'type': 'webrtc_signal',
       'target_participant_id': fromPid,
       'payload': {'type': 'answer', 'sdp': answer.sdp},
     });
@@ -1197,21 +1663,26 @@ class _SessionScreenState extends State<SessionScreen> {
   Future<void> _handleAnswer(int fromPid, Map<String, dynamic> payload) async {
     final sdp = payload['sdp'] as String?;
     if (sdp == null) return;
-    await _peerConnections[fromPid]
-        ?.setRemoteDescription(RTCSessionDescription(sdp, 'answer'));
+    await _peerConnections[fromPid]?.setRemoteDescription(
+      RTCSessionDescription(sdp, 'answer'),
+    );
   }
 
   Future<void> _handleIceCandidateSingle(
-      int fromPid, Map<String, dynamic> payload) async {
+    int fromPid,
+    Map<String, dynamic> payload,
+  ) async {
     final c = payload['candidate'] as Map<String, dynamic>?;
     if (c == null) return;
-    await _peerConnections[fromPid]?.addCandidate(RTCIceCandidate(
-      c['candidate'], c['sdpMid'], c['sdpMLineIndex'],
-    ));
+    await _peerConnections[fromPid]?.addCandidate(
+      RTCIceCandidate(c['candidate'], c['sdpMid'], c['sdpMLineIndex']),
+    );
   }
 
   Future<void> _handleIceCandidateBatch(
-      int fromPid, Map<String, dynamic> payload) async {
+    int fromPid,
+    Map<String, dynamic> payload,
+  ) async {
     final list = payload['candidates'] as List<dynamic>?;
     if (list == null) return;
     final pc = _peerConnections[fromPid];
@@ -1219,9 +1690,9 @@ class _SessionScreenState extends State<SessionScreen> {
     for (final c in list) {
       final cm = c as Map<String, dynamic>;
       try {
-        await pc.addCandidate(RTCIceCandidate(
-          cm['candidate'], cm['sdpMid'], cm['sdpMLineIndex'],
-        ));
+        await pc.addCandidate(
+          RTCIceCandidate(cm['candidate'], cm['sdpMid'], cm['sdpMLineIndex']),
+        );
       } catch (e) {
         print('[WebRTC] ICE add error: $e');
       }
@@ -1240,15 +1711,18 @@ class _SessionScreenState extends State<SessionScreen> {
 
   Future<void> _speakIfEnabled(String text) async {
     if (_ttsEnabled && mounted) {
-      try { await TtsService.speak(text); } catch (_) {}
+      try {
+        await TtsService.speak(text);
+      } catch (_) {}
     }
   }
 
   void _showSnackError(String msg) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(msg), backgroundColor: Colors.red),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(msg), backgroundColor: Colors.red));
+    unawaited(_speakIfEnabled(msg));
   }
 
   void _scrollChatToBottom() {
@@ -1257,7 +1731,7 @@ class _SessionScreenState extends State<SessionScreen> {
         _chatScrollController.animateTo(
           _chatScrollController.position.maxScrollExtent,
           duration: const Duration(milliseconds: 300),
-          curve:    Curves.easeOut,
+          curve: Curves.easeOut,
         );
       }
     });
@@ -1275,6 +1749,269 @@ class _SessionScreenState extends State<SessionScreen> {
 
   // ── dispose ─────────────────────────────────────────────────────────────
 
+  FocusNode _focusNodeFor(
+    Map<int, FocusNode> nodes,
+    int id,
+    String debugLabel,
+  ) {
+    return nodes.putIfAbsent(
+      id,
+      () => FocusNode(debugLabel: '$debugLabel-$id'),
+    );
+  }
+
+  void _seekBy(double seconds) {
+    if (_currentAudioId == null) {
+      _speakIfEnabled('No audio is selected');
+      return;
+    }
+    _seekAudio((_currentPosition + seconds).clamp(0.0, _audioDuration ?? 0.0));
+  }
+
+  void _toggleSessionAudio() {
+    if (_currentAudioId == null) {
+      _speakIfEnabled('No audio is selected');
+      return;
+    }
+    _isPlayingSessionAudio ? _pauseSessionAudio() : _playSessionAudio();
+  }
+
+  List<KeypadFocusTarget> get _sessionFocusTargets {
+    final targets = <KeypadFocusTarget>[
+      KeypadFocusTarget(
+        node: _ttsFocusNode,
+        label: _ttsEnabled
+            ? 'Turn text to speech off'
+            : 'Turn text to speech on',
+        onActivate: _toggleTts,
+      ),
+      if (widget.isTeacher)
+        KeypadFocusTarget(
+          node: _inviteFocusNode,
+          label: 'Invite students',
+          onActivate: _openInviteScreen,
+        ),
+      if (widget.isTeacher)
+        KeypadFocusTarget(
+          node: _endFocusNode,
+          label: 'End session for everyone',
+          onActivate: _confirmEndSession,
+        ),
+      if (widget.isTeacher)
+        KeypadFocusTarget(
+          node: _audioPanelFocusNode,
+          label: _showAudioPanel ? 'Close audio library' : 'Open audio library',
+          onActivate: _toggleAudioPanel,
+        ),
+      KeypadFocusTarget(
+        node: _leaveFocusNode,
+        label: 'Leave session and return to dashboard',
+        onActivate: _leaveSession,
+      ),
+      KeypadFocusTarget(
+        node: _participantsTabFocusNode,
+        label: 'Participants tab',
+        onActivate: () {
+          final nodeContext = _participantsTabFocusNode.context;
+          if (nodeContext != null)
+            DefaultTabController.of(nodeContext).animateTo(0);
+        },
+      ),
+      KeypadFocusTarget(
+        node: _chatTabFocusNode,
+        label: 'Chat tab',
+        onActivate: () {
+          final nodeContext = _chatTabFocusNode.context;
+          if (nodeContext != null)
+            DefaultTabController.of(nodeContext).animateTo(1);
+        },
+      ),
+    ];
+
+    for (final participant in _participants.values) {
+      final participantId = participant['id'] as int?;
+      if (!widget.isTeacher ||
+          participantId == null ||
+          participantId == _participantId) {
+        continue;
+      }
+      final name = participant['name'] as String? ?? 'participant';
+      final isMuted = participant['is_muted'] as bool? ?? false;
+      targets.addAll([
+        KeypadFocusTarget(
+          node: _focusNodeFor(
+            _participantMuteFocusNodes,
+            participantId,
+            'participant-mute',
+          ),
+          label: '${isMuted ? 'Unmute' : 'Mute'} $name',
+          onActivate: () => _muteParticipant(participantId, !isMuted),
+        ),
+        KeypadFocusTarget(
+          node: _focusNodeFor(
+            _participantKickFocusNodes,
+            participantId,
+            'participant-remove',
+          ),
+          label: 'Remove $name from session',
+          onActivate: () => _kickParticipant(participantId),
+        ),
+      ]);
+    }
+
+    targets.addAll([
+      KeypadFocusTarget(
+        node: _chatTtsFocusNode,
+        label: _ttsEnabled ? 'Turn chat speech off' : 'Turn chat speech on',
+        onActivate: _toggleTts,
+      ),
+      KeypadFocusTarget(
+        node: _chatFieldFocusNode,
+        label: 'Chat message',
+        isTextField: true,
+      ),
+      KeypadFocusTarget(
+        node: _chatSendFocusNode,
+        label: 'Send chat message',
+        onActivate: _sendMessage,
+      ),
+    ]);
+
+    if (widget.isTeacher && _currentAudioId != null) {
+      targets.addAll([
+        KeypadFocusTarget(
+          node: _seekFocusNode,
+          label: 'Audio position. Use left and right to seek ten seconds',
+          onDecrease: () => _seekBy(-10),
+          onIncrease: () => _seekBy(10),
+        ),
+        KeypadFocusTarget(
+          node: _slowerFocusNode,
+          label: 'Decrease audio speed',
+          onActivate: () =>
+              _changeAudioSpeed((_audioSpeed - 0.25).clamp(0.5, 2.0)),
+          isEnabled: () => _audioSpeed > 0.5,
+        ),
+        KeypadFocusTarget(
+          node: _rewindFocusNode,
+          label: 'Back ten seconds',
+          onActivate: () => _seekBy(-10),
+        ),
+        KeypadFocusTarget(
+          node: _playFocusNode,
+          label: _isPlayingSessionAudio ? 'Pause audio' : 'Play audio',
+          onActivate: _toggleSessionAudio,
+        ),
+        KeypadFocusTarget(
+          node: _forwardFocusNode,
+          label: 'Forward ten seconds',
+          onActivate: () => _seekBy(10),
+        ),
+        KeypadFocusTarget(
+          node: _fasterFocusNode,
+          label: 'Increase audio speed',
+          onActivate: () =>
+              _changeAudioSpeed((_audioSpeed + 0.25).clamp(0.5, 2.0)),
+          isEnabled: () => _audioSpeed < 2.0,
+        ),
+      ]);
+    }
+
+    if (widget.isTeacher && _showAudioPanel) {
+      targets.addAll([
+        KeypadFocusTarget(
+          node: _uploadFocusNode,
+          label: _isUploadingAudio
+              ? 'Audio upload in progress'
+              : 'Upload audio',
+          onActivate: _uploadAudio,
+          isEnabled: () => !_isUploadingAudio,
+        ),
+        KeypadFocusTarget(
+          node: _refreshAudioFocusNode,
+          label: 'Refresh audio library',
+          onActivate: _loadAudioLibrary,
+        ),
+        KeypadFocusTarget(
+          node: _closeAudioFocusNode,
+          label: 'Close audio library',
+          onActivate: _toggleAudioPanel,
+        ),
+      ]);
+      for (final audio in _audioFiles) {
+        final audioId = (audio['audio_id'] ?? audio['id']) as int?;
+        if (audioId == null) continue;
+        final title = audio['title'] as String? ?? 'Untitled';
+        targets.addAll([
+          KeypadFocusTarget(
+            node: _focusNodeFor(
+              _previewAudioFocusNodes,
+              audioId,
+              'audio-preview',
+            ),
+            label: _previewingAudioId == audioId
+                ? 'Stop preview of $title'
+                : 'Preview $title privately',
+            onActivate: () => _previewAudio(audioId, title),
+          ),
+          KeypadFocusTarget(
+            node: _focusNodeFor(
+              _selectAudioFocusNodes,
+              audioId,
+              'audio-select',
+            ),
+            label: 'Select and play $title for the session',
+            onActivate: () => _selectAndPlayAudio(audioId, title),
+          ),
+        ]);
+      }
+    }
+
+    targets.addAll([
+      KeypadFocusTarget(
+        node: _muteFocusNode,
+        label: _muted ? 'Unmute microphone' : 'Mute microphone',
+        onActivate: _toggleMute,
+      ),
+      KeypadFocusTarget(
+        node: _handFocusNode,
+        label: _handRaised ? 'Lower hand' : 'Raise hand',
+        onActivate: _toggleHandRaise,
+      ),
+      if (widget.isTeacher)
+        KeypadFocusTarget(
+          node: _bottomInviteFocusNode,
+          label: 'Invite students',
+          onActivate: _openInviteScreen,
+        ),
+      if (widget.isTeacher)
+        KeypadFocusTarget(
+          node: _bottomAudioFocusNode,
+          label: _showAudioPanel ? 'Close audio library' : 'Open audio library',
+          onActivate: _toggleAudioPanel,
+        ),
+      KeypadFocusTarget(
+        node: _bottomLeaveFocusNode,
+        label: 'Leave session and return to dashboard',
+        onActivate: _leaveSession,
+      ),
+    ]);
+    return targets;
+  }
+
+  Map<int, VoidCallback> get _sessionKeyActions => {
+    1: _toggleMute,
+    2: _toggleHandRaise,
+    3: widget.isTeacher ? _openInviteScreen : _toggleTts,
+    4: widget.isTeacher ? _toggleAudioPanel : _focusChat,
+    if (widget.isTeacher) 5: _uploadAudioShortcut,
+    if (widget.isTeacher) 6: _loadAudioLibrary,
+    if (widget.isTeacher) 7: () => _seekBy(-10),
+    if (widget.isTeacher) 8: _toggleSessionAudio,
+    if (widget.isTeacher) 9: () => _seekBy(10),
+    if (widget.isTeacher) 0: _confirmEndSession,
+  };
+
   @override
   void dispose() {
     _chatController.dispose();
@@ -1290,43 +2027,69 @@ class _SessionScreenState extends State<SessionScreen> {
     _sse.close();
 
     _localStream?.dispose();
-    for (final pc in _peerConnections.values) { pc.close(); }
-    for (final r  in _remoteRenderers.values) { r.dispose(); }
-    for (final t  in _iceTimers.values)       { t.cancel(); }
+    for (final pc in _peerConnections.values) {
+      pc.close();
+    }
+    for (final r in _remoteRenderers.values) {
+      r.dispose();
+    }
+    for (final t in _iceTimers.values) {
+      t.cancel();
+    }
 
     _sessionAudioPlayer.dispose();
     _previewPlayer.stop();
     _previewPlayer.dispose();
-    _screenFocusNode.dispose();
+    for (final node in [
+      _ttsFocusNode,
+      _inviteFocusNode,
+      _endFocusNode,
+      _audioPanelFocusNode,
+      _leaveFocusNode,
+      _muteFocusNode,
+      _handFocusNode,
+      _bottomInviteFocusNode,
+      _bottomAudioFocusNode,
+      _bottomLeaveFocusNode,
+      _participantsTabFocusNode,
+      _chatTabFocusNode,
+      _chatTtsFocusNode,
+      _chatFieldFocusNode,
+      _chatSendFocusNode,
+      _seekFocusNode,
+      _slowerFocusNode,
+      _rewindFocusNode,
+      _playFocusNode,
+      _forwardFocusNode,
+      _fasterFocusNode,
+      _uploadFocusNode,
+      _refreshAudioFocusNode,
+      _closeAudioFocusNode,
+      ..._participantMuteFocusNodes.values,
+      ..._participantKickFocusNodes.values,
+      ..._previewAudioFocusNodes.values,
+      ..._selectAudioFocusNodes.values,
+    ]) {
+      node.dispose();
+    }
+    TtsService.stop();
     super.dispose();
   }
-
 
   // ── UI ───────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
-    return KeyboardListener(
-      focusNode: _screenFocusNode,
-      onKeyEvent: (KeyEvent event) {
-        if (event is KeyDownEvent) {
-          final key = event.logicalKey;
-          final digit = resolveKeyToDigit(key, event.character);
-          if (digit == 1) {
-            _toggleMute();
-          } else if (digit == 2) {
-            _toggleHandRaise();
-          } else if (digit == 3 && widget.isTeacher) {
-            _openInviteScreen();
-          } else if (digit == 4 && widget.isTeacher) {
-            setState(() => _showAudioPanel = !_showAudioPanel);
-          } else if (isStarKey(key)) {
-            _repeatSessionInstructions();
-          } else if (isHashKey(key)) {
-            _leaveSession();
-          }
-        }
-      },
+    return KeypadInstructionWrapper(
+      screenName: widget.isTeacher ? 'Teacher session' : 'Student session',
+      actions: _sessionKeyActions,
+      labels: widget.isTeacher
+          ? sessionTeacherKeyLabels
+          : sessionStudentKeyLabels,
+      onStarKey: _repeatSessionInstructions,
+      onHashKey: _leaveSession,
+      navigationController: _keypadController,
+      focusTargets: _sessionFocusTargets,
       child: _buildMainScaffold(context),
     );
   }
@@ -1355,13 +2118,16 @@ class _SessionScreenState extends State<SessionScreen> {
     }
 
     final bool tiny = UIUtils.isTiny(context);
-    final List<Map<String, dynamic>> participantsList = _participants.values.toList();
+    final List<Map<String, dynamic>> participantsList = _participants.values
+        .toList();
     final bool isMobile = MediaQuery.of(context).size.width < 600;
 
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          widget.isTeacher ? '${widget.sessionTitle} (Teacher)' : widget.sessionTitle,
+          widget.isTeacher
+              ? '${widget.sessionTitle} (Teacher)'
+              : widget.sessionTitle,
           style: TextStyle(fontSize: UIUtils.fontSize(context, 16)),
         ),
         backgroundColor: Colors.teal,
@@ -1369,17 +2135,20 @@ class _SessionScreenState extends State<SessionScreen> {
         actions: [
           // TTS toggle
           IconButton(
-            icon: Icon(_ttsEnabled ? Icons.volume_up : Icons.volume_off, size: UIUtils.iconSize(context, 20)),
-            tooltip: 'Toggle TTS',
-            onPressed: () {
-              setState(() => _ttsEnabled = !_ttsEnabled);
-              TtsService.configure(enabled: _ttsEnabled);
-              _speakIfEnabled(_ttsEnabled ? 'TTS enabled' : 'TTS disabled');
-            },
+            focusNode: _ttsFocusNode,
+            icon: Icon(
+              _ttsEnabled ? Icons.volume_up : Icons.volume_off,
+              size: UIUtils.iconSize(context, 20),
+            ),
+            tooltip: _ttsEnabled
+                ? 'Turn text-to-speech off'
+                : 'Turn text-to-speech on',
+            onPressed: _toggleTts,
           ),
           // Invite students — teacher only
           if (widget.isTeacher)
             IconButton(
+              focusNode: _inviteFocusNode,
               icon: Icon(Icons.person_add, size: UIUtils.iconSize(context, 20)),
               tooltip: 'Invite Students',
               onPressed: _openInviteScreen,
@@ -1387,19 +2156,29 @@ class _SessionScreenState extends State<SessionScreen> {
           // End session — teacher only
           if (widget.isTeacher)
             IconButton(
-              icon: Icon(Icons.stop_circle, color: Colors.red, size: UIUtils.iconSize(context, 20)),
+              focusNode: _endFocusNode,
+              icon: Icon(
+                Icons.stop_circle,
+                color: Colors.red,
+                size: UIUtils.iconSize(context, 20),
+              ),
               tooltip: 'End session',
-              onPressed: () => _sse.send({'type': 'end_session'}),
+              onPressed: _confirmEndSession,
             ),
           // Audio Library — teacher only
           if (widget.isTeacher)
             IconButton(
-              icon: Icon(Icons.library_music, size: UIUtils.iconSize(context, 20)),
+              focusNode: _audioPanelFocusNode,
+              icon: Icon(
+                Icons.library_music,
+                size: UIUtils.iconSize(context, 20),
+              ),
               tooltip: 'Audio Library',
-              onPressed: () => setState(() => _showAudioPanel = !_showAudioPanel),
+              onPressed: _toggleAudioPanel,
             ),
           // Leave
           IconButton(
+            focusNode: _leaveFocusNode,
             icon: Icon(Icons.exit_to_app, size: UIUtils.iconSize(context, 20)),
             tooltip: 'Leave',
             onPressed: _leaveSession,
@@ -1413,8 +2192,8 @@ class _SessionScreenState extends State<SessionScreen> {
 
           // ── Main content ───────────────────────────────────────────────
           Expanded(
-            child: isMobile 
-                ? _buildMobileLayout(participantsList) 
+            child: isMobile
+                ? _buildMobileLayout(participantsList)
                 : _buildDesktopLayout(participantsList),
           ),
 
@@ -1428,13 +2207,16 @@ class _SessionScreenState extends State<SessionScreen> {
     );
   }
 
-
   Widget _buildActionBar() {
     final bool isKeypad = UIUtils.isKeypad(context);
     final bool short = UIUtils.isShort(context);
 
     return Container(
-      padding: UIUtils.paddingSymmetric(context, horizontal: 4, vertical: short ? 4 : 8),
+      padding: UIUtils.paddingSymmetric(
+        context,
+        horizontal: 4,
+        vertical: short ? 4 : 8,
+      ),
       color: Colors.grey.shade900,
       child: SafeArea(
         top: false,
@@ -1445,6 +2227,7 @@ class _SessionScreenState extends State<SessionScreen> {
             children: [
               // Mute
               _actionBarBtn(
+                focusNode: _muteFocusNode,
                 icon: _muted ? Icons.mic_off : Icons.mic,
                 label: isKeypad ? '1:Mute' : 'Mute',
                 color: _muted ? Colors.red : Colors.green,
@@ -1453,6 +2236,7 @@ class _SessionScreenState extends State<SessionScreen> {
               SizedBox(width: UIUtils.spacing(context, 8)),
               // Raise / lower hand
               _actionBarBtn(
+                focusNode: _handFocusNode,
                 icon: _handRaised ? Icons.pan_tool : Icons.pan_tool_outlined,
                 label: isKeypad ? '2:Hand' : 'Raise',
                 color: _handRaised ? Colors.amber : Colors.grey.shade400,
@@ -1461,6 +2245,7 @@ class _SessionScreenState extends State<SessionScreen> {
               if (widget.isTeacher) ...[
                 SizedBox(width: UIUtils.spacing(context, 8)),
                 _actionBarBtn(
+                  focusNode: _bottomInviteFocusNode,
                   icon: Icons.person_add,
                   label: isKeypad ? '3:Invite' : 'Invite',
                   color: Colors.lightBlue,
@@ -1468,16 +2253,18 @@ class _SessionScreenState extends State<SessionScreen> {
                 ),
                 SizedBox(width: UIUtils.spacing(context, 8)),
                 _actionBarBtn(
+                  focusNode: _bottomAudioFocusNode,
                   icon: Icons.library_music,
                   label: isKeypad ? '4:Audio' : 'Audio',
                   color: Colors.purple.shade300,
-                  onTap: () => setState(() => _showAudioPanel = !_showAudioPanel),
+                  onTap: _toggleAudioPanel,
                   active: _showAudioPanel,
                 ),
               ],
               SizedBox(width: UIUtils.spacing(context, 8)),
               // Leave
               _actionBarBtn(
+                focusNode: _bottomLeaveFocusNode,
                 icon: Icons.call_end,
                 label: isKeypad ? '#:Exit' : 'Leave',
                 color: Colors.red.shade400,
@@ -1491,6 +2278,7 @@ class _SessionScreenState extends State<SessionScreen> {
   }
 
   Widget _actionBarBtn({
+    required FocusNode focusNode,
     required IconData icon,
     required String label,
     required Color color,
@@ -1502,7 +2290,9 @@ class _SessionScreenState extends State<SessionScreen> {
     final double btnSize = short ? 34 : (isKeypad ? 40 : 48);
 
     return InkWell(
+      focusNode: focusNode,
       onTap: onTap,
+      focusColor: color.withOpacity(0.28),
       borderRadius: BorderRadius.circular(12),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
@@ -1520,14 +2310,21 @@ class _SessionScreenState extends State<SessionScreen> {
                   width: 2,
                 ),
               ),
-              child: Icon(icon, color: color, size: UIUtils.iconSize(context, short || isKeypad ? 18 : 24)),
+              child: Icon(
+                icon,
+                color: color,
+                size: UIUtils.iconSize(context, short || isKeypad ? 18 : 24),
+              ),
             ),
             SizedBox(height: UIUtils.spacing(context, short ? 2 : 4)),
-            Text(label,
-                style: TextStyle(
-                    color: Colors.grey.shade400,
-                    fontSize: UIUtils.fontSize(context, short ? 8 : 9),
-                    fontWeight: FontWeight.w500)),
+            Text(
+              label,
+              style: TextStyle(
+                color: Colors.grey.shade400,
+                fontSize: UIUtils.fontSize(context, short ? 8 : 9),
+                fontWeight: FontWeight.w500,
+              ),
+            ),
           ],
         ),
       ),
@@ -1542,15 +2339,21 @@ class _SessionScreenState extends State<SessionScreen> {
         children: [
           TabBar(
             tabs: [
-              Tab(
-                text: 'Participants',
-                icon: Icon(Icons.people, size: UIUtils.iconSize(context, 16)),
-                height: tiny ? 36 : null,
+              Focus(
+                focusNode: _participantsTabFocusNode,
+                child: Tab(
+                  text: 'Participants',
+                  icon: Icon(Icons.people, size: UIUtils.iconSize(context, 16)),
+                  height: tiny ? 36 : null,
+                ),
               ),
-              Tab(
-                text: 'Chat',
-                icon: Icon(Icons.chat, size: UIUtils.iconSize(context, 16)),
-                height: tiny ? 36 : null,
+              Focus(
+                focusNode: _chatTabFocusNode,
+                child: Tab(
+                  text: 'Chat',
+                  icon: Icon(Icons.chat, size: UIUtils.iconSize(context, 16)),
+                  height: tiny ? 36 : null,
+                ),
               ),
             ],
             labelColor: Colors.teal,
@@ -1572,15 +2375,9 @@ class _SessionScreenState extends State<SessionScreen> {
   Widget _buildDesktopLayout(List<Map<String, dynamic>> participantsList) {
     return Row(
       children: [
-        Expanded(
-          flex: 2,
-          child: _buildParticipantsList(participantsList),
-        ),
+        Expanded(flex: 2, child: _buildParticipantsList(participantsList)),
         const VerticalDivider(width: 1),
-        Expanded(
-          flex: 3,
-          child: _buildChatPanel(),
-        ),
+        Expanded(flex: 3, child: _buildChatPanel()),
       ],
     );
   }
@@ -1590,7 +2387,10 @@ class _SessionScreenState extends State<SessionScreen> {
       return Center(
         child: Text(
           'Waiting for participants...',
-          style: TextStyle(color: Colors.grey, fontSize: UIUtils.fontSize(context, 13)),
+          style: TextStyle(
+            color: UIUtils.subtextColor,
+            fontSize: UIUtils.fontSize(context, 13),
+          ),
         ),
       );
     }
@@ -1601,24 +2401,31 @@ class _SessionScreenState extends State<SessionScreen> {
       padding: UIUtils.paddingAll(context, 8),
       itemCount: participantsList.length,
       itemBuilder: (_, i) {
-        final p          = participantsList[i];
-        final pid        = p['id']        as int;
-        final isSelf     = pid == _participantId;
-        final isMuted    = p['is_muted']  as bool? ?? false;
-        final isTeacher  = p['is_teacher'] as bool? ?? false;
+        final p = participantsList[i];
+        final pid = p['id'] as int;
+        final isSelf = pid == _participantId;
+        final isMuted = p['is_muted'] as bool? ?? false;
+        final isTeacher = p['is_teacher'] as bool? ?? false;
         final raisedHand = p['raised_hand'] as bool? ?? false;
-        final name       = p['name']      as String? ?? '?';
+        final name = p['name'] as String? ?? '?';
 
         return Card(
           margin: EdgeInsets.only(bottom: UIUtils.spacing(context, 4)),
           child: ListTile(
             dense: tiny,
-            contentPadding: UIUtils.paddingSymmetric(context, horizontal: 8, vertical: 4),
+            contentPadding: UIUtils.paddingSymmetric(
+              context,
+              horizontal: 8,
+              vertical: 4,
+            ),
             leading: CircleAvatar(
               backgroundColor: isMuted ? Colors.red : Colors.green,
               radius: UIUtils.iconSize(context, 18),
-              child: Icon(isMuted ? Icons.mic_off : Icons.mic,
-                  color: Colors.white, size: UIUtils.iconSize(context, 16)),
+              child: Icon(
+                isMuted ? Icons.mic_off : Icons.mic,
+                color: Colors.white,
+                size: UIUtils.iconSize(context, 16),
+              ),
             ),
             title: Text(
               isSelf ? '$name (You)' : name,
@@ -1641,11 +2448,23 @@ class _SessionScreenState extends State<SessionScreen> {
                 if (raisedHand)
                   Padding(
                     padding: const EdgeInsets.only(right: 4),
-                    child: Icon(Icons.pan_tool, color: Colors.amber, size: UIUtils.iconSize(context, 18)),
+                    child: Icon(
+                      Icons.pan_tool,
+                      color: Colors.amber,
+                      size: UIUtils.iconSize(context, 18),
+                    ),
                   ),
                 if (widget.isTeacher && !isSelf) ...[
                   IconButton(
-                    icon: Icon(isMuted ? Icons.mic : Icons.mic_off, size: UIUtils.iconSize(context, 18)),
+                    focusNode: _focusNodeFor(
+                      _participantMuteFocusNodes,
+                      pid,
+                      'participant-mute',
+                    ),
+                    icon: Icon(
+                      isMuted ? Icons.mic : Icons.mic_off,
+                      size: UIUtils.iconSize(context, 18),
+                    ),
                     color: Colors.blue,
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
@@ -1654,7 +2473,15 @@ class _SessionScreenState extends State<SessionScreen> {
                   ),
                   SizedBox(width: UIUtils.spacing(context, 2)),
                   IconButton(
-                    icon: Icon(Icons.remove_circle, size: UIUtils.iconSize(context, 18)),
+                    focusNode: _focusNodeFor(
+                      _participantKickFocusNodes,
+                      pid,
+                      'participant-remove',
+                    ),
+                    icon: Icon(
+                      Icons.remove_circle,
+                      size: UIUtils.iconSize(context, 18),
+                    ),
                     color: Colors.red,
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
@@ -1681,7 +2508,8 @@ class _SessionScreenState extends State<SessionScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (constraints.maxHeight >= 120) _buildChatHeader(compact: true),
+                if (constraints.maxHeight >= 120)
+                  _buildChatHeader(compact: true),
                 ConstrainedBox(
                   constraints: BoxConstraints(
                     minHeight: constraints.maxHeight >= 120 ? 34 : 24,
@@ -1716,7 +2544,11 @@ class _SessionScreenState extends State<SessionScreen> {
       color: UIUtils.isHighContrast ? UIUtils.cardColor : Colors.teal.shade50,
       child: Row(
         children: [
-          Icon(Icons.chat, color: UIUtils.accentColor, size: UIUtils.iconSize(context, compact ? 14 : 16)),
+          Icon(
+            Icons.chat,
+            color: UIUtils.accentColor,
+            size: UIUtils.iconSize(context, compact ? 14 : 16),
+          ),
           SizedBox(width: UIUtils.spacing(context, 4)),
           Expanded(
             child: Text(
@@ -1728,18 +2560,20 @@ class _SessionScreenState extends State<SessionScreen> {
             ),
           ),
           IconButton(
-            icon: Icon(_ttsEnabled ? Icons.volume_up : Icons.volume_off, size: UIUtils.iconSize(context, compact ? 14 : 16)),
-            tooltip: 'Toggle TTS',
+            focusNode: _chatTtsFocusNode,
+            icon: Icon(
+              _ttsEnabled ? Icons.volume_up : Icons.volume_off,
+              size: UIUtils.iconSize(context, compact ? 14 : 16),
+            ),
+            tooltip: _ttsEnabled
+                ? 'Turn text-to-speech off'
+                : 'Turn text-to-speech on',
             padding: EdgeInsets.zero,
             constraints: BoxConstraints.tightFor(
               width: UIUtils.iconSize(context, compact ? 24 : 28),
               height: UIUtils.iconSize(context, compact ? 24 : 28),
             ),
-            onPressed: () {
-              setState(() => _ttsEnabled = !_ttsEnabled);
-              TtsService.configure(enabled: _ttsEnabled);
-              _speakIfEnabled(_ttsEnabled ? "TTS enabled" : "TTS disabled");
-            },
+            onPressed: _toggleTts,
           ),
         ],
       ),
@@ -1751,12 +2585,17 @@ class _SessionScreenState extends State<SessionScreen> {
       return Center(
         child: Text(
           'No messages yet',
-          style: TextStyle(color: UIUtils.subtextColor, fontSize: UIUtils.fontSize(context, compact ? 10 : 12)),
+          style: TextStyle(
+            color: UIUtils.subtextColor,
+            fontSize: UIUtils.fontSize(context, compact ? 10 : 12),
+          ),
         ),
       );
     }
 
-    final itemCount = compact ? (_messages.length > 2 ? 2 : _messages.length) : _messages.length;
+    final itemCount = compact
+        ? (_messages.length > 2 ? 2 : _messages.length)
+        : _messages.length;
     final startIndex = compact ? _messages.length - itemCount : 0;
 
     return ListView.builder(
@@ -1772,7 +2611,9 @@ class _SessionScreenState extends State<SessionScreen> {
         return Align(
           alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
           child: Container(
-            margin: EdgeInsets.only(bottom: UIUtils.spacing(context, compact ? 2 : 4)),
+            margin: EdgeInsets.only(
+              bottom: UIUtils.spacing(context, compact ? 2 : 4),
+            ),
             padding: UIUtils.paddingSymmetric(
               context,
               horizontal: compact ? 6 : 8,
@@ -1783,10 +2624,16 @@ class _SessionScreenState extends State<SessionScreen> {
             ),
             decoration: BoxDecoration(
               color: isMe
-                  ? (UIUtils.isHighContrast ? UIUtils.primaryColor : Colors.teal.shade100)
-                  : (UIUtils.isHighContrast ? UIUtils.cardColor : Colors.grey.shade200),
+                  ? (UIUtils.isHighContrast
+                        ? UIUtils.primaryColor
+                        : Colors.teal.shade100)
+                  : (UIUtils.isHighContrast
+                        ? UIUtils.cardColor
+                        : Colors.grey.shade200),
               borderRadius: BorderRadius.circular(compact ? 8 : 10),
-              border: UIUtils.isHighContrast ? Border.all(color: UIUtils.accentColor.withOpacity(0.5)) : null,
+              border: UIUtils.isHighContrast
+                  ? Border.all(color: UIUtils.accentColor.withOpacity(0.5))
+                  : null,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1848,9 +2695,13 @@ class _SessionScreenState extends State<SessionScreen> {
                 height: compact ? 32 : null,
                 child: TextField(
                   controller: _chatController,
+                  focusNode: _chatFieldFocusNode,
+                  onTap: _focusChat,
                   decoration: InputDecoration(
                     hintText: "Message...",
-                    hintStyle: TextStyle(fontSize: UIUtils.fontSize(context, compact ? 10 : 12)),
+                    hintStyle: TextStyle(
+                      fontSize: UIUtils.fontSize(context, compact ? 10 : 12),
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(20),
                     ),
@@ -1862,7 +2713,9 @@ class _SessionScreenState extends State<SessionScreen> {
                     isDense: true,
                   ),
                   onSubmitted: (_) => _sendMessage(),
-                  style: TextStyle(fontSize: UIUtils.fontSize(context, compact ? 10 : 12)),
+                  style: TextStyle(
+                    fontSize: UIUtils.fontSize(context, compact ? 10 : 12),
+                  ),
                   maxLines: 1,
                 ),
               ),
@@ -1877,7 +2730,13 @@ class _SessionScreenState extends State<SessionScreen> {
                   shape: BoxShape.circle,
                 ),
                 child: IconButton(
-                  icon: Icon(Icons.send, color: Colors.white, size: UIUtils.iconSize(context, compact ? 12 : 14)),
+                  focusNode: _chatSendFocusNode,
+                  icon: Icon(
+                    Icons.send,
+                    color: Colors.white,
+                    size: UIUtils.iconSize(context, compact ? 12 : 14),
+                  ),
+                  tooltip: 'Send message',
                   padding: EdgeInsets.zero,
                   onPressed: _sendMessage,
                 ),
@@ -1893,7 +2752,9 @@ class _SessionScreenState extends State<SessionScreen> {
     if (_currentAudioId == null) return const SizedBox.shrink();
 
     final isPlaying = _isPlayingSessionAudio;
-    final barColor  = isPlaying ? Colors.deepPurple.shade700 : Colors.grey.shade800;
+    final barColor = isPlaying
+        ? Colors.deepPurple.shade700
+        : Colors.grey.shade800;
     final compact = UIUtils.isTiny(context) || UIUtils.isShort(context);
 
     return Container(
@@ -1903,65 +2764,86 @@ class _SessionScreenState extends State<SessionScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Title + speed + time
-          Row(children: [
-            Icon(
-              isPlaying ? Icons.music_note : Icons.audiotrack,
-              color: Colors.white, size: compact ? 16 : 20,
-            ),
-            SizedBox(width: compact ? 6 : 8),
-            Expanded(
-              child: Text(
-                _currentAudioTitle ?? 'Audio',
-                style: TextStyle(
-                    color: Colors.white, fontWeight: FontWeight.bold, fontSize: compact ? 12 : 15),
-                overflow: TextOverflow.ellipsis,
+          Row(
+            children: [
+              Icon(
+                isPlaying ? Icons.music_note : Icons.audiotrack,
+                color: Colors.white,
+                size: compact ? 16 : 20,
               ),
-            ),
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: compact ? 6 : 8, vertical: compact ? 2 : 3),
-              decoration: BoxDecoration(
-                color: Colors.white24,
-                borderRadius: BorderRadius.circular(10),
+              SizedBox(width: compact ? 6 : 8),
+              Expanded(
+                child: Text(
+                  _currentAudioTitle ?? 'Audio',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: compact ? 12 : 15,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
-              child: Text(
-                '${_audioSpeed.toStringAsFixed(1)}×',
-                style: TextStyle(
-                    color: Colors.white, fontWeight: FontWeight.bold, fontSize: compact ? 10 : 12),
+              Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: compact ? 6 : 8,
+                  vertical: compact ? 2 : 3,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white24,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  '${_audioSpeed.toStringAsFixed(1)}×',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: compact ? 10 : 12,
+                  ),
+                ),
               ),
-            ),
-            if (!compact) ...[
-              const SizedBox(width: 8),
-              Text(
-                '${_formatDuration(_currentPosition)} / '
-                '${_audioDuration != null ? _formatDuration(_audioDuration!) : "--:--"}',
-                style: const TextStyle(color: Colors.white70, fontSize: 12),
-              ),
+              if (!compact) ...[
+                const SizedBox(width: 8),
+                Text(
+                  '${_formatDuration(_currentPosition)} / '
+                  '${_audioDuration != null ? _formatDuration(_audioDuration!) : "--:--"}',
+                  style: const TextStyle(color: Colors.white70, fontSize: 12),
+                ),
+              ],
             ],
-          ]),
+          ),
 
           // Seek bar:
           //   Teacher → interactive slider
           //   Student → read-only LinearProgressIndicator
           if (widget.isTeacher && !compact)
-            SliderTheme(
-              data: SliderThemeData(
-                trackHeight: 3,
-                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 7),
-                activeTrackColor: Colors.tealAccent,
-                inactiveTrackColor: Colors.white30,
-                thumbColor: Colors.tealAccent,
-                overlayColor: Colors.tealAccent.withOpacity(0.2),
-              ),
-              child: Slider(
-                value: (_audioDuration != null && _audioDuration! > 0)
-                    ? (_currentPosition / _audioDuration!).clamp(0.0, 1.0)
-                    : 0.0,
-                onChanged: _audioDuration != null
-                    ? (v) => setState(() => _currentPosition = v * _audioDuration!)
-                    : null,
-                onChangeEnd: _audioDuration != null
-                    ? (v) => _seekAudio(v * _audioDuration!)
-                    : null,
+            Focus(
+              focusNode: _seekFocusNode,
+              child: ExcludeFocus(
+                child: SliderTheme(
+                  data: SliderThemeData(
+                    trackHeight: 3,
+                    thumbShape: const RoundSliderThumbShape(
+                      enabledThumbRadius: 7,
+                    ),
+                    activeTrackColor: Colors.tealAccent,
+                    inactiveTrackColor: Colors.white30,
+                    thumbColor: Colors.tealAccent,
+                    overlayColor: Colors.tealAccent.withOpacity(0.2),
+                  ),
+                  child: Slider(
+                    value: (_audioDuration != null && _audioDuration! > 0)
+                        ? (_currentPosition / _audioDuration!).clamp(0.0, 1.0)
+                        : 0.0,
+                    onChanged: _audioDuration != null
+                        ? (v) => setState(
+                            () => _currentPosition = v * _audioDuration!,
+                          )
+                        : null,
+                    onChangeEnd: _audioDuration != null
+                        ? (v) => _seekAudio(v * _audioDuration!)
+                        : null,
+                  ),
+                ),
               ),
             )
           else if (compact)
@@ -2003,57 +2885,116 @@ class _SessionScreenState extends State<SessionScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   IconButton(
-                    icon: Icon(Icons.fast_rewind, color: Colors.white70, size: compact ? 18 : 24),
+                    focusNode: _slowerFocusNode,
+                    icon: Icon(
+                      Icons.fast_rewind,
+                      color: Colors.white70,
+                      size: compact ? 18 : 24,
+                    ),
                     tooltip: 'Slower',
-                    constraints: compact ? const BoxConstraints.tightFor(width: 32, height: 30) : null,
+                    constraints: compact
+                        ? const BoxConstraints.tightFor(width: 32, height: 30)
+                        : null,
                     padding: EdgeInsets.zero,
                     onPressed: widget.isTeacher
-                      ? (_audioSpeed > 0.5 ? () => _changeAudioSpeed((_audioSpeed - 0.25).clamp(0.5, 2.0)) : null)
-                      : () => _applyAudioSpeedLocally((_audioSpeed - 0.25).clamp(0.25, 3.0)),
+                        ? (_audioSpeed > 0.5
+                              ? () => _changeAudioSpeed(
+                                  (_audioSpeed - 0.25).clamp(0.5, 2.0),
+                                )
+                              : null)
+                        : () => _applyAudioSpeedLocally(
+                            (_audioSpeed - 0.25).clamp(0.25, 3.0),
+                          ),
                   ),
                   IconButton(
-                    icon: Icon(Icons.replay_10, color: Colors.white70, size: compact ? 18 : 24),
+                    focusNode: _rewindFocusNode,
+                    icon: Icon(
+                      Icons.replay_10,
+                      color: Colors.white70,
+                      size: compact ? 18 : 24,
+                    ),
                     tooltip: 'Back 10s',
-                    constraints: compact ? const BoxConstraints.tightFor(width: 32, height: 30) : null,
+                    constraints: compact
+                        ? const BoxConstraints.tightFor(width: 32, height: 30)
+                        : null,
                     padding: EdgeInsets.zero,
-                    onPressed: () =>
-                        _seekAudio((_currentPosition - 10).clamp(0.0, _audioDuration ?? 0.0)),
+                    onPressed: () => _seekAudio(
+                      (_currentPosition - 10).clamp(0.0, _audioDuration ?? 0.0),
+                    ),
                   ),
                   compact
                       ? IconButton(
-                          icon: Icon(isPlaying ? Icons.pause_circle : Icons.play_circle, color: Colors.white, size: 24),
+                          focusNode: _playFocusNode,
+                          icon: Icon(
+                            isPlaying ? Icons.pause_circle : Icons.play_circle,
+                            color: Colors.white,
+                            size: 24,
+                          ),
                           tooltip: isPlaying ? 'Pause' : 'Play',
-                          constraints: const BoxConstraints.tightFor(width: 36, height: 30),
+                          constraints: const BoxConstraints.tightFor(
+                            width: 36,
+                            height: 30,
+                          ),
                           padding: EdgeInsets.zero,
-                          onPressed: isPlaying ? _pauseSessionAudio : _playSessionAudio,
+                          onPressed: isPlaying
+                              ? _pauseSessionAudio
+                              : _playSessionAudio,
                         )
                       : ElevatedButton.icon(
-                          onPressed: isPlaying ? _pauseSessionAudio : _playSessionAudio,
-                          icon: Icon(isPlaying ? Icons.pause : Icons.play_arrow),
+                          focusNode: _playFocusNode,
+                          onPressed: isPlaying
+                              ? _pauseSessionAudio
+                              : _playSessionAudio,
+                          icon: Icon(
+                            isPlaying ? Icons.pause : Icons.play_arrow,
+                          ),
                           label: Text(isPlaying ? 'Pause' : 'Play'),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: isPlaying ? Colors.orange : Colors.green,
+                            backgroundColor: isPlaying
+                                ? Colors.orange
+                                : Colors.green,
                             foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 8,
+                            ),
                             shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20)),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
                           ),
                         ),
                   IconButton(
-                    icon: Icon(Icons.forward_10, color: Colors.white70, size: compact ? 18 : 24),
+                    focusNode: _forwardFocusNode,
+                    icon: Icon(
+                      Icons.forward_10,
+                      color: Colors.white70,
+                      size: compact ? 18 : 24,
+                    ),
                     tooltip: 'Forward 10s',
-                    constraints: compact ? const BoxConstraints.tightFor(width: 32, height: 30) : null,
+                    constraints: compact
+                        ? const BoxConstraints.tightFor(width: 32, height: 30)
+                        : null,
                     padding: EdgeInsets.zero,
-                    onPressed: () =>
-                        _seekAudio((_currentPosition + 10).clamp(0.0, _audioDuration ?? 0.0)),
+                    onPressed: () => _seekAudio(
+                      (_currentPosition + 10).clamp(0.0, _audioDuration ?? 0.0),
+                    ),
                   ),
                   IconButton(
-                    icon: Icon(Icons.fast_forward, color: Colors.white70, size: compact ? 18 : 24),
+                    focusNode: _fasterFocusNode,
+                    icon: Icon(
+                      Icons.fast_forward,
+                      color: Colors.white70,
+                      size: compact ? 18 : 24,
+                    ),
                     tooltip: 'Faster',
-                    constraints: compact ? const BoxConstraints.tightFor(width: 32, height: 30) : null,
+                    constraints: compact
+                        ? const BoxConstraints.tightFor(width: 32, height: 30)
+                        : null,
                     padding: EdgeInsets.zero,
                     onPressed: _audioSpeed < 2.0
-                        ? () => _changeAudioSpeed((_audioSpeed + 0.25).clamp(0.5, 2.0))
+                        ? () => _changeAudioSpeed(
+                            (_audioSpeed + 0.25).clamp(0.5, 2.0),
+                          )
                         : null,
                   ),
                 ],
@@ -2092,15 +3033,23 @@ class _SessionScreenState extends State<SessionScreen> {
   Widget _buildAudioLibraryPanel() {
     if (!_showAudioPanel) return const SizedBox.shrink();
     final screenHeight = MediaQuery.of(context).size.height;
-    final panelHeight = (screenHeight < 520
-        ? (screenHeight * 0.36).clamp(120.0, 220.0)
-        : (screenHeight * 0.4).clamp(240.0, 320.0)).toDouble();
+    final panelHeight =
+        (screenHeight < 520
+                ? (screenHeight * 0.36).clamp(120.0, 220.0)
+                : (screenHeight * 0.4).clamp(240.0, 320.0))
+            .toDouble();
 
     return Container(
       height: panelHeight,
       decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        border: Border(top: BorderSide(color: Colors.grey.shade300)),
+        color: UIUtils.cardColor,
+        border: Border(
+          top: BorderSide(
+            color: UIUtils.isHighContrast
+                ? UIUtils.accentColor
+                : Colors.grey.shade300,
+          ),
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
@@ -2117,25 +3066,36 @@ class _SessionScreenState extends State<SessionScreen> {
             color: Colors.teal.shade700,
             child: Row(
               children: [
-
                 const Icon(Icons.library_music, color: Colors.white, size: 18),
                 const SizedBox(width: 8),
                 const Expanded(
-                  child: Text('Audio Library',
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 15)),
+                  child: Text(
+                    'Audio Library',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                    ),
+                  ),
                 ),
                 // Upload button
                 TextButton.icon(
+                  focusNode: _uploadFocusNode,
                   onPressed: _isUploadingAudio ? null : _uploadAudio,
                   icon: _isUploadingAudio
                       ? const SizedBox(
-                          width: 16, height: 16,
+                          width: 16,
+                          height: 16,
                           child: CircularProgressIndicator(
-                              strokeWidth: 2, color: Colors.white))
-                      : const Icon(Icons.upload_file, color: Colors.white, size: 18),
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Icon(
+                          Icons.upload_file,
+                          color: Colors.white,
+                          size: 18,
+                        ),
                   label: Text(
                     _isUploadingAudio ? 'Uploading…' : 'Upload',
                     style: const TextStyle(color: Colors.white),
@@ -2143,15 +3103,22 @@ class _SessionScreenState extends State<SessionScreen> {
                 ),
                 // Refresh
                 IconButton(
-                  icon: const Icon(Icons.refresh, color: Colors.white, size: 20),
+                  focusNode: _refreshAudioFocusNode,
+                  icon: const Icon(
+                    Icons.refresh,
+                    color: Colors.white,
+                    size: 20,
+                  ),
                   tooltip: 'Refresh',
                   onPressed: _loadAudioLibrary,
                   constraints: const BoxConstraints(),
                   padding: EdgeInsets.zero,
                 ),
                 IconButton(
+                  focusNode: _closeAudioFocusNode,
                   icon: const Icon(Icons.close, color: Colors.white, size: 20),
-                  onPressed: () => setState(() => _showAudioPanel = false),
+                  tooltip: 'Close audio library',
+                  onPressed: _toggleAudioPanel,
                   constraints: const BoxConstraints(),
                   padding: const EdgeInsets.only(left: 8),
                 ),
@@ -2166,136 +3133,177 @@ class _SessionScreenState extends State<SessionScreen> {
           // File list
           Expanded(
             child: !_audioLibraryLoaded
-                ? const Center(child: CircularProgressIndicator(color: Colors.teal))
+                ? const Center(
+                    child: CircularProgressIndicator(color: Colors.teal),
+                  )
                 : _audioFiles.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.audiotrack,
-                                size: 48, color: Colors.grey),
-                            const SizedBox(height: 8),
-                            const Text('No audio files yet',
-                                style: TextStyle(color: Colors.grey)),
-                            const SizedBox(height: 8),
-                            TextButton.icon(
-                              onPressed: _uploadAudio,
-                              icon: const Icon(Icons.upload_file),
-                              label: const Text('Upload your first file'),
-                            ),
-                          ],
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.audiotrack,
+                          size: 48,
+                          color: UIUtils.subtextColor,
                         ),
-                      )
-                    : ListView.builder(
-                        padding: const EdgeInsets.all(8),
-                        itemCount: _audioFiles.length,
-                        itemBuilder: (_, i) {
-                          final audio    = _audioFiles[i];
-                          final audioId  = audio['audio_id'] ?? audio['id'] as int;
-                          final title    = audio['title']   as String? ?? 'Untitled';
-                          final desc     = audio['description'] as String? ?? '';
-                          final isPrev   = _previewingAudioId == audioId;
-                          final isActive = _currentAudioId    == audioId;
+                        const SizedBox(height: 8),
+                        Text(
+                          'No audio files yet',
+                          style: TextStyle(color: UIUtils.subtextColor),
+                        ),
+                        const SizedBox(height: 8),
+                        TextButton.icon(
+                          onPressed: _uploadAudio,
+                          icon: const Icon(Icons.upload_file),
+                          label: const Text('Upload your first file'),
+                        ),
+                      ],
+                    ),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.all(8),
+                    itemCount: _audioFiles.length,
+                    itemBuilder: (_, i) {
+                      final audio = _audioFiles[i];
+                      final audioId = audio['audio_id'] ?? audio['id'] as int;
+                      final title = audio['title'] as String? ?? 'Untitled';
+                      final desc = audio['description'] as String? ?? '';
+                      final isPrev = _previewingAudioId == audioId;
+                      final isActive = _currentAudioId == audioId;
 
-                          return Card(
-                            margin: const EdgeInsets.only(bottom: 8),
-                            elevation: isActive ? 3 : 1,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              side: isActive
-                                  ? BorderSide(
-                                      color: Colors.teal.shade400, width: 2)
-                                  : BorderSide.none,
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        elevation: isActive ? 3 : 1,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          side: isActive
+                              ? BorderSide(
+                                  color: Colors.teal.shade400,
+                                  width: 2,
+                                )
+                              : BorderSide.none,
+                        ),
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 4,
+                          ),
+                          leading: Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: isActive
+                                  ? (UIUtils.isHighContrast
+                                        ? UIUtils.backgroundColor
+                                        : Colors.teal.shade50)
+                                  : UIUtils.backgroundColor,
+                              borderRadius: BorderRadius.circular(8),
                             ),
-                            child: ListTile(
-                              contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 12, vertical: 4),
-                              leading: Container(
-                                width: 40, height: 40,
-                                decoration: BoxDecoration(
-                                  color: isActive
-                                      ? Colors.teal.shade50
-                                      : Colors.grey.shade100,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Icon(
-                                  isPrev ? Icons.graphic_eq : Icons.audiotrack,
-                                  color: isActive
-                                      ? Colors.teal.shade700
-                                      : Colors.grey.shade600,
-                                  size: 22,
-                                ),
-                              ),
-                              title: Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(title,
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 14),
-                                        overflow: TextOverflow.ellipsis),
-                                  ),
-                                  if (isActive)
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 6, vertical: 2),
-                                      decoration: BoxDecoration(
-                                        color: Colors.teal.shade700,
-                                        borderRadius: BorderRadius.circular(6),
-                                      ),
-                                      child: const Text('ACTIVE',
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 9,
-                                              fontWeight: FontWeight.bold)),
-                                    ),
-                                ],
-                              ),
-                              subtitle: desc.isNotEmpty
-                                  ? Text(desc,
-                                      style: TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.grey.shade600),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis)
-                                  : null,
-                              trailing: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  // Preview (local, not broadcast)
-                                  IconButton(
-                                    icon: Icon(
-                                      isPrev ? Icons.stop_circle : Icons.headphones_rounded,
-                                      color: isPrev
-                                          ? Colors.orange
-                                          : Colors.blue.shade600,
-                                      size: 26,
-                                    ),
-                                    tooltip: isPrev ? 'Stop preview (only you)' : 'Preview (only you)',
-                                    onPressed: () => _previewAudio(audioId, title),
-                                    padding: EdgeInsets.zero,
-                                    constraints: const BoxConstraints(),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  // Select & broadcast to all
-                                  IconButton(
-                                    icon: Icon(
-                                      Icons.campaign_rounded,
-                                      color: Colors.green.shade600,
-                                      size: 26,
-                                    ),
-                                    tooltip: 'Select & Play for session',
-                                    onPressed: () =>
-                                        _selectAndPlayAudio(audioId, title),
-                                    padding: EdgeInsets.zero,
-                                    constraints: const BoxConstraints(),
-                                  ),
-                                ],
-                              ),
+                            child: Icon(
+                              isPrev ? Icons.graphic_eq : Icons.audiotrack,
+                              color: isActive
+                                  ? (UIUtils.isHighContrast
+                                        ? UIUtils.accentColor
+                                        : Colors.teal.shade700)
+                                  : UIUtils.subtextColor,
+                              size: 22,
                             ),
-                          );
-                        },
-                      ),
+                          ),
+                          title: Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  title,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              if (isActive)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 6,
+                                    vertical: 2,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.teal.shade700,
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: const Text(
+                                    'ACTIVE',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                          subtitle: desc.isNotEmpty
+                              ? Text(
+                                  desc,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: UIUtils.subtextColor,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                )
+                              : null,
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // Preview (local, not broadcast)
+                              IconButton(
+                                focusNode: _focusNodeFor(
+                                  _previewAudioFocusNodes,
+                                  audioId,
+                                  'audio-preview',
+                                ),
+                                icon: Icon(
+                                  isPrev
+                                      ? Icons.stop_circle
+                                      : Icons.headphones_rounded,
+                                  color: isPrev
+                                      ? Colors.orange
+                                      : Colors.blue.shade600,
+                                  size: 26,
+                                ),
+                                tooltip: isPrev
+                                    ? 'Stop preview (only you)'
+                                    : 'Preview (only you)',
+                                onPressed: () => _previewAudio(audioId, title),
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(),
+                              ),
+                              const SizedBox(width: 8),
+                              // Select & broadcast to all
+                              IconButton(
+                                focusNode: _focusNodeFor(
+                                  _selectAudioFocusNodes,
+                                  audioId,
+                                  'audio-select',
+                                ),
+                                icon: Icon(
+                                  Icons.campaign_rounded,
+                                  color: Colors.green.shade600,
+                                  size: 26,
+                                ),
+                                tooltip: 'Select & Play for session',
+                                onPressed: () =>
+                                    _selectAndPlayAudio(audioId, title),
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
           ),
         ],
       ),

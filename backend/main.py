@@ -1731,6 +1731,24 @@ async def session_action(
     elif typ == "end_session":
         if not is_teacher:
             raise HTTPException(status_code=403, detail="Teacher permission required")
+
+        q_session = await db.execute(
+            select(models.Session).filter(models.Session.session_id == session_id)
+        )
+        session = q_session.scalar_one_or_none()
+        if not session:
+            raise HTTPException(status_code=404, detail="Session not found")
+        if session.created_by != user_id:
+            raise HTTPException(status_code=403, detail="Only creator can end session")
+        if not session.is_active:
+            raise HTTPException(status_code=400, detail="Session already ended")
+
+        # Persist the lifecycle transition before notifying clients. Without
+        # this, dashboards immediately list the ended session as active again.
+        session.is_active = False
+        session.ended_at = datetime.utcnow()
+        await db.commit()
+
         await ws_mgr.broadcast(session_id, {"type": "session_ending"})
         asyncio.create_task(ws_mgr.close_session(session_id))
         await SessionLogger.log_session_ended(db, session_id, user_id)
