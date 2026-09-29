@@ -159,18 +159,22 @@ class FCMNotificationService:
         token: str,
         session_id: int,
         session_title: str,
-        teacher_name: str
+        teacher_name: str,
+        class_name: str,
+        subject_name: str,
     ) -> bool:
         """Send session invitation notification"""
         return await self.send_notification(
             token=token,
             title="Session Invitation",
-            body=f"{teacher_name} invited you to join '{session_title}'",
+            body=f"{teacher_name} invited you to {class_name} {subject_name}: '{session_title}'",
             data={
                 "type": "session_invitation",
                 "session_id": str(session_id),
                 "session_title": session_title,
-                "teacher_name": teacher_name
+                "teacher_name": teacher_name,
+                "class_name": class_name,
+                "subject_name": subject_name,
             }
         )
 

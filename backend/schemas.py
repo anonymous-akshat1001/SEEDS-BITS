@@ -61,6 +61,8 @@ class TokenData(BaseModel):
 # Input schema when the teacher creates a session
 class SessionCreate(BaseModel):
     title: str = Field(..., min_length=1, max_length=500)
+    class_id: int
+    subject_id: int
 
 
 # Table stores what is returned when session has been created succesfully
@@ -69,6 +71,10 @@ class SessionOut(BaseModel):
     title: Optional[str]
     is_active: bool
     created_by: Optional[int]
+    class_id: int
+    subject_id: int
+    class_name: Optional[str] = None
+    subject_name: Optional[str] = None
     created_at: datetime
     ended_at: Optional[datetime] = None
     participant_count: Optional[int] = 0  # Added participant count
@@ -119,6 +125,8 @@ class AudioFileUpload(BaseModel):
     title: str = Field(..., min_length=1, max_length=500)
     description: Optional[str] = ""
     session_ids: List[int]  # Allows teacher to upload audio to multiple sessions
+    class_id: int
+    subject_id: int
 
     @validator("session_ids")
     def validate_sessions(cls, v):
@@ -149,6 +157,10 @@ class AudioFileOut(BaseModel):
     mime_type: str
     duration: Optional[float] = None
     uploaded_by: Optional[int]
+    class_id: int
+    subject_id: int
+    class_name: Optional[str] = None
+    subject_name: Optional[str] = None
     uploaded_at: datetime
     
     class Config:
@@ -309,6 +321,154 @@ class SuccessResponse(BaseModel):
     ok: bool = True
     message: Optional[str] = None
     data: Optional[dict] = None
+
+
+# ==================== CLASS, SUBJECT, AND ADMIN SCHEMAS ====================
+
+class ClassOut(BaseModel):
+    class_id: int
+    name: str
+    sort_order: int
+    is_active: bool
+
+    class Config:
+        orm_mode = True
+
+
+class ClassCreate(BaseModel):
+    name: str = Field(..., min_length=1, max_length=40)
+    sort_order: int
+
+
+class SubjectCreate(BaseModel):
+    name: str = Field(..., min_length=1, max_length=100)
+
+
+class SubjectOut(BaseModel):
+    subject_id: int
+    name: str
+    is_active: bool
+
+    class Config:
+        orm_mode = True
+
+
+class StudentEnrollmentRequest(BaseModel):
+    class_id: int
+
+
+class StudentMembershipOut(BaseModel):
+    membership_id: int
+    student_id: int
+    student_name: Optional[str] = None
+    class_id: int
+    class_name: Optional[str] = None
+    is_active: bool
+    assigned_at: datetime
+
+    class Config:
+        orm_mode = True
+
+
+class TeacherAssignmentRequest(BaseModel):
+    class_id: int
+    subject_id: int
+
+
+class TeacherAssignmentOut(BaseModel):
+    assignment_id: int
+    teacher_id: int
+    teacher_name: Optional[str] = None
+    class_id: int
+    class_name: Optional[str] = None
+    subject_id: int
+    subject_name: Optional[str] = None
+    is_active: bool
+
+    class Config:
+        orm_mode = True
+
+
+class AdminUserOut(BaseModel):
+    user_id: int
+    name: str
+    phone_number: str
+    role: str
+    class_id: Optional[int] = None
+    class_name: Optional[str] = None
+    assignment_count: int = 0
+
+
+class WorkspaceOut(BaseModel):
+    class_id: int
+    class_name: str
+    subject_id: int
+    subject_name: str
+
+
+# ==================== PLAYLIST SCHEMAS ====================
+
+class PlaylistCreate(BaseModel):
+    title: str = Field(..., min_length=1, max_length=300)
+    description: Optional[str] = ""
+
+
+class TeacherPlaylistCreate(PlaylistCreate):
+    class_id: int
+    subject_id: int
+
+
+class PlaylistUpdate(BaseModel):
+    title: Optional[str] = Field(None, min_length=1, max_length=300)
+    description: Optional[str] = None
+
+
+class PlaylistItemAdd(BaseModel):
+    audio_id: int
+
+
+class PlaylistReorder(BaseModel):
+    item_ids: List[int]
+
+
+class PlaylistItemOut(BaseModel):
+    item_id: int
+    audio_id: int
+    position: int
+    title: Optional[str] = None
+    subject_name: Optional[str] = None
+    stream_path: Optional[str] = None
+    available: bool = True
+
+
+class TeacherPlaylistOut(BaseModel):
+    playlist_id: int
+    owner_teacher_id: int
+    owner_name: Optional[str] = None
+    class_id: int
+    class_name: Optional[str] = None
+    subject_id: int
+    subject_name: Optional[str] = None
+    title: str
+    description: Optional[str] = ""
+    is_published: bool
+    is_archived: bool
+    created_at: datetime
+    updated_at: datetime
+    item_count: int = 0
+    items: List[PlaylistItemOut] = Field(default_factory=list)
+
+
+class StudentPlaylistOut(BaseModel):
+    playlist_id: int
+    owner_student_id: int
+    title: str
+    description: Optional[str] = ""
+    visibility: str = "private"
+    created_at: datetime
+    updated_at: datetime
+    item_count: int = 0
+    items: List[PlaylistItemOut] = Field(default_factory=list)
 
 
 # ==================== NOTIFICATIONS SCHEMAS ====================

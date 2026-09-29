@@ -2,11 +2,12 @@
 from datetime import datetime, timedelta
 from jose import jwt, JWTError
 from passlib.context import CryptContext
-from fastapi import HTTPException, status
+from fastapi import HTTPException, status, Query
 import schemas, models
 import os
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
+from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from database import get_db
@@ -18,7 +19,10 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 1 day
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # Type of authentication used by FASTAPI endpoints
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login", auto_error=False)
+ALLOW_DEV_USER_IMPERSONATION = os.getenv(
+    "ALLOW_DEV_USER_IMPERSONATION", "false"
+).strip().lower() in {"1", "true", "yes"}
 
 # Compares plain text password with the hashed password stored in the database
 def verify_password(plain, hashed):
@@ -57,7 +61,19 @@ def decode_access_token(token: str):
 
 
 # Get current user from JWT token
-async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)) -> models.User:
+async def get_current_user(
+    token: Optional[str] = Depends(oauth2_scheme),
+    user_id: Optional[int] = Query(None),
+    db: AsyncSession = Depends(get_db),
+) -> models.User:
+    if user_id is not None and ALLOW_DEV_USER_IMPERSONATION:
+        q = await db.execute(select(models.User).filter(models.User.user_id == user_id))
+        user = q.scalar_one_or_none()
+        if not user:
+            raise HTTPException(status_code=401, detail="Development user not found")
+        return user
+    if not token:
+        raise HTTPException(status_code=401, detail="Authentication required")
     try:
         payload = decode_access_token(token)    # Calls the above function to decode the payload(token)
         user_id = payload.get("user_id")
@@ -90,6 +106,22 @@ async def get_current_user_from_token(token: str, db: AsyncSession) -> models.Us
         raise HTTPException(status_code=401, detail="User not found")
     return user
 
+
+async def get_media_user(
+    access_token: Optional[str] = Query(None),
+    user_id: Optional[int] = Query(None),
+    db: AsyncSession = Depends(get_db),
+) -> models.User:
+    """Authenticate media clients that cannot attach an Authorization header."""
+    if access_token:
+        return await get_current_user_from_token(access_token, db)
+    if user_id is not None and ALLOW_DEV_USER_IMPERSONATION:
+        result = await db.execute(select(models.User).filter(models.User.user_id == user_id))
+        user = result.scalar_one_or_none()
+        if user:
+            return user
+    raise HTTPException(status_code=401, detail="Authentication required")
+
 # Only allow teachers
 async def require_teacher(current_user: models.User = Depends(get_current_user)) -> models.User:
     if current_user.role != "teacher":
@@ -100,4 +132,10 @@ async def require_teacher(current_user: models.User = Depends(get_current_user))
 async def require_student(current_user: models.User = Depends(get_current_user)) -> models.User:
     if current_user.role != "student":
         raise HTTPException(status_code=403, detail="Student role required")
+    return current_user
+
+
+async def require_admin(current_user: models.User = Depends(get_current_user)) -> models.User:
+    if current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Administrator role required")
     return current_user

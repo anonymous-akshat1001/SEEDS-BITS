@@ -11,6 +11,7 @@ import 'screens/simple_session_screen.dart';
 import 'screens/audio_library_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/invite_students_screen.dart';
+import 'screens/admin_dashboard.dart';
 import 'utils/ui_utils.dart';
 import 'services/notification_services.dart';
 import 'services/tts_service.dart';
@@ -80,6 +81,8 @@ WEB_VAPID_KEY=BOYVjb77moWEwSyBY-HxCkiAFBuNrCncK9oSobRL1TubgfGicL1JOiw_B0Nod74jEb
         _initialRoute = '/teacher_dashboard';
       } else if (token != null && token.isNotEmpty && role == 'student') {
         _initialRoute = '/student_dashboard';
+      } else if (token != null && token.isNotEmpty && role == 'admin') {
+        _initialRoute = '/admin_dashboard';
       }
     } catch (error) {
       debugPrint('[MAIN] Essential preference initialization failed: $error');
@@ -148,6 +151,8 @@ WEB_VAPID_KEY=BOYVjb77moWEwSyBY-HxCkiAFBuNrCncK9oSobRL1TubgfGicL1JOiw_B0Nod74jEb
         'userName': userName,
         'isTeacher': false,
         'sessionTitle': data['session_title'] ?? 'Session',
+        'className': data['class_name'],
+        'subjectName': data['subject_name'],
       },
     );
   }
@@ -347,6 +352,7 @@ class MyApp extends StatelessWidget {
               '/register': (context) => const RegisterScreen(),
               '/teacher_dashboard': (context) => const TeacherDashboard(),
               '/student_dashboard': (context) => const StudentDashboard(),
+              '/admin_dashboard': (context) => const AdminDashboard(),
               '/settings': (context) => const SettingsScreen(),
             },
 
@@ -360,6 +366,8 @@ class MyApp extends StatelessWidget {
                   final userName = args['userName'];
                   final isTeacher = args['isTeacher'] ?? false;
                   final sessionTitle = args['sessionTitle'] ?? 'Session';
+                  final className = args['className']?.toString();
+                  final subjectName = args['subjectName']?.toString();
 
                   if (sessionId is int && userId is int && userName is String) {
                     return MaterialPageRoute(
@@ -369,6 +377,8 @@ class MyApp extends StatelessWidget {
                         userName: userName,
                         isTeacher: isTeacher,
                         sessionTitle: sessionTitle,
+                        className: className,
+                        subjectName: subjectName,
                       ),
                       settings: settings,
                     );

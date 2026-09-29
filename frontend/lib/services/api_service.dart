@@ -46,7 +46,7 @@ class ApiResult<T> {
 class ApiService {
   static final String baseUrl =
       dotenv.env['API_BASE_URL'] ?? 'http://127.0.0.1:8000';
-  static const bool devMode = true; // Set to false for JWT mode
+  static const bool devMode = false;
 
   static String? cachedToken; // set this right after reading from prefs
 
@@ -266,14 +266,12 @@ class ApiService {
   }
 
   static Future<ApiResult<Map<String, dynamic>>> joinSessionResult(
-    int sessionId, {
-    int? userId,
-  }) async {
+    int sessionId,
+  ) async {
     final uri = await _buildUri('/sessions/$sessionId/join');
     final prefs = await SharedPreferences.getInstance();
     try {
       final request = http.MultipartRequest('POST', uri);
-      if (userId != null) request.fields['user_id'] = userId.toString();
       if (!devMode) {
         final token = prefs.getString('token');
         if (token != null) request.headers['Authorization'] = 'Bearer $token';
@@ -346,7 +344,20 @@ class ApiService {
 
   // Public wrapper which allows other code to reuse headers
   static Future<Map<String, String>> getHeaders() async {
-    return await _buildHeaders();
+    return await _buildHeaders(useAuth: true);
+  }
+
+  /// Builds an authenticated URL for media clients that cannot attach headers.
+  static Future<String> mediaUrl(String path) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    final uri = Uri.parse('$baseUrl$path');
+    if (token == null || token.isEmpty) return uri.toString();
+    return uri
+        .replace(
+          queryParameters: {...uri.queryParameters, 'access_token': token},
+        )
+        .toString();
   }
 
   ////////////////////// POST /////////////////////////////
@@ -466,6 +477,31 @@ class ApiService {
     }
   }
 
+  static Future<Map<String, dynamic>?> patch(
+    String path,
+    Map<String, dynamic> data, {
+    bool useAuth = true,
+  }) async {
+    final uri = await _buildUri(path);
+    final headers = await _buildHeaders(useAuth: useAuth);
+    try {
+      final response = await http.patch(
+        uri,
+        headers: headers,
+        body: jsonEncode(data),
+      );
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        return response.body.isEmpty
+            ? <String, dynamic>{'ok': true}
+            : Map<String, dynamic>.from(jsonDecode(response.body) as Map);
+      }
+      return null;
+    } catch (error) {
+      debugPrint('PATCH $path error: $error');
+      return null;
+    }
+  }
+
   /////////////////////////// FILE UPLOAD  /////////////////////////
 
   // Uploads file using multipart/form-data
@@ -572,8 +608,16 @@ class ApiService {
   /////////////////////////// SESSION ENDPOINTS /////////////////////////
 
   /// Create a new session (teacher only)
-  static Future<Map<String, dynamic>?> createSession(String title) async {
-    return await post('/sessions', {'title': title}, useAuth: true);
+  static Future<Map<String, dynamic>?> createSession(
+    String title, {
+    required int classId,
+    required int subjectId,
+  }) async {
+    return await post('/sessions', {
+      'title': title,
+      'class_id': classId,
+      'subject_id': subjectId,
+    }, useAuth: true);
   }
 
   /// Get all active sessions
@@ -598,19 +642,12 @@ class ApiService {
   /////////////////////////// PARTICIPANT ENDPOINTS /////////////////////////
 
   /// Join a session as a participant
-  static Future<Map<String, dynamic>?> joinSession(
-    int sessionId, {
-    int? userId,
-  }) async {
+  static Future<Map<String, dynamic>?> joinSession(int sessionId) async {
     final uri = await _buildUri('/sessions/$sessionId/join');
     final prefs = await SharedPreferences.getInstance();
 
     try {
       var req = http.MultipartRequest("POST", uri);
-
-      if (userId != null) {
-        req.fields['user_id'] = userId.toString();
-      }
 
       if (!devMode) {
         final token = prefs.getString('token');
@@ -807,6 +844,8 @@ class ApiService {
     required String title,
     String description = '',
     List<int> sessionIds = const [],
+    required int classId,
+    required int subjectId,
   }) async {
     return await uploadFile(
       '/audio/upload',
@@ -816,6 +855,8 @@ class ApiService {
         'title': title,
         'description': description,
         'session_ids': jsonEncode(sessionIds),
+        'class_id': classId.toString(),
+        'subject_id': subjectId.toString(),
       },
     );
   }
@@ -827,6 +868,8 @@ class ApiService {
     required String title,
     String description = '',
     List<int> sessionIds = const [],
+    required int classId,
+    required int subjectId,
   }) async {
     return await uploadFileBytes(
       '/audio/upload',
@@ -837,6 +880,8 @@ class ApiService {
         'title': title,
         'description': description,
         'session_ids': jsonEncode(sessionIds),
+        'class_id': classId.toString(),
+        'subject_id': subjectId.toString(),
       },
     );
   }
@@ -852,27 +897,248 @@ class ApiService {
     return null;
   }
 
-  // Compatibility fallback for dev-auth deployments where user_id query param
-  // controls identity and student /audio/list may return empty.
-  static Future<List<dynamic>?> getAudioListAsUser(int userId) async {
-    String uri = '$baseUrl/audio/list?user_id=$userId';
-    final parsed = Uri.parse(uri);
-    final headers = await _buildHeaders(useAuth: true);
-    try {
-      final res = await http.get(parsed, headers: headers);
-      if (res.statusCode >= 200 && res.statusCode < 300) {
-        final data = jsonDecode(res.body);
-        if (data is List) return data;
-      } else {
-        print(
-          'GET /audio/list as user=$userId failed: ${res.statusCode} ${res.body}',
-        );
-      }
-    } catch (e) {
-      print('GET /audio/list as user=$userId error: $e');
-    }
-    return null;
+  static Future<Map<String, dynamic>?> getAccessContext() async {
+    final result = await get('/me/access-context', useAuth: true);
+    return result is Map ? Map<String, dynamic>.from(result) : null;
   }
+
+  static Future<List<dynamic>> getClasses({
+    bool includeArchived = false,
+  }) async {
+    final result = await get(
+      '/catalog/classes?include_archived=$includeArchived',
+      useAuth: true,
+    );
+    return result is List ? result : const [];
+  }
+
+  static Future<List<dynamic>> getSubjects({
+    bool includeArchived = false,
+  }) async {
+    final result = await get(
+      '/catalog/subjects?include_archived=$includeArchived',
+      useAuth: true,
+    );
+    return result is List ? result : const [];
+  }
+
+  static Future<List<dynamic>> getAdminUsers({
+    String search = '',
+    bool unassignedOnly = false,
+  }) async {
+    final query = Uri(
+      queryParameters: {
+        if (search.isNotEmpty) 'search': search,
+        'unassigned_only': unassignedOnly.toString(),
+      },
+    ).query;
+    final result = await get('/admin/users?$query', useAuth: true);
+    return result is List ? result : const [];
+  }
+
+  static Future<Map<String, dynamic>?> enrollStudent(
+    int studentId,
+    int classId,
+  ) => post('/admin/students/$studentId/class', {
+    'class_id': classId,
+  }, useAuth: true);
+
+  static Future<Map<String, dynamic>?> assignTeacher(
+    int teacherId,
+    int classId,
+    int subjectId,
+  ) => post('/admin/teachers/$teacherId/assignments', {
+    'class_id': classId,
+    'subject_id': subjectId,
+  }, useAuth: true);
+
+  static Future<List<dynamic>> getTeacherAssignments(int teacherId) async {
+    final result = await get(
+      '/admin/teachers/$teacherId/assignments',
+      useAuth: true,
+    );
+    return result is List ? result : const [];
+  }
+
+  static Future<bool> archiveTeacherAssignment(
+    int teacherId,
+    int assignmentId,
+  ) => delete(
+    '/admin/teachers/$teacherId/assignments/$assignmentId',
+    useAuth: true,
+  );
+
+  static Future<Map<String, dynamic>?> createSubject(String name) =>
+      post('/admin/subjects', {'name': name}, useAuth: true);
+
+  static Future<Map<String, dynamic>?> createClass(
+    String name,
+    int sortOrder,
+  ) => post('/admin/classes', {
+    'name': name,
+    'sort_order': sortOrder,
+  }, useAuth: true);
+
+  static Future<Map<String, dynamic>?> setSubjectArchived(
+    int subjectId,
+    bool archived,
+  ) => post(
+    '/admin/subjects/$subjectId/archive?archived=$archived',
+    const {},
+    useAuth: true,
+  );
+
+  static Future<Map<String, dynamic>?> setClassArchived(
+    int classId,
+    bool archived,
+  ) => post(
+    '/admin/classes/$classId/archive?archived=$archived',
+    const {},
+    useAuth: true,
+  );
+
+  static Future<List<dynamic>> getTeacherPlaylists({
+    bool includeArchived = false,
+  }) async {
+    final result = await get(
+      '/teacher-playlists?include_archived=$includeArchived',
+      useAuth: true,
+    );
+    return result is List ? result : const [];
+  }
+
+  static Future<Map<String, dynamic>?> createTeacherPlaylist({
+    required String title,
+    required int classId,
+    required int subjectId,
+    String description = '',
+  }) => post('/teacher-playlists', {
+    'title': title,
+    'description': description,
+    'class_id': classId,
+    'subject_id': subjectId,
+  }, useAuth: true);
+
+  static Future<Map<String, dynamic>?> getTeacherPlaylist(
+    int playlistId,
+  ) async {
+    final result = await get('/teacher-playlists/$playlistId', useAuth: true);
+    return result is Map ? Map<String, dynamic>.from(result) : null;
+  }
+
+  static Future<Map<String, dynamic>?> updateTeacherPlaylist(
+    int playlistId, {
+    required String title,
+    String? description,
+  }) => patch('/teacher-playlists/$playlistId', {
+    'title': title,
+    if (description != null) 'description': description,
+  });
+
+  static Future<Map<String, dynamic>?> addTeacherPlaylistItem(
+    int playlistId,
+    int audioId,
+  ) => post('/teacher-playlists/$playlistId/items', {
+    'audio_id': audioId,
+  }, useAuth: true);
+
+  static Future<Map<String, dynamic>?> reorderTeacherPlaylist(
+    int playlistId,
+    List<int> itemIds,
+  ) => post('/teacher-playlists/$playlistId/reorder', {
+    'item_ids': itemIds,
+  }, useAuth: true);
+
+  static Future<Map<String, dynamic>?> setTeacherPlaylistPublished(
+    int playlistId,
+    bool published,
+  ) => post(
+    '/teacher-playlists/$playlistId/publish?published=$published',
+    const {},
+    useAuth: true,
+  );
+
+  static Future<Map<String, dynamic>?> setTeacherPlaylistArchived(
+    int playlistId,
+    bool archived,
+  ) => post(
+    '/teacher-playlists/$playlistId/archive?archived=$archived',
+    const {},
+    useAuth: true,
+  );
+
+  static Future<bool> removeTeacherPlaylistItem(int playlistId, int itemId) =>
+      delete('/teacher-playlists/$playlistId/items/$itemId', useAuth: true);
+
+  static Future<List<dynamic>> getVisibleTeacherPlaylists({
+    int? subjectId,
+  }) async {
+    final suffix = subjectId == null ? '' : '?subject_id=$subjectId';
+    final result = await get(
+      '/student/teacher-playlists$suffix',
+      useAuth: true,
+    );
+    return result is List ? result : const [];
+  }
+
+  static Future<Map<String, dynamic>?> getVisibleTeacherPlaylist(
+    int playlistId,
+  ) async {
+    final result = await get(
+      '/student/teacher-playlists/$playlistId',
+      useAuth: true,
+    );
+    return result is Map ? Map<String, dynamic>.from(result) : null;
+  }
+
+  static Future<List<dynamic>> getStudentPlaylists() async {
+    final result = await get('/student-playlists', useAuth: true);
+    return result is List ? result : const [];
+  }
+
+  static Future<Map<String, dynamic>?> getStudentPlaylist(
+    int playlistId,
+  ) async {
+    final result = await get('/student-playlists/$playlistId', useAuth: true);
+    return result is Map ? Map<String, dynamic>.from(result) : null;
+  }
+
+  static Future<Map<String, dynamic>?> createStudentPlaylist({
+    required String title,
+    String description = '',
+  }) => post('/student-playlists', {
+    'title': title,
+    'description': description,
+  }, useAuth: true);
+
+  static Future<Map<String, dynamic>?> updateStudentPlaylist(
+    int playlistId, {
+    required String title,
+    String? description,
+  }) => patch('/student-playlists/$playlistId', {
+    'title': title,
+    if (description != null) 'description': description,
+  });
+
+  static Future<Map<String, dynamic>?> addStudentPlaylistItem(
+    int playlistId,
+    int audioId,
+  ) => post('/student-playlists/$playlistId/items', {
+    'audio_id': audioId,
+  }, useAuth: true);
+
+  static Future<Map<String, dynamic>?> reorderStudentPlaylist(
+    int playlistId,
+    List<int> itemIds,
+  ) => post('/student-playlists/$playlistId/reorder', {
+    'item_ids': itemIds,
+  }, useAuth: true);
+
+  static Future<bool> removeStudentPlaylistItem(int playlistId, int itemId) =>
+      delete('/student-playlists/$playlistId/items/$itemId', useAuth: true);
+
+  static Future<bool> deleteStudentPlaylist(int playlistId) =>
+      delete('/student-playlists/$playlistId', useAuth: true);
 
   static Future<List<dynamic>?> getAudioListBySession(int sessionId) async {
     final result = await get('/audio/session/$sessionId', useAuth: true);
@@ -898,45 +1164,11 @@ class ApiService {
   static Future<Map<String, dynamic>?> selectAudio(
     int sessionId,
     int audioId,
-  ) async {
-    // Build base path first
-    String path = '/sessions/$sessionId/audio/select';
-
-    // Manually construct the full URI with query params
-    String fullUri = '$baseUrl$path';
-
-    // Add user_id if in dev mode
-    if (devMode) {
-      final prefs = await SharedPreferences.getInstance();
-      final userId = prefs.getInt('user_id');
-      if (userId != null) {
-        fullUri += '?user_id=$userId';
-        fullUri += '&audio_id=$audioId'; // Add audio_id after user_id
-      } else {
-        fullUri += '?audio_id=$audioId';
-      }
-    } else {
-      fullUri += '?audio_id=$audioId';
-    }
-
-    final uri = Uri.parse(fullUri);
-    final headers = await _buildHeaders(useAuth: true);
-
-    try {
-      final res = await http.post(uri, headers: headers);
-
-      if (res.statusCode >= 200 && res.statusCode < 300) {
-        if (res.body.isEmpty) return {'ok': true};
-        return jsonDecode(res.body);
-      } else {
-        print('SELECT AUDIO failed: ${res.statusCode} ${res.body}');
-        return null;
-      }
-    } catch (e) {
-      print('SELECT AUDIO error: $e');
-      return null;
-    }
-  }
+  ) => post(
+    '/sessions/$sessionId/audio/select?audio_id=$audioId',
+    const {},
+    useAuth: true,
+  );
 
   /// Unified audio control endpoint
   static Future<Map<String, dynamic>?> controlAudio(

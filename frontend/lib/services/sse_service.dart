@@ -1,12 +1,12 @@
 // Replaces WsService (WebSocket) with:
-//   • SSE listener  — GET /sse/sessions/{id}?user_id={uid}   (server → client)
+//   • Authenticated SSE listener for server → client events
 //   • HTTP POST     — POST /sessions/{id}/action              (client → server)
 //
 // The public API is intentionally close to the old WsService so that
 // call-sites need minimal changes.
 
 // Architecture:
-//   Server → Client : GET /sse/sessions/{id}?user_id={uid}  (SSE stream)
+//   Server → Client : GET /sse/sessions/{id}?access_token=...  (SSE stream)
 //   Client → Server : POST /sessions/{id}/action             (plain HTTP POST)
 //
 // Public API intentionally mirrors WsService so session_screen.dart
@@ -17,6 +17,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 typedef MsgHandler = void Function(Map<String, dynamic>);
 
@@ -53,18 +54,27 @@ class SseService {
     _startStream();
   }
 
-  void _startStream() {
+  Future<void> _startStream() async {
     if (_disposed || sessionId == null || userId == null) return;
     _reconnecting = false;
 
-    // Build the SSE URL.  In devMode the server reads identity from
-    // the user_id query param (same as every other API call).
-    final url = '$_baseUrl/sse/sessions/$sessionId?user_id=$userId';
+    // EventSource-style clients cannot attach an Authorization header, so the
+    // server accepts the same signed JWT in the stream URL over HTTPS.
+    final preferences = await SharedPreferences.getInstance();
+    final token = preferences.getString('token');
+    if (token == null || token.isEmpty) {
+      debugPrint('[SSE] Authentication token is missing');
+      _scheduleReconnect();
+      return;
+    }
+    final url = Uri.parse(
+      '$_baseUrl/sse/sessions/$sessionId',
+    ).replace(queryParameters: {'access_token': token});
     debugPrint('[SSE] Connecting → $url');
 
     _client = http.Client();
 
-    final request = http.Request('GET', Uri.parse(url));
+    final request = http.Request('GET', url);
     request.headers['Accept'] = 'text/event-stream';
     request.headers['Cache-Control'] = 'no-cache';
 
@@ -184,13 +194,19 @@ class SseService {
   Future<void> send(Map<String, dynamic> msg) async {
     if (sessionId == null || userId == null) return;
 
-    // Build URL with user_id (devMode identity pattern used throughout the app)
-    final url = '$_baseUrl/sessions/$sessionId/action?user_id=$userId';
+    // Mutating actions use the normal Bearer token header.
+    final preferences = await SharedPreferences.getInstance();
+    final token = preferences.getString('token');
+    if (token == null || token.isEmpty) return;
+    final url = '$_baseUrl/sessions/$sessionId/action';
 
     try {
       final response = await http.post(
         Uri.parse(url),
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
         body: jsonEncode(msg),
       );
 

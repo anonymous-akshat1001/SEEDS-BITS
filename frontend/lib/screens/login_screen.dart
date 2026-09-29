@@ -337,7 +337,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
       final roleText = role.toString().trim().toLowerCase();
 
-      if (isTeacher && roleText != 'teacher') {
+      if (isTeacher && roleText != 'teacher' && roleText != 'admin') {
         _setLoginError("This phone number is registered as a student account");
         return;
       }
@@ -370,7 +370,9 @@ class _LoginScreenState extends State<LoginScreen> {
       }
 
       // navigate to different dashboard based on the role
-      if (roleText == 'teacher') {
+      if (roleText == 'admin') {
+        Navigator.pushReplacementNamed(context, '/admin_dashboard');
+      } else if (roleText == 'teacher') {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => const TeacherDashboard()),

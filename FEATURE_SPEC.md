@@ -338,7 +338,7 @@ This is helpful because it lets students address the specific conceptual gap pre
 #### Teacher: course planning and curation
 
 1. A teacher opens **AI Course Planning** from the teacher dashboard.
-2. The teacher creates or selects a course/session context and provides the subject, grade/level, learning outcomes, syllabus/course structure, and optional source materials or repository references.
+2. The teacher creates or selects a course/session context and provides the subject, class/level, learning outcomes, syllabus/course structure, and optional source materials or repository references.
 3. SEEDS submits the authorized coursework request to the Agentic AI API.
 4. The agent returns a proposed concept map, prerequisite/threshold concepts, suggested sequence, explanations, activities/questions, and accessible presentation suggestions.
 5. The teacher reviews and edits the proposal, then explicitly publishes selected material to the relevant student cohort/session.

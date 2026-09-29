@@ -47,6 +47,7 @@ const Map<int, String> studentDashboardKeyLabels = {
   1: 'Refresh Sessions',
   2: 'Search Sessions by Name or ID',
   3: 'Offline Audio Library',
+  4: 'My Private Playlists',
 };
 
 // ─── Teacher Dashboard ──────────────────────────────────────────────────────
@@ -56,6 +57,7 @@ const Map<int, String> teacherDashboardKeyLabels = {
   2: 'Create Session',
   3: 'Offline Audio Library',
   4: 'Search Sessions by Name or ID',
+  5: 'Class Playlists',
 };
 
 // ─── Session Screen (Student) ───────────────────────────────────────────────
@@ -104,6 +106,7 @@ const Map<int, String> classAudioStudentKeyLabels = {
   2: 'Play or Pause',
   3: 'Stop Playback',
   4: 'Toggle T T S',
+  6: 'Next Subject Filter',
   7: 'Slow Down Audio',
   9: 'Speed Up Audio',
   0: 'Go Back',
@@ -116,6 +119,7 @@ const Map<int, String> classAudioTeacherKeyLabels = {
   3: 'Play or Pause',
   4: 'Stop Playback',
   5: 'Toggle T T S',
+  6: 'Next Subject Filter',
   7: 'Slow Down Audio',
   9: 'Speed Up Audio',
   0: 'Go Back',

@@ -18,8 +18,10 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import update, func
+from sqlalchemy.orm import selectinload
 
-import models, schemas, auth, ws_manager
+import models, schemas, auth, ws_manager, access_control as access
+import admin_routes, playlist_routes
 from database import engine, get_db
 from notification_service import fcm_service
 from ws_manager import ws_mgr, SESSION_STATE, SESSION_LOCK
@@ -40,6 +42,8 @@ async def lifespan(app: FastAPI):
 
 # Create FastAPI app
 app = FastAPI(title="SEEDS Application", lifespan=lifespan)
+app.include_router(admin_routes.router)
+app.include_router(playlist_routes.router)
 
 
 # CORS (Cross-Origin Resource Sharing) controls which websites can make requests to your API
@@ -53,38 +57,13 @@ app.add_middleware(
 
 
 
-# NO JWT AUTH FUNCTIONS :
-
-
-
-# Create temporary dependencies which bypass JWT Authentication : 
-async def get_user_by_id(user_id: Optional[int] = Query(None), db: AsyncSession = Depends(get_db)):
-    """
-    Dev-only: fetch a user by user_id=123 (or will read from header X-User-Id if provided).
-    This replaces JWT-based get_current_user during development.
-    """
-    if user_id is None:
-        raise HTTPException(status_code=400, detail="user_id query param required for dev auth (e.g. user_id=5)")
-
-    # Used to query the database
-    q = await db.execute(select(models.User).filter(models.User.user_id == user_id))
-    user = q.scalar_one_or_none()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    return user
-
-# The following functions ensure that the user has the correct role (teacher or student)
-
-async def require_teacher(user: models.User = Depends(get_user_by_id)):
-    if user.role.lower() != "teacher":
-        raise HTTPException(status_code=403, detail="Teacher role required")
-    return user
-
-
-async def require_student(user: models.User = Depends(get_user_by_id)):
-    if user.role.lower() != "student":
-        raise HTTPException(status_code=403, detail="Student role required")
-    return user
+# JWT identity is the production default. Query-parameter impersonation is
+# supported by auth.get_current_user only when ALLOW_DEV_USER_IMPERSONATION is
+# explicitly enabled in the backend environment.
+get_user_by_id = auth.get_current_user
+require_teacher = auth.require_teacher
+require_student = auth.require_student
+require_admin = auth.require_admin
 
 
 
@@ -165,8 +144,23 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(),
 async def create_session(payload: schemas.SessionCreate, 
                          user: models.User = Depends(require_teacher), 
                          db: AsyncSession = Depends(get_db)):
+    title = payload.title.strip()
+    if not title:
+        raise HTTPException(status_code=422, detail="Session title is required")
+    school_class, subject = await access.require_active_class_subject(
+        db, payload.class_id, payload.subject_id
+    )
+    await access.require_teacher_assignment(
+        db, user.user_id, payload.class_id, payload.subject_id
+    )
     # Creates a new session object
-    s = models.Session(title=payload.title, created_by=user.user_id, is_active=True)
+    s = models.Session(
+        title=title,
+        created_by=user.user_id,
+        class_id=school_class.class_id,
+        subject_id=subject.subject_id,
+        is_active=True,
+    )
     # stages the new session for saving
     db.add(s)
     # Actually adds to db
@@ -183,9 +177,20 @@ async def create_session(payload: schemas.SessionCreate,
         })
     
     # Log session creation
-    await SessionLogger.log_session_created(db, s.session_id, user.user_id, payload.title)
+    await SessionLogger.log_session_created(db, s.session_id, user.user_id, title)
     
-    return s
+    return {
+        "session_id": s.session_id,
+        "title": s.title,
+        "created_by": s.created_by,
+        "is_active": s.is_active,
+        "created_at": s.created_at,
+        "class_id": s.class_id,
+        "class_name": school_class.name,
+        "subject_id": s.subject_id,
+        "subject_name": subject.name,
+        "participant_count": 0,
+    }
 
 
 # Delete a session - teacher only
@@ -195,17 +200,20 @@ async def delete_session(session_id: int,
                       db: AsyncSession = Depends(get_db),
                       background_tasks: BackgroundTasks = None):
     # Fetches the session with the given ID from the database
-    q = await db.execute(select(models.Session).filter(models.Session.session_id == session_id))
+    q = await db.execute(
+        select(models.Session).options(
+            selectinload(models.Session.school_class),
+            selectinload(models.Session.subject),
+        ).filter(models.Session.session_id == session_id)
+    )
     s = q.scalar_one_or_none()
 
     if not s:
         raise HTTPException(status_code=404, detail="Session not found")
+    await access.require_session_access(db, user, s, manage=True)
     
     if not s.is_active:
         raise HTTPException(status_code=400, detail="Session already ended")
-    
-    if s.created_by != user.user_id:
-        raise HTTPException(status_code=403, detail="Only creator can end session")
     
     s.is_active = False
     s.ended_at = datetime.utcnow()
@@ -233,19 +241,43 @@ async def get_active_sessions(
     """
     if user.role.lower() == "teacher":
         # Only sessions created by this teacher
-        q = await db.execute(
-            select(models.Session).filter(
-                models.Session.created_by == user.user_id,
-                models.Session.is_active == True
+        assignments = await db.execute(
+            select(models.TeacherClassSubjectAssignment).filter(
+                models.TeacherClassSubjectAssignment.teacher_id == user.user_id,
+                models.TeacherClassSubjectAssignment.is_active.is_(True),
             )
         )
-    else:
-        # Student: all active sessions
+        pairs = {
+            (assignment.class_id, assignment.subject_id)
+            for assignment in assignments.scalars().all()
+        }
         q = await db.execute(
-            select(models.Session).filter(models.Session.is_active == True)
+            select(models.Session).options(
+                selectinload(models.Session.school_class),
+                selectinload(models.Session.subject),
+            ).filter(
+                models.Session.created_by == user.user_id,
+                models.Session.is_active.is_(True),
+            )
         )
-
-    sessions = q.scalars().all()
+        sessions = [
+            session for session in q.scalars().all()
+            if (session.class_id, session.subject_id) in pairs
+        ]
+    elif user.role.lower() == "student":
+        membership = await access.get_active_student_membership(db, user.user_id)
+        q = await db.execute(
+            select(models.Session).options(
+                selectinload(models.Session.school_class),
+                selectinload(models.Session.subject),
+            ).filter(
+                models.Session.is_active.is_(True),
+                models.Session.class_id == membership.class_id,
+            )
+        )
+        sessions = q.scalars().all()
+    else:
+        raise HTTPException(status_code=403, detail="Administrators do not join classroom sessions.")
     
     # Add participant count and teacher name to each session
     result = []
@@ -276,6 +308,10 @@ async def get_active_sessions(
             'title': session.title,
             'is_active': session.is_active,
             'created_by': session.created_by,
+            'class_id': session.class_id,
+            'subject_id': session.subject_id,
+            'class_name': session.school_class.name if session.school_class else None,
+            'subject_name': session.subject.name if session.subject else None,
             'created_at': session.created_at,
             'ended_at': session.ended_at,
             'participant_count': participant_count,
@@ -298,12 +334,29 @@ async def get_active_sessions(
 # Get all students (for inviting to session)
 @app.get("/users/students", response_model=List[schemas.UserOut])
 async def get_all_students(
+    session_id: int = Query(...),
     current_user: models.User = Depends(require_teacher),
     db: AsyncSession = Depends(get_db)
 ):
-    """Get list of all students for teacher to invite"""
+    """Get only students enrolled in the class of a teacher-owned session."""
+    session_result = await db.execute(
+        select(models.Session).filter(models.Session.session_id == session_id)
+    )
+    classroom_session = session_result.scalar_one_or_none()
+    if classroom_session is None:
+        raise HTTPException(status_code=404, detail="Session not found")
+    await access.require_session_access(db, current_user, classroom_session, manage=True)
     q = await db.execute(
-        select(models.User).filter(models.User.role == "student")
+        select(models.User)
+        .join(
+            models.StudentClassMembership,
+            models.StudentClassMembership.student_id == models.User.user_id,
+        )
+        .filter(
+            models.User.role == "student",
+            models.StudentClassMembership.class_id == classroom_session.class_id,
+            models.StudentClassMembership.is_active.is_(True),
+        )
     )
     students = q.scalars().all()
     return students
@@ -320,14 +373,17 @@ async def invite_student_to_session(
     background_tasks: BackgroundTasks = None
 ):
     # Verify session exists and belongs to teacher
-    q = await db.execute(select(models.Session).filter(models.Session.session_id == session_id))
+    q = await db.execute(
+        select(models.Session).options(
+            selectinload(models.Session.school_class),
+            selectinload(models.Session.subject),
+        ).filter(models.Session.session_id == session_id)
+    )
     session = q.scalar_one_or_none()
     
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
-    
-    if session.created_by != current_user.user_id:
-        raise HTTPException(status_code=403, detail="Not your session")
+    await access.require_session_access(db, current_user, session, manage=True)
     
     # Get student info
     q = await db.execute(select(models.User).filter(models.User.user_id == student_id))
@@ -335,6 +391,11 @@ async def invite_student_to_session(
     
     if not student:
         raise HTTPException(status_code=404, detail="Student not found")
+    if student.role != "student":
+        raise HTTPException(status_code=400, detail="Only students may be invited")
+    membership = await access.get_active_student_membership(db, student.user_id)
+    if membership.class_id != session.class_id:
+        raise HTTPException(status_code=403, detail="Student is not enrolled in this session class")
     
     # Get student's FCM tokens
     q = await db.execute(
@@ -350,7 +411,9 @@ async def invite_student_to_session(
                 token=fcm_token.token,
                 session_id=session_id,
                 session_title=session.title,
-                teacher_name=current_user.name
+                teacher_name=current_user.name,
+                class_name=session.school_class.name,
+                subject_name=session.subject.name,
             )
     
     # Send invitation via WebSocket if student is online
@@ -359,7 +422,9 @@ async def invite_student_to_session(
         "session_id": session_id,
         "session_title": session.title,
         "teacher_name": current_user.name,
-        "teacher_id": current_user.user_id
+        "teacher_id": current_user.user_id,
+        "class_name": session.school_class.name,
+        "subject_name": session.subject.name,
     }
     
     # Try to send to student via any active WebSocket connections
@@ -405,15 +470,20 @@ async def join_or_add_participant(
     if not target_user:
         raise HTTPException(status_code=404, detail="User not found")
 
+    if current_user.user_id == user_id:
+        await access.require_session_access(db, current_user, session)
+
     # Role-based validation : 
     
     # If teacher adds someone else, ensure they are the session owner
     if current_user.user_id != user_id:
-        if session.created_by != current_user.user_id:
-            raise HTTPException(status_code=403, detail="Only the session creator can add other users")
+        await access.require_session_access(db, current_user, session, manage=True)
 
         if target_user.role.lower() != "student":
             raise HTTPException(status_code=400, detail="Only students can be added as participants")
+        membership = await access.get_active_student_membership(db, target_user.user_id)
+        if membership.class_id != session.class_id:
+            raise HTTPException(status_code=403, detail="Student is outside this session class")
 
     # Check if participant already exists
     q2 = await db.execute(select(models.Participant).filter(
@@ -471,6 +541,13 @@ async def remove_participant(session_id: int, participant_id: int,
                              current_user: models.User = Depends(require_teacher),
                              db: AsyncSession = Depends(get_db),
                              background_tasks: BackgroundTasks = None):
+    session_result = await db.execute(
+        select(models.Session).filter(models.Session.session_id == session_id)
+    )
+    classroom_session = session_result.scalar_one_or_none()
+    if classroom_session is None:
+        raise HTTPException(status_code=404, detail="Session not found")
+    await access.require_session_access(db, current_user, classroom_session, manage=True)
     # Looks up the participant - student in this case by ID
     q = await db.execute(select(models.Participant).filter(
         models.Participant.participant_id == participant_id,
@@ -502,6 +579,13 @@ async def mute_participant(session_id: int, participant_id: int, mute: bool = Tr
                            current_user: models.User = Depends(require_teacher),
                            db: AsyncSession = Depends(get_db),
                            background_tasks: BackgroundTasks = None):
+    session_result = await db.execute(
+        select(models.Session).filter(models.Session.session_id == session_id)
+    )
+    classroom_session = session_result.scalar_one_or_none()
+    if classroom_session is None:
+        raise HTTPException(status_code=404, detail="Session not found")
+    await access.require_session_access(db, current_user, classroom_session, manage=True)
     # Find student ID who is to be muted
     q = await db.execute(select(models.Participant).filter(
         models.Participant.participant_id == participant_id,
@@ -568,9 +652,22 @@ async def calculate_audio_duration(file_path: str) -> Optional[float]:
 async def upload_audio(title: str = Form(...),
                        description: str = Form(""),
                        session_ids: str = Form(""),
+                       class_id: int = Form(...),
+                       subject_id: int = Form(...),
                        file: UploadFile = File(...),
                        current_user: models.User = Depends(require_teacher),
                        db: AsyncSession = Depends(get_db)):
+
+    title = title.strip()
+    if not title:
+        raise HTTPException(status_code=422, detail="Audio title is required")
+
+    school_class, subject = await access.require_active_class_subject(
+        db, class_id, subject_id
+    )
+    await access.require_teacher_assignment(
+        db, current_user.user_id, class_id, subject_id
+    )
 
     parsed_session_ids: List[int] = []
     if session_ids.strip():
@@ -588,6 +685,8 @@ async def upload_audio(title: str = Form(...),
         q = await db.execute(
             select(models.Session.session_id).filter(
                 models.Session.created_by == current_user.user_id,
+                models.Session.class_id == class_id,
+                models.Session.subject_id == subject_id,
                 models.Session.session_id.in_(parsed_session_ids)
             )
         )
@@ -595,7 +694,7 @@ async def upload_audio(title: str = Form(...),
         if len(allowed_session_ids) != len(parsed_session_ids):
             raise HTTPException(
                 status_code=403,
-                detail="One or more selected sessions do not belong to the current teacher"
+                detail="Selected sessions must belong to the teacher and match the audio class and subject"
             )
         
 
@@ -633,6 +732,8 @@ async def upload_audio(title: str = Form(...),
         description=description,
         file_path=file_path,
         uploaded_by=current_user.user_id,
+        class_id=school_class.class_id,
+        subject_id=subject.subject_id,
         mime_type=file.content_type,
         duration=duration
     )
@@ -651,7 +752,23 @@ async def upload_audio(title: str = Form(...),
     # Log audio upload
     await SessionLogger.log_audio_uploaded(db, current_user.user_id, af.audio_id, title, file_path, duration)
     
-    return {"audio": af, "session_ids": allowed_session_ids}
+    return {
+        "audio": {
+            "audio_id": af.audio_id,
+            "title": af.title,
+            "description": af.description,
+            "file_path": af.file_path,
+            "mime_type": af.mime_type,
+            "duration": af.duration,
+            "uploaded_by": af.uploaded_by,
+            "uploaded_at": af.uploaded_at,
+            "class_id": af.class_id,
+            "subject_id": af.subject_id,
+            "class_name": school_class.name,
+            "subject_name": subject.name,
+        },
+        "session_ids": allowed_session_ids,
+    }
 
 
 # Get audio files:
@@ -659,23 +776,61 @@ async def upload_audio(title: str = Form(...),
 # - Students see all available audio files (so they can self-listen like Spotify)
 @app.get("/audio/list", response_model=List[schemas.AudioFileOut])
 async def list_audio_files(
+    subject_id: Optional[int] = Query(None),
     current_user: models.User = Depends(get_user_by_id),
     db: AsyncSession = Depends(get_db)
 ):
+    base_query = select(models.AudioFile).options(
+        selectinload(models.AudioFile.school_class),
+        selectinload(models.AudioFile.subject),
+    )
     if current_user.role.lower() == "teacher":
         # Teacher: only their own uploads
         q = await db.execute(
-            select(models.AudioFile).filter(
+            base_query.filter(
                 models.AudioFile.uploaded_by == current_user.user_id
             ).order_by(models.AudioFile.uploaded_at.desc())
         )
-    else:
-        # Student: all available audio files
+        files = [
+            audio for audio in q.scalars().all()
+            if subject_id is None or audio.subject_id == subject_id
+        ]
+        authorized_files = []
+        for audio in files:
+            try:
+                await access.require_audio_access(db, current_user, audio)
+                authorized_files.append(audio)
+            except HTTPException:
+                continue
+        files = authorized_files
+    elif current_user.role.lower() == "student":
+        membership = await access.get_active_student_membership(db, current_user.user_id)
+        filters = [models.AudioFile.class_id == membership.class_id]
+        if subject_id is not None:
+            filters.append(models.AudioFile.subject_id == subject_id)
         q = await db.execute(
-            select(models.AudioFile).order_by(models.AudioFile.uploaded_at.desc())
+            base_query.filter(*filters).order_by(models.AudioFile.uploaded_at.desc())
         )
-    files = q.scalars().all()
-    return files
+        files = q.scalars().all()
+    else:
+        raise HTTPException(status_code=403, detail="Administrators do not browse classroom audio")
+    return [
+        {
+            "audio_id": audio.audio_id,
+            "title": audio.title,
+            "description": audio.description,
+            "file_path": audio.file_path,
+            "mime_type": audio.mime_type,
+            "duration": audio.duration,
+            "uploaded_by": audio.uploaded_by,
+            "uploaded_at": audio.uploaded_at,
+            "class_id": audio.class_id,
+            "subject_id": audio.subject_id,
+            "class_name": audio.school_class.name,
+            "subject_name": audio.subject.name,
+        }
+        for audio in files
+    ]
 
 
 
@@ -688,12 +843,13 @@ async def list_audio_files_by_session(
     session = await db.get(models.Session, session_id)
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
-
-    if current_user.role.lower() == "teacher" and session.created_by != current_user.user_id:
-        raise HTTPException(status_code=403, detail="Not your session")
+    await access.require_session_access(db, current_user, session)
 
     q = await db.execute(
-        select(models.AudioFile)
+        select(models.AudioFile).options(
+            selectinload(models.AudioFile.school_class),
+            selectinload(models.AudioFile.subject),
+        )
         .join(models.SessionAudio, models.SessionAudio.audio_id == models.AudioFile.audio_id)
         .filter(models.SessionAudio.session_id == session_id)
         .order_by(models.AudioFile.uploaded_at.desc())
@@ -702,7 +858,14 @@ async def list_audio_files_by_session(
 
     # Session-scoped library must only include files explicitly linked
     # to this session at upload time.
-    return linked_files
+    return [
+        {
+            **{column.name: getattr(audio, column.name) for column in models.AudioFile.__table__.columns},
+            "class_name": audio.school_class.name,
+            "subject_name": audio.subject.name,
+        }
+        for audio in linked_files
+    ]
 
 
 @app.post("/sessions/{session_id}/audio/{audio_id}/link")
@@ -716,16 +879,15 @@ async def link_audio_to_session(
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
         
-    if session.created_by != current_user.user_id:
-        raise HTTPException(status_code=403, detail="Not your session")
+    await access.require_session_access(db, current_user, session, manage=True)
         
     audio = await db.get(models.AudioFile, audio_id)
     if not audio:
         raise HTTPException(status_code=404, detail="Audio file not found")
         
-    # Verify if audio belongs to this teacher or if it's public. For now, restrict to teacher's own audio
-    if audio.uploaded_by != current_user.user_id:
-        raise HTTPException(status_code=403, detail="You can only link your own audio files")
+    await access.require_audio_access(db, current_user, audio, manage=True)
+    if audio.class_id != session.class_id or audio.subject_id != session.subject_id:
+        raise HTTPException(status_code=400, detail="Audio and session must have the same class and subject")
 
     # Check if already linked
     q = await db.execute(
@@ -773,6 +935,14 @@ async def get_self_listen_history(
     result = []
     for log in logs:
         details = log.event_details or {}
+        audio_id = details.get("audio_id")
+        audio = await db.get(models.AudioFile, audio_id) if audio_id else None
+        if audio is None:
+            continue
+        try:
+            await access.require_audio_access(db, current_user, audio)
+        except HTTPException:
+            continue
         result.append({
             "log_id": log.log_id,
             "audio_id": details.get("audio_id"),
@@ -792,6 +962,7 @@ async def get_self_listen_history(
 async def stream_audio(
     audio_id: int,
     request: Request,
+    current_user: models.User = Depends(auth.get_media_user),
     db: AsyncSession = Depends(get_db)
 ):
     from fastapi.responses import Response
@@ -800,6 +971,7 @@ async def stream_audio(
     af = q.scalar_one_or_none()
     if not af:
         raise HTTPException(status_code=404, detail="Audio not found")
+    await access.require_audio_access(db, current_user, af)
 
     file_path = af.file_path
     file_size = os.path.getsize(file_path)
@@ -876,11 +1048,16 @@ async def stream_audio(
 
 # Actually plays the audio stream by sending data chunks
 @app.get("/audio/{audio_id}/play")
-async def play_audio(audio_id: int, db: AsyncSession = Depends(get_db)):
+async def play_audio(
+    audio_id: int,
+    current_user: models.User = Depends(auth.get_media_user),
+    db: AsyncSession = Depends(get_db),
+):
     q = await db.execute(select(models.AudioFile).filter(models.AudioFile.audio_id == audio_id))
     af = q.scalar_one_or_none()
     if not af:
         raise HTTPException(status_code=404, detail="Audio not found")
+    await access.require_audio_access(db, current_user, af)
     # Defines a generator (iterfile) that yields file bytes gradually instead of loading the entire file in memory
     def iterfile():
         with open(af.file_path, mode="rb") as file_like:
@@ -915,6 +1092,7 @@ async def log_self_listen(
     af = q.scalar_one_or_none()
     if not af:
         raise HTTPException(status_code=404, detail="Audio file not found")
+    await access.require_audio_access(db, current_user, af)
 
     # Reuse the existing Log model — session_id is NULL for self-listen events
     log_entry = models.Log(
@@ -945,11 +1123,26 @@ async def rest_select_audio(session_id: int,
                             audio_id: int = Query(...),
                             current_user: models.User = Depends(require_teacher),
                             db: AsyncSession = Depends(get_db)):
+    classroom_session = await db.get(models.Session, session_id)
+    if classroom_session is None:
+        raise HTTPException(status_code=404, detail="Session not found")
+    await access.require_session_access(db, current_user, classroom_session, manage=True)
     # Verify audio exists
     q = await db.execute(select(models.AudioFile).filter(models.AudioFile.audio_id == audio_id))
     af = q.scalar_one_or_none()
     if not af:
         raise HTTPException(status_code=404, detail="Audio file not found")
+    await access.require_audio_access(db, current_user, af, manage=True)
+    if af.class_id != classroom_session.class_id or af.subject_id != classroom_session.subject_id:
+        raise HTTPException(status_code=400, detail="Audio does not match the session class and subject")
+    link_result = await db.execute(
+        select(models.SessionAudio).filter(
+            models.SessionAudio.session_id == session_id,
+            models.SessionAudio.audio_id == audio_id,
+        )
+    )
+    if link_result.scalar_one_or_none() is None:
+        raise HTTPException(status_code=403, detail="Audio is not linked to this session")
     
     await ws_mgr.audio_select(session_id, audio_id, af.title)
     
@@ -968,6 +1161,10 @@ async def rest_play_audio(session_id: int,
                           position: float = Form(0.0),
                           current_user: models.User = Depends(require_teacher),
                           db: AsyncSession = Depends(get_db)):
+    classroom_session = await db.get(models.Session, session_id)
+    if classroom_session is None:
+        raise HTTPException(status_code=404, detail="Session not found")
+    await access.require_session_access(db, current_user, classroom_session, manage=True)
     # If audio_id not provided, use currently selected audio
     if audio_id is None:
         async with SESSION_LOCK:
@@ -975,6 +1172,12 @@ async def rest_play_audio(session_id: int,
                 audio_id = SESSION_STATE[session_id]["playback"].get("audio_id")
         if audio_id is None:
             raise HTTPException(status_code=400, detail="No audio selected for this session")
+    audio_file = await db.get(models.AudioFile, audio_id)
+    if audio_file is None:
+        raise HTTPException(status_code=404, detail="Audio file not found")
+    await access.require_audio_access(db, current_user, audio_file, manage=True)
+    if audio_file.class_id != classroom_session.class_id or audio_file.subject_id != classroom_session.subject_id:
+        raise HTTPException(status_code=400, detail="Audio does not match the session class and subject")
     
     await ws_mgr.audio_play(session_id, audio_id, speed, position)
     
@@ -990,6 +1193,10 @@ async def rest_play_audio(session_id: int,
 async def rest_pause_audio(session_id: int,
                            current_user: models.User = Depends(require_teacher),
                            db: AsyncSession = Depends(get_db)):
+    classroom_session = await db.get(models.Session, session_id)
+    if classroom_session is None:
+        raise HTTPException(status_code=404, detail="Session not found")
+    await access.require_session_access(db, current_user, classroom_session, manage=True)
     await ws_mgr.audio_pause(session_id)
     
     # Log audio pause
@@ -1007,6 +1214,10 @@ async def control_audio_playback(
     current_user: models.User = Depends(require_teacher),
     db: AsyncSession = Depends(get_db)
 ):
+    classroom_session = await db.get(models.Session, session_id)
+    if classroom_session is None:
+        raise HTTPException(status_code=404, detail="Session not found")
+    await access.require_session_access(db, current_user, classroom_session, manage=True)
     async with SESSION_LOCK:
         if session_id not in SESSION_STATE:
             raise HTTPException(status_code=404, detail="Session not found")
@@ -1027,6 +1238,12 @@ async def control_audio_playback(
         audio_file = q.scalar_one_or_none()
         if not audio_file:
             raise HTTPException(status_code=404, detail="Audio file not found")
+        await access.require_audio_access(db, current_user, audio_file, manage=True)
+        if (
+            audio_file.class_id != classroom_session.class_id
+            or audio_file.subject_id != classroom_session.subject_id
+        ):
+            raise HTTPException(status_code=400, detail="Audio does not match the session class and subject")
         
         # Update playback state based on action
         if control.action == 'play':
@@ -1086,6 +1303,10 @@ async def get_audio_playback_state(
     current_user: models.User = Depends(get_user_by_id),
     db: AsyncSession = Depends(get_db)
 ):
+    classroom_session = await db.get(models.Session, session_id)
+    if classroom_session is None:
+        raise HTTPException(status_code=404, detail="Session not found")
+    await access.require_session_access(db, current_user, classroom_session)
     async with SESSION_LOCK:
         if session_id not in SESSION_STATE:
             raise HTTPException(status_code=404, detail="Session not found")
@@ -1118,11 +1339,14 @@ async def send_chat_message(
     session = await db.get(models.Session, session_id)
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
+    await access.require_session_access(db, current_user, session)
 
     # Verify participant exists
     participant = await db.get(models.Participant, msg.participant_id)
     if not participant or participant.session_id != session_id:
         raise HTTPException(status_code=400, detail="Invalid participant")
+    if participant.user_id != current_user.user_id:
+        raise HTTPException(status_code=403, detail="Cannot send chat as another participant")
 
     chat_msg = models.ChatMessage(
         session_id=session_id,
@@ -1158,6 +1382,10 @@ async def get_chat_history(
     current_user: models.User = Depends(get_user_by_id)
 ):
     """Get chat history for a session"""
+    session = await db.get(models.Session, session_id)
+    if session is None:
+        raise HTTPException(status_code=404, detail="Session not found")
+    await access.require_session_access(db, current_user, session)
     q = select(models.ChatMessage).where(
         models.ChatMessage.session_id == session_id
     ).order_by(models.ChatMessage.timestamp.asc())
@@ -1168,12 +1396,25 @@ async def get_chat_history(
 
 
 @app.get("/sessions/{session_id}/state")
-async def get_session_state(session_id: int, db: Annotated[AsyncSession, Depends(get_db)]):
-    session = await db.get(models.Session, session_id)
+async def get_session_state(
+    session_id: int,
+    current_user: models.User = Depends(get_user_by_id),
+    db: AsyncSession = Depends(get_db),
+):
+    session_result = await db.execute(
+        select(models.Session).options(
+            selectinload(models.Session.school_class),
+            selectinload(models.Session.subject),
+        ).filter(models.Session.session_id == session_id)
+    )
+    session = session_result.scalar_one_or_none()
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
+    await access.require_session_access(db, current_user, session)
 
-    q = select(models.Participant).where(models.Participant.session_id == session_id)
+    q = select(models.Participant).options(
+        selectinload(models.Participant.user)
+    ).where(models.Participant.session_id == session_id)
     participants = (await db.scalars(q)).all()
 
     q_audio = (
@@ -1185,6 +1426,11 @@ async def get_session_state(session_id: int, db: Annotated[AsyncSession, Depends
 
     return {
         "session_id": session.session_id,
+        "title": session.title,
+        "class_id": session.class_id,
+        "class_name": session.school_class.name,
+        "subject_id": session.subject_id,
+        "subject_name": session.subject.name,
         "is_active": session.is_active,
         "participants": [
             {
@@ -1223,9 +1469,7 @@ async def get_session_logs_endpoint(
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
     
-    # Only session creator (teacher) can view logs
-    if session.created_by != current_user.user_id and current_user.role.lower() != "teacher":
-        raise HTTPException(status_code=403, detail="Only the session creator can view logs")
+    await access.require_session_access(db, current_user, session, manage=True)
     
     logs = await get_session_logs(db, session_id, event_type, user_id, limit)
     
@@ -1259,9 +1503,7 @@ async def get_session_logs_summary_endpoint(
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
     
-    # Only session creator (teacher) can view logs
-    if session.created_by != current_user.user_id and current_user.role.lower() != "teacher":
-        raise HTTPException(status_code=403, detail="Only the session creator can view logs")
+    await access.require_session_access(db, current_user, session, manage=True)
     
     summary = await get_session_summary(db, session_id)
     return summary
@@ -1382,7 +1624,7 @@ def _sse_frame(event: str, data: dict) -> str:
 @app.get("/sse/sessions/{session_id}")
 async def session_sse(
     session_id: int,
-    user_id: int = Query(...),
+    current_user: models.User = Depends(auth.get_media_user),
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -1404,16 +1646,14 @@ async def session_sse(
       • Broadcasts 'participant_left' to remaining clients.
     """
 
-    # resolve user 
-    q_user = await db.execute(
-        select(models.User).filter(models.User.user_id == user_id)
-    )
-    user = q_user.scalar_one_or_none()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+    classroom_session = await db.get(models.Session, session_id)
+    if classroom_session is None or not classroom_session.is_active:
+        raise HTTPException(status_code=404, detail="Active session not found")
+    await access.require_session_access(db, current_user, classroom_session)
 
-    uname      = user.name
-    is_teacher = user.role.lower() == "teacher"
+    user_id = current_user.user_id
+    uname      = current_user.name
+    is_teacher = current_user.role.lower() == "teacher"
 
     # resolve / create participant row 
     q_part = await db.execute(
@@ -1571,6 +1811,11 @@ async def session_action(
     uname      = current_user.name
     typ        = action.type
 
+    classroom_session = await db.get(models.Session, session_id)
+    if classroom_session is None or not classroom_session.is_active:
+        raise HTTPException(status_code=404, detail="Active session not found")
+    await access.require_session_access(db, current_user, classroom_session)
+
     # Resolve this user's participant_id for this session
     q_part = await db.execute(
         select(models.Participant).filter(
@@ -1671,6 +1916,7 @@ async def session_action(
     elif typ in ("mute_participant", "unmute_participant"):
         if not is_teacher:
             raise HTTPException(status_code=403, detail="Teacher permission required")
+        await access.require_session_access(db, current_user, classroom_session, manage=True)
         target = action.target_participant_id
         if target is None:
             raise HTTPException(status_code=400, detail="target_participant_id required")
@@ -1706,6 +1952,7 @@ async def session_action(
     elif typ == "kick_participant":
         if not is_teacher:
             raise HTTPException(status_code=403, detail="Teacher permission required")
+        await access.require_session_access(db, current_user, classroom_session, manage=True)
         target = action.target_participant_id
         if target is None:
             raise HTTPException(status_code=400, detail="target_participant_id required")
@@ -1731,6 +1978,7 @@ async def session_action(
     elif typ == "end_session":
         if not is_teacher:
             raise HTTPException(status_code=403, detail="Teacher permission required")
+        await access.require_session_access(db, current_user, classroom_session, manage=True)
 
         q_session = await db.execute(
             select(models.Session).filter(models.Session.session_id == session_id)

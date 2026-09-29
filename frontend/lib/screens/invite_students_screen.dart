@@ -59,7 +59,10 @@ class _InviteStudentsScreenState extends State<InviteStudentsScreen> {
 
     try {
       // calls backend and returns list of students
-      final result = await ApiService.get('/users/students', useAuth: true);
+      final result = await ApiService.get(
+        '/users/students?session_id=${widget.sessionId}',
+        useAuth: true,
+      );
 
       if (result != null) {
         setState(() {

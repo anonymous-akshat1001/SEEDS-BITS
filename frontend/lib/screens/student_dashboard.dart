@@ -4,12 +4,14 @@ import '../services/api_service.dart';
 import '../services/tts_service.dart';
 import 'session_screen.dart';
 import 'audio_library_screen.dart';
+import 'playlist_screens.dart';
 import 'package:flutter/services.dart';
 import '../utils/ui_utils.dart';
 import '../widgets/key_instruction_wrapper.dart';
 import '../utils/keypad_actions.dart';
 import '../services/auth_session_service.dart';
 import '../utils/session_search.dart';
+import '../utils/class_access_utils.dart';
 
 // Define the Student Dashboard as a Stateful Widget
 class StudentDashboard extends StatefulWidget {
@@ -32,6 +34,8 @@ class _StudentDashboardState extends State<StudentDashboard> {
   String? currentUserName;
   bool isLoading = true;
   bool _isRefreshing = false;
+  String? _className;
+  int? _selectedSubjectId;
   final KeypadNavigationController _keypadController =
       KeypadNavigationController();
   final FocusNode _refreshFocusNode = FocusNode(debugLabel: 'student-refresh');
@@ -41,6 +45,12 @@ class _StudentDashboardState extends State<StudentDashboard> {
   );
   final FocusNode _libraryFocusNode = FocusNode(debugLabel: 'student-library');
   final FocusNode _logoutFocusNode = FocusNode(debugLabel: 'student-logout');
+  final FocusNode _subjectFocusNode = FocusNode(
+    debugLabel: 'student-subject-filter',
+  );
+  final FocusNode _playlistsFocusNode = FocusNode(
+    debugLabel: 'student-playlists',
+  );
   final Map<int, FocusNode> _sessionFocusNodes = {};
 
   // Called once when widget is created
@@ -68,6 +78,12 @@ class _StudentDashboardState extends State<StudentDashboard> {
       currentUserName = name;
     });
 
+    final accessContext = await ApiService.getAccessContext();
+    final classData = accessContext?['student_class'];
+    if (mounted && classData is Map) {
+      setState(() => _className = classData['class_name']?.toString());
+    }
+
     // Load session only if user exists
     if (currentUserId != null) {
       await _loadSessions();
@@ -92,6 +108,12 @@ class _StudentDashboardState extends State<StudentDashboard> {
     if (result.isSuccess && result.data is List) {
       setState(() {
         sessions = result.data as List;
+        if (_selectedSubjectId != null &&
+            !_availableSubjects.any(
+              (entry) => entry['subject_id'] == _selectedSubjectId,
+            )) {
+          _selectedSubjectId = null;
+        }
         _isRefreshing = false;
       });
       await TtsService.speak(
@@ -134,10 +156,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
 
     try {
       await TtsService.speak('Joining session');
-      final result = await ApiService.joinSessionResult(
-        sessionId,
-        userId: currentUserId,
-      );
+      final result = await ApiService.joinSessionResult(sessionId);
       if (result.isSuccess) {
         TtsService.speak("Joined session $sessionId");
 
@@ -145,9 +164,13 @@ class _StudentDashboardState extends State<StudentDashboard> {
         if (mounted) {
           // Find session title from sessions list
           String sessionTitle = 'Session';
+          String? className;
+          String? subjectName;
           for (final s in sessions) {
             if (s['session_id'] == sessionId) {
               sessionTitle = s['title'] ?? 'Session';
+              className = s['class_name']?.toString();
+              subjectName = s['subject_name']?.toString();
               break;
             }
           }
@@ -161,6 +184,8 @@ class _StudentDashboardState extends State<StudentDashboard> {
                 userName: currentUserName!,
                 isTeacher: false,
                 sessionTitle: sessionTitle,
+                className: className,
+                subjectName: subjectName,
               ),
             ),
           ).then((_) {
@@ -201,6 +226,8 @@ class _StudentDashboardState extends State<StudentDashboard> {
     _joinFocusNode.dispose();
     _libraryFocusNode.dispose();
     _logoutFocusNode.dispose();
+    _subjectFocusNode.dispose();
+    _playlistsFocusNode.dispose();
     for (final node in _sessionFocusNodes.values) {
       node.dispose();
     }
@@ -217,6 +244,14 @@ class _StudentDashboardState extends State<StudentDashboard> {
     );
   }
 
+  void _openMyPlaylists() {
+    TtsService.speak('Opening My Playlists. These playlists are private.');
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const StudentPlaylistsScreen()),
+    );
+  }
+
   void _focusSessionInput() {
     _keypadController.exitTextEditing();
     _inputFocusNode.requestFocus();
@@ -226,8 +261,26 @@ class _StudentDashboardState extends State<StudentDashboard> {
     );
   }
 
-  List get _filteredSessions =>
-      filterSessionsByNameOrId(sessions, sessionCtrl.text);
+  List get _filteredSessions {
+    final bySubject = filterSessionsBySubject(sessions, _selectedSubjectId);
+    return filterSessionsByNameOrId(bySubject, sessionCtrl.text);
+  }
+
+  List<Map<String, dynamic>> get _availableSubjects {
+    final byId = <int, Map<String, dynamic>>{};
+    for (final session in sessions) {
+      final id = session['subject_id'];
+      if (id is int) {
+        byId[id] = {
+          'subject_id': id,
+          'subject_name': session['subject_name'] ?? 'Subject $id',
+        };
+      }
+    }
+    return byId.values.toList()..sort(
+      (a, b) => '${a['subject_name']}'.compareTo('${b['subject_name']}'),
+    );
+  }
 
   void _showSearchResults() {
     _keypadController.exitTextEditing();
@@ -253,6 +306,12 @@ class _StudentDashboardState extends State<StudentDashboard> {
   Future<void> _logout() => AuthSessionService.logoutFrom(context);
 
   List<KeypadFocusTarget> _dashboardFocusTargets() {
+    final selectedSubject = _selectedSubjectId == null
+        ? null
+        : _availableSubjects.cast<Map<String, dynamic>?>().firstWhere(
+            (entry) => entry?['subject_id'] == _selectedSubjectId,
+            orElse: () => null,
+          );
     final targets = <KeypadFocusTarget>[
       KeypadFocusTarget(
         node: _refreshFocusNode,
@@ -261,9 +320,20 @@ class _StudentDashboardState extends State<StudentDashboard> {
         isEnabled: () => !_isRefreshing,
       ),
       KeypadFocusTarget(
+        node: _subjectFocusNode,
+        label: selectedSubject == null
+            ? 'All subjects'
+            : 'Subject ${selectedSubject['subject_name']}',
+      ),
+      KeypadFocusTarget(
         node: _inputFocusNode,
         label: 'Search sessions by name or ID',
         isTextField: true,
+      ),
+      KeypadFocusTarget(
+        node: _playlistsFocusNode,
+        label: 'My private playlists',
+        onActivate: _openMyPlaylists,
       ),
       KeypadFocusTarget(
         node: _joinFocusNode,
@@ -286,7 +356,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
         KeypadFocusTarget(
           node: node,
           label:
-              'Session $id, ${session['title'] ?? 'untitled'}, teacher ${session['teacher_name'] ?? 'unknown'}. Press OK to join',
+              'Session $id, ${session['title'] ?? 'untitled'}, ${session['subject_name'] ?? 'subject'}, teacher ${session['teacher_name'] ?? 'unknown'}. Press OK to join',
           onActivate: () => joinSession(id),
         ),
       );
@@ -330,6 +400,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
         1: _loadSessions,
         2: _focusSessionInput,
         3: _openOfflineAudioLibrary,
+        4: _openMyPlaylists,
       },
       navigationController: _keypadController,
       focusTargets: _dashboardFocusTargets(),
@@ -436,6 +507,49 @@ class _StudentDashboardState extends State<StudentDashboard> {
                   ),
                   SizedBox(height: UIUtils.spacing(context, 8)),
                 ],
+                Card(
+                  child: ListTile(
+                    leading: const Icon(Icons.class_outlined),
+                    title: Text(_className ?? 'Class assignment pending'),
+                    subtitle: const Text('Your assigned class'),
+                  ),
+                ),
+                DropdownButtonFormField<int?>(
+                  focusNode: _subjectFocusNode,
+                  value: _selectedSubjectId,
+                  decoration: const InputDecoration(
+                    labelText: 'Filter sessions by subject',
+                    prefixIcon: Icon(Icons.filter_alt_outlined),
+                  ),
+                  items: [
+                    const DropdownMenuItem<int?>(
+                      value: null,
+                      child: Text('All subjects'),
+                    ),
+                    ..._availableSubjects.map(
+                      (entry) => DropdownMenuItem<int?>(
+                        value: entry['subject_id'] as int,
+                        child: Text('${entry['subject_name']}'),
+                      ),
+                    ),
+                  ],
+                  onChanged: (value) {
+                    setState(() => _selectedSubjectId = value);
+                    TtsService.speak(
+                      value == null
+                          ? 'Showing all subjects'
+                          : 'Subject filter selected',
+                    );
+                  },
+                ),
+                SizedBox(height: UIUtils.spacing(context, 8)),
+                OutlinedButton.icon(
+                  focusNode: _playlistsFocusNode,
+                  onPressed: _openMyPlaylists,
+                  icon: const Icon(Icons.queue_music),
+                  label: const Text('4: My Playlists · Private'),
+                ),
+                SizedBox(height: UIUtils.spacing(context, 12)),
                 // User Info Card
                 Card(
                   elevation: 0,
@@ -747,6 +861,13 @@ class _StudentDashboardState extends State<StudentDashboard> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               SizedBox(height: UIUtils.spacing(context, 4)),
+                              Text(
+                                '${s['class_name'] ?? _className ?? 'Class'} · ${s['subject_name'] ?? 'Subject'}',
+                                style: TextStyle(
+                                  fontSize: UIUtils.fontSize(context, 11),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
                               Row(
                                 children: [
                                   Icon(

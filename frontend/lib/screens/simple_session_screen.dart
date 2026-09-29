@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
-import 'dart:convert';
 import '../services/api_service.dart';
+import '../services/sse_service.dart';
 import '../services/tts_service.dart';
 import '../utils/ui_utils.dart';
 import '../widgets/key_instruction_wrapper.dart';
 import '../widgets/keypad_confirmation_dialog.dart';
 import '../utils/keypad_actions.dart';
-import 'package:flutter/services.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
@@ -33,7 +31,7 @@ class SimpleSessionScreen extends StatefulWidget {
 }
 
 class _SimpleSessionScreenState extends State<SimpleSessionScreen> {
-  WebSocketChannel? _wsChannel;
+  final SseService _sessionEvents = SseService();
   final stt.SpeechToText _speech = stt.SpeechToText();
   bool _muted = false;
   bool _handRaised = false;
@@ -47,10 +45,8 @@ class _SimpleSessionScreenState extends State<SimpleSessionScreen> {
   // Audio state
   final AudioPlayer _sessionAudioPlayer = AudioPlayer();
   double _audioSpeed = 1.0;
-  int? _currentAudioId;
   String? _currentAudioTitle;
   bool _isPlayingSessionAudio = false;
-  double _currentPosition = 0.0;
   bool _isReturningToDashboard = false;
 
   @override
@@ -62,7 +58,7 @@ class _SimpleSessionScreenState extends State<SimpleSessionScreen> {
   Future<void> _initialize() async {
     await _loadAccessibilitySettings();
     await _joinSession();
-    await _connectWebSocket();
+    _connectSessionEvents();
     await _speak("Connected to session ${widget.sessionId}");
     if (_voiceCommandsEnabled) {
       _startVoiceCommands();
@@ -99,43 +95,21 @@ class _SimpleSessionScreenState extends State<SimpleSessionScreen> {
     }
   }
 
-  Future<void> _connectWebSocket() async {
-    try {
-      final wsUrl =
-          'ws://127.0.0.1:8000/ws/sessions/${widget.sessionId}?user_id=${widget.userId}';
-      _wsChannel = WebSocketChannel.connect(Uri.parse(wsUrl));
-
-      _wsChannel!.stream.listen(
-        (message) => _handleWebSocketMessage(message),
-        onError: (error) => _reconnect(),
-        onDone: () => _reconnect(),
-      );
-
-      setState(() => _statusText = "Connected");
-    } catch (e) {
-      setState(() => _statusText = "Connection failed");
-      Future.delayed(const Duration(seconds: 3), _reconnect);
-    }
-  }
-
-  Future<void> _reconnect() async {
-    if (!mounted) return;
-    setState(() => _statusText = "Reconnecting...");
-    await Future.delayed(const Duration(seconds: 2));
-    if (mounted) await _connectWebSocket();
+  void _connectSessionEvents() {
+    _sessionEvents.connect(
+      widget.sessionId.toString(),
+      widget.userId,
+      _handleSessionEvent,
+    );
+    if (mounted) setState(() => _statusText = "Connected");
   }
 
   void _sendMessage(Map<String, dynamic> message) {
-    try {
-      _wsChannel?.sink.add(jsonEncode(message));
-    } catch (e) {
-      print('[WS SEND ERROR] $e');
-    }
+    _sessionEvents.send(message);
   }
 
-  void _handleWebSocketMessage(dynamic message) {
+  void _handleSessionEvent(Map<String, dynamic> data) {
     try {
-      final data = jsonDecode(message);
       final type = data['type'];
 
       switch (type) {
@@ -180,7 +154,6 @@ class _SimpleSessionScreenState extends State<SimpleSessionScreen> {
           final title = data['title'] as String?;
           if (audioId != null) {
             setState(() {
-              _currentAudioId = audioId;
               _currentAudioTitle = title;
             });
             _speak("Audio selected: ${title ?? 'Unknown'}");
@@ -208,7 +181,7 @@ class _SimpleSessionScreenState extends State<SimpleSessionScreen> {
           break;
       }
     } catch (e) {
-      print('[WS PARSE ERROR] $e');
+      print('[SESSION EVENT ERROR] $e');
     }
   }
 
@@ -347,10 +320,8 @@ class _SimpleSessionScreenState extends State<SimpleSessionScreen> {
   ) async {
     try {
       setState(() {
-        _currentAudioId = audioId;
         _currentAudioTitle = title ?? _currentAudioTitle;
         _isPlayingSessionAudio = true;
-        _currentPosition = position;
         // We use our local speed preference if set, otherwise the broadcast speed
         // Actually, let's stick to broadcast speed initially unless user changed it
       });
@@ -359,7 +330,7 @@ class _SimpleSessionScreenState extends State<SimpleSessionScreen> {
       // Apply our local speed preference
       await _sessionAudioPlayer.setPlaybackRate(_audioSpeed);
       await _sessionAudioPlayer.play(
-        UrlSource('${ApiService.baseUrl}/audio/$audioId/stream'),
+        UrlSource(await ApiService.mediaUrl('/audio/$audioId/stream')),
       );
       if (position > 0) {
         await _sessionAudioPlayer.seek(Duration(seconds: position.toInt()));
@@ -379,7 +350,6 @@ class _SimpleSessionScreenState extends State<SimpleSessionScreen> {
 
   Future<void> _onAudioSeek(double position) async {
     await _sessionAudioPlayer.seek(Duration(seconds: position.toInt()));
-    setState(() => _currentPosition = position);
   }
 
   void _increaseSpeed() {
@@ -465,7 +435,7 @@ class _SimpleSessionScreenState extends State<SimpleSessionScreen> {
     if (_speech.isListening) {
       _speech.stop();
     }
-    _wsChannel?.sink.close();
+    _sessionEvents.close();
     _sessionAudioPlayer.stop();
     _sessionAudioPlayer.dispose();
     super.dispose();

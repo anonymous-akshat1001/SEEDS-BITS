@@ -5,6 +5,7 @@ import '../services/tts_service.dart';
 import 'package:flutter/services.dart';
 import 'session_screen.dart';
 import 'audio_library_screen.dart';
+import 'playlist_screens.dart';
 import '../utils/ui_utils.dart';
 import '../widgets/key_instruction_wrapper.dart';
 import '../widgets/keypad_confirmation_dialog.dart';
@@ -32,6 +33,8 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
   // Controls loading spinner
   bool isLoading = true;
   bool _isRefreshing = false;
+  List<dynamic> _workspaces = const [];
+  Map<String, dynamic>? _selectedWorkspace;
   final TextEditingController _searchController = TextEditingController();
   final KeypadNavigationController _keypadController =
       KeypadNavigationController();
@@ -43,6 +46,12 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     debugLabel: 'teacher-search-results',
   );
   final FocusNode _logoutFocusNode = FocusNode(debugLabel: 'teacher-logout');
+  final FocusNode _workspaceFocusNode = FocusNode(
+    debugLabel: 'teacher-workspace',
+  );
+  final FocusNode _playlistsFocusNode = FocusNode(
+    debugLabel: 'teacher-playlists',
+  );
   final Map<int, FocusNode> _sessionOpenFocusNodes = {};
   final Map<int, FocusNode> _sessionDeleteFocusNodes = {};
 
@@ -71,6 +80,19 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
       currentUserId = id;
       currentUserName = name;
     });
+
+    final accessContext = await ApiService.getAccessContext();
+    final workspaceData = accessContext?['teacher_workspaces'];
+    if (mounted && workspaceData is List) {
+      setState(() {
+        _workspaces = workspaceData;
+        if (_workspaces.isNotEmpty) {
+          _selectedWorkspace = Map<String, dynamic>.from(
+            _workspaces.first as Map,
+          );
+        }
+      });
+    }
 
     // load session only if user exists
     if (currentUserId != null) {
@@ -136,6 +158,13 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
       // stop execution
       return;
     }
+    final workspace = _selectedWorkspace;
+    if (workspace == null) {
+      await TtsService.speak(
+        'No class and subject assignment is available. Ask an administrator to assign one.',
+      );
+      return;
+    }
 
     // Show dialog to input session title, waits for input and returns a String
     final title = await showDialog<String>(
@@ -160,7 +189,11 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     // send session creation request to backend
     final result = await ApiService.postResult(
       '/sessions',
-      {'title': title},
+      {
+        'title': title,
+        'class_id': workspace['class_id'],
+        'subject_id': workspace['subject_id'],
+      },
       useAuth: true,
       context: 'session creation',
     );
@@ -217,9 +250,13 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
 
     // Find the session title from the sessions list
     String sessionTitle = 'Session';
+    String? className;
+    String? subjectName;
     for (final s in sessions) {
       if (s['session_id'] == sessionId) {
         sessionTitle = s['title'] ?? 'Session';
+        className = s['class_name']?.toString();
+        subjectName = s['subject_name']?.toString();
         break;
       }
     }
@@ -236,6 +273,8 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
           userName: currentUserName!,
           isTeacher: true,
           sessionTitle: sessionTitle,
+          className: className,
+          subjectName: subjectName,
         ),
       ),
     ).then((_) {
@@ -247,16 +286,52 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
   // Open offline audio library (no session context)
   void _openOfflineAudioLibrary() {
     TtsService.speak("Opening offline audio library");
+    final workspace = _selectedWorkspace;
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const OfflineAudioLibraryScreen()),
+      MaterialPageRoute(
+        builder: (_) => OfflineAudioLibraryScreen(
+          classId: workspace?['class_id'] as int?,
+          subjectId: workspace?['subject_id'] as int?,
+        ),
+      ),
+    );
+  }
+
+  void _openPlaylists() {
+    final workspace = _selectedWorkspace;
+    if (workspace == null) {
+      TtsService.speak('No class and subject workspace is assigned');
+      return;
+    }
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => TeacherPlaylistsScreen(
+          classId: workspace['class_id'] as int,
+          className: '${workspace['class_name']}',
+          subjectId: workspace['subject_id'] as int,
+          subjectName: '${workspace['subject_name']}',
+        ),
+      ),
     );
   }
 
   Future<void> _logout() => AuthSessionService.logoutFrom(context);
 
-  List get _filteredSessions =>
-      filterSessionsByNameOrId(sessions, _searchController.text);
+  List get _filteredSessions {
+    final workspace = _selectedWorkspace;
+    final workspaceSessions = workspace == null
+        ? <dynamic>[]
+        : sessions
+              .where(
+                (session) =>
+                    session['class_id'] == workspace['class_id'] &&
+                    session['subject_id'] == workspace['subject_id'],
+              )
+              .toList();
+    return filterSessionsByNameOrId(workspaceSessions, _searchController.text);
+  }
 
   void _focusSessionSearch() {
     _keypadController.exitTextEditing();
@@ -297,9 +372,20 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
         isEnabled: () => !_isRefreshing,
       ),
       KeypadFocusTarget(
+        node: _workspaceFocusNode,
+        label: _selectedWorkspace == null
+            ? 'No class and subject workspace assigned'
+            : 'Workspace ${_selectedWorkspace!['class_name']}, ${_selectedWorkspace!['subject_name']}',
+      ),
+      KeypadFocusTarget(
         node: _createFocusNode,
         label: 'Create new session',
         onActivate: createSession,
+      ),
+      KeypadFocusTarget(
+        node: _playlistsFocusNode,
+        label: 'Class playlists',
+        onActivate: _openPlaylists,
       ),
       KeypadFocusTarget(
         node: _libraryFocusNode,
@@ -416,6 +502,8 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     _searchFocusNode.dispose();
     _searchResultsFocusNode.dispose();
     _logoutFocusNode.dispose();
+    _workspaceFocusNode.dispose();
+    _playlistsFocusNode.dispose();
     for (final node in _sessionOpenFocusNodes.values) {
       node.dispose();
     }
@@ -455,6 +543,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
         2: createSession,
         3: _openOfflineAudioLibrary,
         4: _focusSessionSearch,
+        5: _openPlaylists,
       },
       navigationController: _keypadController,
       focusTargets: _dashboardFocusTargets(),
@@ -597,6 +686,54 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                       ],
                     ),
                   ),
+                ),
+
+                SizedBox(height: UIUtils.spacing(context, 12)),
+
+                Semantics(
+                  label: 'Selected class and subject workspace',
+                  child: DropdownButtonFormField<int>(
+                    focusNode: _workspaceFocusNode,
+                    value: _selectedWorkspace?['assignment_id'] as int?,
+                    decoration: const InputDecoration(
+                      labelText: 'Class and subject workspace',
+                      prefixIcon: Icon(Icons.workspaces_outline),
+                    ),
+                    items: _workspaces
+                        .map<DropdownMenuItem<int>>(
+                          (entry) => DropdownMenuItem<int>(
+                            value: entry['assignment_id'] as int,
+                            child: Text(
+                              '${entry['class_name']} · ${entry['subject_name']}',
+                            ),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (assignmentId) {
+                      if (assignmentId == null) return;
+                      setState(() {
+                        _selectedWorkspace = Map<String, dynamic>.from(
+                          _workspaces.firstWhere(
+                                (entry) =>
+                                    entry['assignment_id'] == assignmentId,
+                              )
+                              as Map,
+                        );
+                      });
+                      TtsService.speak(
+                        '${_selectedWorkspace!['class_name']}, ${_selectedWorkspace!['subject_name']} selected',
+                      );
+                    },
+                  ),
+                ),
+
+                SizedBox(height: UIUtils.spacing(context, 8)),
+
+                OutlinedButton.icon(
+                  focusNode: _playlistsFocusNode,
+                  onPressed: _openPlaylists,
+                  icon: const Icon(Icons.playlist_play),
+                  label: const Text('5: Class Playlists'),
                 ),
 
                 SizedBox(height: UIUtils.spacing(context, 12)),
@@ -773,7 +910,6 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                     final sessionId = s['session_id'] ?? 0;
                     final title = s['title'] ?? 'Untitled Session';
                     // final participantCount = s['participant_count'] ?? 0;
-                    final createdAt = s['created_at'] ?? '';
 
                     return Card(
                       margin: EdgeInsets.only(
@@ -826,6 +962,13 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                     ),
+                                    Text(
+                                      '${s['class_name'] ?? 'Class'} · ${s['subject_name'] ?? 'Subject'}',
+                                      style: TextStyle(
+                                        fontSize: UIUtils.fontSize(context, 11),
+                                        color: UIUtils.subtextColor,
+                                      ),
+                                    ),
                                     // SizedBox(height: UIUtils.spacing(context, 3)),
                                     // Row(
                                     //   children: [
@@ -855,7 +998,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                                   ElevatedButton(
                                     focusNode: _sessionOpenFocusNodes
                                         .putIfAbsent(
-                                          sessionId as int,
+                                          sessionId,
                                           () => FocusNode(
                                             debugLabel:
                                                 'teacher-open-$sessionId',

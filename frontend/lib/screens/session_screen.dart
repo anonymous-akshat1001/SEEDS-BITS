@@ -29,6 +29,8 @@ class SessionScreen extends StatefulWidget {
   final bool isTeacher;
   final String userName;
   final String sessionTitle;
+  final String? className;
+  final String? subjectName;
 
   const SessionScreen({
     super.key,
@@ -37,6 +39,8 @@ class SessionScreen extends StatefulWidget {
     this.isTeacher = false,
     required this.userName,
     this.sessionTitle = 'Session',
+    this.className,
+    this.subjectName,
   });
 
   @override
@@ -259,10 +263,23 @@ class _SessionScreenState extends State<SessionScreen> {
   Future<void> _loadTeacherSessions() async {
     final sessions = await ApiService.getActiveSessions();
     if (sessions != null && mounted) {
+      final mapped = sessions
+          .map((e) => Map<String, dynamic>.from(e as Map))
+          .toList();
+      final current = mapped.where(
+        (session) => session['session_id'] == widget.sessionId,
+      );
+      final currentSession = current.isEmpty ? null : current.first;
       setState(() {
-        _teacherSessions = sessions
-            .map((e) => Map<String, dynamic>.from(e as Map))
-            .toList();
+        _teacherSessions = currentSession == null
+            ? mapped
+            : mapped
+                  .where(
+                    (session) =>
+                        session['class_id'] == currentSession['class_id'] &&
+                        session['subject_id'] == currentSession['subject_id'],
+                  )
+                  .toList();
       });
     }
   }
@@ -625,7 +642,7 @@ class _SessionScreenState extends State<SessionScreen> {
       await _sessionAudioPlayer.stop();
       await _sessionAudioPlayer.setPlaybackRate(speed);
       await _sessionAudioPlayer.play(
-        UrlSource('$baseUrl/audio/$audioId/stream'),
+        UrlSource(await ApiService.mediaUrl('/audio/$audioId/stream')),
       );
       if (position > 0) {
         await _sessionAudioPlayer.seek(Duration(seconds: position.toInt()));
@@ -1071,7 +1088,11 @@ class _SessionScreenState extends State<SessionScreen> {
       MaterialPageRoute(
         builder: (_) => InviteStudentsScreen(
           sessionId: widget.sessionId,
-          sessionTitle: widget.sessionTitle,
+          sessionTitle: [
+            widget.sessionTitle,
+            if (widget.className != null) widget.className!,
+            if (widget.subjectName != null) widget.subjectName!,
+          ].join(', '),
         ),
       ),
     );
@@ -1369,16 +1390,25 @@ class _SessionScreenState extends State<SessionScreen> {
         }
       }
 
-      final prefs = await SharedPreferences.getInstance();
-      final userId = prefs.getInt('user_id');
-      final uri = Uri.parse('$baseUrl/audio/upload?user_id=$userId');
+      final sessionState = await ApiService.getSessionState(widget.sessionId);
+      final classId = sessionState?['class_id'] as int?;
+      final subjectId = sessionState?['subject_id'] as int?;
+      if (classId == null || subjectId == null) {
+        _showSnackError(
+          'The session class and subject could not be determined',
+        );
+        return;
+      }
+      final uri = Uri.parse('$baseUrl/audio/upload');
       final headers = await ApiService.getHeaders();
 
       final request = http.MultipartRequest('POST', uri)
         ..headers.addAll(headers)
         ..fields['title'] = title
         ..fields['description'] = _uploadDescCtrl.text.trim()
-        ..fields['session_ids'] = jsonEncode(selectedSessionIds.toList());
+        ..fields['session_ids'] = jsonEncode(selectedSessionIds.toList())
+        ..fields['class_id'] = classId.toString()
+        ..fields['subject_id'] = subjectId.toString();
 
       final ext = file.extension?.toLowerCase() ?? '';
       final contentType =
@@ -1444,7 +1474,8 @@ class _SessionScreenState extends State<SessionScreen> {
       return;
     }
     await _previewPlayer.stop();
-    await _previewPlayer.play(UrlSource('$baseUrl/audio/$audioId/stream'));
+    final url = await ApiService.mediaUrl('/audio/$audioId/stream');
+    await _previewPlayer.play(UrlSource(url));
     if (mounted) setState(() => _previewingAudioId = audioId);
     _speakIfEnabled('Previewing $title');
   }
@@ -1549,13 +1580,13 @@ class _SessionScreenState extends State<SessionScreen> {
     );
 
     pc.onTrack = (event) {
-      if (event.streams.isNotEmpty)
+      if (event.streams.isNotEmpty) {
         _handleRemoteStream(participantId, event.streams[0]);
+      }
     };
 
     // Batch ICE candidates: collect for 150 ms then send as a single POST
     pc.onIceCandidate = (candidate) {
-      if (candidate == null) return;
       _pendingIceCandidates.putIfAbsent(participantId, () => []).add({
         'candidate': candidate.candidate,
         'sdpMid': candidate.sdpMid,
@@ -2081,7 +2112,12 @@ class _SessionScreenState extends State<SessionScreen> {
   @override
   Widget build(BuildContext context) {
     return KeypadInstructionWrapper(
-      screenName: widget.isTeacher ? 'Teacher session' : 'Student session',
+      screenName: [
+        widget.isTeacher ? 'Teacher session' : 'Student session',
+        widget.sessionTitle,
+        if (widget.className != null) widget.className!,
+        if (widget.subjectName != null) widget.subjectName!,
+      ].join(', '),
       actions: _sessionKeyActions,
       labels: widget.isTeacher
           ? sessionTeacherKeyLabels
@@ -2124,11 +2160,24 @@ class _SessionScreenState extends State<SessionScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          widget.isTeacher
-              ? '${widget.sessionTitle} (Teacher)'
-              : widget.sessionTitle,
-          style: TextStyle(fontSize: UIUtils.fontSize(context, 16)),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              widget.isTeacher
+                  ? '${widget.sessionTitle} (Teacher)'
+                  : widget.sessionTitle,
+              style: TextStyle(fontSize: UIUtils.fontSize(context, 16)),
+            ),
+            if (widget.className != null || widget.subjectName != null)
+              Text(
+                [
+                  widget.className,
+                  widget.subjectName,
+                ].whereType<String>().join(' · '),
+                style: TextStyle(fontSize: UIUtils.fontSize(context, 11)),
+              ),
+          ],
         ),
         backgroundColor: Colors.teal,
         toolbarHeight: tiny ? 40 : null,

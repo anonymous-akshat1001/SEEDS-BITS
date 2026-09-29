@@ -18,6 +18,7 @@ import '../services/tts_service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../widgets/key_instruction_wrapper.dart';
 import '../utils/keypad_actions.dart';
+import 'playlist_screens.dart';
 
 // Backend and websocket URL
 final baseUrl = dotenv.env['API_BASE_URL'];
@@ -27,9 +28,16 @@ final wsBaseUrl = dotenv.env['WS_BASE_URL'];
 class AudioLibraryScreen extends StatefulWidget {
   final int?
   sessionId; // Optional - if provided, allows selecting audio for session
+  final int? classId;
+  final int? subjectId;
 
   // Constructor
-  const AudioLibraryScreen({super.key, this.sessionId});
+  const AudioLibraryScreen({
+    super.key,
+    this.sessionId,
+    this.classId,
+    this.subjectId,
+  });
 
   @override
   State<AudioLibraryScreen> createState() => _AudioLibraryScreenState();
@@ -340,14 +348,39 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
       return;
     }
 
+    int? classId = widget.classId;
+    int? subjectId = widget.subjectId;
+    if (widget.sessionId != null && (classId == null || subjectId == null)) {
+      final state = await ApiService.get(
+        '/sessions/${widget.sessionId}/state',
+        useAuth: true,
+      );
+      if (state is Map) {
+        classId = int.tryParse('${state['class_id']}');
+        subjectId = int.tryParse('${state['subject_id']}');
+      }
+    }
+    if (classId == null || subjectId == null) {
+      final context = await ApiService.getAccessContext();
+      final workspaces = context?['workspaces'];
+      if (workspaces is List && workspaces.length == 1) {
+        classId = int.tryParse('${workspaces.first['class_id']}');
+        subjectId = int.tryParse('${workspaces.first['subject_id']}');
+      }
+    }
+    if (classId == null || subjectId == null) {
+      _showError(
+        'Choose a class and subject workspace on the Teacher Dashboard before uploading audio.',
+      );
+      return;
+    }
+
     setState(() => _isUploading = true);
     await _speakIfEnabled("Uploading audio file");
 
     try {
       final headers = await ApiService.getHeaders();
-      final uri = Uri.parse(
-        '$baseUrl/audio/upload?user_id=${await _getUserId()}',
-      );
+      final uri = Uri.parse('$baseUrl/audio/upload');
 
       // Multipart request support files and form fields
       var request = http.MultipartRequest('POST', uri);
@@ -355,6 +388,8 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
       request.headers.addAll(headers);
       request.fields['title'] = title;
       request.fields['description'] = description;
+      request.fields['class_id'] = classId.toString();
+      request.fields['subject_id'] = subjectId.toString();
       if (widget.sessionId != null) {
         request.fields['session_ids'] = jsonEncode([widget.sessionId]);
       }
@@ -446,12 +481,6 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
     }
   }
 
-  Future<int?> _getUserId() async {
-    // Get from SharedPreferences
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getInt('user_id');
-  }
-
   // Local Audio Preview
   Future<void> _playAudioLocally(int audioId, String title) async {
     try {
@@ -464,7 +493,7 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
 
       await _audioPlayer.stop();
       // Backend streaming endpoint
-      final url = '$baseUrl/audio/$audioId/stream';
+      final url = await ApiService.mediaUrl('/audio/$audioId/stream');
       // Streams audio directly from backend
       await _audioPlayer.play(UrlSource(url));
       // updates UI state
@@ -1029,7 +1058,10 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
 /// which shows all audio files uploaded by that class's teacher.
 /// ──────────────────────────────────────────────────────────────────────────────
 class OfflineAudioLibraryScreen extends StatefulWidget {
-  const OfflineAudioLibraryScreen({super.key});
+  const OfflineAudioLibraryScreen({super.key, this.classId, this.subjectId});
+
+  final int? classId;
+  final int? subjectId;
 
   @override
   State<OfflineAudioLibraryScreen> createState() =>
@@ -1098,6 +1130,8 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
           sessionTitle: session['title'] as String? ?? 'Session',
           teacherId: session['created_by'] as int?,
           isTeacher: _isTeacher,
+          classId: session['class_id'] as int?,
+          subjectId: session['subject_id'] as int?,
         ),
       ),
     );
@@ -1140,8 +1174,19 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
           sessionTitle: _isTeacher ? 'My Audio Library' : 'All Audio Files',
           teacherId: _isTeacher ? _currentUserId : null,
           isTeacher: _isTeacher,
+          classId: widget.classId,
+          subjectId: widget.subjectId,
         ),
       ),
+    );
+  }
+
+  void _openMyPlaylists() {
+    if (_isTeacher) return;
+    TtsService.speak('Opening My Playlists. Playlist contents are private.');
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const StudentPlaylistsScreen()),
     );
   }
 
@@ -1158,7 +1203,10 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
 
     return KeypadInstructionWrapper(
       screenName: 'Offline Audio Library',
-      labels: offlineAudioLibraryKeyLabels,
+      labels: {
+        ...offlineAudioLibraryKeyLabels,
+        if (!_isTeacher) 4: 'My Private Playlists',
+      },
       actions: {
         1: () {
           setState(() {
@@ -1169,6 +1217,7 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
         },
         2: () => _searchFocusNode.requestFocus(),
         3: _openAllAudioFiles,
+        if (!_isTeacher) 4: _openMyPlaylists,
         0: () => Navigator.of(context).pop(),
       },
       child: Scaffold(
@@ -1365,6 +1414,8 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
                                     : 'All Audio Files',
                                 teacherId: _isTeacher ? _currentUserId : null,
                                 isTeacher: _isTeacher,
+                                classId: widget.classId,
+                                subjectId: widget.subjectId,
                               ),
                             ),
                           );
@@ -1427,6 +1478,15 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
                         ),
                       ),
                     ),
+
+                    if (!_isTeacher) ...[
+                      OutlinedButton.icon(
+                        onPressed: _openMyPlaylists,
+                        icon: const Icon(Icons.lock_outline),
+                        label: const Text('4: My Playlists · Private'),
+                      ),
+                      SizedBox(height: UIUtils.spacing(context, 16)),
+                    ],
 
                     // ── Classes / Sessions Header ────────────────────────
                     Row(
@@ -1602,6 +1662,8 @@ class ClassAudioScreen extends StatefulWidget {
   final String sessionTitle;
   final int? teacherId; // created_by user_id of the session
   final bool isTeacher;
+  final int? classId;
+  final int? subjectId;
 
   const ClassAudioScreen({
     super.key,
@@ -1609,6 +1671,8 @@ class ClassAudioScreen extends StatefulWidget {
     required this.sessionTitle,
     this.teacherId,
     this.isTeacher = false,
+    this.classId,
+    this.subjectId,
   });
 
   @override
@@ -1618,11 +1682,13 @@ class ClassAudioScreen extends StatefulWidget {
 class _ClassAudioScreenState extends State<ClassAudioScreen> {
   final AudioPlayer _audioPlayer = AudioPlayer();
 
+  List<Map<String, dynamic>> _allAudioFiles = [];
   List<Map<String, dynamic>> _audioFiles = [];
   bool _isLoading = true;
   bool _isUploadingAudio = false;
   bool _ttsEnabled = true;
   int? _resolvedTeacherId;
+  int? _selectedSubjectId;
   List<Map<String, dynamic>> _teacherSessions = [];
 
   // Playback state
@@ -1637,6 +1703,7 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
   void initState() {
     super.initState();
     _resolvedTeacherId = widget.teacherId;
+    _selectedSubjectId = widget.subjectId;
     if (widget.isTeacher) {
       _loadTeacherSessions();
     }
@@ -1647,10 +1714,28 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
   Future<void> _loadTeacherSessions() async {
     final sessions = await ApiService.getActiveSessions();
     if (sessions != null && mounted) {
+      final mapped = sessions
+          .map((e) => Map<String, dynamic>.from(e as Map))
+          .toList();
+      final current = mapped.where(
+        (session) => session['session_id'] == widget.sessionId,
+      );
+      final currentSession = current.isEmpty ? null : current.first;
+      final workspaceClassId =
+          currentSession?['class_id'] as int? ?? widget.classId;
+      final workspaceSubjectId =
+          currentSession?['subject_id'] as int? ?? widget.subjectId;
       setState(() {
-        _teacherSessions = sessions
-            .map((e) => Map<String, dynamic>.from(e as Map))
-            .toList();
+        _teacherSessions =
+            workspaceClassId == null || workspaceSubjectId == null
+            ? mapped
+            : mapped
+                  .where(
+                    (session) =>
+                        session['class_id'] == workspaceClassId &&
+                        session['subject_id'] == workspaceSubjectId,
+                  )
+                  .toList();
       });
     }
   }
@@ -1729,9 +1814,22 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
               )
               .toList();
         }
-
+        if (widget.classId != null) {
+          allFiles = allFiles
+              .where((file) => file['class_id'] == widget.classId)
+              .toList();
+        }
         setState(() {
-          _audioFiles = allFiles;
+          _allAudioFiles = allFiles;
+          final subjectIds = allFiles
+              .map((file) => file['subject_id'])
+              .whereType<int>()
+              .toSet();
+          if (_selectedSubjectId != null &&
+              !subjectIds.contains(_selectedSubjectId)) {
+            _selectedSubjectId = widget.subjectId;
+          }
+          _applyAudioFilters();
         });
         await _speakIfEnabled(
           "Found ${_audioFiles.length} audio files for ${widget.sessionTitle}",
@@ -1745,6 +1843,70 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  List<Map<String, dynamic>> get _availableSubjects {
+    final byId = <int, Map<String, dynamic>>{};
+    for (final audio in _allAudioFiles) {
+      final id = audio['subject_id'];
+      if (id is int) {
+        byId[id] = {
+          'subject_id': id,
+          'subject_name': audio['subject_name'] ?? 'Subject $id',
+        };
+      }
+    }
+    return byId.values.toList()..sort(
+      (first, second) =>
+          '${first['subject_name']}'.compareTo('${second['subject_name']}'),
+    );
+  }
+
+  void _applyAudioFilters() {
+    _audioFiles =
+        _allAudioFiles.where((audio) {
+          if (widget.subjectId != null &&
+              audio['subject_id'] != widget.subjectId) {
+            return false;
+          }
+          return _selectedSubjectId == null ||
+              audio['subject_id'] == _selectedSubjectId;
+        }).toList()..sort(
+          (first, second) => '${first['title']}'.toLowerCase().compareTo(
+            '${second['title']}'.toLowerCase(),
+          ),
+        );
+  }
+
+  void _selectSubject(int? subjectId) {
+    setState(() {
+      _selectedSubjectId = subjectId;
+      _applyAudioFilters();
+    });
+    final selected = subjectId == null
+        ? null
+        : _availableSubjects.cast<Map<String, dynamic>?>().firstWhere(
+            (entry) => entry?['subject_id'] == subjectId,
+            orElse: () => null,
+          );
+    _speakIfEnabled(
+      selected == null
+          ? 'Showing audio from all subjects'
+          : 'Showing ${selected['subject_name']} audio. ${_audioFiles.length} files',
+    );
+  }
+
+  void _cycleSubjectFilter() {
+    if (widget.subjectId != null) {
+      _speakIfEnabled('This library is already limited to one subject');
+      return;
+    }
+    final ids = <int?>[
+      null,
+      ..._availableSubjects.map((entry) => entry['subject_id'] as int),
+    ];
+    final currentIndex = ids.indexOf(_selectedSubjectId);
+    _selectSubject(ids[(currentIndex + 1) % ids.length]);
   }
 
   Future<void> _playOrPauseAudio(int audioId, String title) async {
@@ -1772,7 +1934,8 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
       });
 
       await _audioPlayer.setPlaybackRate(_audioSpeed);
-      await _audioPlayer.play(UrlSource('$baseUrl/audio/$audioId/stream'));
+      final url = await ApiService.mediaUrl('/audio/$audioId/stream');
+      await _audioPlayer.play(UrlSource(url));
 
       // Log the self-listen event
       try {
@@ -1979,7 +2142,9 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
         if (widget.sessionId != 0) widget.sessionId,
       };
 
-      if (widget.isTeacher && _teacherSessions.isNotEmpty) {
+      if (widget.sessionId != 0 &&
+          widget.isTeacher &&
+          _teacherSessions.isNotEmpty) {
         final confirmedSessions = await showDialog<bool>(
           context: context,
           builder: (ctx) => KeypadInstructionWrapper(
@@ -2038,6 +2203,19 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
       }
 
       Map<String, dynamic>? uploadResult;
+      final currentSession = _teacherSessions
+          .cast<Map<String, dynamic>?>()
+          .firstWhere(
+            (session) => session?['session_id'] == widget.sessionId,
+            orElse: () => null,
+          );
+      final classId = currentSession?['class_id'] as int? ?? widget.classId;
+      final subjectId =
+          currentSession?['subject_id'] as int? ?? widget.subjectId;
+      if (classId == null || subjectId == null) {
+        _showError('The session class and subject could not be determined');
+        return;
+      }
 
       if (file.bytes != null) {
         uploadResult = await ApiService.uploadAudioBytes(
@@ -2046,6 +2224,8 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
           title: title,
           description: desc,
           sessionIds: selectedSessionIds.toList(),
+          classId: classId,
+          subjectId: subjectId,
         );
       } else if (file.path != null) {
         uploadResult = await ApiService.uploadAudio(
@@ -2053,6 +2233,8 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
           title: title,
           description: desc,
           sessionIds: selectedSessionIds.toList(),
+          classId: classId,
+          subjectId: subjectId,
         );
       }
 
@@ -2112,6 +2294,8 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
                 MaterialPageRoute(
                   builder: (_) => SelectExistingAudioScreen(
                     sessionId: widget.sessionId,
+                    classId: widget.classId,
+                    subjectId: widget.subjectId,
                     currentAudioIds: _audioFiles
                         .map((e) => (e['audio_id'] ?? e['id']) as int)
                         .toSet(),
@@ -2153,6 +2337,7 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
             3: _togglePlayPause,
             4: _stopAudio,
             5: _toggleTts,
+            6: _cycleSubjectFilter,
             7: () => _changeSpeed(-0.25),
             9: () => _changeSpeed(0.25),
             0: () {
@@ -2165,6 +2350,7 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
             2: _togglePlayPause,
             3: _stopAudio,
             4: _toggleTts,
+            6: _cycleSubjectFilter,
             7: () => _changeSpeed(-0.25),
             9: () => _changeSpeed(0.25),
             0: () {
@@ -2287,6 +2473,36 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
                       minHeight: 3,
                     ),
 
+                  if (widget.subjectId == null && _availableSubjects.isNotEmpty)
+                    Padding(
+                      padding: UIUtils.paddingSymmetric(
+                        context,
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      child: DropdownButtonFormField<int?>(
+                        key: ValueKey(_selectedSubjectId),
+                        initialValue: _selectedSubjectId,
+                        decoration: const InputDecoration(
+                          labelText: 'Subject filter (key 6)',
+                          prefixIcon: Icon(Icons.menu_book_outlined),
+                        ),
+                        items: [
+                          const DropdownMenuItem<int?>(
+                            value: null,
+                            child: Text('All subjects'),
+                          ),
+                          ..._availableSubjects.map(
+                            (subject) => DropdownMenuItem<int?>(
+                              value: subject['subject_id'] as int,
+                              child: Text('${subject['subject_name']}'),
+                            ),
+                          ),
+                        ],
+                        onChanged: _selectSubject,
+                      ),
+                    ),
+
                   // ── Header ──────────────────────────────────────────
                   Padding(
                     padding: UIUtils.paddingAll(context, compact ? 8 : 12),
@@ -2392,6 +2608,9 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
                                   audio['audio_id'] ?? audio['id'] ?? 0;
                               final title = audio['title'] ?? 'Untitled';
                               final description = audio['description'] ?? '';
+                              final subjectName =
+                                  audio['subject_name'] ?? 'Subject';
+                              final className = audio['class_name'] ?? 'Class';
                               final duration = audio['duration'] as double?;
                               final isCurrentlyPlaying =
                                   _playingAudioId == audioId;
@@ -2465,6 +2684,18 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
                                                   ),
                                                   fontWeight: FontWeight.w700,
                                                   color: UIUtils.textColor,
+                                                ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                              Text(
+                                                '$className • $subjectName',
+                                                style: TextStyle(
+                                                  fontSize: UIUtils.fontSize(
+                                                    context,
+                                                    11,
+                                                  ),
+                                                  color: UIUtils.subtextColor,
                                                 ),
                                                 maxLines: 1,
                                                 overflow: TextOverflow.ellipsis,
@@ -2826,12 +3057,16 @@ class AddAudioOptionsScreen extends StatelessWidget {
 
 class SelectExistingAudioScreen extends StatefulWidget {
   final int sessionId;
+  final int? classId;
+  final int? subjectId;
   final Set<int> currentAudioIds;
   final VoidCallback onAudioAdded;
 
   const SelectExistingAudioScreen({
     super.key,
     required this.sessionId,
+    this.classId,
+    this.subjectId,
     required this.currentAudioIds,
     required this.onAudioAdded,
   });
@@ -2856,10 +3091,25 @@ class _SelectExistingAudioScreenState extends State<SelectExistingAudioScreen> {
     setState(() => _isLoading = true);
     final allAudio = await ApiService.getAudioList();
     if (allAudio != null && mounted) {
+      int? classId = widget.classId;
+      int? subjectId = widget.subjectId;
+      if (classId == null || subjectId == null) {
+        final state = await ApiService.get(
+          '/sessions/${widget.sessionId}/state',
+          useAuth: true,
+        );
+        if (state is Map) {
+          classId = int.tryParse('${state['class_id']}');
+          subjectId = int.tryParse('${state['subject_id']}');
+        }
+      }
+      if (!mounted) return;
       final available = allAudio
           .where((audio) {
             final id = (audio['audio_id'] ?? audio['id']) as int;
-            return !widget.currentAudioIds.contains(id);
+            return !widget.currentAudioIds.contains(id) &&
+                audio['class_id'] == classId &&
+                audio['subject_id'] == subjectId;
           })
           .map((e) => Map<String, dynamic>.from(e as Map))
           .toList();
