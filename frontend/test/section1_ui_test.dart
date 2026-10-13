@@ -22,10 +22,18 @@ void main() {
     await tester.pumpWidget(const MaterialApp(home: LoginScreen()));
     await tester.pump(const Duration(milliseconds: 100));
 
+    expect(find.text('1 Student'), findsOneWidget);
+    expect(find.text('2 Teacher'), findsOneWidget);
+    expect(find.text('3 Admin'), findsOneWidget);
+    await tester.sendKeyEvent(LogicalKeyboardKey.digit3);
+    await tester.pump();
+    expect(find.text('4: Login as Administrator'), findsOneWidget);
+    await tester.tap(find.text('1 Student'));
+    await tester.pump();
     final fields = find.byType(TextField);
     await tester.enterText(fields.at(0), '9876543210');
     await tester.enterText(fields.at(1), 'short');
-    await tester.tap(find.text('1: Login'));
+    await tester.tap(find.text('4: Login as Student'));
     await tester.pump();
     expect(
       find.text('Password must be at least 6 characters.'),

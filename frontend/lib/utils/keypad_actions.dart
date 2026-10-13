@@ -18,9 +18,11 @@ const Map<int, String> welcomeKeyLabels = {
 
 // ─── Login Screen ───────────────────────────────────────────────────────────
 const Map<int, String> loginKeyLabels = {
-  1: 'Login',
-  2: 'Register',
-  3: 'Toggle Teacher Account Check',
+  1: 'Select Student Account',
+  2: 'Select Teacher Account',
+  3: 'Select Administrator Account',
+  4: 'Login',
+  5: 'Register',
 };
 
 // ─── Register Screen ────────────────────────────────────────────────────────

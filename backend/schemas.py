@@ -330,6 +330,7 @@ class ClassOut(BaseModel):
     name: str
     sort_order: int
     is_active: bool
+    archived_at: Optional[datetime] = None
 
     class Config:
         orm_mode = True
@@ -348,6 +349,7 @@ class SubjectOut(BaseModel):
     subject_id: int
     name: str
     is_active: bool
+    archived_at: Optional[datetime] = None
 
     class Config:
         orm_mode = True
@@ -355,6 +357,24 @@ class SubjectOut(BaseModel):
 
 class StudentEnrollmentRequest(BaseModel):
     class_id: int
+
+
+class ClassSubjectRequest(BaseModel):
+    subject_id: int
+
+
+class ClassSubjectOut(BaseModel):
+    association_id: int
+    class_id: int
+    class_name: Optional[str] = None
+    subject_id: int
+    subject_name: Optional[str] = None
+    is_active: bool
+    associated_at: datetime
+    archived_at: Optional[datetime] = None
+
+    class Config:
+        orm_mode = True
 
 
 class StudentMembershipOut(BaseModel):
@@ -397,6 +417,7 @@ class AdminUserOut(BaseModel):
     class_id: Optional[int] = None
     class_name: Optional[str] = None
     assignment_count: int = 0
+    assignments: List[TeacherAssignmentOut] = Field(default_factory=list)
 
 
 class WorkspaceOut(BaseModel):

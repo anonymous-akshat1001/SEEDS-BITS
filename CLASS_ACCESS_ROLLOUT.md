@@ -1,6 +1,7 @@
 # Class, Subject, and Playlist Rollout
 
-This release introduces destructive schema changes. Use it first on the current test database, not on a database whose data must be retained.
+This release includes a data-preserving Alembic migration for existing
+databases and a separate destructive reset command for disposable databases.
 
 ## 1. Configure production-safe authentication
 
@@ -14,9 +15,26 @@ Generate a long, private `JWT_SECRET`. Do not place the Firebase service-account
 
 ## 2. Set the one-time bootstrap administrator
 
-Set `BOOTSTRAP_ADMIN_NAME`, `BOOTSTRAP_ADMIN_PHONE`, and a password of at least eight characters in the backend process environment. These values are consumed only by the reset command.
+Set `BOOTSTRAP_ADMIN_NAME`, `BOOTSTRAP_ADMIN_PHONE`, and a password of at least
+eight characters in the backend process environment. Startup creates the
+administrator only when the configured phone number does not already exist; it
+does not overwrite the password of an existing administrator. Public
+registration cannot create administrators.
 
-## 3. Reset and seed the test database
+## 3. Upgrade an existing database
+
+From the repository root, run:
+
+```powershell
+alembic upgrade head
+```
+
+The migration creates explicit class-subject associations, backfills pairs
+from sessions, audio, and teacher assignments, and preserves historical data.
+If it reports invalid legacy references, repair those records and rerun the
+migration.
+
+## 4. Reset and seed a disposable database
 
 From the repository root, run:
 
@@ -28,18 +46,20 @@ The command refuses to run without the explicit confirmation flag. It drops all 
 
 Remove the bootstrap password from reusable shell profiles after the command completes.
 
-## 4. Assign accounts before rollout
+## 5. Configure catalog associations and accounts
 
 Sign in as the bootstrap administrator. Use the accessible Admin Dashboard to:
 
-1. assign every student to exactly one class;
-2. assign each teacher to one or more class-subject workspaces;
-3. review the unassigned-account filter;
-4. archive or restore catalogue entries and teacher assignments as required.
+1. configure the active subjects for every class;
+2. assign every student to exactly one class;
+3. assign each teacher to one or more valid class-subject workspaces;
+4. review the All, Enrolled/Assigned, and Unassigned filters; and
+5. archive or restore catalog entries, associations, and assignments as
+   required.
 
 Students without an active class and teachers without an active workspace are intentionally denied class-sensitive content.
 
-## 5. Deployment checks
+## 6. Deployment checks
 
 - Serve the API and authenticated audio streams over HTTPS.
 - Confirm Firebase notifications contain only eligible same-class recipients.

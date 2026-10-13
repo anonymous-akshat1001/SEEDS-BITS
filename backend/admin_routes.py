@@ -26,7 +26,30 @@ async def list_classes(
     db: AsyncSession = Depends(get_db),
 ):
     query = select(models.SchoolClass)
-    if not (include_archived and current_user.role == "admin"):
+    if current_user.role == "student":
+        query = query.join(
+            models.StudentClassMembership,
+            models.StudentClassMembership.class_id == models.SchoolClass.class_id,
+        ).filter(
+            models.StudentClassMembership.student_id == current_user.user_id,
+            models.StudentClassMembership.is_active.is_(True),
+            models.SchoolClass.is_active.is_(True),
+        )
+    elif current_user.role == "teacher":
+        query = query.join(
+            models.TeacherClassSubjectAssignment,
+            models.TeacherClassSubjectAssignment.class_id == models.SchoolClass.class_id,
+        ).join(
+            models.ClassSubjectAssociation,
+            (models.ClassSubjectAssociation.class_id == models.TeacherClassSubjectAssignment.class_id)
+            & (models.ClassSubjectAssociation.subject_id == models.TeacherClassSubjectAssignment.subject_id),
+        ).filter(
+            models.TeacherClassSubjectAssignment.teacher_id == current_user.user_id,
+            models.TeacherClassSubjectAssignment.is_active.is_(True),
+            models.ClassSubjectAssociation.is_active.is_(True),
+            models.SchoolClass.is_active.is_(True),
+        ).distinct()
+    elif not include_archived:
         query = query.filter(models.SchoolClass.is_active.is_(True))
     result = await db.execute(query.order_by(models.SchoolClass.sort_order))
     return result.scalars().all()
@@ -39,7 +62,34 @@ async def list_subjects(
     db: AsyncSession = Depends(get_db),
 ):
     query = select(models.Subject)
-    if not (include_archived and current_user.role == "admin"):
+    if current_user.role == "student":
+        query = query.join(
+            models.ClassSubjectAssociation,
+            models.ClassSubjectAssociation.subject_id == models.Subject.subject_id,
+        ).join(
+            models.StudentClassMembership,
+            models.StudentClassMembership.class_id == models.ClassSubjectAssociation.class_id,
+        ).filter(
+            models.StudentClassMembership.student_id == current_user.user_id,
+            models.StudentClassMembership.is_active.is_(True),
+            models.ClassSubjectAssociation.is_active.is_(True),
+            models.Subject.is_active.is_(True),
+        )
+    elif current_user.role == "teacher":
+        query = query.join(
+            models.TeacherClassSubjectAssignment,
+            models.TeacherClassSubjectAssignment.subject_id == models.Subject.subject_id,
+        ).join(
+            models.ClassSubjectAssociation,
+            (models.ClassSubjectAssociation.class_id == models.TeacherClassSubjectAssignment.class_id)
+            & (models.ClassSubjectAssociation.subject_id == models.TeacherClassSubjectAssignment.subject_id),
+        ).filter(
+            models.TeacherClassSubjectAssignment.teacher_id == current_user.user_id,
+            models.TeacherClassSubjectAssignment.is_active.is_(True),
+            models.ClassSubjectAssociation.is_active.is_(True),
+            models.Subject.is_active.is_(True),
+        ).distinct()
+    elif not include_archived:
         query = query.filter(models.Subject.is_active.is_(True))
     result = await db.execute(query.order_by(models.Subject.name))
     return result.scalars().all()
@@ -66,6 +116,24 @@ async def access_context(
         response["student_class"] = {
             "class_id": membership.class_id,
             "class_name": school_class.name if school_class else "Class",
+            "subjects": [
+                {
+                    "subject_id": association.subject_id,
+                    "subject_name": association.subject.name,
+                }
+                for association in (
+                    await db.execute(
+                        select(models.ClassSubjectAssociation)
+                        .options(selectinload(models.ClassSubjectAssociation.subject))
+                        .filter(
+                            models.ClassSubjectAssociation.class_id == membership.class_id,
+                            models.ClassSubjectAssociation.is_active.is_(True),
+                            models.Subject.is_active.is_(True),
+                        )
+                        .join(models.Subject)
+                    )
+                ).scalars().all()
+            ],
         }
     elif current_user.role == "teacher":
         result = await db.execute(
@@ -77,6 +145,12 @@ async def access_context(
             .filter(
                 models.TeacherClassSubjectAssignment.teacher_id == current_user.user_id,
                 models.TeacherClassSubjectAssignment.is_active.is_(True),
+                models.ClassSubjectAssociation.is_active.is_(True),
+            )
+            .join(
+                models.ClassSubjectAssociation,
+                (models.ClassSubjectAssociation.class_id == models.TeacherClassSubjectAssignment.class_id)
+                & (models.ClassSubjectAssociation.subject_id == models.TeacherClassSubjectAssignment.subject_id),
             )
         )
         response["teacher_workspaces"] = [
@@ -96,45 +170,71 @@ async def access_context(
 @router.get("/admin/users", response_model=list[schemas.AdminUserOut])
 async def admin_list_users(
     search: str = "",
-    unassigned_only: bool = False,
+    role: Optional[str] = Query(None, regex="^(student|teacher)$"),
+    assignment_status: str = Query("all", regex="^(all|assigned|unassigned)$"),
+    limit: int = Query(100, ge=1, le=200),
     admin: models.User = Depends(auth.require_admin),
     db: AsyncSession = Depends(get_db),
 ):
     del admin
-    query = select(models.User).filter(models.User.role.in_(["student", "teacher"]))
-    if search.strip():
-        pattern = f"%{search.strip().lower()}%"
+    query = select(models.User).filter(
+        models.User.role.in_([role] if role else ["student", "teacher"])
+    )
+    normalized_search = " ".join(search.split()).lower()
+    if normalized_search:
+        pattern = f"%{normalized_search}%"
         query = query.filter(
             func.lower(models.User.name).like(pattern)
             | func.lower(models.User.phone_number).like(pattern)
         )
-    users = (await db.execute(query.order_by(models.User.name))).scalars().all()
+    users = (
+        await db.execute(query.order_by(models.User.name, models.User.user_id).limit(limit))
+    ).scalars().all()
+    user_ids = [user.user_id for user in users]
+    memberships = (
+        await db.execute(
+            select(models.StudentClassMembership)
+            .options(selectinload(models.StudentClassMembership.school_class))
+            .filter(
+                models.StudentClassMembership.student_id.in_(user_ids),
+                models.StudentClassMembership.is_active.is_(True),
+            )
+        )
+    ).scalars().all() if user_ids else []
+    assignments = (
+        await db.execute(
+            select(models.TeacherClassSubjectAssignment)
+            .join(
+                models.ClassSubjectAssociation,
+                (models.ClassSubjectAssociation.class_id == models.TeacherClassSubjectAssignment.class_id)
+                & (models.ClassSubjectAssociation.subject_id == models.TeacherClassSubjectAssignment.subject_id),
+            )
+            .options(
+                selectinload(models.TeacherClassSubjectAssignment.teacher),
+                selectinload(models.TeacherClassSubjectAssignment.school_class),
+                selectinload(models.TeacherClassSubjectAssignment.subject),
+            )
+            .filter(
+                models.TeacherClassSubjectAssignment.teacher_id.in_(user_ids),
+                models.TeacherClassSubjectAssignment.is_active.is_(True),
+                models.ClassSubjectAssociation.is_active.is_(True),
+            )
+        )
+    ).scalars().all() if user_ids else []
+    membership_by_student = {
+        membership.student_id: membership for membership in memberships
+    }
+    assignments_by_teacher: dict[int, list[models.TeacherClassSubjectAssignment]] = {}
+    for assignment in assignments:
+        assignments_by_teacher.setdefault(assignment.teacher_id, []).append(assignment)
     output = []
     for user in users:
-        class_id = None
-        class_name = None
-        assignment_count = 0
-        if user.role == "student":
-            membership_result = await db.execute(
-                select(models.StudentClassMembership).filter(
-                    models.StudentClassMembership.student_id == user.user_id,
-                    models.StudentClassMembership.is_active.is_(True),
-                )
-            )
-            membership = membership_result.scalar_one_or_none()
-            if membership:
-                school_class = await db.get(models.SchoolClass, membership.class_id)
-                class_id = membership.class_id
-                class_name = school_class.name if school_class else None
-        else:
-            count_result = await db.execute(
-                select(func.count(models.TeacherClassSubjectAssignment.assignment_id)).filter(
-                    models.TeacherClassSubjectAssignment.teacher_id == user.user_id,
-                    models.TeacherClassSubjectAssignment.is_active.is_(True),
-                )
-            )
-            assignment_count = count_result.scalar() or 0
-        if unassigned_only and (class_id is not None or assignment_count > 0):
+        membership = membership_by_student.get(user.user_id)
+        user_assignments = assignments_by_teacher.get(user.user_id, [])
+        assigned = membership is not None if user.role == "student" else bool(user_assignments)
+        if assignment_status == "assigned" and not assigned:
+            continue
+        if assignment_status == "unassigned" and assigned:
             continue
         output.append(
             {
@@ -142,9 +242,13 @@ async def admin_list_users(
                 "name": user.name,
                 "phone_number": user.phone_number,
                 "role": user.role,
-                "class_id": class_id,
-                "class_name": class_name,
-                "assignment_count": assignment_count,
+                "class_id": membership.class_id if membership else None,
+                "class_name": membership.school_class.name if membership else None,
+                "assignment_count": len(user_assignments),
+                "assignments": [
+                    _assignment_payload(assignment)
+                    for assignment in user_assignments
+                ],
             }
         )
     return output
@@ -189,6 +293,7 @@ async def archive_class(
     if school_class is None:
         raise HTTPException(status_code=404, detail="Class not found")
     school_class.is_active = not archived
+    school_class.archived_at = datetime.utcnow() if archived else None
     await db.commit()
     await db.refresh(school_class)
     return school_class
@@ -221,6 +326,107 @@ async def create_subject(
     await db.commit()
     await db.refresh(subject)
     return subject
+
+
+@router.get(
+    "/admin/classes/{class_id}/subjects",
+    response_model=list[schemas.ClassSubjectOut],
+)
+async def list_class_subjects(
+    class_id: int,
+    include_archived: bool = False,
+    admin: models.User = Depends(auth.require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    del admin
+    if await db.get(models.SchoolClass, class_id) is None:
+        raise HTTPException(status_code=404, detail="Class not found")
+    query = (
+        select(models.ClassSubjectAssociation)
+        .options(
+            selectinload(models.ClassSubjectAssociation.school_class),
+            selectinload(models.ClassSubjectAssociation.subject),
+        )
+        .filter(models.ClassSubjectAssociation.class_id == class_id)
+    )
+    if not include_archived:
+        query = query.filter(models.ClassSubjectAssociation.is_active.is_(True))
+    associations = (await db.execute(query)).scalars().all()
+    return [_class_subject_payload(association) for association in associations]
+
+
+@router.post(
+    "/admin/classes/{class_id}/subjects",
+    response_model=schemas.ClassSubjectOut,
+)
+async def associate_class_subject(
+    class_id: int,
+    payload: schemas.ClassSubjectRequest,
+    admin: models.User = Depends(auth.require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    school_class = await db.get(models.SchoolClass, class_id)
+    subject = await db.get(models.Subject, payload.subject_id)
+    if school_class is None or not school_class.is_active:
+        raise HTTPException(status_code=404, detail="Active class not found")
+    if subject is None or not subject.is_active:
+        raise HTTPException(status_code=404, detail="Active subject not found")
+    result = await db.execute(
+        select(models.ClassSubjectAssociation).filter(
+            models.ClassSubjectAssociation.class_id == class_id,
+            models.ClassSubjectAssociation.subject_id == payload.subject_id,
+        )
+    )
+    association = result.scalar_one_or_none()
+    if association is None:
+        association = models.ClassSubjectAssociation(
+            class_id=class_id,
+            subject_id=payload.subject_id,
+            associated_by=admin.user_id,
+        )
+        db.add(association)
+    else:
+        association.is_active = True
+        association.archived_at = None
+        association.associated_by = admin.user_id
+    await db.commit()
+    await db.refresh(association)
+    return {
+        **_class_subject_payload(association),
+        "class_name": school_class.name,
+        "subject_name": subject.name,
+    }
+
+
+@router.delete(
+    "/admin/classes/{class_id}/subjects/{association_id}",
+    response_model=schemas.ClassSubjectOut,
+)
+async def archive_class_subject(
+    class_id: int,
+    association_id: int,
+    admin: models.User = Depends(auth.require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    del admin
+    result = await db.execute(
+        select(models.ClassSubjectAssociation)
+        .options(
+            selectinload(models.ClassSubjectAssociation.school_class),
+            selectinload(models.ClassSubjectAssociation.subject),
+        )
+        .filter(
+            models.ClassSubjectAssociation.association_id == association_id,
+            models.ClassSubjectAssociation.class_id == class_id,
+        )
+    )
+    association = result.scalar_one_or_none()
+    if association is None:
+        raise HTTPException(status_code=404, detail="Class subject association not found")
+    association.is_active = False
+    association.archived_at = datetime.utcnow()
+    await db.commit()
+    return _class_subject_payload(association)
 
 
 @router.post("/admin/subjects/{subject_id}/archive", response_model=schemas.SubjectOut)
@@ -285,6 +491,28 @@ async def enroll_or_transfer_student(
         "is_active": membership.is_active,
         "assigned_at": membership.assigned_at,
     }
+
+
+@router.delete("/admin/students/{student_id}/class")
+async def remove_student_membership(
+    student_id: int,
+    admin: models.User = Depends(auth.require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    del admin
+    result = await db.execute(
+        select(models.StudentClassMembership).filter(
+            models.StudentClassMembership.student_id == student_id,
+            models.StudentClassMembership.is_active.is_(True),
+        )
+    )
+    membership = result.scalar_one_or_none()
+    if membership is None:
+        raise HTTPException(status_code=404, detail="Active class membership not found")
+    membership.is_active = False
+    membership.ended_at = datetime.utcnow()
+    await db.commit()
+    return {"ok": True}
 
 
 @router.get("/admin/teachers/{teacher_id}/assignments", response_model=list[schemas.TeacherAssignmentOut])
@@ -404,4 +632,19 @@ def _assignment_payload(assignment: models.TeacherClassSubjectAssignment) -> dic
         "subject_id": assignment.subject_id,
         "subject_name": assignment.subject.name,
         "is_active": assignment.is_active,
+    }
+
+
+def _class_subject_payload(association: models.ClassSubjectAssociation) -> dict:
+    return {
+        "association_id": association.association_id,
+        "class_id": association.class_id,
+        "class_name": (
+            association.school_class.name if association.school_class else None
+        ),
+        "subject_id": association.subject_id,
+        "subject_name": association.subject.name if association.subject else None,
+        "is_active": association.is_active,
+        "associated_at": association.associated_at,
+        "archived_at": association.archived_at,
     }

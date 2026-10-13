@@ -336,7 +336,14 @@ async def student_teacher_playlists(
     if subject_id is not None:
         filters.append(models.TeacherPlaylist.subject_id == subject_id)
     result = await db.execute(
-        select(models.TeacherPlaylist).options(*_teacher_options()).filter(*filters)
+        select(models.TeacherPlaylist)
+        .join(
+            models.ClassSubjectAssociation,
+            (models.ClassSubjectAssociation.class_id == models.TeacherPlaylist.class_id)
+            & (models.ClassSubjectAssociation.subject_id == models.TeacherPlaylist.subject_id),
+        )
+        .options(*_teacher_options())
+        .filter(*filters, models.ClassSubjectAssociation.is_active.is_(True))
         .order_by(models.TeacherPlaylist.updated_at.desc())
     )
     return [_teacher_payload(playlist, include_items=False) for playlist in result.scalars().all()]

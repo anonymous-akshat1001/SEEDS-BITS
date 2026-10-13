@@ -1681,6 +1681,9 @@ class ClassAudioScreen extends StatefulWidget {
 
 class _ClassAudioScreenState extends State<ClassAudioScreen> {
   final AudioPlayer _audioPlayer = AudioPlayer();
+  final FocusNode _subjectFilterFocusNode = FocusNode(
+    debugLabel: 'audio-subject-filter',
+  );
 
   List<Map<String, dynamic>> _allAudioFiles = [];
   List<Map<String, dynamic>> _audioFiles = [];
@@ -1896,7 +1899,7 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
     );
   }
 
-  void _cycleSubjectFilter() {
+  void _cycleSubjectFilter([int direction = 1]) {
     if (widget.subjectId != null) {
       _speakIfEnabled('This library is already limited to one subject');
       return;
@@ -1906,7 +1909,9 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
       ..._availableSubjects.map((entry) => entry['subject_id'] as int),
     ];
     final currentIndex = ids.indexOf(_selectedSubjectId);
-    _selectSubject(ids[(currentIndex + 1) % ids.length]);
+    var next = (currentIndex + direction) % ids.length;
+    if (next < 0) next += ids.length;
+    _selectSubject(ids[next]);
   }
 
   Future<void> _playOrPauseAudio(int audioId, String title) async {
@@ -2316,6 +2321,7 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
   void dispose() {
     _audioPlayer.stop();
     _audioPlayer.dispose();
+    _subjectFilterFocusNode.dispose();
     TtsService.stop();
     super.dispose();
   }
@@ -2363,6 +2369,17 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
       screenName: 'Class Audio Library',
       labels: labels,
       actions: actions,
+      focusTargets: [
+        if (widget.subjectId == null && _availableSubjects.isNotEmpty)
+          KeypadFocusTarget(
+            node: _subjectFilterFocusNode,
+            label:
+                'Subject filter. Use left or right to change the selected subject',
+            onActivate: _cycleSubjectFilter,
+            onDecrease: () => _cycleSubjectFilter(-1),
+            onIncrease: _cycleSubjectFilter,
+          ),
+      ],
       child: Scaffold(
         appBar: AppBar(
           title: Column(
@@ -2482,7 +2499,9 @@ class _ClassAudioScreenState extends State<ClassAudioScreen> {
                       ),
                       child: DropdownButtonFormField<int?>(
                         key: ValueKey(_selectedSubjectId),
+                        focusNode: _subjectFilterFocusNode,
                         initialValue: _selectedSubjectId,
+                        isExpanded: true,
                         decoration: const InputDecoration(
                           labelText: 'Subject filter (key 6)',
                           prefixIcon: Icon(Icons.menu_book_outlined),

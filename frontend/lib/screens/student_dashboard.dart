@@ -305,6 +305,29 @@ class _StudentDashboardState extends State<StudentDashboard> {
 
   Future<void> _logout() => AuthSessionService.logoutFrom(context);
 
+  void _cycleSubjectFilter(int direction) {
+    final ids = <int?>[
+      null,
+      ..._availableSubjects.map((entry) => entry['subject_id'] as int),
+    ];
+    if (ids.isEmpty) return;
+    var current = ids.indexOf(_selectedSubjectId);
+    if (current < 0) current = 0;
+    var next = (current + direction) % ids.length;
+    if (next < 0) next += ids.length;
+    setState(() => _selectedSubjectId = ids[next]);
+    final selected = ids[next] == null
+        ? null
+        : _availableSubjects.firstWhere(
+            (entry) => entry['subject_id'] == ids[next],
+          );
+    TtsService.speak(
+      selected == null
+          ? 'Showing all subjects'
+          : 'Showing ${selected['subject_name']} sessions',
+    );
+  }
+
   List<KeypadFocusTarget> _dashboardFocusTargets() {
     final selectedSubject = _selectedSubjectId == null
         ? null
@@ -322,8 +345,11 @@ class _StudentDashboardState extends State<StudentDashboard> {
       KeypadFocusTarget(
         node: _subjectFocusNode,
         label: selectedSubject == null
-            ? 'All subjects'
-            : 'Subject ${selectedSubject['subject_name']}',
+            ? 'All subjects. Use left or right to change'
+            : 'Subject ${selectedSubject['subject_name']}. Use left or right to change',
+        onActivate: () => _cycleSubjectFilter(1),
+        onDecrease: () => _cycleSubjectFilter(-1),
+        onIncrease: () => _cycleSubjectFilter(1),
       ),
       KeypadFocusTarget(
         node: _inputFocusNode,
@@ -417,6 +443,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
   Widget _buildScaffold(BuildContext context) {
     final bool tiny = UIUtils.isTiny(context);
     final bool compact = tiny || UIUtils.isShort(context);
+    final bool largeText = MediaQuery.textScalerOf(context).scale(1) > 1.15;
 
     return Scaffold(
       appBar: AppBar(
@@ -515,8 +542,10 @@ class _StudentDashboardState extends State<StudentDashboard> {
                   ),
                 ),
                 DropdownButtonFormField<int?>(
+                  key: ValueKey(_selectedSubjectId),
                   focusNode: _subjectFocusNode,
-                  value: _selectedSubjectId,
+                  initialValue: _selectedSubjectId,
+                  isExpanded: true,
                   decoration: const InputDecoration(
                     labelText: 'Filter sessions by subject',
                     prefixIcon: Icon(Icons.filter_alt_outlined),
@@ -658,7 +687,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
                               ),
                             ),
                             SizedBox(width: UIUtils.spacing(context, 8)),
-                            compact
+                            compact || largeText
                                 ? SizedBox(
                                     width: 40,
                                     height: 40,
@@ -745,11 +774,13 @@ class _StudentDashboardState extends State<StudentDashboard> {
                 // Active sessions header
                 Row(
                   children: [
-                    Text(
-                      "Active Sessions",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: UIUtils.fontSize(context, 16),
+                    Expanded(
+                      child: Text(
+                        "Active Sessions",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: UIUtils.fontSize(context, 16),
+                        ),
                       ),
                     ),
                     SizedBox(width: UIUtils.spacing(context, 6)),
@@ -896,36 +927,49 @@ class _StudentDashboardState extends State<StudentDashboard> {
                               // ),
                             ],
                           ),
-                          trailing: ElevatedButton(
-                            focusNode: _sessionFocusNodes.putIfAbsent(
-                              sessionId as int,
-                              () => FocusNode(
-                                debugLabel: 'student-session-$sessionId',
-                              ),
-                            ),
-                            onPressed: () => joinSession(sessionId),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: UIUtils.primaryColor,
-                              foregroundColor: Colors.white,
-                              padding: UIUtils.paddingSymmetric(
-                                context,
-                                horizontal: 12,
-                                vertical: 8,
-                              ),
-                              minimumSize: Size.zero,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                              elevation: 0,
-                            ),
-                            child: Text(
-                              "Join",
-                              style: TextStyle(
-                                fontSize: UIUtils.fontSize(context, 12),
-                              ),
-                            ),
-                          ),
+                          trailing: largeText || tiny
+                              ? IconButton.filled(
+                                  focusNode: _sessionFocusNodes.putIfAbsent(
+                                    sessionId as int,
+                                    () => FocusNode(
+                                      debugLabel: 'student-session-$sessionId',
+                                    ),
+                                  ),
+                                  onPressed: () => joinSession(sessionId),
+                                  tooltip: 'Join $title',
+                                  icon: const Icon(Icons.login),
+                                )
+                              : ElevatedButton(
+                                  focusNode: _sessionFocusNodes.putIfAbsent(
+                                    sessionId as int,
+                                    () => FocusNode(
+                                      debugLabel: 'student-session-$sessionId',
+                                    ),
+                                  ),
+                                  onPressed: () => joinSession(sessionId),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: UIUtils.primaryColor,
+                                    foregroundColor: Colors.white,
+                                    padding: UIUtils.paddingSymmetric(
+                                      context,
+                                      horizontal: 12,
+                                      vertical: 8,
+                                    ),
+                                    minimumSize: Size.zero,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    tapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
+                                    elevation: 0,
+                                  ),
+                                  child: Text(
+                                    "Join",
+                                    style: TextStyle(
+                                      fontSize: UIUtils.fontSize(context, 12),
+                                    ),
+                                  ),
+                                ),
                         ),
                       ),
                     );

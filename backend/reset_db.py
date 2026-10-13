@@ -15,11 +15,12 @@ import sys
 from pathlib import Path
 
 from dotenv import load_dotenv
+from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import sessionmaker
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import auth  # type: ignore  # noqa: E402
+import bootstrap  # type: ignore  # noqa: E402
 import models  # type: ignore  # noqa: E402
 from database import engine  # type: ignore  # noqa: E402
 
@@ -31,24 +32,8 @@ CLASS_NAMES = ["LKG", "UKG", *[f"Class {number}" for number in range(1, 13)]]
 SUBJECT_NAMES = ["English", "Maths", "Science"]
 
 
-def _required_environment() -> tuple[str, str, str]:
-    values = (
-        os.getenv("BOOTSTRAP_ADMIN_NAME", "").strip(),
-        os.getenv("BOOTSTRAP_ADMIN_PHONE", "").strip(),
-        os.getenv("BOOTSTRAP_ADMIN_PASSWORD", ""),
-    )
-    if not all(values):
-        raise RuntimeError(
-            "BOOTSTRAP_ADMIN_NAME, BOOTSTRAP_ADMIN_PHONE, and "
-            "BOOTSTRAP_ADMIN_PASSWORD must all be set before resetting the database."
-        )
-    if len(values[2]) < 8:
-        raise RuntimeError("BOOTSTRAP_ADMIN_PASSWORD must be at least 8 characters.")
-    return values
-
-
 async def reset_and_seed() -> None:
-    admin_name, admin_phone, admin_password = _required_environment()
+    bootstrap.required_admin_environment()
 
     async with engine.begin() as connection:
         print("Dropping all SEEDS tables...")
@@ -66,19 +51,25 @@ async def reset_and_seed() -> None:
                 for index, name in enumerate(CLASS_NAMES)
             ]
         )
-        session.add_all([models.Subject(name=name) for name in SUBJECT_NAMES])
-        session.add(
-            models.User(
-                name=admin_name,
-                phone_number=admin_phone,
-                role="admin",
-                password_hash=auth.get_password_hash(admin_password),
+        subjects = [models.Subject(name=name) for name in SUBJECT_NAMES]
+        session.add_all(subjects)
+        await session.flush()
+        classes = (
+            await session.execute(select(models.SchoolClass))
+        ).scalars().all()
+        session.add_all(
+            models.ClassSubjectAssociation(
+                class_id=school_class.class_id,
+                subject_id=subject.subject_id,
             )
+            for school_class in classes
+            for subject in subjects
         )
         await session.commit()
+        admin = await bootstrap.ensure_bootstrap_admin(session)
 
     print(f"Seeded {len(CLASS_NAMES)} classes and {len(SUBJECT_NAMES)} subjects.")
-    print(f"Bootstrap administrator created for phone {admin_phone}.")
+    print(f"Bootstrap administrator ready for phone {admin.phone_number}.")
     print("Database reset complete.")
 
 

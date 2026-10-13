@@ -28,6 +28,7 @@ async def get_active_student_membership(
 async def require_teacher_assignment(
     db: AsyncSession, teacher_id: int, class_id: int, subject_id: int,
 ) -> models.TeacherClassSubjectAssignment:
+    await require_active_class_subject(db, class_id, subject_id)
     result = await db.execute(
         select(models.TeacherClassSubjectAssignment).filter(
             models.TeacherClassSubjectAssignment.teacher_id == teacher_id,
@@ -48,24 +49,31 @@ async def require_teacher_assignment(
 async def require_active_class_subject(
     db: AsyncSession, class_id: int, subject_id: int,
 ) -> tuple[models.SchoolClass, models.Subject]:
-    class_result = await db.execute(
-        select(models.SchoolClass).filter(
+    result = await db.execute(
+        select(models.SchoolClass, models.Subject)
+        .join(
+            models.ClassSubjectAssociation,
+            models.ClassSubjectAssociation.class_id == models.SchoolClass.class_id,
+        )
+        .join(
+            models.Subject,
+            models.Subject.subject_id == models.ClassSubjectAssociation.subject_id,
+        )
+        .filter(
             models.SchoolClass.class_id == class_id,
-            models.SchoolClass.is_active.is_(True),
-        )
-    )
-    school_class = class_result.scalar_one_or_none()
-    subject_result = await db.execute(
-        select(models.Subject).filter(
             models.Subject.subject_id == subject_id,
+            models.SchoolClass.is_active.is_(True),
             models.Subject.is_active.is_(True),
+            models.ClassSubjectAssociation.is_active.is_(True),
         )
     )
-    subject = subject_result.scalar_one_or_none()
-    if school_class is None:
-        raise HTTPException(status_code=404, detail="Class not found or inactive.")
-    if subject is None:
-        raise HTTPException(status_code=404, detail="Subject not found or archived.")
+    pair = result.one_or_none()
+    if pair is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Active class and subject association not found.",
+        )
+    school_class, subject = pair
     return school_class, subject
 
 
@@ -79,6 +87,14 @@ async def require_class_access(
         membership = await get_active_student_membership(db, user.user_id)
         if membership.class_id != class_id:
             raise HTTPException(status_code=403, detail="This content belongs to another class.")
+        if subject_id is not None:
+            try:
+                await require_active_class_subject(db, class_id, subject_id)
+            except HTTPException as error:
+                raise HTTPException(
+                    status_code=403,
+                    detail="This content is not available to the student's class.",
+                ) from error
         return
     if user.role == "teacher" and subject_id is not None:
         await require_teacher_assignment(db, user.user_id, class_id, subject_id)

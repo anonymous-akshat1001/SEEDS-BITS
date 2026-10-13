@@ -5,6 +5,7 @@ psycopg2-binary
 alembic
 python-jose[cryptography]
 passlib[bcrypt]
+bcrypt<5
 pydantic>=2.10,<3
 asyncpg
 python-multipart

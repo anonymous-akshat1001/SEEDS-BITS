@@ -1,192 +1,640 @@
-# SEEDS-BITS — Backend
+# SEEDS-BITS
 
 > **Synchronized Educational Environment for Dynamic Sessions**
->
-> A real-time classroom platform built with **FastAPI** + **SSE** (Server-Sent Events) + **PostgreSQL**.
-> Teachers create sessions, students join, and all interactions are streamed in real-time.
 
----
+SEEDS is a real-time classroom platform for teachers, students, and
+administrators. The repository contains:
 
-## Table of Contents
+- a **Flutter client** for Android, web, and desktop;
+- a **FastAPI backend** for authentication, classes, sessions, audio, chat,
+  playlists, and administration;
+- a **PostgreSQL database** accessed asynchronously through SQLAlchemy; and
+- optional **Firebase Cloud Messaging** support for session notifications.
 
-- [Architecture Overview](#architecture-overview)
-- [Tech Stack](#tech-stack)
-- [Branch Info](#branch-info)
-- [Deployment Guide](#deployment-guide)
-  - [Prerequisites](#prerequisites)
-  - [Step-by-Step Deployment](#step-by-step-deployment)
-  - [Environment Variables](#environment-variables)
-  - [Database Setup](#database-setup)
-  - [Running the Server](#running-the-server)
-  - [Nginx / Reverse Proxy Notes](#nginx--reverse-proxy-notes)
-- [API Endpoints](#api-endpoints)
-- [Session Logging Feature](#session-logging-feature)
-  - [What Gets Logged](#what-gets-logged)
-  - [Logging Architecture](#logging-architecture)
-  - [Log API Endpoints](#log-api-endpoints)
-- [Testing Guide](#testing-guide)
-  - [Quick Smoke Test (curl)](#quick-smoke-test-curl)
-  - [Testing via Swagger UI](#testing-via-swagger-ui)
-  - [Full End-to-End Test Flow](#full-end-to-end-test-flow)
-  - [Verifying Logs in the Database](#verifying-logs-in-the-database)
-- [File Structure](#file-structure)
+Teachers can create classes and live sessions, invite students, share and
+control audio, manage participants, and review session activity. Students can
+join sessions, receive synchronized updates, communicate, and use the
+accessibility-focused keypad and text-to-speech interface.
 
----
+## Contents
 
-## Architecture Overview
+- [Architecture](#architecture)
+- [Technology stack](#technology-stack)
+- [Repository structure](#repository-structure)
+- [Prerequisites](#prerequisites)
+- [Quick start](#quick-start)
+- [Backend setup](#backend-setup)
+- [Frontend setup](#frontend-setup)
+- [Firebase setup](#firebase-setup)
+- [Running the application](#running-the-application)
+- [Testing and validation](#testing-and-validation)
+- [Building the Android app](#building-the-android-app)
+- [API overview](#api-overview)
+- [Session logging](#session-logging)
+- [Production notes](#production-notes)
+- [Troubleshooting](#troubleshooting)
 
+## Architecture
+
+```mermaid
+flowchart LR
+    U[Teacher / Student / Admin] --> F[Flutter application]
+
+    F -->|REST and JWT| A[FastAPI application]
+    F -->|Server-Sent Events| R[Real-time session manager]
+    F -->|WebRTC where required| W[RTC services]
+
+    A --> R
+    A --> W
+    A -->|Async SQLAlchemy| P[(PostgreSQL)]
+    A -->|Audio files| S[Local audio storage]
+    A -->|Optional push notifications| C[Firebase Cloud Messaging]
+    C --> F
 ```
-Flutter App (Client)
-    │
-    ├── GET  /sse/sessions/{id}?user_id=X   ← long-lived SSE stream (server → client)
-    ├── POST /sessions/{id}/action           ← all user actions (client → server)
-    └── REST endpoints                        ← CRUD for sessions, audio, chat, etc.
-    │
-FastAPI Backend (Python)
-    │
-    ├── ws_manager.py   → manages SSE queues + broadcasts
-    ├── main.py         → all endpoints + SSE + action handler
-    ├── session_logger.py → logs every event to the DB
-    └── models.py       → SQLAlchemy ORM models
-    │
-PostgreSQL Database
-    └── 11 tables (users, sessions, participants, logs, ...)
+
+### Request and event flow
+
+1. The Flutter client authenticates against the backend and stores the JWT
+   locally.
+2. Normal operations use REST endpoints for users, classes, sessions, audio,
+   playlists, chat, and administration.
+3. During a live session, the client opens an SSE connection. The backend
+   maintains an in-memory queue for each connected participant.
+4. Client actions are submitted to the backend, persisted when necessary, and
+   broadcast to connected session members.
+5. Session events are written to PostgreSQL so teachers can retrieve detailed
+   logs and summaries.
+6. If Firebase credentials are configured, invitations and other notifications
+   can also be delivered through FCM.
+
+### Backend components
+
+| Component | Responsibility |
+|-----------|----------------|
+| `main.py` | FastAPI app, lifecycle, REST endpoints, SSE, and session actions |
+| `admin_routes.py` | Administrator APIs |
+| `playlist_routes.py` | Playlist APIs |
+| `auth.py` | Password hashing, JWT handling, and role dependencies |
+| `database.py` | Async SQLAlchemy engine and session factory |
+| `models.py` | SQLAlchemy database models |
+| `schemas.py` | Pydantic request and response models |
+| `ws_manager.py` | Live connection queues, state, and broadcasts |
+| `session_logger.py` | Persistent session event logging and summaries |
+| `notification_service.py` | Optional Firebase push delivery |
+
+### Class and subject access model
+
+`SchoolClass` remains the backend model for the user-facing **Class** entity.
+Classes and subjects have an explicit, persistent many-to-many association:
+
+- a student has zero or one active class membership and can use every active
+  subject associated with that class;
+- a teacher can have multiple class-subject assignments, but an assignment is
+  valid only while its class-subject association is active;
+- sessions, audio, and teacher playlists retain both `class_id` and
+  `subject_id`; the backend validates that pair for list, resource, media, and
+  live-event access; and
+- archiving catalog entries or an association prevents new work in that
+  workspace without deleting historical sessions, audio, logs, or assignments.
+
+These rules are enforced by the backend. Client filtering is only a usability
+aid and is not an authorization boundary.
+
+### Frontend layers
+
+| Layer | Location | Responsibility |
+|-------|----------|----------------|
+| App bootstrap and navigation | `frontend/lib/main.dart` | Environment loading, startup, routes, and deferred notifications |
+| Screens | `frontend/lib/screens/` | Login, dashboards, sessions, settings, audio, playlists, and administration |
+| Services | `frontend/lib/services/` | REST, authentication state, SSE, WebSocket/RTC, notifications, and TTS |
+| Shared UI | `frontend/lib/widgets/` | Reusable participant, chat, keypad, and dialog widgets |
+| Utilities | `frontend/lib/utils/` | Access control, search, keypad behavior, and UI preferences |
+
+## Technology stack
+
+| Area | Technology |
+|------|------------|
+| Client | Flutter 3.35.6 / Dart 3.9.2 |
+| State and local storage | Provider and SharedPreferences |
+| Backend | Python 3.10+ and FastAPI |
+| Database | PostgreSQL 12+ |
+| ORM and driver | SQLAlchemy 1.4 async and asyncpg |
+| Authentication | JWT, python-jose, and bcrypt |
+| Real-time transport | Server-Sent Events, plus WebRTC where required |
+| Push notifications | Firebase Cloud Messaging |
+| Audio | Flutter audio packages and FastAPI file streaming |
+| Tests | pytest and flutter_test |
+
+## Repository structure
+
+```text
+SEEDS-BITS/
+|-- .env.example                 Backend environment template
+|-- README.md                    Project documentation
+|-- backend/
+|   |-- main.py                  FastAPI entry point
+|   |-- admin_routes.py          Administrator routes
+|   |-- playlist_routes.py       Playlist routes
+|   |-- auth.py                  Authentication and authorization
+|   |-- database.py              Database engine and sessions
+|   |-- models.py                SQLAlchemy models
+|   |-- schemas.py               Pydantic schemas
+|   |-- ws_manager.py            Real-time session manager
+|   |-- session_logger.py        Session event logging
+|   |-- notification_service.py  Firebase server integration
+|   |-- reset_db.py              Database reset/bootstrap utility
+|   |-- requirements.txt         Runtime dependencies
+|   |-- requirements-dev.txt     Runtime and test dependencies
+|   `-- tests/                   Backend tests
+`-- frontend/
+    |-- lib/
+    |   |-- main.dart            Flutter entry point
+    |   |-- screens/             Application screens
+    |   |-- services/            API and device services
+    |   |-- utils/               Shared application utilities
+    |   `-- widgets/             Reusable widgets
+    |-- test/                    Flutter tests
+    |-- android/                 Android host project
+    |-- web/                     Web host project
+    |-- windows/                 Windows host project
+    |-- pubspec.yaml             Flutter dependencies and assets
+    `-- FCM_SETUP.md             Detailed Firebase/FCM guide
 ```
 
----
+## Prerequisites
 
-## Tech Stack
+### Required for backend development
 
-| Component | Technology |
-|-----------|-----------|
-| Backend Framework | FastAPI (async) |
-| Real-time Transport | SSE (Server-Sent Events) — replaces WebSockets |
-| Database | PostgreSQL with asyncpg driver |
-| ORM | SQLAlchemy 1.4 (async) |
-| Auth | JWT (python-jose) + bcrypt |
-| Push Notifications | Firebase Cloud Messaging |
-| Audio Streaming | aiofiles + FileResponse |
+- Git
+- Python 3.10 or newer
+- PostgreSQL 12 or newer
 
----
+### Required for frontend development
 
-## Branch Info
+- Flutter **3.35.6** (the revision recorded in `frontend/.metadata`)
+- Dart **3.9.2** (included with Flutter 3.35.6)
+- Git
+- Windows Developer Mode when developing on Windows
 
-| Branch | Purpose |
-|--------|---------|
-| `main` | Latest SSE-based code (no logging) |
-| `kshitij` | **main + session logging** — use this for deployment |
+### Required for Android development
 
-Always deploy from the **`kshitij`** branch. It has everything from `main` plus the complete logging system.
+- Android Studio
+- Android SDK and command-line tools
+- JDK 17
+- An Android emulator or a physical device with USB debugging enabled
 
----
+### Optional
 
-## Deployment Guide
+- Node.js and Firebase CLI for regenerating Firebase client configuration
+- A Firebase service-account JSON file for backend push notifications
+- Nginx or another reverse proxy for production deployment
 
-### Prerequisites
+## Quick start
 
-- **Python 3.10+**
-- **PostgreSQL 12+** (running and accessible)
-- **pip** for installing Python dependencies
-- (Optional) **Nginx** or another reverse proxy for production
+The following is the shortest local setup after the prerequisites are
+installed.
 
-### Step-by-Step Deployment
-
-```bash
-# 1. Clone the repo
+```powershell
 git clone https://github.com/anonymous-akshat1001/SEEDS-BITS.git
 cd SEEDS-BITS
 
-# 2. Switch to the kshitij branch (has logging)
-git checkout kshitij
-git pull origin kshitij
+# Backend environment
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install -r backend\requirements-dev.txt
 
-# 3. Install Python dependencies
-cd backend
-pip install -r requirements.txt
+# Create and edit the backend configuration
+Copy-Item .env.example .env
 
-# 4. Set up the .env file (see Environment Variables section below)
-cp ../.env.example ../.env   # or create manually
-# Edit ../.env with your database credentials
-
-# 5. Create the PostgreSQL database
-sudo -u postgres createdb seeds_db
-# OR connect to psql and run: CREATE DATABASE seeds_db;
-
-# 6. Start the server
-uvicorn main:app --host 0.0.0.0 --port 8000
-# Server will auto-create tables on first startup
+# Frontend dependencies
+cd frontend
+flutter pub get
 ```
 
-### Environment Variables
+Create the PostgreSQL database and complete the environment files described
+below before starting the applications.
 
-Create a `.env` file in the **project root** (parent of `backend/`):
+> On macOS or Linux, activate the Python environment with
+> `source .venv/bin/activate` and use `/` instead of `\` in commands.
+
+## Backend setup
+
+### 1. Create the Python environment
+
+From the repository root:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install -r backend\requirements-dev.txt
+```
+
+Use `requirements.txt` instead if test dependencies are not needed:
+
+```powershell
+python -m pip install -r backend\requirements.txt
+```
+
+Use `python -m pip`, not `pip install requirements.txt`. The `-r` flag tells
+pip to install the packages listed in the file.
+
+### 2. Create the PostgreSQL database
+
+Using `createdb`:
+
+```powershell
+$env:PGPASSWORD = "your_postgres_password"
+createdb -U postgres -h localhost seeds_db
+Remove-Item Env:PGPASSWORD
+```
+
+Or from `psql`:
+
+```sql
+CREATE DATABASE seeds_db;
+```
+
+Clean databases receive the current tables during application startup. Existing
+installations must run the Alembic migration before starting the updated
+backend.
+
+### 3. Configure the backend environment
+
+Copy the template:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+The `.env` file belongs in the repository root, not inside `backend/`.
 
 ```env
-# Database connection (REQUIRED)
-DATABASE_URL="postgresql+asyncpg://YOUR_USER:YOUR_PASSWORD@localhost:5432/seeds_db"
+DATABASE_URL=postgresql+asyncpg://postgres:your_password@localhost:5432/seeds_db
+JWT_SECRET=replace-with-a-long-random-secret
+ALLOW_DEV_USER_IMPERSONATION=false
 
-# JWT secret for authentication (REQUIRED)
-JWT_SECRET="YOUR_SECURE_SECRET_KEY_HERE"
+BOOTSTRAP_ADMIN_NAME=SEEDS Administrator
+BOOTSTRAP_ADMIN_PHONE=9999999999
+BOOTSTRAP_ADMIN_PASSWORD=replace-with-a-strong-password
 
-# Audio storage directory
-AUDIO_DIR="./data/audio"
+AUDIO_DIR=./data/audio
+BACKEND_URL=http://127.0.0.1:8000
+API_BASE_URL=http://127.0.0.1:8000
+WS_BASE_URL=ws://127.0.0.1:8000
 
-# Backend URL (used by frontend)
-BACKEND_URL=http://your-server-ip:8000
-API_BASE_URL=http://your-server-ip:8000
-
-# Firebase (optional, for push notifications)
-FIREBASE_SERVICE_ACCOUNT_KEY=""
+FIREBASE_SERVICE_ACCOUNT_KEY=
 ```
 
-> **Important**: The `DATABASE_URL` must use the `postgresql+asyncpg://` scheme (not `postgres://`).
+Important:
 
-### Database Setup
+- `DATABASE_URL` must use the `postgresql+asyncpg://` scheme.
+- All three `BOOTSTRAP_ADMIN_*` values are required. The backend creates that
+  administrator idempotently on startup, keyed by phone number, and never
+  overwrites an existing administrator password.
+- Public registration accepts only `teacher` and `student`; administrators
+  sign in through the normal login endpoint but cannot register publicly.
+- Never commit `.env`, Firebase credentials, private keys, or production
+  passwords.
+- Keep `ALLOW_DEV_USER_IMPERSONATION=false` except in a controlled development
+  environment.
+- `FIREBASE_SERVICE_ACCOUNT_KEY` is optional. Leave it empty if push
+  notifications are not being tested.
 
-The server auto-creates all tables on startup via `Base.metadata.create_all()`. If you need to create them manually:
+### 4. Upgrade or initialize the database
+
+For an existing database, run the data-preserving migration from the repository
+root:
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+alembic upgrade head
+```
+
+The migration creates the class-subject association table and backfills pairs
+observed in existing sessions, audio, and teacher assignments. It stops with an
+actionable error if legacy rows refer to missing classes or subjects; repair
+those references and rerun it.
+
+For a disposable clean development database, the destructive reset command
+creates the current schema, associates the seeded subjects with all seeded
+classes, and creates the configured bootstrap administrator:
+
+```powershell
+python -m backend.reset_db --confirm-reset
+```
+
+### 5. Start the backend
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+cd backend
+python -m uvicorn main:app --host 127.0.0.1 --port 8000 --reload
+```
+
+Available local URLs:
+
+- API: `http://127.0.0.1:8000`
+- Swagger UI: `http://127.0.0.1:8000/docs`
+- OpenAPI JSON: `http://127.0.0.1:8000/openapi.json`
+
+## Frontend setup
+
+### 1. Verify Flutter
+
+```powershell
+flutter --version
+flutter doctor -v
+```
+
+This project was created with Flutter 3.35.6 and Dart 3.9.2. Other compatible
+Flutter versions may work, but changing SDK versions can update
+`pubspec.lock` or generated platform files.
+
+### 2. Restore Flutter packages
+
+```powershell
+cd frontend
+flutter pub get --enforce-lockfile
+```
+
+If dependencies were intentionally changed in `pubspec.yaml`, run
+`flutter pub get` without `--enforce-lockfile` and review the lockfile update.
+
+### 3. Configure frontend URLs
+
+Create both files below because the app first loads `assets/.env` and then
+falls back to `.env`.
+
+`frontend/.env`:
+
+```env
+API_BASE_URL=http://127.0.0.1:8000
+WS_BASE_URL=ws://127.0.0.1:8000
+WEB_VAPID_KEY=
+```
+
+`frontend/assets/.env`:
+
+```env
+API_BASE_URL=http://127.0.0.1:8000
+WS_BASE_URL=ws://127.0.0.1:8000
+WEB_VAPID_KEY=
+```
+
+For a physical Android device, `127.0.0.1` refers to the phone itself. Replace
+it with the development computer's LAN IP address, for example:
+
+```env
+API_BASE_URL=http://192.168.1.50:8000
+WS_BASE_URL=ws://192.168.1.50:8000
+```
+
+Then run the backend with `--host 0.0.0.0` and allow the port through the local
+firewall.
+
+### 4. Windows and Android setup
+
+On Windows:
+
+1. Enable **Developer Mode** in Windows Settings so Flutter can create
+   symlinks for plugins.
+2. Install Android Studio and its Android SDK.
+3. Install Android SDK command-line tools and accept the licenses:
+
+   ```powershell
+   flutter doctor --android-licenses
+   ```
+
+4. Use JDK 17 for this project's Gradle version:
+
+   ```powershell
+   flutter config --jdk-dir="C:\path\to\jdk-17"
+   ```
+
+5. Confirm the Android toolchain is healthy:
+
+   ```powershell
+   flutter doctor -v
+   ```
+
+## Firebase setup
+
+The Flutter source imports the generated
+`frontend/lib/firebase_options.dart`. This file and native Firebase
+configuration files are intentionally excluded from Git.
+
+To generate the client configuration for the existing `seeds-bits` Firebase
+project:
+
+```powershell
+npm install --global firebase-tools
+firebase login
+dart pub global activate flutterfire_cli
+
+cd frontend
+flutterfire configure --project=seeds-bits --platforms=android,web
+flutter pub get --enforce-lockfile
+```
+
+Do not create a second Firebase project if `seeds-bits` is missing from the
+project list. Ask a project owner to grant your Google account access.
+
+Backend push delivery additionally requires a Firebase service-account key:
+
+1. Generate it from **Firebase Console > Project settings > Service
+   accounts**.
+2. Store the JSON file outside this repository.
+3. Set `FIREBASE_SERVICE_ACCOUNT_KEY` in the root `.env` to its absolute path.
+
+Push notifications are optional for normal backend startup. See
+`frontend/FCM_SETUP.md` for device registration and end-to-end notification
+testing.
+
+## Running the application
+
+### Terminal 1: backend
+
+```powershell
+cd SEEDS-BITS
+.\.venv\Scripts\Activate.ps1
+cd backend
+python -m uvicorn main:app --host 127.0.0.1 --port 8000 --reload
+```
+
+### Terminal 2: frontend
+
+```powershell
+cd SEEDS-BITS\frontend
+flutter devices
+flutter run
+```
+
+Run a specific target:
+
+```powershell
+# Microsoft Edge
+flutter run -d edge
+
+# A connected Android device or emulator
+flutter run -d <device-id>
+```
+
+## Testing and validation
+
+### Backend
+
+From the repository root with the virtual environment active:
+
+```powershell
+python -m pytest backend\tests -q
+```
+
+### Frontend
+
+```powershell
+cd frontend
+flutter test
+flutter analyze
+```
+
+`flutter analyze` currently reports existing info-level style and deprecation
+notices. Compilation errors should still be treated as failures.
+
+### Backend smoke test
+
+With the backend running:
+
+```powershell
+Invoke-WebRequest http://127.0.0.1:8000/openapi.json
+```
+
+You can also use Swagger UI at `http://127.0.0.1:8000/docs` to register users,
+log in, create a session, and exercise the APIs.
+
+## Building the Android app
+
+### Debug APK
+
+```powershell
+cd frontend
+flutter build apk --debug
+```
+
+Output:
+
+```text
+frontend/build/app/outputs/flutter-apk/app-debug.apk
+```
+
+### Release APK
+
+```powershell
+flutter build apk --release
+```
+
+Release artifacts distributed by this project should be renamed to:
+
+```text
+SEEDS-v<version>.apk
+```
+
+For example, version `1.0.0` should be distributed as
+`SEEDS-v1.0.0.apk`. Production releases also require an Android signing
+configuration; never commit signing keys or passwords.
+
+## API overview
+
+The complete and current API schema is available from Swagger UI while the
+backend is running. Major endpoint groups include:
+
+| Area | Example endpoints |
+|------|-------------------|
+| Authentication | `POST /auth/register`, `POST /auth/login` |
+| Classes and subjects | Administrator, teacher, and membership routes |
+| Sessions | Create, list, join, invite, end, and delete |
+| Live events | `GET /sse/sessions/{session_id}`, session action routes |
+| Participants | Join, remove, mute, hand raise, and access control |
+| Audio | Upload, list, stream, select, play, pause, seek, and speed |
+| Playlists | Create, update, order, and assign audio |
+| Chat | Send messages and retrieve session history |
+| Notifications | Register and remove FCM device tokens |
+| Logs | Retrieve session events and aggregated summaries |
+
+Authentication uses JWTs. Query-parameter user impersonation is available only
+when `ALLOW_DEV_USER_IMPERSONATION` is explicitly enabled.
+
+The administrator dashboard provides separate student and teacher searches by
+normalized name or phone substring. Students can be filtered by All, Enrolled,
+or Unassigned and can be assigned, transferred, or removed from a class.
+Teachers can be filtered by All, Assigned, or Unassigned and can hold multiple
+class-subject assignments. Administrators also manage the active subjects for
+each class.
+
+Dashboard operations support pointer/touch, normal keyboard traversal,
+D-pad/remote navigation, and the existing numeric-keypad shortcuts. Dialogs
+provide equivalent non-pointer actions, visible focus, semantic selected or
+toggled state, and spoken status/error feedback through the configured TTS
+service. Class, subject, and workspace selectors support left/right D-pad
+cycling with spoken selection feedback rather than requiring a dropdown menu.
+Existing high-contrast and text-scale preferences remain in effect.
+
+Ending a live session closes it for all connected participants and marks it
+ended; it does not delete the session. Teachers continue to see active and
+ended sessions in dashboard history, while students see only active sessions.
+An ended session can be reactivated and opened again. It can also be
+permanently deleted after a separate destructive confirmation; active sessions
+must be ended before permanent deletion is allowed.
+
+## Session logging
+
+Significant session actions are stored with a timestamp and JSON event details.
+Examples include:
+
+- session creation and completion;
+- participant joins, leaves, invitations, removals, and mute changes;
+- raised or lowered hands;
+- chat messages;
+- audio upload, selection, playback, pause, seek, and speed changes; and
+- accessibility/self-listen events.
+
+Teachers can retrieve detailed session logs and aggregated summaries through
+the logging endpoints. The data flow is:
+
+```text
+FastAPI endpoint
+    -> SessionLogger
+    -> SQLAlchemy async session
+    -> PostgreSQL logs table
+```
+
+To inspect recent logs directly:
 
 ```sql
--- Connect to your database
-psql -U your_user -d seeds_db
-
--- The following tables are created automatically:
--- users, sessions, participants, audio_files, playback,
--- questions, logs, jwt_tokens, chat_messages, audio_messages, fcm_tokens
-
--- To verify tables exist:
-\dt
+SELECT log_id, session_id, user_id, event_type, event_details, created_at
+FROM logs
+ORDER BY created_at DESC
+LIMIT 20;
 ```
 
-The **`logs`** table (used by session logging) has this schema:
+## Production notes
 
-```sql
-CREATE TABLE logs (
-    log_id      SERIAL PRIMARY KEY,
-    session_id  INTEGER REFERENCES sessions(session_id) ON DELETE CASCADE,
-    user_id     INTEGER REFERENCES users(user_id) ON DELETE SET NULL,
-    event_type  VARCHAR(50) NOT NULL,
-    event_details JSON,
-    created_at  TIMESTAMP DEFAULT NOW()
-);
+### Process model
+
+Run the backend with **one worker** because live session queues and
+`SESSION_STATE` are currently stored in process memory:
+
+```powershell
+python -m uvicorn main:app --host 0.0.0.0 --port 8000 --workers 1
 ```
 
-### Running the Server
+Multiple workers require moving shared session state to Redis or another
+external store.
 
-```bash
-# Development (with auto-reload)
-uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+### Reverse proxy and SSE
 
-# Production
-uvicorn main:app --host 0.0.0.0 --port 8000 --workers 1
-```
-
-> **Note**: Use `--workers 1` in production because the in-memory session state (`SESSION_STATE`) is not shared across workers. For multi-worker setups, you'd need Redis or similar.
-
-### Nginx / Reverse Proxy Notes
-
-The SSE endpoint requires that your proxy **does not buffer** the response. The server already sends `X-Accel-Buffering: no` in the SSE response headers, which disables buffering in Nginx automatically.
-
-If issues persist, add this to your Nginx config:
+An SSE proxy must not buffer responses. For Nginx:
 
 ```nginx
 location /sse/ {
@@ -199,314 +647,61 @@ location /sse/ {
 }
 ```
 
----
+### Security checklist
 
-## API Endpoints
+- Use a long, randomly generated JWT secret.
+- Use HTTPS in production.
+- Restrict CORS to trusted origins before public deployment.
+- Store database and Firebase credentials in a secret manager.
+- Keep development impersonation disabled.
+- Back up PostgreSQL and uploaded audio.
+- Use a proper Android release signing key.
 
-### Authentication
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/auth/register` | Register a new user (teacher/student) |
-| POST | `/auth/login` | Login and receive JWT token |
+## Troubleshooting
 
-### Sessions
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/sessions` | Create a new session (teacher only) |
-| DELETE | `/sessions/{session_id}` | Delete a session (teacher only) |
-| GET | `/sessions/active` | List all active sessions |
-| GET | `/sessions/{session_id}/state` | Get full session state |
+### `pip` is not recognized
 
-### Participants
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/users/students` | List all students (for inviting) |
-| POST | `/sessions/{session_id}/invite` | Invite a student |
-| POST | `/sessions/{session_id}/join` | Join a session |
-| DELETE | `/sessions/{session_id}/participants/{pid}` | Remove a participant |
-| POST | `/sessions/{session_id}/participants/{pid}/mute` | Mute/unmute participant |
+Install Python, reopen the terminal, and use:
 
-### Audio
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/audio/upload` | Upload an audio file |
-| GET | `/audio/list` | List uploaded audio files |
-| GET | `/audio/{audio_id}/stream` | Stream audio file |
-| GET | `/audio/{audio_id}/play` | Play audio file |
-| POST | `/sessions/{session_id}/audio/select` | Select audio for session |
-| POST | `/sessions/{session_id}/audio/play` | Play audio in session |
-| POST | `/sessions/{session_id}/audio/pause` | Pause audio in session |
-| POST | `/sessions/{session_id}/audio/control` | Unified audio control (play/pause/seek/speed) |
-| GET | `/sessions/{session_id}/audio/state` | Get current playback state |
-
-### Chat
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/sessions/{session_id}/chat` | Send a chat message |
-| GET | `/sessions/{session_id}/chat` | Get chat history |
-
-### Real-Time (SSE)
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/sse/sessions/{session_id}?user_id=X` | SSE stream (server → client) |
-| POST | `/sessions/{session_id}/action` | All user actions (client → server) |
-
-### Session Logs
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/sessions/{session_id}/logs` | Get session activity logs |
-| GET | `/sessions/{session_id}/logs/summary` | Get session event summary |
-
-### Notifications
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/users/fcm-token` | Register FCM push token |
-| DELETE | `/users/fcm-token` | Remove FCM token |
-
----
-
-## Session Logging Feature
-
-### What Gets Logged
-
-Every significant action in a session is automatically recorded with a timestamp and JSONB details:
-
-| Event Type | Trigger | Example Details |
-|-----------|---------|-----------------|
-| `session_created` | Teacher creates a session | `{"title": "Physics 101"}` |
-| `session_ended` | Teacher ends a session | `{"ended_at": "2026-02-24T..."}` |
-| `participant_joined` | User joins via REST or SSE | `{"user_name": "John", "participant_id": 4}` |
-| `participant_left` | SSE stream disconnects | `{"participant_id": 4}` |
-| `participant_kicked` | Teacher kicks a participant | `{"kicked_user_id": 3, "reason": "Removed by teacher"}` |
-| `participant_invited` | Teacher invites a student | `{"invited_user_id": 5}` |
-| `participant_muted` | Self-mute or teacher mute | `{"target_user_id": 3, "is_self_mute": false}` |
-| `participant_unmuted` | Self-unmute or teacher unmute | `{"target_user_id": 3, "is_self_unmute": true}` |
-| `hand_raised` | Student raises hand | `{"participant_id": 4}` |
-| `hand_lowered` | Student lowers hand | `{"participant_id": 4}` |
-| `chat_message` | User sends a chat message | `{"message": "Hello!", "message_length": 6}` |
-| `audio_uploaded` | Teacher uploads audio | `{"title": "Lecture 1", "duration": 3600}` |
-| `audio_selected` | Teacher selects audio for session | `{"audio_id": 1, "audio_title": "Lecture 1"}` |
-| `audio_play` | Audio playback starts | `{"audio_id": 1, "position": 0.0, "speed": 1.0}` |
-| `audio_pause` | Audio playback paused | `{"position": 42.5}` |
-| `audio_seek` | Audio position changed | `{"audio_id": 1, "position": 120.0}` |
-
-### Logging Architecture
-
-```
-main.py (endpoint handlers)
-    │
-    │  await SessionLogger.log_xxx(db, ...)
-    ▼
-session_logger.py
-    │
-    │  INSERT INTO logs (session_id, user_id, event_type, event_details, created_at)
-    ▼
-PostgreSQL → logs table (JSONB event_details)
+```powershell
+python -m pip install -r backend\requirements-dev.txt
 ```
 
-- **`session_logger.py`** — Contains the `SessionLogger` class with 15+ static methods, one per event type
-- **`models.py`** — Contains the `Log` model (maps to the `logs` table)
-- **`main.py`** — Calls `SessionLogger.log_xxx()` in 26 places across REST, SSE, and action endpoints
+### Flutter reports that symlink support is required
 
-### Log API Endpoints
+Enable Windows Developer Mode and restart the terminal or editor.
 
-#### `GET /sessions/{session_id}/logs`
+### `firebase_options.dart` is missing
 
-Returns detailed log entries for a session. **Teacher-only access.**
+Run the FlutterFire configuration steps in [Firebase setup](#firebase-setup).
 
-**Query parameters:**
-- `user_id` (required) — your user ID (for auth)
-- `event_type` (optional) — filter by event type (e.g., `participant_joined`)
-- `limit` (optional, default 100) — max number of logs to return
+### Gradle uses an invalid or unsupported Java version
 
-**Example response:**
-```json
-{
-  "session_id": 8,
-  "total_logs": 3,
-  "logs": [
-    {
-      "log_id": 19,
-      "event_type": "participant_muted",
-      "user_id": 1,
-      "event_details": {
-        "participant_id": 4,
-        "target_user_id": 3,
-        "is_self_mute": false
-      },
-      "created_at": "2026-02-24T16:24:20.666428"
-    },
-    {
-      "log_id": 18,
-      "event_type": "participant_joined",
-      "user_id": 3,
-      "event_details": {
-        "participant_id": 4,
-        "user_name": "Test Student",
-        "joined_at": "2026-02-24T16:24:04.954850"
-      },
-      "created_at": "2026-02-24T16:24:04.954861"
-    }
-  ]
-}
+Install JDK 17 and configure Flutter:
+
+```powershell
+flutter config --jdk-dir="C:\path\to\jdk-17"
 ```
 
-#### `GET /sessions/{session_id}/logs/summary`
+Do not commit a developer-specific `org.gradle.java.home` path to
+`android/gradle.properties`.
 
-Returns aggregated event counts for a session. **Teacher-only access.**
+### Android cannot reach the local backend
 
-**Example response:**
-```json
-{
-  "session_id": 8,
-  "total_events": 3,
-  "event_counts": {
-    "participant_muted": 1,
-    "participant_joined": 1,
-    "session_created": 1
-  },
-  "unique_participants_joined": 1,
-  "participants_left": 0,
-  "first_event": "2026-02-24T16:23:54.274799",
-  "last_event": "2026-02-24T16:24:20.666428"
-}
-```
+- Replace `127.0.0.1` in the frontend environment files with the computer's
+  LAN IP.
+- Start Uvicorn with `--host 0.0.0.0`.
+- Confirm the phone and computer are on the same network.
+- Allow TCP port 8000 through the local firewall.
 
----
+### PostgreSQL connection fails
 
-## Testing Guide
+- Confirm the PostgreSQL service is running.
+- Verify the username, password, host, port, and database in `DATABASE_URL`.
+- Confirm `seeds_db` exists.
+- Use `postgresql+asyncpg://`, not `postgres://`.
 
-### Quick Smoke Test (curl)
+## Additional documentation
 
-Run these commands after the server is up. Replace `localhost:8000` with your production URL.
-
-```bash
-# 1. Register a teacher
-curl -X POST http://localhost:8000/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{"name":"Test Teacher","phone_number":"9999999999","password":"pass123","role":"teacher"}'
-# → Note the user_id (e.g., 1)
-
-# 2. Register a student
-curl -X POST http://localhost:8000/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{"name":"Test Student","phone_number":"8888888888","password":"pass123","role":"student"}'
-# → Note the user_id (e.g., 2)
-
-# 3. Create a session as teacher
-curl -X POST "http://localhost:8000/sessions?user_id=1" \
-  -H "Content-Type: application/json" \
-  -d '{"title":"My Test Session"}'
-# → Note the session_id (e.g., 1)
-
-# 4. Join session as student
-curl -X POST "http://localhost:8000/sessions/1/join?user_id=2" \
-  -H "Content-Type: application/x-www-form-urlencoded" \
-  -d "user_id=2"
-# → Note the participant_id (e.g., 1)
-
-# 5. Mute the student (as teacher)
-curl -X POST "http://localhost:8000/sessions/1/participants/1/mute?user_id=1&mute=true"
-
-# 6. Check the logs — should show 3 events
-curl -s "http://localhost:8000/sessions/1/logs?user_id=1" | python3 -m json.tool
-
-# 7. Check the summary
-curl -s "http://localhost:8000/sessions/1/logs/summary?user_id=1" | python3 -m json.tool
-```
-
-**Expected output from step 6:**
-- `session_created` with the session title
-- `participant_joined` with the student's name
-- `participant_muted` with `is_self_mute: false`
-
-### Testing via Swagger UI
-
-1. Open **`http://your-server/docs`** in a browser
-2. All endpoints are listed with "Try it out" buttons
-3. For the logging endpoints, scroll to:
-   - **`GET /sessions/{session_id}/logs`**
-   - **`GET /sessions/{session_id}/logs/summary`**
-4. Click **Try it out** → enter a `session_id` and `user_id` → click **Execute**
-
-### Full End-to-End Test Flow
-
-For a complete test that covers SSE and the action endpoint (which is what the Flutter app uses):
-
-```bash
-# Terminal 1: Start SSE stream as student (long-lived connection)
-curl -N "http://localhost:8000/sse/sessions/1?user_id=2"
-# This will print SSE events as they happen
-
-# Terminal 2: Perform actions as teacher
-# Mute via action endpoint
-curl -X POST "http://localhost:8000/sessions/1/action?user_id=1" \
-  -H "Content-Type: application/json" \
-  -d '{"type":"mute_participant","target_participant_id":1,"mute":true}'
-
-# Send chat message
-curl -X POST "http://localhost:8000/sessions/1/action?user_id=1" \
-  -H "Content-Type: application/json" \
-  -d '{"type":"chat","text":"Hello everyone!"}'
-
-# End session
-curl -X POST "http://localhost:8000/sessions/1/action?user_id=1" \
-  -H "Content-Type: application/json" \
-  -d '{"type":"end_session"}'
-
-# Terminal 3: Check all the logged events
-curl -s "http://localhost:8000/sessions/1/logs?user_id=1" | python3 -m json.tool
-```
-
-### Verifying Logs in the Database
-
-Connect to the database directly to verify logs are being written:
-
-```bash
-psql -U your_user -d seeds_db
-
--- View all logs for a session
-SELECT log_id, event_type, user_id, event_details, created_at
-FROM logs
-WHERE session_id = 1
-ORDER BY created_at;
-
--- Count events by type
-SELECT event_type, COUNT(*) as count
-FROM logs
-WHERE session_id = 1
-GROUP BY event_type;
-
--- Check recent activity
-SELECT * FROM logs ORDER BY created_at DESC LIMIT 10;
-```
-
----
-
-## File Structure
-
-```
-SEEDS-BITS/
-├── .env                        # Environment variables (DB URL, JWT secret, etc.)
-├── README.md                   # ← This file
-├── backend/
-│   ├── main.py                 # All API endpoints + SSE + action handler (1700+ lines)
-│   ├── session_logger.py       # Session logging module (SessionLogger class)
-│   ├── models.py               # SQLAlchemy ORM models (11 tables)
-│   ├── schemas.py              # Pydantic request/response schemas
-│   ├── database.py             # Async DB engine + session factory
-│   ├── auth.py                 # JWT token creation + verification
-│   ├── ws_manager.py           # SSE queue manager + broadcast logic
-│   ├── notification_service.py # Firebase push notification service
-│   ├── requirements.txt        # Python dependencies
-│   └── __init__.py             # Package init
-└── frontend/                   # Flutter mobile app
-```
-
----
-
-## Production URL
-
-If deployed at BITS Hyderabad:
-- **Swagger Docs**: `http://responsible-tech.bits-hyderabad.ac.in/seeds/docs`
-- **API Base**: `http://responsible-tech.bits-hyderabad.ac.in/seeds`
+- `frontend/FCM_SETUP.md` - Firebase Cloud Messaging setup and testing
+- Swagger UI - `http://127.0.0.1:8000/docs` while the backend is running

@@ -11,6 +11,7 @@ from sqlalchemy.pool import StaticPool
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import access_control as access  # noqa: E402
+import main  # noqa: E402
 import models  # noqa: E402
 import playlist_routes  # noqa: E402
 
@@ -50,6 +51,19 @@ async def seeded_db():
             password_hash="test",
         )
         db.add_all([class_one, class_two, english, maths, teacher, student, other_student])
+        await db.flush()
+        db.add_all(
+            [
+                models.ClassSubjectAssociation(
+                    class_id=class_one.class_id,
+                    subject_id=english.subject_id,
+                ),
+                models.ClassSubjectAssociation(
+                    class_id=class_two.class_id,
+                    subject_id=english.subject_id,
+                ),
+            ]
+        )
         await db.flush()
         db.add_all(
             [
@@ -101,6 +115,21 @@ async def test_teacher_assignment_rejects_unassigned_pair(seeded_db):
 
 
 @pytest.mark.asyncio
+async def test_teacher_assignment_rejects_subject_not_associated_with_class(
+    seeded_db,
+):
+    db, data = seeded_db
+    with pytest.raises(HTTPException) as denied:
+        await access.require_teacher_assignment(
+            db,
+            data["teacher"].user_id,
+            data["class_one"].class_id,
+            data["maths"].subject_id,
+        )
+    assert denied.value.status_code == 404
+
+
+@pytest.mark.asyncio
 async def test_archived_teacher_assignment_is_denied(seeded_db):
     db, data = seeded_db
     result = await db.execute(
@@ -137,6 +166,131 @@ async def test_student_cannot_access_other_class_session(seeded_db):
     await db.commit()
     with pytest.raises(HTTPException) as denied:
         await access.require_session_access(db, data["student"], session)
+    assert denied.value.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_teacher_can_list_ended_sessions_without_exposing_them_as_active(
+    seeded_db,
+):
+    db, data = seeded_db
+    ended = models.Session(
+        title="Completed lesson",
+        created_by=data["teacher"].user_id,
+        class_id=data["class_one"].class_id,
+        subject_id=data["english"].subject_id,
+        is_active=False,
+    )
+    db.add(ended)
+    await db.commit()
+
+    active_only = await main.get_active_sessions(
+        include_ended=False,
+        user=data["teacher"],
+        db=db,
+    )
+    history = await main.get_active_sessions(
+        include_ended=True,
+        user=data["teacher"],
+        db=db,
+    )
+
+    assert all(session["session_id"] != ended.session_id for session in active_only)
+    ended_payload = next(
+        session for session in history if session["session_id"] == ended.session_id
+    )
+    assert ended_payload["is_active"] is False
+
+
+@pytest.mark.asyncio
+async def test_teacher_can_reactivate_then_permanently_delete_ended_session(
+    seeded_db,
+):
+    db, data = seeded_db
+    session = models.Session(
+        title="Reusable lesson",
+        created_by=data["teacher"].user_id,
+        class_id=data["class_one"].class_id,
+        subject_id=data["english"].subject_id,
+        is_active=False,
+    )
+    db.add(session)
+    await db.commit()
+
+    response = await main.reactivate_session(
+        session_id=session.session_id,
+        user=data["teacher"],
+        db=db,
+    )
+    assert response["ok"] is True
+    assert session.is_active is True
+    assert session.ended_at is None
+
+    with pytest.raises(HTTPException) as active_delete:
+        await main.permanently_delete_session(
+            session_id=session.session_id,
+            user=data["teacher"],
+            db=db,
+        )
+    assert active_delete.value.status_code == 409
+
+    session.is_active = False
+    await db.commit()
+    response = await main.permanently_delete_session(
+        session_id=session.session_id,
+        user=data["teacher"],
+        db=db,
+    )
+    assert response["ok"] is True
+    assert await db.get(models.Session, session.session_id) is None
+
+
+@pytest.mark.asyncio
+async def test_student_accesses_all_active_subjects_associated_with_class(seeded_db):
+    db, data = seeded_db
+    maths_association = models.ClassSubjectAssociation(
+        class_id=data["class_one"].class_id,
+        subject_id=data["maths"].subject_id,
+    )
+    db.add(maths_association)
+    await db.commit()
+
+    await access.require_class_access(
+        db,
+        data["student"],
+        data["class_one"].class_id,
+        data["english"].subject_id,
+    )
+    await access.require_class_access(
+        db,
+        data["student"],
+        data["class_one"].class_id,
+        data["maths"].subject_id,
+    )
+
+
+@pytest.mark.asyncio
+async def test_student_denied_archived_class_subject_pair(seeded_db):
+    db, data = seeded_db
+    result = await db.execute(
+        models.ClassSubjectAssociation.__table__.select().where(
+            models.ClassSubjectAssociation.class_id == data["class_one"].class_id
+        )
+    )
+    association = await db.get(
+        models.ClassSubjectAssociation,
+        result.first().association_id,
+    )
+    association.is_active = False
+    await db.commit()
+
+    with pytest.raises(HTTPException) as denied:
+        await access.require_class_access(
+            db,
+            data["student"],
+            data["class_one"].class_id,
+            data["english"].subject_id,
+        )
     assert denied.value.status_code == 403
 
 

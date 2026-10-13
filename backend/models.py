@@ -2,7 +2,8 @@
 from datetime import datetime
 from sqlalchemy import (
     Column, Integer, String, Text, ForeignKey, Boolean,
-    TIMESTAMP, CheckConstraint, JSON, text, Float, UniqueConstraint, Index
+    TIMESTAMP, CheckConstraint, JSON, text, Float, UniqueConstraint, Index,
+    ForeignKeyConstraint,
 )
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
@@ -50,6 +51,7 @@ class SchoolClass(Base):
     sort_order = Column(Integer, unique=True, nullable=False)
     is_active = Column(Boolean, nullable=False, server_default=text("true"))
     created_at = Column(TIMESTAMP, server_default=func.now(), nullable=False)
+    archived_at = Column(TIMESTAMP)
 
 
 class Subject(Base):
@@ -60,6 +62,30 @@ class Subject(Base):
     is_active = Column(Boolean, nullable=False, server_default=text("true"))
     created_at = Column(TIMESTAMP, server_default=func.now(), nullable=False)
     archived_at = Column(TIMESTAMP)
+
+
+class ClassSubjectAssociation(Base):
+    __tablename__ = "class_subject_associations"
+
+    association_id = Column(Integer, primary_key=True, index=True)
+    class_id = Column(
+        Integer, ForeignKey("classes.class_id", ondelete="RESTRICT"), nullable=False,
+    )
+    subject_id = Column(
+        Integer, ForeignKey("subjects.subject_id", ondelete="RESTRICT"), nullable=False,
+    )
+    is_active = Column(Boolean, nullable=False, server_default=text("true"))
+    associated_at = Column(TIMESTAMP, server_default=func.now(), nullable=False)
+    archived_at = Column(TIMESTAMP)
+    associated_by = Column(Integer, ForeignKey("users.user_id", ondelete="SET NULL"))
+
+    school_class = relationship("SchoolClass")
+    subject = relationship("Subject")
+    associator = relationship("User")
+
+    __table_args__ = (
+        UniqueConstraint("class_id", "subject_id", name="uq_class_subject"),
+    )
 
 
 class StudentClassMembership(Base):
@@ -116,6 +142,15 @@ class TeacherClassSubjectAssignment(Base):
     assigner = relationship("User", foreign_keys=[assigned_by])
 
     __table_args__ = (
+        ForeignKeyConstraint(
+            ["class_id", "subject_id"],
+            [
+                "class_subject_associations.class_id",
+                "class_subject_associations.subject_id",
+            ],
+            name="fk_teacher_assignment_class_subject",
+            ondelete="RESTRICT",
+        ),
         UniqueConstraint(
             "teacher_id", "class_id", "subject_id",
             name="uq_teacher_class_subject",
@@ -146,6 +181,18 @@ class Session(Base):
     session_audios = relationship("SessionAudio", back_populates="session", cascade="all, delete-orphan")
     school_class = relationship("SchoolClass")
     subject = relationship("Subject")
+
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["class_id", "subject_id"],
+            [
+                "class_subject_associations.class_id",
+                "class_subject_associations.subject_id",
+            ],
+            name="fk_session_class_subject",
+            ondelete="RESTRICT",
+        ),
+    )
 
 
 # Represents a user inside a session(links User table with Session Table)
@@ -190,6 +237,18 @@ class AudioFile(Base):
     session_links = relationship("SessionAudio", back_populates="audio", cascade="all, delete-orphan")
     school_class = relationship("SchoolClass")
     subject = relationship("Subject")
+
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["class_id", "subject_id"],
+            [
+                "class_subject_associations.class_id",
+                "class_subject_associations.subject_id",
+            ],
+            name="fk_audio_class_subject",
+            ondelete="RESTRICT",
+        ),
+    )
 
 
 # Tracks when an audio file is played in a session

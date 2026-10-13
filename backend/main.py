@@ -17,12 +17,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from sqlalchemy import update, func
+from sqlalchemy import delete, update, func
 from sqlalchemy.orm import selectinload
 
-import models, schemas, auth, ws_manager, access_control as access
+import models, schemas, auth, ws_manager, access_control as access, bootstrap
 import admin_routes, playlist_routes
-from database import engine, get_db
+from database import AsyncSessionLocal, engine, get_db
 from notification_service import fcm_service
 from ws_manager import ws_mgr, SESSION_STATE, SESSION_LOCK
 from session_logger import SessionLogger, get_session_logs, get_session_summary
@@ -37,6 +37,8 @@ os.makedirs(AUDIO_DIR, exist_ok=True)
 async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
         await conn.run_sync(models.Base.metadata.create_all)
+    async with AsyncSessionLocal() as db:
+        await bootstrap.ensure_bootstrap_admin(db)
     yield
 
 
@@ -193,9 +195,9 @@ async def create_session(payload: schemas.SessionCreate,
     }
 
 
-# Delete a session - teacher only
-@app.delete("/sessions/{session_id}")
-async def delete_session(session_id: int,
+# End a session for all participants while preserving its history.
+@app.post("/sessions/{session_id}/end")
+async def end_session(session_id: int,
                       user: models.User = Depends(require_teacher),
                       db: AsyncSession = Depends(get_db),
                       background_tasks: BackgroundTasks = None):
@@ -225,12 +227,74 @@ async def delete_session(session_id: int,
     else:
         asyncio.create_task(ws_mgr.close_session(session_id))
     
-    return {"ok": True, "message": "Session ended successfully"}
+    return {"ok": True, "message": "Session ended and retained in history"}
+
+
+@app.post("/sessions/{session_id}/reactivate")
+async def reactivate_session(
+    session_id: int,
+    user: models.User = Depends(require_teacher),
+    db: AsyncSession = Depends(get_db),
+):
+    classroom_session = await db.get(models.Session, session_id)
+    if classroom_session is None:
+        raise HTTPException(status_code=404, detail="Session not found")
+    await access.require_session_access(
+        db, user, classroom_session, manage=True,
+    )
+    if classroom_session.is_active:
+        raise HTTPException(status_code=409, detail="Session is already active")
+
+    classroom_session.is_active = True
+    classroom_session.ended_at = None
+    await db.commit()
+    async with SESSION_LOCK:
+        SESSION_STATE[session_id] = {
+            "connections": {},
+            "participants": {},
+            "playback": {
+                "audio_id": None,
+                "status": "stopped",
+                "speed": 1.0,
+                "position": 0.0,
+            },
+        }
+    return {"ok": True, "message": "Session reactivated"}
+
+
+@app.delete("/sessions/{session_id}")
+async def permanently_delete_session(
+    session_id: int,
+    user: models.User = Depends(require_teacher),
+    db: AsyncSession = Depends(get_db),
+):
+    classroom_session = await db.get(models.Session, session_id)
+    if classroom_session is None:
+        raise HTTPException(status_code=404, detail="Session not found")
+    await access.require_session_access(
+        db, user, classroom_session, manage=True,
+    )
+    if classroom_session.is_active:
+        raise HTTPException(
+            status_code=409,
+            detail="End the session before deleting it permanently",
+        )
+
+    await db.execute(
+        delete(models.Session).where(
+            models.Session.session_id == session_id,
+        )
+    )
+    await db.commit()
+    async with SESSION_LOCK:
+        SESSION_STATE.pop(session_id, None)
+    return {"ok": True, "message": "Session permanently deleted"}
 
 
 # Get the list of active sessions : 
 @app.get("/sessions/active", response_model=List[schemas.SessionOut])
 async def get_active_sessions(
+    include_ended: bool = False,
     user: models.User = Depends(get_user_by_id),  # dev auth
     db: AsyncSession = Depends(get_db)
 ):
@@ -242,22 +306,41 @@ async def get_active_sessions(
     if user.role.lower() == "teacher":
         # Only sessions created by this teacher
         assignments = await db.execute(
-            select(models.TeacherClassSubjectAssignment).filter(
+            select(models.TeacherClassSubjectAssignment)
+            .join(
+                models.ClassSubjectAssociation,
+                (models.ClassSubjectAssociation.class_id == models.TeacherClassSubjectAssignment.class_id)
+                & (models.ClassSubjectAssociation.subject_id == models.TeacherClassSubjectAssignment.subject_id),
+            )
+            .join(
+                models.SchoolClass,
+                models.SchoolClass.class_id == models.TeacherClassSubjectAssignment.class_id,
+            )
+            .join(
+                models.Subject,
+                models.Subject.subject_id == models.TeacherClassSubjectAssignment.subject_id,
+            )
+            .filter(
                 models.TeacherClassSubjectAssignment.teacher_id == user.user_id,
                 models.TeacherClassSubjectAssignment.is_active.is_(True),
+                models.ClassSubjectAssociation.is_active.is_(True),
+                models.SchoolClass.is_active.is_(True),
+                models.Subject.is_active.is_(True),
             )
         )
         pairs = {
             (assignment.class_id, assignment.subject_id)
             for assignment in assignments.scalars().all()
         }
+        teacher_filters = [models.Session.created_by == user.user_id]
+        if not include_ended:
+            teacher_filters.append(models.Session.is_active.is_(True))
         q = await db.execute(
             select(models.Session).options(
                 selectinload(models.Session.school_class),
                 selectinload(models.Session.subject),
             ).filter(
-                models.Session.created_by == user.user_id,
-                models.Session.is_active.is_(True),
+                *teacher_filters,
             )
         )
         sessions = [
@@ -267,12 +350,17 @@ async def get_active_sessions(
     elif user.role.lower() == "student":
         membership = await access.get_active_student_membership(db, user.user_id)
         q = await db.execute(
-            select(models.Session).options(
+            select(models.Session).join(
+                models.ClassSubjectAssociation,
+                (models.ClassSubjectAssociation.class_id == models.Session.class_id)
+                & (models.ClassSubjectAssociation.subject_id == models.Session.subject_id),
+            ).options(
                 selectinload(models.Session.school_class),
                 selectinload(models.Session.subject),
             ).filter(
                 models.Session.is_active.is_(True),
                 models.Session.class_id == membership.class_id,
+                models.ClassSubjectAssociation.is_active.is_(True),
             )
         )
         sessions = q.scalars().all()
@@ -809,7 +897,14 @@ async def list_audio_files(
         if subject_id is not None:
             filters.append(models.AudioFile.subject_id == subject_id)
         q = await db.execute(
-            base_query.filter(*filters).order_by(models.AudioFile.uploaded_at.desc())
+            base_query.join(
+                models.ClassSubjectAssociation,
+                (models.ClassSubjectAssociation.class_id == models.AudioFile.class_id)
+                & (models.ClassSubjectAssociation.subject_id == models.AudioFile.subject_id),
+            ).filter(
+                *filters,
+                models.ClassSubjectAssociation.is_active.is_(True),
+            ).order_by(models.AudioFile.uploaded_at.desc())
         )
         files = q.scalars().all()
     else:

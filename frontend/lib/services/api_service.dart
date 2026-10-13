@@ -629,10 +629,29 @@ class ApiService {
     return null;
   }
 
-  /// Delete/end a session (teacher only)
-  static Future<bool> deleteSession(int sessionId) async {
-    return await delete('/sessions/$sessionId', useAuth: true);
+  /// End a session for everyone while preserving its history.
+  static Future<bool> endSession(int sessionId) async {
+    final result = await postResult(
+      '/sessions/$sessionId/end',
+      const {},
+      useAuth: true,
+      context: 'session ending',
+    );
+    return result.isSuccess;
   }
+
+  static Future<bool> reactivateSession(int sessionId) async {
+    final result = await postResult(
+      '/sessions/$sessionId/reactivate',
+      const {},
+      useAuth: true,
+      context: 'session reactivation',
+    );
+    return result.isSuccess;
+  }
+
+  static Future<bool> permanentlyDeleteSession(int sessionId) =>
+      delete('/sessions/$sessionId', useAuth: true);
 
   /// Get session state
   static Future<Map<String, dynamic>?> getSessionState(int sessionId) async {
@@ -924,12 +943,14 @@ class ApiService {
 
   static Future<List<dynamic>> getAdminUsers({
     String search = '',
-    bool unassignedOnly = false,
+    String? role,
+    String assignmentStatus = 'all',
   }) async {
     final query = Uri(
       queryParameters: {
         if (search.isNotEmpty) 'search': search,
-        'unassigned_only': unassignedOnly.toString(),
+        if (role != null) 'role': role,
+        'assignment_status': assignmentStatus,
       },
     ).query;
     final result = await get('/admin/users?$query', useAuth: true);
@@ -942,6 +963,30 @@ class ApiService {
   ) => post('/admin/students/$studentId/class', {
     'class_id': classId,
   }, useAuth: true);
+
+  static Future<bool> removeStudentClass(int studentId) =>
+      delete('/admin/students/$studentId/class', useAuth: true);
+
+  static Future<List<dynamic>> getClassSubjects(
+    int classId, {
+    bool includeArchived = false,
+  }) async {
+    final result = await get(
+      '/admin/classes/$classId/subjects?include_archived=$includeArchived',
+      useAuth: true,
+    );
+    return result is List ? result : const [];
+  }
+
+  static Future<Map<String, dynamic>?> associateClassSubject(
+    int classId,
+    int subjectId,
+  ) => post('/admin/classes/$classId/subjects', {
+    'subject_id': subjectId,
+  }, useAuth: true);
+
+  static Future<bool> archiveClassSubject(int classId, int associationId) =>
+      delete('/admin/classes/$classId/subjects/$associationId', useAuth: true);
 
   static Future<Map<String, dynamic>?> assignTeacher(
     int teacherId,

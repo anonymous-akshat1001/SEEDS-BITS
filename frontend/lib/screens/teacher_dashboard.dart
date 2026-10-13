@@ -107,13 +107,13 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     });
   }
 
-  // Fetch all active sessions for this teacher
+  // Fetch active and ended sessions for this teacher.
   Future<void> _loadSessions() async {
     final previousFocus = FocusManager.instance.primaryFocus;
     if (mounted) setState(() => _isRefreshing = true);
     await TtsService.speak('Refreshing sessions');
     final result = await ApiService.getResult(
-      '/sessions/active',
+      '/sessions/active?include_ended=true',
       useAuth: true,
       context: 'session list',
     );
@@ -132,8 +132,8 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
       });
       await TtsService.speak(
         sessions.isEmpty
-            ? 'No active sessions found'
-            : '${sessions.length} active sessions found',
+            ? 'No sessions found'
+            : '${sessions.length} sessions found',
       );
     } else {
       setState(() => _isRefreshing = false);
@@ -143,8 +143,9 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
       ).showSnackBar(SnackBar(content: Text(message)));
       await TtsService.speak(message);
     }
-    if (previousFocus != null && previousFocus.canRequestFocus)
+    if (previousFocus != null && previousFocus.canRequestFocus) {
       previousFocus.requestFocus();
+    }
   }
 
   // Funtion to create a new session by the teacher
@@ -283,6 +284,27 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     });
   }
 
+  void _cycleWorkspace(int direction) {
+    if (_workspaces.isEmpty) {
+      TtsService.speak('No class and subject workspace is assigned');
+      return;
+    }
+    final currentId = _selectedWorkspace?['assignment_id'];
+    var current = _workspaces.indexWhere(
+      (entry) => entry['assignment_id'] == currentId,
+    );
+    if (current < 0) current = 0;
+    var next = (current + direction) % _workspaces.length;
+    if (next < 0) next += _workspaces.length;
+    setState(() {
+      _selectedWorkspace = Map<String, dynamic>.from(_workspaces[next] as Map);
+    });
+    TtsService.speak(
+      '${_selectedWorkspace!['class_name']}, '
+      '${_selectedWorkspace!['subject_name']} selected',
+    );
+  }
+
   // Open offline audio library (no session context)
   void _openOfflineAudioLibrary() {
     TtsService.speak("Opening offline audio library");
@@ -375,7 +397,10 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
         node: _workspaceFocusNode,
         label: _selectedWorkspace == null
             ? 'No class and subject workspace assigned'
-            : 'Workspace ${_selectedWorkspace!['class_name']}, ${_selectedWorkspace!['subject_name']}',
+            : 'Workspace ${_selectedWorkspace!['class_name']}, ${_selectedWorkspace!['subject_name']}. Use left or right to change',
+        onActivate: () => _cycleWorkspace(1),
+        onDecrease: () => _cycleWorkspace(-1),
+        onIncrease: () => _cycleWorkspace(1),
       ),
       KeypadFocusTarget(
         node: _createFocusNode,
@@ -406,24 +431,35 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     for (final session in _filteredSessions) {
       final id = int.tryParse((session['session_id'] ?? '').toString()) ?? 0;
       final title = session['title'] ?? 'session';
+      final isActive = session['is_active'] == true;
       targets.add(
         KeypadFocusTarget(
           node: _sessionOpenFocusNodes.putIfAbsent(
             id,
             () => FocusNode(debugLabel: 'teacher-open-$id'),
           ),
-          label: 'Session $id, $title. Press OK to open',
-          onActivate: () => _openSession(id),
+          label: isActive
+              ? 'Session $id, $title. Press OK to open'
+              : 'Ended session $id, $title. Press OK to reactivate and open',
+          onActivate: isActive
+              ? () => _openSession(id)
+              : () => _reactivateSession(id, title),
         ),
       );
       targets.add(
         KeypadFocusTarget(
           node: _sessionDeleteFocusNodes.putIfAbsent(
             id,
-            () => FocusNode(debugLabel: 'teacher-delete-$id'),
+            () => FocusNode(
+              debugLabel: isActive ? 'teacher-end-$id' : 'teacher-delete-$id',
+            ),
           ),
-          label: 'Delete $title',
-          onActivate: () => _deleteSession(id, title),
+          label: isActive
+              ? 'End $title for all participants'
+              : 'Permanently delete ended session $title',
+          onActivate: isActive
+              ? () => _endSession(id, title)
+              : () => _permanentlyDeleteSession(id, title),
         ),
       );
     }
@@ -437,52 +473,39 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     return targets;
   }
 
-  // Function to delete the session created previously
-  Future<void> _deleteSession(int sessionId, String title) async {
-    // confirmation dialog
+  Future<void> _endSession(int sessionId, String title) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Session'),
-        content: Text('Are you sure you want to delete "$title"?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Delete'),
-          ),
-        ],
+      barrierDismissible: false,
+      builder: (_) => KeypadConfirmationDialog(
+        title: 'End session for everyone?',
+        message:
+            'End "$title" and close it for every participant? The session will remain in your dashboard history.',
+        cancelLabel: 'Keep session open',
+        confirmLabel: 'End for everyone',
+        cancelKey: 0,
+        confirmKey: 1,
       ),
     );
 
-    // cancel deletion
-    if (confirmed != true) {
-      return;
-    }
+    if (confirmed != true) return;
 
-    // sends deletion request to backend
-    final result = await ApiService.deleteResult(
-      '/sessions/$sessionId',
-      useAuth: true,
-      context: 'session deletion',
-    );
+    final ended = await ApiService.endSession(sessionId);
 
-    if (result.isSuccess) {
-      setState(() {
-        sessions.removeWhere((s) => s['session_id'] == sessionId);
-      });
-      TtsService.speak("Session deleted");
+    if (ended) {
+      await _loadSessions();
+      await TtsService.speak(
+        'Session ended for everyone and kept in session history',
+      );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Session deleted successfully")),
+          const SnackBar(
+            content: Text('Session ended and retained in history'),
+          ),
         );
       }
     } else {
-      final message = result.failure!.message;
+      const message = 'The session could not be ended. Please try again.';
       TtsService.speak(message);
       if (mounted) {
         ScaffoldMessenger.of(
@@ -490,6 +513,67 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
         ).showSnackBar(SnackBar(content: Text(message)));
       }
     }
+  }
+
+  Future<void> _reactivateSession(int sessionId, String title) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => KeypadConfirmationDialog(
+        title: 'Reactivate session?',
+        message:
+            'Reactivate "$title" and open it for participants to join again?',
+        cancelLabel: 'Keep ended',
+        confirmLabel: 'Reactivate and open',
+        cancelKey: 0,
+        confirmKey: 1,
+      ),
+    );
+    if (confirmed != true) return;
+
+    final reactivated = await ApiService.reactivateSession(sessionId);
+    if (!reactivated) {
+      const message = 'The session could not be reactivated. Please try again.';
+      await TtsService.speak(message);
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text(message)));
+      }
+      return;
+    }
+
+    await _loadSessions();
+    await TtsService.speak('Session reactivated. Opening session.');
+    if (mounted) _openSession(sessionId);
+  }
+
+  Future<void> _permanentlyDeleteSession(int sessionId, String title) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => KeypadConfirmationDialog(
+        title: 'Permanently delete session?',
+        message:
+            'Permanently delete "$title", including its participants, chat, and logs? This cannot be undone.',
+        cancelLabel: 'Keep session',
+        confirmLabel: 'Delete permanently',
+        cancelKey: 0,
+        confirmKey: 1,
+      ),
+    );
+    if (confirmed != true) return;
+
+    final deleted = await ApiService.permanentlyDeleteSession(sessionId);
+    final message = deleted
+        ? 'Session permanently deleted'
+        : 'The session could not be deleted. Please try again.';
+    await TtsService.speak(message);
+    if (!mounted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
+    if (deleted) await _loadSessions();
   }
 
   // Frees memory
@@ -657,7 +741,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                     side: BorderSide(
                       color: UIUtils.isHighContrast
                           ? UIUtils.accentColor
-                          : Colors.grey.withOpacity(0.1),
+                          : Colors.grey.withValues(alpha: 0.1),
                     ),
                   ),
                   child: Padding(
@@ -693,8 +777,10 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                 Semantics(
                   label: 'Selected class and subject workspace',
                   child: DropdownButtonFormField<int>(
+                    key: ValueKey(_selectedWorkspace?['assignment_id'] as int?),
                     focusNode: _workspaceFocusNode,
-                    value: _selectedWorkspace?['assignment_id'] as int?,
+                    initialValue: _selectedWorkspace?['assignment_id'] as int?,
+                    isExpanded: true,
                     decoration: const InputDecoration(
                       labelText: 'Class and subject workspace',
                       prefixIcon: Icon(Icons.workspaces_outline),
@@ -883,7 +969,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                           SizedBox(height: UIUtils.spacing(context, 10)),
                           Text(
                             _searchController.text.trim().isEmpty
-                                ? "No active sessions yet"
+                                ? "No sessions yet"
                                 : "No matching sessions",
                             style: TextStyle(
                               fontSize: UIUtils.fontSize(context, 15),
@@ -909,6 +995,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                   ..._filteredSessions.map((s) {
                     final sessionId = s['session_id'] ?? 0;
                     final title = s['title'] ?? 'Untitled Session';
+                    final isActive = s['is_active'] == true;
                     // final participantCount = s['participant_count'] ?? 0;
 
                     return Card(
@@ -920,7 +1007,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: InkWell(
-                        onTap: () => _openSession(sessionId),
+                        onTap: isActive ? () => _openSession(sessionId) : null,
                         borderRadius: BorderRadius.circular(12),
                         child: Padding(
                           padding: UIUtils.paddingAll(context, 12),
@@ -969,6 +1056,16 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                                         color: UIUtils.subtextColor,
                                       ),
                                     ),
+                                    Text(
+                                      isActive ? 'Active' : 'Ended',
+                                      style: TextStyle(
+                                        fontSize: UIUtils.fontSize(context, 11),
+                                        color: isActive
+                                            ? Colors.green.shade700
+                                            : UIUtils.subtextColor,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
                                     // SizedBox(height: UIUtils.spacing(context, 3)),
                                     // Row(
                                     //   children: [
@@ -1004,9 +1101,16 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                                                 'teacher-open-$sessionId',
                                           ),
                                         ),
-                                    onPressed: () => _openSession(sessionId),
+                                    onPressed: isActive
+                                        ? () => _openSession(sessionId)
+                                        : () => _reactivateSession(
+                                            sessionId,
+                                            title,
+                                          ),
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.green,
+                                      backgroundColor: isActive
+                                          ? Colors.green
+                                          : Colors.blue,
                                       foregroundColor: Colors.white,
                                       padding: UIUtils.paddingSymmetric(
                                         context,
@@ -1018,7 +1122,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                                           MaterialTapTargetSize.shrinkWrap,
                                     ),
                                     child: Text(
-                                      "Open",
+                                      isActive ? "Open" : "Reactivate & Open",
                                       style: TextStyle(
                                         fontSize: UIUtils.fontSize(context, 12),
                                       ),
@@ -1030,18 +1134,27 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                                         .putIfAbsent(
                                           sessionId as int,
                                           () => FocusNode(
-                                            debugLabel:
-                                                'teacher-delete-$sessionId',
+                                            debugLabel: isActive
+                                                ? 'teacher-end-$sessionId'
+                                                : 'teacher-delete-$sessionId',
                                           ),
                                         ),
-                                    onPressed: () =>
-                                        _deleteSession(sessionId, title),
+                                    onPressed: isActive
+                                        ? () => _endSession(sessionId, title)
+                                        : () => _permanentlyDeleteSession(
+                                            sessionId,
+                                            title,
+                                          ),
                                     icon: Icon(
-                                      Icons.delete,
+                                      isActive
+                                          ? Icons.stop_circle_outlined
+                                          : Icons.delete_forever,
                                       size: UIUtils.iconSize(context, 18),
                                     ),
                                     color: Colors.red,
-                                    tooltip: "Delete Session",
+                                    tooltip: isActive
+                                        ? 'End Session for Everyone'
+                                        : 'Delete Session Permanently',
                                     padding: EdgeInsets.zero,
                                     constraints: const BoxConstraints(),
                                   ),
@@ -1052,7 +1165,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                         ),
                       ),
                     );
-                  }).toList(),
+                  }),
 
                 SizedBox(
                   height: UIUtils.spacing(context, 12),

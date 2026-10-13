@@ -29,7 +29,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final passCtrl = TextEditingController();
 
   // state variables
-  bool isTeacher = false;
+  String _selectedRole = 'student';
   bool isLoading = false;
   bool _passwordVisible = false;
   String? _errorMessage;
@@ -337,8 +337,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
       final roleText = role.toString().trim().toLowerCase();
 
-      if (isTeacher && roleText != 'teacher' && roleText != 'admin') {
-        _setLoginError("This phone number is registered as a student account");
+      if (roleText != _selectedRole) {
+        _setLoginError(
+          'This phone number is not registered as a $_selectedRole account.',
+        );
         return;
       }
 
@@ -401,6 +403,28 @@ class _LoginScreenState extends State<LoginScreen> {
     TtsService.speak(message);
   }
 
+  void _selectRole(String role) {
+    if (_selectedRole == role) {
+      TtsService.speak('${_roleName(role)} account already selected');
+      return;
+    }
+    setState(() => _selectedRole = role);
+    TtsService.speak('${_roleName(role)} account selected');
+  }
+
+  void _moveRole(int direction) {
+    const roles = ['student', 'teacher', 'admin'];
+    final current = roles.indexOf(_selectedRole);
+    var next = (current + direction) % roles.length;
+    if (next < 0) next += roles.length;
+    _selectRole(roles[next]);
+  }
+
+  String _roleName(String role) {
+    if (role == 'admin') return 'Administrator';
+    return '${role[0].toUpperCase()}${role.substring(1)}';
+  }
+
   // Register FCM token with backend after login
   Future<void> _registerFCMTokenIfAvailable() async {
     try {
@@ -456,17 +480,11 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
         KeypadFocusTarget(
           node: _roleFocus,
-          label: isTeacher
-              ? 'Teacher account selected'
-              : 'Student account selected',
-          onActivate: () {
-            setState(() => isTeacher = !isTeacher);
-            TtsService.speak(
-              isTeacher
-                  ? 'Teacher account expected'
-                  : 'Student account expected',
-            );
-          },
+          label:
+              '${_roleName(_selectedRole)} account selected. Use left or right to change account type',
+          onActivate: () => _moveRole(1),
+          onDecrease: () => _moveRole(-1),
+          onIncrease: () => _moveRole(1),
         ),
         KeypadFocusTarget(
           node: _submitFocus,
@@ -481,14 +499,11 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       ],
       actions: {
-        1: _login,
-        2: () => Navigator.pushNamed(context, '/register'),
-        3: () {
-          setState(() => isTeacher = !isTeacher);
-          TtsService.speak(
-            isTeacher ? "Teacher account expected" : "Student account expected",
-          );
-        },
+        1: () => _selectRole('student'),
+        2: () => _selectRole('teacher'),
+        3: () => _selectRole('admin'),
+        4: _login,
+        5: () => Navigator.pushNamed(context, '/register'),
       },
       child: Scaffold(
         backgroundColor: UIUtils.backgroundColor,
@@ -596,8 +611,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     controller: phoneCtrl,
                     focusNode: _phoneFocus,
                     onChanged: (_) {
-                      if (_errorMessage != null)
+                      if (_errorMessage != null) {
                         setState(() => _errorMessage = null);
+                      }
                     },
                     style: TextStyle(
                       fontSize: UIUtils.fontSize(context, 14),
@@ -641,8 +657,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     focusNode: _passwordFocus,
                     obscureText: !_passwordVisible,
                     onChanged: (_) {
-                      if (_errorMessage != null)
+                      if (_errorMessage != null) {
                         setState(() => _errorMessage = null);
+                      }
                     },
                     style: TextStyle(
                       fontSize: UIUtils.fontSize(context, 14),
@@ -697,31 +714,36 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   SizedBox(height: UIUtils.spacing(context, 8)),
 
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        "Teacher account?",
-                        style: TextStyle(
-                          fontSize: UIUtils.fontSize(context, 13),
-                        ),
+                  Focus(
+                    focusNode: _roleFocus,
+                    child: Semantics(
+                      label:
+                          'Account type. ${_roleName(_selectedRole)} selected. Use left and right arrows to change.',
+                      liveRegion: true,
+                      child: SegmentedButton<String>(
+                        showSelectedIcon: true,
+                        segments: const [
+                          ButtonSegment(
+                            value: 'student',
+                            label: Text('1 Student'),
+                            icon: Icon(Icons.school_outlined),
+                          ),
+                          ButtonSegment(
+                            value: 'teacher',
+                            label: Text('2 Teacher'),
+                            icon: Icon(Icons.person_outline),
+                          ),
+                          ButtonSegment(
+                            value: 'admin',
+                            label: Text('3 Admin'),
+                            icon: Icon(Icons.admin_panel_settings_outlined),
+                          ),
+                        ],
+                        selected: {_selectedRole},
+                        onSelectionChanged: (selection) =>
+                            _selectRole(selection.first),
                       ),
-                      Transform.scale(
-                        scale: UIUtils.scale(context),
-                        child: Switch(
-                          focusNode: _roleFocus,
-                          value: isTeacher,
-                          onChanged: (v) {
-                            setState(() => isTeacher = v);
-                            TtsService.speak(
-                              v
-                                  ? "Teacher account expected"
-                                  : "Student account expected",
-                            );
-                          },
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                   SizedBox(height: UIUtils.spacing(context, 8)),
 
@@ -752,7 +774,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             )
                           : Text(
-                              "1: Login",
+                              "4: Login as ${_roleName(_selectedRole)}",
                               style: TextStyle(
                                 fontSize: UIUtils.fontSize(context, 16),
                                 fontWeight: FontWeight.w600,
@@ -768,7 +790,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     focusNode: _registerFocus,
                     onPressed: () => Navigator.pushNamed(context, '/register'),
                     child: Text(
-                      "2: Don't have an account? Register",
+                      "5: Don't have an account? Register",
                       style: TextStyle(
                         fontSize: UIUtils.fontSize(context, 14),
                         color: UIUtils.accentColor,

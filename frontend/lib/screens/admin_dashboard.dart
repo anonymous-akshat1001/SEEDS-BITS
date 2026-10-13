@@ -20,7 +20,10 @@ class _AdminDashboardState extends State<AdminDashboard> {
   final _searchController = TextEditingController();
   final _searchNode = FocusNode(debugLabel: 'admin-user-search');
   final _refreshNode = FocusNode(debugLabel: 'admin-refresh');
-  final _unassignedNode = FocusNode(debugLabel: 'admin-unassigned');
+  final _roleFilterNode = FocusNode(debugLabel: 'admin-account-type-filter');
+  final _assignmentFilterNode = FocusNode(
+    debugLabel: 'admin-assignment-filter',
+  );
   final _subjectNode = FocusNode(debugLabel: 'admin-add-subject');
   final _classNode = FocusNode(debugLabel: 'admin-add-class');
   final _logoutNode = FocusNode(debugLabel: 'admin-logout');
@@ -32,7 +35,8 @@ class _AdminDashboardState extends State<AdminDashboard> {
   List<dynamic> _classes = const [];
   List<dynamic> _subjects = const [];
   bool _loading = true;
-  bool _unassignedOnly = false;
+  String? _roleFilter;
+  String _assignmentStatus = 'all';
 
   @override
   void initState() {
@@ -45,7 +49,8 @@ class _AdminDashboardState extends State<AdminDashboard> {
     _searchController.dispose();
     _searchNode.dispose();
     _refreshNode.dispose();
-    _unassignedNode.dispose();
+    _roleFilterNode.dispose();
+    _assignmentFilterNode.dispose();
     _subjectNode.dispose();
     _classNode.dispose();
     _logoutNode.dispose();
@@ -66,7 +71,8 @@ class _AdminDashboardState extends State<AdminDashboard> {
     final results = await Future.wait([
       ApiService.getAdminUsers(
         search: _searchController.text.trim(),
-        unassignedOnly: _unassignedOnly,
+        role: _roleFilter,
+        assignmentStatus: _assignmentStatus,
       ),
       ApiService.getClasses(includeArchived: true),
       ApiService.getSubjects(includeArchived: true),
@@ -88,9 +94,100 @@ class _AdminDashboardState extends State<AdminDashboard> {
     _keypad.enterTextEditing(_searchNode);
   }
 
-  Future<void> _toggleUnassigned() async {
-    setState(() => _unassignedOnly = !_unassignedOnly);
+  Future<void> _setRoleFilter(String? role) async {
+    if (_roleFilter == role) return;
+    setState(() {
+      _roleFilter = role;
+      _assignmentStatus = 'all';
+    });
+    await TtsService.speak(
+      'Showing ${_roleFilterLabel().toLowerCase()}. Loading accounts.',
+    );
     await _refresh();
+  }
+
+  Future<void> _cycleRoleFilter(int direction) async {
+    const filters = <String?>[null, 'student', 'teacher'];
+    final current = filters.indexOf(_roleFilter);
+    var next = (current + direction) % filters.length;
+    if (next < 0) next += filters.length;
+    await _setRoleFilter(filters[next]);
+  }
+
+  Future<void> _cycleAssignmentFilter(int direction) async {
+    const filters = ['all', 'assigned', 'unassigned'];
+    final current = filters.indexOf(_assignmentStatus);
+    var next = (current + direction) % filters.length;
+    if (next < 0) next += filters.length;
+    setState(() => _assignmentStatus = filters[next]);
+    await TtsService.speak(
+      'Assignment filter ${_assignmentFilterLabel()}. Loading accounts.',
+    );
+    await _refresh();
+  }
+
+  String _roleFilterLabel() => switch (_roleFilter) {
+    'student' => 'Students only',
+    'teacher' => 'Teachers only',
+    _ => 'All registered accounts',
+  };
+
+  String _assignmentFilterLabel() => switch (_assignmentStatus) {
+    'assigned' =>
+      _roleFilter == 'student'
+          ? 'Enrolled'
+          : _roleFilter == 'teacher'
+          ? 'Assigned'
+          : 'Enrolled or assigned',
+    'unassigned' => 'Unassigned',
+    _ => 'All assignment states',
+  };
+
+  List<dynamic> get _orderedUsers {
+    if (_roleFilter != null) return _users;
+    return [
+      ..._users.where((entry) => entry['role'] == 'teacher'),
+      ..._users.where((entry) => entry['role'] == 'student'),
+    ];
+  }
+
+  Widget _accountCard(dynamic entry) {
+    final user = Map<String, dynamic>.from(entry as Map);
+    final id = user['user_id'] as int;
+    final detail = user['role'] == 'student'
+        ? (user['class_name'] ?? 'No class assigned')
+        : '${user['assignment_count']} active assignments';
+    return Card(
+      child: ListTile(
+        focusNode: _userNodes.putIfAbsent(
+          id,
+          () => FocusNode(debugLabel: 'admin-user-$id'),
+        ),
+        title: Text('${user['name']}'),
+        subtitle: Text('$detail\n${user['phone_number']}'),
+        isThreeLine: true,
+        trailing: const Icon(Icons.edit_outlined),
+        onTap: () => _manageUser(user),
+      ),
+    );
+  }
+
+  List<Widget> _accountSection(String heading, Iterable<dynamic> accounts) {
+    final entries = accounts.toList();
+    if (entries.isEmpty) return const [];
+    return [
+      Padding(
+        padding: const EdgeInsets.only(top: 12, bottom: 4),
+        child: Semantics(
+          header: true,
+          child: Text(
+            '$heading (${entries.length})',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+        ),
+      ),
+      ...entries.map(_accountCard),
+    ];
   }
 
   Future<String?> _textDialog({
@@ -219,6 +316,86 @@ class _AdminDashboardState extends State<AdminDashboard> {
     );
   }
 
+  Future<void> _manageClassSubjects(Map<String, dynamic> schoolClass) async {
+    final associations = await ApiService.getClassSubjects(
+      schoolClass['class_id'] as int,
+      includeArchived: true,
+    );
+    if (!mounted) return;
+    final activeBySubject = <int, Map<String, dynamic>>{
+      for (final entry in associations)
+        if (entry['is_active'] == true)
+          entry['subject_id'] as int: Map<String, dynamic>.from(entry as Map),
+    };
+    final result = await showDialog<Map<String, dynamic>>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        title: Text('Subjects for ${schoolClass['name']}'),
+        content: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 520, maxHeight: 460),
+          child: ListView(
+            shrinkWrap: true,
+            children: _subjects.map((entry) {
+              final subject = Map<String, dynamic>.from(entry as Map);
+              final subjectId = subject['subject_id'] as int;
+              final association = activeBySubject[subjectId];
+              final available = subject['is_active'] == true;
+              return Semantics(
+                toggled: association != null,
+                child: ListTile(
+                  enabled: available || association != null,
+                  title: Text('${subject['name']}'),
+                  subtitle: Text(
+                    !available
+                        ? 'Subject archived'
+                        : association == null
+                        ? 'Not available in this class'
+                        : 'Available in this class',
+                  ),
+                  trailing: Icon(
+                    association == null
+                        ? Icons.add_circle_outline
+                        : Icons.remove_circle_outline,
+                  ),
+                  onTap: () => Navigator.pop(dialogContext, {
+                    'subject_id': subjectId,
+                    'association_id': association?['association_id'],
+                    'remove': association != null,
+                  }),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+    if (result == null) return;
+    final remove = result['remove'] == true;
+    final success = remove
+        ? await ApiService.archiveClassSubject(
+            schoolClass['class_id'] as int,
+            result['association_id'] as int,
+          )
+        : await ApiService.associateClassSubject(
+                schoolClass['class_id'] as int,
+                result['subject_id'] as int,
+              ) !=
+              null;
+    await _announceResult(
+      success,
+      remove
+          ? 'Subject removed from ${schoolClass['name']}'
+          : 'Subject added to ${schoolClass['name']}',
+    );
+  }
+
   Future<void> _toggleSubject(Map<String, dynamic> subject) async {
     final currentlyActive = subject['is_active'] == true;
     final confirmed = await showDialog<bool>(
@@ -251,6 +428,9 @@ class _AdminDashboardState extends State<AdminDashboard> {
     } else {
       await _assignTeacher(user);
     }
+    if (mounted) {
+      _userNodes[user['user_id'] as int]?.requestFocus();
+    }
   }
 
   Future<void> _assignStudent(Map<String, dynamic> student) async {
@@ -266,18 +446,44 @@ class _AdminDashboardState extends State<AdminDashboard> {
     final classNode = FocusNode(debugLabel: 'student-class-selection');
     final cancelNode = FocusNode(debugLabel: 'student-class-cancel');
     final assignNode = FocusNode(debugLabel: 'student-class-assign');
-    final confirmed = await showDialog<bool>(
+    final removeNode = FocusNode(debugLabel: 'student-class-remove');
+    late StateSetter updateDialog;
+    void moveClass(int direction) {
+      final current = activeClasses.indexWhere(
+        (entry) => entry['class_id'] == classId,
+      );
+      var next = (current + direction) % activeClasses.length;
+      if (next < 0) next += activeClasses.length;
+      updateDialog(() => classId = activeClasses[next]['class_id'] as int);
+      TtsService.speak(
+        '${activeClasses[next]['name']} selected. Use left or right to change class.',
+      );
+    }
+
+    final action = await showDialog<String>(
       context: context,
       barrierDismissible: false,
       builder: (dialogContext) => KeypadInstructionWrapper(
         screenName: 'Assign class to ${student['name']}',
-        labels: const {0: 'Cancel', 1: 'Assign'},
+        labels: {
+          0: 'Cancel',
+          1: 'Assign',
+          if (currentClassId != null) 2: 'Remove class',
+        },
         actions: {
-          0: () => Navigator.pop(dialogContext, false),
-          1: () => Navigator.pop(dialogContext, true),
+          0: () => Navigator.pop(dialogContext),
+          1: () => Navigator.pop(dialogContext, 'assign'),
+          if (currentClassId != null)
+            2: () => Navigator.pop(dialogContext, 'remove'),
         },
         focusTargets: [
-          KeypadFocusTarget(node: classNode, label: 'Choose class'),
+          KeypadFocusTarget(
+            node: classNode,
+            label: 'Choose class. Use left or right to change',
+            onActivate: () => moveClass(1),
+            onDecrease: () => moveClass(-1),
+            onIncrease: () => moveClass(1),
+          ),
           KeypadFocusTarget(
             node: cancelNode,
             label: 'Cancel',
@@ -286,48 +492,73 @@ class _AdminDashboardState extends State<AdminDashboard> {
           KeypadFocusTarget(
             node: assignNode,
             label: 'Assign class',
-            onActivate: () => Navigator.pop(dialogContext, true),
+            onActivate: () => Navigator.pop(dialogContext, 'assign'),
           ),
+          if (currentClassId != null)
+            KeypadFocusTarget(
+              node: removeNode,
+              label: 'Remove class',
+              onActivate: () => Navigator.pop(dialogContext, 'remove'),
+            ),
         ],
         child: StatefulBuilder(
-          builder: (context, setLocal) => AlertDialog(
-            title: Text('Assign class to ${student['name']}'),
-            content: DropdownButtonFormField<int>(
-              focusNode: classNode,
-              initialValue: classId,
-              decoration: const InputDecoration(labelText: 'Class'),
-              items: activeClasses
-                  .map<DropdownMenuItem<int>>(
-                    (entry) => DropdownMenuItem(
-                      value: entry['class_id'] as int,
-                      child: Text('${entry['name']}'),
-                    ),
-                  )
-                  .toList(),
-              onChanged: (value) {
-                if (value != null) setLocal(() => classId = value);
-              },
-            ),
-            actions: [
-              TextButton(
-                focusNode: cancelNode,
-                onPressed: () => Navigator.pop(dialogContext, false),
-                child: const Text('Cancel (0)'),
+          builder: (context, setLocal) {
+            updateDialog = setLocal;
+            return AlertDialog(
+              title: Text('Assign class to ${student['name']}'),
+              content: DropdownButtonFormField<int>(
+                key: ValueKey(classId),
+                focusNode: classNode,
+                initialValue: classId,
+                isExpanded: true,
+                decoration: const InputDecoration(labelText: 'Class'),
+                items: activeClasses
+                    .map<DropdownMenuItem<int>>(
+                      (entry) => DropdownMenuItem(
+                        value: entry['class_id'] as int,
+                        child: Text('${entry['name']}'),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (value) {
+                  if (value != null) setLocal(() => classId = value);
+                },
               ),
-              FilledButton(
-                focusNode: assignNode,
-                onPressed: () => Navigator.pop(dialogContext, true),
-                child: const Text('Assign (1)'),
-              ),
-            ],
-          ),
+              actions: [
+                TextButton(
+                  focusNode: cancelNode,
+                  onPressed: () => Navigator.pop(dialogContext),
+                  child: const Text('Cancel (0)'),
+                ),
+                if (currentClassId != null)
+                  TextButton(
+                    focusNode: removeNode,
+                    onPressed: () => Navigator.pop(dialogContext, 'remove'),
+                    child: const Text('Remove class (2)'),
+                  ),
+                FilledButton(
+                  focusNode: assignNode,
+                  onPressed: () => Navigator.pop(dialogContext, 'assign'),
+                  child: const Text('Assign (1)'),
+                ),
+              ],
+            );
+          },
         ),
       ),
     );
     classNode.dispose();
     cancelNode.dispose();
     assignNode.dispose();
-    if (confirmed != true) return;
+    removeNode.dispose();
+    if (action == 'remove') {
+      final removed = await ApiService.removeStudentClass(
+        student['user_id'] as int,
+      );
+      await _announceResult(removed, '${student['name']} removed from class');
+      return;
+    }
+    if (action != 'assign') return;
     final result = await ApiService.enrollStudent(
       student['user_id'] as int,
       classId,
@@ -345,16 +576,19 @@ class _AdminDashboardState extends State<AdminDashboard> {
     final activeClasses = _classes
         .where((entry) => entry['is_active'] == true)
         .toList();
-    final activeSubjects = _subjects
-        .where((entry) => entry['is_active'] == true)
-        .toList();
-    if (activeClasses.isEmpty || activeSubjects.isEmpty) return;
+    if (activeClasses.isEmpty) return;
     final assignments = await ApiService.getTeacherAssignments(
       teacher['user_id'] as int,
     );
     if (!mounted) return;
     int classId = activeClasses.first['class_id'] as int;
-    int subjectId = activeSubjects.first['subject_id'] as int;
+    var classSubjects = await ApiService.getClassSubjects(classId);
+    if (!mounted) return;
+    if (classSubjects.isEmpty) {
+      await TtsService.speak('This class has no active subjects.');
+      return;
+    }
+    int subjectId = classSubjects.first['subject_id'] as int;
     final classNode = FocusNode(debugLabel: 'teacher-class-selection');
     final subjectNode = FocusNode(debugLabel: 'teacher-subject-selection');
     final cancelNode = FocusNode(debugLabel: 'teacher-assignment-cancel');
@@ -365,6 +599,49 @@ class _AdminDashboardState extends State<AdminDashboard> {
           debugLabel: 'teacher-assignment-${entry['assignment_id']}',
         ),
     };
+    late StateSetter updateDialog;
+    Future<void> selectClass(int value) async {
+      final subjects = await ApiService.getClassSubjects(value);
+      if (subjects.isEmpty) {
+        await TtsService.speak('The selected class has no active subjects.');
+        return;
+      }
+      final selectedClass = activeClasses.firstWhere(
+        (entry) => entry['class_id'] == value,
+      );
+      updateDialog(() {
+        classId = value;
+        classSubjects = subjects;
+        subjectId = subjects.first['subject_id'] as int;
+      });
+      await TtsService.speak(
+        '${selectedClass['name']} selected. '
+        '${subjects.first['subject_name']} subject selected.',
+      );
+    }
+
+    void moveTeacherClass(int direction) {
+      final current = activeClasses.indexWhere(
+        (entry) => entry['class_id'] == classId,
+      );
+      var next = (current + direction) % activeClasses.length;
+      if (next < 0) next += activeClasses.length;
+      selectClass(activeClasses[next]['class_id'] as int);
+    }
+
+    void moveSubject(int direction) {
+      final current = classSubjects.indexWhere(
+        (entry) => entry['subject_id'] == subjectId,
+      );
+      var next = (current + direction) % classSubjects.length;
+      if (next < 0) next += classSubjects.length;
+      updateDialog(() => subjectId = classSubjects[next]['subject_id'] as int);
+      TtsService.speak(
+        '${classSubjects[next]['subject_name']} selected. '
+        'Use left or right to change subject.',
+      );
+    }
+
     final confirmed = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
@@ -387,8 +664,20 @@ class _AdminDashboardState extends State<AdminDashboard> {
                 dialogContext,
               ),
             ),
-          KeypadFocusTarget(node: classNode, label: 'Choose class'),
-          KeypadFocusTarget(node: subjectNode, label: 'Choose subject'),
+          KeypadFocusTarget(
+            node: classNode,
+            label: 'Choose class. Use left or right to change',
+            onActivate: () => moveTeacherClass(1),
+            onDecrease: () => moveTeacherClass(-1),
+            onIncrease: () => moveTeacherClass(1),
+          ),
+          KeypadFocusTarget(
+            node: subjectNode,
+            label: 'Choose subject. Use left or right to change',
+            onActivate: () => moveSubject(1),
+            onDecrease: () => moveSubject(-1),
+            onIncrease: () => moveSubject(1),
+          ),
           KeypadFocusTarget(
             node: cancelNode,
             label: 'Cancel',
@@ -401,96 +690,103 @@ class _AdminDashboardState extends State<AdminDashboard> {
           ),
         ],
         child: StatefulBuilder(
-          builder: (context, setLocal) => AlertDialog(
-            title: Text('Assign ${teacher['name']}'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (assignments.isNotEmpty) ...[
-                  const Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text('Current assignments'),
-                  ),
-                  const SizedBox(height: 8),
-                  ConstrainedBox(
-                    constraints: const BoxConstraints(maxHeight: 180),
-                    child: SingleChildScrollView(
-                      child: Column(
-                        children: assignments.map<Widget>((entry) {
-                          final assignmentId = entry['assignment_id'] as int;
-                          return ListTile(
-                            dense: true,
-                            title: Text('${entry['class_name']}'),
-                            subtitle: Text('${entry['subject_name']}'),
-                            trailing: IconButton(
-                              focusNode: assignmentNodes[assignmentId],
-                              tooltip: 'Remove assignment',
-                              icon: const Icon(Icons.remove_circle_outline),
-                              onPressed: () => _removeTeacherAssignment(
-                                teacher,
-                                Map<String, dynamic>.from(entry as Map),
-                                dialogContext,
+          builder: (context, setLocal) {
+            updateDialog = setLocal;
+            return AlertDialog(
+              title: Text('Assign ${teacher['name']}'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (assignments.isNotEmpty) ...[
+                    const Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text('Current assignments'),
+                    ),
+                    const SizedBox(height: 8),
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxHeight: 180),
+                      child: SingleChildScrollView(
+                        child: Column(
+                          children: assignments.map<Widget>((entry) {
+                            final assignmentId = entry['assignment_id'] as int;
+                            return ListTile(
+                              dense: true,
+                              title: Text('${entry['class_name']}'),
+                              subtitle: Text('${entry['subject_name']}'),
+                              trailing: IconButton(
+                                focusNode: assignmentNodes[assignmentId],
+                                tooltip: 'Remove assignment',
+                                icon: const Icon(Icons.remove_circle_outline),
+                                onPressed: () => _removeTeacherAssignment(
+                                  teacher,
+                                  Map<String, dynamic>.from(entry as Map),
+                                  dialogContext,
+                                ),
                               ),
-                            ),
-                          );
-                        }).toList(),
+                            );
+                          }).toList(),
+                        ),
                       ),
                     ),
+                    const Divider(),
+                    const Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text('Add an assignment'),
+                    ),
+                  ],
+                  DropdownButtonFormField<int>(
+                    key: ValueKey('teacher-class-$classId'),
+                    focusNode: classNode,
+                    initialValue: classId,
+                    isExpanded: true,
+                    decoration: const InputDecoration(labelText: 'Class'),
+                    items: activeClasses
+                        .map<DropdownMenuItem<int>>(
+                          (entry) => DropdownMenuItem(
+                            value: entry['class_id'] as int,
+                            child: Text('${entry['name']}'),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (value) {
+                      if (value != null) selectClass(value);
+                    },
                   ),
-                  const Divider(),
-                  const Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text('Add an assignment'),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<int>(
+                    key: ValueKey('teacher-subject-$subjectId'),
+                    focusNode: subjectNode,
+                    initialValue: subjectId,
+                    isExpanded: true,
+                    decoration: const InputDecoration(labelText: 'Subject'),
+                    items: classSubjects
+                        .map<DropdownMenuItem<int>>(
+                          (entry) => DropdownMenuItem(
+                            value: entry['subject_id'] as int,
+                            child: Text('${entry['subject_name']}'),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (value) {
+                      if (value != null) setLocal(() => subjectId = value);
+                    },
                   ),
                 ],
-                DropdownButtonFormField<int>(
-                  focusNode: classNode,
-                  initialValue: classId,
-                  decoration: const InputDecoration(labelText: 'Class'),
-                  items: activeClasses
-                      .map<DropdownMenuItem<int>>(
-                        (entry) => DropdownMenuItem(
-                          value: entry['class_id'] as int,
-                          child: Text('${entry['name']}'),
-                        ),
-                      )
-                      .toList(),
-                  onChanged: (value) {
-                    if (value != null) setLocal(() => classId = value);
-                  },
+              ),
+              actions: [
+                TextButton(
+                  focusNode: cancelNode,
+                  onPressed: () => Navigator.pop(dialogContext, false),
+                  child: const Text('Cancel (0)'),
                 ),
-                const SizedBox(height: 12),
-                DropdownButtonFormField<int>(
-                  focusNode: subjectNode,
-                  initialValue: subjectId,
-                  decoration: const InputDecoration(labelText: 'Subject'),
-                  items: activeSubjects
-                      .map<DropdownMenuItem<int>>(
-                        (entry) => DropdownMenuItem(
-                          value: entry['subject_id'] as int,
-                          child: Text('${entry['name']}'),
-                        ),
-                      )
-                      .toList(),
-                  onChanged: (value) {
-                    if (value != null) setLocal(() => subjectId = value);
-                  },
+                FilledButton(
+                  focusNode: assignNode,
+                  onPressed: () => Navigator.pop(dialogContext, true),
+                  child: const Text('Assign (1)'),
                 ),
               ],
-            ),
-            actions: [
-              TextButton(
-                focusNode: cancelNode,
-                onPressed: () => Navigator.pop(dialogContext, false),
-                child: const Text('Cancel (0)'),
-              ),
-              FilledButton(
-                focusNode: assignNode,
-                onPressed: () => Navigator.pop(dialogContext, true),
-                child: const Text('Assign (1)'),
-              ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
@@ -551,11 +847,20 @@ class _AdminDashboardState extends State<AdminDashboard> {
         isTextField: true,
       ),
       KeypadFocusTarget(
-        node: _unassignedNode,
-        label: _unassignedOnly
-            ? 'Show all accounts'
-            : 'Show unassigned accounts',
-        onActivate: _toggleUnassigned,
+        node: _roleFilterNode,
+        label:
+            'Account type filter. ${_roleFilterLabel()}. Use left or right to change',
+        onActivate: () => _cycleRoleFilter(1),
+        onDecrease: () => _cycleRoleFilter(-1),
+        onIncrease: () => _cycleRoleFilter(1),
+      ),
+      KeypadFocusTarget(
+        node: _assignmentFilterNode,
+        label:
+            'Assignment filter. ${_assignmentFilterLabel()}. Use left or right to change',
+        onActivate: () => _cycleAssignmentFilter(1),
+        onDecrease: () => _cycleAssignmentFilter(-1),
+        onIncrease: () => _cycleAssignmentFilter(1),
       ),
       KeypadFocusTarget(
         node: _subjectNode,
@@ -578,8 +883,10 @@ class _AdminDashboardState extends State<AdminDashboard> {
             () => FocusNode(debugLabel: 'admin-class-$id'),
           ),
           label:
-              '${schoolClass['name']}, ${schoolClass['is_active'] == true ? 'active' : 'archived'}. Press OK to ${schoolClass['is_active'] == true ? 'archive' : 'restore'}',
-          onActivate: () => _toggleClass(schoolClass),
+              '${schoolClass['name']}, ${schoolClass['is_active'] == true ? 'active' : 'archived'}. Press OK to ${schoolClass['is_active'] == true ? 'manage subjects' : 'restore'}',
+          onActivate: () => schoolClass['is_active'] == true
+              ? _manageClassSubjects(schoolClass)
+              : _toggleClass(schoolClass),
         ),
       );
     }
@@ -598,7 +905,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
         ),
       );
     }
-    for (final entry in _users) {
+    for (final entry in _orderedUsers) {
       final user = Map<String, dynamic>.from(entry as Map);
       final id = user['user_id'] as int;
       final node = _userNodes.putIfAbsent(
@@ -635,17 +942,19 @@ class _AdminDashboardState extends State<AdminDashboard> {
         0: 'Log Out',
         1: 'Refresh',
         2: 'Search Users',
-        3: 'Toggle Unassigned Accounts',
-        4: 'Create Subject',
-        5: 'Create Class',
+        3: 'Change Account Type Filter',
+        4: 'Change Assignment Filter',
+        5: 'Create Subject',
+        6: 'Create Class',
       },
       actions: {
         0: () => AuthSessionService.logoutFrom(context),
         1: _refresh,
         2: _focusSearch,
-        3: _toggleUnassigned,
-        4: _addSubject,
-        5: _addClass,
+        3: () => _cycleRoleFilter(1),
+        4: () => _cycleAssignmentFilter(1),
+        5: _addSubject,
+        6: _addClass,
       },
       navigationController: _keypad,
       focusTargets: _focusTargets(),
@@ -688,13 +997,85 @@ class _AdminDashboardState extends State<AdminDashboard> {
                           prefixIcon: Icon(Icons.search),
                         ),
                       ),
+                      const SizedBox(height: 12),
                       Focus(
-                        focusNode: _unassignedNode,
-                        child: SwitchListTile(
-                          secondary: const Icon(Icons.person_off_outlined),
-                          title: const Text('3. Unassigned accounts only'),
-                          value: _unassignedOnly,
-                          onChanged: (_) => _toggleUnassigned(),
+                        focusNode: _roleFilterNode,
+                        child: Semantics(
+                          label:
+                              'Account type filter. ${_roleFilterLabel()}. Use left and right arrows to change.',
+                          liveRegion: true,
+                          child: SegmentedButton<String?>(
+                            showSelectedIcon: true,
+                            segments: const [
+                              ButtonSegment<String?>(
+                                value: null,
+                                label: Text('3 All accounts'),
+                                icon: Icon(Icons.groups_outlined),
+                              ),
+                              ButtonSegment<String?>(
+                                value: 'student',
+                                label: Text('Students'),
+                                icon: Icon(Icons.school_outlined),
+                              ),
+                              ButtonSegment<String?>(
+                                value: 'teacher',
+                                label: Text('Teachers'),
+                                icon: Icon(Icons.person_outline),
+                              ),
+                            ],
+                            selected: {_roleFilter},
+                            onSelectionChanged: (selection) =>
+                                _setRoleFilter(selection.first),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Focus(
+                        focusNode: _assignmentFilterNode,
+                        child: Semantics(
+                          label:
+                              'Assignment filter. ${_assignmentFilterLabel()}. Use left and right arrows to change.',
+                          liveRegion: true,
+                          child: Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: [
+                              ChoiceChip(
+                                label: const Text('4 All'),
+                                selected: _assignmentStatus == 'all',
+                                onSelected: (_) async {
+                                  setState(() => _assignmentStatus = 'all');
+                                  await _refresh();
+                                },
+                              ),
+                              ChoiceChip(
+                                label: Text(
+                                  _roleFilter == 'student'
+                                      ? 'Enrolled'
+                                      : _roleFilter == 'teacher'
+                                      ? 'Assigned'
+                                      : 'Enrolled or assigned',
+                                ),
+                                selected: _assignmentStatus == 'assigned',
+                                onSelected: (_) async {
+                                  setState(
+                                    () => _assignmentStatus = 'assigned',
+                                  );
+                                  await _refresh();
+                                },
+                              ),
+                              ChoiceChip(
+                                label: const Text('Unassigned'),
+                                selected: _assignmentStatus == 'unassigned',
+                                onSelected: (_) async {
+                                  setState(
+                                    () => _assignmentStatus = 'unassigned',
+                                  );
+                                  await _refresh();
+                                },
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                       Wrap(
@@ -705,13 +1086,13 @@ class _AdminDashboardState extends State<AdminDashboard> {
                             focusNode: _subjectNode,
                             onPressed: _addSubject,
                             icon: const Icon(Icons.menu_book),
-                            label: const Text('4. Create subject'),
+                            label: const Text('5. Create subject'),
                           ),
                           OutlinedButton.icon(
                             focusNode: _classNode,
                             onPressed: _addClass,
                             icon: const Icon(Icons.class_outlined),
-                            label: const Text('5. Create class'),
+                            label: const Text('6. Create class'),
                           ),
                         ],
                       ),
@@ -728,7 +1109,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                             entry as Map,
                           );
                           final id = schoolClass['class_id'] as int;
-                          return ActionChip(
+                          return InputChip(
                             focusNode: _classNodes.putIfAbsent(
                               id,
                               () => FocusNode(debugLabel: 'admin-class-$id'),
@@ -741,7 +1122,22 @@ class _AdminDashboardState extends State<AdminDashboard> {
                             label: Text(
                               '${schoolClass['name']} · ${schoolClass['is_active'] == true ? 'Active' : 'Archived'}',
                             ),
-                            onPressed: () => _toggleClass(schoolClass),
+                            tooltip: schoolClass['is_active'] == true
+                                ? 'Manage class subjects'
+                                : 'Archived class',
+                            onPressed: schoolClass['is_active'] == true
+                                ? () => _manageClassSubjects(schoolClass)
+                                : null,
+                            onDeleted: () => _toggleClass(schoolClass),
+                            deleteIcon: Icon(
+                              schoolClass['is_active'] == true
+                                  ? Icons.archive_outlined
+                                  : Icons.unarchive_outlined,
+                            ),
+                            deleteButtonTooltipMessage:
+                                schoolClass['is_active'] == true
+                                ? 'Archive class'
+                                : 'Restore class',
                           );
                         }).toList(),
                       ),
@@ -788,28 +1184,17 @@ class _AdminDashboardState extends State<AdminDashboard> {
                             child: Text('No matching accounts.'),
                           ),
                         ),
-                      ..._users.map((entry) {
-                        final user = Map<String, dynamic>.from(entry as Map);
-                        final id = user['user_id'] as int;
-                        final detail = user['role'] == 'student'
-                            ? (user['class_name'] ?? 'No class assigned')
-                            : '${user['assignment_count']} active assignments';
-                        return Card(
-                          child: ListTile(
-                            focusNode: _userNodes.putIfAbsent(
-                              id,
-                              () => FocusNode(debugLabel: 'admin-user-$id'),
-                            ),
-                            title: Text('${user['name']}'),
-                            subtitle: Text(
-                              '${user['role']} · $detail\n${user['phone_number']}',
-                            ),
-                            isThreeLine: true,
-                            trailing: const Icon(Icons.edit_outlined),
-                            onTap: () => _manageUser(user),
-                          ),
-                        );
-                      }),
+                      if (_roleFilter == null) ...[
+                        ..._accountSection(
+                          'Teachers',
+                          _users.where((entry) => entry['role'] == 'teacher'),
+                        ),
+                        ..._accountSection(
+                          'Students',
+                          _users.where((entry) => entry['role'] == 'student'),
+                        ),
+                      ] else
+                        ..._users.map(_accountCard),
                     ],
                   ),
           ),
