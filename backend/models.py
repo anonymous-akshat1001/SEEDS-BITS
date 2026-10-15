@@ -427,3 +427,217 @@ class StudentPlaylistItem(Base):
         UniqueConstraint("playlist_id", "audio_id", name="uq_student_playlist_audio"),
         UniqueConstraint("playlist_id", "position", name="uq_student_playlist_position"),
     )
+
+
+class QuestionBankQuestion(Base):
+    __tablename__ = "question_bank_questions"
+
+    question_id = Column(Integer, primary_key=True)
+    owner_teacher_id = Column(
+        Integer, ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False,
+    )
+    class_id = Column(Integer, ForeignKey("classes.class_id", ondelete="RESTRICT"), nullable=False)
+    subject_id = Column(Integer, ForeignKey("subjects.subject_id", ondelete="RESTRICT"), nullable=False)
+    question_text = Column(Text, nullable=False)
+    explanation = Column(Text)
+    is_archived = Column(Boolean, nullable=False, server_default=text("false"))
+    created_at = Column(TIMESTAMP, nullable=False, server_default=func.now())
+    updated_at = Column(TIMESTAMP, nullable=False, server_default=func.now(), onupdate=func.now())
+    archived_at = Column(TIMESTAMP)
+
+    owner = relationship("User")
+    school_class = relationship("SchoolClass")
+    subject = relationship("Subject")
+    options = relationship(
+        "QuestionBankOption", back_populates="question",
+        cascade="all, delete-orphan", order_by="QuestionBankOption.position",
+    )
+
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["class_id", "subject_id"],
+            ["class_subject_associations.class_id", "class_subject_associations.subject_id"],
+            name="fk_bank_question_class_subject",
+            ondelete="RESTRICT",
+        ),
+        Index("ix_bank_question_owner_workspace", "owner_teacher_id", "class_id", "subject_id"),
+        Index("ix_bank_question_owner_archived", "owner_teacher_id", "is_archived"),
+    )
+
+
+class QuestionBankOption(Base):
+    __tablename__ = "question_bank_options"
+
+    option_id = Column(Integer, primary_key=True)
+    question_id = Column(
+        Integer, ForeignKey("question_bank_questions.question_id", ondelete="CASCADE"), nullable=False,
+    )
+    option_text = Column(Text, nullable=False)
+    position = Column(Integer, nullable=False)
+    is_correct = Column(Boolean, nullable=False, server_default=text("false"))
+
+    question = relationship("QuestionBankQuestion", back_populates="options")
+
+    __table_args__ = (
+        UniqueConstraint("question_id", "position", name="uq_bank_option_position"),
+        CheckConstraint("position >= 0 AND position < 4", name="check_bank_option_position"),
+    )
+
+
+class Quiz(Base):
+    __tablename__ = "quizzes"
+
+    quiz_id = Column(Integer, primary_key=True)
+    owner_teacher_id = Column(Integer, ForeignKey("users.user_id", ondelete="SET NULL"))
+    class_id = Column(Integer, ForeignKey("classes.class_id", ondelete="RESTRICT"), nullable=False)
+    subject_id = Column(Integer, ForeignKey("subjects.subject_id", ondelete="RESTRICT"), nullable=False)
+    title = Column(String(300), nullable=False)
+    description = Column(Text)
+    status = Column(String(20), nullable=False, server_default="draft")
+    attempt_limit = Column(Integer, nullable=False, server_default=text("1"))
+    opens_at = Column(TIMESTAMP)
+    closes_at = Column(TIMESTAMP)
+    time_limit_minutes = Column(Integer)
+    shuffle_questions = Column(Boolean, nullable=False, server_default=text("false"))
+    shuffle_options = Column(Boolean, nullable=False, server_default=text("false"))
+    created_at = Column(TIMESTAMP, nullable=False, server_default=func.now())
+    updated_at = Column(TIMESTAMP, nullable=False, server_default=func.now(), onupdate=func.now())
+    published_at = Column(TIMESTAMP)
+    closed_at = Column(TIMESTAMP)
+
+    owner = relationship("User")
+    school_class = relationship("SchoolClass")
+    subject = relationship("Subject")
+    questions = relationship(
+        "QuizQuestion", back_populates="quiz",
+        cascade="all, delete-orphan", order_by="QuizQuestion.position",
+    )
+    attempts = relationship("QuizAttempt", back_populates="quiz")
+
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["class_id", "subject_id"],
+            ["class_subject_associations.class_id", "class_subject_associations.subject_id"],
+            name="fk_quiz_class_subject",
+            ondelete="RESTRICT",
+        ),
+        CheckConstraint("status IN ('draft', 'published', 'closed')", name="check_quiz_status"),
+        CheckConstraint("attempt_limit >= 1 AND attempt_limit <= 20", name="check_quiz_attempt_limit"),
+        CheckConstraint(
+            "time_limit_minutes IS NULL OR (time_limit_minutes >= 1 AND time_limit_minutes <= 1440)",
+            name="check_quiz_time_limit",
+        ),
+        CheckConstraint(
+            "opens_at IS NULL OR closes_at IS NULL OR opens_at < closes_at",
+            name="check_quiz_schedule",
+        ),
+        Index("ix_quiz_owner_workspace_status", "owner_teacher_id", "class_id", "subject_id", "status"),
+        Index("ix_quiz_student_listing", "class_id", "subject_id", "status", "opens_at", "closes_at"),
+    )
+
+
+class QuizQuestion(Base):
+    __tablename__ = "quiz_questions"
+
+    quiz_question_id = Column(Integer, primary_key=True)
+    quiz_id = Column(Integer, ForeignKey("quizzes.quiz_id", ondelete="CASCADE"), nullable=False)
+    source_question_id = Column(
+        Integer, ForeignKey("question_bank_questions.question_id", ondelete="SET NULL"),
+    )
+    question_text = Column(Text, nullable=False)
+    explanation = Column(Text)
+    position = Column(Integer, nullable=False)
+
+    quiz = relationship("Quiz", back_populates="questions")
+    source_question = relationship("QuestionBankQuestion")
+    options = relationship(
+        "QuizOption", back_populates="question",
+        cascade="all, delete-orphan", order_by="QuizOption.position",
+    )
+
+    __table_args__ = (
+        UniqueConstraint("quiz_id", "position", name="uq_quiz_question_position"),
+    )
+
+
+class QuizOption(Base):
+    __tablename__ = "quiz_options"
+
+    quiz_option_id = Column(Integer, primary_key=True)
+    quiz_question_id = Column(
+        Integer, ForeignKey("quiz_questions.quiz_question_id", ondelete="CASCADE"), nullable=False,
+    )
+    option_text = Column(Text, nullable=False)
+    position = Column(Integer, nullable=False)
+    is_correct = Column(Boolean, nullable=False, server_default=text("false"))
+
+    question = relationship("QuizQuestion", back_populates="options")
+
+    __table_args__ = (
+        UniqueConstraint("quiz_question_id", "position", name="uq_quiz_option_position"),
+        CheckConstraint("position >= 0 AND position < 4", name="check_quiz_option_position"),
+    )
+
+
+class QuizAttempt(Base):
+    __tablename__ = "quiz_attempts"
+
+    attempt_id = Column(Integer, primary_key=True)
+    quiz_id = Column(Integer, ForeignKey("quizzes.quiz_id", ondelete="RESTRICT"), nullable=False)
+    student_id = Column(Integer, ForeignKey("users.user_id", ondelete="SET NULL"))
+    attempt_number = Column(Integer, nullable=False)
+    status = Column(String(20), nullable=False, server_default="in_progress")
+    started_at = Column(TIMESTAMP, nullable=False, server_default=func.now())
+    deadline_at = Column(TIMESTAMP)
+    completed_at = Column(TIMESTAMP)
+    correct_count = Column(Integer, nullable=False, server_default=text("0"))
+    total_questions = Column(Integer, nullable=False)
+    percentage_score = Column(Float, nullable=False, server_default=text("0"))
+    question_order = Column(JSON, nullable=False)
+    option_order = Column(JSON, nullable=False)
+
+    quiz = relationship("Quiz", back_populates="attempts")
+    student = relationship("User")
+    responses = relationship("QuizResponse", back_populates="attempt")
+
+    __table_args__ = (
+        CheckConstraint(
+            "status IN ('in_progress', 'completed', 'timed_out')",
+            name="check_quiz_attempt_status",
+        ),
+        UniqueConstraint("quiz_id", "student_id", "attempt_number", name="uq_quiz_attempt_number"),
+        Index(
+            "uq_active_quiz_attempt",
+            "quiz_id", "student_id",
+            unique=True,
+            postgresql_where=text("status = 'in_progress'"),
+            sqlite_where=text("status = 'in_progress'"),
+        ),
+        Index("ix_quiz_attempt_student_quiz", "student_id", "quiz_id", "status"),
+    )
+
+
+class QuizResponse(Base):
+    __tablename__ = "quiz_responses"
+
+    response_id = Column(Integer, primary_key=True)
+    attempt_id = Column(
+        Integer, ForeignKey("quiz_attempts.attempt_id", ondelete="RESTRICT"), nullable=False,
+    )
+    quiz_question_id = Column(
+        Integer, ForeignKey("quiz_questions.quiz_question_id", ondelete="RESTRICT"), nullable=False,
+    )
+    selected_option_id = Column(
+        Integer, ForeignKey("quiz_options.quiz_option_id", ondelete="RESTRICT"), nullable=False,
+    )
+    is_correct = Column(Boolean, nullable=False)
+    submitted_at = Column(TIMESTAMP, nullable=False, server_default=func.now())
+
+    attempt = relationship("QuizAttempt", back_populates="responses")
+    question = relationship("QuizQuestion")
+    selected_option = relationship("QuizOption")
+
+    __table_args__ = (
+        UniqueConstraint("attempt_id", "quiz_question_id", name="uq_quiz_response_question"),
+        Index("ix_quiz_response_question", "quiz_question_id"),
+    )

@@ -1185,6 +1185,165 @@ class ApiService {
   static Future<bool> deleteStudentPlaylist(int playlistId) =>
       delete('/student-playlists/$playlistId', useAuth: true);
 
+  static Future<List<dynamic>> getBankQuestions({
+    int? classId,
+    int? subjectId,
+    String search = '',
+  }) async {
+    final query = Uri(
+      queryParameters: {
+        if (classId != null) 'class_id': '$classId',
+        if (subjectId != null) 'subject_id': '$subjectId',
+        if (search.trim().isNotEmpty) 'search': search.trim(),
+      },
+    ).query;
+    final result = await get('/question-bank?$query', useAuth: true);
+    return result is List ? result : const [];
+  }
+
+  static Future<Map<String, dynamic>?> createBankQuestion({
+    required int classId,
+    required int subjectId,
+    required String questionText,
+    required List<String> options,
+    required int correctOptionIndex,
+    String? explanation,
+  }) => post('/question-bank', {
+    'class_id': classId,
+    'subject_id': subjectId,
+    'question_text': questionText,
+    'options': options,
+    'correct_option_index': correctOptionIndex,
+    'explanation': explanation,
+  }, useAuth: true);
+
+  static Future<Map<String, dynamic>?> updateBankQuestion({
+    required int questionId,
+    required int classId,
+    required int subjectId,
+    required String questionText,
+    required List<String> options,
+    required int correctOptionIndex,
+    String? explanation,
+  }) => put('/question-bank/$questionId', {
+    'class_id': classId,
+    'subject_id': subjectId,
+    'question_text': questionText,
+    'options': options,
+    'correct_option_index': correctOptionIndex,
+    'explanation': explanation,
+  }, useAuth: true);
+
+  static Future<Map<String, dynamic>?> archiveBankQuestion(int questionId) =>
+      post(
+        '/question-bank/$questionId/archive?archived=true',
+        const {},
+        useAuth: true,
+      );
+
+  static Future<Map<String, dynamic>?> duplicateBankQuestion(int questionId) =>
+      post('/question-bank/$questionId/duplicate', const {}, useAuth: true);
+
+  static Future<List<dynamic>> getTeacherQuizzes({
+    int? classId,
+    int? subjectId,
+  }) async {
+    final query = Uri(
+      queryParameters: {
+        if (classId != null) 'class_id': '$classId',
+        if (subjectId != null) 'subject_id': '$subjectId',
+      },
+    ).query;
+    final result = await get('/teacher/quizzes?$query', useAuth: true);
+    return result is List ? result : const [];
+  }
+
+  static Future<Map<String, dynamic>?> createQuiz(
+    Map<String, dynamic> payload,
+  ) => post('/teacher/quizzes', payload, useAuth: true);
+
+  static Future<Map<String, dynamic>?> addBankQuestionToQuiz(
+    int quizId,
+    int questionId,
+  ) => post('/teacher/quizzes/$quizId/questions/from-bank', {
+    'question_id': questionId,
+  }, useAuth: true);
+
+  static Future<Map<String, dynamic>?> publishQuiz(int quizId) =>
+      post('/teacher/quizzes/$quizId/publish', const {}, useAuth: true);
+
+  static Future<Map<String, dynamic>?> closeQuiz(int quizId) =>
+      post('/teacher/quizzes/$quizId/close', const {}, useAuth: true);
+
+  static Future<Map<String, dynamic>?> duplicateQuiz(int quizId) =>
+      post('/teacher/quizzes/$quizId/duplicate', const {}, useAuth: true);
+
+  static Future<Map<String, dynamic>?> getQuizSummary(int quizId) async {
+    final result = await get('/teacher/quizzes/$quizId/summary', useAuth: true);
+    return result is Map ? Map<String, dynamic>.from(result) : null;
+  }
+
+  static Future<List<dynamic>> getTeacherQuizResults(int quizId) async {
+    final result = await get('/teacher/quizzes/$quizId/results', useAuth: true);
+    return result is List ? result : const [];
+  }
+
+  static Future<Map<String, dynamic>?> remindQuizStudents(int quizId) => post(
+    '/teacher/quizzes/$quizId/remind-not-attempted',
+    const {},
+    useAuth: true,
+  );
+
+  static Future<List<dynamic>> getStudentQuizzes({
+    int? subjectId,
+    String? status,
+  }) async {
+    final query = Uri(
+      queryParameters: {
+        if (subjectId != null) 'subject_id': '$subjectId',
+        if (status != null) 'status': status,
+      },
+    ).query;
+    final result = await get('/student/quizzes?$query', useAuth: true);
+    return result is List ? result : const [];
+  }
+
+  static Future<Map<String, dynamic>?> startQuizAttempt(int quizId) =>
+      post('/student/quizzes/$quizId/attempts', const {}, useAuth: true);
+
+  static Future<Map<String, dynamic>?> getQuizAttempt(int attemptId) async {
+    final result = await get('/student/attempts/$attemptId', useAuth: true);
+    return result is Map ? Map<String, dynamic>.from(result) : null;
+  }
+
+  static Future<Map<String, dynamic>?> submitQuizAnswer({
+    required int attemptId,
+    required int questionId,
+    required int optionId,
+  }) => post('/student/attempts/$attemptId/answers', {
+    'quiz_question_id': questionId,
+    'selected_option_id': optionId,
+  }, useAuth: true);
+
+  static Future<Map<String, dynamic>?> completeQuizAttempt(int attemptId) =>
+      post('/student/attempts/$attemptId/complete', const {}, useAuth: true);
+
+  static Future<Map<String, dynamic>?> getQuizAttemptHistory(int quizId) async {
+    final result = await get(
+      '/student/quizzes/$quizId/attempts',
+      useAuth: true,
+    );
+    return result is Map ? Map<String, dynamic>.from(result) : null;
+  }
+
+  static Future<Map<String, dynamic>?> getQuizReview(int attemptId) async {
+    final result = await get(
+      '/student/attempts/$attemptId/review',
+      useAuth: true,
+    );
+    return result is Map ? Map<String, dynamic>.from(result) : null;
+  }
+
   static Future<List<dynamic>?> getAudioListBySession(int sessionId) async {
     final result = await get('/audio/session/$sessionId', useAuth: true);
     if (result is List) {

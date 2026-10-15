@@ -5,6 +5,7 @@ import '../services/tts_service.dart';
 import 'session_screen.dart';
 import 'audio_library_screen.dart';
 import 'playlist_screens.dart';
+import 'quiz_screens.dart';
 import 'package:flutter/services.dart';
 import '../utils/ui_utils.dart';
 import '../widgets/key_instruction_wrapper.dart';
@@ -51,6 +52,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
   final FocusNode _playlistsFocusNode = FocusNode(
     debugLabel: 'student-playlists',
   );
+  final FocusNode _quizzesFocusNode = FocusNode(debugLabel: 'student-quizzes');
   final Map<int, FocusNode> _sessionFocusNodes = {};
 
   // Called once when widget is created
@@ -228,6 +230,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
     _logoutFocusNode.dispose();
     _subjectFocusNode.dispose();
     _playlistsFocusNode.dispose();
+    _quizzesFocusNode.dispose();
     for (final node in _sessionFocusNodes.values) {
       node.dispose();
     }
@@ -249,6 +252,14 @@ class _StudentDashboardState extends State<StudentDashboard> {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => const StudentPlaylistsScreen()),
+    );
+  }
+
+  void _openQuizzes() {
+    TtsService.speak('Opening quizzes');
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const StudentQuizScreen()),
     );
   }
 
@@ -362,6 +373,11 @@ class _StudentDashboardState extends State<StudentDashboard> {
         onActivate: _openMyPlaylists,
       ),
       KeypadFocusTarget(
+        node: _quizzesFocusNode,
+        label: 'Quizzes',
+        onActivate: _openQuizzes,
+      ),
+      KeypadFocusTarget(
         node: _joinFocusNode,
         label: 'Show matching sessions',
         onActivate: _showSearchResults,
@@ -427,6 +443,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
         2: _focusSessionInput,
         3: _openOfflineAudioLibrary,
         4: _openMyPlaylists,
+        5: _openQuizzes,
       },
       navigationController: _keypadController,
       focusTargets: _dashboardFocusTargets(),
@@ -577,6 +594,13 @@ class _StudentDashboardState extends State<StudentDashboard> {
                   onPressed: _openMyPlaylists,
                   icon: const Icon(Icons.queue_music),
                   label: const Text('4: My Playlists · Private'),
+                ),
+                SizedBox(height: UIUtils.spacing(context, 8)),
+                OutlinedButton.icon(
+                  focusNode: _quizzesFocusNode,
+                  onPressed: _openQuizzes,
+                  icon: const Icon(Icons.quiz_outlined),
+                  label: const Text('5: Quizzes'),
                 ),
                 SizedBox(height: UIUtils.spacing(context, 12)),
                 // User Info Card

@@ -81,4 +81,19 @@ def test_class_subject_migration_backfills_legacy_pairs(tmp_path, monkeypatch):
     connection.close()
 
     assert rows == [(1, 1, 1)]
-    assert version == ("20261013_01",)
+    quiz_tables = connection = sqlite3.connect(database_path)
+    table_names = {
+        row[0]
+        for row in quiz_tables.execute(
+            "SELECT name FROM sqlite_master WHERE type = 'table'"
+        ).fetchall()
+    }
+    quiz_tables.close()
+
+    assert {
+        "question_bank_questions",
+        "quizzes",
+        "quiz_attempts",
+        "quiz_responses",
+    }.issubset(table_names)
+    assert version == ("20261013_02",)

@@ -21,7 +21,7 @@ from sqlalchemy import delete, update, func
 from sqlalchemy.orm import selectinload
 
 import models, schemas, auth, ws_manager, access_control as access, bootstrap
-import admin_routes, playlist_routes
+import admin_routes, playlist_routes, quiz_routes
 from database import AsyncSessionLocal, engine, get_db
 from notification_service import fcm_service
 from ws_manager import ws_mgr, SESSION_STATE, SESSION_LOCK
@@ -46,6 +46,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="SEEDS Application", lifespan=lifespan)
 app.include_router(admin_routes.router)
 app.include_router(playlist_routes.router)
+app.include_router(quiz_routes.router)
 
 
 # CORS (Cross-Origin Resource Sharing) controls which websites can make requests to your API

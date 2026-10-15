@@ -50,6 +50,7 @@ const Map<int, String> studentDashboardKeyLabels = {
   2: 'Search Sessions by Name or ID',
   3: 'Offline Audio Library',
   4: 'My Private Playlists',
+  5: 'Quizzes',
 };
 
 // ─── Teacher Dashboard ──────────────────────────────────────────────────────
@@ -60,6 +61,16 @@ const Map<int, String> teacherDashboardKeyLabels = {
   3: 'Offline Audio Library',
   4: 'Search Sessions by Name or ID',
   5: 'Class Playlists',
+  6: 'Quizzes',
+};
+
+const Map<int, String> quizAttemptKeyLabels = {
+  1: 'Select option 1',
+  2: 'Select option 2',
+  3: 'Select option 3',
+  4: 'Select option 4',
+  5: 'Submit selected answer',
+  6: 'Next question or view result',
 };
 
 // ─── Session Screen (Student) ───────────────────────────────────────────────

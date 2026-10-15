@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'session_screen.dart';
 import 'audio_library_screen.dart';
 import 'playlist_screens.dart';
+import 'quiz_screens.dart';
 import '../utils/ui_utils.dart';
 import '../widgets/key_instruction_wrapper.dart';
 import '../widgets/keypad_confirmation_dialog.dart';
@@ -52,6 +53,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
   final FocusNode _playlistsFocusNode = FocusNode(
     debugLabel: 'teacher-playlists',
   );
+  final FocusNode _quizzesFocusNode = FocusNode(debugLabel: 'teacher-quizzes');
   final Map<int, FocusNode> _sessionOpenFocusNodes = {};
   final Map<int, FocusNode> _sessionDeleteFocusNodes = {};
 
@@ -339,6 +341,25 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     );
   }
 
+  void _openQuizzes() {
+    final workspace = _selectedWorkspace;
+    if (workspace == null) {
+      TtsService.speak('No class and subject workspace is assigned');
+      return;
+    }
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => TeacherQuizScreen(
+          classId: workspace['class_id'] as int,
+          className: '${workspace['class_name']}',
+          subjectId: workspace['subject_id'] as int,
+          subjectName: '${workspace['subject_name']}',
+        ),
+      ),
+    );
+  }
+
   Future<void> _logout() => AuthSessionService.logoutFrom(context);
 
   List get _filteredSessions {
@@ -413,6 +434,11 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
         onActivate: _openPlaylists,
       ),
       KeypadFocusTarget(
+        node: _quizzesFocusNode,
+        label: 'Quizzes and private question bank',
+        onActivate: _openQuizzes,
+      ),
+      KeypadFocusTarget(
         node: _libraryFocusNode,
         label: 'Offline audio library',
         onActivate: _openOfflineAudioLibrary,
@@ -440,7 +466,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
           ),
           label: isActive
               ? 'Session $id, $title. Press OK to open'
-              : 'Ended session $id, $title. Press OK to reactivate and open',
+              : 'Ended session $id, $title. Press OK to reactivate',
           onActivate: isActive
               ? () => _openSession(id)
               : () => _reactivateSession(id, title),
@@ -521,10 +547,9 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
       barrierDismissible: false,
       builder: (_) => KeypadConfirmationDialog(
         title: 'Reactivate session?',
-        message:
-            'Reactivate "$title" and open it for participants to join again?',
+        message: 'Reactivate "$title" so participants can join it again?',
         cancelLabel: 'Keep ended',
-        confirmLabel: 'Reactivate and open',
+        confirmLabel: 'Reactivate',
         cancelKey: 0,
         confirmKey: 1,
       ),
@@ -544,8 +569,22 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     }
 
     await _loadSessions();
-    await TtsService.speak('Session reactivated. Opening session.');
-    if (mounted) _openSession(sessionId);
+    await TtsService.speak('Session reactivated');
+    if (!mounted) return;
+    final openNow = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => KeypadConfirmationDialog(
+        title: 'Open session now?',
+        message:
+            '"$title" is active again. Open it now, or return to it later from the dashboard.',
+        cancelLabel: 'Open later',
+        confirmLabel: 'Open now',
+        cancelKey: 0,
+        confirmKey: 1,
+      ),
+    );
+    if (openNow == true && mounted) _openSession(sessionId);
   }
 
   Future<void> _permanentlyDeleteSession(int sessionId, String title) async {
@@ -588,6 +627,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     _logoutFocusNode.dispose();
     _workspaceFocusNode.dispose();
     _playlistsFocusNode.dispose();
+    _quizzesFocusNode.dispose();
     for (final node in _sessionOpenFocusNodes.values) {
       node.dispose();
     }
@@ -628,6 +668,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
         3: _openOfflineAudioLibrary,
         4: _focusSessionSearch,
         5: _openPlaylists,
+        6: _openQuizzes,
       },
       navigationController: _keypadController,
       focusTargets: _dashboardFocusTargets(),
@@ -820,6 +861,15 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                   onPressed: _openPlaylists,
                   icon: const Icon(Icons.playlist_play),
                   label: const Text('5: Class Playlists'),
+                ),
+
+                SizedBox(height: UIUtils.spacing(context, 8)),
+
+                OutlinedButton.icon(
+                  focusNode: _quizzesFocusNode,
+                  onPressed: _openQuizzes,
+                  icon: const Icon(Icons.quiz_outlined),
+                  label: const Text('6: Quizzes & Question Bank'),
                 ),
 
                 SizedBox(height: UIUtils.spacing(context, 12)),
@@ -1122,7 +1172,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                                           MaterialTapTargetSize.shrinkWrap,
                                     ),
                                     child: Text(
-                                      isActive ? "Open" : "Reactivate & Open",
+                                      isActive ? "Open" : "Reactivate",
                                       style: TextStyle(
                                         fontSize: UIUtils.fontSize(context, 12),
                                       ),

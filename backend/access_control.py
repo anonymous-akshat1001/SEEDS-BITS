@@ -164,3 +164,39 @@ def require_student_playlist_owner(
 ) -> None:
     if user.role != "student" or playlist.owner_student_id != user.user_id:
         raise HTTPException(status_code=404, detail="Private playlist not found.")
+
+
+def require_bank_question_owner(
+    teacher: models.User, question: models.QuestionBankQuestion,
+) -> None:
+    if teacher.role != "teacher" or question.owner_teacher_id != teacher.user_id:
+        raise HTTPException(status_code=404, detail="Question bank entry not found.")
+
+
+def require_quiz_owner(teacher: models.User, quiz: models.Quiz) -> None:
+    if teacher.role != "teacher" or quiz.owner_teacher_id != teacher.user_id:
+        raise HTTPException(status_code=404, detail="Quiz not found.")
+
+
+async def require_student_quiz_access(
+    db: AsyncSession,
+    student: models.User,
+    quiz: models.Quiz,
+) -> models.StudentClassMembership:
+    if student.role != "student" or quiz.status == "draft":
+        raise HTTPException(status_code=404, detail="Quiz not found.")
+    membership = await get_active_student_membership(db, student.user_id)
+    if membership.class_id != quiz.class_id:
+        raise HTTPException(status_code=404, detail="Quiz not found.")
+    try:
+        await require_active_class_subject(db, quiz.class_id, quiz.subject_id)
+    except HTTPException as error:
+        raise HTTPException(status_code=404, detail="Quiz not found.") from error
+    return membership
+
+
+def require_attempt_owner(
+    student: models.User, attempt: models.QuizAttempt,
+) -> None:
+    if student.role != "student" or attempt.student_id != student.user_id:
+        raise HTTPException(status_code=404, detail="Quiz attempt not found.")

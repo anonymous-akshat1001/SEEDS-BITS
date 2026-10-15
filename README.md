@@ -30,6 +30,7 @@ accessibility-focused keypad and text-to-speech interface.
 - [Testing and validation](#testing-and-validation)
 - [Building the Android app](#building-the-android-app)
 - [API overview](#api-overview)
+- [Quiz module](#quiz-module)
 - [Session logging](#session-logging)
 - [Production notes](#production-notes)
 - [Troubleshooting](#troubleshooting)
@@ -74,6 +75,8 @@ flowchart LR
 | `main.py` | FastAPI app, lifecycle, REST endpoints, SSE, and session actions |
 | `admin_routes.py` | Administrator APIs |
 | `playlist_routes.py` | Playlist APIs |
+| `quiz_routes.py` | Question banks, quiz authoring, attempts, grading, and results |
+| `quiz_schemas.py` | Typed quiz request and response contracts |
 | `auth.py` | Password hashing, JWT handling, and role dependencies |
 | `database.py` | Async SQLAlchemy engine and session factory |
 | `models.py` | SQLAlchemy database models |
@@ -561,6 +564,7 @@ backend is running. Major endpoint groups include:
 | Chat | Send messages and retrieve session history |
 | Notifications | Register and remove FCM device tokens |
 | Logs | Retrieve session events and aggregated summaries |
+| Quizzes | Question bank, authoring, publication, attempts, feedback, review, and results |
 
 Authentication uses JWTs. Query-parameter user impersonation is available only
 when `ALLOW_DEV_USER_IMPERSONATION` is explicitly enabled.
@@ -579,6 +583,110 @@ toggled state, and spoken status/error feedback through the configured TTS
 service. Class, subject, and workspace selectors support left/right D-pad
 cycling with spoken selection feedback rather than requiring a dropdown menu.
 Existing high-contrast and text-scale preferences remain in effect.
+
+## Quiz module
+
+### Teacher workflow
+
+Each teacher has a private question bank scoped to an active assigned
+class-subject workspace. A bank question contains exactly four different,
+non-empty options and one correct answer. It may include an explanation.
+Teachers can search, edit, archive, and duplicate their questions. Adding a
+bank question to a quiz creates a quiz-owned snapshot, so later bank edits
+never rewrite published content or student records.
+
+From **Teacher Dashboard > Quizzes & Question Bank**, a teacher can:
+
+1. create a draft with a title and optional description;
+2. configure an attempt limit from 1 to 20;
+3. optionally schedule UTC opening and closing times;
+4. optionally set a per-attempt limit from 1 to 1440 minutes;
+5. independently enable question and option shuffling;
+6. add question snapshots, preview readiness, and publish;
+7. manually close a published quiz or duplicate any quiz into a new draft; and
+8. open a results dashboard with class statistics, every student's individual
+   attempt scores, and the names of students who have not attempted; and
+9. send one reminder notification to all students who have not attempted.
+
+Drafts are private to their owner. Publication requires an active teacher
+assignment, an active class-subject association, and at least one valid
+question. Publishing queues a notification for every enrolled student with a
+registered device token. Published or attempted academic records are retained.
+Only an unattempted draft can be deleted; material revisions use duplication.
+
+### Student workflow and grading
+
+Students see published quizzes only for their current active class and active
+subjects. Closed quizzes remain listed only when that student previously
+attempted them. Historical review intentionally follows current
+class-membership rules: transferring a student prevents access to the old
+class, while retained database records remain available to the owning teacher.
+
+Starting a quiz resumes an existing in-progress attempt. Otherwise the server
+enforces scheduling, closure, and the attempt limit before creating the next
+one-based attempt. When the attempt limit is exhausted, the quiz card no longer
+offers a start action and directs the student to attempt history instead.
+Question and option order is generated once and stored.
+The effective deadline is the earlier of the per-attempt limit and quiz close
+time. Device clocks and client countdowns are not authoritative.
+
+Answers require explicit submission and are final after the server accepts
+them. The response immediately discloses correctness, the selected answer, the
+correct answer, and the optional explanation for that question only. This
+immediate feedback is intentional even when multiple attempts are permitted.
+Unanswered questions receive zero. The backend grades all attempts and stores
+the correct count, total, and percentage rounded to two decimal places using
+decimal half-up rounding. Student and class primary scores use each student's
+highest completed or timed-out attempt while retaining every attempt.
+
+### Quiz accessibility controls
+
+Quiz screens reuse the application keypad wrapper, focus order, confirmation
+dialogs, high-contrast palette, text scaling, semantics, and TTS service.
+Touch, pointer, Tab/Shift+Tab, D-pad arrows, and OK/Enter remain available.
+
+- Teacher dashboard: **6** opens Quizzes & Question Bank.
+- Student dashboard: **5** opens Quizzes.
+- During an attempt: **1–4** select an option, **5** explicitly submits it,
+  and **6** moves to the next question or result.
+- After completion: **0** or **6** returns to the Quizzes screen.
+- **Star** repeats the current screen instructions.
+- D-pad arrows move through controls; OK/Enter activates the focused control.
+
+Question and quiz authoring dialogs use the same interaction model. Up and
+down move through every field and action, OK enters text editing, and up or
+down leaves editing. Bank-question options are entered as four separate fields;
+the correct answer is then chosen in a separate required selector, avoiding an
+implicit default answer. Quiz opening and closing controls announce whether a
+time is unset, explain that the date is chosen before the time, restore focus
+after selection, and support left-arrow clearing. Visible **Options** buttons
+replace three-dot menus for question-bank actions; their dialogs expose every
+action in deterministic D-pad order. Quiz cards, the results dashboard,
+student score entries, bulk reminders, result history, and answer review are
+all D-pad reachable and expose complete spoken semantic labels.
+
+Selecting or focusing an option never grades it. After confirmed submission,
+focus moves to a live feedback region. Correctness is communicated with text,
+an icon, semantics, and speech rather than color alone. Connectivity failures
+retain the local selection and do not show success until the server confirms
+the response.
+
+### Quiz migration and retention
+
+Existing installations must apply the quiz migration:
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+alembic upgrade head
+```
+
+Revision `20261013_02` creates normalized bank, snapshot, attempt, option, and
+response tables plus workspace, status, student, and partial active-attempt
+indexes. It follows `20261013_01`, supports PostgreSQL and the SQLite test
+suite, and preserves class, subject, user, assignment, and prior application
+data. Quiz owners and attempt students may become null when users are removed,
+but attempts, responses, scores, and snapshots are restricted from cascading
+deletion.
 
 Ending a live session closes it for all connected participants and marks it
 ended; it does not delete the session. Teachers continue to see active and
