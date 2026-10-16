@@ -68,6 +68,18 @@ class UIUtils {
     return math.min(math.max(v, 10.0), base * 1.8);
   }
 
+  static double responsiveTextScale(BuildContext context, double requested) {
+    final width = MediaQuery.sizeOf(context).width;
+    final maximum = width < 280
+        ? 1.15
+        : width < 360
+        ? 1.25
+        : width < 420
+        ? 1.4
+        : 2.0;
+    return requested.clamp(0.8, maximum).toDouble();
+  }
+
   /// Scaled padding value
   static double padding(BuildContext context, double base) {
     final v = base * scale(context);

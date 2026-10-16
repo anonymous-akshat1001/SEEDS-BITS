@@ -159,6 +159,9 @@ class QuizOut(BaseModel):
     closed_at: Optional[datetime] = None
     question_count: int
     questions: List[QuizQuestionAuthorOut] = Field(default_factory=list)
+    notification_recipients: Optional[int] = None
+    notifications_sent: Optional[int] = None
+    notification_failures: Optional[int] = None
 
 
 class PublicationReadiness(BaseModel):

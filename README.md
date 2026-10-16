@@ -444,14 +444,18 @@ flutter pub get --enforce-lockfile
 Do not create a second Firebase project if `seeds-bits` is missing from the
 project list. Ask a project owner to grant your Google account access.
 
-Backend push delivery additionally requires a Firebase service-account key:
+Backend push delivery additionally requires Firebase server credentials:
 
 1. Generate it from **Firebase Console > Project settings > Service
    accounts**.
 2. Store the JSON file outside this repository.
 3. Set `FIREBASE_SERVICE_ACCOUNT_KEY` in the root `.env` to its absolute path.
 
-Push notifications are optional for normal backend startup. See
+If that variable is empty or the file is absent, the backend tries Google
+Application Default Credentials. Quiz publication reports zero successful
+deliveries when neither credential source is available, rather than silently
+claiming that notifications were sent. Push notifications are optional for
+normal backend startup. See
 `frontend/FCM_SETUP.md` for device registration and end-to-end notification
 testing.
 
@@ -610,9 +614,11 @@ From **Teacher Dashboard > Quizzes & Question Bank**, a teacher can:
 
 Drafts are private to their owner. Publication requires an active teacher
 assignment, an active class-subject association, and at least one valid
-question. Publishing queues a notification for every enrolled student with a
-registered device token. Published or attempted academic records are retained.
-Only an unattempted draft can be deleted; material revisions use duplication.
+question. Publishing immediately attempts delivery to every enrolled student
+with a registered device token and reports successful or failed device
+deliveries to the teacher. Published or attempted academic records are
+retained. Only an unattempted draft can be deleted; material revisions use
+duplication.
 
 ### Student workflow and grading
 

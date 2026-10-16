@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../services/api_service.dart';
 import '../services/tts_service.dart';
+import '../utils/keypad_actions.dart';
 import '../utils/ui_utils.dart';
 import '../widgets/key_instruction_wrapper.dart';
 import '../widgets/keypad_confirmation_dialog.dart';
@@ -134,6 +135,7 @@ class _TeacherQuizScreenState extends State<TeacherQuizScreen> {
   List<dynamic> _questions = const [];
   List<dynamic> _quizzes = const [];
   bool _loading = true;
+  bool _initialAnnouncementPending = true;
   String? _error;
 
   @override
@@ -162,9 +164,16 @@ class _TeacherQuizScreenState extends State<TeacherQuizScreen> {
       _loading = false;
       _error = null;
     });
-    TtsService.speak(
-      '${_questions.length} bank questions and ${_quizzes.length} quizzes loaded',
-    );
+    final summary =
+        '${_questions.length} bank questions and ${_quizzes.length} quizzes loaded.';
+    if (_initialAnnouncementPending) {
+      _initialAnnouncementPending = false;
+      await TtsService.speak(
+        '${buildTtsInstructions(teacherQuizKeyLabels, screenName: 'Teacher quizzes for ${widget.className}, ${widget.subjectName}')} $summary',
+      );
+    } else {
+      await TtsService.speak(summary);
+    }
   }
 
   Future<void> _createQuestion() async {
@@ -353,7 +362,22 @@ class _TeacherQuizScreenState extends State<TeacherQuizScreen> {
       );
       return;
     }
-    await TtsService.speak('Quiz published');
+    final recipients = result['notification_recipients'] as int? ?? 0;
+    final sent = result['notifications_sent'] as int? ?? 0;
+    final failures = result['notification_failures'] as int? ?? 0;
+    final notificationMessage = recipients == 0
+        ? 'There are no eligible students to notify.'
+        : sent == 0
+        ? 'Quiz published, but no student device notifications were delivered. Check notification registration and server Firebase credentials.'
+        : failures > 0
+        ? 'Quiz published. $sent device notifications sent and $failures failed.'
+        : 'Quiz published. $sent device notifications sent.';
+    if (sent == 0 && recipients > 0 && mounted) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(notificationMessage)));
+    }
+    await TtsService.speak(notificationMessage);
     await _load();
   }
 
@@ -432,12 +456,8 @@ class _TeacherQuizScreenState extends State<TeacherQuizScreen> {
     return KeypadInstructionWrapper(
       screenName:
           'Teacher quizzes for ${widget.className}, ${widget.subjectName}',
-      labels: const {
-        0: 'Go back',
-        1: 'Refresh',
-        2: 'Create bank question',
-        3: 'Create quiz draft',
-      },
+      labels: teacherQuizKeyLabels,
+      autoPlay: false,
       actions: {
         0: () => Navigator.pop(context),
         1: _load,
@@ -1048,6 +1068,7 @@ class _StudentQuizScreenState extends State<StudentQuizScreen> {
   final Map<int, FocusNode> _historyFocuses = {};
   List<dynamic> _quizzes = const [];
   bool _loading = true;
+  bool _initialAnnouncementPending = true;
   String? _stateFilter;
   int? _subjectFilter;
 
@@ -1068,11 +1089,17 @@ class _StudentQuizScreenState extends State<StudentQuizScreen> {
       _quizzes = quizzes;
       _loading = false;
     });
-    TtsService.speak(
-      quizzes.isEmpty
-          ? 'No quizzes available'
-          : '${quizzes.length} quizzes available',
-    );
+    final summary = quizzes.isEmpty
+        ? 'No quizzes available.'
+        : '${quizzes.length} quizzes available.';
+    if (_initialAnnouncementPending) {
+      _initialAnnouncementPending = false;
+      await TtsService.speak(
+        '${buildTtsInstructions(studentQuizKeyLabels, screenName: 'Student quizzes')} $summary',
+      );
+    } else {
+      await TtsService.speak(summary);
+    }
   }
 
   Future<void> _openQuiz(Map quiz) async {
@@ -1210,7 +1237,8 @@ class _StudentQuizScreenState extends State<StudentQuizScreen> {
   Widget build(BuildContext context) {
     return KeypadInstructionWrapper(
       screenName: 'Student quizzes',
-      labels: const {0: 'Go back', 1: 'Refresh quizzes'},
+      labels: studentQuizKeyLabels,
+      autoPlay: false,
       actions: {0: () => Navigator.pop(context), 1: _load},
       focusTargets: [
         KeypadFocusTarget(

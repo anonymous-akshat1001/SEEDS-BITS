@@ -114,8 +114,8 @@ test -f "$ARCHIVE" || {
   exit 1
 }
 
-rm -rf "$STAGING"
-mkdir -p "$STAGING"
+sudo rm -rf "$STAGING"
+sudo install -d -o seeds -g seeds -m 755 "$STAGING"
 tar -xzf "$ARCHIVE" -C "$STAGING"
 
 test -f "$STAGING/backend/main.py" || {
@@ -346,7 +346,7 @@ service.
 ## 11. Clean up after a successful deployment
 
 ```bash
-rm -rf "$STAGING"
+sudo rm -rf "$STAGING"
 rm -f "$ARCHIVE"
 rm -f /tmp/seeds-production-requirements.txt
 ```

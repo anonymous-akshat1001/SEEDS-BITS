@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../services/api_service.dart';
 import '../services/auth_session_service.dart';
 import '../services/tts_service.dart';
+import '../utils/keypad_actions.dart';
 import '../utils/ui_utils.dart';
 import '../widgets/key_instruction_wrapper.dart';
 import '../widgets/keypad_confirmation_dialog.dart';
@@ -35,6 +36,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
   List<dynamic> _classes = const [];
   List<dynamic> _subjects = const [];
   bool _loading = true;
+  bool _initialAnnouncementPending = true;
   String? _roleFilter;
   String _assignmentStatus = 'all';
 
@@ -84,9 +86,16 @@ class _AdminDashboardState extends State<AdminDashboard> {
       _subjects = results[2];
       _loading = false;
     });
-    await TtsService.speak(
-      '${_users.length} accounts shown. ${_classes.length} classes and ${_subjects.length} subjects.',
-    );
+    final summary =
+        '${_users.length} accounts shown. ${_classes.length} classes and ${_subjects.length} subjects.';
+    if (_initialAnnouncementPending) {
+      _initialAnnouncementPending = false;
+      await TtsService.speak(
+        '${buildTtsInstructions(adminDashboardKeyLabels, screenName: 'Administrator Dashboard')} $summary',
+      );
+    } else {
+      await TtsService.speak(summary);
+    }
   }
 
   void _focusSearch() {
@@ -938,15 +947,8 @@ class _AdminDashboardState extends State<AdminDashboard> {
   Widget build(BuildContext context) {
     return KeypadInstructionWrapper(
       screenName: 'Administrator Dashboard',
-      labels: const {
-        0: 'Log Out',
-        1: 'Refresh',
-        2: 'Search Users',
-        3: 'Change Account Type Filter',
-        4: 'Change Assignment Filter',
-        5: 'Create Subject',
-        6: 'Create Class',
-      },
+      labels: adminDashboardKeyLabels,
+      autoPlay: false,
       actions: {
         0: () => AuthSessionService.logoutFrom(context),
         1: _refresh,
@@ -1004,28 +1006,29 @@ class _AdminDashboardState extends State<AdminDashboard> {
                           label:
                               'Account type filter. ${_roleFilterLabel()}. Use left and right arrows to change.',
                           liveRegion: true,
-                          child: SegmentedButton<String?>(
-                            showSelectedIcon: true,
-                            segments: const [
-                              ButtonSegment<String?>(
-                                value: null,
-                                label: Text('3 All accounts'),
-                                icon: Icon(Icons.groups_outlined),
+                          child: Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: [
+                              ChoiceChip(
+                                avatar: const Icon(Icons.groups_outlined),
+                                label: const Text('3 All accounts'),
+                                selected: _roleFilter == null,
+                                onSelected: (_) => _setRoleFilter(null),
                               ),
-                              ButtonSegment<String?>(
-                                value: 'student',
-                                label: Text('Students'),
-                                icon: Icon(Icons.school_outlined),
+                              ChoiceChip(
+                                avatar: const Icon(Icons.school_outlined),
+                                label: const Text('Students'),
+                                selected: _roleFilter == 'student',
+                                onSelected: (_) => _setRoleFilter('student'),
                               ),
-                              ButtonSegment<String?>(
-                                value: 'teacher',
-                                label: Text('Teachers'),
-                                icon: Icon(Icons.person_outline),
+                              ChoiceChip(
+                                avatar: const Icon(Icons.person_outline),
+                                label: const Text('Teachers'),
+                                selected: _roleFilter == 'teacher',
+                                onSelected: (_) => _setRoleFilter('teacher'),
                               ),
                             ],
-                            selected: {_roleFilter},
-                            onSelectionChanged: (selection) =>
-                                _setRoleFilter(selection.first),
                           ),
                         ),
                       ),

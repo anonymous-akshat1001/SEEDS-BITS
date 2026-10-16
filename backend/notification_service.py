@@ -1,12 +1,15 @@
-import json
 import httpx
+import google.auth
 from google.oauth2 import service_account
 from google.auth.transport.requests import Request
 from typing import List, Optional
 import os
 
 # Path to your Firebase service account key JSON file
-SERVICE_ACCOUNT_FILE = os.getenv("FIREBASE_SERVICE_ACCOUNT_KEY", "./seeds-bits-firebase.json")
+SERVICE_ACCOUNT_FILE = (
+    os.getenv("FIREBASE_SERVICE_ACCOUNT_KEY", "").strip()
+    or "./seeds-bits-firebase.json"
+)
 SCOPES = ['https://www.googleapis.com/auth/firebase.messaging']
 
 class FCMNotificationService:
@@ -18,15 +21,18 @@ class FCMNotificationService:
     def _load_credentials(self):
         """Load Firebase service account credentials"""
         try:
-            self.credentials = service_account.Credentials.from_service_account_file(
-                SERVICE_ACCOUNT_FILE,
-                scopes=SCOPES
-            )
-            
-            # Extract project ID from service account file
-            with open(SERVICE_ACCOUNT_FILE, 'r') as f:
-                service_account_info = json.load(f)
-                self.project_id = service_account_info.get('project_id')
+            if os.path.isfile(SERVICE_ACCOUNT_FILE):
+                self.credentials = (
+                    service_account.Credentials.from_service_account_file(
+                        SERVICE_ACCOUNT_FILE,
+                        scopes=SCOPES,
+                    )
+                )
+                self.project_id = self.credentials.project_id
+            else:
+                self.credentials, self.project_id = google.auth.default(
+                    scopes=SCOPES,
+                )
             
             print(f"[FCM] Loaded credentials for project: {self.project_id}")
         except Exception as e:

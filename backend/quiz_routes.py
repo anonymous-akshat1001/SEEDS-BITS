@@ -4,7 +4,7 @@ import random
 from datetime import datetime, timedelta
 from decimal import Decimal, ROUND_HALF_UP
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -47,18 +47,17 @@ async def _eligible_students(
     )
 
 
-async def _queue_quiz_notifications(
+async def _send_quiz_notifications(
     db: AsyncSession,
-    background_tasks: BackgroundTasks | None,
     quiz: models.Quiz,
     students: list[models.User],
     *,
     title: str,
     body: str,
     notification_type: str,
-) -> int:
-    if background_tasks is None or not students:
-        return 0
+) -> dict[str, int]:
+    if not students:
+        return {"recipients": 0, "success": 0, "failure": 0}
     student_ids = [student.user_id for student in students]
     tokens = (
         await db.execute(
@@ -67,21 +66,23 @@ async def _queue_quiz_notifications(
             )
         )
     ).scalars().all()
-    for token in tokens:
-        background_tasks.add_task(
-            fcm_service.send_notification,
-            token=token,
-            title=title,
-            body=body,
-            data={
-                "type": notification_type,
-                "quiz_id": quiz.quiz_id,
-                "quiz_title": quiz.title,
-                "class_id": quiz.class_id,
-                "subject_id": quiz.subject_id,
-            },
-        )
-    return len(tokens)
+    delivery = await fcm_service.send_to_multiple(
+        list(tokens),
+        title=title,
+        body=body,
+        data={
+            "type": notification_type,
+            "quiz_id": quiz.quiz_id,
+            "quiz_title": quiz.title,
+            "class_id": quiz.class_id,
+            "subject_id": quiz.subject_id,
+        },
+    )
+    return {
+        "recipients": len(students),
+        "success": delivery["success"],
+        "failure": delivery["failure"],
+    }
 
 
 def _now() -> datetime:
@@ -747,7 +748,6 @@ async def quiz_readiness(
 @router.post("/teacher/quizzes/{quiz_id}/publish", response_model=qs.QuizOut)
 async def publish_quiz(
     quiz_id: int,
-    background_tasks: BackgroundTasks = None,
     teacher: models.User = Depends(auth.require_teacher),
     db: AsyncSession = Depends(get_db),
 ):
@@ -766,9 +766,8 @@ async def publish_quiz(
     await db.commit()
     published = await _get_quiz(db, quiz_id)
     students = await _eligible_students(db, published.class_id)
-    await _queue_quiz_notifications(
+    delivery = await _send_quiz_notifications(
         db,
-        background_tasks,
         published,
         students,
         title="New quiz published",
@@ -778,7 +777,15 @@ async def publish_quiz(
         ),
         notification_type="quiz_published",
     )
-    return _quiz_payload(published, include_questions=True)
+    payload = _quiz_payload(published, include_questions=True)
+    payload.update(
+        {
+            "notification_recipients": delivery["recipients"],
+            "notifications_sent": delivery["success"],
+            "notification_failures": delivery["failure"],
+        }
+    )
+    return payload
 
 
 async def _finalize_attempt(
@@ -1460,7 +1467,6 @@ async def quiz_results(
 )
 async def remind_students_not_attempted(
     quiz_id: int,
-    background_tasks: BackgroundTasks = None,
     teacher: models.User = Depends(auth.require_teacher),
     db: AsyncSession = Depends(get_db),
 ):
@@ -1482,9 +1488,8 @@ async def remind_students_not_attempted(
         for student in students
         if student.user_id not in attempted_student_ids
     ]
-    queued = await _queue_quiz_notifications(
+    delivery = await _send_quiz_notifications(
         db,
-        background_tasks,
         quiz,
         not_attempted,
         title="Quiz reminder",
@@ -1497,7 +1502,7 @@ async def remind_students_not_attempted(
     return {
         "eligible_students": len(students),
         "students_notified": len(not_attempted),
-        "device_notifications_queued": queued,
+        "device_notifications_queued": delivery["success"],
     }
 
 

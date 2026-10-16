@@ -330,14 +330,15 @@ class MyApp extends StatelessWidget {
             theme: _buildTheme(highContrast),
             builder: (context, child) {
               if (child == null) return const SizedBox.shrink();
-              if (appTextScale == 1.0) return child;
               final mediaQuery = MediaQuery.of(context);
               final systemScale = mediaQuery.textScaler.scale(1.0);
+              final effectiveScale = UIUtils.responsiveTextScale(
+                context,
+                systemScale * appTextScale,
+              );
               return MediaQuery(
                 data: mediaQuery.copyWith(
-                  textScaler: TextScaler.linear(
-                    (systemScale * appTextScale).clamp(0.8, 2.0),
-                  ),
+                  textScaler: TextScaler.linear(effectiveScale),
                 ),
                 child: child,
               );
@@ -786,7 +787,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                             color: UIUtils.backgroundColor,
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
-                              color: Colors.grey.withOpacity(0.1),
+                              color: Colors.grey.withValues(alpha: 0.1),
                               width: 1,
                             ),
                           ),

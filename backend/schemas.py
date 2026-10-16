@@ -1,5 +1,5 @@
 # schemas.py
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, ConfigDict, Field, validator
 from typing import List, Optional
 from datetime import datetime
 
@@ -30,8 +30,7 @@ class UserOut(BaseModel):
     role: str
     created_at: datetime
     
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Input for user login
@@ -80,8 +79,7 @@ class SessionOut(BaseModel):
     participant_count: Optional[int] = 0  # Added participant count
     teacher_name: Optional[str] = None    # Added teacher name
     
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Represents mapping table (audio and session)
@@ -91,8 +89,7 @@ class SessionAudioOut(BaseModel):
     audio_id: int
     added_at: datetime
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ==================== PARTICIPANT SCHEMAS ====================
@@ -108,8 +105,7 @@ class ParticipantOut(BaseModel):
     is_kicked: bool
     hand_raised: bool
     
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Participant with user details
@@ -144,8 +140,7 @@ class AudioCreateResponse(BaseModel):
     mime_type: str
     uploaded_at: datetime
     
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Contains full audio metadata
@@ -163,8 +158,7 @@ class AudioFileOut(BaseModel):
     subject_name: Optional[str] = None
     uploaded_at: datetime
     
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Lists all the audios in the session
@@ -198,8 +192,7 @@ class PlaybackOut(BaseModel):
     ended_at: Optional[datetime] = None
     speed: float
     
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Used in websockets / sse
@@ -244,8 +237,7 @@ class ChatMessageRead(BaseModel):
     timestamp: datetime
     is_system_message: bool = False
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Adds the sender name - which would need a union hence kept as a separate table(used only when needed)
@@ -271,8 +263,7 @@ class LogOut(BaseModel):
     event_details: Optional[dict]
     created_at: datetime
     
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ==================== WEBSOCKET MESSAGE SCHEMAS ====================
@@ -304,8 +295,7 @@ class SessionState(BaseModel):
     participants: dict  # participant_id -> participant_info
     playback: dict  # Current playback state
     
-    class Config:
-        arbitrary_types_allowed = True
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
 
 # ==================== ERROR SCHEMAS ====================
@@ -332,8 +322,7 @@ class ClassOut(BaseModel):
     is_active: bool
     archived_at: Optional[datetime] = None
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ClassCreate(BaseModel):
@@ -351,8 +340,7 @@ class SubjectOut(BaseModel):
     is_active: bool
     archived_at: Optional[datetime] = None
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class StudentEnrollmentRequest(BaseModel):
@@ -373,8 +361,7 @@ class ClassSubjectOut(BaseModel):
     associated_at: datetime
     archived_at: Optional[datetime] = None
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class StudentMembershipOut(BaseModel):
@@ -386,8 +373,7 @@ class StudentMembershipOut(BaseModel):
     is_active: bool
     assigned_at: datetime
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class TeacherAssignmentRequest(BaseModel):
@@ -405,8 +391,7 @@ class TeacherAssignmentOut(BaseModel):
     subject_name: Optional[str] = None
     is_active: bool
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class AdminUserOut(BaseModel):
@@ -513,5 +498,4 @@ class SelfListenLogOut(BaseModel):
     audio_title: Optional[str]
     listened_at: datetime
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)

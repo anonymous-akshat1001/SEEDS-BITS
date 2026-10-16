@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 import pytest_asyncio
-from fastapi import BackgroundTasks, HTTPException
+from fastapi import HTTPException
 from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
@@ -333,8 +333,28 @@ async def test_lifecycle_attempt_feedback_idempotency_and_grading(quiz_db):
 
 
 @pytest.mark.asyncio
-async def test_publish_and_reminder_notifications_target_eligible_students(quiz_db):
+async def test_publish_and_reminder_notifications_target_eligible_students(
+    quiz_db, monkeypatch,
+):
     db, data = quiz_db
+    deliveries = []
+
+    async def send_to_multiple(tokens, title, body, data=None):
+        deliveries.append(
+            {
+                "tokens": list(tokens),
+                "title": title,
+                "body": body,
+                "data": data,
+            }
+        )
+        return {"success": len(tokens), "failure": 0}
+
+    monkeypatch.setattr(
+        quiz_routes.fcm_service,
+        "send_to_multiple",
+        send_to_multiple,
+    )
     second_student = models.User(
         name="Second Quiz Student",
         phone_number="9555555555",
@@ -377,29 +397,33 @@ async def test_publish_and_reminder_notifications_target_eligible_students(quiz_
         teacher=data["teacher"],
         db=db,
     )
-    publish_tasks = BackgroundTasks()
-    await quiz_routes.publish_quiz(
+    published = await quiz_routes.publish_quiz(
         quiz["quiz_id"],
-        background_tasks=publish_tasks,
         teacher=data["teacher"],
         db=db,
     )
-    assert len(publish_tasks.tasks) == 2
+    assert published["notification_recipients"] == 2
+    assert published["notifications_sent"] == 2
+    assert published["notification_failures"] == 0
+    assert set(deliveries[0]["tokens"]) == {
+        "student-one-token",
+        "student-two-token",
+    }
+    assert deliveries[0]["data"]["type"] == "quiz_published"
 
     await quiz_routes.start_or_resume_attempt(
         quiz["quiz_id"], student=data["student"], db=db,
     )
-    reminder_tasks = BackgroundTasks()
     reminder = await quiz_routes.remind_students_not_attempted(
         quiz["quiz_id"],
-        background_tasks=reminder_tasks,
         teacher=data["teacher"],
         db=db,
     )
     assert reminder["eligible_students"] == 2
     assert reminder["students_notified"] == 1
     assert reminder["device_notifications_queued"] == 1
-    assert len(reminder_tasks.tasks) == 1
+    assert deliveries[1]["tokens"] == ["student-two-token"]
+    assert deliveries[1]["data"]["type"] == "quiz_reminder"
 
 
 @pytest.mark.asyncio

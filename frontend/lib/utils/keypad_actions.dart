@@ -64,6 +64,28 @@ const Map<int, String> teacherDashboardKeyLabels = {
   6: 'Quizzes',
 };
 
+const Map<int, String> adminDashboardKeyLabels = {
+  0: 'Log Out',
+  1: 'Refresh',
+  2: 'Search Users',
+  3: 'Change Account Type Filter',
+  4: 'Change Assignment Filter',
+  5: 'Create Subject',
+  6: 'Create Class',
+};
+
+const Map<int, String> teacherQuizKeyLabels = {
+  0: 'Go back',
+  1: 'Refresh',
+  2: 'Create bank question',
+  3: 'Create quiz draft',
+};
+
+const Map<int, String> studentQuizKeyLabels = {
+  0: 'Go back',
+  1: 'Refresh quizzes',
+};
+
 const Map<int, String> quizAttemptKeyLabels = {
   1: 'Select option 1',
   2: 'Select option 2',

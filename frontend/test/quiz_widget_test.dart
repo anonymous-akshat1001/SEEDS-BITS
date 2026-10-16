@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frontend/screens/quiz_screens.dart';
 import 'package:frontend/utils/keypad_actions.dart';
+import 'package:frontend/utils/ui_utils.dart';
 
 Map<String, dynamic> attemptFixture() => {
   'attempt_id': 7,
@@ -36,6 +37,28 @@ void main() {
     expect(teacherDashboardKeyLabels[6], 'Quizzes');
     expect(quizAttemptKeyLabels[1], 'Select option 1');
     expect(quizAttemptKeyLabels[5], 'Submit selected answer');
+    expect(adminDashboardKeyLabels[6], 'Create Class');
+    expect(teacherQuizKeyLabels[2], 'Create bank question');
+    expect(studentQuizKeyLabels[1], 'Refresh quizzes');
+  });
+
+  testWidgets('phone widths cap combined text scaling', (tester) async {
+    double? effectiveScale;
+    await tester.pumpWidget(
+      MediaQuery(
+        data: const MediaQueryData(size: Size(320, 640)),
+        child: MaterialApp(
+          home: Builder(
+            builder: (context) {
+              effectiveScale = UIUtils.responsiveTextScale(context, 2.0);
+              return const SizedBox.shrink();
+            },
+          ),
+        ),
+      ),
+    );
+
+    expect(effectiveScale, 1.25);
   });
 
   testWidgets('attempt renders four options and requires explicit submit', (
