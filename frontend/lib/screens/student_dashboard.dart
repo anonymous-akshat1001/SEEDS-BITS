@@ -240,7 +240,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
 
   // Open offline audio library (no session context)
   void _openOfflineAudioLibrary() {
-    TtsService.speak("Opening offline audio library");
+    TtsService.speak('Opening recorded audio library. Internet is required.');
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => const OfflineAudioLibraryScreen()),
@@ -465,13 +465,15 @@ class _StudentDashboardState extends State<StudentDashboard> {
     return Scaffold(
       appBar: AppBar(
         // Screen Title
-        title: Text(
-          "Student Dashboard",
-          style: TextStyle(
-            fontSize: UIUtils.fontSize(context, 18),
-            fontWeight: FontWeight.w600,
-          ),
-        ),
+        title: UIUtils.useStackedLayout(context)
+            ? null
+            : Text(
+                "Student Dashboard",
+                style: TextStyle(
+                  fontSize: UIUtils.fontSize(context, 18),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
         backgroundColor: UIUtils.cardColor,
         foregroundColor: UIUtils.textColor,
         elevation: 0,
@@ -543,6 +545,14 @@ class _StudentDashboardState extends State<StudentDashboard> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                if (UIUtils.useStackedLayout(context))
+                  Semantics(
+                    header: true,
+                    child: Text(
+                      'Student Dashboard',
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
+                  ),
                 if (_isRefreshing) ...[
                   Semantics(
                     liveRegion: true,
@@ -564,7 +574,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
                   initialValue: _selectedSubjectId,
                   isExpanded: true,
                   decoration: const InputDecoration(
-                    labelText: 'Filter sessions by subject',
+                    label: Text('Filter sessions by subject'),
                     prefixIcon: Icon(Icons.filter_alt_outlined),
                   ),
                   items: [
@@ -685,7 +695,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
                                   fontSize: UIUtils.fontSize(context, 14),
                                 ),
                                 decoration: InputDecoration(
-                                  labelText: "2. Session name or ID",
+                                  label: const Text("2. Session name or ID"),
                                   labelStyle: TextStyle(
                                     fontSize: UIUtils.fontSize(context, 12),
                                     color: UIUtils.subtextColor,
@@ -780,7 +790,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
                     size: UIUtils.iconSize(context, 22),
                   ),
                   label: Text(
-                    "3: Offline Audio Library",
+                    '3: Recorded Audio Library',
                     style: TextStyle(fontSize: UIUtils.fontSize(context, 15)),
                   ),
                   style: OutlinedButton.styleFrom(

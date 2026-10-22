@@ -395,6 +395,8 @@ class TeacherAssignmentOut(BaseModel):
 
 
 class AdminUserOut(BaseModel):
+    auth_version: int = 0
+    must_change_password: bool = False
     user_id: int
     name: str
     phone_number: str
@@ -480,12 +482,12 @@ class StudentPlaylistOut(BaseModel):
 # ==================== NOTIFICATIONS SCHEMAS ====================
 
 class FCMTokenRequest(BaseModel):
-    token: str
-    device_type: Optional[str] = "unknown"
+    token: str = Field(min_length=1, max_length=2048)
+    device_type: Optional[str] = Field(default="unknown", max_length=20)
 
 
 class FCMTokenDeleteRequest(BaseModel):
-    token: str
+    token: str = Field(min_length=1, max_length=2048)
 
 
 # ==================== SELF-LISTEN SCHEMAS ====================

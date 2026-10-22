@@ -23,39 +23,83 @@ class ChatPanel extends StatefulWidget {
 class _ChatPanelState extends State<ChatPanel> {
   final List<Map<String, String>> messages = [];
   final TextEditingController _ctrl = TextEditingController();
+  final _readFocus = FocusNode(debugLabel: 'chat-read-latest');
+  bool _sending = false;
 
-  void _sendText() {
-    final txt = _ctrl.text.trim();
-    if (txt.isEmpty) return;
-    // SseService.send() mirrors WsService.send() — same Map signature
-    widget.ws.send({'type': 'chat', 'text': txt});
-    setState(() => messages.add({'from': 'me', 'text': txt}));
-    _ctrl.clear();
+  void _readLatest() {
+    if (messages.isEmpty) {
+      TtsService.speak('No messages yet.');
+    } else {
+      final message = messages.last;
+      final delivery = message['delivery'];
+      TtsService.speak(
+        '${message['from']}: ${message['text']}'
+        '${delivery == null ? '' : '\nDelivery status: $delivery.'}',
+      );
+    }
   }
 
-  // Called by SseService when a chat event arrives.
-  // is_own=true messages are already skipped by SseService, so every
-  // message that reaches here is from another participant.
+  Future<void> _sendText() async {
+    if (_sending) {
+      TtsService.speak('Waiting for message confirmation.');
+      return;
+    }
+    final txt = _ctrl.text.trim();
+    if (txt.isEmpty) {
+      TtsService.speak('Enter a message before selecting Send.');
+      return;
+    }
+    final message = {'from': 'me', 'text': txt, 'delivery': 'Sending'};
+    setState(() {
+      _sending = true;
+      messages.add(message);
+    });
+    final result = await widget.ws.send({'type': 'chat', 'text': txt});
+    if (!mounted) return;
+    setState(() {
+      _sending = false;
+      message['delivery'] = result.isSuccess ? 'Sent' : 'Not confirmed';
+    });
+    if (result.isSuccess) {
+      if (_ctrl.text.trim() == txt) _ctrl.clear();
+      TtsService.speak('Message sent.');
+    } else {
+      final error = result.failure!.message;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error)));
+      TtsService.speak(error, priority: SpeechPriority.critical);
+    }
+  }
+
   void onReceive(Map<String, dynamic> msg) {
+    if (!mounted || msg['is_own'] == true) return;
     if (msg['type'] == 'chat') {
       final text = msg['text'] ?? msg['message'] ?? '';
       final from =
           msg['sender_name'] ?? msg['participant_id']?.toString() ?? 'unknown';
       if (text.toString().isEmpty) return;
       setState(() => messages.add({'from': from, 'text': text.toString()}));
-      TtsService.speak(text.toString());
+      TtsService.speak(
+        'New chat messages.',
+        priority: SpeechPriority.incidental,
+        group: 'New chat messages',
+      );
     }
   }
 
   @override
   void initState() {
     super.initState();
+    TtsService.registerLiveSession(this);
     widget.ws.registerChatHandler(onReceive);
   }
 
   @override
   void dispose() {
+    TtsService.unregisterLiveSession(this);
     widget.ws.unregisterChatHandler(onReceive);
+    _readFocus.dispose();
     _ctrl.dispose();
     super.dispose();
   }
@@ -68,6 +112,23 @@ class _ChatPanelState extends State<ChatPanel> {
       padding: UIUtils.paddingAll(context, 6),
       child: Column(
         children: [
+          Focus(
+            canRequestFocus: false,
+            onFocusChange: (focused) {
+              if (focused) {
+                TtsService.speak(
+                  'Read latest message',
+                  priority: SpeechPriority.navigation,
+                );
+              }
+            },
+            child: IconButton(
+              focusNode: _readFocus,
+              tooltip: 'Read latest message',
+              onPressed: _readLatest,
+              icon: const Icon(Icons.mark_chat_read_outlined),
+            ),
+          ),
           Expanded(
             child: ListView.builder(
               itemCount: messages.length,
@@ -84,7 +145,7 @@ class _ChatPanelState extends State<ChatPanel> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
-                      m['text'] ?? '',
+                      '${m['text'] ?? ''}${m['delivery'] == null ? '' : '\n${m['delivery']}'}',
                       style: TextStyle(
                         color: me ? Colors.black : Colors.white,
                         fontSize: UIUtils.fontSize(context, 12),
@@ -117,7 +178,7 @@ class _ChatPanelState extends State<ChatPanel> {
                 ),
               ),
               IconButton(
-                onPressed: _sendText,
+                onPressed: _sending ? null : _sendText,
                 icon: Icon(Icons.send, size: UIUtils.iconSize(context, 18)),
               ),
             ],

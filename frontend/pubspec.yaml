@@ -54,11 +54,14 @@ dependencies:
   flutter_dotenv: ^5.1.0
   mobile_number: ^3.0.0
   permission_handler: ^11.3.1
+  path_provider: ^2.1.5
+  crypto: ^3.0.7
 
   
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  path_provider_platform_interface: ^2.1.2
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is

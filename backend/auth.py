@@ -71,40 +71,94 @@ async def get_current_user(
         user = q.scalar_one_or_none()
         if not user:
             raise HTTPException(status_code=401, detail="Development user not found")
+        _check_session(user, user.auth_version)
         return user
     if not token:
         raise HTTPException(status_code=401, detail="Authentication required")
-    try:
-        payload = decode_access_token(token)    # Calls the above function to decode the payload(token)
-        user_id = payload.get("user_id")
-    except:
-        raise HTTPException(status_code=401, detail="Invalid token")
-    
-    # Queries DB to check if the user with that user_id exists.
-    q = await db.execute(
-        select(models.User).filter(models.User.user_id == user_id)  # Acts like a SELECT + WHERE SQL query
-    )
-    # Extract a single row from the query
-    user = q.scalar_one_or_none()
-    if not user:
-        raise HTTPException(status_code=401, detail="User not found")
-    return user
+    return await get_current_user_from_token(token, db)
 
 # Get current user from JWT token (for WebSocket authentication)
-async def get_current_user_from_token(token: str, db: AsyncSession) -> models.User:
-    try:
-        payload = decode_access_token(token)
-        user_id = payload.get("user_id")
-    except:
+async def get_current_user_from_token(
+    token: str, db: AsyncSession, *, allow_password_change: bool = False,
+) -> models.User:
+    payload = decode_access_token(token)
+    user_id = payload.get("user_id")
+    version = payload.get("auth_version", 0)
+    if type(user_id) is not int or type(version) is not int or version < 0:
         raise HTTPException(status_code=401, detail="Invalid token")
-    
     q = await db.execute(
         select(models.User).filter(models.User.user_id == user_id)
+        .execution_options(populate_existing=True)
     )
     user = q.scalar_one_or_none()
     if not user:
         raise HTTPException(status_code=401, detail="User not found")
+    _check_session(user, version, allow_password_change=allow_password_change)
     return user
+
+
+def _check_session(user, version, *, allow_password_change=False):
+    if user.auth_version != version:
+        raise HTTPException(status_code=401, detail="Session expired. Sign in again.")
+    if user.must_change_password and not allow_password_change:
+        raise HTTPException(status_code=403, detail="Password change required")
+
+
+async def get_password_change_user(
+    token: Optional[str] = Depends(oauth2_scheme),
+    db: AsyncSession = Depends(get_db),
+) -> models.User:
+    if not token:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    return await get_current_user_from_token(token, db, allow_password_change=True)
+
+
+async def session_is_current(db: AsyncSession, user_id: int, version: int) -> bool:
+    result = await db.execute(select(
+        models.User.auth_version, models.User.must_change_password,
+    ).where(models.User.user_id == user_id))
+    row = result.one_or_none()
+    return row is not None and row.auth_version == version and not row.must_change_password
+
+
+def session_payload(user: models.User) -> dict:
+    duration = timedelta(days=7)
+    if user.must_change_password:
+        duration = min(duration, user.temporary_password_expires_at - datetime.utcnow())
+        if duration.total_seconds() <= 0:
+            raise HTTPException(status_code=401, detail="Temporary credential expired. Contact your school administrator.")
+    return {
+        "access_token": create_access_token(
+            {"user_id": user.user_id, "role": user.role, "auth_version": user.auth_version},
+            expires_delta=duration,
+        ),
+        "token_type": "bearer",
+        "user_id": user.user_id,
+        "role": user.role,
+        "name": user.name,
+        "must_change_password": bool(user.must_change_password),
+    }
+
+
+async def verify_temporary_password(user: models.User, password: str, db: AsyncSession):
+    now = datetime.utcnow()
+    if user.temporary_password_expires_at is None or now >= user.temporary_password_expires_at:
+        raise HTTPException(status_code=401, detail="Temporary credential expired. Contact your school administrator.")
+    if user.temporary_password_locked_until:
+        if now < user.temporary_password_locked_until:
+            raise HTTPException(status_code=429, detail="Temporary-credential sign-in paused for 15 minutes. Try later or contact your school administrator.")
+        user.temporary_password_locked_until = None
+        user.temporary_password_failures = 0
+    if not verify_password(password, user.password_hash):
+        user.temporary_password_failures += 1
+        if user.temporary_password_failures >= 10:
+            user.temporary_password_locked_until = now + timedelta(minutes=15)
+        await db.commit()
+        if user.temporary_password_locked_until:
+            raise HTTPException(status_code=429, detail="Temporary-credential sign-in paused for 15 minutes. Try later or contact your school administrator.")
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    user.temporary_password_failures = 0
+    user.temporary_password_locked_until = None
 
 
 async def get_media_user(
@@ -119,6 +173,7 @@ async def get_media_user(
         result = await db.execute(select(models.User).filter(models.User.user_id == user_id))
         user = result.scalar_one_or_none()
         if user:
+            _check_session(user, user.auth_version)
             return user
     raise HTTPException(status_code=401, detail="Authentication required")
 

@@ -115,29 +115,27 @@ def _bank_options():
     )
 
 
-async def _get_quiz(db: AsyncSession, quiz_id: int) -> models.Quiz:
-    quiz = (
-        await db.execute(
-            select(models.Quiz).options(*_quiz_options()).filter(
-                models.Quiz.quiz_id == quiz_id,
-            ).execution_options(populate_existing=True)
-        )
-    ).scalar_one_or_none()
+async def _get_quiz(db: AsyncSession, quiz_id: int, *, lock: bool = False) -> models.Quiz:
+    query = select(models.Quiz).options(*_quiz_options()).filter(
+        models.Quiz.quiz_id == quiz_id,
+    ).execution_options(populate_existing=True)
+    if lock:
+        query = query.with_for_update()
+    quiz = (await db.execute(query)).scalar_one_or_none()
     if quiz is None:
         raise HTTPException(status_code=404, detail="Quiz not found.")
     return quiz
 
 
 async def _get_bank_question(
-    db: AsyncSession, question_id: int,
+    db: AsyncSession, question_id: int, *, lock: bool = False,
 ) -> models.QuestionBankQuestion:
-    question = (
-        await db.execute(
-            select(models.QuestionBankQuestion).options(*_bank_options()).filter(
-                models.QuestionBankQuestion.question_id == question_id,
-            ).execution_options(populate_existing=True)
-        )
-    ).scalar_one_or_none()
+    query = select(models.QuestionBankQuestion).options(*_bank_options()).filter(
+        models.QuestionBankQuestion.question_id == question_id,
+    ).execution_options(populate_existing=True)
+    if lock:
+        query = query.with_for_update()
+    question = (await db.execute(query)).scalar_one_or_none()
     if question is None:
         raise HTTPException(status_code=404, detail="Question bank entry not found.")
     return question
@@ -174,8 +172,41 @@ def _display_status(quiz: models.Quiz, now: datetime | None = None) -> str:
     return "open"
 
 
+def _content_metadata(question) -> dict:
+    return {
+        "topics": list(question.topics or []),
+        "notation": question.notation or "plain_text",
+        "spoken_question_text": question.spoken_question_text,
+        "spoken_options": list(question.spoken_options) if question.spoken_options else None,
+        "spoken_explanation": question.spoken_explanation,
+        "spoken_reviewed": bool(question.spoken_reviewed),
+    }
+
+
+def _record_revision(db: AsyncSession, question: models.QuestionBankQuestion) -> None:
+    options = sorted(question.options, key=lambda option: option.position)
+    db.add(models.QuestionBankRevision(
+        question_id=question.question_id, revision=question.revision,
+        content={
+            **_content_metadata(question),
+            "class_id": question.class_id, "subject_id": question.subject_id,
+            "question_text": question.question_text, "explanation": question.explanation,
+            "options": [option.option_text for option in options],
+            "correct_option_index": next(index for index, option in enumerate(options) if option.is_correct),
+        },
+    ))
+
+
+def _spoken_option(question, option) -> str | None:
+    if option is None or not question.spoken_reviewed or not question.spoken_options:
+        return None
+    return question.spoken_options[option.position]
+
+
 def _bank_payload(question: models.QuestionBankQuestion) -> dict:
     return {
+        **_content_metadata(question),
+        "revision": question.revision,
         "question_id": question.question_id,
         "owner_teacher_id": question.owner_teacher_id,
         "class_id": question.class_id,
@@ -202,6 +233,8 @@ def _bank_payload(question: models.QuestionBankQuestion) -> dict:
 
 def _author_question_payload(question: models.QuizQuestion) -> dict:
     return {
+        **_content_metadata(question),
+        "source_revision": question.source_revision,
         "quiz_question_id": question.quiz_question_id,
         "source_question_id": question.source_question_id,
         "question_text": question.question_text,
@@ -229,6 +262,9 @@ def _quiz_payload(quiz: models.Quiz, include_questions: bool = False) -> dict:
         "subject_name": quiz.subject.name if quiz.subject else None,
         "title": quiz.title,
         "description": quiz.description,
+        "mode": quiz.mode,
+        "feedback_policy": quiz.feedback_policy,
+        "feedback_release_at": quiz.feedback_release_at,
         "status": quiz.status,
         "display_status": _display_status(quiz),
         "attempt_limit": quiz.attempt_limit,
@@ -260,11 +296,14 @@ def _safe_question(
     return {
         "quiz_question_id": question.quiz_question_id,
         "question_text": question.question_text,
+        "spoken_question_text": question.spoken_question_text if question.spoken_reviewed else None,
+        "topics": list(question.topics or []),
         "position": question.position,
         "options": [
             {
                 "quiz_option_id": option.quiz_option_id,
                 "option_text": option.option_text,
+                "spoken_option_text": _spoken_option(question, option),
                 "position": index,
             }
             for index, option in enumerate(ordered)
@@ -274,6 +313,15 @@ def _safe_question(
 
 def _validate_snapshot(question: models.QuizQuestion) -> list[str]:
     errors = []
+    try:
+        qs.QuestionContent(
+            **_content_metadata(question),
+            question_text=question.question_text, explanation=question.explanation,
+            options=[option.option_text for option in question.options],
+            correct_option_index=0,
+        )
+    except ValueError as error:
+        errors.append(f"Question {question.position + 1} has invalid content or unreviewed spoken notation: {error}")
     if not question.question_text.strip():
         errors.append(f"Question {question.position + 1} has no text.")
     if len(question.options) != 4:
@@ -331,6 +379,8 @@ def _snapshot_from_bank(
     quiz: models.Quiz, question: models.QuestionBankQuestion,
 ) -> models.QuizQuestion:
     snapshot = models.QuizQuestion(
+        **_content_metadata(question),
+        source_revision=question.revision,
         quiz_id=quiz.quiz_id,
         source_question_id=question.question_id,
         question_text=question.question_text,
@@ -392,6 +442,8 @@ async def create_bank_question(
         db, teacher.user_id, payload.class_id, payload.subject_id,
     )
     question = models.QuestionBankQuestion(
+        **_content_metadata(payload),
+        revision=1,
         owner_teacher_id=teacher.user_id,
         class_id=payload.class_id,
         subject_id=payload.subject_id,
@@ -407,6 +459,8 @@ async def create_bank_question(
         for index, text in enumerate(payload.options)
     ]
     db.add(question)
+    await db.flush()
+    _record_revision(db, question)
     await db.commit()
     return _bank_payload(await _get_bank_question(db, question.question_id))
 
@@ -429,8 +483,10 @@ async def update_bank_question(
     teacher: models.User = Depends(auth.require_teacher),
     db: AsyncSession = Depends(get_db),
 ):
-    question = await _get_bank_question(db, question_id)
+    question = await _get_bank_question(db, question_id, lock=True)
     access.require_bank_question_owner(teacher, question)
+    if "expected_revision" in payload.model_fields_set and payload.expected_revision != question.revision:
+        raise HTTPException(status_code=409, detail="This question changed. Refresh and review the current revision before saving.")
     await access.require_teacher_assignment(
         db, teacher.user_id, payload.class_id, payload.subject_id,
     )
@@ -438,9 +494,35 @@ async def update_bank_question(
     question.subject_id = payload.subject_id
     question.question_text = payload.question_text
     question.explanation = payload.explanation
+    for field, value in _content_metadata(payload).items():
+        setattr(question, field, value)
+    question.revision = (question.revision or 0) + 1
     await _replace_bank_options(db, question, payload)
+    _record_revision(db, question)
     await db.commit()
     return _bank_payload(await _get_bank_question(db, question_id))
+
+
+@router.get("/question-bank/{question_id}/revisions")
+async def bank_question_revisions(
+    question_id: int,
+    offset: int = Query(0, ge=0),
+    teacher: models.User = Depends(auth.require_teacher),
+    db: AsyncSession = Depends(get_db),
+):
+    question = await _get_bank_question(db, question_id)
+    access.require_bank_question_owner(teacher, question)
+    rows = (await db.execute(
+        select(models.QuestionBankRevision)
+        .filter(models.QuestionBankRevision.question_id == question_id)
+        .order_by(models.QuestionBankRevision.revision.desc()).offset(offset).limit(21)
+    )).scalars().all()
+    return {
+        "question_id": question_id,
+        "has_more": len(rows) > 20,
+        "revisions": [{"revision": row.revision, "recorded_at": row.recorded_at, "content": row.content} for row in rows[:20]],
+        "history_notice": "Only revisions saved after revision tracking was introduced are available. Older history is unknown.",
+    }
 
 
 @router.post("/question-bank/{question_id}/archive", response_model=qs.BankQuestionOut)
@@ -470,6 +552,8 @@ async def duplicate_bank_question(
         db, teacher.user_id, source.class_id, source.subject_id,
     )
     duplicate = models.QuestionBankQuestion(
+        **_content_metadata(source),
+        revision=1,
         owner_teacher_id=teacher.user_id,
         class_id=source.class_id,
         subject_id=source.subject_id,
@@ -485,6 +569,8 @@ async def duplicate_bank_question(
         for option in source.options
     ]
     db.add(duplicate)
+    await db.flush()
+    _record_revision(db, duplicate)
     await db.commit()
     return _bank_payload(await _get_bank_question(db, duplicate.question_id))
 
@@ -521,6 +607,8 @@ async def create_quiz(
     teacher: models.User = Depends(auth.require_teacher),
     db: AsyncSession = Depends(get_db),
 ):
+    if payload.feedback_policy == "legacy_immediate":
+        raise HTTPException(422, "Legacy immediate feedback is only retained for existing quizzes.")
     await access.require_teacher_assignment(
         db, teacher.user_id, payload.class_id, payload.subject_id,
     )
@@ -554,6 +642,8 @@ async def update_quiz(
 ):
     quiz = await _get_quiz(db, quiz_id)
     access.require_quiz_owner(teacher, quiz)
+    if payload.feedback_policy == "legacy_immediate" and quiz.feedback_policy != "legacy_immediate":
+        raise HTTPException(422, "Legacy feedback cannot be enabled on a new quiz.")
     if quiz.status != "draft":
         raise HTTPException(status_code=409, detail="Only draft quiz settings can be edited.")
     if await _attempt_exists(db, quiz_id):
@@ -612,6 +702,8 @@ async def create_and_add_question(
     source = None
     if payload.save_to_bank:
         source = models.QuestionBankQuestion(
+            **_content_metadata(payload),
+            revision=1,
             owner_teacher_id=teacher.user_id,
             class_id=quiz.class_id,
             subject_id=quiz.subject_id,
@@ -628,7 +720,10 @@ async def create_and_add_question(
         ]
         db.add(source)
         await db.flush()
+        _record_revision(db, source)
     snapshot = models.QuizQuestion(
+        **_content_metadata(payload),
+        source_revision=source.revision if source else None,
         quiz_id=quiz.quiz_id,
         source_question_id=source.question_id if source else None,
         question_text=payload.question_text,
@@ -850,6 +945,9 @@ async def duplicate_quiz(
         subject_id=source.subject_id,
         title=f"{source.title} (copy)",
         description=source.description,
+        mode=source.mode,
+        feedback_policy=("after_completion" if source.feedback_policy == "legacy_immediate" else source.feedback_policy),
+        feedback_release_at=source.feedback_release_at,
         status="draft",
         attempt_limit=source.attempt_limit,
         opens_at=None,
@@ -861,6 +959,8 @@ async def duplicate_quiz(
     duplicate.questions = []
     for source_question in source.questions:
         question = models.QuizQuestion(
+            **_content_metadata(source_question),
+            source_revision=source_question.source_revision,
             source_question_id=source_question.source_question_id,
             question_text=source_question.question_text,
             explanation=source_question.explanation,
@@ -933,16 +1033,21 @@ async def _student_quiz_payload(
         attempt for attempt in attempts
         if attempt.status in {"completed", "timed_out"}
     ]
+    for attempt in attempts:
+        attempt.quiz = quiz
     active = next(
         (attempt for attempt in attempts if attempt.status == "in_progress"),
         None,
     )
-    attempts_remaining = max(quiz.attempt_limit - len(attempts), 0)
+    attempts_remaining = None if quiz.mode == "practice" else max(quiz.attempt_limit - len(attempts), 0)
     display_status = _display_status(quiz, now)
     return {
         "quiz_id": quiz.quiz_id,
         "title": quiz.title,
         "description": quiz.description,
+        "mode": quiz.mode,
+        "feedback_policy": quiz.feedback_policy,
+        "feedback_release_at": quiz.feedback_release_at,
         "class_name": quiz.school_class.name,
         "subject_id": quiz.subject_id,
         "subject_name": quiz.subject.name,
@@ -957,12 +1062,12 @@ async def _student_quiz_payload(
         "attempts_remaining": attempts_remaining,
         "can_start_attempt": (
             active is not None
-            or (display_status == "open" and attempts_remaining > 0)
+            or (display_status == "open" and (attempts_remaining is None or attempts_remaining > 0))
         ),
         "in_progress_attempt_id": active.attempt_id if active else None,
         "highest_score": (
-            max(attempt.percentage_score for attempt in completed)
-            if completed else None
+            max((attempt.percentage_score for attempt in completed if _score_released(attempt)), default=None)
+            if quiz.mode == "graded" else None
         ),
         "question_count": len(quiz.questions),
         "server_time": now,
@@ -1037,7 +1142,41 @@ def _next_question(attempt: models.QuizAttempt) -> dict | None:
     return None
 
 
-def _attempt_payload(attempt: models.QuizAttempt, include_question: bool = True) -> dict:
+def _feedback_released(attempt: models.QuizAttempt) -> bool:
+    quiz = attempt.quiz
+    if quiz.mode == "practice" or quiz.feedback_policy == "legacy_immediate":
+        return True
+    if attempt.status == "in_progress" or quiz.feedback_policy == "score_only":
+        return False
+    if quiz.feedback_policy == "scheduled":
+        return quiz.feedback_release_at is not None and _now() >= quiz.feedback_release_at
+    return quiz.feedback_policy == "after_completion"
+
+
+def _score_released(attempt: models.QuizAttempt) -> bool:
+    if attempt.quiz.mode == "practice" or attempt.quiz.feedback_policy == "legacy_immediate":
+        return True
+    if attempt.status == "in_progress":
+        return False
+    return attempt.quiz.feedback_policy != "scheduled" or _feedback_released(attempt)
+
+
+def _feedback_message(attempt: models.QuizAttempt) -> str:
+    quiz = attempt.quiz
+    if quiz.mode == "practice":
+        return "Practice feedback, not an academic grade."
+    if quiz.feedback_policy == "score_only":
+        return "Only the score is released after final submission. Answer keys and explanations are not released."
+    if quiz.feedback_policy == "scheduled":
+        return f"Answer feedback and scores are released after final submission and {quiz.feedback_release_at.isoformat()} UTC."
+    if quiz.feedback_policy == "after_completion" and attempt.status == "in_progress":
+        return "Answer saved and locked. Answer feedback and scores are released after final submission."
+    return "Answer feedback is available."
+
+
+def _attempt_payload(attempt: models.QuizAttempt, include_question: bool = True, *, teacher: bool = False) -> dict:
+    score_visible = teacher or _score_released(attempt)
+    graded = attempt.quiz.mode == "graded"
     return {
         "attempt_id": attempt.attempt_id,
         "quiz_id": attempt.quiz_id,
@@ -1046,9 +1185,13 @@ def _attempt_payload(attempt: models.QuizAttempt, include_question: bool = True)
         "started_at": attempt.started_at,
         "deadline_at": attempt.deadline_at,
         "completed_at": attempt.completed_at,
-        "correct_count": attempt.correct_count,
+        "correct_count": attempt.correct_count if score_visible else None,
         "total_questions": attempt.total_questions,
-        "percentage_score": attempt.percentage_score,
+        "percentage_score": attempt.percentage_score if score_visible and graded else None,
+        "is_graded": graded,
+        "score_released": score_visible,
+        "feedback_message": _feedback_message(attempt),
+        "extra_time_minutes": attempt.extra_time_minutes,
         "answered_count": len(attempt.responses),
         "server_time": _now(),
         "question": (
@@ -1078,7 +1221,7 @@ async def start_or_resume_attempt(
     student: models.User = Depends(auth.require_student),
     db: AsyncSession = Depends(get_db),
 ):
-    quiz = await _get_quiz(db, quiz_id)
+    quiz = await _get_quiz(db, quiz_id, lock=True)
     await access.require_student_quiz_access(db, student, quiz)
     now = _now()
     existing = (
@@ -1096,6 +1239,7 @@ async def start_or_resume_attempt(
         existing.quiz = quiz
         if not await _expire_if_due(db, existing, now):
             return _attempt_payload(existing)
+        quiz = await _get_quiz(db, quiz_id, lock=True)
     await _close_if_due(db, quiz, now)
     if quiz.status != "published":
         await db.commit()
@@ -1110,7 +1254,7 @@ async def start_or_resume_attempt(
             )
         )
     ).scalars().all()
-    if len(attempts) >= quiz.attempt_limit:
+    if quiz.mode != "practice" and len(attempts) >= quiz.attempt_limit:
         raise HTTPException(status_code=409, detail="Attempt limit reached.")
     if not quiz.questions:
         raise HTTPException(status_code=409, detail="This quiz has no questions.")
@@ -1129,8 +1273,10 @@ async def start_or_resume_attempt(
             random.SystemRandom().shuffle(option_ids)
         option_order[str(question_id)] = option_ids
     boundaries = []
+    accommodation = await db.get(models.QuizAccommodation, (quiz_id, student.user_id))
+    extra_minutes = accommodation.extra_minutes if accommodation is not None and quiz.time_limit_minutes else 0
     if quiz.time_limit_minutes:
-        boundaries.append(now + timedelta(minutes=quiz.time_limit_minutes))
+        boundaries.append(now + timedelta(minutes=quiz.time_limit_minutes + extra_minutes))
     if quiz.closes_at:
         boundaries.append(quiz.closes_at)
     attempt = models.QuizAttempt(
@@ -1140,6 +1286,7 @@ async def start_or_resume_attempt(
         status="in_progress",
         started_at=now,
         deadline_at=min(boundaries) if boundaries else None,
+        extra_time_minutes=extra_minutes,
         total_questions=len(question_ids),
         question_order=question_ids,
         option_order=option_order,
@@ -1197,18 +1344,23 @@ def _feedback(
         if option.quiz_option_id == response.selected_option_id
     )
     correct = next(option for option in question.options if option.is_correct)
-    return {
+    result = {
         "response_id": response.response_id,
         "quiz_question_id": question.quiz_question_id,
         "selected_option_id": selected.quiz_option_id,
         "selected_option_text": selected.option_text,
-        "correct_option_id": correct.quiz_option_id,
-        "correct_option_text": correct.option_text,
-        "is_correct": response.is_correct,
-        "explanation": question.explanation,
+        "selected_option_spoken_text": _spoken_option(question, selected),
+        "feedback_released": _feedback_released(attempt),
+        "feedback_message": _feedback_message(attempt),
         "submitted_at": response.submitted_at,
         "next_question": _next_question(attempt),
     }
+    if result["feedback_released"]:
+        result.update(correct_option_id=correct.quiz_option_id, correct_option_text=correct.option_text,
+                      correct_option_spoken_text=_spoken_option(question, correct),
+                      spoken_explanation=question.spoken_explanation if question.spoken_reviewed else None,
+                      is_correct=response.is_correct, explanation=question.explanation)
+    return result
 
 
 @router.post(
@@ -1337,7 +1489,8 @@ async def student_attempt_history(
     return {
         "quiz_id": quiz_id,
         "highest_score": (
-            max(attempt.percentage_score for attempt in final) if final else None
+            max((attempt.percentage_score for attempt in final if _score_released(attempt)), default=None)
+            if quiz.mode == "graded" else None
         ),
         "attempts": [
             _attempt_payload(attempt, include_question=False)
@@ -1346,7 +1499,10 @@ async def student_attempt_history(
     }
 
 
-def _review_payload(attempt: models.QuizAttempt) -> dict:
+def _review_payload(attempt: models.QuizAttempt, *, teacher: bool = False) -> dict:
+    if not teacher and not _feedback_released(attempt):
+        return {"attempt": _attempt_payload(attempt, include_question=False), "questions": [],
+                "feedback_message": _feedback_message(attempt)}
     responses = {
         response.quiz_question_id: response for response in attempt.responses
     }
@@ -1369,17 +1525,22 @@ def _review_payload(attempt: models.QuizAttempt) -> dict:
             {
                 "quiz_question_id": question_id,
                 "question_text": question.question_text,
+                "spoken_question_text": question.spoken_question_text if question.spoken_reviewed else None,
                 "selected_option_id": selected.quiz_option_id if selected else None,
                 "selected_option_text": selected.option_text if selected else None,
+                "selected_option_spoken_text": _spoken_option(question, selected),
                 "correct_option_id": correct.quiz_option_id,
                 "correct_option_text": correct.option_text,
+                "correct_option_spoken_text": _spoken_option(question, correct),
+                "spoken_explanation": question.spoken_explanation if question.spoken_reviewed else None,
                 "is_correct": bool(response and response.is_correct),
                 "explanation": question.explanation,
             }
         )
     return {
-        "attempt": _attempt_payload(attempt, include_question=False),
+        "attempt": _attempt_payload(attempt, include_question=False, teacher=teacher),
         "questions": review,
+        "feedback_message": _feedback_message(attempt),
     }
 
 
@@ -1409,6 +1570,32 @@ async def _owner_quiz(
     return quiz
 
 
+@router.post("/teacher/quizzes/{quiz_id}/accommodations")
+async def set_accommodation(
+    quiz_id: int, payload: qs.AccommodationUpdate,
+    teacher: models.User = Depends(auth.require_teacher), db: AsyncSession = Depends(get_db),
+):
+    quiz = await _get_quiz(db, quiz_id, lock=True)
+    access.require_quiz_owner(teacher, quiz)
+    await access.require_teacher_assignment(db, teacher.user_id, quiz.class_id, quiz.subject_id)
+    student = await db.get(models.User, payload.student_id)
+    if student is None or student.role != "student":
+        raise HTTPException(404, "Eligible student not found.")
+    membership = await access.get_active_student_membership(db, student.user_id)
+    if membership.class_id != quiz.class_id:
+        raise HTTPException(403, "This student is not eligible for this quiz.")
+    if quiz.mode == "practice" or quiz.time_limit_minutes is None:
+        raise HTTPException(422, "This quiz has no per-attempt timer to extend.")
+    accommodation = await db.get(models.QuizAccommodation, (quiz_id, student.user_id))
+    if accommodation is None:
+        accommodation = models.QuizAccommodation(quiz_id=quiz_id, student_id=student.user_id)
+        db.add(accommodation)
+    accommodation.extra_minutes = payload.extra_minutes
+    await db.commit()
+    return {"ok": True, "student_id": student.user_id, "extra_minutes": payload.extra_minutes,
+            "message": "Saved for future attempts only. Existing attempt deadlines remain unchanged; quiz closing time still applies."}
+
+
 @router.get(
     "/teacher/quizzes/{quiz_id}/results",
     response_model=list[qs.EligibleStudentOut],
@@ -1420,6 +1607,8 @@ async def quiz_results(
 ):
     quiz = await _owner_quiz(db, teacher, quiz_id)
     students = await _eligible_students(db, quiz.class_id)
+    accommodations = (await db.execute(select(models.QuizAccommodation).where(models.QuizAccommodation.quiz_id == quiz_id))).scalars().all()
+    extra_by_student = {item.student_id: item.extra_minutes for item in accommodations}
     student_ids = [student.user_id for student in students]
     attempts = (
         await db.execute(
@@ -1446,14 +1635,15 @@ async def quiz_results(
             {
                 "student_id": student.user_id,
                 "student_name": student.name,
+                "extra_time_minutes": extra_by_student.get(student.user_id, 0),
                 "started": bool(student_attempts),
                 "completed": bool(final),
                 "highest_score": (
                     max(attempt.percentage_score for attempt in final)
-                    if final else None
+                    if final and quiz.mode == "graded" else None
                 ),
                 "attempts": [
-                    _attempt_payload(attempt, include_question=False)
+                    _attempt_payload(attempt, include_question=False, teacher=True)
                     for attempt in student_attempts
                 ],
             }
@@ -1520,7 +1710,7 @@ async def teacher_attempt_review(
     attempt = await _get_attempt(db, attempt_id)
     if attempt.quiz_id != quiz_id:
         raise HTTPException(status_code=404, detail="Quiz attempt not found.")
-    return _review_payload(attempt)
+    return _review_payload(attempt, teacher=True)
 
 
 @router.get(
@@ -1579,12 +1769,16 @@ async def quiz_summary(
                 "quiz_question_id": question.quiz_question_id,
                 "question_text": question.question_text,
                 "response_count": len(responses),
+                "spoken_question_text": question.spoken_question_text if question.spoken_reviewed else None,
                 "correct_percentage": _score(correct, len(responses)),
             }
         )
     started = len(by_student)
     completed = len(highest_scores)
+    grades = highest_scores if quiz.mode == "graded" else []
     return {
+        "mode": quiz.mode,
+        "time_limit_minutes": quiz.time_limit_minutes,
         "eligible_students": eligible,
         "started": started,
         "completed": completed,
@@ -1592,12 +1786,12 @@ async def quiz_summary(
         "completion_percentage": _score(completed, eligible),
         "average_highest_score": (
             float(
-                (sum(Decimal(str(score)) for score in highest_scores) / len(highest_scores))
+                (sum(Decimal(str(score)) for score in grades) / len(grades))
                 .quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
             )
-            if highest_scores else None
+            if grades else None
         ),
-        "highest_score": max(highest_scores) if highest_scores else None,
-        "lowest_completed_score": min(highest_scores) if highest_scores else None,
+        "highest_score": max(grades) if grades else None,
+        "lowest_completed_score": min(grades) if grades else None,
         "per_question": question_stats,
     }

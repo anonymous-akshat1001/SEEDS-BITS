@@ -5,6 +5,10 @@ import 'package:frontend/widgets/keypad_confirmation_dialog.dart';
 
 void main() {
   testWidgets('custom keypad keys confirm and cancel a dialog', (tester) async {
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      const MethodChannel('flutter_tts'),
+      (_) async => 1,
+    );
     bool? result;
 
     await tester.pumpWidget(

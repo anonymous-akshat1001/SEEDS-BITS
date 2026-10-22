@@ -50,6 +50,7 @@ class KeypadFocusTarget {
 
   bool get enabled =>
       node.context != null &&
+      node.parent != null &&
       node.canRequestFocus &&
       (isEnabled?.call() ?? true);
 }
@@ -71,6 +72,7 @@ class KeypadInstructionWrapper extends StatefulWidget {
     this.showDebugOverlay = const bool.fromEnvironment('SEEDS_KEYPAD_QA'),
     this.onStarKey,
     this.onHashKey,
+    this.onSpeechRescued,
     this.focusTargets = const [],
     this.navigationController,
   });
@@ -84,6 +86,7 @@ class KeypadInstructionWrapper extends StatefulWidget {
   final bool showDebugOverlay;
   final VoidCallback? onStarKey;
   final VoidCallback? onHashKey;
+  final VoidCallback? onSpeechRescued;
   final List<KeypadFocusTarget> focusTargets;
   final KeypadNavigationController? navigationController;
 
@@ -100,10 +103,12 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
   final Map<FocusNode, VoidCallback> _focusListeners = {};
   final Map<int, DateTime> _lastFiredAt = {};
   FocusNode? _navigationOnlyTextNode;
+  FocusNode? _returnFocusNode;
   Timer? _instructionTimer;
   ModalRoute<void>? _subscribedRoute;
   static const _debounceDuration = Duration(milliseconds: 300);
   static bool _userInteracted = false;
+  static final _keypadScopes = <FocusNode>{};
 
   String _debugLastKey = '';
   String _debugLastChar = '';
@@ -117,6 +122,8 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
     _navigationController =
         widget.navigationController ?? KeypadNavigationController();
     _attachFocusListeners();
+    _keypadScopes.add(_scopeFocusNode);
+    FocusManager.instance.addEarlyKeyEventHandler(_handleEarlyKeyEvent);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -152,7 +159,14 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _navigationController.exitTextEditing();
-        _scopeFocusNode.requestFocus();
+        final previous = _returnFocusNode;
+        if (previous != null &&
+            previous.context != null &&
+            previous.canRequestFocus) {
+          previous.requestFocus();
+        } else {
+          _scopeFocusNode.requestFocus();
+        }
       }
     });
     if (widget.autoPlay) {
@@ -162,6 +176,10 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
 
   @override
   void didPushNext() {
+    final primary = FocusManager.instance.primaryFocus;
+    if (primary != null && primary.ancestors.contains(_scopeFocusNode)) {
+      _returnFocusNode = primary;
+    }
     _instructionTimer?.cancel();
     _navigationController.exitTextEditing();
     _navigationOnlyTextNode = null;
@@ -196,13 +214,14 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
     _focusListeners.clear();
   }
 
-  Future<void> _playInstructions() async {
+  Future<void> _playInstructions({bool detailed = false}) async {
+    if (TtsService.mode == SpeechMode.screenReader) return;
     if (kIsWeb && !_userInteracted) return;
     final route = ModalRoute.of(context);
     if (route != null && !route.isCurrent) return;
     try {
-      await TtsService.stop();
       if (widget.audioAsset != null) {
+        await TtsService.stop();
         await _audioPlayer.stop();
         await _audioPlayer.play(AssetSource(widget.audioAsset!));
         return;
@@ -210,7 +229,7 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
       // Stopping a platform audio player can complete late on some devices.
       // Do not let that delay or suppress the destination screen's TTS.
       unawaited(_audioPlayer.stop());
-      final instructions = _instructionText();
+      final instructions = _instructionText(detailed: detailed);
       if (instructions.isNotEmpty) await TtsService.speak(instructions);
     } catch (error) {
       debugPrint('[KEYPAD INSTRUCTIONS] $error');
@@ -235,13 +254,19 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
 
   void _speakSafely(String text) {
     unawaited(
-      TtsService.speak(text).catchError((Object error) {
+      TtsService.speak(text, priority: SpeechPriority.navigation).catchError((
+        Object error,
+      ) {
         debugPrint('[KEYPAD TTS] $error');
       }),
     );
   }
 
-  String _instructionText() {
+  String _instructionText({bool detailed = false}) {
+    if (!detailed && TtsService.verbosity == SpeechVerbosity.essential) {
+      return '${widget.screenName ?? 'SEEDS'}. '
+          'Use up and down to move, and OK to select. Press star for all shortcuts.';
+    }
     if (widget.labels.isNotEmpty) {
       return '${buildTtsInstructions(widget.labels, screenName: widget.screenName)} '
           'Use the direction keys to move. Press OK to activate a control or edit a field. '
@@ -252,6 +277,21 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
           'Press star to repeat these instructions.';
     }
     return '';
+  }
+
+  Future<void> _repeatHelp() async {
+    await TtsService.rescue();
+    if (!mounted) return;
+    if (TtsService.mode == SpeechMode.selfVoicing) {
+      widget.onSpeechRescued?.call();
+    }
+    final route = ModalRoute.of(context);
+    if (route != null && !route.isCurrent) return;
+    if (widget.onStarKey != null) {
+      widget.onStarKey!();
+    } else {
+      await _playInstructions(detailed: true);
+    }
   }
 
   void _onInteraction() {
@@ -266,8 +306,9 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
     final primary = FocusManager.instance.primaryFocus;
     if (primary == null) return null;
     for (final target in widget.focusTargets) {
-      if (identical(primary, target.node) || target.node.hasFocus)
+      if (identical(primary, target.node) || target.node.hasFocus) {
         return target;
+      }
     }
     return null;
   }
@@ -332,23 +373,29 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
         key == LogicalKeyboardKey.select;
   }
 
+  KeyEventResult _handleEarlyKeyEvent(KeyEvent event) {
+    final primary = FocusManager.instance.primaryFocus;
+    if (primary == null || !_scopeFocusNode.hasFocus) {
+      return KeyEventResult.ignored;
+    }
+    // Native sliders consume arrows before bubbling reaches the screen.
+    // Only the innermost keypad scope may handle a key ahead of those controls.
+    for (final node in [primary, ...primary.ancestors]) {
+      if (_keypadScopes.contains(node)) {
+        return identical(node, _scopeFocusNode)
+            ? _handleKeyEvent(_scopeFocusNode, event)
+            : KeyEventResult.ignored;
+      }
+    }
+    return KeyEventResult.ignored;
+  }
+
   KeyEventResult _handleKeyEvent(FocusNode node, KeyEvent event) {
     if (event is! KeyDownEvent) return KeyEventResult.ignored;
     _onInteraction();
 
     final key = event.logicalKey;
     final character = event.character;
-
-    if (isStarKey(key)) {
-      (widget.onStarKey ?? _playInstructions).call();
-      _updateDebug(key.keyLabel, character, null, true, isStar: true);
-      return KeyEventResult.handled;
-    }
-    if (isHashKey(key) && widget.onHashKey != null) {
-      widget.onHashKey!();
-      _updateDebug(key.keyLabel, character, null, true, isHash: true);
-      return KeyEventResult.handled;
-    }
 
     final current = _currentTarget;
     final unregisteredEditable = current == null && _isEditableInputFocused();
@@ -385,6 +432,21 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
       return KeyEventResult.ignored;
     }
 
+    if (isStarKey(key)) {
+      unawaited(_repeatHelp());
+      _updateDebug(key.keyLabel, character, null, true, isStar: true);
+      return KeyEventResult.handled;
+    }
+    if (isHashKey(key)) {
+      if (widget.onHashKey != null) {
+        widget.onHashKey!();
+      } else {
+        unawaited(Navigator.of(context).maybePop());
+      }
+      _updateDebug(key.keyLabel, character, null, true, isHash: true);
+      return KeyEventResult.handled;
+    }
+
     if (key == LogicalKeyboardKey.arrowUp) {
       _moveFocus(-1);
       return KeyEventResult.handled;
@@ -403,7 +465,16 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
     }
     if (_isEnterKey(key)) {
       if (current == null) {
-        _moveFocus(1);
+        final primary = FocusManager.instance.primaryFocus;
+        if (primary != null &&
+            primary != _scopeFocusNode &&
+            primary.context != null) {
+          Actions.maybeInvoke(primary.context!, const ActivateIntent());
+        } else {
+          _moveFocus(1);
+        }
+      } else if (!current.enabled) {
+        _speakSafely('This control is not available right now.');
       } else if (current.isTextField) {
         _navigationOnlyTextNode = null;
         _navigationController.enterTextEditing(current.node);
@@ -453,6 +524,8 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
 
   @override
   void dispose() {
+    FocusManager.instance.removeEarlyKeyEventHandler(_handleEarlyKeyEvent);
+    _keypadScopes.remove(_scopeFocusNode);
     _instructionTimer?.cancel();
     if (_subscribedRoute != null) routeObserver.unsubscribe(this);
     _detachFocusListeners();

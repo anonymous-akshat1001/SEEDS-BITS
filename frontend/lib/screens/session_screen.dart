@@ -4,6 +4,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show PlatformException;
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:file_picker/file_picker.dart';
@@ -13,13 +14,22 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import '../services/api_service.dart';
 import '../services/sse_service.dart';
+import '../services/session_microphone_controller.dart';
+import '../services/auth_session_service.dart';
+import '../services/session_voice_controller.dart';
 import '../services/tts_service.dart';
 import '../widgets/key_instruction_wrapper.dart';
 import '../widgets/keypad_confirmation_dialog.dart';
+import '../widgets/classroom_console_dialog.dart';
+import '../widgets/classroom_check_dialog.dart';
+import '../services/classroom_check_state.dart';
+import '../services/private_note_recorder.dart';
+import 'lesson_sequences_screen.dart';
 import 'invite_students_screen.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../utils/ui_utils.dart';
 import '../utils/keypad_actions.dart';
+import '../main.dart' show routeObserver;
 
 final baseUrl = dotenv.env['API_BASE_URL'];
 
@@ -47,7 +57,8 @@ class SessionScreen extends StatefulWidget {
   State<SessionScreen> createState() => _SessionScreenState();
 }
 
-class _SessionScreenState extends State<SessionScreen> {
+class _SessionScreenState extends State<SessionScreen>
+    with WidgetsBindingObserver, RouteAware {
   // ── WebRTC ─────────────────────────────────────────────────────────────
   MediaStream? _localStream;
   final Map<int, RTCPeerConnection> _peerConnections = {};
@@ -63,15 +74,56 @@ class _SessionScreenState extends State<SessionScreen> {
   // ── audio ──────────────────────────────────────────────────────────────
   final AudioPlayer _sessionAudioPlayer = AudioPlayer();
   final stt.SpeechToText _speech = stt.SpeechToText();
+  late final SessionVoiceController _voice = SessionVoiceController(
+    initialize: () {
+      // SpeechToText caches initialization; its public listeners still belong
+      // to the current session, not a previously disposed route.
+      _speech.statusListener = _voice.handleStatus;
+      _speech.errorListener = (_) => _voice.handleError();
+      return _speech.initialize(
+        onStatus: _voice.handleStatus,
+        onError: (_) => _voice.handleError(),
+      );
+    },
+    listen: (onResult) => _speech.listen(
+      listenOptions: stt.SpeechListenOptions(
+        listenMode: stt.ListenMode.confirmation,
+        partialResults: false,
+      ),
+      listenFor: const Duration(seconds: 12),
+      pauseFor: const Duration(seconds: 3),
+      onResult: (result) =>
+          onResult(result.recognizedWords, result.finalResult),
+    ),
+    cancel: _speech.cancel,
+    stopSpeech: TtsService.stopForVoiceCommands,
+    canAct: () =>
+        mounted &&
+        _voiceCommandsEnabled &&
+        !_isInitializing &&
+        (ModalRoute.of(context)?.isCurrent ?? false),
+    onCommand: _handleVoiceCommand,
+    onIssue: _voiceIssue,
+  );
+  final _voiceFocus = FocusNode(debugLabel: 'session-listen-command');
+  ModalRoute<void>? _voiceRoute;
+  bool _voiceUnmuteDialogOpen = false;
 
   // ── UI state ───────────────────────────────────────────────────────────
-  bool _muted = false;
+  late final _microphone = SessionMicrophoneController(
+    isAvailable: () => _localStream?.getAudioTracks().isNotEmpty == true,
+    setCaptureEnabled: (enabled) {
+      _localStream?.getAudioTracks().forEach(
+        (track) => track.enabled = enabled,
+      );
+    },
+    sendMute: (muted) => _sse.send({'type': 'mute_self', 'mute': muted}),
+  );
+  bool get _muted => _microphone.muted;
   bool _handRaised = false;
   bool _ttsEnabled = true;
   bool _voiceCommandsEnabled = false;
-  bool _voiceCommandsAvailable = false;
   bool _isInitializing = true;
-  Timer? _voiceRestartTimer;
 
   // Set from the SSE 'connected' event — authoritative server-assigned id
   int? _participantId;
@@ -90,6 +142,16 @@ class _SessionScreenState extends State<SessionScreen> {
   final List<Map<String, dynamic>> _messages = [];
   final Map<int, Map<String, dynamic>> _participants = {};
   final ScrollController _chatScrollController = ScrollController();
+  bool get _mutePending => _microphone.pending;
+  bool _handPending = false;
+  bool _chatPending = false;
+  bool _endingSession = false;
+  int _handRevision = 0;
+  String _connectionMessage = 'Connecting to the class.';
+  final _connectionFocus = FocusNode(debugLabel: 'session-connection-status');
+  final _retryConnectionFocus = FocusNode(
+    debugLabel: 'session-retry-connection',
+  );
 
   // ── Audio library panel toggle (teacher) ───────────────────────────────
   bool _showAudioPanel = false;
@@ -137,6 +199,17 @@ class _SessionScreenState extends State<SessionScreen> {
   );
   final FocusNode _chatTabFocusNode = FocusNode(debugLabel: 'session-chat-tab');
   final FocusNode _chatTtsFocusNode = FocusNode(debugLabel: 'session-chat-tts');
+  final _readMessageFocus = FocusNode(debugLabel: 'session-read-message');
+  final _readUpdatesFocus = FocusNode(debugLabel: 'session-read-updates');
+  final _stopSpeechFocus = FocusNode(debugLabel: 'session-stop-speech');
+  final _repeatHelpFocus = FocusNode(debugLabel: 'session-repeat-help');
+  final _consoleFocus = FocusNode(debugLabel: 'session-classroom-console');
+  final _consoleRevision = ValueNotifier<int>(0);
+  bool _consoleOpen = false;
+  final _checkFocus = FocusNode(debugLabel: 'session-classroom-check');
+  final _sequencesFocus = FocusNode(debugLabel: 'session-sequences');
+  final _checkState = ValueNotifier(const ClassroomCheckState());
+  bool _checkOpen = false;
   final FocusNode _chatFieldFocusNode = FocusNode(
     debugLabel: 'session-chat-field',
   );
@@ -171,12 +244,20 @@ class _SessionScreenState extends State<SessionScreen> {
   final Map<int, FocusNode> _previewAudioFocusNodes = {};
   final Map<int, FocusNode> _selectAudioFocusNodes = {};
   bool _isReturningToDashboard = false;
+  bool _leaveConfirmationOpen = false;
 
   // ── lifecycle ───────────────────────────────────────────────────────────
 
   @override
   void initState() {
     super.initState();
+    PrivateNoteRecorder.liveSessions++;
+    WidgetsBinding.instance.addObserver(this);
+    _voice.addListener(_voiceChanged);
+    TtsService.speaking.addListener(_speechActivityChanged);
+    _microphone.addListener(() {
+      if (mounted) setState(() {});
+    });
     _initialize();
 
     _sessionAudioPlayer.onPositionChanged.listen((pos) {
@@ -198,6 +279,18 @@ class _SessionScreenState extends State<SessionScreen> {
     });
 
     // Preview player for audio library
+    TtsService.registerLiveSession(this);
+    TtsService.registerRecordedPlayback(
+      _previewPlayer,
+      isPlaying: () => mounted && _previewingAudioId != null,
+      canResume: () => mounted && (ModalRoute.of(context)?.isCurrent ?? true),
+      onResumeSkipped: () {
+        if (mounted) setState(() => _previewingAudioId = null);
+      },
+      item: () => _previewPlayer.source,
+      pause: _previewPlayer.pause,
+      resume: _previewPlayer.resume,
+    );
     _previewPlayer.onPlayerComplete.listen((_) {
       if (mounted) setState(() => _previewingAudioId = null);
     });
@@ -212,12 +305,15 @@ class _SessionScreenState extends State<SessionScreen> {
     try {
       print('[INIT] Starting…');
       await _loadAccessibilitySettings();
+      if (!mounted) return;
       await _initializeMedia();
+      if (!mounted) return;
 
       // Join the session HTTP-side so a Participant row exists before SSE connects.
       // The SSE endpoint also creates the row if absent, but calling join first
       // ensures _participantId is known slightly earlier.
       await _joinSessionHttp();
+      if (!mounted) return;
 
       // Open the SSE stream — this also creates the participant row server-side
       // and returns the authoritative participant_id via the 'connected' event.
@@ -230,13 +326,11 @@ class _SessionScreenState extends State<SessionScreen> {
       setState(() => _isInitializing = false);
       // Speak key mappings for this screen
       await _repeatSessionInstructions();
-      if (_voiceCommandsEnabled) {
-        await _startVoiceCommands();
-      }
     } catch (e) {
       print('[INIT ERROR] $e');
+      if (!mounted) return;
       await _speakIfEnabled("Failed to initialize session");
-      setState(() => _isInitializing = false);
+      if (mounted) setState(() => _isInitializing = false);
     }
   }
 
@@ -245,7 +339,8 @@ class _SessionScreenState extends State<SessionScreen> {
     final ttsEnabled = prefs.getBool('tts_enabled') ?? true;
     final voiceEnabled = prefs.getBool('voice_commands_enabled') ?? false;
     final volume = prefs.getDouble('tts_volume') ?? 1.0;
-    final speechRate = prefs.getDouble('tts_speech_rate') ?? 0.5;
+    final speechRate =
+        prefs.getDouble('tts_speech_rate') ?? TtsService.defaultSpeechRate;
 
     await TtsService.configure(
       enabled: ttsEnabled,
@@ -286,6 +381,7 @@ class _SessionScreenState extends State<SessionScreen> {
 
   Future<void> _initializeMedia() async {
     final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
     final explanationSeen =
         prefs.getBool('microphone_permission_explained') ?? false;
     if (!explanationSeen) {
@@ -296,22 +392,24 @@ class _SessionScreenState extends State<SessionScreen> {
         builder: (_) => const KeypadConfirmationDialog(
           title: 'Microphone access',
           message:
-              'SEEDS uses the microphone only during an active session for live audio and enabled voice commands. You can stay in the session without microphone access, but others will not hear you.',
+              'In this session SEEDS uses the microphone for live audio and explicitly activated voice commands. You can stay without microphone access, but others will not hear you. Separate private-note recording requires its own explicit start outside live sessions.',
           confirmLabel: 'Continue to session',
         ),
       );
+      if (!mounted) return;
       if (confirmed != true) {
-        _muted = true;
+        _microphone.applyRemoteMute(true);
         _showSnackError(
           'Microphone access was skipped. You joined the session muted.',
         );
         return;
       }
       await prefs.setBool('microphone_permission_explained', true);
+      if (!mounted) return;
     }
 
     try {
-      _localStream = await navigator.mediaDevices.getUserMedia({
+      final stream = await navigator.mediaDevices.getUserMedia({
         'audio': {
           'mandatory': {
             'googEchoCancellation': true,
@@ -322,11 +420,17 @@ class _SessionScreenState extends State<SessionScreen> {
         },
         'video': false,
       });
-      _localStream!.getAudioTracks().forEach((t) => t.enabled = !_muted);
+      stream.getAudioTracks().forEach((t) => t.enabled = false);
+      if (!mounted) {
+        await stream.dispose();
+        return;
+      }
+      _localStream = stream;
       print('[MEDIA] Local stream ready');
     } catch (e) {
       print('[MEDIA ERROR] $e');
-      _muted = true;
+      if (!mounted) return;
+      _microphone.applyRemoteMute(true);
       _showSnackError(
         'Microphone access is unavailable. You joined the session muted.',
       );
@@ -359,6 +463,23 @@ class _SessionScreenState extends State<SessionScreen> {
     print('[SSE RECV] $type');
 
     switch (type) {
+      case 'connection_status':
+        if (!mounted) return;
+        setState(() => _connectionMessage = '${data['message']}');
+        if (_sse.state == SessionConnectionState.authenticationExpired) {
+          unawaited(_onAuthenticationRevoked());
+          return;
+        }
+        if (_sse.state == SessionConnectionState.reconnecting ||
+            _sse.state == SessionConnectionState.authenticationExpired ||
+            _sse.state == SessionConnectionState.unavailable) {
+          _speakIfEnabled(
+            _connectionMessage,
+            priority: SpeechPriority.critical,
+          );
+        }
+      case 'action_unconfirmed':
+        _showSnackError('${data['message']}');
       // ── connection bootstrap ─────────────────────────────────────────
       case 'connected':
         // Server tells us our authoritative participant_id
@@ -370,6 +491,10 @@ class _SessionScreenState extends State<SessionScreen> {
 
       case 'session_state':
         _updateSessionState(data);
+        _applyClassroomCheck(data['classroom_check'], bootstrap: true);
+
+      case 'classroom_check':
+        _applyClassroomCheck(data);
 
       // ── participant presence ─────────────────────────────────────────
       case 'participant_joined':
@@ -403,6 +528,9 @@ class _SessionScreenState extends State<SessionScreen> {
       // ── kicked / session ended ───────────────────────────────────────
       case 'kicked':
         _onKicked(data);
+
+      case 'authentication_revoked':
+        _onAuthenticationRevoked();
 
       case 'session_ended':
       case 'session_ending':
@@ -439,6 +567,22 @@ class _SessionScreenState extends State<SessionScreen> {
       default:
         print('[SSE] Unhandled type: $type');
     }
+    if (mounted &&
+        const {
+          'connection_status',
+          'session_state',
+          'participant_joined',
+          'participant_left',
+          'participant_kicked',
+          'participant_muted',
+          'hand_raised',
+          'hand_lowered',
+          'audio_selected',
+          'audio_play',
+          'audio_pause',
+        }.contains(type)) {
+      _consoleRevision.value++;
+    }
   }
 
   // ── session state snapshot ──────────────────────────────────────────────
@@ -461,12 +605,27 @@ class _SessionScreenState extends State<SessionScreen> {
           'name': meta['name'] ?? 'User ${meta['user_id']}',
           'is_muted': meta['is_muted'] ?? false,
           'raised_hand': meta['raised_hand'] ?? false,
+          'hand_queue_order': meta['hand_queue_order'],
+          'hand_revision': meta['hand_revision'] ?? 0,
           // is_teacher is now stored server-side and included in the snapshot
           'is_teacher': meta['is_teacher'] ?? false,
         };
       });
+      final own = _participants[_participantId];
+      if (own != null) {
+        _handRaised = own['raised_hand'] == true;
+        _handRevision++;
+      }
     });
+    if (_participants[_participantId]?['is_muted'] == true) {
+      _microphone.applyRemoteMute(true);
+    }
 
+    for (final participant in _peerConnections.keys.toList()) {
+      if (!_participants.containsKey(participant)) {
+        _closePeerConnection(participant);
+      }
+    }
     print('[STATE] ${_participants.length} participants');
 
     // Also restore audio playback state if the session was already playing
@@ -483,6 +642,8 @@ class _SessionScreenState extends State<SessionScreen> {
           'title': playback['title'],
         });
       }
+    } else if (playback != null) {
+      _onAudioPause(playback);
     }
 
     // Initiate WebRTC with every existing participant (except self)
@@ -506,19 +667,33 @@ class _SessionScreenState extends State<SessionScreen> {
     if (pid == null || pid == _participantId) return;
 
     print('[PARTICIPANT] Joined: $name (pid=$pid)');
+    final previous = _participants[pid];
+    final revision = data['hand_revision'] as int? ?? 0;
+    final keepHand =
+        previous != null && (previous['hand_revision'] as int? ?? 0) > revision;
 
     setState(() {
       _participants[pid] = {
         'id': pid,
         'user_id': uid,
         'name': name,
-        'is_muted': false,
-        'raised_hand': false,
+        'is_muted': data['is_muted'] ?? true,
+        'raised_hand': keepHand
+            ? previous['raised_hand']
+            : data['raised_hand'] ?? false,
+        'hand_queue_order': keepHand
+            ? previous['hand_queue_order']
+            : data['hand_queue_order'],
+        'hand_revision': keepHand ? previous['hand_revision'] : revision,
         'is_teacher': isTeacher,
       };
     });
 
-    _speakIfEnabled('$name joined');
+    _speakIfEnabled(
+      'A participant joined.',
+      priority: SpeechPriority.incidental,
+      group: 'Participants joined',
+    );
 
     // Give a short delay so both sides have their SSE streams open
     // before we attempt WebRTC negotiation.
@@ -536,10 +711,13 @@ class _SessionScreenState extends State<SessionScreen> {
     final pid = data['participant_id'] as int?;
     if (pid == null) return;
 
-    final name = _participants[pid]?['name'] as String? ?? 'Someone';
     setState(() => _participants.remove(pid));
     _closePeerConnection(pid);
-    _speakIfEnabled('$name left');
+    _speakIfEnabled(
+      'A participant left.',
+      priority: SpeechPriority.incidental,
+      group: 'Participants left',
+    );
   }
 
   void _onParticipantMuted(Map<String, dynamic> data) {
@@ -551,24 +729,42 @@ class _SessionScreenState extends State<SessionScreen> {
       if (_participants.containsKey(pid)) {
         _participants[pid]!['is_muted'] = isMuted;
       }
-      // If it's about us, update our local mute state too
-      if (pid == _participantId) _muted = isMuted;
     });
+    if (pid == _participantId) _microphone.applyRemoteMute(isMuted);
   }
 
   void _onHandChanged(Map<String, dynamic> data, bool raised) {
     final pid = data['participant_id'] as int?;
     if (pid == null) return;
+    final participant = _participants[pid];
+    if (participant == null) return;
+    final revision = data['hand_revision'];
+    final currentRevision = participant['hand_revision'] as int? ?? 0;
+    if ((revision is int && revision < currentRevision) ||
+        (revision == null && currentRevision > 0)) {
+      return;
+    }
 
     setState(() {
       if (_participants.containsKey(pid)) {
         _participants[pid]!['raised_hand'] = raised;
+        _participants[pid]!['hand_queue_order'] = raised
+            ? data['hand_queue_order']
+            : null;
+        _participants[pid]!['hand_revision'] = revision ?? currentRevision;
+      }
+      if (pid == _participantId) {
+        _handRaised = raised;
+        _handRevision++;
       }
     });
 
     if (raised && widget.isTeacher) {
-      final name = _participants[pid]?['name'] ?? 'Someone';
-      _speakIfEnabled('$name raised their hand');
+      _speakIfEnabled(
+        'A participant raised their hand.',
+        priority: SpeechPriority.incidental,
+        group: 'Hands raised',
+      );
     }
   }
 
@@ -596,7 +792,11 @@ class _SessionScreenState extends State<SessionScreen> {
     });
 
     _scrollChatToBottom();
-    _speakIfEnabled('$senderName: $text');
+    _speakIfEnabled(
+      'New chat messages. Use Read latest message to listen.',
+      priority: SpeechPriority.incidental,
+      group: 'New chat messages',
+    );
   }
 
   void _onKicked(Map<String, dynamic> data) {
@@ -605,6 +805,45 @@ class _SessionScreenState extends State<SessionScreen> {
 
   void _onSessionEnded() {
     _returnToDashboard();
+  }
+
+  Future<void> _onAuthenticationRevoked() async {
+    if (_isReturningToDashboard || !mounted) return;
+    _isReturningToDashboard = true;
+    _microphone.applyRemoteMute(true);
+    _sse.close();
+    try {
+      await _voice.stop();
+      await Future.wait(
+        _peerConnections.values.map((peer) => peer.close()),
+      ).timeout(const Duration(seconds: 2));
+      await Future.wait([
+        _sessionAudioPlayer.stop(),
+        _previewPlayer.stop(),
+      ]).timeout(const Duration(seconds: 2));
+    } on PlatformException {
+      debugPrint(
+        '[SESSION] Native media cleanup failed after sign-in revocation',
+      );
+      _showSnackError(
+        'Sign-in ended. Native audio cleanup could not be confirmed. Close SEEDS if audio continues.',
+      );
+    } on TimeoutException {
+      debugPrint(
+        '[SESSION] Native media cleanup timed out after sign-in revocation',
+      );
+      _showSnackError(
+        'Sign-in ended. Audio cleanup timed out. Close SEEDS if audio continues.',
+      );
+    } finally {
+      await AuthSessionService.clearLoginState();
+      if (mounted) {
+        TtsService.speak(
+          'Your sign-in changed. Sign in again or contact your school administrator.',
+        );
+        Navigator.of(context).pushNamedAndRemoveUntil('/login', (_) => false);
+      }
+    }
   }
 
   // ── audio playback ──────────────────────────────────────────────────────
@@ -617,7 +856,11 @@ class _SessionScreenState extends State<SessionScreen> {
       _currentAudioId = audioId;
       _currentAudioTitle = title;
     });
-    _speakIfEnabled('Audio selected: ${title ?? "Unknown"}');
+    _speakIfEnabled(
+      'The class recording selection changed. Use Read class updates for details.',
+      priority: SpeechPriority.incidental,
+      group: 'Class recording selection',
+    );
   }
 
   Future<void> _onAudioPlay(Map<String, dynamic> data) async {
@@ -656,6 +899,7 @@ class _SessionScreenState extends State<SessionScreen> {
   Future<void> _onAudioPause(Map<String, dynamic> data) async {
     final position = (data['position'] as num?)?.toDouble();
     await _sessionAudioPlayer.pause();
+    if (!mounted) return;
     setState(() {
       _isPlayingSessionAudio = false;
       if (position != null) _currentPosition = position;
@@ -688,159 +932,220 @@ class _SessionScreenState extends State<SessionScreen> {
       audioId: _currentAudioId!,
       speed: _audioSpeed,
       position: _currentPosition,
+      canSend: () => mounted,
     );
-    if (result != null && result['ok'] == true) {
-      setState(() => _isPlayingSessionAudio = true);
+    if (!mounted) return;
+    if (!result.isSuccess) {
+      _showSnackError(result.failure!.message);
     }
   }
 
   Future<void> _pauseSessionAudio() async {
     final pos = await _sessionAudioPlayer.getCurrentPosition();
+    if (!mounted) return;
     final posSeconds = pos?.inSeconds.toDouble() ?? _currentPosition;
     setState(() {
       _currentPosition = posSeconds;
       _isPlayingSessionAudio = false;
     });
     await _sessionAudioPlayer.pause();
-    await ApiService.controlAudio(
+    final result = await ApiService.controlAudio(
       widget.sessionId,
       action: 'pause',
       position: posSeconds,
+      canSend: () => mounted,
     );
+    if (mounted && !result.isSuccess) {
+      _showSnackError(
+        'Your local audio is paused. The class pause was not '
+        'confirmed. ${result.failure!.message}',
+      );
+    }
   }
 
   Future<void> _seekAudio(double position) async {
-    if (!widget.isTeacher) return;
+    if (!widget.isTeacher || _isSeeking) return;
     setState(() => _isSeeking = true);
     try {
-      await ApiService.controlAudio(
+      final result = await ApiService.controlAudio(
         widget.sessionId,
         action: 'seek',
         position: position,
+        canSend: () => mounted,
       );
+      if (!mounted) return;
+      if (!result.isSuccess) {
+        _showSnackError(result.failure!.message);
+        return;
+      }
       await _sessionAudioPlayer.seek(Duration(seconds: position.toInt()));
+      if (!mounted) return;
       setState(() => _currentPosition = position);
     } finally {
-      setState(() => _isSeeking = false);
+      if (mounted) setState(() => _isSeeking = false);
     }
   }
 
   Future<void> _changeAudioSpeed(double newSpeed) async {
     if (!widget.isTeacher || _currentAudioId == null) return;
-    setState(() => _audioSpeed = newSpeed);
-    await _sessionAudioPlayer.setPlaybackRate(newSpeed);
     final pos = await _sessionAudioPlayer.getCurrentPosition();
-    await ApiService.controlAudio(
+    if (!mounted) return;
+    final result = await ApiService.controlAudio(
       widget.sessionId,
       action: 'play',
       audioId: _currentAudioId!,
       speed: newSpeed,
       position: pos?.inSeconds.toDouble() ?? _currentPosition,
+      canSend: () => mounted,
     );
+    if (!mounted) return;
+    if (!result.isSuccess) {
+      _showSnackError(result.failure!.message);
+      return;
+    }
+    await _sessionAudioPlayer.setPlaybackRate(newSpeed);
+    if (mounted) setState(() => _audioSpeed = newSpeed);
   }
 
   // ── user actions (sent via HTTP POST) ───────────────────────────────────
 
   void _toggleMute() async {
-    setState(() => _muted = !_muted);
-    _localStream?.getAudioTracks().forEach((t) => t.enabled = !_muted);
-    await _sse.send({'type': 'mute_self', 'mute': _muted});
-    await _speakIfEnabled(_muted ? 'Muted' : 'Unmuted');
+    if (_mutePending) {
+      _speakIfEnabled('Waiting for microphone confirmation.');
+      return;
+    }
+    final nextMuted = !_muted;
+    final result = await _microphone.toggle();
+    if (!mounted) return;
+    if (result.isSuccess) {
+      await _speakIfEnabled(_muted ? 'Muted' : 'Unmuted');
+    } else if (nextMuted) {
+      await _speakIfEnabled(
+        'Microphone muted on this phone. The class confirmation was not received.',
+        priority: SpeechPriority.critical,
+      );
+    } else {
+      _showSnackError(result.failure!.message);
+    }
   }
 
   void _toggleHandRaise() async {
-    setState(() => _handRaised = !_handRaised);
-    await _sse.send({'type': _handRaised ? 'raise_hand' : 'lower_hand'});
-    await _speakIfEnabled(_handRaised ? 'Hand raised' : 'Hand lowered');
-  }
-
-  Future<void> _startVoiceCommands() async {
-    if (!_voiceCommandsEnabled) return;
-
-    try {
-      final available = await _speech.initialize(
-        onStatus: _handleSpeechStatus,
-        onError: _handleSpeechError,
-      );
-
-      if (!mounted) return;
-      setState(() => _voiceCommandsAvailable = available);
-
-      if (!available) {
-        await _speakIfEnabled(
-          'Voice commands are not available on this device',
-        );
-        return;
-      }
-
-      await _listenForVoiceCommand();
-      await _speakIfEnabled('Voice commands ready');
-    } catch (e) {
-      print('[VOICE COMMAND ERROR] $e');
-      await _speakIfEnabled('Voice commands could not start');
-    }
-  }
-
-  Future<void> _listenForVoiceCommand() async {
-    if (!_voiceCommandsEnabled ||
-        !_voiceCommandsAvailable ||
-        !mounted ||
-        _speech.isListening) {
+    if (_handPending) {
+      _speakIfEnabled('Waiting for hand status confirmation.');
       return;
     }
-
-    await _speech.listen(
-      listenMode: stt.ListenMode.confirmation,
-      partialResults: false,
-      listenFor: const Duration(seconds: 12),
-      pauseFor: const Duration(seconds: 3),
-      onResult: (result) {
-        if (result.finalResult) {
-          _handleVoiceCommand(result.recognizedWords);
-        }
-      },
-    );
-  }
-
-  void _handleSpeechStatus(String status) {
-    if (!_voiceCommandsEnabled || !mounted) return;
-    if (status == 'done' || status == 'notListening') {
-      _scheduleVoiceRestart();
-    }
-  }
-
-  void _handleSpeechError(dynamic error) {
-    print('[VOICE COMMAND SPEECH ERROR] $error');
-    if (_voiceCommandsEnabled && mounted) {
-      _scheduleVoiceRestart();
-    }
-  }
-
-  void _scheduleVoiceRestart() {
-    _voiceRestartTimer?.cancel();
-    _voiceRestartTimer = Timer(const Duration(milliseconds: 700), () {
-      if (mounted && _voiceCommandsEnabled) {
-        _listenForVoiceCommand();
-      }
+    final raised = !_handRaised;
+    final revision = _handRevision;
+    setState(() => _handPending = true);
+    final result = await _sse.send({
+      'type': raised ? 'raise_hand' : 'lower_hand',
     });
+    if (!mounted) return;
+    setState(() {
+      _handPending = false;
+      if (result.isSuccess && revision == _handRevision) _handRaised = raised;
+    });
+    if (result.isSuccess) {
+      await _speakIfEnabled(_handRaised ? 'Hand raised' : 'Hand lowered');
+    }
   }
 
-  void _handleVoiceCommand(String words) {
-    final command = words.toLowerCase().trim();
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final route = ModalRoute.of(context);
+    if (route is ModalRoute<void> && !identical(route, _voiceRoute)) {
+      if (_voiceRoute != null) routeObserver.unsubscribe(this);
+      _voiceRoute = route;
+      routeObserver.subscribe(this, route);
+    }
+  }
+
+  @override
+  void didPushNext() => unawaited(_voice.stop());
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.resumed) unawaited(_voice.stop());
+  }
+
+  void _voiceChanged() {
+    if (mounted) setState(() {});
+  }
+
+  void _speechActivityChanged() {
+    if (TtsService.speaking.value && _voice.hasWindow) {
+      unawaited(_voice.stop());
+    }
+  }
+
+  void _voiceIssue(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
+    TtsService.speak(message, priority: SpeechPriority.critical);
+  }
+
+  Future<void> _toggleVoiceListening() async {
+    if (_voice.busy) {
+      final stopped = await _voice.stop();
+      if (stopped && mounted) await _speakIfEnabled('Voice listening stopped.');
+    } else {
+      await _voice.start();
+    }
+  }
+
+  Future<void> _confirmVoiceUnmute() async {
+    if (_voiceUnmuteDialogOpen || !_muted || _mutePending) return;
+    _voiceUnmuteDialogOpen = true;
+    try {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (_) => const KeypadConfirmationDialog(
+          title: 'Unmute your microphone?',
+          message:
+              'A voice command requested unmute. Confirm with a key or touch. Other class members will be able to hear you.',
+          confirmLabel: 'Unmute',
+          cancelLabel: 'Stay muted',
+        ),
+      );
+      if (confirmed == true && mounted && _muted && !_mutePending) {
+        _toggleMute();
+      }
+    } finally {
+      _voiceUnmuteDialogOpen = false;
+    }
+  }
+
+  Future<void> _handleVoiceCommand(String words) async {
+    final command = words
+        .toLowerCase()
+        .trim()
+        .replaceAll(RegExp(r'[.!?,]+$'), '')
+        .replaceAll(RegExp(r'\s+'), ' ');
     if (command.isEmpty) return;
 
-    print('[VOICE COMMAND] $command');
-
-    if (command.contains('unmute')) {
+    if (const {
+      'unmute',
+      'unmute me',
+      'unmute microphone',
+      'unmute my microphone',
+    }.contains(command)) {
       if (_muted) {
-        _toggleMute();
+        await _confirmVoiceUnmute();
       } else {
         _speakIfEnabled('Already unmuted');
       }
       return;
     }
 
-    if (command.contains('mute')) {
+    if (const {
+      'mute',
+      'mute me',
+      'mute microphone',
+      'mute my microphone',
+    }.contains(command)) {
       if (!_muted) {
         _toggleMute();
       } else {
@@ -849,7 +1154,7 @@ class _SessionScreenState extends State<SessionScreen> {
       return;
     }
 
-    if (command.contains('lower hand') || command.contains('lower my hand')) {
+    if (const {'lower hand', 'lower my hand'}.contains(command)) {
       if (_handRaised) {
         _toggleHandRaise();
       } else {
@@ -858,7 +1163,7 @@ class _SessionScreenState extends State<SessionScreen> {
       return;
     }
 
-    if (command.contains('raise hand') || command.contains('raise my hand')) {
+    if (const {'raise hand', 'raise my hand'}.contains(command)) {
       if (!_handRaised) {
         _toggleHandRaise();
       } else {
@@ -867,17 +1172,23 @@ class _SessionScreenState extends State<SessionScreen> {
       return;
     }
 
-    if (command.contains('repeat') || command.contains('instructions')) {
+    if (const {
+      'repeat',
+      'instructions',
+      'repeat instructions',
+    }.contains(command)) {
       _repeatSessionInstructions();
       return;
     }
 
-    if (widget.isTeacher && command.contains('invite')) {
+    if (widget.isTeacher &&
+        const {'invite', 'invite students'}.contains(command)) {
       _openInviteScreen();
       return;
     }
 
-    if (widget.isTeacher && command.contains('audio')) {
+    if (widget.isTeacher &&
+        const {'audio', 'audio library'}.contains(command)) {
       setState(() => _showAudioPanel = !_showAudioPanel);
       _speakIfEnabled(
         _showAudioPanel ? 'Audio library opened' : 'Audio library closed',
@@ -885,7 +1196,12 @@ class _SessionScreenState extends State<SessionScreen> {
       return;
     }
 
-    if (command.contains('leave') || command.contains('exit')) {
+    if (const {
+      'leave',
+      'exit',
+      'leave session',
+      'exit session',
+    }.contains(command)) {
       _leaveSession();
       return;
     }
@@ -899,7 +1215,9 @@ class _SessionScreenState extends State<SessionScreen> {
         : sessionStudentKeyLabels;
     final instructions = buildTtsInstructions(
       labels,
-      screenName: 'Session ready',
+      screenName:
+          'Session controls. $_connectionMessage '
+          'Your microphone is ${_muted ? 'muted' : 'unmuted'} on this phone.',
     );
     await _speakIfEnabled(
       '$instructions Use up and down to move through every session control. '
@@ -909,7 +1227,7 @@ class _SessionScreenState extends State<SessionScreen> {
   }
 
   void _toggleTts() {
-    setState(() => _ttsEnabled = !_ttsEnabled);
+    setState(() => _ttsEnabled = !TtsService.isEnabled);
     TtsService.configure(enabled: _ttsEnabled);
     if (_ttsEnabled) {
       _speakIfEnabled('Text to speech enabled');
@@ -958,86 +1276,239 @@ class _SessionScreenState extends State<SessionScreen> {
 
   Future<void> _confirmEndSession() async {
     if (!widget.isTeacher || !mounted) return;
-    final cancelNode = FocusNode(debugLabel: 'cancel-end-session');
-    final confirmNode = FocusNode(debugLabel: 'confirm-end-session');
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => KeypadInstructionWrapper(
-        screenName: 'End session confirmation',
-        labels: const {0: 'Cancel', 1: 'End Session for Everyone'},
-        actions: {
-          0: () => Navigator.pop(dialogContext, false),
-          1: () => Navigator.pop(dialogContext, true),
-        },
-        focusTargets: [
-          KeypadFocusTarget(
-            node: cancelNode,
-            label: 'Cancel. Return to the session',
-            onActivate: () => Navigator.pop(dialogContext, false),
-          ),
-          KeypadFocusTarget(
-            node: confirmNode,
-            label: 'End session for everyone',
-            onActivate: () => Navigator.pop(dialogContext, true),
-          ),
-        ],
-        child: AlertDialog(
-          title: const Text('End session?'),
-          content: const Text(
-            'This stops the session for every participant and returns everyone '
-            'to their dashboard. Nobody will be logged out.',
-          ),
-          actions: [
-            TextButton(
-              focusNode: cancelNode,
-              onPressed: () => Navigator.pop(dialogContext, false),
-              child: const Text('Cancel (0)'),
-            ),
-            ElevatedButton(
-              focusNode: confirmNode,
-              onPressed: () => Navigator.pop(dialogContext, true),
-              child: const Text('End for everyone (1)'),
-            ),
-          ],
+    if (_endingSession) {
+      _speakIfEnabled('Waiting for end-session confirmation.');
+      return;
+    }
+    setState(() => _endingSession = true);
+    try {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (_) => const KeypadConfirmationDialog(
+          title: 'End session?',
+          message:
+              'This stops the session for every participant and returns '
+              'everyone to their dashboard. Nobody will be logged out.',
+          cancelLabel: 'Cancel',
+          confirmLabel: 'End for everyone',
+          cancelKey: 0,
+          confirmKey: 1,
         ),
-      ),
-    );
-    cancelNode.dispose();
-    confirmNode.dispose();
-    if (confirmed == true && mounted) {
-      await _sse.send({'type': 'end_session'});
+      );
+      if (confirmed == true && mounted) {
+        await _sse.send({'type': 'end_session'});
+      }
+    } finally {
+      if (mounted) setState(() => _endingSession = false);
     }
   }
 
-  /// Chat send: add to UI immediately (optimistic) then POST to server.
-  /// The server will echo the message back via SSE, but SseService marks it
-  /// is_own=true so _onChatMessage skips it — no duplicate.
-  void _sendMessage() {
+  Future<void> _sendMessage() async {
+    if (_chatPending) {
+      _speakIfEnabled('Waiting for message confirmation.');
+      return;
+    }
     final text = _chatController.text.trim();
-    if (text.isEmpty) return;
+    if (text.isEmpty) {
+      _speakIfEnabled('Enter a message before selecting Send.');
+      return;
+    }
 
-    // Optimistic local insert
+    final message = <String, dynamic>{
+      'sender': widget.userName,
+      'text': text,
+      'timestamp': DateTime.now(),
+      'isMe': true,
+      'delivery': 'Sending',
+    };
     setState(() {
-      _messages.add({
-        'sender': widget.userName,
-        'text': text,
-        'timestamp': DateTime.now(),
-        'isMe': true,
-      });
+      _chatPending = true;
+      _messages.add(message);
     });
-    _chatController.clear();
     _scrollChatToBottom();
-    _speakIfEnabled('${widget.userName}: $text');
-
-    // Fire-and-forget POST
-    _sse.send({'type': 'chat', 'text': text});
+    final result = await _sse.send({'type': 'chat', 'text': text});
+    if (!mounted) return;
+    setState(() {
+      _chatPending = false;
+      message['delivery'] = result.isSuccess ? 'Sent' : 'Not confirmed';
+    });
+    if (result.isSuccess) {
+      if (_chatController.text.trim() == text) _chatController.clear();
+      _speakIfEnabled('Message sent.');
+    }
   }
 
-  void _muteParticipant(int participantId, bool mute) {
+  void _muteParticipant(int participantId) {
+    final participant = _participants[participantId];
+    if (participant?['is_muted'] == true) {
+      _speakIfEnabled(
+        '${participant?['name'] ?? 'This participant'} is muted. '
+        'Only they can unmute their microphone.',
+      );
+      return;
+    }
+
     _sse.send({
-      'type': mute ? 'mute_participant' : 'unmute_participant',
+      'type': 'mute_participant',
       'target_participant_id': participantId,
     });
+  }
+
+  String _classroomSummary() {
+    final people = _participants.values;
+    final hands = people.where((p) => p['raised_hand'] == true).length;
+    final muted = people.where((p) => p['is_muted'] == true).length;
+    return 'Local connection: $_connectionMessage. '
+        'Last received classroom state: ${people.length} participants, '
+        '$hands raised hands, $muted microphones reported muted. '
+        'Remote reconnecting counts and active speaker identification are unavailable. '
+        '${_currentAudioId == null ? 'No class recording selected.' : 'Class recording $_currentAudioTitle. ${_isPlayingSessionAudio ? 'Playing requested.' : 'Paused.'}'} '
+        '${_previewingAudioId == null ? 'Private preview stopped.' : 'Private preview active on this phone only.'} '
+        'Microphone flags and accepted playback requests do not prove that anyone spoke or heard audio.';
+  }
+
+  bool _applyClassroomCheck(Object? data, {bool bootstrap = false}) {
+    if (data == null && bootstrap) {
+      _checkState.value = const ClassroomCheckState();
+      return true;
+    }
+    try {
+      final next = ClassroomCheckState.parse(
+        data,
+        userId: widget.userId,
+        teacher: widget.isTeacher,
+      );
+      if (bootstrap || next.revision >= _checkState.value.revision) {
+        _checkState.value = next;
+      }
+      return true;
+    } on FormatException catch (error) {
+      debugPrint('[CHECK] ${error.message}');
+      _showSnackError(
+        'Classroom check state could not be read. Refresh before responding.',
+      );
+      return false;
+    }
+  }
+
+  Future<String?> _classroomCheckAction(
+    String type,
+    String? id,
+    String? choice,
+  ) async {
+    final previous = _checkState.value;
+    final result = await _sse.send({
+      'type': type,
+      'check_id': id,
+      if (choice != null) 'choice': choice,
+    });
+    if (!mounted) return null;
+    if (!result.isSuccess) {
+      return result.failure?.message ??
+          'The classroom check action was not confirmed. Refresh before trying again.';
+    }
+    if (!_applyClassroomCheck(
+      result.data?['check_state'],
+      bootstrap: type == 'read_check' && identical(previous, _checkState.value),
+    )) {
+      return 'The classroom check confirmation was unreadable. Refresh before trying again.';
+    }
+    return null;
+  }
+
+  Future<void> _openClassroomCheck() async {
+    if (_checkOpen) return;
+    _checkOpen = true;
+    try {
+      await showDialog<void>(
+        context: context,
+        builder: (_) => ClassroomCheckDialog(
+          state: _checkState,
+          teacher: widget.isTeacher,
+          act: _classroomCheckAction,
+        ),
+      );
+    } finally {
+      _checkOpen = false;
+    }
+  }
+
+  Future<void> _openSequences() => Navigator.push<void>(
+    context,
+    MaterialPageRoute(
+      builder: (_) => LessonSequencesScreen(
+        sessionId: widget.sessionId,
+        execute: (step) async {
+          if (!mounted) return;
+          if (step.kind == LessonStepKind.audio) {
+            await _selectAndPlayAudio(step.audioId!, step.text);
+          } else {
+            await TtsService.speak(
+              step.text,
+              priority: SpeechPriority.requested,
+            );
+            if (mounted && step.kind == LessonStepKind.check) {
+              await _openClassroomCheck();
+            }
+          }
+        },
+      ),
+    ),
+  );
+  Future<String?> _acknowledgeHand(int id, int? order) async {
+    if (!widget.isTeacher) {
+      return 'Only the session teacher may acknowledge a hand.';
+    }
+    final participant = _participants[id];
+    if (participant == null ||
+        participant['raised_hand'] != true ||
+        participant['hand_queue_order'] != order) {
+      return 'The selected hand changed. Read the queue again.';
+    }
+    final name = participant['name'] ?? 'Participant';
+    final result = await _sse.send({
+      'type': 'acknowledge_hand',
+      'target_participant_id': id,
+      'hand_queue_order': order,
+    });
+    if (!mounted) return null;
+    if (!result.isSuccess) {
+      return result.failure?.message ??
+          'The hand acknowledgment was not confirmed. Read the queue before retrying.';
+    }
+    final state = result.data?['hand_state'];
+    if (state is! Map<String, dynamic> ||
+        state['participant_id'] != id ||
+        state['raised_hand'] != false ||
+        state['hand_revision'] is! int) {
+      return 'Hand acknowledgment was not readable. Check the queue before trying again.';
+    }
+    _onHandChanged(state, false);
+    _consoleRevision.value++;
+    await _speakIfEnabled(
+      _participants[id]?['raised_hand'] == true
+          ? '$name acknowledged earlier. Their hand has since changed; read the queue again. Their microphone was not changed.'
+          : '$name acknowledged. The selected hand was lowered. Their microphone was not changed.',
+    );
+    return null;
+  }
+
+  Future<void> _openClassroomConsole() async {
+    if (!widget.isTeacher || _consoleOpen) return;
+    _consoleOpen = true;
+    try {
+      await showDialog<void>(
+        context: context,
+        builder: (_) => ClassroomConsoleDialog(
+          revision: _consoleRevision,
+          participants: () => _participants.values.toList(),
+          summary: _classroomSummary,
+          acknowledge: _acknowledgeHand,
+        ),
+      );
+    } finally {
+      _consoleOpen = false;
+    }
   }
 
   void _kickParticipant(int participantId) {
@@ -1061,7 +1532,8 @@ class _SessionScreenState extends State<SessionScreen> {
   }
 
   Future<void> _leaveSession() async {
-    if (!mounted) return;
+    if (!mounted || _leaveConfirmationOpen || _isReturningToDashboard) return;
+    _leaveConfirmationOpen = true;
     final confirmed = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
@@ -1076,8 +1548,29 @@ class _SessionScreenState extends State<SessionScreen> {
       ),
     );
     if (confirmed == true && mounted) {
+      _microphone.applyRemoteMute(true);
+      final result = await _sse.send({'type': 'leave_session'});
+      if (!mounted) return;
+      if (!result.isSuccess) {
+        final leaveLocally = await showDialog<bool>(
+          context: context,
+          barrierDismissible: false,
+          builder: (_) => const KeypadConfirmationDialog(
+            title: 'Leave without server confirmation?',
+            message:
+                'This phone is muted. The server did not confirm clearing your raised hand. Leave locally now, or stay and retry? A fresh join resets your hand.',
+            cancelLabel: 'Stay and retry',
+            confirmLabel: 'Leave locally',
+          ),
+        );
+        if (leaveLocally != true || !mounted) {
+          _leaveConfirmationOpen = false;
+          return;
+        }
+      }
       await _returnToDashboard();
     }
+    _leaveConfirmationOpen = false;
   }
 
   // ── Invite participants (teacher only) ───────────────────────────────────
@@ -1535,30 +2028,42 @@ class _SessionScreenState extends State<SessionScreen> {
 
   Future<void> _selectAndPlayAudio(int audioId, String title) async {
     // Tell server which audio is selected — broadcasts audio_selected to all
-    final selected = await ApiService.selectAudio(widget.sessionId, audioId);
-    if (selected == null || selected['ok'] != true) {
-      _showSnackError('Failed to select audio');
+    final selected = await ApiService.selectAudio(
+      widget.sessionId,
+      audioId,
+      canSend: () => mounted,
+    );
+    if (!mounted) return;
+    if (!selected.isSuccess) {
+      _showSnackError(selected.failure!.message);
       return;
     }
-    if (mounted)
+    if (mounted) {
       setState(() {
         _currentAudioId = audioId;
         _currentAudioTitle = title;
       });
+    }
 
     // Ask teacher whether to play now
     if (!mounted) return;
     final play = await _confirmPlayAudio(title);
 
-    if (play == true) {
-      await ApiService.controlAudio(
+    if (play == true && mounted) {
+      final result = await ApiService.controlAudio(
         widget.sessionId,
         action: 'play',
         audioId: audioId,
         speed: 1.0,
         position: 0.0,
+        canSend: () => mounted,
       );
-      _speakIfEnabled('Playing $title for all participants');
+      if (!mounted) return;
+      if (result.isSuccess) {
+        _speakIfEnabled('Class playback request accepted for $title.');
+      } else {
+        _showSnackError(result.failure!.message);
+      }
     }
   }
 
@@ -1740,11 +2245,26 @@ class _SessionScreenState extends State<SessionScreen> {
 
   // ── helpers ─────────────────────────────────────────────────────────────
 
-  Future<void> _speakIfEnabled(String text) async {
-    if (_ttsEnabled && mounted) {
-      try {
-        await TtsService.speak(text);
-      } catch (_) {}
+  Future<void> _speakIfEnabled(
+    String text, {
+    SpeechPriority priority = SpeechPriority.requested,
+    String? group,
+  }) async {
+    if (TtsService.isEnabled && mounted) {
+      await TtsService.speak(text, priority: priority, group: group);
+    }
+  }
+
+  void _readLatestMessage() {
+    if (_messages.isEmpty) {
+      TtsService.speak('No messages yet.');
+    } else {
+      final message = _messages.last;
+      final delivery = message['delivery'];
+      TtsService.speak(
+        '${message['sender']}: ${message['text']}'
+        '${delivery == null ? '' : '\nDelivery status: $delivery.'}',
+      );
     }
   }
 
@@ -1807,8 +2327,40 @@ class _SessionScreenState extends State<SessionScreen> {
     _isPlayingSessionAudio ? _pauseSessionAudio() : _playSessionAudio();
   }
 
+  bool get _canRetryConnection =>
+      _sse.state == SessionConnectionState.interrupted ||
+      _sse.state == SessionConnectionState.reconnecting;
+
   List<KeypadFocusTarget> get _sessionFocusTargets {
     final targets = <KeypadFocusTarget>[
+      KeypadFocusTarget(
+        node: _connectionFocus,
+        label: 'Connection status. $_connectionMessage',
+        onActivate: () => TtsService.speak(_connectionMessage),
+      ),
+      KeypadFocusTarget(
+        node: _retryConnectionFocus,
+        label: 'Retry class connection',
+        onActivate: _sse.reconnect,
+        isEnabled: () => _canRetryConnection,
+      ),
+      if (widget.isTeacher)
+        KeypadFocusTarget(
+          node: _consoleFocus,
+          label: 'Open classroom console. Raised hands and classroom summary',
+          onActivate: _openClassroomConsole,
+        ),
+      KeypadFocusTarget(
+        node: _checkFocus,
+        label: 'Open private classroom check. Ungraded responses',
+        onActivate: _openClassroomCheck,
+      ),
+      if (widget.isTeacher)
+        KeypadFocusTarget(
+          node: _sequencesFocus,
+          label: 'Reusable lesson sequences. Select before explicit Run',
+          onActivate: _openSequences,
+        ),
       KeypadFocusTarget(
         node: _ttsFocusNode,
         label: _ttsEnabled
@@ -1827,6 +2379,7 @@ class _SessionScreenState extends State<SessionScreen> {
           node: _endFocusNode,
           label: 'End session for everyone',
           onActivate: _confirmEndSession,
+          isEnabled: () => !_endingSession,
         ),
       if (widget.isTeacher)
         KeypadFocusTarget(
@@ -1844,8 +2397,9 @@ class _SessionScreenState extends State<SessionScreen> {
         label: 'Participants tab',
         onActivate: () {
           final nodeContext = _participantsTabFocusNode.context;
-          if (nodeContext != null)
+          if (nodeContext != null) {
             DefaultTabController.of(nodeContext).animateTo(0);
+          }
         },
       ),
       KeypadFocusTarget(
@@ -1853,8 +2407,9 @@ class _SessionScreenState extends State<SessionScreen> {
         label: 'Chat tab',
         onActivate: () {
           final nodeContext = _chatTabFocusNode.context;
-          if (nodeContext != null)
+          if (nodeContext != null) {
             DefaultTabController.of(nodeContext).animateTo(1);
+          }
         },
       ),
     ];
@@ -1875,8 +2430,10 @@ class _SessionScreenState extends State<SessionScreen> {
             participantId,
             'participant-mute',
           ),
-          label: '${isMuted ? 'Unmute' : 'Mute'} $name',
-          onActivate: () => _muteParticipant(participantId, !isMuted),
+          label: isMuted
+              ? '$name is muted. Read microphone status'
+              : 'Mute $name',
+          onActivate: () => _muteParticipant(participantId),
         ),
         KeypadFocusTarget(
           node: _focusNodeFor(
@@ -1891,6 +2448,33 @@ class _SessionScreenState extends State<SessionScreen> {
     }
 
     targets.addAll([
+      if (_voiceCommandsEnabled)
+        KeypadFocusTarget(
+          node: _voiceFocus,
+          label:
+              '${_voice.busy ? 'Stop listening' : 'Listen for command'}. ${_voice.status}',
+          onActivate: _toggleVoiceListening,
+        ),
+      KeypadFocusTarget(
+        node: _readMessageFocus,
+        label: 'Read latest message',
+        onActivate: _readLatestMessage,
+      ),
+      KeypadFocusTarget(
+        node: _readUpdatesFocus,
+        label: 'Read class updates',
+        onActivate: TtsService.readPendingUpdates,
+      ),
+      KeypadFocusTarget(
+        node: _stopSpeechFocus,
+        label: 'Stop speech',
+        onActivate: TtsService.stop,
+      ),
+      KeypadFocusTarget(
+        node: _repeatHelpFocus,
+        label: 'Repeat session help',
+        onActivate: _repeatSessionInstructions,
+      ),
       KeypadFocusTarget(
         node: _chatTtsFocusNode,
         label: _ttsEnabled ? 'Turn chat speech off' : 'Turn chat speech on',
@@ -1905,6 +2489,7 @@ class _SessionScreenState extends State<SessionScreen> {
         node: _chatSendFocusNode,
         label: 'Send chat message',
         onActivate: _sendMessage,
+        isEnabled: () => !_chatPending,
       ),
     ]);
 
@@ -2003,11 +2588,13 @@ class _SessionScreenState extends State<SessionScreen> {
         node: _muteFocusNode,
         label: _muted ? 'Unmute microphone' : 'Mute microphone',
         onActivate: _toggleMute,
+        isEnabled: () => !_mutePending,
       ),
       KeypadFocusTarget(
         node: _handFocusNode,
         label: _handRaised ? 'Lower hand' : 'Raise hand',
         onActivate: _toggleHandRaise,
+        isEnabled: () => !_handPending,
       ),
       if (widget.isTeacher)
         KeypadFocusTarget(
@@ -2045,15 +2632,27 @@ class _SessionScreenState extends State<SessionScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    routeObserver.unsubscribe(this);
+    TtsService.speaking.removeListener(_speechActivityChanged);
+    _voice.removeListener(_voiceChanged);
+    _voice.dispose();
+    _voiceFocus.dispose();
+    _microphone.dispose();
+    PrivateNoteRecorder.liveSessions--;
+    _connectionFocus.dispose();
+    _retryConnectionFocus.dispose();
+    TtsService.unregisterLiveSession(this);
+    TtsService.unregisterRecordedPlayback(_previewPlayer);
+    _readMessageFocus.dispose();
+    _readUpdatesFocus.dispose();
+    _stopSpeechFocus.dispose();
+    _repeatHelpFocus.dispose();
     _chatController.dispose();
     _chatScrollController.dispose();
     _uploadTitleCtrl.dispose();
     _uploadDescCtrl.dispose();
     _voiceCommandsEnabled = false;
-    _voiceRestartTimer?.cancel();
-    if (_speech.isListening) {
-      _speech.stop();
-    }
 
     _sse.close();
 
@@ -2079,6 +2678,9 @@ class _SessionScreenState extends State<SessionScreen> {
       _leaveFocusNode,
       _muteFocusNode,
       _handFocusNode,
+      _consoleFocus,
+      _checkFocus,
+      _sequencesFocus,
       _bottomInviteFocusNode,
       _bottomAudioFocusNode,
       _bottomLeaveFocusNode,
@@ -2103,6 +2705,8 @@ class _SessionScreenState extends State<SessionScreen> {
     ]) {
       node.dispose();
     }
+    _consoleRevision.dispose();
+    _checkState.dispose();
     TtsService.stop();
     super.dispose();
   }
@@ -2123,10 +2727,17 @@ class _SessionScreenState extends State<SessionScreen> {
           ? sessionTeacherKeyLabels
           : sessionStudentKeyLabels,
       onStarKey: _repeatSessionInstructions,
+      onSpeechRescued: () => setState(() => _ttsEnabled = TtsService.isEnabled),
       onHashKey: _leaveSession,
       navigationController: _keypadController,
       focusTargets: _sessionFocusTargets,
-      child: _buildMainScaffold(context),
+      child: PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, result) {
+          if (!didPop) _leaveSession();
+        },
+        child: _buildMainScaffold(context),
+      ),
     );
   }
 
@@ -2135,19 +2746,22 @@ class _SessionScreenState extends State<SessionScreen> {
       return Scaffold(
         backgroundColor: Colors.grey.shade900,
         body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const CircularProgressIndicator(color: Colors.teal),
-              SizedBox(height: UIUtils.spacing(context, 12)),
-              Text(
-                'Initializing session...',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: UIUtils.fontSize(context, 14),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const CircularProgressIndicator(color: Colors.teal),
+                SizedBox(height: UIUtils.spacing(context, 12)),
+                Text(
+                  'Initializing session...',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: UIUtils.fontSize(context, 14),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       );
@@ -2157,9 +2771,87 @@ class _SessionScreenState extends State<SessionScreen> {
     final List<Map<String, dynamic>> participantsList = _participants.values
         .toList();
     final bool isMobile = MediaQuery.of(context).size.width < 600;
+    final toolbarWidth = MediaQuery.sizeOf(context).width;
+    final statusWidth = toolbarWidth.clamp(0, 96).toDouble();
+    final toolbarIcons =
+        2 + (widget.isTeacher ? 2 : 0) + (_voiceCommandsEnabled ? 1 : 0);
+    final firstRowIcons = ((toolbarWidth - statusWidth) / 48).floor();
+    final remainingIcons = (toolbarIcons - firstRowIcons).clamp(
+      0,
+      toolbarIcons,
+    );
+    final rowCapacity = (toolbarWidth / 48).floor().clamp(1, toolbarIcons);
+    final toolbarRows = 1 + ((remainingIcons + rowCapacity - 1) ~/ rowCapacity);
 
     return Scaffold(
       appBar: AppBar(
+        bottom: PreferredSize(
+          preferredSize: Size.fromHeight(48.0 * toolbarRows),
+          child: Wrap(
+            children: [
+              SizedBox(
+                width: statusWidth,
+                height: 48,
+                child: TextButton(
+                  focusNode: _connectionFocus,
+                  onPressed: () => TtsService.speak(_connectionMessage),
+                  child: Text(
+                    _sse.state.label,
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                ),
+              ),
+              IconButton(
+                focusNode: _retryConnectionFocus,
+                tooltip: 'Retry class connection',
+                onPressed: _canRetryConnection ? _sse.reconnect : null,
+                icon: const Icon(Icons.refresh, color: Colors.white),
+              ),
+              if (widget.isTeacher)
+                IconButton(
+                  focusNode: _consoleFocus,
+                  tooltip: 'Classroom console',
+                  onPressed: _openClassroomConsole,
+                  icon: const Icon(
+                    Icons.pan_tool_outlined,
+                    color: Colors.white,
+                  ),
+                ),
+              IconButton(
+                focusNode: _checkFocus,
+                tooltip: 'Private classroom check',
+                onPressed: _openClassroomCheck,
+                icon: const Icon(
+                  Icons.question_answer_outlined,
+                  color: Colors.white,
+                ),
+              ),
+              if (widget.isTeacher)
+                IconButton(
+                  focusNode: _sequencesFocus,
+                  tooltip: 'Lesson sequences',
+                  onPressed: _openSequences,
+                  icon: const Icon(
+                    Icons.format_list_numbered,
+                    color: Colors.white,
+                  ),
+                ),
+              if (_voiceCommandsEnabled)
+                IconButton(
+                  focusNode: _voiceFocus,
+                  tooltip:
+                      '${_voice.busy ? 'Stop listening' : 'Listen for command'}. ${_voice.status}',
+                  icon: Icon(
+                    _voice.busy
+                        ? Icons.mic_off_outlined
+                        : Icons.keyboard_voice_outlined,
+                  ),
+                  color: Colors.white,
+                  onPressed: _toggleVoiceListening,
+                ),
+            ],
+          ),
+        ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -2212,7 +2904,7 @@ class _SessionScreenState extends State<SessionScreen> {
                 size: UIUtils.iconSize(context, 20),
               ),
               tooltip: 'End session',
-              onPressed: _confirmEndSession,
+              onPressed: _endingSession ? null : _confirmEndSession,
             ),
           // Audio Library — teacher only
           if (widget.isTeacher)
@@ -2278,9 +2970,16 @@ class _SessionScreenState extends State<SessionScreen> {
               _actionBarBtn(
                 focusNode: _muteFocusNode,
                 icon: _muted ? Icons.mic_off : Icons.mic,
-                label: isKeypad ? '1:Mute' : 'Mute',
+                label: _mutePending
+                    ? 'Waiting'
+                    : isKeypad
+                    ? '1:${_muted ? 'Unmute' : 'Mute'}'
+                    : _muted
+                    ? 'Unmute'
+                    : 'Mute',
                 color: _muted ? Colors.red : Colors.green,
                 onTap: _toggleMute,
+                enabled: !_mutePending,
               ),
               SizedBox(width: UIUtils.spacing(context, 8)),
               // Raise / lower hand
@@ -2290,6 +2989,7 @@ class _SessionScreenState extends State<SessionScreen> {
                 label: isKeypad ? '2:Hand' : 'Raise',
                 color: _handRaised ? Colors.amber : Colors.grey.shade400,
                 onTap: _toggleHandRaise,
+                enabled: !_handPending,
               ),
               if (widget.isTeacher) ...[
                 SizedBox(width: UIUtils.spacing(context, 8)),
@@ -2333,6 +3033,7 @@ class _SessionScreenState extends State<SessionScreen> {
     required Color color,
     required VoidCallback onTap,
     bool active = false,
+    bool enabled = true,
   }) {
     final bool isKeypad = UIUtils.isKeypad(context);
     final bool short = UIUtils.isShort(context);
@@ -2340,7 +3041,7 @@ class _SessionScreenState extends State<SessionScreen> {
 
     return InkWell(
       focusNode: focusNode,
-      onTap: onTap,
+      onTap: enabled ? onTap : null,
       focusColor: color.withOpacity(0.28),
       borderRadius: BorderRadius.circular(12),
       child: Padding(
@@ -2381,7 +3082,6 @@ class _SessionScreenState extends State<SessionScreen> {
   }
 
   Widget _buildMobileLayout(List<Map<String, dynamic>> participantsList) {
-    final bool tiny = UIUtils.isTiny(context);
     return DefaultTabController(
       length: 2,
       child: Column(
@@ -2392,16 +3092,14 @@ class _SessionScreenState extends State<SessionScreen> {
                 focusNode: _participantsTabFocusNode,
                 child: Tab(
                   text: 'Participants',
-                  icon: Icon(Icons.people, size: UIUtils.iconSize(context, 16)),
-                  height: tiny ? 36 : null,
+                  height: MediaQuery.textScalerOf(context).scale(11) + 16,
                 ),
               ),
               Focus(
                 focusNode: _chatTabFocusNode,
                 child: Tab(
                   text: 'Chat',
-                  icon: Icon(Icons.chat, size: UIUtils.iconSize(context, 16)),
-                  height: tiny ? 36 : null,
+                  height: MediaQuery.textScalerOf(context).scale(11) + 16,
                 ),
               ),
             ],
@@ -2511,14 +3209,16 @@ class _SessionScreenState extends State<SessionScreen> {
                       'participant-mute',
                     ),
                     icon: Icon(
-                      isMuted ? Icons.mic : Icons.mic_off,
+                      isMuted ? Icons.info_outline : Icons.mic_off,
                       size: UIUtils.iconSize(context, 18),
                     ),
                     color: Colors.blue,
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
-                    onPressed: () => _muteParticipant(pid, !isMuted),
-                    tooltip: isMuted ? 'Unmute' : 'Mute',
+                    onPressed: () => _muteParticipant(pid),
+                    tooltip: isMuted
+                        ? 'Muted. Only this participant can unmute'
+                        : 'Mute',
                   ),
                   SizedBox(width: UIUtils.spacing(context, 2)),
                   IconButton(
@@ -2557,8 +3257,7 @@ class _SessionScreenState extends State<SessionScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (constraints.maxHeight >= 120)
-                  _buildChatHeader(compact: true),
+                _buildChatHeader(compact: true),
                 ConstrainedBox(
                   constraints: BoxConstraints(
                     minHeight: constraints.maxHeight >= 120 ? 34 : 24,
@@ -2607,6 +3306,50 @@ class _SessionScreenState extends State<SessionScreen> {
                 fontWeight: FontWeight.bold,
               ),
             ),
+          ),
+          IconButton(
+            focusNode: _readMessageFocus,
+            tooltip: 'Read latest message',
+            icon: const Icon(Icons.mark_chat_read_outlined),
+            onPressed: _readLatestMessage,
+            visualDensity: VisualDensity.compact,
+            constraints: compact
+                ? const BoxConstraints.tightFor(width: 28, height: 28)
+                : null,
+            padding: EdgeInsets.zero,
+          ),
+          IconButton(
+            focusNode: _readUpdatesFocus,
+            tooltip: 'Read class updates',
+            icon: const Icon(Icons.notifications_active_outlined),
+            onPressed: TtsService.readPendingUpdates,
+            visualDensity: VisualDensity.compact,
+            constraints: compact
+                ? const BoxConstraints.tightFor(width: 28, height: 28)
+                : null,
+            padding: EdgeInsets.zero,
+          ),
+          IconButton(
+            focusNode: _stopSpeechFocus,
+            tooltip: 'Stop speech',
+            icon: const Icon(Icons.stop_circle_outlined),
+            onPressed: TtsService.stop,
+            visualDensity: VisualDensity.compact,
+            constraints: compact
+                ? const BoxConstraints.tightFor(width: 28, height: 28)
+                : null,
+            padding: EdgeInsets.zero,
+          ),
+          IconButton(
+            focusNode: _repeatHelpFocus,
+            tooltip: 'Repeat session help',
+            icon: const Icon(Icons.help_outline),
+            onPressed: _repeatSessionInstructions,
+            visualDensity: VisualDensity.compact,
+            constraints: compact
+                ? const BoxConstraints.tightFor(width: 28, height: 28)
+                : null,
+            padding: EdgeInsets.zero,
           ),
           IconButton(
             focusNode: _chatTtsFocusNode,
@@ -2708,6 +3451,14 @@ class _SessionScreenState extends State<SessionScreen> {
                   maxLines: compact ? 1 : null,
                   overflow: compact ? TextOverflow.ellipsis : null,
                 ),
+                if (msg['delivery'] != null)
+                  Text(
+                    '${msg['delivery']}',
+                    style: TextStyle(
+                      fontSize: UIUtils.fontSize(context, compact ? 10 : 12),
+                      color: UIUtils.textColor,
+                    ),
+                  ),
               ],
             ),
           ),
@@ -2787,7 +3538,7 @@ class _SessionScreenState extends State<SessionScreen> {
                   ),
                   tooltip: 'Send message',
                   padding: EdgeInsets.zero,
-                  onPressed: _sendMessage,
+                  onPressed: _chatPending ? null : _sendMessage,
                 ),
               ),
             ),

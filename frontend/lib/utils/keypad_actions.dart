@@ -41,6 +41,7 @@ const Map<int, String> settingsKeyLabels = {
   4: 'Toggle High Contrast',
   5: 'Test T T S',
   6: 'Save Settings',
+  7: 'Check English voice',
 };
 
 // ─── Student Dashboard ──────────────────────────────────────────────────────
@@ -48,7 +49,7 @@ const Map<int, String> studentDashboardKeyLabels = {
   0: 'Log out',
   1: 'Refresh Sessions',
   2: 'Search Sessions by Name or ID',
-  3: 'Offline Audio Library',
+  3: 'Recorded Audio Library',
   4: 'My Private Playlists',
   5: 'Quizzes',
 };
@@ -58,7 +59,7 @@ const Map<int, String> teacherDashboardKeyLabels = {
   0: 'Log out',
   1: 'Refresh Sessions',
   2: 'Create Session',
-  3: 'Offline Audio Library',
+  3: 'Recorded Audio Library',
   4: 'Search Sessions by Name or ID',
   5: 'Class Playlists',
   6: 'Quizzes',

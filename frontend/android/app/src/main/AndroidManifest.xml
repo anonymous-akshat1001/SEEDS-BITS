@@ -18,6 +18,8 @@
         android:label="SEEDS"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
+        android:fullBackupContent="@xml/learning_backup_rules"
+        android:dataExtractionRules="@xml/learning_data_extraction_rules"
         android:usesCleartextTraffic="true">
         <activity
             android:name=".MainActivity"

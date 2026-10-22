@@ -60,25 +60,15 @@ class UIUtils {
 
   /// Scaled font size
   static double fontSize(BuildContext context, double base) {
-    final s = scale(context);
-    // On keypad devices, we actually want text slightly LARGER than pure scale
-    // because the screen is physically small and far from the eye.
-    final factor = isKeypad(context) ? s * 1.1 : s;
-    final v = base * factor;
-    return math.min(math.max(v, 10.0), base * 1.8);
+    return math.max(base * math.max(scale(context), 1.0), 10.0);
   }
 
-  static double responsiveTextScale(BuildContext context, double requested) {
-    final width = MediaQuery.sizeOf(context).width;
-    final maximum = width < 280
-        ? 1.15
-        : width < 360
-        ? 1.25
-        : width < 420
-        ? 1.4
-        : 2.0;
-    return requested.clamp(0.8, maximum).toDouble();
-  }
+  static TextScaler combinedTextScaler(TextScaler system, double appScale) =>
+      _AppTextScaler(system, appScale);
+
+  static bool useStackedLayout(BuildContext context) =>
+      MediaQuery.sizeOf(context).width < 360 ||
+      MediaQuery.textScalerOf(context).scale(16) > 20;
 
   /// Scaled padding value
   static double padding(BuildContext context, double base) {
@@ -129,4 +119,17 @@ class UIUtils {
       isHighContrast ? Colors.white : const Color(0xFF2D3436);
   static Color get subtextColor =>
       isHighContrast ? const Color(0xFFFFF176) : const Color(0xFF455A64);
+}
+
+class _AppTextScaler extends TextScaler {
+  const _AppTextScaler(this.system, this.appScale);
+
+  final TextScaler system;
+  final double appScale;
+
+  @override
+  double scale(double fontSize) => system.scale(fontSize) * appScale;
+
+  @override
+  double get textScaleFactor => scale(14) / 14;
 }

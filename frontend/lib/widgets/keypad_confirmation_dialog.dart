@@ -44,7 +44,8 @@ class _KeypadConfirmationDialogState extends State<KeypadConfirmationDialog> {
     void close(bool confirmed) => Navigator.pop(context, confirmed);
 
     return KeypadInstructionWrapper(
-      screenName: widget.title,
+      screenName: '${widget.title}. ${widget.message}',
+      onHashKey: () => close(false),
       labels: {
         widget.cancelKey: widget.cancelLabel,
         widget.confirmKey: widget.confirmLabel,
@@ -66,24 +67,29 @@ class _KeypadConfirmationDialogState extends State<KeypadConfirmationDialog> {
         ),
       ],
       child: AlertDialog(
+        scrollable: true,
         title: Text(widget.title),
-        content: Semantics(liveRegion: true, child: Text(widget.message)),
-        actions: [
-          TextButton(
-            focusNode: _cancelFocus,
-            onPressed: () => close(false),
-            child: Text('${widget.cancelKey}: ${widget.cancelLabel}'),
-          ),
-          ElevatedButton(
-            focusNode: _confirmFocus,
-            onPressed: () => close(true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: UIUtils.primaryColor,
-              foregroundColor: Colors.white,
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Semantics(liveRegion: true, child: Text(widget.message)),
+            TextButton(
+              focusNode: _cancelFocus,
+              onPressed: () => close(false),
+              child: Text('${widget.cancelKey}: ${widget.cancelLabel}'),
             ),
-            child: Text('${widget.confirmKey}: ${widget.confirmLabel}'),
-          ),
-        ],
+            ElevatedButton(
+              focusNode: _confirmFocus,
+              onPressed: () => close(true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: UIUtils.primaryColor,
+                foregroundColor: Colors.white,
+              ),
+              child: Text('${widget.confirmKey}: ${widget.confirmLabel}'),
+            ),
+          ],
+        ),
       ),
     );
   }

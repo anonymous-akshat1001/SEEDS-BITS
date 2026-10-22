@@ -3,11 +3,11 @@ import 'dart:async';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'screens/login_screen.dart';
+import 'screens/change_password_screen.dart';
 import 'screens/register_screen.dart';
 import 'screens/teacher_dashboard.dart';
 import 'screens/student_dashboard.dart';
 import 'screens/session_screen.dart';
-import 'screens/simple_session_screen.dart';
 import 'screens/audio_library_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/invite_students_screen.dart';
@@ -77,7 +77,11 @@ WEB_VAPID_KEY=BOYVjb77moWEwSyBY-HxCkiAFBuNrCncK9oSobRL1TubgfGicL1JOiw_B0Nod74jEb
       await TtsService.loadFromPreferences();
       final token = prefs.getString('token');
       final role = prefs.getString('role');
-      if (token != null && token.isNotEmpty && role == 'teacher') {
+      if (token != null &&
+          token.isNotEmpty &&
+          prefs.getBool('must_change_password') == true) {
+        _initialRoute = '/change_password';
+      } else if (token != null && token.isNotEmpty && role == 'teacher') {
         _initialRoute = '/teacher_dashboard';
       } else if (token != null && token.isNotEmpty && role == 'student') {
         _initialRoute = '/student_dashboard';
@@ -110,6 +114,8 @@ WEB_VAPID_KEY=BOYVjb77moWEwSyBY-HxCkiAFBuNrCncK9oSobRL1TubgfGicL1JOiw_B0Nod74jEb
       );
       final notificationService = NotificationService();
       if (!await notificationService.hasNotificationPermission()) {
+        final prefs = await SharedPreferences.getInstance();
+        if (prefs.getBool('must_change_password') == true) return;
         if (!mounted) return;
         final context = navigatorKey.currentContext;
         if (context == null || !context.mounted) return;
@@ -140,6 +146,17 @@ WEB_VAPID_KEY=BOYVjb77moWEwSyBY-HxCkiAFBuNrCncK9oSobRL1TubgfGicL1JOiw_B0Nod74jEb
     final sessionId = int.tryParse(data['session_id']?.toString() ?? '');
     if (sessionId == null) return;
     final prefs = await SharedPreferences.getInstance();
+    if ((prefs.getString('token') ?? '').isEmpty) {
+      navigatorKey.currentState?.pushNamed('/login');
+      return;
+    }
+    if (prefs.getBool('must_change_password') == true) {
+      navigatorKey.currentState?.pushNamedAndRemoveUntil(
+        '/change_password',
+        (_) => false,
+      );
+      return;
+    }
     final userId = prefs.getInt('user_id');
     final userName = prefs.getString('user_name') ?? prefs.getString('name');
     if (userId == null || userName == null) return;
@@ -159,7 +176,9 @@ WEB_VAPID_KEY=BOYVjb77moWEwSyBY-HxCkiAFBuNrCncK9oSobRL1TubgfGicL1JOiw_B0Nod74jEb
 
   @override
   Widget build(BuildContext context) {
-    if (_ready) return MyApp(initialRoute: _initialRoute);
+    if (_ready) {
+      return MyApp(initialRoute: _initialRoute);
+    }
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: SeedsLoadingScreen(message: _startupError),
@@ -331,14 +350,12 @@ class MyApp extends StatelessWidget {
             builder: (context, child) {
               if (child == null) return const SizedBox.shrink();
               final mediaQuery = MediaQuery.of(context);
-              final systemScale = mediaQuery.textScaler.scale(1.0);
-              final effectiveScale = UIUtils.responsiveTextScale(
-                context,
-                systemScale * appTextScale,
-              );
               return MediaQuery(
                 data: mediaQuery.copyWith(
-                  textScaler: TextScaler.linear(effectiveScale),
+                  textScaler: UIUtils.combinedTextScaler(
+                    mediaQuery.textScaler,
+                    appTextScale,
+                  ),
                 ),
                 child: child,
               );
@@ -350,6 +367,7 @@ class MyApp extends StatelessWidget {
             routes: {
               '/welcome': (context) => const WelcomeScreen(),
               '/login': (context) => const LoginScreen(),
+              '/change_password': (context) => const ChangePasswordScreen(),
               '/register': (context) => const RegisterScreen(),
               '/teacher_dashboard': (context) => const TeacherDashboard(),
               '/student_dashboard': (context) => const StudentDashboard(),
@@ -359,7 +377,8 @@ class MyApp extends StatelessWidget {
 
             onGenerateRoute: (settings) {
               // Session screen route
-              if (settings.name == '/session') {
+              if (settings.name == '/session' ||
+                  settings.name == '/simple_session') {
                 final args = settings.arguments;
                 if (args is Map<String, dynamic>) {
                   final sessionId = args['sessionId'];
@@ -380,30 +399,6 @@ class MyApp extends StatelessWidget {
                         sessionTitle: sessionTitle,
                         className: className,
                         subjectName: subjectName,
-                      ),
-                      settings: settings,
-                    );
-                  }
-                }
-                return MaterialPageRoute(builder: (_) => const LoginScreen());
-              }
-
-              // Simple session screen route (for button phones)
-              if (settings.name == '/simple_session') {
-                final args = settings.arguments;
-                if (args is Map<String, dynamic>) {
-                  final sessionId = args['sessionId'];
-                  final userId = args['userId'];
-                  final userName = args['userName'];
-                  final isTeacher = args['isTeacher'] ?? false;
-
-                  if (sessionId is int && userId is int && userName is String) {
-                    return MaterialPageRoute(
-                      builder: (_) => SimpleSessionScreen(
-                        sessionId: sessionId,
-                        userId: userId,
-                        userName: userName,
-                        isTeacher: isTeacher,
                       ),
                       settings: settings,
                     );

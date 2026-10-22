@@ -1,12 +1,17 @@
+import 'dart:async';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 
 import '../services/api_service.dart';
 import '../services/tts_service.dart';
+import '../services/learning_playback_controller.dart';
+import '../services/learning_progress_store.dart';
 import '../utils/ui_utils.dart';
 import '../widgets/key_instruction_wrapper.dart';
 import '../widgets/keypad_confirmation_dialog.dart';
+import '../widgets/learning_controls.dart';
 import '../utils/class_access_utils.dart';
+import 'downloads_screen.dart';
 
 class TeacherPlaylistsScreen extends StatefulWidget {
   const TeacherPlaylistsScreen({
@@ -566,8 +571,43 @@ class PlaylistDetailScreen extends StatefulWidget {
   State<PlaylistDetailScreen> createState() => _PlaylistDetailScreenState();
 }
 
-class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
+class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
+    with WidgetsBindingObserver {
   final _player = AudioPlayer();
+  late final _learning = LearningPlaybackController(
+    seek: _player.seek,
+    setSpeed: _player.setPlaybackRate,
+    resume: () async {
+      await _player.resume();
+      if (mounted) setState(() => _playing = true);
+    },
+    isPlaying: () =>
+        mounted && _playing && _player.state == PlayerState.playing,
+    onIssue: _learningIssue,
+  );
+  final _learningNodes = <String, FocusNode>{};
+  final _downloadsNode = FocusNode(debugLabel: 'playlist-downloads');
+  FocusNode _learningNode(String name) => _learningNodes.putIfAbsent(
+    name,
+    () => FocusNode(debugLabel: 'playlist-$name'),
+  );
+  LearningControls get _learningControls => LearningControls(
+    controller: _learning,
+    nodeFor: _learningNode,
+    pauseForNotes: () async {
+      if (_playPending) {
+        throw const LearningStorageException(
+          'Wait for the playlist player before opening study notes.',
+        );
+      }
+      await _player.pause();
+      if (mounted) setState(() => _playing = false);
+      await _learning.flush();
+    },
+  );
+  bool _playPending = false;
+  Completer<void>? _playSettled;
+  int _playRevision = 0;
   final _keypad = KeypadNavigationController();
   final _backNode = FocusNode(debugLabel: 'playlist-detail-back');
   final _refreshNode = FocusNode(debugLabel: 'playlist-detail-refresh');
@@ -592,12 +632,79 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
   @override
   void initState() {
     super.initState();
-    _player.onPlayerComplete.listen((_) => _next());
+    WidgetsBinding.instance.addObserver(this);
+    _learning.addListener(_learningChanged);
+    _player.onPositionChanged.listen((position) {
+      if (mounted) _learning.updatePosition(position);
+    });
+    _player.onDurationChanged.listen((duration) {
+      if (mounted && _learning.ready) _learning.updateDuration(duration);
+    });
+    _player.onPlayerComplete.listen((_) async {
+      if (!mounted) return;
+      final revision = _playRevision;
+      if (_playPending) await _playSettled?.future;
+      if (!mounted || revision != _playRevision || !_learning.ready) return;
+      final looping = await _learning.handleCompletion();
+      if (!mounted || revision != _playRevision || looping) return;
+      setState(() => _playing = false);
+      await _next();
+    });
+    TtsService.registerRecordedPlayback(
+      _player,
+      isPlaying: () => mounted && _playing,
+      canResume: () => mounted && (ModalRoute.of(context)?.isCurrent ?? true),
+      onResumeSkipped: () {
+        if (mounted) setState(() => _playing = false);
+      },
+      item: () => _player.source,
+      pause: _player.pause,
+      resume: _player.resume,
+    );
     _load();
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.paused) {
+      unawaited(_learning.flush());
+    }
+  }
+
+  void _learningChanged() {
+    if (mounted) setState(() {});
+  }
+
+  void _learningIssue(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
+    TtsService.speak(message, priority: SpeechPriority.critical);
+  }
+
+  Future<void> _openDownloads() async {
+    final candidates = _items
+        .whereType<Map>()
+        .where((item) => item['available'] != false)
+        .map((item) => Map<String, dynamic>.from(item))
+        .toList();
+    await Navigator.push<void>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => DownloadsScreen(candidates: candidates),
+      ),
+    );
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    TtsService.unregisterRecordedPlayback(_player);
+    _learning.removeListener(_learningChanged);
+    _learning.dispose();
+    _downloadsNode.dispose();
     _player.dispose();
     _backNode.dispose();
     _refreshNode.dispose();
@@ -612,6 +719,9 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
       node.dispose();
     }
     for (final node in _removeNodes.values) {
+      node.dispose();
+    }
+    for (final node in _learningNodes.values) {
       node.dispose();
     }
     super.dispose();
@@ -634,6 +744,17 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
         ? await ApiService.getAudioList()
         : const <dynamic>[];
     if (!mounted) return;
+    if (playlist == null ||
+        playlist['items'] is! List ||
+        playlist['title'] is! String) {
+      setState(() => _loading = false);
+      _learningIssue(
+        'Could not refresh this playlist. Check your connection and try again. Existing playback and saved progress have not been changed.',
+      );
+      return;
+    }
+    final activeAudioId = _learning.ready ? _learning.lesson?.audioId : null;
+    var activeUnavailable = false;
     setState(() {
       _playlist = playlist;
       _availableAudio = audio ?? const [];
@@ -641,21 +762,48 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
       if (_selectedIndex >= _items.length) {
         _selectedIndex = _items.isEmpty ? 0 : _items.length - 1;
       }
+      if (activeAudioId != null) {
+        final index = _items.indexWhere(
+          (item) =>
+              item is Map &&
+              item['audio_id'] == activeAudioId &&
+              item['available'] != false,
+        );
+        if (index >= 0) {
+          _selectedIndex = index;
+        } else {
+          activeUnavailable = true;
+        }
+      }
     });
-    if (playlist != null) {
-      final state = _teacher
-          ? (playlist['is_archived'] == true
-                ? 'archived'
-                : playlist['is_published'] == true
-                ? 'published'
-                : 'draft')
-          : widget.mode == PlaylistMode.studentPrivate
-          ? 'private'
-          : 'published class playlist';
-      TtsService.speak(
-        '${playlist['title']}. ${playlist['class_name'] ?? ''} ${playlist['subject_name'] ?? ''}. ${_items.length} items. $state.',
+    if (activeUnavailable) {
+      ++_playRevision;
+      await _player.pause();
+      await _learning.flush();
+      _learning.abort();
+      await _player.stop();
+      if (!mounted) return;
+      setState(() {
+        _playing = false;
+        _playPending = false;
+      });
+      _learningIssue(
+        'The current lesson is no longer available in this playlist. Playback stopped. Your saved progress and bookmarks are kept.',
       );
+      return;
     }
+    final state = _teacher
+        ? (playlist['is_archived'] == true
+              ? 'archived'
+              : playlist['is_published'] == true
+              ? 'published'
+              : 'draft')
+        : widget.mode == PlaylistMode.studentPrivate
+        ? 'private'
+        : 'published class playlist';
+    TtsService.speak(
+      '${playlist['title']}. ${playlist['class_name'] ?? ''} ${playlist['subject_name'] ?? ''}. ${_items.length} items. $state.',
+    );
   }
 
   Future<void> _add() async {
@@ -734,7 +882,10 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
 
   Future<void> _selectAndPlay(int index) async {
     if (index < 0 || index >= _items.length) return;
-    setState(() => _selectedIndex = index);
+    if (_playPending) {
+      TtsService.speak('Please wait for the lesson player.');
+      return;
+    }
     final item = _items[index];
     if (item['available'] == false) {
       TtsService.speak(
@@ -747,15 +898,61 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
       TtsService.speak('${item['title']} is unavailable');
       return;
     }
-    final url = await ApiService.mediaUrl(streamPath);
-    await _player.play(UrlSource(url));
-    if (mounted) setState(() => _playing = true);
-    TtsService.speak(
-      'Playing ${item['title']}. Item ${index + 1} of ${_items.length}',
-    );
+    final revision = ++_playRevision;
+    final settled = _playSettled = Completer<void>();
+    setState(() => _playPending = true);
+    try {
+      await _player.pause();
+      if (!mounted || revision != _playRevision) return;
+      setState(() => _playing = false);
+      if (!await LearningControls.prepare(
+        context,
+        _learning,
+        item['audio_id'] as int,
+        '${item['title']}',
+      )) {
+        return;
+      }
+      if (!mounted || revision != _playRevision) return;
+      setState(() => _selectedIndex = index);
+      final url = await ApiService.mediaUrl(streamPath);
+      if (!mounted || revision != _playRevision) return;
+      await _player.setReleaseMode(ReleaseMode.stop);
+      if (!mounted || revision != _playRevision) return;
+      await _player.setPlaybackRate(_learning.speed);
+      if (!mounted || revision != _playRevision) return;
+      await _player.play(UrlSource(url), position: _learning.position);
+      if (!mounted || revision != _playRevision) return;
+      _learning.activate();
+      setState(() => _playing = true);
+      final duration = await _player.getDuration();
+      if (!mounted || revision != _playRevision) return;
+      if (duration != null) _learning.updateDuration(duration);
+      TtsService.speak(
+        'Playing ${item['title']}. Item ${index + 1} of ${_items.length}. '
+        'Position ${learningTime(_learning.position)}.',
+      );
+    } on Exception catch (error) {
+      debugPrint('[LEARNING] Playlist playback failed (${error.runtimeType})');
+      if (!mounted || revision != _playRevision) return;
+      _learning.abort();
+      setState(() => _playing = false);
+      _learningIssue(
+        'Could not play this lesson. Check your connection and try again.',
+      );
+    } finally {
+      settled.complete();
+      if (mounted && revision == _playRevision) {
+        setState(() => _playPending = false);
+      }
+    }
   }
 
   Future<void> _playPause() async {
+    if (_playPending) {
+      TtsService.speak('Please wait for the lesson player.');
+      return;
+    }
     if (_items.isEmpty) {
       TtsService.speak('Playlist is empty');
       return;
@@ -763,9 +960,16 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
     if (_playing) {
       await _player.pause();
       if (mounted) setState(() => _playing = false);
+      await _learning.flush();
       TtsService.speak('Paused');
     } else {
-      await _selectAndPlay(_selectedIndex);
+      if (_player.state == PlayerState.paused && _learning.ready) {
+        await _player.resume();
+        if (mounted) setState(() => _playing = true);
+        TtsService.speak('Playback resumed');
+      } else {
+        await _selectAndPlay(_selectedIndex);
+      }
     }
   }
 
@@ -777,8 +981,15 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
   }
 
   Future<void> _next() async {
+    if (_playPending) {
+      TtsService.speak('Please wait for the lesson player.');
+      return;
+    }
     if (_items.isEmpty) return;
     if (_selectedIndex >= _items.length - 1) {
+      await _player.pause();
+      await _learning.flush();
+      _learning.abort();
       await _player.stop();
       if (mounted) setState(() => _playing = false);
       TtsService.speak('End of playlist');
@@ -1007,6 +1218,13 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
         onActivate: _previous,
       ),
       KeypadFocusTarget(node: _nextNode, label: 'Next item', onActivate: _next),
+      KeypadFocusTarget(
+        node: _downloadsNode,
+        label:
+            'Download playlist recordings. Select individually or confirm all listed recordings',
+        onActivate: _openDownloads,
+      ),
+      if (_learning.lesson != null) ..._learningControls.focusTargets(context),
       if (_teacher && _playlist?['is_archived'] != true)
         KeypadFocusTarget(
           node: _publishNode,
@@ -1187,6 +1405,12 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                           ),
                         ),
                     ],
+                  ),
+                  if (_learning.lesson != null) _learningControls,
+                  OutlinedButton(
+                    focusNode: _downloadsNode,
+                    onPressed: _openDownloads,
+                    child: const Text('Download playlist recordings'),
                   ),
                   if (_editable && _items.isNotEmpty)
                     Padding(

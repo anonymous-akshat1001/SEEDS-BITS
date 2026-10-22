@@ -8,6 +8,7 @@ import '../utils/keypad_actions.dart';
 import '../utils/ui_utils.dart';
 import '../widgets/key_instruction_wrapper.dart';
 import '../widgets/keypad_confirmation_dialog.dart';
+import '../widgets/admin_password_reset_dialog.dart';
 
 class AdminDashboard extends StatefulWidget {
   const AdminDashboard({super.key});
@@ -432,10 +433,87 @@ class _AdminDashboardState extends State<AdminDashboard> {
   }
 
   Future<void> _manageUser(Map<String, dynamic> user) async {
-    if (user['role'] == 'student') {
-      await _assignStudent(user);
-    } else {
-      await _assignTeacher(user);
+    final nodes = List.generate(
+      3,
+      (i) => FocusNode(debugLabel: 'admin-account-action-$i'),
+    );
+    final action = await showDialog<int>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => KeypadInstructionWrapper(
+        screenName:
+            'Manage selected account. Choose assignments, password recovery, or Cancel.',
+        labels: const {
+          0: 'Cancel',
+          1: 'Manage assignments',
+          2: 'Password recovery',
+        },
+        actions: {
+          for (var i = 0; i < 3; i++) i: () => Navigator.pop(dialogContext, i),
+        },
+        focusTargets: [
+          for (var i = 0; i < 3; i++)
+            KeypadFocusTarget(
+              node: nodes[i],
+              label: ['Cancel', 'Manage assignments', 'Password recovery'][i],
+              onActivate: () => Navigator.pop(dialogContext, i),
+            ),
+        ],
+        child: AlertDialog(
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text('Manage ${user['name']}'),
+                for (var i = 0; i < 3; i++)
+                  TextButton(
+                    focusNode: nodes[i],
+                    onPressed: () => Navigator.pop(dialogContext, i),
+                    child: Text(
+                      [
+                        '0: Cancel',
+                        '1: Manage assignments',
+                        '2: Password recovery',
+                      ][i],
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    for (final node in nodes) {
+      node.dispose();
+    }
+    if (!mounted) return;
+    if (action == 1) {
+      if (user['role'] == 'student') {
+        await _assignStudent(user);
+      } else {
+        await _assignTeacher(user);
+      }
+    } else if (action == 2) {
+      final version = user['auth_version'];
+      if (version is! int || version < 0) {
+        await _announceResult(
+          false,
+          'Account recovery requires a current server version. Refresh the account.',
+        );
+        return;
+      }
+      await showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => AdminPasswordResetDialog(
+          accountId: user['user_id'] as int,
+          authVersion: version,
+          accountName: user['name'].toString(),
+          phoneNumber: user['phone_number'].toString(),
+        ),
+      );
+      await _refresh();
     }
     if (mounted) {
       _userNodes[user['user_id'] as int]?.requestFocus();

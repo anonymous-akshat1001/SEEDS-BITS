@@ -22,8 +22,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _showKeyboardShortcuts = true;
   bool _highContrastMode = false;
   double _ttsVolume = 1.0;
-  double _ttsSpeechRate = 0.5;
+  double _ttsSpeechRate = TtsService.defaultSpeechRate;
   double _textScale = 1.0;
+  SpeechMode _speechMode = SpeechMode.selfVoicing;
+  SpeechVerbosity _verbosity = SpeechVerbosity.standard;
+  final _modeFocus = FocusNode(debugLabel: 'settings-speech-mode');
+  final _verbosityFocus = FocusNode(debugLabel: 'settings-verbosity');
+  final _stopFocus = FocusNode(debugLabel: 'settings-stop-speech');
+  final _repeatFocus = FocusNode(debugLabel: 'settings-repeat-help');
+  final _voiceCheckFocus = FocusNode(debugLabel: 'settings-english-voice');
+  bool _checkingVoice = false;
+  String? _voiceStatus;
   final FocusNode _backFocus = FocusNode(debugLabel: 'settings-back');
   final FocusNode _resetFocus = FocusNode(debugLabel: 'settings-reset');
   final FocusNode _ttsFocus = FocusNode(debugLabel: 'settings-tts');
@@ -63,8 +72,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _showKeyboardShortcuts = prefs.getBool('show_keyboard_shortcuts') ?? true;
       _highContrastMode = prefs.getBool('high_contrast_mode') ?? false;
       _ttsVolume = prefs.getDouble('tts_volume') ?? 1.0;
-      _ttsSpeechRate = prefs.getDouble('tts_speech_rate') ?? 0.5;
+      _ttsSpeechRate =
+          prefs.getDouble('tts_speech_rate') ?? TtsService.defaultSpeechRate;
       _textScale = prefs.getDouble('text_scale') ?? 1.0;
+      _speechMode =
+          prefs.getString('speech_mode') == SpeechMode.screenReader.name
+          ? SpeechMode.screenReader
+          : SpeechMode.selfVoicing;
+      _verbosity = switch (prefs.getString('speech_verbosity')) {
+        'essential' => SpeechVerbosity.essential,
+        'detailed' => SpeechVerbosity.detailed,
+        _ => SpeechVerbosity.standard,
+      };
     });
 
     UIUtils.setHighContrastMode(_highContrastMode);
@@ -87,6 +106,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     await prefs.setDouble('tts_volume', _ttsVolume);
     await prefs.setDouble('tts_speech_rate', _ttsSpeechRate);
     await prefs.setDouble('text_scale', _textScale);
+    await prefs.setString('speech_mode', _speechMode.name);
+    await prefs.setString('speech_verbosity', _verbosity.name);
 
     UIUtils.setHighContrastMode(_highContrastMode);
     UIUtils.setTextScale(_textScale);
@@ -112,6 +133,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         enabled: _ttsEnabled,
         volume: _ttsVolume,
         speechRate: _ttsSpeechRate,
+        mode: _speechMode,
+        verbosity: _verbosity,
       );
     } catch (e) {
       print('[TTS CONFIG] Error: $e');
@@ -136,6 +159,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
     await TtsService.speak(
       "This is a test of the text to speech system. Volume is ${(_ttsVolume * 100).round()} percent. Speech rate is ${(_ttsSpeechRate * 2).toStringAsFixed(1)}.",
     );
+  }
+
+  Future<void> _checkEnglishVoice() async {
+    if (_checkingVoice) return;
+    setState(() => _checkingVoice = true);
+    final message = await TtsService.checkEnglishVoice();
+    if (!mounted) return;
+    setState(() {
+      _checkingVoice = false;
+      _voiceStatus = message;
+    });
+    await TtsService.speak(message);
   }
 
   void _setVolume(double value) {
@@ -175,8 +210,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
         _showKeyboardShortcuts = true;
         _highContrastMode = false;
         _ttsVolume = 1.0;
-        _ttsSpeechRate = 0.5;
+        _ttsSpeechRate = TtsService.defaultSpeechRate;
         _textScale = 1.0;
+        _speechMode = SpeechMode.selfVoicing;
+        _verbosity = SpeechVerbosity.standard;
       });
 
       await _saveSettings();
@@ -199,6 +236,37 @@ class _SettingsScreenState extends State<SettingsScreen> {
     await _saveBoolSetting('tts_enabled', true);
     await _configureTTS();
     await TtsService.speak('TTS enabled');
+  }
+
+  Future<void> _toggleSpeechMode() async {
+    setState(() {
+      _speechMode = _speechMode == SpeechMode.selfVoicing
+          ? SpeechMode.screenReader
+          : SpeechMode.selfVoicing;
+    });
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('speech_mode', _speechMode.name);
+    await _configureTTS();
+    if (_speechMode == SpeechMode.selfVoicing) {
+      await TtsService.speak('Self-voicing mode. App narration is available.');
+    }
+  }
+
+  Future<void> _cycleVerbosity() async {
+    setState(() {
+      _verbosity = SpeechVerbosity
+          .values[(_verbosity.index + 1) % SpeechVerbosity.values.length];
+    });
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('speech_verbosity', _verbosity.name);
+    await _configureTTS();
+    await TtsService.speak('Narration level ${_verbosity.name}.');
+  }
+
+  void _repeatHelp() {
+    TtsService.speak(
+      buildTtsInstructions(settingsKeyLabels, screenName: 'Settings'),
+    );
   }
 
   void _toggleVoiceCommands() {
@@ -368,6 +436,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
   // saves memory since it is called when screen is destroyed
   @override
   void dispose() {
+    _modeFocus.dispose();
+    _verbosityFocus.dispose();
+    _stopFocus.dispose();
+    _repeatFocus.dispose();
+    _voiceCheckFocus.dispose();
     _backFocus.dispose();
     _resetFocus.dispose();
     _ttsFocus.dispose();
@@ -390,6 +463,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     return KeypadInstructionWrapper(
       screenName: 'Settings',
+      onSpeechRescued: () => setState(() {
+        _ttsEnabled = TtsService.isEnabled;
+        _ttsVolume = TtsService.volume;
+      }),
       labels: settingsKeyLabels,
       focusTargets: [
         KeypadFocusTarget(
@@ -425,6 +502,34 @@ class _SettingsScreenState extends State<SettingsScreen> {
           onActivate: _testTTS,
         ),
         KeypadFocusTarget(
+          node: _modeFocus,
+          label: _speechMode == SpeechMode.screenReader
+              ? 'Screen-reader mode. App narration is off. Activate for self-voicing.'
+              : 'Self-voicing mode. Activate for Android screen-reader mode.',
+          onActivate: _toggleSpeechMode,
+        ),
+        KeypadFocusTarget(
+          node: _verbosityFocus,
+          label: 'Narration level ${_verbosity.name}. Activate to change.',
+          onActivate: _cycleVerbosity,
+        ),
+        KeypadFocusTarget(
+          node: _stopFocus,
+          label: 'Stop speech',
+          onActivate: TtsService.stop,
+        ),
+        KeypadFocusTarget(
+          node: _repeatFocus,
+          label: 'Repeat Settings help',
+          onActivate: _repeatHelp,
+        ),
+        KeypadFocusTarget(
+          node: _voiceCheckFocus,
+          label: 'Check English voice availability and installation guidance',
+          onActivate: _checkEnglishVoice,
+          isEnabled: () => !_checkingVoice,
+        ),
+        KeypadFocusTarget(
           node: _voiceFocus,
           label: 'Voice commands for active sessions',
           onActivate: _toggleVoiceCommands,
@@ -434,7 +539,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             node: _voiceHelpFocus,
             label: 'Voice command help. Commands work only in active sessions.',
             onActivate: () => _speakIfEnabled(
-              'In active sessions, say mute, unmute, raise hand, lower hand, leave, or repeat instructions.',
+              'In a session, activate Listen for command, then say mute, unmute, raise hand, lower hand, leave, or repeat. Listening does not restart automatically. Unmute asks for a key or touch confirmation.',
             ),
           ),
         KeypadFocusTarget(
@@ -467,6 +572,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         4: _toggleHighContrast,
         5: _testTTS,
         6: _saveSettings,
+        7: _checkEnglishVoice,
       },
       child: Scaffold(
         appBar: AppBar(
@@ -476,13 +582,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
             onPressed: () => Navigator.maybePop(context),
             icon: const Icon(Icons.arrow_back),
           ),
-          title: Text(
-            'Settings',
-            style: TextStyle(
-              fontSize: UIUtils.fontSize(context, 18),
-              fontWeight: FontWeight.w600,
-            ),
-          ),
+          title: UIUtils.useStackedLayout(context)
+              ? null
+              : Text(
+                  'Settings',
+                  style: TextStyle(
+                    fontSize: UIUtils.fontSize(context, 18),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
           backgroundColor: UIUtils.cardColor,
           foregroundColor: UIUtils.textColor,
           elevation: 0,
@@ -508,8 +616,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              if (UIUtils.useStackedLayout(context))
+                Semantics(
+                  header: true,
+                  child: Text(
+                    'Settings',
+                    style: Theme.of(context).textTheme.headlineSmall,
+                  ),
+                ),
               // Text-to-Speech Settings
               _buildSettingSection(context, 'Text-to-Speech', [
+                ValueListenableBuilder<String?>(
+                  valueListenable: TtsService.issue,
+                  builder: (_, message, child) => message == null
+                      ? const SizedBox.shrink()
+                      : Semantics(liveRegion: true, child: Text(message)),
+                ),
                 _buildSwitchTile(
                   context,
                   title: 'Enable TTS',
@@ -568,6 +690,42 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                   ),
                 ),
+                _buildSwitchTile(
+                  context,
+                  title: 'Use Android screen reader',
+                  subtitle: _speechMode == SpeechMode.screenReader
+                      ? 'App narration is off. Enable your screen reader in Android settings.'
+                      : 'Self-voicing mode. App provides spoken guidance.',
+                  value: _speechMode == SpeechMode.screenReader,
+                  onChanged: (_) => _toggleSpeechMode(),
+                  focusNode: _modeFocus,
+                ),
+                OutlinedButton(
+                  focusNode: _verbosityFocus,
+                  onPressed: _cycleVerbosity,
+                  child: Text('Narration: ${_verbosity.name}'),
+                ),
+                TextButton(
+                  focusNode: _stopFocus,
+                  onPressed: TtsService.stop,
+                  child: const Text('Stop speech'),
+                ),
+                TextButton(
+                  focusNode: _repeatFocus,
+                  onPressed: _repeatHelp,
+                  child: const Text('Repeat help'),
+                ),
+                OutlinedButton(
+                  focusNode: _voiceCheckFocus,
+                  onPressed: _checkingVoice ? null : _checkEnglishVoice,
+                  child: Text(
+                    _checkingVoice
+                        ? 'Checking English voice...'
+                        : '7: Check English voice',
+                  ),
+                ),
+                if (_voiceStatus != null)
+                  Semantics(liveRegion: true, child: Text(_voiceStatus!)),
               ]),
 
               // Voice Commands
@@ -575,7 +733,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 _buildSwitchTile(
                   context,
                   title: 'Voice Commands',
-                  subtitle: 'Available only inside active sessions',
+                  subtitle:
+                      'Enable Listen for command in sessions. No automatic listening.',
                   value: _voiceCommandsEnabled,
                   onChanged: (_) => _toggleVoiceCommands(),
                   focusNode: _voiceFocus,
@@ -584,17 +743,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   Semantics(
                     button: true,
                     label:
-                        'Voice commands. Say mute, unmute, raise hand, lower hand, leave, or repeat instructions.',
+                        'Activate Listen for command in a session. Unmute requires key or touch confirmation.',
                     child: InkWell(
                       focusNode: _voiceHelpFocus,
                       onTap: () => _speakIfEnabled(
-                        'Voice commands are mute, unmute, raise hand, lower hand, leave, and repeat instructions.',
+                        'Activate Listen for command, then say mute, unmute, raise hand, lower hand, leave, or repeat. Listening does not restart automatically. Unmute asks for a key or touch confirmation.',
                       ),
                       borderRadius: BorderRadius.circular(6),
                       child: Padding(
                         padding: UIUtils.paddingAll(context, 6),
                         child: Text(
-                          'Active-session commands: "mute", "unmute", "raise hand", "lower hand", "leave", "repeat"',
+                          'Choose Listen for command in a session, then say "mute", "unmute", "raise hand", "lower hand", "leave" or "repeat". Voice unmute requires confirmation.',
                           style: TextStyle(
                             fontSize: UIUtils.fontSize(context, 11),
                             color: UIUtils.subtextColor,

@@ -11,6 +11,18 @@ from database import Base
 
 
 # Stores all teachers + users and helps distiguinsh between them
+class LessonSequence(Base):
+    __tablename__ = "lesson_sequences"
+
+    sequence_id = Column(Integer, primary_key=True)
+    owner_teacher_id = Column(Integer, ForeignKey("users.user_id", ondelete="RESTRICT"), nullable=False, index=True)
+    class_id = Column(Integer, ForeignKey("classes.class_id", ondelete="RESTRICT"), nullable=False)
+    subject_id = Column(Integer, ForeignKey("subjects.subject_id", ondelete="RESTRICT"), nullable=False)
+    title = Column(String(160), nullable=False)
+    revision = Column(Integer, nullable=False, server_default=text("1"))
+    steps = Column(JSON, nullable=False)
+
+
 class User(Base):
     __tablename__ = "users"
 
@@ -19,6 +31,13 @@ class User(Base):
     phone_number = Column(Text, unique=True, nullable=False)
     role = Column(String(20), nullable=False)
     password_hash = Column(Text, nullable=False)
+    auth_version = Column(Integer, nullable=False, default=0, server_default=text("0"))
+    must_change_password = Column(Boolean, nullable=False, default=False, server_default=text("false"))
+    temporary_password_expires_at = Column(TIMESTAMP)
+    temporary_password_failures = Column(Integer, nullable=False, default=0, server_default=text("0"))
+    temporary_password_locked_until = Column(TIMESTAMP)
+    password_reset_at = Column(TIMESTAMP)
+    password_reset_by = Column(Integer)
     created_at = Column(TIMESTAMP, server_default=func.now())
     fcm_tokens = relationship("FCMToken", back_populates="user", cascade="all, delete-orphan")
 
@@ -170,6 +189,7 @@ class Session(Base):
     is_active = Column(Boolean, server_default=text("true"))
     created_at = Column(TIMESTAMP, server_default=func.now())
     ended_at = Column(TIMESTAMP)
+    hand_queue_sequence = Column(Integer, nullable=False, server_default=text("0"))
     # Relationships
     creator = relationship("User", back_populates="sessions_created")
     participants = relationship("Participant", back_populates="session", cascade="all, delete-orphan")
@@ -207,6 +227,8 @@ class Participant(Base):
     is_muted = Column(Boolean, server_default=text("true"))  
     is_kicked = Column(Boolean, server_default=text("false"))
     hand_raised = Column(Boolean, server_default=text("false"))  # Added for raise hand feature
+    hand_queue_order = Column(Integer)
+    hand_revision = Column(Integer, nullable=False, server_default=text("0"))
 
     # Relationships
     session = relationship("Session", back_populates="participants")
@@ -334,6 +356,7 @@ class ChatMessage(Base):
 # Stores device tokens for push notifications
 class FCMToken(Base):
     __tablename__ = "fcm_tokens"
+    __table_args__ = (UniqueConstraint("token", name="uq_fcm_token"),)
     
     token_id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False)
@@ -440,6 +463,13 @@ class QuestionBankQuestion(Base):
     subject_id = Column(Integer, ForeignKey("subjects.subject_id", ondelete="RESTRICT"), nullable=False)
     question_text = Column(Text, nullable=False)
     explanation = Column(Text)
+    revision = Column(Integer)
+    topics = Column(JSON)
+    notation = Column(String(20), nullable=False, server_default="plain_text")
+    spoken_question_text = Column(Text)
+    spoken_options = Column(JSON)
+    spoken_explanation = Column(Text)
+    spoken_reviewed = Column(Boolean, nullable=False, server_default=text("false"))
     is_archived = Column(Boolean, nullable=False, server_default=text("false"))
     created_at = Column(TIMESTAMP, nullable=False, server_default=func.now())
     updated_at = Column(TIMESTAMP, nullable=False, server_default=func.now(), onupdate=func.now())
@@ -463,6 +493,15 @@ class QuestionBankQuestion(Base):
         Index("ix_bank_question_owner_workspace", "owner_teacher_id", "class_id", "subject_id"),
         Index("ix_bank_question_owner_archived", "owner_teacher_id", "is_archived"),
     )
+
+
+class QuestionBankRevision(Base):
+    __tablename__ = "question_bank_revisions"
+
+    question_id = Column(Integer, ForeignKey("question_bank_questions.question_id", ondelete="CASCADE"), primary_key=True)
+    revision = Column(Integer, primary_key=True)
+    content = Column(JSON, nullable=False)
+    recorded_at = Column(TIMESTAMP, nullable=False, server_default=func.now())
 
 
 class QuestionBankOption(Base):
@@ -493,6 +532,9 @@ class Quiz(Base):
     subject_id = Column(Integer, ForeignKey("subjects.subject_id", ondelete="RESTRICT"), nullable=False)
     title = Column(String(300), nullable=False)
     description = Column(Text)
+    mode = Column(String(20), nullable=False, server_default="graded")
+    feedback_policy = Column(String(30), nullable=False, server_default="legacy_immediate")
+    feedback_release_at = Column(TIMESTAMP)
     status = Column(String(20), nullable=False, server_default="draft")
     attempt_limit = Column(Integer, nullable=False, server_default=text("1"))
     opens_at = Column(TIMESTAMP)
@@ -546,6 +588,13 @@ class QuizQuestion(Base):
     )
     question_text = Column(Text, nullable=False)
     explanation = Column(Text)
+    source_revision = Column(Integer)
+    topics = Column(JSON)
+    notation = Column(String(20), nullable=False, server_default="plain_text")
+    spoken_question_text = Column(Text)
+    spoken_options = Column(JSON)
+    spoken_explanation = Column(Text)
+    spoken_reviewed = Column(Boolean, nullable=False, server_default=text("false"))
     position = Column(Integer, nullable=False)
 
     quiz = relationship("Quiz", back_populates="questions")
@@ -589,6 +638,7 @@ class QuizAttempt(Base):
     status = Column(String(20), nullable=False, server_default="in_progress")
     started_at = Column(TIMESTAMP, nullable=False, server_default=func.now())
     deadline_at = Column(TIMESTAMP)
+    extra_time_minutes = Column(Integer, nullable=False, server_default=text("0"))
     completed_at = Column(TIMESTAMP)
     correct_count = Column(Integer, nullable=False, server_default=text("0"))
     total_questions = Column(Integer, nullable=False)
@@ -615,6 +665,13 @@ class QuizAttempt(Base):
         ),
         Index("ix_quiz_attempt_student_quiz", "student_id", "quiz_id", "status"),
     )
+
+
+class QuizAccommodation(Base):
+    __tablename__ = "quiz_accommodations"
+    quiz_id = Column(Integer, ForeignKey("quizzes.quiz_id", ondelete="CASCADE"), primary_key=True)
+    student_id = Column(Integer, ForeignKey("users.user_id", ondelete="CASCADE"), primary_key=True)
+    extra_minutes = Column(Integer, nullable=False, server_default=text("0"))
 
 
 class QuizResponse(Base):

@@ -1,4 +1,5 @@
 import asyncio
+import hashlib
 from contextlib import asynccontextmanager
 import os
 from typing import Annotated, List, Optional
@@ -7,8 +8,9 @@ import uuid
 import aiofiles
 import json
 import jwt
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pydantic import BaseModel
+from fastapi import Response
 
 from fastapi import FastAPI, Depends, WebSocket, WebSocketDisconnect, BackgroundTasks, Query, Form, HTTPException, status, UploadFile, File, APIRouter, Request
 from fastapi.responses import StreamingResponse
@@ -19,9 +21,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import delete, update, func
 from sqlalchemy.orm import selectinload
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.dialects.postgresql import insert as postgres_insert
+from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 
 import models, schemas, auth, ws_manager, access_control as access, bootstrap
-import admin_routes, playlist_routes, quiz_routes
+import admin_routes, playlist_routes, quiz_routes, classroom_checks, sequence_routes
+import account_recovery
 from database import AsyncSessionLocal, engine, get_db
 from notification_service import fcm_service
 from ws_manager import ws_mgr, SESSION_STATE, SESSION_LOCK
@@ -47,6 +53,8 @@ app = FastAPI(title="SEEDS Application", lifespan=lifespan)
 app.include_router(admin_routes.router)
 app.include_router(playlist_routes.router)
 app.include_router(quiz_routes.router)
+app.include_router(sequence_routes.router)
+app.include_router(account_recovery.router)
 
 
 # CORS (Cross-Origin Resource Sharing) controls which websites can make requests to your API
@@ -108,32 +116,27 @@ async def register(user_in: schemas.UserCreate, db: AsyncSession = Depends(get_d
 # In-built FASTAPI authentication method :
 
 @app.post("/auth/login")
-async def login(form_data: OAuth2PasswordRequestForm = Depends(),
+async def login(response: Response, form_data: OAuth2PasswordRequestForm = Depends(),
                 db: AsyncSession = Depends(get_db)):
     # Treat username as phone_number
     phone = form_data.username
     password = form_data.password
 
     # Check if the phone number exists
-    q = await db.execute(select(models.User).filter(models.User.phone_number == phone))
+    q = await db.execute(select(models.User).filter(
+        models.User.phone_number == phone,
+    ).with_for_update().execution_options(populate_existing=True))
     user = q.scalar_one_or_none()
 
-    if not user or not auth.verify_password(password, user.password_hash):
+    if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
-
-    # If user is valid, create a JWT token
-    role = user.role.lower()
-    token_data = {"user_id": user.user_id, "role": role}
-    access_token = auth.create_access_token(token_data, expires_delta=timedelta(days=7))
-    
-    # RETURN USER NAME IN RESPONSE
-    return {
-        "access_token": access_token,
-        "token_type": "bearer",
-        "user_id": user.user_id,
-        "role": role,
-        "name": user.name  
-    }
+    if user.must_change_password:
+        await auth.verify_temporary_password(user, password, db)
+    elif not auth.verify_password(password, user.password_hash):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
+    await db.commit()
+    response.headers["Cache-Control"] = "no-store"
+    return auth.session_payload(user)
 
 
 
@@ -545,7 +548,7 @@ async def join_or_add_participant(
         user_id = current_user.user_id
     
     # Fetch session
-    q = await db.execute(select(models.Session).filter(models.Session.session_id == session_id))
+    q = await db.execute(select(models.Session).filter(models.Session.session_id == session_id).with_for_update())
     session = q.scalar_one_or_none()
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
@@ -581,6 +584,31 @@ async def join_or_add_participant(
     ))
     exist = q2.scalar_one_or_none()
     if exist:
+        if user_id == current_user.user_id:
+            exist.is_muted = True
+            exist.hand_raised = False
+            exist.hand_queue_order = None
+            exist.hand_revision = (exist.hand_revision or 0) + 1
+            exist.left_at = None
+            await db.commit()
+            async with SESSION_LOCK:
+                if session_id in SESSION_STATE:
+                    participant = SESSION_STATE[session_id]["participants"].get(exist.participant_id)
+                    if participant is not None:
+                        participant["is_muted"] = True
+                        participant["raised_hand"] = False
+                        participant["hand_queue_order"] = None
+                        participant["hand_revision"] = exist.hand_revision
+            await ws_mgr.broadcast(session_id, {
+                "type": "hand_lowered", "participant_id": exist.participant_id,
+                "raised_hand": False, "hand_queue_order": None,
+                "hand_revision": exist.hand_revision,
+            })
+            await ws_mgr.broadcast(session_id, {
+                "type": "participant_muted",
+                "participant_id": exist.participant_id,
+                "is_muted": True,
+            })
         # Participant already exists — broadcast event and return
         await ws_mgr.broadcast(session_id, {
             "type": "participant_already_present",
@@ -605,8 +633,10 @@ async def join_or_add_participant(
         })
         s["participants"][p.participant_id] = {
             "user_id": user_id,
-            "is_muted": False,
-            "raised_hand": False,
+            "is_muted": bool(p.is_muted),
+            "raised_hand": bool(p.hand_raised),
+            "hand_queue_order": p.hand_queue_order,
+            "hand_revision": p.hand_revision,
             "name": target_user.name,
         }
 
@@ -631,7 +661,7 @@ async def remove_participant(session_id: int, participant_id: int,
                              db: AsyncSession = Depends(get_db),
                              background_tasks: BackgroundTasks = None):
     session_result = await db.execute(
-        select(models.Session).filter(models.Session.session_id == session_id)
+        select(models.Session).filter(models.Session.session_id == session_id).with_for_update()
     )
     classroom_session = session_result.scalar_one_or_none()
     if classroom_session is None:
@@ -645,9 +675,11 @@ async def remove_participant(session_id: int, participant_id: int,
     p = q.scalar_one_or_none()
     if not p:
         raise HTTPException(status_code=404, detail="Participant not found")
-    
     p.is_kicked = True
     p.left_at = datetime.utcnow()
+    p.hand_raised = False
+    p.hand_queue_order = None
+    p.hand_revision = (p.hand_revision or 0) + 1
     await db.commit()
     
     # Kick via WebSocket manager
@@ -684,6 +716,11 @@ async def mute_participant(session_id: int, participant_id: int, mute: bool = Tr
     if not p:
         raise HTTPException(status_code=404, detail="Participant not found")
     
+    if not mute and p.user_id != current_user.user_id:
+        raise HTTPException(
+            status_code=403,
+            detail="Only the participant can unmute their own microphone",
+        )
     p.is_muted = mute
     await db.commit()
     # Inform ws clients
@@ -1054,6 +1091,55 @@ async def get_self_listen_history(
 # Stream audio with HTTP Range Request support.
 # Range requests allow Flutter's audio player to seek within a file without
 # downloading the whole thing first — essential for the self-listen (Spotify) model.
+@app.get("/audio/{audio_id}/offline-manifest")
+async def offline_audio_manifest(
+    audio_id: int,
+    current_user: models.User = Depends(auth.get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    audio = await db.get(models.AudioFile, audio_id)
+    if audio is None:
+        raise HTTPException(status_code=404, detail="Audio not found")
+    await access.require_audio_access(db, current_user, audio)
+
+    def fingerprint():
+        try:
+            with open(audio.file_path, "rb") as source:
+                before = os.fstat(source.fileno())
+                if before.st_size <= 0:
+                    raise HTTPException(status_code=409, detail="The recording is empty")
+                if before.st_size > 50_000_000:
+                    raise HTTPException(status_code=413, detail="This recording exceeds the 50 MB offline storage limit")
+                hasher = hashlib.sha256()
+                for chunk in iter(lambda: source.read(65536), b""):
+                    hasher.update(chunk)
+                digest = hasher.hexdigest()
+                after = os.fstat(source.fileno())
+                if (before.st_size, before.st_mtime_ns) != (after.st_size, after.st_mtime_ns):
+                    raise HTTPException(status_code=409, detail="The recording changed. Retry the download")
+                return after.st_size, digest
+        except FileNotFoundError:
+            raise HTTPException(status_code=404, detail="The recording file is unavailable")
+        except OSError:
+            raise HTTPException(status_code=503, detail="Recording storage is unavailable. Retry later")
+
+    size, digest = await asyncio.to_thread(fingerprint)
+    now = int(datetime.now(timezone.utc).timestamp())
+    return {
+        "version": 1,
+        "account_id": current_user.user_id,
+        "audio_id": audio.audio_id,
+        "title": audio.title,
+        "class_id": audio.class_id,
+        "subject_id": audio.subject_id,
+        "mime_type": audio.mime_type,
+        "bytes": size,
+        "sha256": digest,
+        "authorized_at": now,
+        "expires_at": now + 30 * 24 * 60 * 60,
+    }
+
+
 @app.get("/audio/{audio_id}/stream")
 async def stream_audio(
     audio_id: int,
@@ -1535,6 +1621,8 @@ async def get_session_state(
                 "name": p.user.name if p.user else None,
                 "muted": p.is_muted,
                 "hand_raised": p.hand_raised,
+                "hand_queue_order": p.hand_queue_order,
+                "hand_revision": p.hand_revision,
             }
             for p in participants
         ],
@@ -1624,32 +1712,30 @@ async def register_fcm_token(
     db: AsyncSession = Depends(get_db)
 ):
     try:
-        result = await db.execute(
-            select(models.FCMToken).filter(
-                models.FCMToken.user_id == current_user.user_id,
-                models.FCMToken.token == data.token,
-            )
-        )
-        existing_token: Optional[models.FCMToken] = result.scalar_one_or_none()
-
-        if existing_token:
-            existing_token.last_used = datetime.utcnow()
-            await db.commit()
-            return {"ok": True, "message": "Token updated"}
-
-        new_token = models.FCMToken(
+        dialect = db.get_bind().dialect.name
+        if dialect not in {"postgresql", "sqlite"}:
+            raise HTTPException(status_code=503, detail="Notification registration is unavailable")
+        insert = postgres_insert if dialect == "postgresql" else sqlite_insert
+        statement = insert(models.FCMToken).values(
             user_id=current_user.user_id,
             token=data.token,
             device_type=data.device_type,
             last_used=datetime.utcnow(),
         )
-        db.add(new_token)
+        await db.execute(statement.on_conflict_do_update(
+            index_elements=[models.FCMToken.token],
+            set_={
+                "user_id": statement.excluded.user_id,
+                "device_type": statement.excluded.device_type,
+                "last_used": statement.excluded.last_used,
+            },
+        ))
         await db.commit()
         return {"ok": True, "message": "Token registered"}
 
-    except Exception as e:
+    except SQLAlchemyError as error:
         await db.rollback()
-        print(f"[FCM] Error registering token: {e}")
+        print(f"[FCM] Token registration failed ({type(error).__name__})")
         raise HTTPException(status_code=500, detail="Failed to register token")
 
 
@@ -1664,22 +1750,17 @@ async def remove_fcm_token(
     db: AsyncSession = Depends(get_db)
 ):
     try:
-        result = await db.execute(
-            select(models.FCMToken).filter(
+        await db.execute(
+            delete(models.FCMToken).where(
                 models.FCMToken.user_id == current_user.user_id,
                 models.FCMToken.token == data.token,
             )
         )
-        fcm_token = result.scalar_one_or_none()
-        if not fcm_token:
-            return {"ok": True, "message": "Token not found"}
-
-        await db.delete(fcm_token)
         await db.commit()
         return {"ok": True, "message": "Token removed"}
-    except Exception as e:
+    except SQLAlchemyError as error:
         await db.rollback()
-        print(f"[FCM] Error removing token: {e}")
+        print(f"[FCM] Token removal failed ({type(error).__name__})")
         raise HTTPException(status_code=500, detail="Failed to remove token")
 
 
@@ -1750,6 +1831,7 @@ async def session_sse(
     user_id = current_user.user_id
     uname      = current_user.name
     is_teacher = current_user.role.lower() == "teacher"
+    auth_version = current_user.auth_version
 
     # resolve / create participant row 
     q_part = await db.execute(
@@ -1778,6 +1860,10 @@ async def session_sse(
         user_id=user_id,
         name=uname,
         is_teacher=is_teacher,
+        is_muted=bool(p.is_muted),
+        raised_hand=bool(p.hand_raised),
+        hand_queue_order=p.hand_queue_order,
+        hand_revision=p.hand_revision,
     )
 
     # notify others 
@@ -1789,6 +1875,10 @@ async def session_sse(
             "user_id":        user_id,
             "name":           uname,
             "is_teacher":     is_teacher,
+            "is_muted":       bool(p.is_muted),
+            "raised_hand":    bool(p.hand_raised),
+            "hand_queue_order": p.hand_queue_order,
+            "hand_revision": p.hand_revision,
         },
         exclude={participant_id},
     )
@@ -1805,6 +1895,8 @@ async def session_sse(
                 "name":       meta["name"],
                 "is_muted":   meta["is_muted"],
                 "raised_hand": meta["raised_hand"],
+                "hand_queue_order": meta.get("hand_queue_order"),
+                "hand_revision": meta.get("hand_revision", 0),
                 "is_teacher": meta.get("is_teacher", False),
             }
             for pid, meta in raw_participants.items()
@@ -1815,24 +1907,31 @@ async def session_sse(
             "participant_id": participant_id,   # tells Flutter "this is you"
             "participants":   participants_out,
             "playback":       dict(raw_playback),
+            "classroom_check": classroom_checks.snapshot(SESSION_STATE[session_id], user_id, classroom_session.created_by),
         }
 
     # SSE generator 
     async def event_generator():
-        # Immediately push connected confirmation + full session state.
-        # These are yielded before the queue loop so they arrive first.
-        yield _sse_frame("connected", {
-            "session_id":     session_id,
-            "participant_id": participant_id,
-            "user_id":        user_id,
-        })
-        yield _sse_frame("session_state", state_snapshot)
-
         try:
+            if not await auth.session_is_current(db, user_id, auth_version):
+                yield _sse_frame("authentication_revoked", {"type": "authentication_revoked"})
+                return
+            yield _sse_frame("connected", {
+                "session_id":     session_id,
+                "participant_id": participant_id,
+                "user_id":        user_id,
+            })
+            if not await auth.session_is_current(db, user_id, auth_version):
+                yield _sse_frame("authentication_revoked", {"type": "authentication_revoked"})
+                return
+            yield _sse_frame("session_state", state_snapshot)
             while True:
                 try:
                     msg = await asyncio.wait_for(queue.get(), timeout=25.0)
                 except asyncio.TimeoutError:
+                    if not await auth.session_is_current(db, user_id, auth_version):
+                        yield _sse_frame("authentication_revoked", {"type": "authentication_revoked"})
+                        break
                     # Keep-alive comment — proxies won't buffer SSE comments
                     yield ": keep-alive\n\n"
                     continue
@@ -1841,22 +1940,18 @@ async def session_sse(
                     # Sentinel pushed by close_session / kick_participant
                     break
 
+                if msg.get("type") == "authentication_revoked" or not await auth.session_is_current(db, user_id, auth_version):
+                    yield _sse_frame("authentication_revoked", {"type": "authentication_revoked"})
+                    break
                 yield _sse_frame(msg.get("type", "message"), msg)
 
         except asyncio.CancelledError:
             # Client disconnected
             pass
         finally:
-            await ws_mgr.disconnect(session_id, participant_id)
-            # Remove from participants dict too so state is accurate
-            async with SESSION_LOCK:
-                if session_id in SESSION_STATE:
-                    SESSION_STATE[session_id]["participants"].pop(participant_id, None)
-            await ws_mgr.broadcast(
-                session_id,
-                {"type": "participant_left", "participant_id": participant_id},
-            )
-            await SessionLogger.log_participant_left(db, session_id, user_id, participant_id)
+            removed = await ws_mgr.disconnect(session_id, participant_id, queue=queue)
+            if removed:
+                await SessionLogger.log_participant_left(db, session_id, user_id, participant_id)
             print(f"[SSE] Closed: session={session_id} participant={participant_id}")
 
     return StreamingResponse(
@@ -1886,6 +1981,9 @@ class SessionAction(BaseModel):
     text:                   Optional[str]   = None
     # teacher actions targeting another participant
     target_participant_id:  Optional[int]   = None
+    hand_queue_order:       Optional[int]   = None
+    check_id:               Optional[str]   = None
+    choice:                 Optional[str]   = None
     # webrtc signalling payload (offer, answer, ice_candidate)
     payload:                Optional[dict]  = None
 
@@ -1907,7 +2005,14 @@ async def session_action(
     uname      = current_user.name
     typ        = action.type
 
-    classroom_session = await db.get(models.Session, session_id)
+    if typ in {"raise_hand", "lower_hand", "acknowledge_hand", "leave_session", "kick_participant"}:
+        locked_session = await db.execute(
+            select(models.Session).where(models.Session.session_id == session_id)
+            .with_for_update().execution_options(populate_existing=True)
+        )
+        classroom_session = locked_session.scalar_one_or_none()
+    else:
+        classroom_session = await db.get(models.Session, session_id)
     if classroom_session is None or not classroom_session.is_active:
         raise HTTPException(status_code=404, detail="Active session not found")
     await access.require_session_access(db, current_user, classroom_session)
@@ -1927,10 +2032,21 @@ async def session_action(
                    "Connect to the SSE stream first.",
         )
     participant_id = p.participant_id
+    if typ in {"open_check", "close_check", "check_response", "read_check"}:
+        if p.left_at is not None or p.is_kicked:
+            raise HTTPException(status_code=403, detail="Join the classroom before using a check.")
+        result = await classroom_checks.act(
+            session_id, kind=typ, user_id=user_id, name=uname,
+            teacher_id=classroom_session.created_by, check_id=action.check_id,
+            choice=action.choice,
+        )
+        return {"ok": True, "check_state": result}
 
     # mute self 
     if typ == "mute_self":
         is_muted = bool(action.mute)
+        p.is_muted = is_muted
+        await db.commit()
         async with SESSION_LOCK:
             if session_id in SESSION_STATE:
                 SESSION_STATE[session_id]["participants"] \
@@ -1953,28 +2069,52 @@ async def session_action(
             },
         )
 
-    # raise / lower hand 
-    elif typ == "raise_hand":
+    elif typ in {"raise_hand", "lower_hand", "acknowledge_hand", "leave_session"}:
+        target = p
+        if typ == "acknowledge_hand":
+            await access.require_session_access(db, current_user, classroom_session, manage=True)
+            target = await db.get(models.Participant, action.target_participant_id) if action.target_participant_id else None
+            if target is None or target.session_id != session_id or target.left_at is not None or target.is_kicked:
+                raise HTTPException(status_code=404, detail="Active participant not found")
+            if not target.hand_raised or target.hand_queue_order != action.hand_queue_order:
+                raise HTTPException(status_code=409, detail="The selected hand changed. Read the queue again before acknowledging.")
+        elif p.left_at is not None and typ != "leave_session":
+            raise HTTPException(status_code=409, detail="Join the session again before changing your hand")
+        raised = typ == "raise_hand"
+        if raised and not target.hand_raised:
+            classroom_session.hand_queue_sequence += 1
+            target.hand_queue_order = classroom_session.hand_queue_sequence
+        if not raised:
+            target.hand_queue_order = None
+        target.hand_raised = raised
+        target.hand_revision = (target.hand_revision or 0) + 1
+        if typ == "leave_session":
+            target.left_at = datetime.now(timezone.utc).replace(tzinfo=None)
+            target.is_muted = True
+        await db.commit()
+        event = {
+            "type": "hand_raised" if raised else "hand_lowered",
+            "participant_id": target.participant_id,
+            "raised_hand": raised, "hand_queue_order": target.hand_queue_order,
+            "hand_revision": target.hand_revision,
+        }
+        if typ == "acknowledge_hand":
+            event["acknowledged_by"] = user_id
         async with SESSION_LOCK:
-            if session_id in SESSION_STATE:
-                SESSION_STATE[session_id]["participants"] \
-                    .setdefault(participant_id, {})["raised_hand"] = True
-        await SessionLogger.log_hand_raised(db, session_id, user_id, participant_id)
-        await ws_mgr.broadcast(
-            session_id,
-            {"type": "hand_raised", "participant_id": participant_id},
-        )
-
-    elif typ == "lower_hand":
-        async with SESSION_LOCK:
-            if session_id in SESSION_STATE:
-                SESSION_STATE[session_id]["participants"] \
-                    .setdefault(participant_id, {})["raised_hand"] = False
-        await SessionLogger.log_hand_lowered(db, session_id, user_id, participant_id)
-        await ws_mgr.broadcast(
-            session_id,
-            {"type": "hand_lowered", "participant_id": participant_id},
-        )
+            metadata = SESSION_STATE.get(session_id, {}).get("participants", {}).get(target.participant_id)
+            if metadata is not None and metadata.get("hand_revision", 0) <= target.hand_revision:
+                metadata.update({
+                    "raised_hand": raised, "hand_queue_order": target.hand_queue_order,
+                    "hand_revision": target.hand_revision,
+                })
+                if typ == "leave_session":
+                    metadata["is_muted"] = True
+        if raised:
+            await SessionLogger.log_hand_raised(db, session_id, target.user_id, target.participant_id)
+        else:
+            await SessionLogger.log_hand_lowered(db, session_id, target.user_id, target.participant_id)
+        await ws_mgr.broadcast(session_id, event)
+        return {"ok": True, "hand_state": event}
 
     # chat 
     elif typ == "chat":
@@ -2027,6 +2167,13 @@ async def session_action(
             raise HTTPException(status_code=404, detail="Target participant not found")
         target_user_id = target_participant.user_id
         mute_val = (typ == "mute_participant")
+        if not mute_val and target_user_id != user_id:
+            raise HTTPException(
+                status_code=403,
+                detail="Only the participant can unmute their own microphone",
+            )
+        target_participant.is_muted = mute_val
+        await db.commit()
         async with SESSION_LOCK:
             if session_id in SESSION_STATE:
                 SESSION_STATE[session_id]["participants"] \
@@ -2052,7 +2199,6 @@ async def session_action(
         target = action.target_participant_id
         if target is None:
             raise HTTPException(status_code=400, detail="target_participant_id required")
-        await ws_mgr.kick_participant(session_id, target, reason="Removed by teacher")
         q_target = await db.execute(
             select(models.Participant).filter(
                 models.Participant.session_id == session_id,
@@ -2060,7 +2206,16 @@ async def session_action(
             )
         )
         target_participant = q_target.scalar_one_or_none()
+        if target_participant is None:
+            raise HTTPException(status_code=404, detail="Participant not found")
         if target_participant:
+            target_participant.is_kicked = True
+            target_participant.left_at = datetime.now(timezone.utc).replace(tzinfo=None)
+            target_participant.hand_raised = False
+            target_participant.hand_queue_order = None
+            target_participant.hand_revision = (target_participant.hand_revision or 0) + 1
+            await db.commit()
+            await ws_mgr.kick_participant(session_id, target, reason="Removed by teacher")
             await SessionLogger.log_participant_kicked(
                 db,
                 session_id,
@@ -2092,6 +2247,9 @@ async def session_action(
         session.is_active = False
         session.ended_at = datetime.utcnow()
         await db.commit()
+        async with SESSION_LOCK:
+            if session_id in SESSION_STATE:
+                SESSION_STATE[session_id].pop("classroom_check", None)
 
         await ws_mgr.broadcast(session_id, {"type": "session_ending"})
         asyncio.create_task(ws_mgr.close_session(session_id))

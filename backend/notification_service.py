@@ -84,13 +84,14 @@ class FCMNotificationService:
                 "message": {
                     "token": token,
                     "notification": {
-                        "title": title,
-                        "body": body
+                        "title": "SEEDS update",
+                        "body": "Open SEEDS to review your updates."
                     },
                     "android": {
                         "priority": priority,
                         "notification": {
                             "sound": "default",
+                            "visibility": "PRIVATE",
                             "click_action": "FLUTTER_NOTIFICATION_CLICK"
                         }
                     },
@@ -116,7 +117,10 @@ class FCMNotificationService:
             
             # Add data payload if provided
             if data:
-                message["message"]["data"] = {k: str(v) for k, v in data.items()}
+                message["message"]["data"] = {
+                    k: str(v) for k, v in data.items()
+                    if k in {"type", "session_id", "quiz_id", "class_id", "subject_id"}
+                }
             
             # Send request
             headers = {

@@ -56,6 +56,10 @@ class WebSocketManager:
         user_id: int,
         name: str,
         is_teacher: bool,
+        is_muted: bool = True,
+        raised_hand: bool = False,
+        hand_queue_order: Optional[int] = None,
+        hand_revision: int = 0,
     ) -> asyncio.Queue:
         """
         Register a new SSE client. Called when a user joins the session
@@ -95,12 +99,18 @@ class WebSocketManager:
             # setdefault preserves existing metadata on reconnect;
             # we update name/is_teacher each time (they don't change).
             existing = s["participants"].get(participant_id, {})    # If reconnecting → preserve old data
+            if existing.get("hand_revision", 0) > hand_revision:
+                raised_hand = existing["raised_hand"]
+                hand_queue_order = existing.get("hand_queue_order")
+                hand_revision = existing["hand_revision"]
 
             s["participants"][participant_id] = {
                 "user_id":    user_id,
                 "name":       name,
-                "is_muted":   existing.get("is_muted", True),
-                "raised_hand": existing.get("raised_hand", False),
+                "is_muted":   existing.get("is_muted", is_muted),
+                "raised_hand": raised_hand,
+                "hand_queue_order": hand_queue_order,
+                "hand_revision": hand_revision,
                 "is_teacher": is_teacher,
             }
 
@@ -112,15 +122,30 @@ class WebSocketManager:
 
 
     # Removes connection but keeps metadata
-    async def disconnect(self, session_id: int, participant_id: int):
-        """Soft disconnect — removes queue but keeps participant metadata."""
+    async def disconnect(
+        self, session_id: int, participant_id: int,
+        queue: Optional[asyncio.Queue] = None,
+    ) -> bool:
+        """Remove only the connection owned by this stream."""
         async with SESSION_LOCK:
+            current = self.active.get(session_id, {}).get(participant_id)
+            if current is None or (queue is not None and current is not queue):
+                return False
             # Remove from active connections
             self.active.get(session_id, {}).pop(participant_id, None)
             if session_id in SESSION_STATE:
                 SESSION_STATE[session_id]["connections"].pop(participant_id, None)
+                if queue is not None:
+                    SESSION_STATE[session_id]["participants"].pop(participant_id, None)
+            if queue is not None:
+                # Publish before a replacement stream can register this participant.
+                await self.broadcast(
+                    session_id,
+                    {"type": "participant_left", "participant_id": participant_id},
+                )
 
         print(f"[SSE MGR] Disconnected session={session_id} participant={participant_id}")
+        return True
 
 
 
@@ -230,6 +255,27 @@ class WebSocketManager:
             {"type": "participant_kicked", "participant_id": participant_id},
         )
 
+
+    async def revoke_user(self, user_id: int):
+        """Discard queued private events and terminate every current account stream."""
+        removed = []
+        async with SESSION_LOCK:
+            for session_id, state in SESSION_STATE.items():
+                for participant_id, meta in list(state["participants"].items()):
+                    if meta.get("user_id") != user_id:
+                        continue
+                    queue = self.active.get(session_id, {}).pop(participant_id, None)
+                    state["connections"].pop(participant_id, None)
+                    state["participants"].pop(participant_id, None)
+                    if queue is not None:
+                        while not queue.empty():
+                            queue.get_nowait()
+                        queue.put_nowait({"type": "authentication_revoked"})
+                    removed.append((session_id, participant_id))
+        for session_id, participant_id in removed:
+            await self.broadcast(session_id, {
+                "type": "participant_left", "participant_id": participant_id,
+            })
 
     # Just closes connection, keeps metadata
     async def disconnect_participant(

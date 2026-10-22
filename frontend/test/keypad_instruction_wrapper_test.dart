@@ -6,6 +6,15 @@ import 'package:frontend/widgets/key_instruction_wrapper.dart';
 import 'package:frontend/main.dart' show routeObserver;
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  setUp(() {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(
+          const MethodChannel('flutter_tts'),
+          (_) async => 1,
+        );
+  });
+
   testWidgets(
     'D-pad traverses, edit mode suppresses shortcuts, and Up exits editing',
     (tester) async {
@@ -66,6 +75,7 @@ void main() {
     final slider = FocusNode();
     var repeats = 0;
     var value = 1;
+    var nativeAdjustments = 0;
 
     await tester.pumpWidget(
       MaterialApp(
@@ -86,7 +96,11 @@ void main() {
             body: Column(
               children: [
                 Focus(focusNode: before, child: const Text('Before')),
-                Focus(focusNode: slider, child: const Text('Slider')),
+                Slider(
+                  focusNode: slider,
+                  value: 0.5,
+                  onChanged: (_) => nativeAdjustments++,
+                ),
               ],
             ),
           ),
@@ -102,8 +116,10 @@ void main() {
     expect(slider.hasFocus, isTrue);
     await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
     expect(value, 2);
+    expect(nativeAdjustments, 0);
     await tester.sendKeyEvent(LogicalKeyboardKey.arrowUp);
     expect(before.hasFocus, isTrue);
+    expect(nativeAdjustments, 0);
 
     await tester.pumpWidget(const SizedBox.shrink());
     before.dispose();
@@ -141,6 +157,71 @@ void main() {
 
     await tester.pumpWidget(const SizedBox.shrink());
     input.dispose();
+  });
+
+  testWidgets('star and hash stay available to a field while editing', (
+    tester,
+  ) async {
+    final input = FocusNode(debugLabel: 'punctuation-input');
+    final navigation = KeypadNavigationController();
+    var repeats = 0;
+    var exits = 0;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: KeypadInstructionWrapper(
+          autoPlay: false,
+          actions: const {},
+          navigationController: navigation,
+          onStarKey: () => repeats++,
+          onHashKey: () => exits++,
+          focusTargets: [
+            KeypadFocusTarget(node: input, label: 'Message', isTextField: true),
+          ],
+          child: Scaffold(body: TextField(focusNode: input)),
+        ),
+      ),
+    );
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    expect(navigation.isEditing, isTrue);
+    await tester.sendKeyEvent(
+      LogicalKeyboardKey.asterisk,
+      physicalKey: PhysicalKeyboardKey.numpadMultiply,
+    );
+    await tester.sendKeyEvent(
+      LogicalKeyboardKey.numberSign,
+      physicalKey: PhysicalKeyboardKey.digit3,
+    );
+    expect(repeats, 0);
+    expect(exits, 0);
+    expect(input.hasFocus, isTrue);
+    await tester.pumpWidget(const SizedBox.shrink());
+    input.dispose();
+  });
+
+  testWidgets('OK activates a native button on a legacy wrapped screen', (
+    tester,
+  ) async {
+    var activations = 0;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: KeypadInstructionWrapper(
+          autoPlay: false,
+          actions: const {},
+          child: Scaffold(
+            body: ElevatedButton(
+              onPressed: () => activations++,
+              child: const Text('Activate'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
+    await tester.pump();
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.pump();
+    expect(activations, 1);
   });
 
   testWidgets('a new TTS announcement stops the previous announcement', (
@@ -243,10 +324,66 @@ void main() {
     await tester.pump(const Duration(milliseconds: 550));
     expect(spoken.last, contains('First screen'));
 
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump();
     tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
       const MethodChannel('flutter_tts'),
       null,
     );
+  });
+
+  testWidgets('hash goes back and restores the previously focused control', (
+    tester,
+  ) async {
+    final opener = FocusNode(debugLabel: 'restore-opener');
+    await tester.pumpWidget(
+      MaterialApp(
+        navigatorObservers: [routeObserver],
+        home: Builder(
+          builder: (context) => KeypadInstructionWrapper(
+            autoPlay: false,
+            actions: const {},
+            focusTargets: [
+              KeypadFocusTarget(
+                node: opener,
+                label: 'Open details',
+                onActivate: () => Navigator.push(
+                  context,
+                  MaterialPageRoute<void>(
+                    builder: (_) => const KeypadInstructionWrapper(
+                      autoPlay: false,
+                      actions: {},
+                      child: Scaffold(body: Text('Details')),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+            child: Scaffold(
+              body: TextButton(
+                focusNode: opener,
+                onPressed: () {},
+                child: const Text('Open details'),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
+    await tester.pump();
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.pumpAndSettle();
+    expect(find.text('Details'), findsOneWidget);
+    await tester.sendKeyEvent(
+      LogicalKeyboardKey.numberSign,
+      physicalKey: PhysicalKeyboardKey.digit3,
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Details'), findsNothing);
+    expect(opener.hasFocus, isTrue);
+    await tester.pumpWidget(const SizedBox.shrink());
+    opener.dispose();
   });
 }
 

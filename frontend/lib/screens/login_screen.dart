@@ -1,9 +1,13 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart'
     show TargetPlatform, defaultTargetPlatform, kIsWeb;
-import 'package:shared_preferences/shared_preferences.dart';
 import '../services/tts_service.dart';
 import '../services/api_service.dart';
+import '../services/auth_session_service.dart';
+import '../services/notification_services.dart';
 import 'teacher_dashboard.dart';
 import 'student_dashboard.dart';
 import 'package:mobile_number/mobile_number.dart';
@@ -12,6 +16,7 @@ import '../utils/ui_utils.dart';
 import '../widgets/key_instruction_wrapper.dart';
 import '../utils/keypad_actions.dart';
 import '../widgets/keypad_confirmation_dialog.dart';
+import '../widgets/sim_suggestion_dialog.dart';
 
 // Defining the Login screen widget as a statefu widget - loading state/input/switch toggle reloads UI
 class LoginScreen extends StatefulWidget {
@@ -43,6 +48,9 @@ class _LoginScreenState extends State<LoginScreen> {
   final FocusNode _roleFocus = FocusNode(debugLabel: 'login-role');
   final FocusNode _submitFocus = FocusNode(debugLabel: 'login-submit');
   final FocusNode _registerFocus = FocusNode(debugLabel: 'login-register');
+  final FocusNode _simFocus = FocusNode(debugLabel: 'login-sim-suggestion');
+  final FocusNode _recoveryFocus = FocusNode(debugLabel: 'login-recovery-help');
+  bool _simRequestPending = false;
 
   // SIM detection state
   List<SimCard> _simCards = [];
@@ -61,12 +69,6 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _initMobileNumber());
-  }
-
-  @override
   void dispose() {
     phoneCtrl.dispose();
     passCtrl.dispose();
@@ -76,45 +78,52 @@ class _LoginScreenState extends State<LoginScreen> {
     _roleFocus.dispose();
     _submitFocus.dispose();
     _registerFocus.dispose();
+    _simFocus.dispose();
+    _recoveryFocus.dispose();
     super.dispose();
   }
 
   Future<void> _initMobileNumber() async {
+    if (_simRequestPending || _simDetecting || isLoading) return;
     // On web, SIM detection is not supported
     if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) {
       if (mounted) {
         setState(() {
           _simDetecting = false;
-          _simStatusMessage = "SIM detection not supported on web";
+          _simStatusMessage =
+              "SIM suggestions are unavailable on this device. Enter the phone number manually.";
         });
+        await TtsService.speak(_simStatusMessage);
       }
       return;
     }
 
+    setState(() => _simRequestPending = true);
     try {
-      var status = await Permission.phone.status;
-      if (!status.isGranted) {
+      final continueWithSim = await showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => const KeypadConfirmationDialog(
+          title: 'Optional SIM autofill',
+          message:
+              'Read optional phone-number suggestions from this device? You will choose a suggestion before it replaces the phone field. This does not verify who owns an account. SIM access is never required for login, registration, Wi-Fi, or joining a session.',
+          confirmLabel: 'Read SIM suggestions',
+        ),
+      );
+      if (continueWithSim != true) {
         if (!mounted) return;
-        final continueWithSim = await showDialog<bool>(
-          context: context,
-          barrierDismissible: false,
-          builder: (_) => const KeypadConfirmationDialog(
-            title: 'Optional SIM autofill',
-            message:
-                'SEEDS can read phone information only to fill the login phone number from this device. SIM access is not required for login, registration, or joining a session.',
-            confirmLabel: 'Use SIM autofill',
-          ),
-        );
-        if (continueWithSim != true) {
-          if (!mounted) return;
-          setState(() {
-            _simDetecting = false;
-            _simStatusMessage =
-                'SIM autofill skipped. Enter the phone number manually.';
-          });
-          return;
-        }
+        setState(() {
+          _simDetecting = false;
+          _simStatusMessage =
+              'SIM autofill skipped. Enter the phone number manually.';
+        });
+        return;
       }
+      if (!mounted) return;
+      var status = await Permission.phone.status.timeout(
+        const Duration(seconds: 10),
+      );
+      if (!mounted) return;
 
       if (mounted) {
         setState(() {
@@ -127,6 +136,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!status.isGranted) {
         status = await Permission.phone.request();
       }
+      if (!mounted) return;
 
       if (!status.isGranted) {
         if (mounted) {
@@ -143,13 +153,30 @@ class _LoginScreenState extends State<LoginScreen> {
       }
 
       // Step 2: Also check the plugin's own permission
-      final bool hasPhonePermission = await MobileNumber.hasPhonePermission;
+      var hasPhonePermission = await MobileNumber.hasPhonePermission.timeout(
+        const Duration(seconds: 10),
+      );
+      if (!mounted) return;
       if (!hasPhonePermission) {
         await MobileNumber.requestPhonePermission;
+        if (!mounted) return;
+        hasPhonePermission = await MobileNumber.hasPhonePermission.timeout(
+          const Duration(seconds: 10),
+        );
       }
+      if (!hasPhonePermission) {
+        await _simUnavailable(StateError('Phone permission was not granted'));
+        return;
+      }
+      if (!mounted) return;
 
       // Step 3: Read SIM cards
-      final List<SimCard> simCards = (await MobileNumber.getSimCards) ?? [];
+      final lookup = MobileNumber.getSimCards;
+      if (lookup == null) {
+        await _simUnavailable(StateError('SIM lookup is unavailable'));
+        return;
+      }
+      final simCards = await lookup.timeout(const Duration(seconds: 10));
 
       if (!mounted) return;
 
@@ -158,31 +185,10 @@ class _LoginScreenState extends State<LoginScreen> {
         setState(() {
           _simCards = [];
           _simDetecting = false;
-          _simStatusMessage = "No SIM card found";
+          _simStatusMessage =
+              "No SIM card found. Enter the phone number manually.";
         });
-        TtsService.speak("No SIM card found on this device");
-      } else if (simCards.length == 1) {
-        // ------- SINGLE SIM -------
-        final rawNumber = simCards[0].number;
-        final carrier = simCards[0].carrierName ?? "Unknown carrier";
-        final number = (rawNumber != null && rawNumber.isNotEmpty)
-            ? _stripCountryCode(rawNumber)
-            : null;
-        setState(() {
-          _simCards = simCards;
-          _simDetecting = false;
-          _simStatusMessage = (number != null && number.isNotEmpty)
-              ? "SIM Detected: $number ($carrier)"
-              : "SIM Detected: $carrier (number unavailable)";
-        });
-        if (number != null && number.isNotEmpty) {
-          phoneCtrl.text = number;
-          TtsService.speak("Phone number found. $number");
-        } else {
-          TtsService.speak(
-            "SIM card detected from $carrier but number is not available",
-          );
-        }
+        TtsService.speak(_simStatusMessage);
       } else {
         // ------- MULTIPLE SIMs -------
         setState(() {
@@ -194,94 +200,63 @@ class _LoginScreenState extends State<LoginScreen> {
         TtsService.speak(
           "${simCards.length} SIM cards detected. Please choose one.",
         );
-        _showSimSelectionDialog(simCards);
+        await _showSimSelectionDialog(simCards);
       }
-    } catch (e) {
-      debugPrint("Error initializing mobile number: $e");
+    } on PlatformException catch (error) {
+      await _simUnavailable(error);
+    } on MissingPluginException catch (error) {
+      await _simUnavailable(error);
+    } on TimeoutException catch (error) {
+      await _simUnavailable(error);
+    } on FormatException catch (error) {
+      await _simUnavailable(error);
+    } on TypeError catch (error) {
+      await _simUnavailable(error);
+    } finally {
       if (mounted) {
         setState(() {
+          _simRequestPending = false;
           _simDetecting = false;
-          _simStatusMessage =
-              "SIM autofill unavailable. Enter the phone number manually.";
         });
       }
     }
   }
 
-  void _showSimSelectionDialog(List<SimCard> cards) {
+  Future<void> _simUnavailable(Object error) async {
+    debugPrint('SIM suggestion failed (${error.runtimeType})');
     if (!mounted) return;
-    showDialog(
+    setState(() {
+      _simDetecting = false;
+      _simStatusMessage =
+          'SIM suggestion unavailable. Enter the phone number manually.';
+    });
+    await TtsService.speak(_simStatusMessage);
+  }
+
+  Future<void> _showSimSelectionDialog(List<SimCard> cards) async {
+    if (!mounted) return;
+    final selection = await showDialog<String>(
       context: context,
       barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(
-          children: const [
-            Icon(Icons.sim_card, color: Colors.teal),
-            SizedBox(width: 8),
-            Text("Select SIM Card"),
-          ],
-        ),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: ListView.builder(
-            shrinkWrap: true,
-            itemCount: cards.length,
-            itemBuilder: (context, index) {
-              final card = cards[index];
-              final carrier = card.carrierName ?? "SIM ${index + 1}";
-              final number = card.number ?? "Number unavailable";
-
-              return Card(
-                margin: const EdgeInsets.symmetric(vertical: 4),
-                child: ListTile(
-                  leading: CircleAvatar(
-                    backgroundColor: Colors.teal.shade100,
-                    child: Text(
-                      "${index + 1}",
-                      style: TextStyle(
-                        color: Colors.teal.shade800,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  title: Text(
-                    carrier,
-                    style: const TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                  subtitle: Text(number),
-                  onTap: () {
-                    final cleanNumber =
-                        (card.number != null && card.number!.isNotEmpty)
-                        ? _stripCountryCode(card.number!)
-                        : number;
-                    setState(() {
-                      if (card.number != null && card.number!.isNotEmpty) {
-                        phoneCtrl.text = cleanNumber;
-                      }
-                      _simStatusMessage = "Selected: $carrier ($cleanNumber)";
-                    });
-                    TtsService.speak("Phone number found. $cleanNumber");
-                    Navigator.pop(ctx);
-                  },
-                ),
-              );
-            },
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              setState(() {
-                _simStatusMessage =
-                    "${cards.length} SIM cards available. Tap to choose.";
-              });
-              Navigator.pop(ctx);
-            },
-            child: const Text("Cancel"),
-          ),
+      builder: (_) => SimSuggestionDialog(
+        options: [
+          for (var i = 0; i < cards.length; i++)
+            (
+              label:
+                  'SIM ${i + 1}, ${cards[i].carrierName ?? 'Unknown carrier'}',
+              number: _stripCountryCode(cards[i].number ?? ''),
+            ),
         ],
       ),
+    );
+    if (!mounted || selection == null) return;
+    setState(() {
+      phoneCtrl.text = selection;
+      _simStatusMessage =
+          'Selected suggestion filled. This is not proof of account ownership.';
+    });
+    await TtsService.speak(
+      'Phone-number suggestion filled. Enter your password to sign in. No sign-in was sent.',
     );
   }
 
@@ -289,7 +264,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _login() async {
     // get text input by the user
     final phone = phoneCtrl.text.trim();
-    final password = passCtrl.text.trim();
+    final password = passCtrl.text;
 
     if (phone.isEmpty || password.isEmpty) {
       _setLoginError("Please fill both phone number and password");
@@ -322,16 +297,16 @@ class _LoginScreenState extends State<LoginScreen> {
         return;
       }
       final data = result.data!;
+      if (!mounted) return;
 
       // access backend response fields
       final accessToken = data['access_token'];
       final userId = data['user_id'];
       final role = data['role'];
-      final userName = data['name'];
 
       if (accessToken == null || userId == null || role == null) {
         _setLoginError("Invalid response from server");
-        debugPrint("Login response missing keys: $data");
+        debugPrint("Login response missing required fields");
         return;
       }
 
@@ -344,25 +319,16 @@ class _LoginScreenState extends State<LoginScreen> {
         return;
       }
 
-      // open persistant local storage
-      final prefs = await SharedPreferences.getInstance();
-
-      // save login session
-      await prefs.setString('token', accessToken);
-      await prefs.setInt('user_id', userId);
-      await prefs.setString('role', roleText);
-
-      // SAVE USER NAME
-      if (userName != null) {
-        await prefs.setString('user_name', userName);
-        await prefs.setString('name', userName); // Fallback key
-        debugPrint("Login successful for user: $userName");
-      } else {
-        debugPrint("Warning: No name in login response");
+      await AuthSessionService.saveLoginState(data);
+      if (!mounted) return;
+      passCtrl.clear();
+      if (data['must_change_password'] == true) {
+        Navigator.of(
+          context,
+        ).pushNamedAndRemoveUntil('/change_password', (_) => false);
+        return;
       }
-
-      // Register FCM token after login (non-blocking)
-      _registerFCMTokenIfAvailable();
+      unawaited(NotificationService().registerSavedToken());
 
       TtsService.speak("Login successful");
 
@@ -385,6 +351,10 @@ class _LoginScreenState extends State<LoginScreen> {
           MaterialPageRoute(builder: (_) => const StudentDashboard()),
         );
       }
+    } on FormatException {
+      _setLoginError(
+        'The sign-in response could not be verified. Please try again.',
+      );
     } catch (e) {
       _setLoginError(ApiService.mapFailure(error: e, context: 'login').message);
     } finally {
@@ -425,33 +395,46 @@ class _LoginScreenState extends State<LoginScreen> {
     return '${role[0].toUpperCase()}${role.substring(1)}';
   }
 
-  // Register FCM token with backend after login
-  Future<void> _registerFCMTokenIfAvailable() async {
-    try {
-      // read the stored push notification token
-      final prefs = await SharedPreferences.getInstance();
-      final fcmToken = prefs.getString('fcm_token');
-
-      if (fcmToken != null && fcmToken.isNotEmpty) {
-        print('[LOGIN] Registering saved FCM token with backend');
-
-        final result = await ApiService.post('/users/fcm-token', {
-          'token': fcmToken,
-          'device_type': kIsWeb ? 'web' : 'mobile',
-        }, useAuth: true);
-
-        if (result != null && result['ok'] == true) {
-          print('[LOGIN] FCM token registered successfully');
-        } else {
-          print('[LOGIN] FCM token registration response: $result');
-        }
-      } else {
-        print('[LOGIN] No FCM token to register');
-      }
-    } catch (e) {
-      print('[LOGIN] Error registering FCM token: $e');
-      // Don't throw - not critical for login
-    }
+  Future<void> _showRecoveryHelp() async {
+    final close = FocusNode(debugLabel: 'recovery-help-close');
+    const message =
+        'Ask your school administrator for password recovery. They must verify your identity outside SEEDS. Do not send them your permanent password. A phone number or SIM suggestion alone does not verify identity. An administrator can issue a private 12-digit temporary credential, valid for 24 hours. After 10 wrong attempts, temporary-credential sign-in pauses for 15 minutes. Sign in with your phone number and temporary credential, then choose a new password. Ask the administrator for a replacement if the credential expires. Recovery requires internet and does not instantly revoke files on disconnected phones.';
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => KeypadInstructionWrapper(
+        screenName: message,
+        labels: const {0: 'Back to login'},
+        actions: {0: () => Navigator.pop(dialogContext)},
+        focusTargets: [
+          KeypadFocusTarget(
+            node: close,
+            label: 'Back to login',
+            onActivate: () => Navigator.pop(dialogContext),
+          ),
+        ],
+        child: AlertDialog(
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  'School-admin recovery',
+                  style: Theme.of(dialogContext).textTheme.headlineSmall,
+                ),
+                const Text(message),
+                TextButton(
+                  focusNode: close,
+                  onPressed: () => Navigator.pop(dialogContext),
+                  child: const Text('0: Back to login'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    close.dispose();
   }
 
   // UI for the LOGIN SCREEN
@@ -459,7 +442,11 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return KeypadInstructionWrapper(
       screenName: 'Login Screen',
-      labels: loginKeyLabels,
+      labels: {
+        ...loginKeyLabels,
+        6: 'Read optional SIM phone-number suggestions',
+        7: 'School-admin password recovery help',
+      },
       navigationController: _keypadController,
       focusTargets: [
         KeypadFocusTarget(
@@ -497,13 +484,27 @@ class _LoginScreenState extends State<LoginScreen> {
           label: 'Register account link',
           onActivate: () => Navigator.pushNamed(context, '/register'),
         ),
+        KeypadFocusTarget(
+          node: _simFocus,
+          label:
+              'Read optional SIM phone-number suggestions. Manual entry always works.',
+          isEnabled: () => !_simRequestPending && !_simDetecting && !isLoading,
+          onActivate: _initMobileNumber,
+        ),
+        KeypadFocusTarget(
+          node: _recoveryFocus,
+          label: 'School-admin password recovery help',
+          onActivate: _showRecoveryHelp,
+        ),
       ],
       actions: {
         1: () => _selectRole('student'),
         2: () => _selectRole('teacher'),
         3: () => _selectRole('admin'),
         4: _login,
+        7: _showRecoveryHelp,
         5: () => Navigator.pushNamed(context, '/register'),
+        6: _initMobileNumber,
       },
       child: Scaffold(
         backgroundColor: UIUtils.backgroundColor,
@@ -534,20 +535,16 @@ class _LoginScreenState extends State<LoginScreen> {
                     decoration: BoxDecoration(
                       color: UIUtils.isHighContrast
                           ? UIUtils.cardColor
-                          : (_simDetecting
-                                ? Colors.grey.shade100
-                                : (_simCards.isNotEmpty
-                                      ? Colors.teal.shade50
-                                      : Colors.red.shade50)),
+                          : (!_simDetecting && _simCards.isNotEmpty
+                                ? Colors.teal.shade50
+                                : Colors.grey.shade100),
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
                         color: UIUtils.isHighContrast
                             ? UIUtils.accentColor
-                            : (_simDetecting
-                                  ? Colors.grey.shade300
-                                  : (_simCards.isNotEmpty
-                                        ? Colors.teal.shade300
-                                        : Colors.red.shade300)),
+                            : (!_simDetecting && _simCards.isNotEmpty
+                                  ? Colors.teal.shade300
+                                  : Colors.grey.shade300),
                       ),
                     ),
                     child: Row(
@@ -565,48 +562,53 @@ class _LoginScreenState extends State<LoginScreen> {
                           Icon(
                             _simCards.isNotEmpty
                                 ? Icons.sim_card
-                                : Icons.sim_card_alert,
+                                : Icons.info_outline,
                             size: UIUtils.iconSize(context, 18),
                             color: UIUtils.isHighContrast
                                 ? UIUtils.accentColor
                                 : (_simCards.isNotEmpty
                                       ? Colors.teal
-                                      : Colors.red.shade600),
+                                      : Colors.grey.shade700),
                           ),
                         SizedBox(width: UIUtils.spacing(context, 8)),
                         // Status text
                         Expanded(
-                          child: Text(
-                            _simStatusMessage,
-                            style: TextStyle(
-                              fontSize: UIUtils.fontSize(context, 12),
-                              fontWeight: FontWeight.w500,
-                              color: UIUtils.isHighContrast
-                                  ? UIUtils.textColor
-                                  : (_simDetecting
-                                        ? Colors.grey.shade700
-                                        : (_simCards.isNotEmpty
-                                              ? Colors.teal.shade800
-                                              : Colors.red.shade700)),
+                          child: Semantics(
+                            liveRegion: true,
+                            child: Text(
+                              _simStatusMessage,
+                              style: TextStyle(
+                                fontSize: UIUtils.fontSize(context, 12),
+                                fontWeight: FontWeight.w500,
+                                color: UIUtils.isHighContrast
+                                    ? UIUtils.textColor
+                                    : (_simDetecting
+                                          ? Colors.grey.shade700
+                                          : (_simCards.isNotEmpty
+                                                ? Colors.teal.shade800
+                                                : Colors.grey.shade700)),
+                              ),
                             ),
                           ),
                         ),
-                        // Re-select button for multiple SIMs
-                        if (!_simDetecting && _simCards.length > 1)
-                          GestureDetector(
-                            onTap: () => _showSimSelectionDialog(_simCards),
-                            child: Icon(
-                              Icons.swap_horiz,
-                              size: UIUtils.iconSize(context, 18),
-                              color: Colors.teal.shade600,
-                            ),
-                          ),
                       ],
                     ),
                   ),
 
                   SizedBox(height: UIUtils.spacing(context, 8)),
 
+                  TextButton(
+                    focusNode: _simFocus,
+                    onPressed: _simRequestPending || _simDetecting || isLoading
+                        ? null
+                        : _initMobileNumber,
+                    child: const Text('6: Read optional SIM suggestions'),
+                  ),
+                  TextButton(
+                    focusNode: _recoveryFocus,
+                    onPressed: _showRecoveryHelp,
+                    child: const Text('7: School-admin password recovery help'),
+                  ),
                   TextField(
                     controller: phoneCtrl,
                     focusNode: _phoneFocus,
@@ -620,7 +622,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       color: UIUtils.textColor,
                     ),
                     decoration: InputDecoration(
-                      labelText: "Phone number",
+                      label: const Text("Phone number"),
                       labelStyle: TextStyle(
                         fontSize: UIUtils.fontSize(context, 13),
                         color: UIUtils.subtextColor,
@@ -666,7 +668,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       color: UIUtils.textColor,
                     ),
                     decoration: InputDecoration(
-                      labelText: "Password",
+                      label: const Text("Password"),
                       labelStyle: TextStyle(
                         fontSize: UIUtils.fontSize(context, 13),
                         color: UIUtils.subtextColor,

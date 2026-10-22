@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'session_screen.dart';
 import 'audio_library_screen.dart';
 import 'playlist_screens.dart';
+import 'lesson_sequences_screen.dart';
 import 'quiz_screens.dart';
 import '../utils/ui_utils.dart';
 import '../widgets/key_instruction_wrapper.dart';
@@ -53,6 +54,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
   final FocusNode _playlistsFocusNode = FocusNode(
     debugLabel: 'teacher-playlists',
   );
+  final _sequencesFocus = FocusNode(debugLabel: 'teacher-sequences');
   final FocusNode _quizzesFocusNode = FocusNode(debugLabel: 'teacher-quizzes');
   final Map<int, FocusNode> _sessionOpenFocusNodes = {};
   final Map<int, FocusNode> _sessionDeleteFocusNodes = {};
@@ -309,7 +311,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
 
   // Open offline audio library (no session context)
   void _openOfflineAudioLibrary() {
-    TtsService.speak("Opening offline audio library");
+    TtsService.speak('Opening recorded audio library. Internet is required.');
     final workspace = _selectedWorkspace;
     Navigator.push(
       context,
@@ -328,6 +330,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
       TtsService.speak('No class and subject workspace is assigned');
       return;
     }
+
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -336,6 +339,23 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
           className: '${workspace['class_name']}',
           subjectId: workspace['subject_id'] as int,
           subjectName: '${workspace['subject_name']}',
+        ),
+      ),
+    );
+  }
+
+  void _openSequences() {
+    final workspace = _selectedWorkspace;
+    if (workspace == null) {
+      TtsService.speak('No class and subject workspace is assigned');
+      return;
+    }
+    Navigator.push<void>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => LessonSequencesScreen(
+          classId: workspace['class_id'] as int,
+          subjectId: workspace['subject_id'] as int,
         ),
       ),
     );
@@ -432,6 +452,11 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
         node: _playlistsFocusNode,
         label: 'Class playlists',
         onActivate: _openPlaylists,
+      ),
+      KeypadFocusTarget(
+        node: _sequencesFocus,
+        label: 'Reusable teacher lesson sequences',
+        onActivate: _openSequences,
       ),
       KeypadFocusTarget(
         node: _quizzesFocusNode,
@@ -627,6 +652,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     _logoutFocusNode.dispose();
     _workspaceFocusNode.dispose();
     _playlistsFocusNode.dispose();
+    _sequencesFocus.dispose();
     _quizzesFocusNode.dispose();
     for (final node in _sessionOpenFocusNodes.values) {
       node.dispose();
@@ -687,13 +713,15 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          "Teacher Dashboard",
-          style: TextStyle(
-            fontSize: UIUtils.fontSize(context, 18),
-            fontWeight: FontWeight.w600,
-          ),
-        ),
+        title: UIUtils.useStackedLayout(context)
+            ? null
+            : Text(
+                "Teacher Dashboard",
+                style: TextStyle(
+                  fontSize: UIUtils.fontSize(context, 18),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
         backgroundColor: UIUtils.cardColor,
         foregroundColor: UIUtils.textColor,
         toolbarHeight: tiny ? 40 : null,
@@ -765,6 +793,14 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                if (UIUtils.useStackedLayout(context))
+                  Semantics(
+                    header: true,
+                    child: Text(
+                      'Teacher Dashboard',
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
+                  ),
                 if (_isRefreshing) ...[
                   Semantics(
                     liveRegion: true,
@@ -823,7 +859,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                     initialValue: _selectedWorkspace?['assignment_id'] as int?,
                     isExpanded: true,
                     decoration: const InputDecoration(
-                      labelText: 'Class and subject workspace',
+                      label: Text('Class and subject workspace'),
                       prefixIcon: Icon(Icons.workspaces_outline),
                     ),
                     items: _workspaces
@@ -861,6 +897,12 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                   onPressed: _openPlaylists,
                   icon: const Icon(Icons.playlist_play),
                   label: const Text('5: Class Playlists'),
+                ),
+                OutlinedButton.icon(
+                  focusNode: _sequencesFocus,
+                  onPressed: _openSequences,
+                  icon: const Icon(Icons.format_list_numbered),
+                  label: const Text('Lesson sequences'),
                 ),
 
                 SizedBox(height: UIUtils.spacing(context, 8)),
@@ -908,7 +950,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                     size: UIUtils.iconSize(context, 22),
                   ),
                   label: Text(
-                    "3: Offline Audio Library",
+                    '3: Recorded Audio Library',
                     style: TextStyle(fontSize: UIUtils.fontSize(context, 15)),
                   ),
                   style: OutlinedButton.styleFrom(
@@ -942,8 +984,8 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                             onChanged: (_) => setState(() {}),
                             onSubmitted: (_) => _showSearchResults(),
                             decoration: const InputDecoration(
-                              labelText: '4. Session name or ID',
-                              hintText: 'Leave empty to list all sessions',
+                              label: Text('4. Session name or ID'),
+                              helper: Text('Leave empty to list all sessions'),
                               prefixIcon: Icon(Icons.search),
                               border: OutlineInputBorder(),
                             ),
@@ -970,11 +1012,13 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                 // Sessions Header
                 Row(
                   children: [
-                    Text(
-                      "Your Sessions",
-                      style: TextStyle(
-                        fontSize: UIUtils.fontSize(context, 16),
-                        fontWeight: FontWeight.bold,
+                    Expanded(
+                      child: Text(
+                        "Your Sessions",
+                        style: TextStyle(
+                          fontSize: UIUtils.fontSize(context, 16),
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                     SizedBox(width: UIUtils.spacing(context, 6)),

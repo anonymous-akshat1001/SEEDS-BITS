@@ -11,6 +11,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   setUp(() {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(
+          const MethodChannel('flutter_tts'),
+          (_) async => 1,
+        );
     SharedPreferences.setMockInitialValues({});
     UIUtils.setHighContrastMode(false);
     UIUtils.setTextScale(1.0);
@@ -80,7 +85,9 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Sync Tolerance'), findsNothing);
     expect(
-      find.textContaining('Available only inside active sessions'),
+      find.textContaining(
+        'Enable Listen for command in sessions. No automatic listening.',
+      ),
       findsOneWidget,
     );
 

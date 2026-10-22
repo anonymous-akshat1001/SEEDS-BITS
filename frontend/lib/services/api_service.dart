@@ -62,6 +62,43 @@ class ApiService {
     final normalized = raw.toLowerCase();
     final normalizedContext = context.toLowerCase();
 
+    if (normalizedContext.contains('login') ||
+        normalizedContext.contains('password change')) {
+      if (statusCode == 429) {
+        return ApiFailure(
+          kind: ApiFailureKind.unauthorized,
+          statusCode: statusCode,
+          message:
+              'Temporary-credential sign-in is paused for 15 minutes. Try later or contact your school administrator.',
+        );
+      }
+      if (statusCode == 401 &&
+          normalized.contains('temporary credential expired')) {
+        return ApiFailure(
+          kind: ApiFailureKind.unauthorized,
+          statusCode: statusCode,
+          message:
+              'Your temporary credential expired. Contact your school administrator for a replacement.',
+        );
+      }
+      if (statusCode == 400 &&
+          normalized.contains('different from the temporary credential')) {
+        return ApiFailure(
+          kind: ApiFailureKind.validation,
+          statusCode: statusCode,
+          message: 'Choose a password different from the temporary credential.',
+        );
+      }
+      if (statusCode == 401 && normalizedContext.contains('password change')) {
+        return ApiFailure(
+          kind: ApiFailureKind.unauthorized,
+          statusCode: statusCode,
+          message: normalized.contains('invalid credentials')
+              ? 'The temporary credential was not accepted. Check it and try again.'
+              : 'Your recovery sign-in expired or changed. Sign in again.',
+        );
+      }
+    }
     if (statusCode == 422 || statusCode == 400) {
       if (normalizedContext.contains('password') ||
           (normalized.contains('password') &&
@@ -127,8 +164,11 @@ class ApiService {
 
   static void _debugFailure(String operation, ApiFailure failure) {
     if (kDebugMode) {
+      final sensitive =
+          operation.toLowerCase().contains('password') ||
+          operation.toLowerCase().contains('login');
       debugPrint(
-        '[API] $operation failed (${failure.statusCode}): ${failure.debugDetails}',
+        '[API] $operation failed (${failure.statusCode}): ${sensitive ? failure.kind.name : failure.debugDetails}',
       );
     }
   }
@@ -146,11 +186,24 @@ class ApiService {
     String path, {
     bool useAuth = false,
     String context = '',
+    Duration? requestTimeout,
+    bool Function()? canSend,
   }) async {
     final uri = await _buildUri(path);
     final headers = await _buildHeaders(useAuth: useAuth);
+    if (canSend != null && !canSend()) {
+      return const ApiResult.failure(
+        ApiFailure(
+          kind: ApiFailureKind.unauthorized,
+          message: 'Your account changed. This request was not sent.',
+        ),
+      );
+    }
     try {
-      final response = await http.get(uri, headers: headers);
+      final request = http.get(uri, headers: headers);
+      final response = requestTimeout == null
+          ? await request
+          : await request.timeout(requestTimeout);
       final body = _decodeBody(response.body);
       if (response.statusCode >= 200 && response.statusCode < 300) {
         return ApiResult<dynamic>.success(body ?? <String, dynamic>{});
@@ -174,17 +227,77 @@ class ApiService {
     Map<String, dynamic> data, {
     bool useAuth = false,
     String context = '',
+    Duration requestTimeout = const Duration(seconds: 20),
+    bool requireJsonObject = false,
+    bool Function()? canSend,
+  }) => _writeResult(
+    path,
+    data,
+    useAuth: useAuth,
+    context: context,
+    requestTimeout: requestTimeout,
+    requireJsonObject: requireJsonObject,
+    canSend: canSend,
+  );
+
+  static Future<ApiResult<Map<String, dynamic>>> putResult(
+    String path,
+    Map<String, dynamic> data, {
+    bool useAuth = false,
+    String context = '',
+    Duration requestTimeout = const Duration(seconds: 20),
+    bool requireJsonObject = true,
+    bool Function()? canSend,
+  }) => _writeResult(
+    path,
+    data,
+    method: 'PUT',
+    useAuth: useAuth,
+    context: context,
+    requestTimeout: requestTimeout,
+    requireJsonObject: requireJsonObject,
+    canSend: canSend,
+  );
+
+  static Future<ApiResult<Map<String, dynamic>>> _writeResult(
+    String path,
+    Map<String, dynamic> data, {
+    String method = 'POST',
+    bool useAuth = false,
+    String context = '',
+    Duration requestTimeout = const Duration(seconds: 20),
+    bool requireJsonObject = false,
+    bool Function()? canSend,
   }) async {
     final uri = await _buildUri(path);
     final headers = await _buildHeaders(useAuth: useAuth);
-    try {
-      final response = await http.post(
-        uri,
-        headers: headers,
-        body: jsonEncode(data),
+    if (canSend != null && !canSend()) {
+      const failure = ApiFailure(
+        kind: ApiFailureKind.unauthorized,
+        message: 'Your account or session changed. This action was not sent.',
       );
+      _debugFailure('$method $path', failure);
+      return const ApiResult.failure(failure);
+    }
+    try {
+      final request = method == 'PUT'
+          ? http.put(uri, headers: headers, body: jsonEncode(data))
+          : http.post(uri, headers: headers, body: jsonEncode(data));
+      final response = await request.timeout(requestTimeout);
       final body = _decodeBody(response.body);
       if (response.statusCode >= 200 && response.statusCode < 300) {
+        if (requireJsonObject && body is! Map<String, dynamic>) {
+          final failure = ApiFailure(
+            kind: ApiFailureKind.unknown,
+            statusCode: response.statusCode,
+            message:
+                'The service response could not be read. The action may have '
+                'been received; check its status before trying again.',
+            debugDetails: 'Expected a JSON object response.',
+          );
+          _debugFailure('$method $path', failure);
+          return ApiResult<Map<String, dynamic>>.failure(failure);
+        }
         return ApiResult<Map<String, dynamic>>.success(
           body is Map<String, dynamic> ? body : <String, dynamic>{'ok': true},
         );
@@ -194,13 +307,70 @@ class ApiService {
         responseBody: body,
         context: context,
       );
-      _debugFailure('POST $path', failure);
+      _debugFailure('$method $path', failure);
       return ApiResult<Map<String, dynamic>>.failure(failure);
     } catch (error) {
       final failure = mapFailure(error: error, context: context);
-      _debugFailure('POST $path', failure);
+      _debugFailure('$method $path', failure);
       return ApiResult<Map<String, dynamic>>.failure(failure);
     }
+  }
+
+  static Future<ApiResult<Map<String, dynamic>>> postAcknowledged(
+    String path,
+    Map<String, dynamic> data, {
+    String context = '',
+    bool Function()? canSend,
+  }) async {
+    final preferences = await SharedPreferences.getInstance();
+    final token = preferences.getString('token');
+    final account = preferences.getInt('user_id');
+    if (token == null || token.isEmpty) {
+      const failure = ApiFailure(
+        kind: ApiFailureKind.unauthorized,
+        message: 'Sign in again before sending this action.',
+      );
+      _debugFailure('POST $path', failure);
+      return const ApiResult.failure(failure);
+    }
+    bool currentAccount() =>
+        preferences.getString('token') == token &&
+        preferences.getInt('user_id') == account;
+    final result = await postResult(
+      path,
+      data,
+      useAuth: true,
+      context: context,
+      requestTimeout: const Duration(seconds: 10),
+      requireJsonObject: true,
+      canSend: () => currentAccount() && (canSend?.call() ?? true),
+    );
+    if (!currentAccount()) {
+      const failure = ApiFailure(
+        kind: ApiFailureKind.unauthorized,
+        message: 'Your account changed. This action could not be confirmed.',
+      );
+      _debugFailure('POST $path', failure);
+      return const ApiResult.failure(failure);
+    }
+    if (result.isSuccess && result.data?['ok'] == true) return result;
+    final original = result.failure;
+    final ambiguous =
+        original == null ||
+        original.kind == ApiFailureKind.network ||
+        original.kind == ApiFailureKind.server ||
+        original.kind == ApiFailureKind.unknown;
+    final failure = ApiFailure(
+      kind: original?.kind ?? ApiFailureKind.unknown,
+      statusCode: original?.statusCode,
+      debugDetails: original?.debugDetails,
+      message: ambiguous
+          ? 'The action was not confirmed. It may have reached the class. '
+                'Check its status before trying again.'
+          : original.message,
+    );
+    _debugFailure('POST $path', failure);
+    return ApiResult.failure(failure);
   }
 
   static Future<ApiResult<void>> deleteResult(
@@ -208,15 +378,28 @@ class ApiService {
     bool useAuth = false,
     String context = '',
     Map<String, dynamic>? data,
+    Duration? requestTimeout,
+    bool Function()? canSend,
   }) async {
     final uri = await _buildUri(path);
     final headers = await _buildHeaders(useAuth: useAuth);
+    if (canSend != null && !canSend()) {
+      return const ApiResult.failure(
+        ApiFailure(
+          kind: ApiFailureKind.unauthorized,
+          message: 'Your account changed. This action was not sent.',
+        ),
+      );
+    }
     try {
-      final response = await http.delete(
+      final request = http.delete(
         uri,
         headers: headers,
         body: data == null ? null : jsonEncode(data),
       );
+      final response = requestTimeout == null
+          ? await request
+          : await request.timeout(requestTimeout);
       if (response.statusCode >= 200 && response.statusCode < 300) {
         return const ApiResult<void>.success(null);
       }
@@ -240,11 +423,15 @@ class ApiService {
   }) async {
     final uri = await _buildUri('/auth/login');
     try {
-      final response = await http.post(
-        uri,
-        headers: const {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: {'username': phoneNumber, 'password': password},
-      );
+      final response = await http
+          .post(
+            uri,
+            headers: const {
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: {'username': phoneNumber, 'password': password},
+          )
+          .timeout(const Duration(seconds: 10));
       final body = _decodeBody(response.body);
       if (response.statusCode >= 200 &&
           response.statusCode < 300 &&
@@ -723,15 +910,16 @@ class ApiService {
     }
   }
 
-  /// Mute/unmute a participant (teacher only)
-  static Future<Map<String, dynamic>?> muteParticipant(
+  /// Mute another participant. Only they can unmute their own microphone.
+  static Future<ApiResult<Map<String, dynamic>>> muteParticipant(
     int sessionId,
     int participantId,
-    bool mute,
   ) async {
-    return await post('/sessions/$sessionId/participants/$participantId/mute', {
-      'mute': mute,
-    }, useAuth: true);
+    return postAcknowledged(
+      '/sessions/$sessionId/participants/$participantId/mute',
+      const {},
+      context: 'session participant mute',
+    );
   }
 
   /// Remove a participant from session (teacher only)
@@ -1208,7 +1396,9 @@ class ApiService {
     required List<String> options,
     required int correctOptionIndex,
     String? explanation,
+    Map<String, dynamic> accessibility = const {},
   }) => post('/question-bank', {
+    ...accessibility,
     'class_id': classId,
     'subject_id': subjectId,
     'question_text': questionText,
@@ -1225,7 +1415,11 @@ class ApiService {
     required List<String> options,
     required int correctOptionIndex,
     String? explanation,
+    Map<String, dynamic> accessibility = const {},
+    int? expectedRevision,
   }) => put('/question-bank/$questionId', {
+    ...accessibility,
+    'expected_revision': expectedRevision,
     'class_id': classId,
     'subject_id': subjectId,
     'question_text': questionText,
@@ -1316,17 +1510,22 @@ class ApiService {
     return result is Map ? Map<String, dynamic>.from(result) : null;
   }
 
-  static Future<Map<String, dynamic>?> submitQuizAnswer({
+  static Future<ApiResult<Map<String, dynamic>>> submitQuizAnswer({
     required int attemptId,
     required int questionId,
     required int optionId,
-  }) => post('/student/attempts/$attemptId/answers', {
+  }) => postResult('/student/attempts/$attemptId/answers', {
     'quiz_question_id': questionId,
     'selected_option_id': optionId,
   }, useAuth: true);
 
-  static Future<Map<String, dynamic>?> completeQuizAttempt(int attemptId) =>
-      post('/student/attempts/$attemptId/complete', const {}, useAuth: true);
+  static Future<ApiResult<Map<String, dynamic>>> completeQuizAttempt(
+    int attemptId,
+  ) => postResult(
+    '/student/attempts/$attemptId/complete',
+    const {},
+    useAuth: true,
+  );
 
   static Future<Map<String, dynamic>?> getQuizAttemptHistory(int quizId) async {
     final result = await get(
@@ -1365,35 +1564,37 @@ class ApiService {
   }
 
   /// Select audio for playback (teacher only)
-  static Future<Map<String, dynamic>?> selectAudio(
+  static Future<ApiResult<Map<String, dynamic>>> selectAudio(
     int sessionId,
-    int audioId,
-  ) => post(
+    int audioId, {
+    bool Function()? canSend,
+  }) => postAcknowledged(
     '/sessions/$sessionId/audio/select?audio_id=$audioId',
     const {},
-    useAuth: true,
+    context: 'session audio selection',
+    canSend: canSend,
   );
 
   /// Unified audio control endpoint
-  static Future<Map<String, dynamic>?> controlAudio(
+  static Future<ApiResult<Map<String, dynamic>>> controlAudio(
     int sessionId, {
     required String action, // 'play', 'pause', 'seek'
     int? audioId,
     double speed = 1.0,
     double position = 0.0,
+    bool Function()? canSend,
   }) async {
-    try {
-      final result = await post('/sessions/$sessionId/audio/control', {
+    return postAcknowledged(
+      '/sessions/$sessionId/audio/control',
+      {
         'audio_id': audioId,
         'speed': speed,
         'position': position,
         'action': action,
-      }, useAuth: true);
-      return result;
-    } catch (e) {
-      print('[API] Error controlling audio: $e');
-      return null;
-    }
+      },
+      context: 'session audio control',
+      canSend: canSend,
+    );
   }
 
   /// Get current audio playback state
@@ -1413,11 +1614,12 @@ class ApiService {
   }
 
   // Update the existing playAudio method to use the new unified endpoint:
-  static Future<Map<String, dynamic>?> playAudio(
+  static Future<ApiResult<Map<String, dynamic>>> playAudio(
     int sessionId, {
     int? audioId,
     double speed = 1.0,
     double position = 0.0,
+    bool Function()? canSend,
   }) async {
     return await controlAudio(
       sessionId,
@@ -1425,23 +1627,36 @@ class ApiService {
       audioId: audioId,
       speed: speed,
       position: position,
+      canSend: canSend,
     );
   }
 
   // Update the existing pauseAudio method:
-  static Future<Map<String, dynamic>?> pauseAudio(
+  static Future<ApiResult<Map<String, dynamic>>> pauseAudio(
     int sessionId, {
     double position = 0.0,
+    bool Function()? canSend,
   }) async {
-    return await controlAudio(sessionId, action: 'pause', position: position);
+    return await controlAudio(
+      sessionId,
+      action: 'pause',
+      position: position,
+      canSend: canSend,
+    );
   }
 
   /// Seek to a specific position in the audio
-  static Future<Map<String, dynamic>?> seekAudio(
+  static Future<ApiResult<Map<String, dynamic>>> seekAudio(
     int sessionId,
-    double position,
-  ) async {
-    return await controlAudio(sessionId, action: 'seek', position: position);
+    double position, {
+    bool Function()? canSend,
+  }) async {
+    return await controlAudio(
+      sessionId,
+      action: 'seek',
+      position: position,
+      canSend: canSend,
+    );
   }
 
   /////////////////////////// CHAT ENDPOINTS  /////////////////////////

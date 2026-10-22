@@ -13,17 +13,28 @@ Windows -> seeds@182.75.45.22:10022 -> seeds@172.16.108.26
 ```
 
 The production service is `seeds-backend.service`. It runs one Uvicorn worker
-from `/home/seeds/backend/venv310` and advertises `/seeds` as its public root
-path.
+and advertises `/seeds` as its public root path. The previously configured
+environment is `/home/seeds/backend/venv310`; the Python 3.11 environment
+confirmed working on this VM is **`/home/seeds/.venv-seeds311`**. Reuse it;
+do not create another environment under the permission-restricted backend
+directory. Keep the previous environment for rollback. Creating or activating
+an environment does not switch systemd; verify its effective command separately.
+
+The backend requires **Python 3.10 or newer**. On the Ubuntu 18.04.6 VM,
+unqualified `python` currently invokes Python 2.7.17. Do not use that interpreter
+for SEEDS, remove the system Python, or repoint `/usr/bin/python` or
+`/usr/bin/python3`. Install the newer version alongside them.
 
 ## Production assets that must not be overwritten
 
 The deployment commands preserve:
 
 - `/home/seeds/.env`
+- `/home/seeds/.venv-seeds311/` (outside the backend archive and sync target)
 - `/home/seeds/backend/data/`
 - `/home/seeds/backend/venv/`
 - `/home/seeds/backend/venv310/`
+- `/home/seeds/backend/venv311/`
 - `/home/seeds/backend/seeds-bits-firebase.json`
 - other Firebase service-account JSON files
 
@@ -61,6 +72,7 @@ tar -czf $DeployArchive `
   --exclude=backend/.pytest_cache `
   --exclude=backend/venv `
   --exclude=backend/venv310 `
+  --exclude=backend/venv311 `
   --exclude=backend/.venv `
   --exclude=backend/*.pyc `
   --exclude=backend/*firebase*.json `
@@ -136,25 +148,131 @@ test -f "$STAGING/alembic.ini" || {
 
 ## 5. Confirm the production prerequisites
 
+### 5.1 Install Python 3.11 on Ubuntu 18.04 if needed
+
+Skip compilation if a supported interpreter and working environment already
+exist. These commands run on the **Ubuntu VM**, not Windows. Ubuntu 18.04 is
+outside standard support; plan a supported OS upgrade separately. Installing
+Python does not update or secure the rest of the OS.
+
+Check available interpreters first:
+
+```bash
+python --version
+python3 --version
+command -v python3.11
+```
+
+If Python 3.11 is unavailable, install build dependencies:
+
+```bash
+sudo apt update
+sudo apt install -y \
+  build-essential curl ca-certificates \
+  libssl-dev zlib1g-dev libbz2-dev \
+  libreadline-dev libsqlite3-dev \
+  libffi-dev liblzma-dev libncursesw5-dev \
+  xz-utils tk-dev uuid-dev
+```
+
+Stop on repository, package or certificate errors; do not disable signature or
+TLS verification. Use the approved Ubuntu repositories/security-support
+configuration for this VM.
+
+Download a maintained Python 3.11 source release from the
+[official source releases page](https://www.python.org/downloads/source/).
+The example uses 3.11.17; review the current release and its published
+verification information before installation.
+
+```bash
+mkdir -p "$HOME/python-build"
+cd "$HOME/python-build"
+
+curl --fail --location --output Python-3.11.17.tgz \
+  https://www.python.org/ftp/python/3.11.17/Python-3.11.17.tgz
+tar -xzf Python-3.11.17.tgz
+cd Python-3.11.17
+
+./configure --with-ensurepip=install
+make -j2
+sudo make altinstall
+```
+
+Run each command only after the preceding one succeeds. `make altinstall`
+installs the versioned interpreter without replacing Ubuntu's default Python.
+Compilation can take several minutes.
+
+Verify the interpreter, HTTPS support and required standard-library modules:
+
+```bash
+/usr/local/bin/python3.11 --version
+/usr/local/bin/python3.11 -c \
+  "import ssl, sqlite3, bz2, lzma, ctypes; print('Python modules OK'); print(ssl.OPENSSL_VERSION)"
+/usr/local/bin/python3.11 -m pip --version
+```
+
+Do not continue if a module is missing. Python 3.11 requires OpenSSL 1.1.1 or
+newer; an outdated `libssl-dev` can leave the interpreter without working SSL.
+Resolve the supported OS/dependency configuration and rebuild rather than
+bypassing HTTPS verification.
+
+The VM already has `/home/seeds/.venv-seeds311`. Verify and reuse it:
+
+```bash
+/home/seeds/.venv-seeds311/bin/python --version
+/home/seeds/.venv-seeds311/bin/python -m pip --version
+```
+
+**Only on a fresh server where that directory does not exist**, create it as
+the `seeds` user:
+
+```bash
+python3.11 -m venv /home/seeds/.venv-seeds311
+```
+
+If the directory exists but its interpreter is missing or broken, stop and
+inspect it rather than overwriting it. Do not use `sudo pip`, change backend
+ownership, or recreate a working environment to resolve a path/permission error.
+
+Do not copy packages from an old environment. Install production requirements
+with the selected interpreter in step 6, including the Ubuntu 18.04 PyAV
+workaround. Do not install the unfiltered requirements on this VM.
+
+### 5.2 Select and verify the deployment environment
+
+For the confirmed Python 3.11 environment:
+
+```bash
+VENV=/home/seeds/.venv-seeds311
+PYTHON="$VENV/bin/python"
+```
+
+If retaining the existing supported Python 3.10 environment instead, set
+`VENV=/home/seeds/backend/venv310` and then `PYTHON="$VENV/bin/python"`.
+Set these variables again if reconnecting to the server. Explicit interpreter
+paths below do not depend on virtual-environment activation.
+
 ```bash
 test -f /home/seeds/.env || {
   echo "ERROR: /home/seeds/.env is missing"
   exit 1
 }
 
-test -x /home/seeds/backend/venv310/bin/python || {
-  echo "ERROR: the Python 3.10 virtual environment is missing"
+test -x "$PYTHON" || {
+  echo "ERROR: the selected Python environment is missing"
   exit 1
 }
 
-/home/seeds/backend/venv310/bin/python --version
+"$PYTHON" --version
+"$PYTHON" -c \
+  "import sys, ssl; assert sys.version_info >= (3, 10), 'Python 3.10+ required'; print(sys.executable); print(ssl.OPENSSL_VERSION)"
 sudo systemctl cat "$SERVICE"
 ```
 
-The effective `ExecStart` must use:
+The effective `ExecStart` must use the selected environment, for example:
 
 ```text
-/home/seeds/backend/venv310/bin/uvicorn
+/home/seeds/.venv-seeds311/bin/uvicorn
 ```
 
 and include:
@@ -165,6 +283,17 @@ and include:
 
 One worker is required because live session state is currently held in process
 memory.
+
+When switching environments, prepare dependencies first. At the maintenance
+window in step 8, stop the service and use `sudo systemctl edit "$SERVICE"`.
+Override `ExecStart` with an empty `ExecStart=` followed by a replacement line.
+Copy the existing complete command and change **only its interpreter/executable
+path** to the selected environment. Preserve the application target, binding,
+port, working directory, environment/Firebase configuration, worker count and
+root path. Then run `sudo systemctl daemon-reload` and inspect
+`sudo systemctl cat "$SERVICE"` again before starting it. Shell variables such
+as `$VENV` are not expanded in a systemd unit; use the literal absolute path.
+Record the previous effective command for rollback.
 
 ## 6. Prepare dependencies
 
@@ -181,9 +310,18 @@ grep -iE 'aiortc|^[[:space:]]*av([=<>!~].*)?$' \
   /tmp/seeds-production-requirements.txt || \
   echo "aiortc and av are excluded"
 
-/home/seeds/backend/venv310/bin/python -m pip install \
+"$PYTHON" -m pip install --upgrade pip
+"$PYTHON" -m pip install \
   -r /tmp/seeds-production-requirements.txt
+"$PYTHON" -m pip check
+"$PYTHON" -c \
+  "import ssl; from dotenv import load_dotenv; print('Python and dotenv are ready')"
 ```
+
+Run each command only after the previous one succeeds. Install and run with
+the same `$PYTHON`: `dotenv` is supplied by `python-dotenv` in the requirements,
+not by a package named `dotenv`. Do not continue to migrations or service startup
+if installation, dependency checks or imports fail.
 
 If backend code starts using `aiortc`, do not continue excluding it. Upgrade
 the server OS/FFmpeg stack and validate a compatible `aiortc`/PyAV installation
@@ -201,6 +339,7 @@ rsync -a \
   --exclude='data/' \
   --exclude='venv/' \
   --exclude='venv310/' \
+  --exclude='venv311/' \
   --exclude='__pycache__/' \
   /home/seeds/backend/ \
   "$BACKUP_DIR/backend/"
@@ -240,6 +379,7 @@ rsync -av --delete \
   --exclude='.env' \
   --exclude='venv/' \
   --exclude='venv310/' \
+  --exclude='venv311/' \
   --exclude='.venv/' \
   --exclude='__pycache__/' \
   --exclude='*.pyc' \
@@ -260,7 +400,7 @@ sudo chown seeds:seeds /home/seeds/alembic.ini
 ```bash
 cd /home/seeds/backend
 
-/home/seeds/backend/venv310/bin/python -c \
+"$PYTHON" -c \
   "import main; print('Backend import successful')"
 ```
 
@@ -273,16 +413,20 @@ Run data-preserving migrations from `/home/seeds`:
 ```bash
 cd /home/seeds
 
-/home/seeds/backend/venv310/bin/python -m alembic \
+"$PYTHON" -m alembic \
   -c /home/seeds/alembic.ini \
   upgrade head
 
-/home/seeds/backend/venv310/bin/python -m alembic \
+"$PYTHON" -m alembic \
   -c /home/seeds/alembic.ini \
   current
 ```
 
 Never run `backend.reset_db` in production.
+
+The migration configuration is `/home/seeds/alembic.ini`, **not**
+`/home/seeds/backend/alembic.ini`. Run Alembic from `/home/seeds`, as shown,
+because its script paths are relative to the repository root.
 
 ## 10. Start and verify the service
 
@@ -382,6 +526,7 @@ rsync -av --delete \
   --exclude='data/' \
   --exclude='venv/' \
   --exclude='venv310/' \
+  --exclude='venv311/' \
   --exclude='__pycache__/' \
   --exclude='*.pyc' \
   --exclude='*firebase*.json' \
@@ -402,8 +547,70 @@ sudo systemctl status "$SERVICE" --no-pager
 Code rollback does not automatically reverse database migrations. Restore a
 database backup only when the release migration requires it and after
 understanding how much production data would be lost.
+If deployment switched Python environments, also restore the recorded previous
+systemd executable path and run `sudo systemctl daemon-reload` before restarting.
+The old environment must still contain dependencies compatible with that code.
 
 ## Troubleshooting
+
+### Missing `backend/venv311`, permission denied, or SSH disconnect
+
+`/home/seeds/backend/venv311` is not the working environment on this VM.
+Creating it failed because the `seeds` user could not write to that location.
+Use the existing environment instead:
+
+```bash
+SERVICE=seeds-backend
+VENV=/home/seeds/.venv-seeds311
+PYTHON="$VENV/bin/python"
+"$PYTHON" --version
+source "$VENV/bin/activate"
+which python
+python -m pip --version
+```
+
+The Python and pip paths must point inside `/home/seeds/.venv-seeds311`.
+Assignments such as `VENV=...` define paths; they do not create environments.
+No backend ownership change or second environment is necessary.
+
+With `set -e`, a failed command in an interactive SSH shell can terminate the
+shell and close the connection. Reconnect using step 3, then troubleshoot
+commands individually **without `set -e`** (or run `set +e` in an existing
+shell). Stop manually after any failed check; do not continue deployment with
+missing prerequisites. Restore the step 4 variables when resuming deployment.
+
+### `ModuleNotFoundError: No module named 'dotenv'`
+
+Python 3 is running, but the selected interpreter lacks backend dependencies.
+Select `/home/seeds/.venv-seeds311` as above and complete step 6 with that
+interpreter, including the filtered Ubuntu 18.04 requirements and import check.
+Installing packages in another environment or activating an empty environment
+does not resolve the missing dependency. A database reset is not a remedy.
+
+### `SyntaxError` in `reset_db.py`, with `/usr/lib/python2.7/runpy.py`
+
+The command used system Python 2.7, which cannot parse SEEDS's Python 3 syntax.
+Do not rewrite the source for Python 2 or change system interpreter symlinks.
+Use the verified `$PYTHON` path selected in step 5.
+
+For routine production upgrades, run the data-preserving Alembic commands in
+step 9. **Reset deletes existing database data** and is not a deployment step.
+Only on a disposable development/test database, with confirmed target
+configuration and bootstrap administrator variables, use:
+
+```bash
+cd /home/seeds
+"$PYTHON" -m backend.reset_db --confirm-reset
+```
+
+For an interactive shell, optional activation is:
+
+```bash
+source "$VENV/bin/activate"
+python --version
+```
+
+Activation affects only that shell, not systemd or subsequent SSH sessions.
 
 ### Service reports `activating (auto-restart)`
 
@@ -436,12 +643,14 @@ unused `aiortc` dependency. Do not repeatedly install PyAV against Ubuntu
 
 ### Alembic cannot import `async_engine_from_config`
 
-The command is using the obsolete Python 3.9 environment or an incomplete
-dependency installation. Use:
+The command may be using an old or incomplete SQLAlchemy installation. Check
+the selected interpreter rather than assuming the shell's `python` is correct:
 
-```text
-/home/seeds/backend/venv310/bin/python
+```bash
+"$PYTHON" --version
+"$PYTHON" -c "import sqlalchemy; print(sqlalchemy.__version__); print(sqlalchemy.__file__)"
+"$PYTHON" -m pip check
 ```
 
-and confirm that SQLAlchemy satisfies the version constraint in
+Confirm that SQLAlchemy satisfies the version constraint in
 `backend/requirements.txt`.

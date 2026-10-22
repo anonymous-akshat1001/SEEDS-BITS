@@ -2,8 +2,6 @@
 
 // imports flutter material design UI
 import 'package:flutter/material.dart';
-// kIsWeb is a flutter constant which tells us whether the app is running on mobile(false) or browser(true)
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:frontend/screens/login_screen.dart';
 // allows saving small data locally - similar to cookies
 import 'package:shared_preferences/shared_preferences.dart';
@@ -12,6 +10,7 @@ import '../services/api_service.dart';
 import '../services/tts_service.dart';
 import '../utils/ui_utils.dart';
 import '../widgets/key_instruction_wrapper.dart';
+import '../services/notification_services.dart';
 import '../utils/keypad_actions.dart';
 // import 'login_screen.dart';
 
@@ -178,31 +177,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   // Register FCM token with backend after registration - private function
   Future<void> _registerFCMTokenIfAvailable() async {
-    try {
-      // Reads previously saved FCM Token
-      final prefs = await SharedPreferences.getInstance();
-      final fcmToken = prefs.getString('fcm_token');
-
-      if (fcmToken != null && fcmToken.isNotEmpty) {
-        print('[REGISTER] Registering saved FCM token with backend');
-
-        final result = await ApiService.post('/users/fcm-token', {
-          'token': fcmToken,
-          'device_type': kIsWeb ? 'web' : 'mobile',
-        }, useAuth: true);
-
-        if (result != null && result['ok'] == true) {
-          print('[REGISTER] FCM token registered successfully');
-        } else {
-          print('[REGISTER] FCM token registration response: $result');
-        }
-      } else {
-        print('[REGISTER] No FCM token to register');
-      }
-    } catch (e) {
-      print('[REGISTER] Error registering FCM token: $e');
-      // Don't throw - not critical
-    }
+    await NotificationService().registerSavedToken();
   }
 
   // Describe UI as a tree like structure and reruns everytime setState is called
@@ -284,7 +259,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       color: UIUtils.textColor,
                     ),
                     decoration: InputDecoration(
-                      labelText: "Name",
+                      label: const Text("Name"),
                       labelStyle: TextStyle(
                         fontSize: UIUtils.fontSize(context, 13),
                         color: UIUtils.subtextColor,
@@ -323,7 +298,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       color: UIUtils.textColor,
                     ),
                     decoration: InputDecoration(
-                      labelText: "Phone number",
+                      label: const Text("Phone number"),
                       labelStyle: TextStyle(
                         fontSize: UIUtils.fontSize(context, 13),
                         color: UIUtils.subtextColor,
@@ -364,7 +339,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       color: UIUtils.textColor,
                     ),
                     decoration: InputDecoration(
-                      labelText: "Password",
+                      label: const Text("Password"),
                       labelStyle: TextStyle(
                         fontSize: UIUtils.fontSize(context, 13),
                         color: UIUtils.subtextColor,
@@ -410,24 +385,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                   SizedBox(height: UIUtils.spacing(context, 10)),
 
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        "Register as Teacher?",
-                        style: TextStyle(
-                          fontSize: UIUtils.fontSize(context, 13),
-                        ),
-                      ),
-                      Transform.scale(
-                        scale: UIUtils.scale(context),
-                        child: Switch(
-                          focusNode: _roleFocus,
-                          value: isTeacher,
-                          onChanged: (_) => _toggleRole(),
-                        ),
-                      ),
-                    ],
+                  SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    focusNode: _roleFocus,
+                    title: Text(
+                      "Register as Teacher?",
+                      style: TextStyle(fontSize: UIUtils.fontSize(context, 13)),
+                    ),
+                    value: isTeacher,
+                    onChanged: (_) => _toggleRole(),
                   ),
                   SizedBox(height: UIUtils.spacing(context, 12)),
 

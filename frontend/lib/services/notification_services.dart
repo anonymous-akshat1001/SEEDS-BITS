@@ -1,5 +1,6 @@
 import 'dart:async';
-import 'package:flutter/foundation.dart' show kDebugMode, kIsWeb;
+import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart' show debugPrint, kDebugMode, kIsWeb;
 // Required to initialize Firebase
 import 'package:firebase_core/firebase_core.dart';
 // Firebase Cloud Messaging (FCM)
@@ -8,6 +9,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import './api_service.dart';
+import './tts_service.dart';
 import '../firebase_options.dart';
 // Allows reading environment variables
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -36,6 +38,18 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 
 // Singletion class of notification services
 class NotificationService {
+  static const privateTitle = 'SEEDS update';
+  static const privateBody = 'Open SEEDS to review your updates.';
+  static Map<String, dynamic> privatePayload(Map<String, dynamic> data) => {
+    for (final key in [
+      'type',
+      'session_id',
+      'quiz_id',
+      'class_id',
+      'subject_id',
+    ])
+      if (data.containsKey(key)) key: data[key],
+  };
   // creates one single instance
   static final NotificationService _instance = NotificationService._internal();
   // factory constructor which returns the same instance
@@ -119,21 +133,16 @@ class NotificationService {
 
       // Get FCM token - unique device token, used by backend to send notfs
       String? token = await _messaging!.getToken();
-      if (kDebugMode && token != null) {
-        print(
-          '[NOTIFICATIONS] FCM token received: ${token.substring(0, 20)}...',
-        );
-      }
 
       if (token != null) {
         // Send token to backend
-        await _registerTokenWithBackend(token, 'mobile');
+        await _registerTokenWithBackend(token);
       }
 
       // Listen for token refresh
       _messaging!.onTokenRefresh.listen((newToken) {
-        print('[NOTIFICATIONS] Token refreshed: $newToken');
-        _registerTokenWithBackend(newToken, 'mobile');
+        debugPrint('[NOTIFICATIONS] Push token refreshed');
+        _registerTokenWithBackend(newToken);
       });
 
       // Configure local notifications
@@ -193,14 +202,13 @@ class NotificationService {
 
         // Backend distinguishes device type
         if (token != null) {
-          print('[NOTIFICATIONS] Web FCM Token: $token');
-          await _registerTokenWithBackend(token, 'web');
+          await _registerTokenWithBackend(token);
         }
 
         // Listen for token refresh and register token with backend
         _messaging!.onTokenRefresh.listen((newToken) {
-          print('[NOTIFICATIONS] Web token refreshed: $newToken');
-          _registerTokenWithBackend(newToken, 'web');
+          debugPrint('[NOTIFICATIONS] Web push token refreshed');
+          _registerTokenWithBackend(newToken);
         });
 
         // Handle foreground messages
@@ -217,80 +225,89 @@ class NotificationService {
   }
 
   /// Register FCM token with backend
-  Future<void> _registerTokenWithBackend(
-    String token,
-    String deviceType,
-  ) async {
+  Future<void> registerSavedToken() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final sessionToken = prefs.getString('token');
+      final token = prefs.getString('fcm_token');
+      if (sessionToken == null ||
+          token == null ||
+          prefs.getBool('must_change_password') == true) {
+        debugPrint(
+          '[FCM] Registration deferred until a normal signed-in session and push token exist',
+        );
+        return;
+      }
+      final result = await ApiService.postAcknowledged(
+        '/users/fcm-token',
+        {'token': token, 'device_type': kIsWeb ? 'web' : 'mobile'},
+        canSend: () =>
+            prefs.getString('token') == sessionToken &&
+            prefs.getString('fcm_token') == token &&
+            prefs.getBool('must_change_password') != true,
+      );
+      if (!result.isSuccess) {
+        await _registrationUnavailable();
+      }
+    } on PlatformException {
+      await _registrationUnavailable();
+    } on MissingPluginException {
+      await _registrationUnavailable();
+    }
+  }
+
+  Future<void> _registrationUnavailable() async {
+    debugPrint('[FCM] Account notification registration unavailable');
+    await TtsService.speak(
+      'Notifications could not be registered. Refresh SEEDS to check class invitations.',
+      priority: SpeechPriority.incidental,
+      group:
+          'Notifications could not be registered. Refresh SEEDS to check class invitations',
+    );
+  }
+
+  Future<void> _registerTokenWithBackend(String token) async {
     try {
       // open local storage
       final prefs = await SharedPreferences.getInstance();
 
       // Save token locally first
-      await prefs.setString('fcm_token', token);
-      print('[FCM] Token saved locally: ${token.substring(0, 20)}...');
-
-      // Check if user is logged in
-      final userId = prefs.getInt('user_id');
-      if (userId == null) {
-        print('[FCM] User not logged in yet - will register token after login');
-        return; // Skip registration for now
+      if (!await prefs.setString('fcm_token', token)) {
+        await _registrationUnavailable();
+        return;
       }
-
-      // Send to backend
-      try {
-        final result = await ApiService.post('/users/fcm-token', {
-          'token': token,
-          'device_type': deviceType,
-        }, useAuth: true);
-
-        if (result != null && result['ok'] == true) {
-          print('[FCM] Token registered with backend successfully');
-        } else {
-          print('[FCM] Token registration returned: $result');
-        }
-      } catch (e) {
-        print('[FCM] Error registering token with backend: $e');
-        // Don't throw - token is saved locally, will retry after login
-      }
-    } catch (e) {
-      print('[FCM] Error in token registration: $e');
+      await registerSavedToken();
+    } on PlatformException {
+      await _registrationUnavailable();
+    } on MissingPluginException {
+      await _registrationUnavailable();
     }
   }
 
   // Handle foreground message on mobile - called when app is open
   void _handleForegroundMessage(RemoteMessage message) {
-    print('[NOTIFICATIONS] Foreground message: ${message.notification?.title}');
+    print('[NOTIFICATIONS] Foreground update received');
 
     // Show local notification manually - firebase doesn't auto show in foreground
-    _showLocalNotification(
-      title: message.notification?.title ?? 'New Notification',
-      body: message.notification?.body ?? '',
-      payload: message.data,
-    );
+    unawaited(showPrivateUpdate(message.data));
 
     // Emits event to stream(app listeners)
-    _notificationController.add(message.data);
+    _notificationController.add(privatePayload(message.data));
   }
 
   /// Handle foreground message on web
   void _handleForegroundMessageWeb(RemoteMessage message) {
-    print(
-      '[NOTIFICATIONS] Web foreground message: ${message.notification?.title}',
-    );
+    print('[NOTIFICATIONS] Web foreground update received');
 
     // Show browser notification (if supported)
     // Note: Browser notifications might not work in foreground depending on browser
 
     // Emit to stream
-    _notificationController.add(message.data);
+    _notificationController.add(privatePayload(message.data));
   }
 
   // Show local notification (mobile only)
-  Future<void> _showLocalNotification({
-    required String title,
-    required String body,
-    Map<String, dynamic>? payload,
-  }) async {
+  Future<bool> showPrivateUpdate(Map<String, dynamic> payload) async {
     // notification channel configuration
     const androidDetails = AndroidNotificationDetails(
       'session_channel',
@@ -302,6 +319,7 @@ class NotificationService {
       enableVibration: true,
       playSound: true,
       icon: '@mipmap/ic_launcher',
+      visibility: NotificationVisibility.private,
     );
 
     const iosDetails = DarwinNotificationDetails(
@@ -316,33 +334,52 @@ class NotificationService {
     );
 
     // displays notification
-    await _localNotifications.show(
-      DateTime.now().millisecondsSinceEpoch ~/ 1000,
-      title,
-      body,
-      details,
-      payload: payload != null ? _encodePayload(payload) : null,
+    try {
+      await _localNotifications.show(
+        DateTime.now().millisecondsSinceEpoch ~/ 1000,
+        privateTitle,
+        privateBody,
+        details,
+        payload: _encodePayload(privatePayload(payload)),
+      );
+      return true;
+    } on PlatformException catch (error) {
+      return _displayFailure(error);
+    } on MissingPluginException catch (error) {
+      return _displayFailure(error);
+    }
+  }
+
+  Future<bool> _displayFailure(Object error) async {
+    print(
+      '[NOTIFICATIONS] Private update display failed (${error.runtimeType})',
     );
+    await TtsService.speak(
+      'An update arrived, but the phone notification could not be displayed. Open SEEDS to check updates.',
+      priority: SpeechPriority.incidental,
+      group: 'notification-display-failure',
+    );
+    return false;
   }
 
   // Handle notification tap from system tray
   void _handleNotificationTap(RemoteMessage message) {
-    print('[NOTIFICATIONS] Notification tapped: ${message.data}');
+    print('[NOTIFICATIONS] Update opened');
 
     if (onNotificationTap != null) {
       // delegates to UI callback
-      onNotificationTap!(message.data);
+      onNotificationTap!(privatePayload(message.data));
     }
 
     // emits event
-    _notificationController.add(message.data);
+    _notificationController.add(privatePayload(message.data));
   }
 
   // Handle local notification tap
   void _onNotificationTapped(NotificationResponse response) {
     if (response.payload != null) {
       // convert string to map(payload)
-      final data = _decodePayload(response.payload!);
+      final data = privatePayload(_decodePayload(response.payload!));
 
       if (onNotificationTap != null) {
         onNotificationTap!(data);

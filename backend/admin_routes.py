@@ -242,6 +242,8 @@ async def admin_list_users(
                 "name": user.name,
                 "phone_number": user.phone_number,
                 "role": user.role,
+                "auth_version": user.auth_version,
+                "must_change_password": user.must_change_password,
                 "class_id": membership.class_id if membership else None,
                 "class_name": membership.school_class.name if membership else None,
                 "assignment_count": len(user_assignments),

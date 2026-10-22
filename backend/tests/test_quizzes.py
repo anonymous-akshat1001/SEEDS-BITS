@@ -118,6 +118,221 @@ def valid_question(**overrides):
     return values
 
 
+async def assessment_quiz(db, data, **settings):
+    quiz = await quiz_routes.create_quiz(qs.QuizCreate(
+        class_id=data["classroom"].class_id, subject_id=data["subject"].subject_id,
+        title="Accessible assessment", **settings,
+    ), data["teacher"], db)
+    await quiz_routes.create_and_add_question(quiz["quiz_id"], qs.AddNewQuestion(
+        **valid_question(), save_to_bank=False,
+    ), data["teacher"], db)
+    return await quiz_routes.publish_quiz(quiz["quiz_id"], data["teacher"], db)
+
+
+def described_question(**overrides):
+    return valid_question(
+        topics=["Algebra", "Reading notation"],
+        notation="described",
+        spoken_question_text="Which planet is called the Red Planet?",
+        spoken_options=["Earth spoken", "Mars spoken", "Venus spoken", "Jupiter spoken"],
+        spoken_explanation="Iron oxide gives Mars a red appearance.",
+        spoken_reviewed=True,
+        **overrides,
+    )
+
+
+@pytest.mark.parametrize("overrides", [
+    {"spoken_reviewed": False}, {"spoken_question_text": None},
+    {"spoken_options": ["Only one"]}, {"spoken_explanation": None},
+    {"topics": ["Algebra", "algebra"]}, {"topics": ["x" * 81]},
+])
+def test_notation_requires_teacher_review_and_complete_alternatives(overrides):
+    content = described_question()
+    content.update(overrides)
+    with pytest.raises(ValidationError):
+        qs.QuestionContent(**content)
+
+
+@pytest.mark.asyncio
+async def test_revisions_preserve_snapshots_and_spoken_options_follow_shuffled_ids(quiz_db):
+    db, data = quiz_db
+    teacher = data["teacher"]
+    workspace = {"class_id": data["classroom"].class_id, "subject_id": data["subject"].subject_id}
+    bank = await quiz_routes.create_bank_question(qs.BankQuestionCreate(**workspace, **described_question()), teacher, db)
+    assert bank["revision"] == 1
+    quiz = await quiz_routes.create_quiz(qs.QuizCreate(**workspace, title="Revision snapshot"), teacher, db)
+    quiz = await quiz_routes.add_bank_question_to_quiz(quiz["quiz_id"], qs.AddBankQuestion(question_id=bank["question_id"]), teacher, db)
+    assert quiz["questions"][0]["source_revision"] == 1
+    changed = described_question()
+    changed.update(question_text="Updated bank question", spoken_question_text="Updated spoken bank question")
+    updated = await quiz_routes.update_bank_question(bank["question_id"], qs.BankQuestionUpdate(
+        **workspace, **changed, expected_revision=1,
+    ), teacher, db)
+    assert updated["revision"] == 2
+    history = await quiz_routes.bank_question_revisions(bank["question_id"], 0, teacher, db)
+    assert [row["revision"] for row in history["revisions"]] == [2, 1]
+    assert history["revisions"][1]["content"]["spoken_question_text"] == described_question()["spoken_question_text"]
+    assert history["has_more"] is False
+    with pytest.raises(HTTPException) as denied:
+        await quiz_routes.bank_question_revisions(bank["question_id"], 0, data["other_teacher"], db)
+    assert denied.value.status_code == 404
+    with pytest.raises(HTTPException) as stale:
+        await quiz_routes.update_bank_question(bank["question_id"], qs.BankQuestionUpdate(
+            **workspace, **changed, expected_revision=1,
+        ), teacher, db)
+    assert stale.value.status_code == 409
+    await db.rollback()
+    # The rollback expires ORM objects; retain only the integer IDs below.
+    snapshot = await quiz_routes._get_quiz(db, quiz["quiz_id"])
+    question = snapshot.questions[0]
+    assert question.source_revision == 1
+    assert question.spoken_question_text == described_question()["spoken_question_text"]
+    reversed_ids = [option.quiz_option_id for option in reversed(question.options)]
+    safe = qs.SafeQuizQuestion(**quiz_routes._safe_question(question, reversed_ids)).model_dump()
+    assert [option["spoken_option_text"] for option in safe["options"]] == list(reversed(described_question()["spoken_options"]))
+    assert "correct_option_index" not in safe and "spoken_explanation" not in safe
+    assert all("is_correct" not in option for option in safe["options"])
+    duplicate = await quiz_routes.duplicate_quiz(quiz["quiz_id"], await db.get(models.User, bank["owner_teacher_id"]), db)
+    assert duplicate["questions"][0]["source_revision"] == 1
+    assert duplicate["questions"][0]["spoken_question_text"] == described_question()["spoken_question_text"]
+
+
+@pytest.mark.asyncio
+async def test_spoken_answer_keys_follow_the_same_release_gate_as_visible_keys(quiz_db):
+    db, data = quiz_db
+    teacher, student = data["teacher"], data["student"]
+    quiz = await quiz_routes.create_quiz(qs.QuizCreate(
+        class_id=data["classroom"].class_id, subject_id=data["subject"].subject_id, title="Spoken policy",
+    ), teacher, db)
+    quiz = await quiz_routes.create_and_add_question(quiz["quiz_id"], qs.AddNewQuestion(**described_question()), teacher, db)
+    assert quiz["questions"][0]["source_revision"] == 1
+    await quiz_routes.publish_quiz(quiz["quiz_id"], teacher, db)
+    attempt = await quiz_routes.start_or_resume_attempt(quiz["quiz_id"], student, db)
+    question = attempt["question"]
+    assert question["spoken_question_text"] == described_question()["spoken_question_text"]
+    feedback = await quiz_routes.submit_answer(attempt["attempt_id"], qs.AnswerSubmission(
+        quiz_question_id=question["quiz_question_id"], selected_option_id=question["options"][1]["quiz_option_id"],
+    ), student, db)
+    assert feedback["selected_option_spoken_text"] == "Mars spoken"
+    assert "correct_option_spoken_text" not in feedback and "spoken_explanation" not in feedback
+    await quiz_routes.complete_attempt(attempt["attempt_id"], student, db)
+    review = await quiz_routes.review_attempt(attempt["attempt_id"], student, db)
+    assert review["questions"][0]["correct_option_spoken_text"] == "Mars spoken"
+    assert review["questions"][0]["spoken_explanation"] == described_question()["spoken_explanation"]
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("policy", ["after_completion", "scheduled", "score_only"])
+async def test_feedback_release_is_enforced_across_answers_completion_history_and_review(quiz_db, monkeypatch, policy):
+    db, data = quiz_db
+    now = datetime(2026, 10, 21, 10)
+    monkeypatch.setattr(quiz_routes, "_now", lambda: now)
+    settings = {"feedback_policy": policy}
+    if policy == "scheduled":
+        settings["feedback_release_at"] = now + timedelta(hours=2)
+    quiz = await assessment_quiz(db, data, **settings)
+    started = await quiz_routes.start_or_resume_attempt(quiz["quiz_id"], data["student"], db)
+    question = quiz["questions"][0]
+    correct = next(option for option in question["options"] if option["is_correct"])
+    saved = await quiz_routes.submit_answer(started["attempt_id"], qs.AnswerSubmission(
+        quiz_question_id=question["quiz_question_id"], selected_option_id=correct["quiz_option_id"],
+    ), data["student"], db)
+    assert saved["feedback_released"] is False
+    assert not {"correct_option_id", "correct_option_text", "is_correct", "explanation"} & saved.keys()
+    finished = await quiz_routes.complete_attempt(started["attempt_id"], data["student"], db)
+    review = await quiz_routes.review_attempt(started["attempt_id"], data["student"], db)
+    history = await quiz_routes.student_attempt_history(quiz["quiz_id"], data["student"], db)
+    if policy == "scheduled":
+        assert finished["score_released"] is False
+        assert finished["percentage_score"] is None
+        assert history["highest_score"] is None
+        assert review["questions"] == []
+        monkeypatch.setattr(quiz_routes, "_now", lambda: now + timedelta(hours=2))
+        released = await quiz_routes.review_attempt(started["attempt_id"], data["student"], db)
+        assert released["questions"][0]["correct_option_text"] == "Mars"
+        assert released["attempt"]["percentage_score"] == 100
+    elif policy == "score_only":
+        assert finished["percentage_score"] == 100
+        assert review["questions"] == []
+    else:
+        assert finished["percentage_score"] == 100
+        assert review["questions"][0]["correct_option_text"] == "Mars"
+    teacher_review = await quiz_routes.teacher_attempt_review(quiz["quiz_id"], started["attempt_id"], data["teacher"], db)
+    assert teacher_review["questions"][0]["correct_option_text"] == "Mars"
+
+
+@pytest.mark.asyncio
+async def test_practice_is_untimed_unlimited_immediate_and_not_reported_as_academic_scores(quiz_db):
+    db, data = quiz_db
+    quiz = await assessment_quiz(db, data, mode="practice", attempt_limit=1)
+    for number in range(3):
+        attempt = await quiz_routes.start_or_resume_attempt(quiz["quiz_id"], data["student"], db)
+        assert attempt["deadline_at"] is None
+        assert attempt["attempt_number"] == number + 1
+        assert attempt["is_graded"] is False
+        question = quiz["questions"][0]
+        option = next(option for option in question["options"] if option["is_correct"])
+        feedback = await quiz_routes.submit_answer(attempt["attempt_id"], qs.AnswerSubmission(
+            quiz_question_id=question["quiz_question_id"], selected_option_id=option["quiz_option_id"],
+        ), data["student"], db)
+        assert feedback["feedback_released"] is True
+        assert feedback["correct_option_text"] == "Mars"
+        finished = await quiz_routes.complete_attempt(attempt["attempt_id"], data["student"], db)
+        assert finished["percentage_score"] is None
+    listed = await quiz_routes.get_student_quiz(quiz["quiz_id"], data["student"], db)
+    assert listed["attempts_remaining"] is None
+    assert listed["highest_score"] is None
+    assert listed["can_start_attempt"] is True
+    summary = await quiz_routes.quiz_summary(quiz["quiz_id"], data["teacher"], db)
+    assert summary["mode"] == "practice" and summary["completed"] == 1
+    assert summary["highest_score"] is None and summary["average_highest_score"] is None
+    results = await quiz_routes.quiz_results(quiz["quiz_id"], data["teacher"], db)
+    assert results[0]["highest_score"] is None
+
+
+@pytest.mark.asyncio
+async def test_extra_minutes_only_affect_future_attempts_and_never_extend_past_closing(quiz_db, monkeypatch):
+    db, data = quiz_db
+    now = datetime(2026, 10, 21, 10)
+    monkeypatch.setattr(quiz_routes, "_now", lambda: now)
+    quiz = await assessment_quiz(db, data, attempt_limit=3, time_limit_minutes=10, closes_at=now + timedelta(minutes=40))
+    first = await quiz_routes.start_or_resume_attempt(quiz["quiz_id"], data["student"], db)
+    saved = await quiz_routes.set_accommodation(quiz["quiz_id"], qs.AccommodationUpdate(
+        student_id=data["student"].user_id, extra_minutes=15,
+    ), data["teacher"], db)
+    assert saved["ok"] is True
+    resumed = await quiz_routes.start_or_resume_attempt(quiz["quiz_id"], data["student"], db)
+    assert resumed["deadline_at"] == first["deadline_at"] == now + timedelta(minutes=10)
+    assert resumed["extra_time_minutes"] == 0
+    await quiz_routes.complete_attempt(first["attempt_id"], data["student"], db)
+    second = await quiz_routes.start_or_resume_attempt(quiz["quiz_id"], data["student"], db)
+    assert second["deadline_at"] == now + timedelta(minutes=25)
+    assert second["extra_time_minutes"] == 15
+    await quiz_routes.set_accommodation(quiz["quiz_id"], qs.AccommodationUpdate(
+        student_id=data["student"].user_id, extra_minutes=100,
+    ), data["teacher"], db)
+    await quiz_routes.complete_attempt(second["attempt_id"], data["student"], db)
+    third = await quiz_routes.start_or_resume_attempt(quiz["quiz_id"], data["student"], db)
+    assert third["deadline_at"] == now + timedelta(minutes=40)
+    assert third["extra_time_minutes"] == 100
+
+
+@pytest.mark.asyncio
+async def test_accommodation_owner_and_student_eligibility_are_enforced(quiz_db):
+    db, data = quiz_db
+    quiz = await assessment_quiz(db, data, time_limit_minutes=10)
+    with pytest.raises(HTTPException) as owner:
+        await quiz_routes.set_accommodation(quiz["quiz_id"], qs.AccommodationUpdate(
+            student_id=data["student"].user_id, extra_minutes=15,
+        ), data["other_teacher"], db)
+    assert owner.value.status_code == 404
+    with pytest.raises(HTTPException) as student:
+        await quiz_routes.set_accommodation(quiz["quiz_id"], qs.AccommodationUpdate(
+            student_id=data["outsider"].user_id, extra_minutes=15,
+        ), data["teacher"], db)
+    assert student.value.status_code == 403
+
+
 @pytest.mark.parametrize(
     "options",
     [
@@ -259,9 +474,10 @@ async def test_lifecycle_attempt_feedback_idempotency_and_grading(quiz_db):
         student=data["student"],
         db=db,
     )
-    assert feedback["is_correct"] is True
-    assert feedback["correct_option_id"] == correct["quiz_option_id"]
-    assert feedback["explanation"] == "Iron oxide makes Mars appear red."
+    assert feedback["feedback_released"] is False
+    assert "is_correct" not in feedback
+    assert "correct_option_id" not in feedback
+    assert "explanation" not in feedback
     duplicate = await quiz_routes.submit_answer(
         attempt["attempt_id"],
         qs.AnswerSubmission(
