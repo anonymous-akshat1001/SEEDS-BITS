@@ -15,6 +15,7 @@ import 'package:frontend/screens/private_notes_screen.dart';
 import 'package:frontend/services/offline_lesson_store.dart';
 import 'package:frontend/services/learning_progress_store.dart';
 import 'package:frontend/services/tts_service.dart';
+import 'package:frontend/widgets/keypad_confirmation_dialog.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
@@ -598,6 +599,42 @@ void main() {
         final saved = await tester.runAsync(() => store.lesson(1));
         expect(saved!.position.inSeconds, 25);
         expect(saved.completed, isFalse);
+      }, client);
+    },
+  );
+
+  testWidgets(
+    'download actions have working direct number keys while files retain D-pad access',
+    (tester) async {
+      await seed(tester);
+      await http.runWithClient(() async {
+        await tester.pumpWidget(const MaterialApp(home: DownloadsScreen()));
+        await waitFor(tester, () {
+          final button = find.widgetWithText(
+            OutlinedButton,
+            '2: Find recordings online',
+          );
+          return button.evaluate().isNotEmpty &&
+              tester.widget<OutlinedButton>(button).onPressed != null;
+        });
+        await tester.sendKeyEvent(LogicalKeyboardKey.digit2);
+        await waitFor(
+          tester,
+          () => find
+              .text('Download or resume English lesson')
+              .evaluate()
+              .isNotEmpty,
+        );
+        expect(find.text('3: Read status'), findsOneWidget);
+        expect(find.text('5: Download listed recordings'), findsOneWidget);
+        await tester.sendKeyEvent(LogicalKeyboardKey.digit5);
+        await tester.pumpAndSettle();
+        expect(find.byType(KeypadConfirmationDialog), findsOneWidget);
+        await tester.sendKeyEvent(LogicalKeyboardKey.digit1);
+        await tester.pumpAndSettle();
+        expect(find.byType(KeypadConfirmationDialog), findsNothing);
+        expect(streamRequested, isFalse);
+        await close(tester);
       }, client);
     },
   );

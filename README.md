@@ -31,6 +31,7 @@ accessibility-focused keypad and text-to-speech interface.
 - [Building the Android app](#building-the-android-app)
 - [API overview](#api-overview)
 - [Keypad accessibility](#keypad-accessibility)
+- [Teacher/student journeys and complete button maps](USER_JOURNEYS.md)
 - [Quiz module](#quiz-module)
 - [Session logging](#session-logging)
 - [Production notes](#production-notes)
@@ -511,6 +512,103 @@ flutter run -d <device-id>
 ```
 
 ## Testing and validation
+
+### Keypad-first redesign foundation
+
+The shared numbered-menu components now power administration section/class
+actions and the teacher class-and-subject chooser. The complete application
+journeys have not yet been migrated; other screens retain their existing key
+mappings unless explicitly listed below.
+
+- `NumberedMenu` provides up to five direct digit choices.
+- `KeypadTextStep` provides a single native input field with validation and an
+  OK/Done completion path. D-pad Up/Down remains the fallback for leaving
+  editing; digits, star, and hash are never intercepted while editing.
+- `KeypadPagedList` requests five items per page from its supplied loader,
+  keeps failed-page retries non-destructive, and rejects stale account-scoped
+  results. Search is delegated to the complete source, not the visible page.
+  Backend paginated browsing adapters are still to be implemented.
+- These components explicitly opt into `KeypadInteractionPolicy.numbered`:
+  `0` is Back, `*` repeats help, and `#` stops app narration. Lists use `7/9`
+  for previous/next, `8` for search, and `6` for options. Legacy wrappers keep
+  their existing mappings.
+
+### Accessibility regression fixes
+
+- Focused text fields always retain digits, star and hash, even before an
+  explicit edit-mode transition. OK finishes editing without inserting a
+  newline; D-pad Up/Down remains available.
+- Browser speech uses a fresh utterance for every announcement. Cancellation
+  settles the outgoing request and stale browser callbacks cannot read newer
+  text or complete newer speech. Android continues to use `flutter_tts`.
+- Administration defaults to Accounts; key `7` chooses Accounts, Classes or
+  Subjects. Filters stay mounted and retain focus while loading; the selected
+  filter and current button are spoken after the response. Class management
+  and class-subject selection use numbered choices.
+- Teacher key `7` opens numbered class/subject assignments (five per page,
+  complete-assignment search); key `8` opens lesson plans. No assignment
+  dropdown is used. Registration key `3` toggles student/teacher.
+- Teacher quizzes use key `4` for untimed practice. Choosing saved questions
+  refreshes the workspace bank first; Step 2 also lists questions already saved
+  in the draft, with OK to read their options. Save/validation errors are spoken and
+  scrolled into view immediately; uncertain writes still require review rather
+  than automatic retry. Quiz scoring, attempts and snapshot rules are unchanged.
+- Recorded-library key `5` focuses the first active class without opening its
+  recordings; D-pad browses sessions and OK opens one. An empty or unavailable
+  list is announced without navigating.
+- Downloads: `1` refresh, `2` find online recordings, `3` status, `4` cancel an
+  active transfer, `5` download the listed pack with confirmation. File actions
+  remain D-pad accessible. Existing confirmation-dialog mappings are retained.
+- Screen help names the main reachable sections rather than only "controls."
+- Returning from a page or dismissing a dialog automatically repeats the
+  current page's help, including pages that announce their initial load
+  themselves. Restored focus cannot cancel that help; active action feedback
+  finishes first, and a new keypad action cancels the pending repeat.
+- Administration help describes the selected Accounts, Classes or Subjects
+  section. Numbered lists announce item keys, options, paging, search, back,
+  D-pad traversal and OK, not just the available items.
+- Lesson plans use separate numbered menus for create/choose, add a step,
+  step management and plan management. Plan, step and recording pickers use
+  five-item searchable lists. `0` returns one level, `8` reads status, `*`
+  repeats help and `#` stops speech. Selecting never runs a step; running and
+  deletion still require confirmation and retain server revision checks.
+- Student quiz help explains filter controls, starting/resuming and history.
+  Active attempts automatically read each question and all spoken option
+  texts, with state-specific key and D-pad instructions. Focus alone never
+  selects or submits; private feedback and results still require explicit
+  requests. Empty classroom hand/summary actions speak their unavailable state
+  rather than silently doing nothing.
+
+Lesson plans require the current backend's `/teacher-sequences` routes and
+database migrations. A deployed `404 Not Found` is not a successful empty
+workspace: creation stays disabled and the screen gives administrator recovery
+instructions. Verify the backend version and proxy routing, back up the
+database, run `alembic upgrade head`, then restart the updated backend. Refresh
+plans afterward. This frontend change does not deploy or migrate a server.
+
+Run the foundation and compatibility tests from `frontend`:
+
+```powershell
+flutter test test\numbered_navigation_test.dart test\keypad_instruction_wrapper_test.dart
+```
+
+Browser speech cancellation/error ownership has a separate browser-only suite:
+
+```powershell
+flutter test --platform chrome test\browser_speech_engine_test.dart
+```
+
+These speech tests mock the browser synthesis API; they do not prove audible
+voice quality or native phone compatibility.
+If a Windows Flutter SDK returns 404 for its own `/canvaskit/` test assets, fix
+or update that SDK's test asset server, or use a non-Windows test runner. The
+browser regression run for these changes supplied the installed SDK assets
+through a local test-only route; no SDK or dependency-cache files were edited.
+
+Physical BlackZone validation is required before signing off device compatibility:
+verify digits/T9, star/hash, OK/Done, D-pad editing exit, both unidentified
+buttons beside OK, and held-key behavior across route transitions. Desktop
+widget tests do not establish native IME or hardware compatibility.
 
 ### Backend
 

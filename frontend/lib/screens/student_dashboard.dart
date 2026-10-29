@@ -436,6 +436,8 @@ class _StudentDashboardState extends State<StudentDashboard> {
 
     return KeypadInstructionWrapper(
       screenName: 'Student Dashboard',
+      navigationSections:
+          'class information, active sessions, recorded lessons, playlists, quizzes, and settings',
       labels: studentDashboardKeyLabels,
       actions: {
         0: _logout,

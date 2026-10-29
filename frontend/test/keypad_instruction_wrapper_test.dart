@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -224,6 +226,88 @@ void main() {
     expect(activations, 1);
   });
 
+  testWidgets(
+    'digits stay input before explicitly entering edit mode; OK exits multiline editing',
+    (tester) async {
+      final field = FocusNode();
+      final next = FocusNode();
+      final input = TextEditingController();
+      final navigation = KeypadNavigationController();
+      var shortcuts = 0;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: KeypadInstructionWrapper(
+            autoPlay: false,
+            navigationController: navigation,
+            actions: {0: () => shortcuts++, 1: () => shortcuts++},
+            focusTargets: [
+              KeypadFocusTarget(
+                node: field,
+                label: 'Description',
+                isTextField: true,
+              ),
+              KeypadFocusTarget(node: next, label: 'Save'),
+            ],
+            child: Scaffold(
+              body: Column(
+                children: [
+                  TextField(focusNode: field, controller: input, maxLines: 3),
+                  TextButton(
+                    focusNode: next,
+                    onPressed: () {},
+                    child: const Text('Save'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
+      expect(field.hasFocus, isTrue);
+      await tester.sendKeyEvent(LogicalKeyboardKey.digit0);
+      await tester.sendKeyEvent(LogicalKeyboardKey.digit1);
+      expect(shortcuts, 0);
+      await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+      await tester.enterText(find.byType(TextField), 'Description 01');
+      await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+      await tester.pump();
+      expect(input.text, 'Description 01');
+      expect(next.hasFocus, isTrue);
+      expect(navigation.isEditing, isFalse);
+      await tester.pumpWidget(const SizedBox.shrink());
+      field.dispose();
+      next.dispose();
+      input.dispose();
+    },
+  );
+
+  testWidgets('nested unregistered input suppresses parent control shortcuts', (
+    tester,
+  ) async {
+    final parent = FocusNode();
+    var shortcuts = 0;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: KeypadInstructionWrapper(
+          autoPlay: false,
+          actions: {0: () => shortcuts++, 1: () => shortcuts++},
+          focusTargets: [KeypadFocusTarget(node: parent, label: 'Form')],
+          child: Scaffold(
+            body: Focus(focusNode: parent, child: const TextField()),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.byType(TextField));
+    await tester.pump();
+    await tester.sendKeyEvent(LogicalKeyboardKey.digit0);
+    await tester.sendKeyEvent(LogicalKeyboardKey.digit1);
+    expect(shortcuts, 0);
+    await tester.pumpWidget(const SizedBox.shrink());
+    parent.dispose();
+  });
+
   testWidgets('a new TTS announcement stops the previous announcement', (
     tester,
   ) async {
@@ -331,6 +415,139 @@ void main() {
       null,
     );
   });
+
+  for (final confirmed in [false, true]) {
+    testWidgets(
+      'dialog result $confirmed repeats help despite restored focus and autoPlay false',
+      (tester) async {
+        final spoken = <String>[];
+        final opener = FocusNode(debugLabel: 'publish-opener');
+        tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+          const MethodChannel('flutter_tts'),
+          (call) async {
+            if (call.method == 'speak') spoken.add(call.arguments.toString());
+            return 1;
+          },
+        );
+        await TtsService.configure(enabled: true, mode: SpeechMode.selfVoicing);
+        await tester.pumpWidget(
+          MaterialApp(
+            navigatorObservers: [routeObserver],
+            home: Builder(
+              builder: (context) {
+                void open() => showDialog<bool>(
+                  context: context,
+                  builder: (dialogContext) => AlertDialog(
+                    content: TextButton(
+                      onPressed: () => Navigator.pop(dialogContext, confirmed),
+                      child: const Text('Close publication dialog'),
+                    ),
+                  ),
+                );
+                return KeypadInstructionWrapper(
+                  autoPlay: false,
+                  screenName: 'Quiz publication review',
+                  navigationSections: 'draft status, questions and publish',
+                  actions: const {},
+                  focusTargets: [
+                    KeypadFocusTarget(
+                      node: opener,
+                      label: 'Publish quiz',
+                      onActivate: open,
+                    ),
+                  ],
+                  child: Scaffold(
+                    body: TextButton(
+                      focusNode: opener,
+                      onPressed: open,
+                      child: const Text('Publish quiz'),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        );
+        await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
+        await tester.pump();
+        await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+        await tester.pumpAndSettle();
+        spoken.clear();
+        await tester.tap(find.text('Close publication dialog'));
+        await tester.pumpAndSettle();
+        await tester.pump(const Duration(milliseconds: 600));
+        expect(opener.hasFocus, isTrue);
+        expect(spoken.last, contains('Quiz publication review'));
+        expect(spoken.last, contains('draft status, questions and publish'));
+        expect(spoken.last, contains('Press OK'));
+        await tester.pumpWidget(const SizedBox.shrink());
+        opener.dispose();
+      },
+    );
+  }
+
+  testWidgets(
+    'return help waits for action feedback instead of interrupting it',
+    (tester) async {
+      final spoken = <String>[];
+      final feedback = Completer<int>();
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        const MethodChannel('flutter_tts'),
+        (call) async {
+          if (call.method == 'speak') {
+            final text = call.arguments.toString();
+            spoken.add(text);
+            if (text.contains('Action feedback still speaking')) {
+              return feedback.future;
+            }
+          }
+          return 1;
+        },
+      );
+      await TtsService.configure(enabled: true, mode: SpeechMode.selfVoicing);
+      await tester.pumpWidget(
+        MaterialApp(
+          navigatorObservers: [routeObserver],
+          home: Builder(
+            builder: (context) => KeypadInstructionWrapper(
+              autoPlay: false,
+              screenName: 'Current lesson plan',
+              navigationSections: 'add step and run selected step',
+              actions: const {},
+              child: Scaffold(
+                body: TextButton(
+                  onPressed: () async {
+                    await showDialog<void>(
+                      context: context,
+                      builder: (dialogContext) => AlertDialog(
+                        content: TextButton(
+                          onPressed: () => Navigator.pop(dialogContext),
+                          child: const Text('Finish action'),
+                        ),
+                      ),
+                    );
+                    await TtsService.speak('Action feedback still speaking');
+                  },
+                  child: const Text('Open action'),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('Open action'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Finish action'));
+      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 600));
+      expect(spoken.last, contains('Action feedback still speaking'));
+      feedback.complete(1);
+      await tester.pumpAndSettle();
+      expect(spoken.last, contains('Current lesson plan'));
+      expect(spoken.last, contains('add step and run selected step'));
+      await tester.pumpWidget(const SizedBox.shrink());
+    },
+  );
 
   testWidgets('hash goes back and restores the previously focused control', (
     tester,

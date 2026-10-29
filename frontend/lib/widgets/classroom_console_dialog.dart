@@ -93,7 +93,11 @@ class _ClassroomConsoleDialogState extends State<ClassroomConsoleDialog> {
 
   Future<void> _acknowledge() async {
     final queue = _queue;
-    if (_pending || queue.isEmpty || _index(queue) < 0) return;
+    if (_pending) return;
+    if (queue.isEmpty || _index(queue) < 0) {
+      await TtsService.speak(_description(queue));
+      return;
+    }
     final hand = queue[_index(queue)];
     setState(() {
       _pending = true;
@@ -113,6 +117,13 @@ class _ClassroomConsoleDialogState extends State<ClassroomConsoleDialog> {
     } finally {
       if (mounted) setState(() => _pending = false);
     }
+  }
+
+  Future<void> _readSummary() async {
+    final summary = widget.summary().trim();
+    await TtsService.speak(
+      summary.isEmpty ? 'No classroom summary is available yet.' : summary,
+    );
   }
 
   @override
@@ -137,12 +148,12 @@ class _ClassroomConsoleDialogState extends State<ClassroomConsoleDialog> {
         KeypadFocusTarget(
           node: _node('summary'),
           label: 'Read classroom summary',
-          onActivate: () => TtsService.speak(widget.summary()),
+          onActivate: _readSummary,
         ),
         KeypadFocusTarget(
           node: _node('previous'),
           label: 'Previous raised hand',
-          isEnabled: () => queue.isNotEmpty && !_pending,
+          isEnabled: () => !_pending,
           onActivate: () => _move(-1),
         ),
         KeypadFocusTarget(
@@ -155,7 +166,7 @@ class _ClassroomConsoleDialogState extends State<ClassroomConsoleDialog> {
         KeypadFocusTarget(
           node: _node('next'),
           label: 'Next raised hand',
-          isEnabled: () => queue.isNotEmpty && !_pending,
+          isEnabled: () => !_pending,
           onActivate: () => _move(1),
         ),
         KeypadFocusTarget(
@@ -163,7 +174,7 @@ class _ClassroomConsoleDialogState extends State<ClassroomConsoleDialog> {
           label: _pending
               ? 'Waiting for hand acknowledgment'
               : 'Acknowledge and lower selected hand. Never unmute',
-          isEnabled: () => queue.isNotEmpty && _index(queue) >= 0 && !_pending,
+          isEnabled: () => !_pending,
           onActivate: _acknowledge,
         ),
         KeypadFocusTarget(
@@ -190,6 +201,8 @@ class _ClassroomConsoleDialogState extends State<ClassroomConsoleDialog> {
 
       return KeypadInstructionWrapper(
         screenName: _help,
+        navigationSections:
+            'read classroom summary, previous hand, read selected hand, next hand, acknowledge hand, stop speech, help and back. If no hands or summary are available, selecting their controls reads that status',
         actions: {0: () => Navigator.pop(context)},
         labels: const {0: 'Back to session'},
         onHashKey: () => Navigator.pop(context),

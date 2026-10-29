@@ -14,6 +14,7 @@ import '../widgets/keypad_confirmation_dialog.dart';
 import '../utils/keypad_actions.dart';
 import '../services/auth_session_service.dart';
 import '../utils/session_search.dart';
+import '../widgets/keypad_paged_list.dart';
 
 // Create Teacher Dashboard Widget
 class TeacherDashboard extends StatefulWidget {
@@ -309,6 +310,56 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     );
   }
 
+  Future<void> _chooseWorkspace() async {
+    if (_workspaces.isEmpty) {
+      await TtsService.speak('No class and subject workspace is assigned.');
+      return;
+    }
+    final workspaces = _workspaces
+        .map((entry) => Map<String, dynamic>.from(entry as Map))
+        .toList();
+    final selected = await Navigator.push<Map<String, dynamic>>(
+      context,
+      MaterialPageRoute(
+        builder: (listContext) => KeypadPagedList<Map<String, dynamic>>(
+          title: 'Choose class and subject',
+          scope: (currentUserId, 'teacher-workspaces'),
+          loadPage: (query) async {
+            final matches = workspaces
+                .where(
+                  (entry) => '${entry['class_name']} ${entry['subject_name']}'
+                      .toLowerCase()
+                      .contains(query.search.trim().toLowerCase()),
+                )
+                .toList();
+            final start = int.parse(query.cursor ?? '0');
+            final end = (start + KeypadListQuery.pageSize).clamp(
+              0,
+              matches.length,
+            );
+            return KeypadListPage(
+              items: matches.sublist(start, end),
+              nextCursor: end < matches.length ? '$end' : null,
+            );
+          },
+          labelOf: (entry) =>
+              '${entry['class_name']}, ${entry['subject_name']}',
+          onSelected: (entry) => Navigator.pop(listContext, entry),
+        ),
+      ),
+    );
+    if (!mounted || selected == null) return;
+    setState(() => _selectedWorkspace = selected);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _keypadController.focusAndAnnounce(
+        _workspaceFocusNode,
+        '${selected['class_name']}, ${selected['subject_name']} selected. '
+        'Class and subject button. Press 7 to choose another workspace.',
+      );
+    });
+  }
+
   // Open offline audio library (no session context)
   void _openOfflineAudioLibrary() {
     TtsService.speak('Opening recorded audio library. Internet is required.');
@@ -438,8 +489,8 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
         node: _workspaceFocusNode,
         label: _selectedWorkspace == null
             ? 'No class and subject workspace assigned'
-            : 'Workspace ${_selectedWorkspace!['class_name']}, ${_selectedWorkspace!['subject_name']}. Use left or right to change',
-        onActivate: () => _cycleWorkspace(1),
+            : 'Workspace ${_selectedWorkspace!['class_name']}, ${_selectedWorkspace!['subject_name']}. Press OK or 7 to choose from numbered assignments',
+        onActivate: _chooseWorkspace,
         onDecrease: () => _cycleWorkspace(-1),
         onIncrease: () => _cycleWorkspace(1),
       ),
@@ -686,6 +737,8 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
 
     return KeypadInstructionWrapper(
       screenName: 'Teacher Dashboard',
+      navigationSections:
+          'class and subject selection, teaching tools, session search, and active or ended sessions',
       labels: teacherDashboardKeyLabels,
       actions: {
         0: _logout,
@@ -695,6 +748,8 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
         4: _focusSessionSearch,
         5: _openPlaylists,
         6: _openQuizzes,
+        7: _chooseWorkspace,
+        8: _openSequences,
       },
       navigationController: _keypadController,
       focusTargets: _dashboardFocusTargets(),
@@ -853,40 +908,15 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
 
                 Semantics(
                   label: 'Selected class and subject workspace',
-                  child: DropdownButtonFormField<int>(
-                    key: ValueKey(_selectedWorkspace?['assignment_id'] as int?),
+                  child: OutlinedButton.icon(
                     focusNode: _workspaceFocusNode,
-                    initialValue: _selectedWorkspace?['assignment_id'] as int?,
-                    isExpanded: true,
-                    decoration: const InputDecoration(
-                      label: Text('Class and subject workspace'),
-                      prefixIcon: Icon(Icons.workspaces_outline),
+                    icon: const Icon(Icons.workspaces_outline),
+                    label: Text(
+                      _selectedWorkspace == null
+                          ? '7: Choose class and subject workspace'
+                          : '7: ${_selectedWorkspace!['class_name']}, ${_selectedWorkspace!['subject_name']}. Change workspace',
                     ),
-                    items: _workspaces
-                        .map<DropdownMenuItem<int>>(
-                          (entry) => DropdownMenuItem<int>(
-                            value: entry['assignment_id'] as int,
-                            child: Text(
-                              '${entry['class_name']} · ${entry['subject_name']}',
-                            ),
-                          ),
-                        )
-                        .toList(),
-                    onChanged: (assignmentId) {
-                      if (assignmentId == null) return;
-                      setState(() {
-                        _selectedWorkspace = Map<String, dynamic>.from(
-                          _workspaces.firstWhere(
-                                (entry) =>
-                                    entry['assignment_id'] == assignmentId,
-                              )
-                              as Map,
-                        );
-                      });
-                      TtsService.speak(
-                        '${_selectedWorkspace!['class_name']}, ${_selectedWorkspace!['subject_name']} selected',
-                      );
-                    },
+                    onPressed: _chooseWorkspace,
                   ),
                 ),
 
@@ -902,7 +932,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                   focusNode: _sequencesFocus,
                   onPressed: _openSequences,
                   icon: const Icon(Icons.format_list_numbered),
-                  label: const Text('Lesson sequences'),
+                  label: const Text('8: Lesson plans'),
                 ),
 
                 SizedBox(height: UIUtils.spacing(context, 8)),

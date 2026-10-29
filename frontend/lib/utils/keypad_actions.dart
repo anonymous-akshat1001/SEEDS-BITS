@@ -63,6 +63,8 @@ const Map<int, String> teacherDashboardKeyLabels = {
   4: 'Search Sessions by Name or ID',
   5: 'Class Playlists',
   6: 'Quizzes',
+  7: 'Choose class and subject workspace',
+  8: 'Lesson plans',
 };
 
 const Map<int, String> adminDashboardKeyLabels = {
@@ -73,6 +75,7 @@ const Map<int, String> adminDashboardKeyLabels = {
   4: 'Change Assignment Filter',
   5: 'Create Subject',
   6: 'Create Class',
+  7: 'Choose Accounts, Classes, or Subjects section',
 };
 
 const Map<int, String> teacherQuizKeyLabels = {
@@ -80,6 +83,7 @@ const Map<int, String> teacherQuizKeyLabels = {
   1: 'Refresh',
   2: 'Create bank question',
   3: 'Create quiz draft',
+  4: 'Create untimed ungraded practice',
 };
 
 const Map<int, String> studentQuizKeyLabels = {
@@ -133,6 +137,7 @@ const Map<int, String> offlineAudioLibraryKeyLabels = {
   1: 'Refresh Classes',
   2: 'Search Class by Name',
   3: 'All Audio Files',
+  5: 'Focus first active class; use D-pad to browse classes',
   0: 'Go Back',
 };
 

@@ -1035,6 +1035,17 @@ void main() {
     );
     await tester.pump(const Duration(milliseconds: 500));
     expect(spoken.join(' '), contains('Which option is second?'));
+    for (final option in [
+      'Option 1. First',
+      'Option 2. Second',
+      'Option 3. Third',
+      'Option 4. Fourth',
+    ]) {
+      expect(spoken.last, contains(option));
+    }
+    expect(spoken.last, contains('D-pad up and down'));
+    expect(spoken.last, contains('moving focus does not select or submit'));
+    expect(spoken.last, contains('5 to save your answer'));
     await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
     await tester.pump();
     expect(
@@ -1125,6 +1136,15 @@ void main() {
   testWidgets(
     'saved answer advances to the next spoken question, not a result',
     (tester) async {
+      final spoken = <String>[];
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        const MethodChannel('flutter_tts'),
+        (call) async {
+          if (call.method == 'speak') spoken.add(call.arguments.toString());
+          return 1;
+        },
+      );
+      await TtsService.configure(enabled: true, mode: SpeechMode.selfVoicing);
       final initial = {...attemptFixture(), 'total_questions': 2};
       final nextQuestion = {
         ...(initial['question'] as Map<String, dynamic>),
@@ -1150,6 +1170,10 @@ void main() {
           await tester.pumpAndSettle();
           expect(find.text('Question 2 of 2'), findsOneWidget);
           expect(find.text('What comes next?'), findsOneWidget);
+          expect(spoken.last, contains('What comes next?'));
+          expect(spoken.last, contains('Option 1. First'));
+          expect(spoken.last, contains('Option 4. Fourth'));
+          expect(spoken.last, contains('5 to save your answer'));
           expect(
             FocusManager.instance.primaryFocus?.debugLabel,
             'quiz-question-prompt',
@@ -1546,8 +1570,8 @@ void main() {
     );
     await tester.pump();
 
-    expect(find.text('Edit bank question'), findsOneWidget);
-    expect(find.text('Archive bank question'), findsOneWidget);
+    expect(find.text('1: Edit bank question'), findsOneWidget);
+    expect(find.text('2: Archive bank question'), findsOneWidget);
     expect(find.text('0: Cancel'), findsOneWidget);
 
     await tester.sendKeyDownEvent(LogicalKeyboardKey.arrowDown);

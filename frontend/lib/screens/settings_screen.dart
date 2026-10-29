@@ -463,6 +463,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     return KeypadInstructionWrapper(
       screenName: 'Settings',
+      navigationSections:
+          'speech and voice commands, display accessibility, playback preferences, and save or reset settings',
       onSpeechRescued: () => setState(() {
         _ttsEnabled = TtsService.isEnabled;
         _ttsVolume = TtsService.volume;

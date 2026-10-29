@@ -61,6 +61,8 @@ void main() {
     await tester.sendKeyEvent(LogicalKeyboardKey.digit1);
     await tester.pump();
     expect(selected, isNull);
+    expect(find.textContaining('Choose a valid date'), findsNothing);
+    await saveWithKeypad();
     expect(find.textContaining('Choose a valid date'), findsOneWidget);
     expect(tester.takeException(), isNull);
 

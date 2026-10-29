@@ -59,7 +59,11 @@ void main() {
     await TtsService.stop();
   });
 
-  Future<void> open(WidgetTester tester, {double textScale = 1}) async {
+  Future<void> open(
+    WidgetTester tester, {
+    double textScale = 1,
+    String? summary,
+  }) async {
     tester.view.physicalSize = const Size(240, 320);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -80,6 +84,7 @@ void main() {
                 revision: revision,
                 participants: () => participants,
                 summary: () =>
+                    summary ??
                     'Snapshot summary. Speaker identification unavailable.',
                 acknowledge: (id, order) async {
                   acknowledged.add(id);
@@ -114,6 +119,24 @@ void main() {
     await tester.sendKeyEvent(LogicalKeyboardKey.enter);
     await tester.pump();
   }
+
+  testWidgets(
+    'empty summary and hand actions speak their state without sending an acknowledgment',
+    (tester) async {
+      participants.clear();
+      await open(tester, summary: '');
+      await activate(tester, 'summary');
+      await tester.pumpAndSettle();
+      expect(spoken.last, contains('No classroom summary is available'));
+      for (final action in ['previous', 'next', 'read', 'acknowledge']) {
+        await activate(tester, action);
+        await tester.pumpAndSettle();
+        expect(spoken.last, contains('No raised hands'));
+      }
+      expect(acknowledged, isEmpty);
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   testWidgets(
     'FIFO next/previous selection and summary are keypad accessible at 240x320 with large text',

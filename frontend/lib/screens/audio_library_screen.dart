@@ -380,6 +380,11 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
                       ),
                     ),
                     maxLines: 3,
+                    textInputAction: TextInputAction.done,
+                    onSubmitted: (_) {
+                      keypadController.exitTextEditing();
+                      cancelNode.requestFocus();
+                    },
                   ),
                 ],
               ),
@@ -723,6 +728,8 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
     final bool compact = tiny || UIUtils.isShort(context);
     return KeypadInstructionWrapper(
       screenName: 'Audio library',
+      navigationSections:
+          'recordings, playback and speech controls, recording sharing, and upload tools when available',
       onSpeechRescued: () => setState(() => _ttsEnabled = TtsService.isEnabled),
       labels: {
         0: 'Back',
@@ -1188,6 +1195,7 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
   bool _isTeacher = false;
   int? _currentUserId;
   bool _continuing = false;
+  String? _sessionsIssue;
 
   FocusNode _focusNode(String name) => _focusNodes.putIfAbsent(
     name,
@@ -1195,6 +1203,11 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
   );
 
   List<KeypadFocusTarget> get _focusTargets => [
+    KeypadFocusTarget(
+      node: _focusNode('browse'),
+      label: 'Focus first active class. Use D-pad to browse active sessions',
+      onActivate: _focusFirstActiveClass,
+    ),
     KeypadFocusTarget(
       node: _focusNode('back'),
       label: 'Back',
@@ -1377,23 +1390,37 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
     if (!mounted) return;
 
     try {
-      final result = await ApiService.getActiveSessions();
-      if (result != null && mounted) {
+      final result = await ApiService.getResult(
+        '/sessions/active',
+        useAuth: true,
+        requestTimeout: const Duration(seconds: 20),
+      );
+      if (!mounted) return;
+      final data = result.data;
+      if (result.isSuccess &&
+          data is List &&
+          data.every(
+            (item) => item is Map<String, dynamic> && item['session_id'] is int,
+          )) {
         setState(() {
-          _sessions = result
-              .map((e) => Map<String, dynamic>.from(e as Map))
-              .toList();
+          _sessions = data.cast<Map<String, dynamic>>();
+          _sessionsIssue = null;
         });
+      } else {
+        final message =
+            '${result.failure?.message ?? 'The class list could not be read.'} '
+            'Active classes could not be refreshed. Press 1 to retry. Saved downloads remain available.';
+        setState(() => _sessionsIssue = message);
+        TtsService.speak(message);
       }
-    } catch (e) {
-      print('[OFFLINE LIB] Error loading sessions: $e');
     } finally {
-      if (mounted)
+      if (mounted) {
         setState(() {
           _sessionsLoaded = true;
           _isLoading =
               !_userInfoLoaded; // hide spinner only if user info is also done
         });
+      }
     }
   }
 
@@ -1458,6 +1485,34 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
     );
   }
 
+  void _focusFirstActiveClass() {
+    if (_isLoading) {
+      TtsService.speak('Classes are still loading. Try key 5 again shortly.');
+      return;
+    }
+    if (_sessionsIssue != null) {
+      TtsService.speak(_sessionsIssue!);
+      return;
+    }
+    if (_sessions.isEmpty) {
+      TtsService.speak(
+        'There are no active classes. Staying in the audio library.',
+      );
+      return;
+    }
+    final session = _sessions.first;
+    final node = _focusNode('session-${session['session_id']}');
+    if (node.context != null) {
+      Scrollable.ensureVisible(node.context!, alignment: 0.5);
+    }
+    _navigation.focusAndAnnounce(
+      node,
+      '${session['title']}. First active class. '
+      'Use D-pad up and down to browse active class sessions. '
+      'Press OK to open the selected class recordings.',
+    );
+  }
+
   void _openMyPlaylists() {
     if (_isTeacher) return;
     TtsService.speak('Opening My Playlists. Playlist contents are private.');
@@ -1484,6 +1539,8 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
     return KeypadInstructionWrapper(
       screenName:
           'Recorded Audio Library. Online lists require internet. Downloaded lessons open separately for offline playback.',
+      navigationSections:
+          'continue learning, saved downloads and private notes, class search, and active class sessions',
       labels: {
         ...offlineAudioLibraryKeyLabels,
         if (!_isTeacher) 4: 'My Private Playlists',
@@ -1499,6 +1556,7 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
         2: () => _searchFocusNode.requestFocus(),
         3: _openAllAudioFiles,
         if (!_isTeacher) 4: _openMyPlaylists,
+        5: _focusFirstActiveClass,
         0: () => Navigator.of(context).pop(),
       },
       navigationController: _navigation,
@@ -1567,6 +1625,13 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    if (_sessionsIssue != null)
+                      Semantics(liveRegion: true, child: Text(_sessionsIssue!)),
+                    OutlinedButton(
+                      focusNode: _focusNode('browse'),
+                      onPressed: _focusFirstActiveClass,
+                      child: const Text('5: Browse active classes'),
+                    ),
                     OutlinedButton.icon(
                       focusNode: _focusNode('continue'),
                       onPressed: _continuing ? null : _continueLearning,
@@ -2794,6 +2859,11 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
                     border: OutlineInputBorder(),
                   ),
                   maxLines: 2,
+                  textInputAction: TextInputAction.done,
+                  onSubmitted: (_) {
+                    keypadController.exitTextEditing();
+                    cancelNode.requestFocus();
+                  },
                 ),
               ],
             ),
@@ -3057,6 +3127,8 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
 
     return KeypadInstructionWrapper(
       screenName: 'Class Audio Library',
+      navigationSections:
+          'subject filters and recordings, playback controls, bookmarks and learning progress, downloads, and teacher upload tools when available',
       onSpeechRescued: () => setState(() => _ttsEnabled = TtsService.isEnabled),
       labels: labels,
       actions: actions,

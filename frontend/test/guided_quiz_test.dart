@@ -76,6 +76,198 @@ void main() {
   });
   tearDown(TtsService.stop);
 
+  testWidgets('key 4 creates explicitly untimed ungraded practice', (
+    tester,
+  ) async {
+    var saved = draft([]);
+    Map<String, dynamic>? submitted;
+    await http.runWithClient(
+      () async {
+        await tester.pumpWidget(
+          const MaterialApp(
+            home: TeacherQuizScreen(
+              classId: 1,
+              subjectId: 2,
+              className: 'Class',
+              subjectName: 'English',
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        await tester.sendKeyEvent(LogicalKeyboardKey.digit4);
+        await tester.pumpAndSettle();
+        expect(find.byType(AccessibleQuizEditorDialog), findsOneWidget);
+        await tester.enterText(
+          find.widgetWithText(TextField, 'Quiz title'),
+          'Practice numbers',
+        );
+        await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
+        await tester.sendKeyEvent(LogicalKeyboardKey.digit8);
+        await tester.pumpAndSettle();
+        expect(submitted?['mode'], 'practice');
+        expect(submitted?['time_limit_minutes'], isNull);
+        expect(submitted?['attempt_limit'], 1);
+        expect(submitted?['feedback_policy'], 'immediate');
+        expect(find.text('Step 2: Add questions'), findsOneWidget);
+        await tester.pumpWidget(const SizedBox.shrink());
+      },
+      () => MockClient((request) async {
+        if (request.url.path == '/question-bank') {
+          return http.Response('[]', 200);
+        }
+        if (request.method == 'POST') {
+          submitted = jsonDecode(request.body) as Map<String, dynamic>;
+          saved = {...saved, ...submitted!};
+        }
+        return http.Response(
+          jsonEncode(
+            request.url.path == '/teacher/quizzes' && request.method == 'GET'
+                ? [saved]
+                : saved,
+          ),
+          200,
+        );
+      }),
+    );
+  });
+
+  for (final bankFails in [false, true]) {
+    testWidgets(
+      'step 2 refreshes saved bank questions before selection; bankFails=$bankFails',
+      (tester) async {
+        var reads = 0;
+        var additions = 0;
+        var saved = draft([]);
+        await http.runWithClient(
+          () async {
+            await tester.pumpWidget(
+              MaterialApp(
+                home: GuidedQuizDraftScreen(
+                  quizId: 3,
+                  classId: 1,
+                  subjectId: 2,
+                  onPublish: (_) async {},
+                ),
+              ),
+            );
+            await tester.pumpAndSettle();
+            await tester.sendKeyEvent(LogicalKeyboardKey.digit3);
+            await tester.pumpAndSettle();
+            expect(reads, 2);
+            if (bankFails) {
+              expect(
+                find.textContaining('No question was added.'),
+                findsOneWidget,
+              );
+              expect(additions, 0);
+            } else {
+              expect(find.textContaining('Question 9'), findsOneWidget);
+              await tester.sendKeyEvent(LogicalKeyboardKey.digit1);
+              await tester.pumpAndSettle();
+              expect(additions, 1);
+              expect(find.textContaining('1 questions saved.'), findsOneWidget);
+              expect(
+                find.textContaining('Saved question 1: Question 9.'),
+                findsOneWidget,
+              );
+            }
+            await tester.pumpWidget(const SizedBox.shrink());
+          },
+          () => MockClient((request) async {
+            if (request.url.path == '/question-bank') {
+              reads++;
+              return reads == 1
+                  ? http.Response('[]', 200)
+                  : bankFails
+                  ? http.Response('{"detail":"Unavailable"}', 503)
+                  : http.Response(jsonEncode([question(9)]), 200);
+            }
+            if (request.method == 'POST') {
+              additions++;
+              saved = draft([question(9)]);
+            }
+            return http.Response(jsonEncode(saved), 200);
+          }),
+        );
+      },
+    );
+  }
+
+  for (final legacyResponse in [false, true]) {
+    testWidgets(
+      'bank-save failures are visible without manual refresh; legacyResponse=$legacyResponse',
+      (tester) async {
+        var bankReads = 0;
+        var saved = false;
+        await http.runWithClient(
+          () async {
+            await tester.pumpWidget(
+              const MaterialApp(
+                home: TeacherQuizScreen(
+                  classId: 1,
+                  subjectId: 2,
+                  className: 'Class',
+                  subjectName: 'English',
+                ),
+              ),
+            );
+            await tester.pumpAndSettle();
+            await tester.sendKeyEvent(LogicalKeyboardKey.digit2);
+            await tester.pumpAndSettle();
+            await tester.enterText(
+              find.widgetWithText(TextField, 'Question text'),
+              'Question 11',
+            );
+            for (var i = 0; i < 4; i++) {
+              await tester.enterText(
+                find.widgetWithText(TextField, 'Option ${i + 1}'),
+                'Answer ${i + 1}',
+              );
+            }
+            await activate(tester, 'bank-question-correct-answer');
+            await tester.sendKeyEvent(LogicalKeyboardKey.digit9);
+            await tester.pumpAndSettle();
+            expect(
+              find.textContaining('Question save could not be confirmed.'),
+              findsWidgets,
+            );
+            expect(saved, isTrue);
+            if (legacyResponse) {
+              expect(bankReads, 2);
+              expect(
+                find.textContaining(
+                  'server returned a question without a revision',
+                ),
+                findsWidgets,
+              );
+              expect(find.text('Question 11'), findsOneWidget);
+            } else {
+              expect(bankReads, 1);
+            }
+            await tester.pumpWidget(const SizedBox.shrink());
+          },
+          () => MockClient((request) async {
+            if (request.url.path == '/question-bank') {
+              if (request.method == 'POST') {
+                saved = true;
+                final body = question(11)..remove('revision');
+                return legacyResponse
+                    ? http.Response(jsonEncode(body), 200)
+                    : http.Response('{"detail":"Unavailable"}', 503);
+              }
+              bankReads++;
+              return http.Response(
+                jsonEncode(saved && legacyResponse ? [question(11)] : []),
+                200,
+              );
+            }
+            return http.Response('[]', 200);
+          }),
+        );
+      },
+    );
+  }
+
   testWidgets(
     'teacher creates title, writes and reuses questions, reviews and separately confirms publish',
     (tester) async {

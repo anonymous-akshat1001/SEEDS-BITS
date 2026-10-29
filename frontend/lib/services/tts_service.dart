@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'speech_engine.dart'
+    if (dart.library.js_interop) 'speech_engine_web.dart';
 
 enum SpeechMode { selfVoicing, screenReader }
 
@@ -30,7 +32,7 @@ class _RecordedPlayback {
 
 class TtsService {
   static const defaultSpeechRate = 0.75;
-  static final FlutterTts _tts = FlutterTts();
+  static final FlutterTts _tts = createSpeechEngine();
   static final ValueNotifier<String?> issue = ValueNotifier(null);
   static final ValueNotifier<bool> speaking = ValueNotifier(false);
   static bool _isInitialized = false;
@@ -275,8 +277,10 @@ class TtsService {
       // stops the native utterance. A stale completion must not resume audio.
       unawaited(_utter(text, generation));
     } catch (error) {
-      _report('Speech could not start. Try Test TTS in Settings.', error);
-      if (generation == _speechGeneration) await _finish(generation);
+      if (generation == _speechGeneration) {
+        _report('Speech could not start. Try Test TTS in Settings.', error);
+        await _finish(generation);
+      }
     }
   }
 
@@ -289,7 +293,9 @@ class TtsService {
         issue.value = null;
       }
     } catch (error) {
-      _report('Speech failed. Try Test TTS in Settings.', error);
+      if (generation == _speechGeneration) {
+        _report('Speech failed. Try Test TTS in Settings.', error);
+      }
     } finally {
       await _finish(generation);
     }
@@ -299,14 +305,16 @@ class TtsService {
     if (generation != _speechGeneration) return;
     _activePriority = null;
     speaking.value = false;
-    await _resumePaused();
+    await _resumePaused(generation);
     _scheduleUpdates();
   }
 
-  static Future<void> _resumePaused() async {
+  static Future<void> _resumePaused(int generation) async {
+    if (generation != _speechGeneration) return;
     final paused = Map.of(_paused);
-    _paused.clear();
     for (final entry in paused.entries) {
+      if (generation != _speechGeneration) return;
+      _paused.remove(entry.key);
       final playback = entry.value.$1;
       if (!identical(_recorded[entry.key], playback) ||
           !playback.isPlaying() ||
@@ -368,7 +376,7 @@ class TtsService {
   }
 
   static Future<bool> stopForVoiceCommands() async {
-    ++_speechGeneration;
+    final generation = ++_speechGeneration;
     _activePriority = null;
     speaking.value = false;
     _updateTimer?.cancel();
@@ -384,7 +392,7 @@ class TtsService {
         error,
       );
     }
-    await _resumePaused();
+    await _resumePaused(generation);
     return stopped;
   }
 

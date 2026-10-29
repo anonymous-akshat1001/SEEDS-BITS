@@ -7,9 +7,12 @@ import '../services/api_service.dart';
 import '../services/tts_service.dart';
 import '../widgets/key_instruction_wrapper.dart';
 import '../widgets/keypad_confirmation_dialog.dart';
+import '../widgets/keypad_paged_list.dart';
 import 'audio_library_screen.dart';
 
 enum LessonStepKind { audio, prompt, check }
+
+enum _LessonPage { plans, steps, add, planActions, stepActions }
 
 class LessonSequenceStep {
   const LessonSequenceStep(this.kind, this.text, {this.audioId});
@@ -104,8 +107,11 @@ class _LessonSequencesScreenState extends State<LessonSequencesScreen> {
   _Plan? _plan;
   int _position = 0;
   int? _account, _classId, _subjectId;
+  String? _token;
+  bool _workspaceReady = false;
   SharedPreferences? _preferences;
   bool _busy = false;
+  _LessonPage _page = _LessonPage.plans;
   String? _issue;
   String _status =
       'Select a plan and a step. Selection never runs a classroom action.';
@@ -116,6 +122,8 @@ class _LessonSequencesScreenState extends State<LessonSequencesScreen> {
   bool get _sameAccount =>
       mounted &&
       _account != null &&
+      _token != null &&
+      _preferences?.getString('token') == _token &&
       _preferences?.getInt('user_id') == _account &&
       _preferences?.getString('role') == 'teacher';
   @override
@@ -163,6 +171,8 @@ class _LessonSequencesScreenState extends State<LessonSequencesScreen> {
   Future<void> _load() async {
     _preferences ??= await SharedPreferences.getInstance();
     _account ??= _preferences!.getInt('user_id');
+    _token ??= _preferences!.getString('token');
+    _workspaceReady = false;
     if (!_sameAccount) {
       throw const _PlanException(
         'Sign in with the original teacher account and reopen lesson sequences.',
@@ -175,7 +185,13 @@ class _LessonSequencesScreenState extends State<LessonSequencesScreen> {
       '/teacher-sequences?$query',
       useAuth: true,
     ).timeout(const Duration(seconds: 10));
-    if (!result.isSuccess) throw _PlanException(result.failure!.message);
+    if (!result.isSuccess) {
+      throw _PlanException(
+        result.failure?.statusCode == 404
+            ? 'Lesson plans are unavailable on this server or workspace. Ask the school administrator to verify the teacher-sequences backend routes and deploy the current backend and migrations. No plan was created. Refresh after the server is updated.'
+            : result.failure!.message,
+      );
+    }
     if (!_sameAccount) {
       throw const _PlanException(
         'Your account changed. Reopen lesson sequences.',
@@ -219,6 +235,8 @@ class _LessonSequencesScreenState extends State<LessonSequencesScreen> {
       setState(() {
         _plans = plans;
         _plan = next;
+        if (next == null) _page = _LessonPage.plans;
+        _workspaceReady = true;
       });
     }
   }
@@ -279,6 +297,7 @@ class _LessonSequencesScreenState extends State<LessonSequencesScreen> {
     setState(() {
       _plans = [..._plans.where((plan) => plan.id != next.id), next];
       _plan = next;
+      _page = _LessonPage.steps;
       _position = next.steps.isEmpty
           ? 0
           : _position.clamp(0, next.steps.length - 1);
@@ -287,6 +306,11 @@ class _LessonSequencesScreenState extends State<LessonSequencesScreen> {
   }
 
   Future<void> _create() => _run(() async {
+    if (!_workspaceReady || _classId == null || _subjectId == null) {
+      throw const _PlanException(
+        'Load the lesson-plan workspace successfully before creating a plan. Press Refresh plans. No plan was created.',
+      );
+    }
     final name = await _text('Name reusable lesson plan', '');
     if (name == null || !_sameAccount) return;
     final result = await _post('/teacher-sequences', {
@@ -340,17 +364,16 @@ class _LessonSequencesScreenState extends State<LessonSequencesScreen> {
           'No authorized recordings were found for this class and subject.',
         );
       }
-      final index = await showDialog<int>(
-        context: context,
-        builder: (_) => _SequenceChoiceDialog(
-          labels: audio.map((audio) => audio['title'] as String).toList(),
-        ),
+      final recording = await _choose<Map<String, dynamic>>(
+        'Choose an authorized recording. Selection adds a step, never broadcasts',
+        audio,
+        (recording) => recording['title'] as String,
       );
-      if (index == null) return;
+      if (recording == null) return;
       step = LessonSequenceStep(
         kind,
-        audio[index]['title'] as String,
-        audioId: audio[index]['audio_id'] as int,
+        recording['title'] as String,
+        audioId: recording['audio_id'] as int,
       );
     } else {
       final text = await _text(
@@ -426,6 +449,7 @@ class _LessonSequencesScreenState extends State<LessonSequencesScreen> {
       setState(() {
         _plans = _plans.where((item) => item.id != plan.id).toList();
         _plan = null;
+        _page = _LessonPage.plans;
         _position = 0;
         _status = 'Selected plan removed. No classroom action was run.';
       });
@@ -499,200 +523,298 @@ class _LessonSequencesScreenState extends State<LessonSequencesScreen> {
       );
     }
   });
+  Future<T?> _choose<T>(
+    String title,
+    List<T> items,
+    String Function(T) label,
+  ) => Navigator.push<T>(
+    context,
+    MaterialPageRoute(
+      builder: (listContext) => KeypadPagedList<T>(
+        title: title,
+        scope: items,
+        labelOf: label,
+        onSelected: (item) => Navigator.pop(listContext, item),
+        loadPage: (query) async {
+          final matches = items
+              .where(
+                (item) => label(
+                  item,
+                ).toLowerCase().contains(query.search.toLowerCase()),
+              )
+              .toList();
+          final start = int.parse(query.cursor ?? '0');
+          final end = (start + KeypadListQuery.pageSize).clamp(
+            0,
+            matches.length,
+          );
+          return KeypadListPage(
+            items: matches.sublist(start, end),
+            nextCursor: end < matches.length ? '$end' : null,
+          );
+        },
+      ),
+    ),
+  );
+
+  Future<void> _choosePlan() async {
+    final plan = await _choose<_Plan>(
+      'Choose a saved lesson plan',
+      _plans,
+      (plan) =>
+          '${plan.title}. ${plan.steps.length} steps. Select without running',
+    );
+    if (plan == null || !_sameAccount) return;
+    setState(() {
+      _plan = plan;
+      _position = 0;
+      _page = _LessonPage.steps;
+      _status = 'Plan selected, not run.';
+    });
+  }
+
+  Future<void> _chooseStep() async {
+    final plan = _plan!;
+    final index = await _choose<int>(
+      'Choose a lesson step. Selection does not run it',
+      List.generate(plan.steps.length, (index) => index),
+      (index) =>
+          'Step ${index + 1}. ${plan.steps[index].kind.name}. ${plan.steps[index].text}',
+    );
+    if (index == null || !_sameAccount || !identical(plan, _plan)) return;
+    setState(() {
+      _position = index;
+      _status = 'Selected step ${index + 1}. Not run.';
+    });
+  }
+
+  void _back() {
+    if (_busy) {
+      unawaited(TtsService.speak('Wait for the lesson-plan action to finish.'));
+      return;
+    }
+    if (_page == _LessonPage.plans) {
+      Navigator.pop(context);
+    } else {
+      setState(() {
+        _page = _page == _LessonPage.steps
+            ? _LessonPage.plans
+            : _LessonPage.steps;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final step = _selected;
-    void select(int offset) {
-      if (_plan!.steps.isEmpty) return;
-      setState(() {
-        _position = (_position + offset) % _plan!.steps.length;
-        _status =
-            'Selected step ${_position + 1}: ${_selected!.text}. Not run.';
-      });
-      unawaited(TtsService.speak(_status));
-    }
-
-    final targets = <KeypadFocusTarget>[
-      KeypadFocusTarget(
-        node: _node('back'),
-        label: 'Back. Does not run or submit anything',
-        onActivate: () => Navigator.pop(context),
-      ),
-      KeypadFocusTarget(
-        node: _node('refresh'),
-        label: 'Refresh saved lesson plans',
-        isEnabled: () => !_busy,
-        onActivate: () => _run(_load),
-      ),
-      KeypadFocusTarget(
-        node: _node('create'),
-        label: 'Create reusable private lesson plan',
-        isEnabled: () => !_busy && _classId != null,
-        onActivate: _create,
-      ),
-      KeypadFocusTarget(
-        node: _node('read'),
-        label: 'Read plan status',
-        onActivate: () =>
-            TtsService.speak('${_issue ?? ''} $_status ${step?.text ?? ''}'),
-      ),
-      for (final plan in _plans)
-        KeypadFocusTarget(
-          node: _node('plan-${plan.id}'),
-          label:
-              '${plan.title}. ${plan.steps.length} steps. Select without running',
-          isEnabled: () => !_busy,
-          onActivate: () => setState(() {
-            _plan = plan;
-            _position = 0;
-            _status = 'Plan selected, not run.';
-          }),
-        ),
-      if (_plan != null) ...[
-        KeypadFocusTarget(
-          node: _node('rename'),
-          label: 'Rename selected plan',
-          isEnabled: () => !_busy,
-          onActivate: _rename,
-        ),
-        KeypadFocusTarget(
-          node: _node('add-audio'),
-          label: 'Add authorized recording',
-          isEnabled: () => !_busy,
-          onActivate: () => _add(LessonStepKind.audio),
-        ),
-        KeypadFocusTarget(
-          node: _node('add-prompt'),
-          label: 'Add teacher instruction prompt',
-          isEnabled: () => !_busy,
-          onActivate: () => _add(LessonStepKind.prompt),
-        ),
-        KeypadFocusTarget(
-          node: _node('add-check'),
-          label: 'Add ungraded understanding check prompt',
-          isEnabled: () => !_busy,
-          onActivate: () => _add(LessonStepKind.check),
-        ),
-        KeypadFocusTarget(
-          node: _node('previous'),
-          label: 'Previous step. Selection only',
-          isEnabled: () => !_busy && step != null,
-          onActivate: () => select(-1),
-        ),
-        KeypadFocusTarget(
-          node: _node('next'),
-          label: 'Next step. Selection only',
-          isEnabled: () => !_busy && step != null,
-          onActivate: () => select(1),
-        ),
-        KeypadFocusTarget(
-          node: _node('edit'),
-          label: 'Edit selected prompt',
-          isEnabled: () =>
-              !_busy && step != null && step.kind != LessonStepKind.audio,
-          onActivate: _edit,
-        ),
-        KeypadFocusTarget(
-          node: _node('earlier'),
-          label: 'Save selected step earlier in plan',
-          isEnabled: () => !_busy && step != null && _position > 0,
-          onActivate: () => _move(-1),
-        ),
-        KeypadFocusTarget(
-          node: _node('later'),
-          label: 'Save selected step later in plan',
-          isEnabled: () =>
-              !_busy && step != null && _position < _plan!.steps.length - 1,
-          onActivate: () => _move(1),
-        ),
-        KeypadFocusTarget(
-          node: _node('run'),
-          label:
-              'Run only selected step with confirmation. No automatic advancement',
-          isEnabled: () => !_busy && step != null,
-          onActivate: _execute,
-        ),
-        KeypadFocusTarget(
-          node: _node('remove-step'),
-          label: 'Remove selected step with confirmation',
-          isEnabled: () => !_busy && step != null,
-          onActivate: _removeStep,
-        ),
-        KeypadFocusTarget(
-          node: _node('remove-plan'),
-          label: 'Remove selected plan with confirmation',
-          isEnabled: () => !_busy,
-          onActivate: _removePlan,
-        ),
-      ],
-    ];
-    Widget button(String id, String label) {
-      final target = targets.firstWhere((target) => target.node == _node(id));
-      return OutlinedButton(
-        focusNode: target.node,
-        onPressed: target.isEnabled?.call() == false ? null : target.onActivate,
-        child: Text(label),
-      );
-    }
-
-    return KeypadInstructionWrapper(
-      screenName:
-          'Teacher lesson plans. Select without running. Run needs confirmation. Steps never advance automatically.',
-      focusTargets: targets,
-      actions: {0: () => Navigator.pop(context)},
-      labels: const {0: 'Back'},
-      onHashKey: () => Navigator.pop(context),
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Lesson sequences'),
-          leading: IconButton(
-            focusNode: _node('back'),
-            tooltip: 'Back',
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () => Navigator.pop(context),
+    void page(_LessonPage value) => setState(() => _page = value);
+    final ready = !_busy && _workspaceReady;
+    final controls = <(String, String, VoidCallback, bool)>[
+      ...switch (_page) {
+        _LessonPage.plans => [
+          ('create', 'Create lesson plan', _create, ready),
+          (
+            'choose-plan',
+            'Choose saved lesson plan',
+            _choosePlan,
+            ready && _plans.isNotEmpty,
           ),
-        ),
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const Text(
-                'Teacher-private reusable plans. Selection does not run classroom actions. No automatic recording, microphone activation or advancement.',
-              ),
-              if (_busy) const LinearProgressIndicator(),
-              if (_issue != null)
-                Semantics(liveRegion: true, child: Text(_issue!)),
-              Text(_status),
-              button('read', 'Read plan status'),
-              button('refresh', 'Refresh plans'),
-              button('create', 'Create lesson plan'),
-              for (final plan in _plans)
-                button(
-                  'plan-${plan.id}',
-                  '${plan.title} (${plan.steps.length} steps)',
+          ('refresh', 'Refresh plans', () => _run(_load), !_busy),
+        ],
+        _LessonPage.steps => [
+          ('add', 'Add a step', () => page(_LessonPage.add), ready),
+          (
+            'choose-step',
+            'Choose a step. Selection only',
+            _chooseStep,
+            ready && step != null,
+          ),
+          (
+            'run',
+            'Run selected step with confirmation',
+            _execute,
+            ready && step != null,
+          ),
+          (
+            'step-actions',
+            'Edit or reorder selected step',
+            () => page(_LessonPage.stepActions),
+            ready && step != null,
+          ),
+          (
+            'plan-actions',
+            'Rename or remove this plan',
+            () => page(_LessonPage.planActions),
+            ready,
+          ),
+        ],
+        _LessonPage.add => [
+          (
+            'add-audio',
+            'Add authorized recording',
+            () => _add(LessonStepKind.audio),
+            ready,
+          ),
+          (
+            'add-prompt',
+            'Add teacher instruction prompt',
+            () => _add(LessonStepKind.prompt),
+            ready,
+          ),
+          (
+            'add-check',
+            'Add understanding check prompt',
+            () => _add(LessonStepKind.check),
+            ready,
+          ),
+        ],
+        _LessonPage.planActions => [
+          ('rename', 'Rename plan', _rename, ready),
+          ('remove-plan', 'Remove plan with confirmation', _removePlan, ready),
+        ],
+        _LessonPage.stepActions => [
+          (
+            'edit',
+            'Edit selected prompt',
+            _edit,
+            ready && step != null && step.kind != LessonStepKind.audio,
+          ),
+          (
+            'earlier',
+            'Move selected step earlier',
+            () => _move(-1),
+            ready && step != null && _position > 0,
+          ),
+          (
+            'later',
+            'Move selected step later',
+            () => _move(1),
+            ready && step != null && _position < _plan!.steps.length - 1,
+          ),
+          (
+            'remove-step',
+            'Remove selected step with confirmation',
+            _removeStep,
+            ready && step != null,
+          ),
+        ],
+      },
+    ];
+    final title = switch (_page) {
+      _LessonPage.plans => 'Lesson plans. Create or choose a plan',
+      _LessonPage.steps => 'Lesson plan. Choose what to do next',
+      _LessonPage.add => 'Add one lesson step. Choose its type',
+      _LessonPage.planActions => 'Manage this lesson plan',
+      _LessonPage.stepActions => 'Manage the selected lesson step',
+    };
+    final selected = step == null
+        ? 'No steps yet. Choose Add a step to begin.'
+        : 'Step ${_position + 1} of ${_plan!.steps.length}: ${step.kind.name}. ${step.text}';
+    void activate(int index) {
+      final control = controls[index];
+      if (control.$4) {
+        control.$3();
+      } else {
+        unawaited(
+          TtsService.speak(
+            '${control.$2} is unavailable. ${_issue ?? (_busy
+                    ? 'Please wait.'
+                    : _page == _LessonPage.plans
+                    ? 'Refresh plans, or create a plan if none are saved.'
+                    : selected)}',
+          ),
+        );
+      }
+    }
+
+    void read() => unawaited(
+      TtsService.speak(
+        '${_issue ?? ''} $_status ${_plan == null ? '${_plans.length} saved plans.' : selected}',
+      ),
+    );
+
+    return PopScope(
+      canPop: _page == _LessonPage.plans && !_busy,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _back();
+      },
+      child: KeypadInstructionWrapper(
+        interactionPolicy: KeypadInteractionPolicy.numbered,
+        screenName: title,
+        introduction: _page == _LessonPage.plans
+            ? 'Teacher-private reusable plans. ${_plans.length} saved plans.'
+            : '${_plan!.title}. $selected Selection never runs a step. Run requires confirmation. No automatic next step.',
+        navigationSections:
+            '${controls.map((control) => control.$2).join(', ')}, read status and back',
+        actions: {
+          0: _back,
+          for (var index = 0; index < controls.length; index++)
+            index + 1: () => activate(index),
+          8: read,
+        },
+        labels: {
+          for (var index = 0; index < controls.length; index++)
+            index + 1:
+                '${controls[index].$2}${controls[index].$4 ? '' : ', unavailable'}',
+          8: 'Read plan status',
+        },
+        focusTargets: [
+          for (var index = 0; index < controls.length; index++)
+            KeypadFocusTarget(
+              node: _node(controls[index].$1),
+              label:
+                  '${index + 1}. ${controls[index].$2}${controls[index].$4 ? '' : ', unavailable'}',
+              onActivate: () => activate(index),
+            ),
+          KeypadFocusTarget(
+            node: _node('read'),
+            label: '8. Read plan status',
+            onActivate: read,
+          ),
+          KeypadFocusTarget(
+            node: _node('back'),
+            label: '0. Back without running a step',
+            onActivate: _back,
+          ),
+        ],
+        child: Scaffold(
+          appBar: AppBar(title: Text(title), automaticallyImplyLeading: false),
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (_busy) const LinearProgressIndicator(),
+                if (_issue != null)
+                  Semantics(liveRegion: true, child: Text(_issue!)),
+                Text(_status),
+                if (_page != _LessonPage.plans) ...[
+                  Text(
+                    'Selected: ${_plan!.title}. Revision ${_plan!.revision}.',
+                  ),
+                  Text(selected),
+                ],
+                for (var index = 0; index < controls.length; index++)
+                  OutlinedButton(
+                    focusNode: _node(controls[index].$1),
+                    onPressed: () => activate(index),
+                    child: Text(
+                      '${index + 1}. ${controls[index].$2}${controls[index].$4 ? '' : ' (unavailable)'}',
+                    ),
+                  ),
+                TextButton(
+                  focusNode: _node('read'),
+                  onPressed: read,
+                  child: const Text('8. Read plan status'),
                 ),
-              if (_plan != null) ...[
-                Text('Selected: ${_plan!.title}. Revision ${_plan!.revision}.'),
-                Text(
-                  step == null
-                      ? 'No steps yet.'
-                      : 'Step ${_position + 1} of ${_plan!.steps.length}: ${step.kind.name}. ${step.text}',
+                TextButton(
+                  focusNode: _node('back'),
+                  onPressed: _back,
+                  child: const Text('0. Back'),
                 ),
-                button('rename', 'Rename plan'),
-                button('add-audio', 'Add recording'),
-                button('add-prompt', 'Add teacher prompt'),
-                button('add-check', 'Add understanding check'),
-                button('previous', 'Previous step'),
-                button('next', 'Next step'),
-                button('edit', 'Edit selected prompt'),
-                button('earlier', 'Move selected step earlier'),
-                button('later', 'Move selected step later'),
-                button('run', 'Run selected step'),
-                button('remove-step', 'Remove selected step'),
-                button('remove-plan', 'Remove selected plan'),
+                const Text('*: Help. #: Stop app speech.'),
               ],
-            ],
+            ),
           ),
         ),
       ),
@@ -743,9 +865,18 @@ class _SequenceTextDialogState extends State<_SequenceTextDialog> {
 
   @override
   Widget build(BuildContext context) => KeypadInstructionWrapper(
+    interactionPolicy: KeypadInteractionPolicy.numbered,
     screenName: widget.title,
-    actions: const {},
-    onHashKey: () => Navigator.pop(context),
+    introduction:
+        'Use D-pad down to reach the text field. Enter the text, then press OK to leave editing. '
+        'Outside the field, press 1 to save or 0 to cancel without saving.',
+    navigationSections: 'the text field, save text and cancel',
+    labels: const {1: 'Save text', 2: 'Cancel without saving'},
+    actions: {
+      0: () => Navigator.pop(context),
+      1: save,
+      2: () => Navigator.pop(context),
+    },
     focusTargets: [
       KeypadFocusTarget(node: _field, label: widget.title, isTextField: true),
       KeypadFocusTarget(
@@ -770,83 +901,21 @@ class _SequenceTextDialogState extends State<_SequenceTextDialog> {
             controller: _text,
             maxLength: widget.maximum,
             maxLines: null,
+            textInputAction: TextInputAction.done,
+            onSubmitted: (_) => _save.requestFocus(),
             decoration: InputDecoration(labelText: widget.title),
           ),
           if (_issue != null) Text(_issue!),
           TextButton(
             focusNode: _save,
             onPressed: save,
-            child: const Text('Save text'),
+            child: const Text('1. Save text'),
           ),
           TextButton(
             focusNode: _cancel,
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: const Text('0. Cancel'),
           ),
-        ],
-      ),
-    ),
-  );
-}
-
-class _SequenceChoiceDialog extends StatefulWidget {
-  const _SequenceChoiceDialog({required this.labels});
-  final List<String> labels;
-  @override
-  State<_SequenceChoiceDialog> createState() => _SequenceChoiceDialogState();
-}
-
-class _SequenceChoiceDialogState extends State<_SequenceChoiceDialog> {
-  late final _nodes = List.generate(
-    widget.labels.length,
-    (i) => FocusNode(debugLabel: 'sequence-recording-$i'),
-  );
-  final _cancel = FocusNode(debugLabel: 'sequence-recording-cancel');
-  @override
-  void dispose() {
-    for (final node in _nodes) {
-      node.dispose();
-    }
-    _cancel.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) => KeypadInstructionWrapper(
-    screenName:
-        'Choose authorized recording. Selection only adds a plan step, never broadcasts.',
-    actions: const {},
-    onHashKey: () => Navigator.pop(context),
-    focusTargets: [
-      KeypadFocusTarget(
-        node: _cancel,
-        label: 'Cancel selection',
-        onActivate: () => Navigator.pop(context),
-      ),
-      for (var i = 0; i < _nodes.length; i++)
-        KeypadFocusTarget(
-          node: _nodes[i],
-          label: widget.labels[i],
-          onActivate: () => Navigator.pop(context, i),
-        ),
-    ],
-    child: AlertDialog(
-      scrollable: true,
-      title: const Text('Add authorized recording'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          TextButton(
-            focusNode: _cancel,
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          for (var i = 0; i < _nodes.length; i++)
-            TextButton(
-              focusNode: _nodes[i],
-              onPressed: () => Navigator.pop(context, i),
-              child: Text(widget.labels[i]),
-            ),
         ],
       ),
     ),

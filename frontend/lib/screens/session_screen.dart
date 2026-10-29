@@ -1220,7 +1220,9 @@ class _SessionScreenState extends State<SessionScreen>
           'Your microphone is ${_muted ? 'muted' : 'unmuted'} on this phone.',
     );
     await _speakIfEnabled(
-      '$instructions Use up and down to move through every session control. '
+      '$instructions Use up and down to explore connection and microphone status, '
+      'lesson playback, participants and the hand queue, chat'
+      '${widget.isTeacher ? ', and teacher classroom tools' : ''}. '
       'Press OK to activate a control or edit chat. While editing chat, numbers '
       'are typed into the message. Press hash to leave the session.',
     );
@@ -1702,6 +1704,11 @@ class _SessionScreenState extends State<SessionScreen>
                       border: OutlineInputBorder(),
                     ),
                     maxLines: 2,
+                    textInputAction: TextInputAction.done,
+                    onSubmitted: (_) {
+                      controller.exitTextEditing();
+                      cancelNode.requestFocus();
+                    },
                   ),
                 ],
               ),
@@ -2716,6 +2723,8 @@ class _SessionScreenState extends State<SessionScreen>
   @override
   Widget build(BuildContext context) {
     return KeypadInstructionWrapper(
+      navigationSections:
+          'connection and microphone status, lesson playback, participants and hand queue, chat${widget.isTeacher ? ', and teacher classroom tools' : ''}',
       screenName: [
         widget.isTeacher ? 'Teacher session' : 'Student session',
         widget.sessionTitle,

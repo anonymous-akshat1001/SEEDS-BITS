@@ -9,6 +9,10 @@ import '../utils/ui_utils.dart';
 import '../widgets/key_instruction_wrapper.dart';
 import '../widgets/keypad_confirmation_dialog.dart';
 import '../widgets/admin_password_reset_dialog.dart';
+import '../widgets/numbered_menu.dart';
+import '../widgets/keypad_paged_list.dart';
+
+enum _AdminSection { accounts, classes, subjects }
 
 class AdminDashboard extends StatefulWidget {
   const AdminDashboard({super.key});
@@ -29,6 +33,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
   final _subjectNode = FocusNode(debugLabel: 'admin-add-subject');
   final _classNode = FocusNode(debugLabel: 'admin-add-class');
   final _logoutNode = FocusNode(debugLabel: 'admin-logout');
+  final _sectionNode = FocusNode(debugLabel: 'admin-sections');
   final Map<int, FocusNode> _userNodes = {};
   final Map<int, FocusNode> _classNodes = {};
   final Map<int, FocusNode> _subjectNodes = {};
@@ -40,6 +45,9 @@ class _AdminDashboardState extends State<AdminDashboard> {
   bool _initialAnnouncementPending = true;
   String? _roleFilter;
   String _assignmentStatus = 'all';
+  _AdminSection _section = _AdminSection.accounts;
+  int _refreshGeneration = 0;
+  String? _issue;
 
   @override
   void initState() {
@@ -57,6 +65,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
     _subjectNode.dispose();
     _classNode.dispose();
     _logoutNode.dispose();
+    _sectionNode.dispose();
     for (final node in _userNodes.values) {
       node.dispose();
     }
@@ -69,22 +78,72 @@ class _AdminDashboardState extends State<AdminDashboard> {
     super.dispose();
   }
 
-  Future<void> _refresh() async {
-    if (mounted) setState(() => _loading = true);
+  Future<void> _refresh({
+    FocusNode? retainFocus,
+    String? filterFeedback,
+  }) async {
+    final generation = ++_refreshGeneration;
+    if (mounted) {
+      setState(() {
+        _loading = true;
+        _issue = null;
+      });
+    }
+    final query = Uri(
+      queryParameters: {
+        if (_searchController.text.trim().isNotEmpty)
+          'search': _searchController.text.trim(),
+        if (_roleFilter != null) 'role': _roleFilter!,
+        'assignment_status': _assignmentStatus,
+      },
+    ).query;
     final results = await Future.wait([
-      ApiService.getAdminUsers(
-        search: _searchController.text.trim(),
-        role: _roleFilter,
-        assignmentStatus: _assignmentStatus,
+      ApiService.getResult(
+        '/admin/users?$query',
+        useAuth: true,
+        requestTimeout: const Duration(seconds: 20),
       ),
-      ApiService.getClasses(includeArchived: true),
-      ApiService.getSubjects(includeArchived: true),
+      ApiService.getResult(
+        '/catalog/classes?include_archived=true',
+        useAuth: true,
+        requestTimeout: const Duration(seconds: 20),
+      ),
+      ApiService.getResult(
+        '/catalog/subjects?include_archived=true',
+        useAuth: true,
+        requestTimeout: const Duration(seconds: 20),
+      ),
     ]);
-    if (!mounted) return;
+    if (!mounted || generation != _refreshGeneration) return;
+    if (results.any((result) => !result.isSuccess || result.data is! List)) {
+      final failure = results
+          .where((result) => !result.isSuccess)
+          .firstOrNull
+          ?.failure;
+      final message =
+          '${failure?.message ?? 'The administration list could not be read.'} '
+          'Administration data was not refreshed. Press 1 to retry.';
+      setState(() {
+        _loading = false;
+        _issue = message;
+      });
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || generation != _refreshGeneration) return;
+        if (retainFocus?.context != null) {
+          _keypad.focusAndAnnounce(
+            retainFocus!,
+            '${filterFeedback ?? ''} $message',
+          );
+        } else {
+          TtsService.speak(message);
+        }
+      });
+      return;
+    }
     setState(() {
-      _users = results[0];
-      _classes = results[1];
-      _subjects = results[2];
+      _users = results[0].data as List;
+      _classes = results[1].data as List;
+      _subjects = results[2].data as List;
       _loading = false;
     });
     final summary =
@@ -92,28 +151,103 @@ class _AdminDashboardState extends State<AdminDashboard> {
     if (_initialAnnouncementPending) {
       _initialAnnouncementPending = false;
       await TtsService.speak(
-        '${buildTtsInstructions(adminDashboardKeyLabels, screenName: 'Administrator Dashboard')} $summary',
+        '${buildTtsInstructions(_sectionKeyLabels, screenName: _sectionTitle)} '
+        'Use D-pad up and down to explore $_sectionNavigation. Press OK to select. $summary',
       );
     } else {
-      await TtsService.speak(summary);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || generation != _refreshGeneration) return;
+        final message = '${filterFeedback ?? ''} $summary';
+        if (retainFocus?.context != null) {
+          _keypad.focusAndAnnounce(retainFocus!, message);
+        } else {
+          TtsService.speak(message);
+        }
+      });
     }
   }
 
+  String get _sectionTitle => 'Administration. ${_section.name} section';
+
+  String get _sectionNavigation => switch (_section) {
+    _AdminSection.accounts =>
+      'account search, account type and enrollment filters, and account management. '
+          'Use left or right on a filter to change it',
+    _AdminSection.classes =>
+      'create class and the list of active or archived classes. '
+          'Press OK on a class for its subject assignments and archive or restore actions',
+    _AdminSection.subjects =>
+      'create subject and the list of active or archived subjects. '
+          'Press OK on a subject to archive or restore it',
+  };
+
+  Map<int, String> get _sectionKeyLabels => {
+    0: adminDashboardKeyLabels[0]!,
+    1: adminDashboardKeyLabels[1]!,
+    if (_section == _AdminSection.accounts)
+      for (final key in [2, 3, 4]) key: adminDashboardKeyLabels[key]!,
+    if (_section == _AdminSection.subjects) 5: adminDashboardKeyLabels[5]!,
+    if (_section == _AdminSection.classes) 6: adminDashboardKeyLabels[6]!,
+    7: adminDashboardKeyLabels[7]!,
+  };
+
+  Future<void> _chooseSection() async {
+    final section = await Navigator.push<_AdminSection>(
+      context,
+      MaterialPageRoute(
+        builder: (menuContext) => NumberedMenu(
+          title: 'Administration sections',
+          choices: [
+            for (final section in _AdminSection.values)
+              NumberedChoice(
+                label: switch (section) {
+                  _AdminSection.accounts => 'Accounts and enrollment',
+                  _AdminSection.classes => 'Classes and their subjects',
+                  _AdminSection.subjects => 'Subjects',
+                },
+                onSelected: () => Navigator.pop(menuContext, section),
+              ),
+          ],
+        ),
+      ),
+    );
+    if (!mounted || section == null) return;
+    setState(() => _section = section);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _keypad.focusAndAnnounce(
+        _sectionNode,
+        '${section.name} section. Use the D-pad to explore '
+        '${section == _AdminSection.accounts
+            ? 'account filters, search and account management'
+            : section == _AdminSection.classes
+            ? 'class creation, subject assignments, and archive or restore actions'
+            : 'subject creation and archive or restore actions'}. '
+        'Press 7 to change section.',
+      );
+    });
+  }
+
   void _focusSearch() {
-    _searchNode.requestFocus();
-    _keypad.enterTextEditing(_searchNode);
+    setState(() => _section = _AdminSection.accounts);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _searchNode.requestFocus();
+      _keypad.enterTextEditing(_searchNode);
+    });
   }
 
   Future<void> _setRoleFilter(String? role) async {
     if (_roleFilter == role) return;
     setState(() {
+      _section = _AdminSection.accounts;
       _roleFilter = role;
       _assignmentStatus = 'all';
     });
-    await TtsService.speak(
-      'Showing ${_roleFilterLabel().toLowerCase()}. Loading accounts.',
+    await _refresh(
+      retainFocus: _roleFilterNode,
+      filterFeedback: 'Account type filter button. ${_roleFilterLabel()}.',
     );
-    await _refresh();
   }
 
   Future<void> _cycleRoleFilter(int direction) async {
@@ -129,11 +263,18 @@ class _AdminDashboardState extends State<AdminDashboard> {
     final current = filters.indexOf(_assignmentStatus);
     var next = (current + direction) % filters.length;
     if (next < 0) next += filters.length;
-    setState(() => _assignmentStatus = filters[next]);
-    await TtsService.speak(
-      'Assignment filter ${_assignmentFilterLabel()}. Loading accounts.',
+    await _setAssignmentFilter(filters[next]);
+  }
+
+  Future<void> _setAssignmentFilter(String value) async {
+    setState(() {
+      _section = _AdminSection.accounts;
+      _assignmentStatus = value;
+    });
+    await _refresh(
+      retainFocus: _assignmentFilterNode,
+      filterFeedback: 'Assignment filter button. ${_assignmentFilterLabel()}.',
     );
-    await _refresh();
   }
 
   String _roleFilterLabel() => switch (_roleFilter) {
@@ -326,6 +467,37 @@ class _AdminDashboardState extends State<AdminDashboard> {
     );
   }
 
+  Future<void> _manageClass(Map<String, dynamic> schoolClass) async {
+    final active = schoolClass['is_active'] == true;
+    final action = await Navigator.push<String>(
+      context,
+      MaterialPageRoute(
+        builder: (menuContext) => NumberedMenu(
+          title: 'Manage ${schoolClass['name']}',
+          choices: [
+            if (active)
+              NumberedChoice(
+                label: 'Manage class subjects',
+                onSelected: () => Navigator.pop(menuContext, 'subjects'),
+              ),
+            NumberedChoice(
+              label: active
+                  ? 'Archive class with confirmation'
+                  : 'Restore class with confirmation',
+              onSelected: () => Navigator.pop(menuContext, 'archive'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (!mounted || action == null) return;
+    if (action == 'subjects') {
+      await _manageClassSubjects(schoolClass);
+    } else {
+      await _toggleClass(schoolClass);
+    }
+  }
+
   Future<void> _manageClassSubjects(Map<String, dynamic> schoolClass) async {
     final associations = await ApiService.getClassSubjects(
       schoolClass['class_id'] as int,
@@ -337,53 +509,50 @@ class _AdminDashboardState extends State<AdminDashboard> {
         if (entry['is_active'] == true)
           entry['subject_id'] as int: Map<String, dynamic>.from(entry as Map),
     };
-    final result = await showDialog<Map<String, dynamic>>(
-      context: context,
-      barrierDismissible: false,
-      builder: (dialogContext) => AlertDialog(
-        title: Text('Subjects for ${schoolClass['name']}'),
-        content: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 520, maxHeight: 460),
-          child: ListView(
-            shrinkWrap: true,
-            children: _subjects.map((entry) {
-              final subject = Map<String, dynamic>.from(entry as Map);
-              final subjectId = subject['subject_id'] as int;
-              final association = activeBySubject[subjectId];
-              final available = subject['is_active'] == true;
-              return Semantics(
-                toggled: association != null,
-                child: ListTile(
-                  enabled: available || association != null,
-                  title: Text('${subject['name']}'),
-                  subtitle: Text(
-                    !available
-                        ? 'Subject archived'
-                        : association == null
-                        ? 'Not available in this class'
-                        : 'Available in this class',
+    final subjects = _subjects
+        .map((entry) => Map<String, dynamic>.from(entry as Map))
+        .where(
+          (subject) =>
+              subject['is_active'] == true ||
+              activeBySubject.containsKey(subject['subject_id']),
+        )
+        .toList();
+    final result = await Navigator.push<Map<String, dynamic>>(
+      context,
+      MaterialPageRoute(
+        builder: (listContext) => KeypadPagedList<Map<String, dynamic>>(
+          title: 'Subjects for ${schoolClass['name']}',
+          scope: schoolClass['class_id'] as int,
+          loadPage: (query) async {
+            final matches = subjects
+                .where(
+                  (subject) => '${subject['name']}'.toLowerCase().contains(
+                    query.search.trim().toLowerCase(),
                   ),
-                  trailing: Icon(
-                    association == null
-                        ? Icons.add_circle_outline
-                        : Icons.remove_circle_outline,
-                  ),
-                  onTap: () => Navigator.pop(dialogContext, {
-                    'subject_id': subjectId,
-                    'association_id': association?['association_id'],
-                    'remove': association != null,
-                  }),
-                ),
-              );
-            }).toList(),
-          ),
+                )
+                .toList();
+            final start = int.parse(query.cursor ?? '0');
+            final end = (start + KeypadListQuery.pageSize).clamp(
+              0,
+              matches.length,
+            );
+            return KeypadListPage(
+              items: matches.sublist(start, end),
+              nextCursor: end < matches.length ? '$end' : null,
+            );
+          },
+          labelOf: (subject) =>
+              '${subject['name']}. '
+              '${activeBySubject.containsKey(subject['subject_id']) ? 'Available in this class. Select to remove' : 'Not available in this class. Select to add'}',
+          onSelected: (subject) {
+            final association = activeBySubject[subject['subject_id']];
+            Navigator.pop(listContext, {
+              'subject_id': subject['subject_id'],
+              'association_id': association?['association_id'],
+              'remove': association != null,
+            });
+          },
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Close'),
-          ),
-        ],
       ),
     );
     if (result == null) return;
@@ -929,38 +1098,48 @@ class _AdminDashboardState extends State<AdminDashboard> {
         onActivate: _refresh,
       ),
       KeypadFocusTarget(
-        node: _searchNode,
-        label: 'Search users',
-        isTextField: true,
+        node: _sectionNode,
+        label: '${_section.name} section. Change administration section',
+        onActivate: _chooseSection,
       ),
-      KeypadFocusTarget(
-        node: _roleFilterNode,
-        label:
-            'Account type filter. ${_roleFilterLabel()}. Use left or right to change',
-        onActivate: () => _cycleRoleFilter(1),
-        onDecrease: () => _cycleRoleFilter(-1),
-        onIncrease: () => _cycleRoleFilter(1),
-      ),
-      KeypadFocusTarget(
-        node: _assignmentFilterNode,
-        label:
-            'Assignment filter. ${_assignmentFilterLabel()}. Use left or right to change',
-        onActivate: () => _cycleAssignmentFilter(1),
-        onDecrease: () => _cycleAssignmentFilter(-1),
-        onIncrease: () => _cycleAssignmentFilter(1),
-      ),
-      KeypadFocusTarget(
-        node: _subjectNode,
-        label: 'Create subject',
-        onActivate: _addSubject,
-      ),
-      KeypadFocusTarget(
-        node: _classNode,
-        label: 'Create class',
-        onActivate: _addClass,
-      ),
+      if (_section == _AdminSection.accounts) ...[
+        KeypadFocusTarget(
+          node: _searchNode,
+          label: 'Search users',
+          isTextField: true,
+        ),
+        KeypadFocusTarget(
+          node: _roleFilterNode,
+          label:
+              'Account type filter. ${_roleFilterLabel()}. Use left or right to change',
+          onActivate: () => _cycleRoleFilter(1),
+          onDecrease: () => _cycleRoleFilter(-1),
+          onIncrease: () => _cycleRoleFilter(1),
+        ),
+        KeypadFocusTarget(
+          node: _assignmentFilterNode,
+          label:
+              'Assignment filter. ${_assignmentFilterLabel()}. Use left or right to change',
+          onActivate: () => _cycleAssignmentFilter(1),
+          onDecrease: () => _cycleAssignmentFilter(-1),
+          onIncrease: () => _cycleAssignmentFilter(1),
+        ),
+      ],
+      if (_section == _AdminSection.subjects)
+        KeypadFocusTarget(
+          node: _subjectNode,
+          label: 'Create subject',
+          onActivate: _addSubject,
+        ),
+      if (_section == _AdminSection.classes)
+        KeypadFocusTarget(
+          node: _classNode,
+          label: 'Create class',
+          onActivate: _addClass,
+        ),
     ];
-    for (final entry in _classes) {
+    for (final entry
+        in _section == _AdminSection.classes ? _classes : const []) {
       final schoolClass = Map<String, dynamic>.from(entry as Map);
       final id = schoolClass['class_id'] as int;
       targets.add(
@@ -970,14 +1149,13 @@ class _AdminDashboardState extends State<AdminDashboard> {
             () => FocusNode(debugLabel: 'admin-class-$id'),
           ),
           label:
-              '${schoolClass['name']}, ${schoolClass['is_active'] == true ? 'active' : 'archived'}. Press OK to ${schoolClass['is_active'] == true ? 'manage subjects' : 'restore'}',
-          onActivate: () => schoolClass['is_active'] == true
-              ? _manageClassSubjects(schoolClass)
-              : _toggleClass(schoolClass),
+              '${schoolClass['name']}, ${schoolClass['is_active'] == true ? 'active' : 'archived'}. Press OK for class subjects and archive or restore actions',
+          onActivate: () => _manageClass(schoolClass),
         ),
       );
     }
-    for (final entry in _subjects) {
+    for (final entry
+        in _section == _AdminSection.subjects ? _subjects : const []) {
       final subject = Map<String, dynamic>.from(entry as Map);
       final id = subject['subject_id'] as int;
       targets.add(
@@ -992,7 +1170,10 @@ class _AdminDashboardState extends State<AdminDashboard> {
         ),
       );
     }
-    for (final entry in _orderedUsers) {
+    for (final entry
+        in _section == _AdminSection.accounts && !_loading && _issue == null
+            ? _orderedUsers
+            : const []) {
       final user = Map<String, dynamic>.from(entry as Map);
       final id = user['user_id'] as int;
       final node = _userNodes.putIfAbsent(
@@ -1024,8 +1205,9 @@ class _AdminDashboardState extends State<AdminDashboard> {
   @override
   Widget build(BuildContext context) {
     return KeypadInstructionWrapper(
-      screenName: 'Administrator Dashboard',
-      labels: adminDashboardKeyLabels,
+      screenName: _sectionTitle,
+      navigationSections: _sectionNavigation,
+      labels: _sectionKeyLabels,
       autoPlay: false,
       actions: {
         0: () => AuthSessionService.logoutFrom(context),
@@ -1035,6 +1217,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
         4: () => _cycleAssignmentFilter(1),
         5: _addSubject,
         6: _addClass,
+        7: _chooseSection,
       },
       navigationController: _keypad,
       focusTargets: _focusTargets(),
@@ -1062,222 +1245,224 @@ class _AdminDashboardState extends State<AdminDashboard> {
             ],
           ),
           body: SafeArea(
-            child: _loading
-                ? const Center(child: CircularProgressIndicator())
-                : ListView(
-                    padding: UIUtils.paddingAll(context, 16),
-                    children: [
-                      TextField(
-                        controller: _searchController,
-                        focusNode: _searchNode,
-                        onTap: () => _keypad.enterTextEditing(_searchNode),
-                        onSubmitted: (_) => _refresh(),
-                        decoration: const InputDecoration(
-                          labelText: '2. Search by name or phone number',
-                          prefixIcon: Icon(Icons.search),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Focus(
-                        focusNode: _roleFilterNode,
-                        child: Semantics(
-                          label:
-                              'Account type filter. ${_roleFilterLabel()}. Use left and right arrows to change.',
-                          liveRegion: true,
-                          child: Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
-                            children: [
-                              ChoiceChip(
-                                avatar: const Icon(Icons.groups_outlined),
-                                label: const Text('3 All accounts'),
-                                selected: _roleFilter == null,
-                                onSelected: (_) => _setRoleFilter(null),
-                              ),
-                              ChoiceChip(
-                                avatar: const Icon(Icons.school_outlined),
-                                label: const Text('Students'),
-                                selected: _roleFilter == 'student',
-                                onSelected: (_) => _setRoleFilter('student'),
-                              ),
-                              ChoiceChip(
-                                avatar: const Icon(Icons.person_outline),
-                                label: const Text('Teachers'),
-                                selected: _roleFilter == 'teacher',
-                                onSelected: (_) => _setRoleFilter('teacher'),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Focus(
-                        focusNode: _assignmentFilterNode,
-                        child: Semantics(
-                          label:
-                              'Assignment filter. ${_assignmentFilterLabel()}. Use left and right arrows to change.',
-                          liveRegion: true,
-                          child: Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
-                            children: [
-                              ChoiceChip(
-                                label: const Text('4 All'),
-                                selected: _assignmentStatus == 'all',
-                                onSelected: (_) async {
-                                  setState(() => _assignmentStatus = 'all');
-                                  await _refresh();
-                                },
-                              ),
-                              ChoiceChip(
-                                label: Text(
-                                  _roleFilter == 'student'
-                                      ? 'Enrolled'
-                                      : _roleFilter == 'teacher'
-                                      ? 'Assigned'
-                                      : 'Enrolled or assigned',
-                                ),
-                                selected: _assignmentStatus == 'assigned',
-                                onSelected: (_) async {
-                                  setState(
-                                    () => _assignmentStatus = 'assigned',
-                                  );
-                                  await _refresh();
-                                },
-                              ),
-                              ChoiceChip(
-                                label: const Text('Unassigned'),
-                                selected: _assignmentStatus == 'unassigned',
-                                onSelected: (_) async {
-                                  setState(
-                                    () => _assignmentStatus = 'unassigned',
-                                  );
-                                  await _refresh();
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      Wrap(
+            child: ListView(
+              padding: UIUtils.paddingAll(context, 16),
+              children: [
+                if (_loading) const LinearProgressIndicator(),
+                if (_issue != null)
+                  Semantics(liveRegion: true, child: Text(_issue!)),
+                OutlinedButton(
+                  focusNode: _sectionNode,
+                  onPressed: _chooseSection,
+                  child: Text('7. Change section: ${_section.name}'),
+                ),
+                if (_section == _AdminSection.accounts) ...[
+                  TextField(
+                    controller: _searchController,
+                    focusNode: _searchNode,
+                    onTap: () => _keypad.enterTextEditing(_searchNode),
+                    onSubmitted: (_) => _refresh(),
+                    decoration: const InputDecoration(
+                      labelText: '2. Search by name or phone number',
+                      prefixIcon: Icon(Icons.search),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Focus(
+                    focusNode: _roleFilterNode,
+                    child: Semantics(
+                      label:
+                          'Account type filter. ${_roleFilterLabel()}. Use left and right arrows to change.',
+                      liveRegion: true,
+                      child: Wrap(
                         spacing: 8,
                         runSpacing: 8,
                         children: [
-                          FilledButton.icon(
-                            focusNode: _subjectNode,
-                            onPressed: _addSubject,
-                            icon: const Icon(Icons.menu_book),
-                            label: const Text('5. Create subject'),
+                          ChoiceChip(
+                            avatar: const Icon(Icons.groups_outlined),
+                            label: const Text('3 All accounts'),
+                            selected: _roleFilter == null,
+                            onSelected: (_) => _setRoleFilter(null),
                           ),
-                          OutlinedButton.icon(
-                            focusNode: _classNode,
-                            onPressed: _addClass,
-                            icon: const Icon(Icons.class_outlined),
-                            label: const Text('6. Create class'),
+                          ChoiceChip(
+                            avatar: const Icon(Icons.school_outlined),
+                            label: const Text('Students'),
+                            selected: _roleFilter == 'student',
+                            onSelected: (_) => _setRoleFilter('student'),
+                          ),
+                          ChoiceChip(
+                            avatar: const Icon(Icons.person_outline),
+                            label: const Text('Teachers'),
+                            selected: _roleFilter == 'teacher',
+                            onSelected: (_) => _setRoleFilter('teacher'),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Classes',
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: _classes.map((entry) {
-                          final schoolClass = Map<String, dynamic>.from(
-                            entry as Map,
-                          );
-                          final id = schoolClass['class_id'] as int;
-                          return InputChip(
-                            focusNode: _classNodes.putIfAbsent(
-                              id,
-                              () => FocusNode(debugLabel: 'admin-class-$id'),
-                            ),
-                            avatar: Icon(
-                              schoolClass['is_active'] == true
-                                  ? Icons.check_circle_outline
-                                  : Icons.archive_outlined,
-                            ),
-                            label: Text(
-                              '${schoolClass['name']} · ${schoolClass['is_active'] == true ? 'Active' : 'Archived'}',
-                            ),
-                            tooltip: schoolClass['is_active'] == true
-                                ? 'Manage class subjects'
-                                : 'Archived class',
-                            onPressed: schoolClass['is_active'] == true
-                                ? () => _manageClassSubjects(schoolClass)
-                                : null,
-                            onDeleted: () => _toggleClass(schoolClass),
-                            deleteIcon: Icon(
-                              schoolClass['is_active'] == true
-                                  ? Icons.archive_outlined
-                                  : Icons.unarchive_outlined,
-                            ),
-                            deleteButtonTooltipMessage:
-                                schoolClass['is_active'] == true
-                                ? 'Archive class'
-                                : 'Restore class',
-                          );
-                        }).toList(),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Subjects',
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: _subjects.map((entry) {
-                          final subject = Map<String, dynamic>.from(
-                            entry as Map,
-                          );
-                          final id = subject['subject_id'] as int;
-                          return ActionChip(
-                            focusNode: _subjectNodes.putIfAbsent(
-                              id,
-                              () => FocusNode(debugLabel: 'admin-subject-$id'),
-                            ),
-                            avatar: Icon(
-                              subject['is_active'] == true
-                                  ? Icons.check_circle_outline
-                                  : Icons.archive_outlined,
-                            ),
-                            label: Text(
-                              '${subject['name']} · ${subject['is_active'] == true ? 'Active' : 'Archived'}',
-                            ),
-                            onPressed: () => _toggleSubject(subject),
-                          );
-                        }).toList(),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Accounts',
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                      if (_users.isEmpty)
-                        Semantics(
-                          liveRegion: true,
-                          child: Padding(
-                            padding: EdgeInsets.all(24),
-                            child: Text('No matching accounts.'),
-                          ),
-                        ),
-                      if (_roleFilter == null) ...[
-                        ..._accountSection(
-                          'Teachers',
-                          _users.where((entry) => entry['role'] == 'teacher'),
-                        ),
-                        ..._accountSection(
-                          'Students',
-                          _users.where((entry) => entry['role'] == 'student'),
-                        ),
-                      ] else
-                        ..._users.map(_accountCard),
-                    ],
+                    ),
                   ),
+                  const SizedBox(height: 12),
+                  Focus(
+                    focusNode: _assignmentFilterNode,
+                    child: Semantics(
+                      label:
+                          'Assignment filter. ${_assignmentFilterLabel()}. Use left and right arrows to change.',
+                      liveRegion: true,
+                      child: Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          ChoiceChip(
+                            label: const Text('4 All'),
+                            selected: _assignmentStatus == 'all',
+                            onSelected: (_) => _setAssignmentFilter('all'),
+                          ),
+                          ChoiceChip(
+                            label: Text(
+                              _roleFilter == 'student'
+                                  ? 'Enrolled'
+                                  : _roleFilter == 'teacher'
+                                  ? 'Assigned'
+                                  : 'Enrolled or assigned',
+                            ),
+                            selected: _assignmentStatus == 'assigned',
+                            onSelected: (_) => _setAssignmentFilter('assigned'),
+                          ),
+                          ChoiceChip(
+                            label: const Text('Unassigned'),
+                            selected: _assignmentStatus == 'unassigned',
+                            onSelected: (_) =>
+                                _setAssignmentFilter('unassigned'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    if (_section == _AdminSection.subjects)
+                      FilledButton.icon(
+                        focusNode: _subjectNode,
+                        onPressed: _addSubject,
+                        icon: const Icon(Icons.menu_book),
+                        label: const Text('5. Create subject'),
+                      ),
+                    if (_section == _AdminSection.classes)
+                      OutlinedButton.icon(
+                        focusNode: _classNode,
+                        onPressed: _addClass,
+                        icon: const Icon(Icons.class_outlined),
+                        label: const Text('6. Create class'),
+                      ),
+                  ],
+                ),
+                if (_section == _AdminSection.classes) ...[
+                  const SizedBox(height: 16),
+                  Text(
+                    'Classes',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: _classes.map((entry) {
+                      final schoolClass = Map<String, dynamic>.from(
+                        entry as Map,
+                      );
+                      final id = schoolClass['class_id'] as int;
+                      return InputChip(
+                        focusNode: _classNodes.putIfAbsent(
+                          id,
+                          () => FocusNode(debugLabel: 'admin-class-$id'),
+                        ),
+                        avatar: Icon(
+                          schoolClass['is_active'] == true
+                              ? Icons.check_circle_outline
+                              : Icons.archive_outlined,
+                        ),
+                        label: Text(
+                          '${schoolClass['name']} · ${schoolClass['is_active'] == true ? 'Active' : 'Archived'}',
+                        ),
+                        tooltip: schoolClass['is_active'] == true
+                            ? 'Manage class subjects'
+                            : 'Archived class',
+                        onPressed: () => _manageClass(schoolClass),
+                        onDeleted: () => _toggleClass(schoolClass),
+                        deleteIcon: Icon(
+                          schoolClass['is_active'] == true
+                              ? Icons.archive_outlined
+                              : Icons.unarchive_outlined,
+                        ),
+                        deleteButtonTooltipMessage:
+                            schoolClass['is_active'] == true
+                            ? 'Archive class'
+                            : 'Restore class',
+                      );
+                    }).toList(),
+                  ),
+                ],
+                if (_section == _AdminSection.subjects) ...[
+                  const SizedBox(height: 16),
+                  Text(
+                    'Subjects',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: _subjects.map((entry) {
+                      final subject = Map<String, dynamic>.from(entry as Map);
+                      final id = subject['subject_id'] as int;
+                      return ActionChip(
+                        focusNode: _subjectNodes.putIfAbsent(
+                          id,
+                          () => FocusNode(debugLabel: 'admin-subject-$id'),
+                        ),
+                        avatar: Icon(
+                          subject['is_active'] == true
+                              ? Icons.check_circle_outline
+                              : Icons.archive_outlined,
+                        ),
+                        label: Text(
+                          '${subject['name']} · ${subject['is_active'] == true ? 'Active' : 'Archived'}',
+                        ),
+                        onPressed: () => _toggleSubject(subject),
+                      );
+                    }).toList(),
+                  ),
+                ],
+                if (_section == _AdminSection.accounts) ...[
+                  const SizedBox(height: 16),
+                  Text(
+                    'Accounts',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  if (!_loading && _issue == null && _users.isEmpty)
+                    Semantics(
+                      liveRegion: true,
+                      child: Padding(
+                        padding: EdgeInsets.all(24),
+                        child: Text('No matching accounts.'),
+                      ),
+                    ),
+                  if (!_loading && _issue == null) ...[
+                    if (_roleFilter == null) ...[
+                      ..._accountSection(
+                        'Teachers',
+                        _users.where((entry) => entry['role'] == 'teacher'),
+                      ),
+                      ..._accountSection(
+                        'Students',
+                        _users.where((entry) => entry['role'] == 'student'),
+                      ),
+                    ] else
+                      ..._users.map(_accountCard),
+                  ],
+                ],
+              ],
+            ),
           ),
         ),
       ),

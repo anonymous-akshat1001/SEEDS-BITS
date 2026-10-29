@@ -185,6 +185,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget build(BuildContext context) {
     return KeypadInstructionWrapper(
       screenName: 'Registration Screen',
+      navigationSections:
+          'name, phone number, password, student or teacher account type, register, and login',
       labels: registerKeyLabels,
       navigationController: _keypadController,
       focusTargets: [
@@ -389,7 +391,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     contentPadding: EdgeInsets.zero,
                     focusNode: _roleFocus,
                     title: Text(
-                      "Register as Teacher?",
+                      "3: Register as ${isTeacher ? 'Teacher' : 'Student'}. Change account type",
                       style: TextStyle(fontSize: UIUtils.fontSize(context, 13)),
                     ),
                     value: isTeacher,

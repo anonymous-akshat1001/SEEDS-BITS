@@ -442,6 +442,8 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return KeypadInstructionWrapper(
       screenName: 'Login Screen',
+      navigationSections:
+          'phone number, password, account type, login, registration and recovery help',
       labels: {
         ...loginKeyLabels,
         6: 'Read optional SIM phone-number suggestions',

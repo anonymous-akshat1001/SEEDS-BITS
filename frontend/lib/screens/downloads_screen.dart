@@ -362,9 +362,39 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
     return KeypadInstructionWrapper(
       screenName:
           'Downloaded Lessons. 50 MB per account. Up to 30 days offline before online access renewal. Files and progress stay separate.',
+      navigationSections:
+          'saved files to play, renew or remove, and online recordings to download or resume',
       onHashKey: _back,
-      actions: {0: _back},
-      labels: const {0: 'Back'},
+      actions: {
+        0: _back,
+        for (final (key, id) in [
+          (1, 'refresh'),
+          (2, 'online'),
+          (3, 'status'),
+          if (progress != null) (4, 'cancel'),
+          if (_candidates.isNotEmpty) (5, 'pack'),
+        ])
+          key: () {
+            final target = targets.firstWhere(
+              (target) => target.node == _node(id),
+            );
+            if (target.enabled) {
+              target.onActivate?.call();
+            } else {
+              TtsService.speak(
+                '${target.label} is unavailable while downloads are busy.',
+              );
+            }
+          },
+      },
+      labels: {
+        0: 'Back',
+        1: 'Refresh downloads',
+        2: 'Find recordings online',
+        3: 'Read status',
+        if (progress != null) 4: 'Cancel download',
+        if (_candidates.isNotEmpty) 5: 'Download listed recordings',
+      },
       focusTargets: targets,
       child: PopScope(
         canPop: progress == null,
@@ -405,9 +435,9 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
                 Wrap(
                   spacing: 8,
                   children: [
-                    button('refresh', 'Refresh downloads'),
-                    button('online', 'Find recordings online'),
-                    button('status', 'Read status'),
+                    button('refresh', '1: Refresh downloads'),
+                    button('online', '2: Find recordings online'),
+                    button('status', '3: Read status'),
                   ],
                 ),
                 if (progress != null) ...[
@@ -419,7 +449,7 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
                         ? progress.received / progress.total
                         : null,
                   ),
-                  button('cancel', 'Cancel download'),
+                  button('cancel', '4: Cancel download'),
                 ],
                 if (_lessons.isEmpty && !_loading)
                   const Text(
@@ -452,7 +482,7 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
                     ),
                   ),
                 if (_candidates.isNotEmpty) ...[
-                  button('pack', 'Download listed recordings'),
+                  button('pack', '5: Download listed recordings'),
                   const Text(
                     'Available recordings. Downloads use internet data.',
                   ),

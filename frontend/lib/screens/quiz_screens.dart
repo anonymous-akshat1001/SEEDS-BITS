@@ -13,6 +13,15 @@ import '../widgets/keypad_confirmation_dialog.dart';
 import '../widgets/quiz_extra_time_dialog.dart';
 import 'question_revisions_screen.dart';
 
+void _revealQuizError(GlobalKey key) {
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    final context = key.currentContext;
+    if (context != null) {
+      Scrollable.ensureVisible(context, alignment: 0.1);
+    }
+  });
+}
+
 String _attemptsText(Map quiz) => quiz['mode'] == 'practice'
     ? 'Unlimited practice attempts. Not graded.'
     : '${quiz['attempts_remaining']} attempts remaining.';
@@ -88,8 +97,17 @@ class _AccessibleActionDialogState extends State<AccessibleActionDialog> {
 
     return KeypadInstructionWrapper(
       screenName: widget.title,
-      labels: const {0: 'Cancel'},
-      actions: {0: () => select(null)},
+      navigationSections: 'the available actions and cancel',
+      labels: {
+        0: 'Cancel',
+        for (var index = 0; index < widget.actions.length && index < 5; index++)
+          index + 1: widget.actions[index].label,
+      },
+      actions: {
+        0: () => select(null),
+        for (var index = 0; index < widget.actions.length && index < 5; index++)
+          index + 1: () => select(widget.actions[index].value),
+      },
       focusTargets: [
         for (var index = 0; index < widget.actions.length; index++)
           KeypadFocusTarget(
@@ -120,7 +138,9 @@ class _AccessibleActionDialogState extends State<AccessibleActionDialog> {
                     focusNode: _focuses[index],
                     onPressed: () => select(widget.actions[index].value),
                     icon: Icon(widget.actions[index].icon),
-                    label: Text(widget.actions[index].label),
+                    label: Text(
+                      '${index < 5 ? '${index + 1}: ' : ''}${widget.actions[index].label}',
+                    ),
                   ),
                 ),
               TextButton(
@@ -171,6 +191,8 @@ class _TeacherQuizScreenState extends State<TeacherQuizScreen> {
   bool _initialAnnouncementPending = true;
   bool _creatingQuiz = false;
   bool _quizSaveUncertain = false;
+  bool _savingQuestion = false;
+  final _errorKey = GlobalKey();
   String? _error;
 
   @override
@@ -179,7 +201,7 @@ class _TeacherQuizScreenState extends State<TeacherQuizScreen> {
     _load();
   }
 
-  Future<void> _load() async {
+  Future<void> _load({bool preserveError = false}) async {
     if (mounted) setState(() => _loading = true);
     final query = Uri(
       queryParameters: {
@@ -212,7 +234,7 @@ class _TeacherQuizScreenState extends State<TeacherQuizScreen> {
       _questions = results[0].data as List;
       _quizzes = results[1].data as List;
       _loading = false;
-      _error = null;
+      if (!preserveError) _error = null;
       _quizSaveUncertain = false;
     });
     final summary =
@@ -220,77 +242,132 @@ class _TeacherQuizScreenState extends State<TeacherQuizScreen> {
     if (_initialAnnouncementPending) {
       _initialAnnouncementPending = false;
       await TtsService.speak(
-        '${buildTtsInstructions(teacherQuizKeyLabels, screenName: 'Teacher quizzes for ${widget.className}, ${widget.subjectName}')} $summary',
+        '${buildTtsInstructions(teacherQuizKeyLabels, screenName: 'Teacher quizzes for ${widget.className}, ${widget.subjectName}')} '
+        'Use the D-pad to explore bank search and saved questions, quiz drafts, published quizzes and results. $summary',
       );
     } else {
-      await TtsService.speak(summary);
+      if (_error != null) _revealQuizError(_errorKey);
+      await TtsService.speak(_error ?? summary);
     }
   }
 
   Future<void> _createQuestion() async {
-    final value = await showDialog<Map<String, dynamic>>(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => const AccessibleQuestionEditorDialog(),
-    );
-    if (value == null) return;
-    final result = await ApiService.createBankQuestion(
-      classId: widget.classId,
-      subjectId: widget.subjectId,
-      questionText: value['question_text'] as String,
-      options: List<String>.from(value['options'] as List),
-      correctOptionIndex: value['correct_option_index'] as int,
-      explanation: value['explanation'] as String?,
-      accessibility: value,
-    );
-    if (!mounted) return;
-    if (result?['question_id'] is! int ||
-        result?['revision'] != 1 ||
-        result?['question_text'] != value['question_text']) {
-      _showError(
-        'Question save could not be confirmed. Check the bank and refresh before retrying; do not create a duplicate.',
+    if (_savingQuestion) return;
+    _savingQuestion = true;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+      final account = prefs.getInt('user_id');
+      if (!mounted) return;
+      final value = await showDialog<Map<String, dynamic>>(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => const AccessibleQuestionEditorDialog(),
       );
-      return;
+      if (value == null) return;
+      final response = await ApiService.postResult(
+        '/question-bank',
+        {...value, 'class_id': widget.classId, 'subject_id': widget.subjectId},
+        useAuth: true,
+        requireJsonObject: true,
+        canSend: () =>
+            mounted &&
+            token != null &&
+            prefs.getString('token') == token &&
+            prefs.getInt('user_id') == account,
+      );
+      final result = response.data;
+      if (!mounted) return;
+      if (prefs.getString('token') != token ||
+          prefs.getInt('user_id') != account) {
+        _showError(
+          'Your account changed. Reopen the question bank before continuing.',
+        );
+        return;
+      }
+      if (!response.isSuccess ||
+          result?['question_id'] is! int ||
+          result?['revision'] != 1 ||
+          result?['question_text'] != value['question_text']) {
+        _showError(
+          '${response.failure?.message ?? (result?['revision'] == null && response.isSuccess ? 'The server returned a question without a revision. Ask the administrator to update the quiz backend.' : 'The saved question did not match.')} '
+          'Question save could not be confirmed. Check the bank and refresh before retrying; do not create a duplicate.',
+        );
+        if (response.isSuccess) await _load(preserveError: true);
+        return;
+      }
+      await TtsService.speak(
+        'Question saved. Editing this bank question later will not change existing quizzes.',
+      );
+      await _load();
+    } finally {
+      _savingQuestion = false;
     }
-    await TtsService.speak(
-      'Question saved. Editing this bank question later will not change existing quizzes.',
-    );
-    await _load();
   }
 
   Future<void> _editQuestion(Map question) async {
-    final value = await showDialog<Map<String, dynamic>>(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => AccessibleQuestionEditorDialog(
-        initialQuestion: Map<String, dynamic>.from(question),
-      ),
-    );
-    if (value == null) return;
-    final result = await ApiService.updateBankQuestion(
-      questionId: question['question_id'] as int,
-      classId: widget.classId,
-      subjectId: widget.subjectId,
-      questionText: value['question_text'] as String,
-      options: List<String>.from(value['options'] as List),
-      correctOptionIndex: value['correct_option_index'] as int,
-      explanation: value['explanation'] as String?,
-      accessibility: value,
-      expectedRevision: question['revision'] as int?,
-    );
-    if (!mounted) return;
-    if (result?['question_id'] != question['question_id'] ||
-        result?['revision'] != (question['revision'] as int? ?? 0) + 1 ||
-        result?['question_text'] != value['question_text']) {
+    if (_savingQuestion) return;
+    if (question['revision'] is! int) {
       _showError(
-        'The bank question could not be confirmed updated. Refresh and review its current revision before retrying.',
+        'This server did not supply a question revision. Ask the administrator to update the quiz backend before editing.',
       );
       return;
     }
-    await TtsService.speak(
-      'Bank question updated. Existing quiz snapshots were not changed.',
-    );
-    await _load();
+    _savingQuestion = true;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+      final account = prefs.getInt('user_id');
+      if (!mounted) return;
+      bool sameAccount() =>
+          mounted &&
+          token != null &&
+          prefs.getString('token') == token &&
+          prefs.getInt('user_id') == account;
+      final value = await showDialog<Map<String, dynamic>>(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => AccessibleQuestionEditorDialog(
+          initialQuestion: Map<String, dynamic>.from(question),
+        ),
+      );
+      if (value == null) return;
+      final response = await ApiService.putResult(
+        '/question-bank/${question['question_id']}',
+        {
+          ...value,
+          'class_id': widget.classId,
+          'subject_id': widget.subjectId,
+          'expected_revision': question['revision'],
+        },
+        useAuth: true,
+        canSend: sameAccount,
+      );
+      final result = response.data;
+      if (!mounted) return;
+      if (!sameAccount()) {
+        _showError(
+          'Your account changed. Reopen the question bank before continuing.',
+        );
+        return;
+      }
+      if (!response.isSuccess ||
+          result?['question_id'] != question['question_id'] ||
+          result?['revision'] != (question['revision'] as int? ?? 0) + 1 ||
+          result?['question_text'] != value['question_text']) {
+        _showError(
+          '${response.failure?.message ?? 'The saved revision did not match.'} The bank question could not be confirmed updated. Refresh and review its current revision before retrying.',
+        );
+        if (response.isSuccess) await _load(preserveError: true);
+        return;
+      }
+      await TtsService.speak(
+        'Bank question updated. Existing quiz snapshots were not changed.',
+      );
+      await _load();
+    } finally {
+      _savingQuestion = false;
+    }
   }
 
   Future<void> _archiveQuestion(Map question) async {
@@ -431,7 +508,7 @@ class _TeacherQuizScreenState extends State<TeacherQuizScreen> {
           result?['status'] != 'draft') {
         _quizSaveUncertain = true;
         _showError(
-          'Draft save could not be confirmed. Refresh the quiz list before creating another draft.',
+          '${response.failure?.message ?? 'The saved draft did not match.'} Draft save could not be confirmed. Refresh the quiz list before creating another draft.',
         );
         return;
       }
@@ -575,6 +652,7 @@ class _TeacherQuizScreenState extends State<TeacherQuizScreen> {
   void _showError(String message) {
     if (!mounted) return;
     setState(() => _error = message);
+    _revealQuizError(_errorKey);
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text(message)));
@@ -605,6 +683,8 @@ class _TeacherQuizScreenState extends State<TeacherQuizScreen> {
     return KeypadInstructionWrapper(
       screenName:
           'Teacher quizzes for ${widget.className}, ${widget.subjectName}',
+      navigationSections:
+          'private bank search and saved questions, quiz drafts, published quizzes, and their results',
       labels: teacherQuizKeyLabels,
       autoPlay: false,
       actions: {
@@ -612,6 +692,7 @@ class _TeacherQuizScreenState extends State<TeacherQuizScreen> {
         1: _load,
         2: _createQuestion,
         3: _createQuiz,
+        4: () => _createQuiz(practice: true),
       },
       focusTargets: [
         KeypadFocusTarget(
@@ -724,6 +805,7 @@ class _TeacherQuizScreenState extends State<TeacherQuizScreen> {
                     ),
                     if (_error != null)
                       Semantics(
+                        key: _errorKey,
                         liveRegion: true,
                         child: Card(
                           color: Theme.of(context).colorScheme.errorContainer,
@@ -763,7 +845,7 @@ class _TeacherQuizScreenState extends State<TeacherQuizScreen> {
                         OutlinedButton(
                           focusNode: _createPracticeFocus,
                           onPressed: () => _createQuiz(practice: true),
-                          child: const Text('Create untimed practice'),
+                          child: const Text('4: Create untimed practice'),
                         ),
                       ],
                     ),
@@ -884,6 +966,7 @@ class _GuidedQuizDraftScreenState extends State<GuidedQuizDraftScreen> {
   bool _review = false;
   bool _needsRefresh = false;
   String? _error;
+  final _errorKey = GlobalKey();
   SharedPreferences? _preferences;
   String? _token;
   int? _account;
@@ -954,6 +1037,7 @@ class _GuidedQuizDraftScreenState extends State<GuidedQuizDraftScreen> {
   void _report(String message) {
     if (!mounted) return;
     setState(() => _error = message);
+    _revealQuizError(_errorKey);
     TtsService.speak(message);
   }
 
@@ -1027,6 +1111,29 @@ class _GuidedQuizDraftScreenState extends State<GuidedQuizDraftScreen> {
       Map<String, dynamic>? content;
       String path;
       if (reuse) {
+        final response = await ApiService.getResult(
+          '/question-bank?class_id=${widget.classId}&subject_id=${widget.subjectId}',
+          useAuth: true,
+          canSend: () => mounted && _sameAccount,
+          requestTimeout: const Duration(seconds: 20),
+        );
+        if (!mounted || !_requireAccount()) return;
+        final bank = response.data;
+        if (!response.isSuccess ||
+            bank is! List ||
+            bank.any(
+              (item) =>
+                  item is! Map<String, dynamic> ||
+                  item['question_id'] is! int ||
+                  item['question_text'] is! String,
+            )) {
+          _report(
+            '${response.failure?.message ?? 'The saved question list could not be read.'} '
+            'The question bank could not be refreshed. No question was added. Try Choose a saved question again.',
+          );
+          return;
+        }
+        setState(() => _bank = bank.cast<Map<String, dynamic>>());
         final existing = _questions
             .map((item) => (item as Map)['source_question_id'])
             .toSet();
@@ -1091,7 +1198,7 @@ class _GuidedQuizDraftScreenState extends State<GuidedQuizDraftScreen> {
           saved['question_count'] != previousCount + 1) {
         setState(() => _needsRefresh = true);
         _report(
-          'Adding the question could not be confirmed. Refresh and review saved questions before adding again; it may already be saved.',
+          '${response.failure?.message ?? 'The saved draft did not match.'} Adding the question could not be confirmed. Refresh and review saved questions before adding again; it may already be saved.',
         );
         return;
       }
@@ -1294,6 +1401,14 @@ class _GuidedQuizDraftScreenState extends State<GuidedQuizDraftScreen> {
             onActivate: _removeQuestion,
             isEnabled: () => !_busy && !_needsRefresh,
           ),
+        for (var index = 0; index < _questions.length; index++)
+          KeypadFocusTarget(
+            node: _node('saved-question-$index'),
+            label:
+                'Saved question ${index + 1}: ${_questions[index]['question_text']}. Already in this draft. Press OK to read its options',
+            onActivate: () => TtsService.speak(_reviewQuestion(index)),
+            isEnabled: () => !_busy,
+          ),
       ],
       if (_quiz != null && _review) ...[
         KeypadFocusTarget(
@@ -1341,6 +1456,9 @@ class _GuidedQuizDraftScreenState extends State<GuidedQuizDraftScreen> {
     return PopScope(
       canPop: !_busy,
       child: KeypadInstructionWrapper(
+        navigationSections: _review
+            ? 'saved questions, quiz settings, and publishing with confirmation'
+            : 'write or choose saved questions, remove questions, and review the draft',
         screenName: published
             ? 'Quiz published'
             : _review
@@ -1399,7 +1517,11 @@ class _GuidedQuizDraftScreenState extends State<GuidedQuizDraftScreen> {
                   if (_busy && ModalRoute.of(context)?.isCurrent != false)
                     const LinearProgressIndicator(),
                   if (_error != null)
-                    Semantics(liveRegion: true, child: Text(_error!)),
+                    Semantics(
+                      key: _errorKey,
+                      liveRegion: true,
+                      child: Text(_error!),
+                    ),
                   for (final target in targets)
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 4),
@@ -1709,6 +1831,8 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
     final summary = _summary;
     return KeypadInstructionWrapper(
       screenName: 'Results for ${widget.quizTitle}',
+      navigationSections:
+          'quiz summary, student results, and available result actions',
       labels: const {
         0: 'Return to quizzes',
         1: 'Refresh results',
@@ -1892,6 +2016,12 @@ class StudentQuizScreen extends StatefulWidget {
 }
 
 class _StudentQuizScreenState extends State<StudentQuizScreen> {
+  static const _navigationHelp =
+      'Use D-pad up and down to reach refresh, quiz state filter, subject filter, '
+      'each available quiz or practice activity, and its attempt history. '
+      'Use left or right on a filter to change it. '
+      'Press OK on a quiz to hear its details and confirm starting or resuming; '
+      'press OK on attempt history to review past attempts. Moving focus never starts an attempt.';
   final _refreshFocus = FocusNode(debugLabel: 'student-quiz-refresh');
   final _stateFilterFocus = FocusNode(debugLabel: 'student-quiz-state-filter');
   final _subjectFilterFocus = FocusNode(
@@ -1928,7 +2058,8 @@ class _StudentQuizScreenState extends State<StudentQuizScreen> {
     if (_initialAnnouncementPending) {
       _initialAnnouncementPending = false;
       await TtsService.speak(
-        '${buildTtsInstructions(studentQuizKeyLabels, screenName: 'Student quizzes')} $summary',
+        '${buildTtsInstructions(studentQuizKeyLabels, screenName: 'Student quizzes')} '
+        '$_navigationHelp $summary',
       );
     } else {
       await TtsService.speak(summary);
@@ -2071,6 +2202,9 @@ class _StudentQuizScreenState extends State<StudentQuizScreen> {
   Widget build(BuildContext context) {
     return KeypadInstructionWrapper(
       screenName: 'Student quizzes',
+      introduction: _navigationHelp,
+      navigationSections:
+          'refresh, quiz state and subject filters, available quizzes and practice activities, and previous attempts',
       labels: studentQuizKeyLabels,
       autoPlay: false,
       actions: {0: () => Navigator.pop(context), 1: _load},
@@ -2291,6 +2425,7 @@ class QuizAttemptScreen extends StatefulWidget {
 }
 
 class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
+  final _keypad = KeypadNavigationController();
   late Map<String, dynamic> _attempt;
   int? _selectedOptionId;
   Map<String, dynamic>? _feedback;
@@ -2331,7 +2466,12 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
     _configureTimer();
     if (_attempt['status'] != 'in_progress') {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) _returnFocus.requestFocus();
+        if (mounted) {
+          _keypad.focusAndAnnounce(
+            _returnFocus,
+            'Attempt complete. Your result remains private. $_navigationHelp',
+          );
+        }
       });
     }
   }
@@ -2391,15 +2531,41 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
         '${_question?['spoken_question_text'] ?? _question?['question_text'] ?? ''}';
   }
 
-  void _readOptions() {
+  String get _optionsAnnouncement {
     final options = _question?['options'] as List? ?? const [];
-    TtsService.speak(
-      [
-        for (var index = 0; index < options.length; index++)
-          'Option ${index + 1}. ${options[index]['spoken_option_text'] ?? options[index]['option_text']}.',
-      ].join(' '),
-    );
+    return [
+      for (var index = 0; index < options.length; index++)
+        'Option ${index + 1}. ${options[index]['spoken_option_text'] ?? options[index]['option_text']}.',
+    ].join(' ');
   }
+
+  String get _questionAndOptions =>
+      '$_questionAnnouncement $_optionsAnnouncement';
+
+  String get _navigationHelp {
+    if (_attempt['status'] != 'in_progress') {
+      return 'Use D-pad up and down to move between return to quizzes and read result privately. '
+          'Press OK to activate a button. Press 8 to read your result privately or 0 to return.';
+    }
+    if (_completionError != null) {
+      return 'Use D-pad up and down to reach Retry completion, stop speech, time remaining if timed, or leave without submitting. '
+          'Press OK to activate a control. Press 6 to retry completion or 0 to leave with confirmation.';
+    }
+    if (_feedback != null || _allAnswersSaved) {
+      return 'Use D-pad up and down to reach saved-answer status, read feedback privately, '
+          'stop speech, time remaining if timed, next question or view result, finish early, and leave. '
+          'Press OK on a control. Press 6 for the next question or result, 7 to finish early with confirmation, or 0 to leave without submitting.';
+    }
+    return 'Use D-pad up and down to move through read question, read all options, '
+        'each answer option, read selected answer, stop speech, time remaining if timed, '
+        'submit answer, finish early, and leave without submitting. '
+        'Press OK on an option to select it; moving focus does not select or submit. '
+        'Press 1 to ${_question?['options'] is List ? (_question!['options'] as List).length : 4} to select an option, then 5 to save your answer. '
+        'Press 7 to finish early with confirmation, or 0 to leave without submitting. '
+        'Press star to repeat question, options and help.';
+  }
+
+  void _readOptions() => TtsService.speak(_optionsAnnouncement);
 
   void _readSelection() {
     final options = _question?['options'] as List? ?? const [];
@@ -2427,7 +2593,10 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
     if (options is! List || index >= options.length) return;
     final option = options[index] as Map;
     setState(() => _selectedOptionId = option['quiz_option_id'] as int);
-    TtsService.speak('Option ${index + 1} selected. Press 5 to submit.');
+    TtsService.speak(
+      'Option ${index + 1}. ${option['spoken_option_text'] ?? option['option_text']}. '
+      'Selected, not submitted. Press 5 to save your answer.',
+    );
   }
 
   void _readPrivateFeedback() {
@@ -2489,7 +2658,12 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
       };
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _feedbackFocus.requestFocus();
+      if (mounted) {
+        _keypad.focusAndAnnounce(
+          _feedbackFocus,
+          'Answer confirmed saved and locked. Press OK to read feedback privately. $_navigationHelp',
+        );
+      }
     });
   }
 
@@ -2515,7 +2689,12 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
       _feedback = null;
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _questionFocus.requestFocus();
+      if (mounted) {
+        _keypad.focusAndAnnounce(
+          _questionFocus,
+          '$_questionAndOptions $_navigationHelp',
+        );
+      }
     });
   }
 
@@ -2563,11 +2742,13 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
       _attempt = result;
       _completing = false;
     });
-    final message =
-        'Attempt ${result['status']}. Your result is private. Use Read result privately to hear it.';
-    await TtsService.speak(message);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _returnFocus.requestFocus();
+      if (mounted) {
+        _keypad.focusAndAnnounce(
+          _returnFocus,
+          'Attempt ${result['status']}. Your result is private. $_navigationHelp',
+        );
+      }
     });
   }
 
@@ -2712,14 +2893,16 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
         if (!popped) unawaited(_exit());
       },
       child: KeypadInstructionWrapper(
+        navigationController: _keypad,
         onHashKey: _exit,
-        screenName:
-            'Quiz attempt, ${widget.quizTitle}. '
-            '${completed
-                ? 'Attempt complete.'
-                : _allAnswersSaved
-                ? 'All answers are saved. Press 6 to view your result.'
-                : _questionAnnouncement}',
+        screenName: 'Quiz attempt, ${widget.quizTitle}',
+        introduction: completed
+            ? 'Attempt complete. Your result remains private. $_navigationHelp'
+            : choosing
+            ? '$_questionAndOptions $_navigationHelp'
+            : _completionError != null
+            ? '$_completionError $_navigationHelp'
+            : 'Answer confirmed saved and locked. $_navigationHelp',
         labels: {
           0: completed
               ? 'Return to quizzes'
@@ -2767,8 +2950,10 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
           if (!completed)
             KeypadFocusTarget(
               node: _questionFocus,
-              label: _questionAnnouncement,
-              onActivate: () => TtsService.speak(_questionAnnouncement),
+              label: choosing ? _questionAndOptions : _questionAnnouncement,
+              onActivate: () => TtsService.speak(
+                choosing ? _questionAndOptions : _questionAnnouncement,
+              ),
             ),
           if (choosing)
             KeypadFocusTarget(
@@ -2781,7 +2966,8 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
               node: _optionFocuses[index],
               label:
                   'Option ${index + 1}, ${options[index]['spoken_option_text'] ?? options[index]['option_text']}, '
-                  '${_selectedOptionId == options[index]['quiz_option_id'] ? 'selected' : 'not selected'}',
+                  '${_selectedOptionId == options[index]['quiz_option_id'] ? 'selected' : 'not selected'}. '
+                  'Press OK or ${index + 1} to select. Press 5 to submit only when ready',
               onActivate: () => _selectOption(index),
               isEnabled: () => _canAnswer,
             ),
@@ -3416,6 +3602,7 @@ class _AccessibleQuestionEditorDialogState
   final _questionFocus = FocusNode(debugLabel: 'bank-question-text');
   final _explanationFocus = FocusNode(debugLabel: 'bank-question-explanation');
   final _correctFocus = FocusNode(debugLabel: 'bank-question-correct-answer');
+  final _validationKey = GlobalKey();
   final _cancelFocus = FocusNode(debugLabel: 'bank-question-cancel');
   final _saveFocus = FocusNode(debugLabel: 'bank-question-save');
   late final List<FocusNode> _optionFocuses;
@@ -3504,6 +3691,7 @@ class _AccessibleQuestionEditorDialogState
         _error =
             'Enter a question, four different non-empty options, and then choose the correct answer.';
       });
+      _revealQuizError(_validationKey);
       TtsService.speak(_error!);
       return;
     }
@@ -3539,6 +3727,7 @@ class _AccessibleQuestionEditorDialogState
         _error =
             'Use up to 20 different topics of 80 characters each. Described notation needs a spoken question, all four spoken options, and a spoken explanation if an explanation is provided. Review and confirm every spoken alternative before saving.';
       });
+      _revealQuizError(_validationKey);
       TtsService.speak(_error!);
       return;
     }
@@ -3605,6 +3794,8 @@ class _AccessibleQuestionEditorDialogState
         : 'Edit bank question';
     return KeypadInstructionWrapper(
       screenName: title,
+      navigationSections:
+          'question text, four answer fields, correct-answer selection, optional spoken descriptions, and save or cancel',
       labels: const {0: 'Cancel', 9: 'Save question'},
       actions: {0: () => Navigator.pop(context), 9: _save},
       navigationController: _navigationController,
@@ -3694,7 +3885,11 @@ class _AccessibleQuestionEditorDialogState
                     'Revision ${widget.initialQuestion!['revision'] ?? 'unknown (legacy)'}. Saving a new bank revision never rewrites an existing quiz or attempt snapshot.',
                   ),
                 if (_error != null)
-                  Semantics(liveRegion: true, child: Text(_error!)),
+                  Semantics(
+                    key: _validationKey,
+                    liveRegion: true,
+                    child: Text(_error!),
+                  ),
                 TextField(
                   controller: _question,
                   focusNode: _questionFocus,
@@ -4018,6 +4213,8 @@ class _AccessibleQuizEditorDialogState
   @override
   Widget build(BuildContext context) {
     return KeypadInstructionWrapper(
+      navigationSections:
+          'title, optional description, timing and attempt settings, feedback and shuffle choices, and continue or cancel',
       screenName: widget.initialQuiz != null
           ? 'Change quiz title and optional settings. Saving does not publish.'
           : widget.practice
