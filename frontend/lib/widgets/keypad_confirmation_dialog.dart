@@ -45,7 +45,6 @@ class _KeypadConfirmationDialogState extends State<KeypadConfirmationDialog> {
 
     return KeypadInstructionWrapper(
       screenName: '${widget.title}. ${widget.message}',
-      onHashKey: () => close(false),
       labels: {
         widget.cancelKey: widget.cancelLabel,
         widget.confirmKey: widget.confirmLabel,
@@ -73,18 +72,26 @@ class _KeypadConfirmationDialogState extends State<KeypadConfirmationDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Semantics(liveRegion: true, child: Text(widget.message)),
-            TextButton(
+            Semantics(
+              liveRegion: true,
+              child: Text(
+                widget.message,
+                style: TextStyle(color: UIUtils.textColor, fontSize: 18),
+              ),
+            ),
+            const SizedBox(height: 16),
+            OutlinedButton(
               focusNode: _cancelFocus,
               onPressed: () => close(false),
               child: Text('${widget.cancelKey}: ${widget.cancelLabel}'),
             ),
+            const SizedBox(height: 12),
             ElevatedButton(
               focusNode: _confirmFocus,
               onPressed: () => close(true),
               style: ElevatedButton.styleFrom(
                 backgroundColor: UIUtils.primaryColor,
-                foregroundColor: Colors.white,
+                foregroundColor: UIUtils.onPrimaryColor,
               ),
               child: Text('${widget.confirmKey}: ${widget.confirmLabel}'),
             ),

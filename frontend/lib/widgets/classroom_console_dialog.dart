@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../services/tts_service.dart';
+import '../utils/ui_utils.dart';
 import 'key_instruction_wrapper.dart';
 
 class ClassroomConsoleDialog extends StatefulWidget {
@@ -27,6 +30,7 @@ class _ClassroomConsoleDialogState extends State<ClassroomConsoleDialog> {
   int? _selectedId;
   bool _pending = false;
   String? _issue;
+  String? _result;
   static const _help =
       'Classroom console. Read summary for the last received classroom state. '
       'Previous and Next select a raised hand without changing it. '
@@ -73,10 +77,36 @@ class _ClassroomConsoleDialogState extends State<ClassroomConsoleDialog> {
       return 'The selected hand is no longer in the queue. ${queue.length} raised hands remain. Use Next or Previous to select a hand.';
     }
     final hand = queue[index];
-    return '${hand['name'] ?? 'Participant ${hand['id']}'}. '
-        'Hand ${index + 1} of ${queue.length}. '
+    return '${_handTitle(queue, index)}. '
         '${hand['hand_queue_order'] is int ? 'Server-recorded queue order.' : 'Original raise order unknown; shown before known-order hands.'} '
         '${hand['is_muted'] == true ? 'Microphone reported muted.' : 'Microphone reported unmuted; this is not proof of speech.'}';
+  }
+
+  /// Short identity of a raised hand, position first:
+  /// "Hand 2 of 5, Ravi, waiting".
+  String _handTitle(List<Map<String, dynamic>> queue, int index) {
+    final hand = queue[index];
+    return 'Hand ${index + 1} of ${queue.length}, '
+        '${hand['name'] ?? 'Participant ${hand['id']}'}, waiting';
+  }
+
+  String _selectedTitle(List<Map<String, dynamic>> queue) {
+    if (queue.isEmpty) return 'No raised hands';
+    final index = _index(queue);
+    return index < 0 ? 'No hand selected' : _handTitle(queue, index);
+  }
+
+  /// Moves keypad focus once the frame that re-enables controls is built.
+  void _focusAfter(String id) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final node = _node(id);
+      if (node.context != null && node.canRequestFocus) {
+        node.requestFocus();
+      } else {
+        _node('read').requestFocus();
+      }
+    });
   }
 
   Future<void> _move(int direction) async {
@@ -98,24 +128,55 @@ class _ClassroomConsoleDialogState extends State<ClassroomConsoleDialog> {
       await TtsService.speak(_description(queue));
       return;
     }
-    final hand = queue[_index(queue)];
+    final index = _index(queue);
+    final hand = queue[index];
+    final name = hand['name'] ?? 'Participant ${hand['id']}';
+    var next = 'acknowledge';
     setState(() {
       _pending = true;
       _issue = null;
+      _result = null;
     });
+    unawaited(
+      TtsService.speak(
+        'Lowering hand for $name. Waiting for the server.',
+        priority: SpeechPriority.navigation,
+      ),
+    );
     try {
       final issue = await widget.acknowledge(
         hand['id'] as int,
         hand['hand_queue_order'] as int?,
       );
-      if (mounted) {
+      if (!mounted) return;
+      if (issue != null) {
         setState(() => _issue = issue);
-        if (issue != null) {
-          await TtsService.speak(issue, priority: SpeechPriority.critical);
-        }
+        await TtsService.speak(issue, priority: SpeechPriority.critical);
+        return;
       }
+      // Select the hand that followed the lowered one so the teacher can
+      // continue down the queue with one more OK.
+      final remaining = [
+        for (final p in queue)
+          if (p['id'] != hand['id']) p,
+      ];
+      final result = remaining.isEmpty
+          ? 'Hand lowered for $name. The hand queue is now empty.'
+          : 'Hand lowered for $name. Next: '
+                '${_handTitle(remaining, index % remaining.length)}.';
+      setState(() {
+        if (remaining.isNotEmpty) {
+          _selectedId = remaining[index % remaining.length]['id'] as int;
+        }
+        _result = result;
+      });
+      if (remaining.isEmpty) next = 'read';
+      await TtsService.speak(result);
     } finally {
-      if (mounted) setState(() => _pending = false);
+      if (mounted) {
+        setState(() => _pending = false);
+        _focusAfter(next);
+      }
     }
   }
 
@@ -141,11 +202,6 @@ class _ClassroomConsoleDialogState extends State<ClassroomConsoleDialog> {
       final queue = _queue;
       final targets = [
         KeypadFocusTarget(
-          node: _node('back'),
-          label: 'Back to session',
-          onActivate: () => Navigator.pop(context),
-        ),
-        KeypadFocusTarget(
           node: _node('summary'),
           label: 'Read classroom summary',
           onActivate: _readSummary,
@@ -158,10 +214,10 @@ class _ClassroomConsoleDialogState extends State<ClassroomConsoleDialog> {
         ),
         KeypadFocusTarget(
           node: _node('read'),
-          label:
-              'Read selected hand and action status. ${_description(queue)} ${_issue ?? ''}',
-          onActivate: () =>
-              TtsService.speak('${_description(_queue)} ${_issue ?? ''}'),
+          label: 'Read selected hand. ${_selectedTitle(queue)}',
+          onActivate: () => TtsService.speak(
+            '${_description(_queue)} ${_issue ?? _result ?? ''}',
+          ),
         ),
         KeypadFocusTarget(
           node: _node('next'),
@@ -173,7 +229,9 @@ class _ClassroomConsoleDialogState extends State<ClassroomConsoleDialog> {
           node: _node('acknowledge'),
           label: _pending
               ? 'Waiting for hand acknowledgment'
-              : 'Acknowledge and lower selected hand. Never unmute',
+              : queue.isEmpty || _index(queue) < 0
+              ? 'Acknowledge and lower selected hand. No hand selected'
+              : 'Lower ${queue[_index(queue)]['name'] ?? 'selected hand'}. Never unmutes',
           isEnabled: () => !_pending,
           onActivate: _acknowledge,
         ),
@@ -186,6 +244,11 @@ class _ClassroomConsoleDialogState extends State<ClassroomConsoleDialog> {
           node: _node('help'),
           label: 'Repeat console help',
           onActivate: () => TtsService.speak(_help),
+        ),
+        KeypadFocusTarget(
+          node: _node('back'),
+          label: 'Back to session',
+          onActivate: () => Navigator.pop(context),
         ),
       ];
       Widget button(String id, String label) {
@@ -205,7 +268,6 @@ class _ClassroomConsoleDialogState extends State<ClassroomConsoleDialog> {
             'read classroom summary, previous hand, read selected hand, next hand, acknowledge hand, stop speech, help and back. If no hands or summary are available, selecting their controls reads that status',
         actions: {0: () => Navigator.pop(context)},
         labels: const {0: 'Back to session'},
-        onHashKey: () => Navigator.pop(context),
         focusTargets: targets,
         child: AlertDialog(
           title: const Text('Classroom console'),
@@ -220,10 +282,30 @@ class _ClassroomConsoleDialogState extends State<ClassroomConsoleDialog> {
               ),
               Text(_description(queue)),
               if (_issue != null)
-                Semantics(liveRegion: true, child: Text(_issue!)),
+                Semantics(
+                  liveRegion: true,
+                  child: Text(
+                    _issue!,
+                    style: TextStyle(
+                      color: UIUtils.errorColor,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                )
+              else if (_result != null && !_pending)
+                Semantics(
+                  liveRegion: true,
+                  child: Text(
+                    _result!,
+                    style: TextStyle(color: UIUtils.successColor),
+                  ),
+                ),
               if (_pending)
-                const Text(
-                  'Waiting for server acknowledgment. No microphone is changed.',
+                Semantics(
+                  liveRegion: true,
+                  child: const Text(
+                    'Waiting for server acknowledgment. No microphone is changed.',
+                  ),
                 ),
               button('previous', 'Previous raised hand'),
               button('read', 'Read selected hand'),

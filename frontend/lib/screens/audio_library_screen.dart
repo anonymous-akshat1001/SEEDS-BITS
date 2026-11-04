@@ -20,6 +20,7 @@ import '../services/learning_progress_store.dart';
 import '../services/offline_lesson_store.dart';
 // Allows reading environment variables
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import '../widgets/accessible_tile.dart';
 import '../widgets/key_instruction_wrapper.dart';
 import '../widgets/keypad_confirmation_dialog.dart';
 import '../widgets/learning_controls.dart';
@@ -70,23 +71,18 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
     ),
     KeypadFocusTarget(
       node: _focusNode('refresh'),
-      label: 'Refresh audio files',
+      label: 'Refresh audio files, key 1',
       onActivate: _loadAudioFiles,
-    ),
-    KeypadFocusTarget(
-      node: _focusNode('tts'),
-      label: _ttsEnabled ? 'Turn speech off' : 'Turn speech on',
-      onActivate: _toggleTts,
     ),
     if (widget.sessionId != null)
       KeypadFocusTarget(
         node: _focusNode('pause-session'),
-        label: 'Pause audio for the session',
+        label: 'Pause audio for the whole session, key 4',
         onActivate: _pauseSessionAudio,
       ),
     KeypadFocusTarget(
       node: _focusNode('upload'),
-      label: 'Upload audio',
+      label: 'Upload audio, key 2',
       onActivate: _uploadAudioFile,
       isEnabled: () => !_isUploading,
     ),
@@ -96,8 +92,8 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
           'preview-${_audioFiles[index]['audio_id'] ?? _audioFiles[index]['id']}',
         ),
         label:
-            'Preview ${_audioFiles[index]['title']} privately. '
-            'Only you can hear this. Item ${index + 1} of ${_audioFiles.length}. '
+            '${_playingAudioId == (_audioFiles[index]['audio_id'] ?? _audioFiles[index]['id']) ? 'Stop preview of' : 'Preview'} '
+            '${_audioFiles[index]['title']} privately. Only you can hear this. '
             '${_audioFiles[index]['description'] ?? ''}',
         onActivate: () => _playAudioLocally(
           (_audioFiles[index]['audio_id'] ?? _audioFiles[index]['id']) as int,
@@ -130,21 +126,27 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
   int? _playingAudioId;
   // Currently selected for session playback
   int? _selectedAudioId;
-  // global TTS toggle for this screen
-  bool _ttsEnabled = true;
+  // Visible copy of the latest spoken status or error
+  String? _statusMessage;
+  bool _statusIsError = false;
+  bool _loadedOnce = false;
 
   // Controllers for upload dialog input fields
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
 
-  void _toggleTts() {
-    setState(() => _ttsEnabled = !TtsService.isEnabled);
-    TtsService.configure(enabled: _ttsEnabled);
-    if (_ttsEnabled) {
-      _speakIfEnabled('Text to speech enabled');
-    } else {
-      TtsService.stop();
-    }
+  void _announce(String message, {bool error = false, SpeechPriority? priority}) {
+    if (!mounted) return;
+    setState(() {
+      _statusMessage = message;
+      _statusIsError = error;
+    });
+    TtsService.speak(
+      message,
+      priority:
+          priority ??
+          (error ? SpeechPriority.critical : SpeechPriority.requested),
+    );
   }
 
   // Called once when the screen is created
@@ -179,7 +181,7 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
       // Clear playing state
       setState(() => _playingAudioId = null);
 
-      _speakIfEnabled("Playback finished");
+      _speakIfEnabled("Preview finished");
     });
 
     // Triggered when player state changes
@@ -227,11 +229,24 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
           }
         });
 
-        await _speakIfEnabled("Loaded ${_audioFiles.length} audio files");
+        _announce(
+          _audioFiles.isEmpty
+              ? 'No recordings yet. Press 2 to upload audio.'
+              : '${_audioFiles.length} recordings loaded.',
+          priority: _loadedOnce ? null : SpeechPriority.incidental,
+        );
+        _loadedOnce = true;
+      } else {
+        _announce(
+          'Could not load recordings. Check your internet connection, then press 1 to retry.',
+          error: true,
+        );
       }
     } catch (e) {
       print('[AUDIO LIBRARY] Error loading files: $e');
-      _showError("Failed to load audio files");
+      _showError(
+        'Could not load recordings. Check your internet connection, then press 1 to retry.',
+      );
     } finally {
       if (!mounted) {
         return;
@@ -403,7 +418,7 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
                 onPressed: () => submit(dialogContext),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: UIUtils.primaryColor,
-                  foregroundColor: Colors.white,
+                  foregroundColor: UIUtils.onPrimaryColor,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -464,7 +479,7 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
     }
 
     setState(() => _isUploading = true);
-    await _speakIfEnabled("Uploading audio file");
+    _announce('Uploading $title. You will hear progress every 25 percent.');
 
     try {
       final headers = await ApiService.getHeaders();
@@ -540,11 +555,11 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
         }
       }
 
-      final response = await request.send();
+      final response = await _sendWithProgress(request, title);
       final responseBody = await response.stream.bytesToString();
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
-        await _speakIfEnabled("Upload successful");
+        _announce('$title uploaded.');
         _titleController.clear();
         _descriptionController.clear();
         // Refresh list after upload
@@ -569,13 +584,44 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
     }
   }
 
+  // Sends [request] while announcing upload progress every 25 percent.
+  Future<http.StreamedResponse> _sendWithProgress(
+    http.MultipartRequest request,
+    String title,
+  ) async {
+    final total = request.contentLength;
+    final body = request.finalize();
+    final streamed = http.StreamedRequest(request.method, request.url)
+      ..contentLength = total
+      ..followRedirects = request.followRedirects
+      ..headers.addAll(request.headers);
+    var sent = 0;
+    var milestone = 0;
+    body.listen(
+      (chunk) {
+        streamed.sink.add(chunk);
+        sent += chunk.length;
+        if (total <= 0) return;
+        final reached = (sent * 100 ~/ total) ~/ 25 * 25;
+        if (reached > milestone && reached < 100) {
+          milestone = reached;
+          _announce('$title: $reached percent uploaded.');
+        }
+      },
+      onDone: streamed.sink.close,
+      onError: streamed.sink.addError,
+      cancelOnError: true,
+    );
+    return streamed.send();
+  }
+
   // Local Audio Preview
   Future<void> _playAudioLocally(int audioId, String title) async {
     try {
       if (_playingAudioId == audioId) {
         await _audioPlayer.stop();
         setState(() => _playingAudioId = null);
-        await _speakIfEnabled("Stopped playback");
+        await _speakIfEnabled("Preview of $title stopped");
         return;
       }
 
@@ -586,10 +632,12 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
       await _audioPlayer.play(UrlSource(url));
       // updates UI state
       setState(() => _playingAudioId = audioId);
-      await _speakIfEnabled("Playing $title");
+      await _speakIfEnabled("Previewing $title privately");
     } catch (e) {
       print('[PLAY] Error: $e');
-      _showError("Failed to play audio");
+      _showError(
+        'Could not play $title. Check your connection and try again.',
+      );
     }
   }
 
@@ -686,14 +734,8 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
     }
   }
 
-  // Shows error which has occured visually
-  void _showError(String message) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: Colors.red),
-    );
-    _speakIfEnabled(message);
-  }
+  // Shows the error visibly (live region) and speaks it once.
+  void _showError(String message) => _announce(message, error: true);
 
   Future<void> _speakIfEnabled(String text) async {
     if (TtsService.isEnabled) {
@@ -730,19 +772,16 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
       screenName: 'Audio library',
       navigationSections:
           'recordings, playback and speech controls, recording sharing, and upload tools when available',
-      onSpeechRescued: () => setState(() => _ttsEnabled = TtsService.isEnabled),
       labels: {
         0: 'Back',
         1: 'Refresh Audio Files',
         2: 'Upload Audio',
-        3: 'Toggle Text to Speech',
         if (widget.sessionId != null) 4: 'Pause Session Audio',
       },
       actions: {
         0: () => Navigator.pop(context),
         1: _loadAudioFiles,
         2: _uploadAudioFile,
-        3: _toggleTts,
         if (widget.sessionId != null) 4: _pauseSessionAudio,
       },
       focusTargets: _focusTargets,
@@ -774,29 +813,15 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
               onPressed: _loadAudioFiles,
               icon: const Icon(Icons.refresh),
             ),
-            IconButton(
-              focusNode: _focusNode('tts'),
-              icon: Icon(
-                _ttsEnabled
-                    ? Icons.volume_up_rounded
-                    : Icons.volume_off_rounded,
-                size: UIUtils.iconSize(context, 20),
-                color: UIUtils.accentColor,
-              ),
-              tooltip: _ttsEnabled
-                  ? 'Turn text-to-speech off'
-                  : 'Turn text-to-speech on',
-              onPressed: _toggleTts,
-            ),
             if (widget.sessionId != null)
               IconButton(
                 focusNode: _focusNode('pause-session'),
                 icon: Icon(
                   Icons.pause_rounded,
-                  size: UIUtils.iconSize(context, 20),
-                  color: Colors.orange,
+                  size: UIUtils.iconSize(context, 24),
+                  color: UIUtils.accentColor,
                 ),
-                tooltip: 'Pause Session Audio',
+                tooltip: 'Pause audio for the whole session, key 4',
                 onPressed: _pauseSessionAudio,
               ),
           ],
@@ -805,8 +830,34 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
         body: _isLoading
             ? const Center(child: CircularProgressIndicator())
             : Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  if (_isUploading) const LinearProgressIndicator(),
+                  if (_isUploading)
+                    LinearProgressIndicator(
+                      color: UIUtils.accentColor,
+                      backgroundColor: UIUtils.cardBorderColor,
+                    ),
+                  if (_statusMessage != null)
+                    Padding(
+                      padding: UIUtils.paddingSymmetric(
+                        context,
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      child: Semantics(
+                        liveRegion: true,
+                        child: Text(
+                          _statusMessage!,
+                          style: TextStyle(
+                            fontSize: UIUtils.fontSize(context, 16),
+                            fontWeight: FontWeight.w700,
+                            color: _statusIsError
+                                ? UIUtils.errorColor
+                                : UIUtils.textColor,
+                          ),
+                        ),
+                      ),
+                    ),
 
                   Padding(
                     padding: UIUtils.paddingAll(context, compact ? 6 : 10),
@@ -829,7 +880,7 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: UIUtils.primaryColor,
-                        foregroundColor: Colors.white,
+                        foregroundColor: UIUtils.onPrimaryColor,
                         padding: UIUtils.paddingSymmetric(
                           context,
                           vertical: compact ? 10 : 14,
@@ -845,7 +896,7 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
                   Padding(
                     padding: UIUtils.paddingSymmetric(context, horizontal: 10),
                     child: Text(
-                      '${_audioFiles.length} Audio Files',
+                      '${_audioFiles.length} recordings',
                       style: TextStyle(
                         fontSize: UIUtils.fontSize(context, 14),
                         fontWeight: FontWeight.w700,
@@ -860,7 +911,7 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
                     child: _audioFiles.isEmpty
                         ? Center(
                             child: Text(
-                              'No audio files yet.\nUpload some!',
+                              'No recordings yet. Press 2 to upload audio.',
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: UIUtils.fontSize(context, 13),
@@ -896,11 +947,12 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                   side: BorderSide(
-                                    color: Colors.grey.withOpacity(0.1),
+                                    color: UIUtils.cardBorderColor,
+                                    width: 1.5,
                                   ),
                                 ),
                                 color: isSelected
-                                    ? UIUtils.accentColor.withOpacity(0.12)
+                                    ? UIUtils.accentColor.withValues(alpha: 0.18)
                                     : UIUtils.cardColor,
                                 child: Padding(
                                   padding: UIUtils.paddingAll(
@@ -918,7 +970,7 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
                                                 ? Icons.music_note_rounded
                                                 : Icons.audiotrack_rounded,
                                             color: isPlaying
-                                                ? Colors.green
+                                                ? UIUtils.successColor
                                                 : UIUtils.accentColor,
                                             size: UIUtils.iconSize(
                                               context,
@@ -968,9 +1020,10 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
                                                               ),
                                                         ),
                                                         child: Text(
-                                                          'SELECTED',
+                                                          'Selected',
                                                           style: TextStyle(
-                                                            color: Colors.white,
+                                                            color: UIUtils
+                                                                .onPrimaryColor,
                                                             fontSize:
                                                                 UIUtils.fontSize(
                                                                   context,
@@ -1067,6 +1120,9 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
                                                     : (isPlaying
                                                           ? 'Stop Preview'
                                                           : 'Preview (Only Me)'),
+                                                semanticsLabel: isPlaying
+                                                    ? 'Stop preview of $title'
+                                                    : 'Preview $title privately',
                                                 style: TextStyle(
                                                   fontSize: UIUtils.fontSize(
                                                     context,
@@ -1075,10 +1131,10 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
                                                 ),
                                               ),
                                               style: ElevatedButton.styleFrom(
-                                                backgroundColor: isPlaying
-                                                    ? Colors.orange
-                                                    : Colors.indigo,
-                                                foregroundColor: Colors.white,
+                                                backgroundColor:
+                                                    UIUtils.accentColor,
+                                                foregroundColor:
+                                                    UIUtils.onAccentColor,
                                                 padding:
                                                     UIUtils.paddingSymmetric(
                                                       context,
@@ -1116,6 +1172,8 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
                                                   compact
                                                       ? 'Session'
                                                       : 'Play in Session',
+                                                  semanticsLabel:
+                                                      'Play $title for everyone in the session',
                                                   style: TextStyle(
                                                     fontSize: UIUtils.fontSize(
                                                       context,
@@ -1124,10 +1182,10 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
                                                   ),
                                                 ),
                                                 style: ElevatedButton.styleFrom(
-                                                  backgroundColor: isSelected
-                                                      ? UIUtils.primaryColor
-                                                      : Colors.green,
-                                                  foregroundColor: Colors.white,
+                                                  backgroundColor:
+                                                      UIUtils.primaryColor,
+                                                  foregroundColor:
+                                                      UIUtils.onPrimaryColor,
                                                   padding:
                                                       UIUtils.paddingSymmetric(
                                                         context,
@@ -1298,7 +1356,7 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text(message)));
+      ).showSnackBar(SnackBar(content: ExcludeSemantics(child: Text(message))));
       TtsService.speak(message, priority: SpeechPriority.critical);
     }
 
@@ -1406,12 +1464,18 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
           _sessions = data.cast<Map<String, dynamic>>();
           _sessionsIssue = null;
         });
+        TtsService.speak(
+          _sessions.isEmpty
+              ? 'No active classes right now. Press 3 for all audio files.'
+              : '${_sessions.length} active classes loaded.',
+          priority: SpeechPriority.incidental,
+        );
       } else {
         final message =
             '${result.failure?.message ?? 'The class list could not be read.'} '
             'Active classes could not be refreshed. Press 1 to retry. Saved downloads remain available.';
         setState(() => _sessionsIssue = message);
-        TtsService.speak(message);
+        TtsService.speak(message, priority: SpeechPriority.critical);
       }
     } finally {
       if (mounted) {
@@ -1458,7 +1522,11 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
     final matches = exact.isNotEmpty ? exact : partial;
     if (matches.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No class found with this session name')),
+        const SnackBar(
+          content: ExcludeSemantics(
+            child: Text('No class found with this session name'),
+          ),
+        ),
       );
       TtsService.speak('No class found with this session name.');
       return;
@@ -1646,10 +1714,10 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
                     Container(
                       padding: UIUtils.paddingAll(context, 12),
                       decoration: BoxDecoration(
-                        color: UIUtils.accentColor.withOpacity(0.08),
+                        color: UIUtils.cardColor,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: UIUtils.accentColor.withOpacity(0.2),
+                          color: UIUtils.cardBorderColor,
                         ),
                       ),
                       child: Row(
@@ -1685,7 +1753,7 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
                         border: Border.all(
                           color: UIUtils.isHighContrast
                               ? UIUtils.accentColor
-                              : Colors.grey.withOpacity(0.15),
+                              : UIUtils.cardBorderColor,
                         ),
                       ),
                       child: Column(
@@ -1723,7 +1791,7 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(10),
                                       borderSide: BorderSide(
-                                        color: Colors.grey.shade300,
+                                        color: UIUtils.cardBorderColor,
                                       ),
                                     ),
                                     focusedBorder: OutlineInputBorder(
@@ -1753,7 +1821,7 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
                                 ),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: UIUtils.primaryColor,
-                                  foregroundColor: Colors.white,
+                                  foregroundColor: UIUtils.onPrimaryColor,
                                   padding: UIUtils.paddingSymmetric(
                                     context,
                                     horizontal: 16,
@@ -1778,12 +1846,12 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
                       margin: EdgeInsets.only(
                         bottom: UIUtils.spacing(context, 16),
                       ),
-                      color: UIUtils.accentColor.withOpacity(0.08),
+                      color: UIUtils.cardColor,
                       elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                         side: BorderSide(
-                          color: UIUtils.accentColor.withOpacity(0.3),
+                          color: UIUtils.cardBorderColor,
                         ),
                       ),
                       child: InkWell(
@@ -1815,7 +1883,7 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
                                 width: 44 * UIUtils.scale(context),
                                 height: 44 * UIUtils.scale(context),
                                 decoration: BoxDecoration(
-                                  color: UIUtils.accentColor.withOpacity(0.15),
+                                  color: UIUtils.backgroundColor,
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: Icon(
@@ -1956,7 +2024,7 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
                             side: BorderSide(
                               color: UIUtils.isHighContrast
                                   ? UIUtils.accentColor
-                                  : Colors.grey.withOpacity(0.12),
+                                  : UIUtils.cardBorderColor,
                             ),
                           ),
                           color: UIUtils.cardColor,
@@ -1973,9 +2041,7 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
                                     width: 44 * UIUtils.scale(context),
                                     height: 44 * UIUtils.scale(context),
                                     decoration: BoxDecoration(
-                                      color: UIUtils.accentColor.withOpacity(
-                                        0.1,
-                                      ),
+                                      color: UIUtils.backgroundColor,
                                       borderRadius: BorderRadius.circular(10),
                                     ),
                                     child: Icon(
@@ -2117,8 +2183,10 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
   List<Map<String, dynamic>> _audioFiles = [];
   bool _isLoading = true;
   bool _isUploadingAudio = false;
-  bool _ttsEnabled = true;
   int? _resolvedTeacherId;
+  String _playbackStatus = 'Stopped';
+  String? _libraryStatus;
+  bool _libraryError = false;
   int? _selectedSubjectId;
   List<Map<String, dynamic>> _teacherSessions = [];
 
@@ -2140,12 +2208,24 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
     () => FocusNode(debugLabel: 'audio-item-$id'),
   );
 
+  int _idOf(Map<String, dynamic> audio) =>
+      (audio['audio_id'] ?? audio['id']) as int;
+
+  String? _audioStatus(int audioId) => _playingAudioId != audioId
+      ? null
+      : _isPlaying
+      ? 'Playing'
+      : 'Paused';
+
   String _audioLabel(int index) {
     final audio = _audioFiles[index];
-    return '${audio['title'] ?? 'Untitled'}. '
-        '${audio['subject_name'] ?? 'Subject'}. '
-        'Lesson ${index + 1} of ${_audioFiles.length}. '
-        '${audio['description'] ?? ''}';
+    final status = _audioStatus(_idOf(audio));
+    return [
+      '${audio['title'] ?? 'Untitled'}',
+      if (status != null) status,
+      '${audio['subject_name'] ?? 'Subject'}',
+      if ('${audio['description'] ?? ''}'.isNotEmpty) '${audio['description']}',
+    ].join('. ');
   }
 
   void _repeatHelp() => TtsService.speak(
@@ -2159,87 +2239,86 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
     ),
   );
 
+  Duration get _position =>
+      Duration(milliseconds: (_currentPosition * 1000).round());
+  Duration? get _duration => _totalDuration == null
+      ? null
+      : Duration(milliseconds: (_totalDuration! * 1000).round());
+
   List<KeypadFocusTarget> get _focusTargets => [
-    if (!widget.downloadedOnly)
-      KeypadFocusTarget(
-        node: _controlNode('downloads'),
-        label: 'Download lessons or manage saved recordings',
-        onActivate: _openDownloads,
-      ),
     KeypadFocusTarget(
       node: _controlNode('back'),
       label: 'Back',
       onActivate: () => Navigator.of(context).maybePop(),
     ),
     KeypadFocusTarget(
-      node: _controlNode('tts'),
-      label: _ttsEnabled ? 'Turn speech off' : 'Turn speech on',
-      onActivate: _toggleTts,
-    ),
-    KeypadFocusTarget(
       node: _controlNode('refresh'),
-      label: 'Refresh audio files',
+      label: 'Refresh audio files, key 1',
       onActivate: _loadAudioFiles,
     ),
-    if (widget.isTeacher)
-      KeypadFocusTarget(
-        node: _controlNode('upload'),
-        label: 'Add audio',
-        onActivate: _handleAddAudio,
-        isEnabled: () => !_isUploadingAudio,
-      ),
-    if (widget.subjectId == null && _availableSubjects.isNotEmpty)
-      KeypadFocusTarget(
-        node: _subjectFilterFocusNode,
-        label:
-            'Subject filter. Use left or right to change the selected subject',
-        onActivate: _cycleSubjectFilter,
-        onDecrease: () => _cycleSubjectFilter(-1),
-        onIncrease: _cycleSubjectFilter,
-      ),
     if (_playingAudioId != null) ...[
       KeypadFocusTarget(
         node: _controlNode('seek'),
         label:
-            'Audio position ${_formatDuration(_currentPosition)}. '
-            'Use left or right to seek ten seconds.',
-        onDecrease: () =>
-            _seekTo((_currentPosition - 10).clamp(0.0, _totalDuration ?? 0.0)),
-        onIncrease: () =>
-            _seekTo((_currentPosition + 10).clamp(0.0, _totalDuration ?? 0.0)),
+            'Lesson position ${learningSpokenPosition(_position, _duration)}. '
+            'Use left or right to move 10 seconds.',
+        onDecrease: () => _seekBy(-10),
+        onIncrease: () => _seekBy(10),
         isEnabled: () => _totalDuration != null,
       ),
       KeypadFocusTarget(
-        node: _controlNode('slower'),
-        label: 'Slower playback',
-        onActivate: () => _changeSpeed(-0.25),
-        isEnabled: () => _audioSpeed > 0.25,
-      ),
-      KeypadFocusTarget(
         node: _controlNode('rewind'),
-        label: 'Back ten seconds',
-        onActivate: () =>
-            _seekTo((_currentPosition - 10).clamp(0.0, _totalDuration ?? 0.0)),
+        label: 'Back 10 seconds, key $playerRewindKey',
+        onActivate: () => _seekBy(-10),
       ),
       KeypadFocusTarget(
         node: _controlNode('play'),
-        label: _isPlaying ? 'Pause lesson' : 'Resume lesson',
+        label: _isPlaying
+            ? 'Pause ${_playingAudioTitle ?? 'lesson'}, key $playerPlayPauseKey'
+            : 'Resume ${_playingAudioTitle ?? 'lesson'}, key $playerPlayPauseKey',
         onActivate: _togglePlayPause,
       ),
       KeypadFocusTarget(
         node: _controlNode('forward'),
-        label: 'Forward ten seconds',
-        onActivate: () =>
-            _seekTo((_currentPosition + 10).clamp(0.0, _totalDuration ?? 0.0)),
+        label: 'Forward 10 seconds, key $playerForwardKey',
+        onActivate: () => _seekBy(10),
+      ),
+      KeypadFocusTarget(
+        node: _controlNode('slower'),
+        label:
+            'Slower, key $playerSlowerKey. Now ${learningSpeedNumber(_audioSpeed)} times',
+        onActivate: () => _changeSpeed(-0.25),
+        isEnabled: () => _audioSpeed > 0.25,
+      ),
+      KeypadFocusTarget(
+        node: _controlNode('stop'),
+        label: 'Stop ${_playingAudioTitle ?? 'lesson'}, key 8',
+        onActivate: _stopAudio,
       ),
       KeypadFocusTarget(
         node: _controlNode('faster'),
-        label: 'Faster playback',
+        label:
+            'Faster, key $playerFasterKey. Now ${learningSpeedNumber(_audioSpeed)} times',
         onActivate: () => _changeSpeed(0.25),
         isEnabled: () => _audioSpeed < 3.0,
       ),
       ..._learningControls.focusTargets(context),
     ],
+    if (widget.subjectId == null && _availableSubjects.isNotEmpty)
+      KeypadFocusTarget(
+        node: _subjectFilterFocusNode,
+        label:
+            'Subject filter, ${_selectedSubjectName ?? 'All subjects'}, key 2. Use left or right to change',
+        onActivate: _cycleSubjectFilter,
+        onDecrease: () => _cycleSubjectFilter(-1),
+        onIncrease: _cycleSubjectFilter,
+      ),
+    if (!widget.downloadedOnly)
+      KeypadFocusTarget(
+        node: _controlNode('downloads'),
+        label: 'Download lessons or manage saved recordings',
+        onActivate: _openDownloads,
+      ),
     KeypadFocusTarget(
       node: _controlNode('stop-speech'),
       label: 'Stop speech',
@@ -2252,20 +2331,12 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
     ),
     for (var index = 0; index < _audioFiles.length; index++)
       KeypadFocusTarget(
-        node: _audioNode(
-          (_audioFiles[index]['audio_id'] ?? _audioFiles[index]['id']) as int,
-        ),
+        node: _audioNode(_idOf(_audioFiles[index])),
         label: _audioLabel(index),
         onActivate: () => _playOrPauseAudio(
-          (_audioFiles[index]['audio_id'] ?? _audioFiles[index]['id']) as int,
+          _idOf(_audioFiles[index]),
           '${_audioFiles[index]['title'] ?? 'Untitled'}',
         ),
-      ),
-    if (_playingAudioId != null)
-      KeypadFocusTarget(
-        node: _controlNode('stop'),
-        label: 'Stop lesson',
-        onActivate: _stopAudio,
       ),
     if (_audioFiles.isEmpty) ...[
       if (widget.isTeacher)
@@ -2281,7 +2352,23 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
         onActivate: _loadAudioFiles,
       ),
     ],
+    if (widget.isTeacher)
+      KeypadFocusTarget(
+        node: _controlNode('upload'),
+        label: 'Add audio, key 3',
+        onActivate: _handleAddAudio,
+        isEnabled: () => !_isUploadingAudio,
+      ),
   ];
+
+  String? get _selectedSubjectName {
+    for (final subject in _availableSubjects) {
+      if (subject['subject_id'] == _selectedSubjectId) {
+        return '${subject['subject_name']}';
+      }
+    }
+    return null;
+  }
 
   @override
   void initState() {
@@ -2364,6 +2451,12 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
   }
 
   void _setupAudioListeners() {
+    _audioPlayer.onPlayerStateChanged.listen((state) {
+      if (mounted &&
+          (state == PlayerState.playing || state == PlayerState.paused)) {
+        _learning.observePlayback(state == PlayerState.playing);
+      }
+    });
     _audioPlayer.onPositionChanged.listen((pos) {
       if (mounted) _learning.updatePosition(pos);
     });
@@ -2380,13 +2473,15 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
       if (!mounted || revision != _playRevision || !_learning.ready) return;
       final looping = await _learning.handleCompletion();
       if (mounted && revision == _playRevision && !looping) {
+        final title = _playingAudioTitle ?? 'Lesson';
         setState(() {
           _isPlaying = false;
           _currentPosition = 0;
           _playingAudioId = null;
           _playingAudioTitle = null;
+          _playbackStatus = 'Finished $title';
         });
-        _speakIfEnabled("Playback finished");
+        _speakIfEnabled('$title finished.');
       }
     });
   }
@@ -2431,14 +2526,11 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
           '[CLASS AUDIO] API returned null - check backend connection and user_id param',
         );
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Could not load audio files. Check network & login.',
-              ),
-              backgroundColor: Colors.orange,
-              duration: Duration(seconds: 5),
-            ),
+          _setLibraryStatus(
+            widget.downloadedOnly
+                ? 'Could not read downloaded lessons. Press 1 to retry.'
+                : 'Could not load recordings. Check your internet connection and sign-in, then press 1 to retry.',
+            error: true,
           );
         }
         return;
@@ -2478,8 +2570,10 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
           }
           _applyAudioFilters();
         });
-        await _speakIfEnabled(
-          "Found ${_audioFiles.length} audio files for ${widget.sessionTitle}",
+        await _setLibraryStatus(
+          _audioFiles.isEmpty
+              ? 'No recordings yet for ${widget.sessionTitle}.'
+              : '${_audioFiles.length} recordings loaded for ${widget.sessionTitle}.',
         );
         if (mounted &&
             !_initialLessonHandled &&
@@ -2502,8 +2596,9 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
       }
     } catch (e) {
       print('[CLASS AUDIO] Error loading files: $e');
-      _showError(
-        ApiService.mapFailure(error: e, context: 'audio list').message,
+      _setLibraryStatus(
+        '${ApiService.mapFailure(error: e, context: 'audio list').message} Press 1 to retry.',
+        error: true,
       );
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -2589,14 +2684,29 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
         if (_isPlaying) {
           await _audioPlayer.pause();
           if (!mounted || revision != _playRevision) return;
-          setState(() => _isPlaying = false);
+          setState(() {
+            _isPlaying = false;
+            _playbackStatus = 'Paused $title';
+          });
           await _learning.flush();
-          await _speakIfEnabled("Paused");
+          await _speakIfEnabled(
+            'Paused at ${learningSpokenPosition(_position, _duration)}.',
+          );
         } else {
           await _audioPlayer.resume();
           if (!mounted || revision != _playRevision) return;
-          setState(() => _isPlaying = true);
-          await _speakIfEnabled("Resumed");
+          setState(() {
+            _isPlaying = true;
+            _playbackStatus = 'Playing $title';
+          });
+          await _speakIfEnabled(
+            learningPlayingAnnouncement(
+              title,
+              _position,
+              _duration,
+              _audioSpeed,
+            ),
+          );
         }
         return;
       }
@@ -2648,26 +2758,39 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
       if (!mounted || revision != _playRevision) return;
       await _audioPlayer.play(source, position: _learning.position);
       if (!mounted || revision != _playRevision) return;
-      _learning.activate();
-      setState(() => _isPlaying = true);
+      _learning.activate(offline: widget.downloadedOnly);
+      setState(() {
+        _isPlaying = true;
+        _playbackStatus = 'Playing $title';
+      });
       final duration = await _audioPlayer.getDuration();
       if (!mounted || revision != _playRevision) return;
       if (duration != null) _learning.updateDuration(duration);
 
       if (!widget.downloadedOnly) unawaited(_logListen(audioId, revision));
 
-      await _speakIfEnabled("Playing $title");
+      await _speakIfEnabled(
+        learningPlayingAnnouncement(
+          title,
+          _learning.position,
+          duration ?? _duration,
+          _audioSpeed,
+        ),
+      );
     } catch (e) {
       debugPrint('[CLASS AUDIO PLAY] Playback failed (${e.runtimeType})');
       if (!mounted || revision != _playRevision) return;
       _learning.abort();
       _showError(
-        e is OfflineLessonException ? e.message : "Failed to play audio",
+        e is OfflineLessonException
+            ? e.message
+            : 'Could not play $title. Check your connection, then select it again.',
       );
       setState(() {
         _isPlaying = false;
         _playingAudioId = null;
         _playingAudioTitle = null;
+        _playbackStatus = 'Stopped';
       });
     } finally {
       settled.complete();
@@ -2690,6 +2813,7 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
   }
 
   Future<void> _stopAudio() async {
+    final title = _playingAudioTitle;
     ++_playRevision;
     await _audioPlayer.pause();
     await _learning.flush();
@@ -2703,8 +2827,25 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
       _playingAudioTitle = null;
       _currentPosition = 0;
       _totalDuration = null;
+      _playbackStatus = 'Stopped';
     });
-    await _speakIfEnabled("Stopped");
+    await _speakIfEnabled(
+      title == null ? 'Nothing is playing.' : '$title stopped.',
+    );
+  }
+
+  Future<void> _seekBy(int seconds) async {
+    if (_playingAudioId == null) {
+      await _speakIfEnabled(
+        'No lesson is playing. Press $playerPlayPauseKey to play the first lesson.',
+      );
+      return;
+    }
+    final end = _totalDuration ?? _currentPosition + seconds.abs();
+    await _seekTo((_currentPosition + seconds).clamp(0.0, end).toDouble());
+    if (mounted) {
+      await _speakIfEnabled(learningSpokenPosition(_position, _duration));
+    }
   }
 
   Future<void> _seekTo(double position) async {
@@ -2719,10 +2860,24 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
   }
 
   Future<void> _changeSpeed(double delta) async {
+    if (_playingAudioId == null) {
+      await _speakIfEnabled('No lesson is playing.');
+      return;
+    }
     final newSpeed = (_audioSpeed + delta).clamp(0.25, 3.0);
+    if (newSpeed == _audioSpeed) {
+      await _speakIfEnabled(
+        delta < 0
+            ? 'Already at the slowest speed.'
+            : 'Already at the fastest speed.',
+      );
+      return;
+    }
     try {
       await _learning.changeSpeed(newSpeed);
-      if (mounted) _speakIfEnabled("Speed ${newSpeed.toStringAsFixed(2)}x");
+      if (mounted) {
+        _speakIfEnabled('Speed ${learningSpeedNumber(newSpeed)} times');
+      }
     } on Exception catch (error) {
       debugPrint('[LEARNING] Speed change failed (${error.runtimeType})');
       _showError('Could not change playback speed. Try again.');
@@ -2747,22 +2902,30 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
     }
   }
 
-  void _toggleTts() {
-    setState(() => _ttsEnabled = !TtsService.isEnabled);
-    TtsService.configure(enabled: _ttsEnabled);
-    if (_ttsEnabled) {
-      _speakIfEnabled('Text to speech enabled');
-    } else {
-      TtsService.stop();
-    }
+  Future<void> _setLibraryStatus(String message, {bool error = false}) async {
+    if (!mounted) return;
+    final firstLoad = _libraryStatus == null;
+    setState(() {
+      _libraryStatus = message;
+      _libraryError = error;
+    });
+    await TtsService.speak(
+      message,
+      priority: error
+          ? SpeechPriority.critical
+          : firstLoad
+          ? SpeechPriority.incidental
+          : SpeechPriority.requested,
+    );
   }
 
   void _showError(String message) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: Colors.red),
-    );
-    _speakIfEnabled(message);
+    setState(() {
+      _libraryStatus = message;
+      _libraryError = true;
+    });
+    TtsService.speak(message, priority: SpeechPriority.critical);
   }
 
   // ── Upload Audio (teacher only) ────────────────────────────────────────────
@@ -2890,7 +3053,6 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
       if (confirmed != true) return;
 
       setState(() => _isUploadingAudio = true);
-      await _speakIfEnabled("Uploading audio");
 
       final title = titleController.text.trim().isNotEmpty
           ? titleController.text.trim()
@@ -2903,62 +3065,106 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
       if (widget.sessionId != 0 &&
           widget.isTeacher &&
           _teacherSessions.isNotEmpty) {
+        final sessionNodes = <int, FocusNode>{
+          for (final session in _teacherSessions)
+            session['session_id'] as int: FocusNode(
+              debugLabel: 'class-upload-session-${session['session_id']}',
+            ),
+        };
+        final cancelSessionsNode = FocusNode(
+          debugLabel: 'class-upload-sessions-cancel',
+        );
+        final confirmSessionsNode = FocusNode(
+          debugLabel: 'class-upload-sessions-confirm',
+        );
+        if (!mounted) return;
         final confirmedSessions = await showDialog<bool>(
           context: context,
-          builder: (ctx) => KeypadInstructionWrapper(
-            screenName: 'Choose sessions for this audio',
-            labels: const {0: 'Cancel', 1: 'Confirm Selected Sessions'},
-            actions: {
-              0: () => Navigator.pop(ctx, false),
-              1: () => Navigator.pop(ctx, true),
-            },
-            child: AlertDialog(
-              title: const Text('Add audio to sessions'),
-              content: StatefulBuilder(
-                builder: (context, setLocalState) => SizedBox(
-                  width: 360,
-                  child: ListView(
-                    shrinkWrap: true,
+          builder: (ctx) => StatefulBuilder(
+            builder: (context, setLocalState) {
+              void toggle(int id) => setLocalState(() {
+                if (!selectedSessionIds.remove(id)) selectedSessionIds.add(id);
+              });
+              return KeypadInstructionWrapper(
+                screenName: 'Choose sessions for this audio',
+                labels: const {0: 'Cancel', 1: 'Confirm Selected Sessions'},
+                actions: {
+                  0: () => Navigator.pop(ctx, false),
+                  1: () => Navigator.pop(ctx, true),
+                },
+                focusTargets: [
+                  for (final session in _teacherSessions)
+                    KeypadFocusTarget(
+                      node: sessionNodes[session['session_id']]!,
+                      label:
+                          '${session['title'] ?? 'Session ${session['session_id']}'}, '
+                          '${selectedSessionIds.contains(session['session_id']) ? 'selected' : 'not selected'}',
+                      onActivate: () => toggle(session['session_id'] as int),
+                    ),
+                  KeypadFocusTarget(
+                    node: cancelSessionsNode,
+                    label: 'Cancel',
+                    onActivate: () => Navigator.pop(ctx, false),
+                  ),
+                  KeypadFocusTarget(
+                    node: confirmSessionsNode,
+                    label:
+                        'Confirm ${selectedSessionIds.length} selected sessions',
+                    onActivate: () => Navigator.pop(ctx, true),
+                  ),
+                ],
+                child: AlertDialog(
+                  scrollable: true,
+                  title: const Text('Add audio to sessions'),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: _teacherSessions.map((session) {
                       final id = session['session_id'] as int;
                       final title =
                           session['title']?.toString() ?? 'Session $id';
                       return CheckboxListTile(
+                        focusNode: sessionNodes[id],
                         value: selectedSessionIds.contains(id),
                         title: Text(title),
-                        subtitle: Text('Session #$id'),
-                        onChanged: (checked) {
-                          setLocalState(() {
-                            if (checked == true) {
-                              selectedSessionIds.add(id);
-                            } else {
-                              selectedSessionIds.remove(id);
-                            }
-                          });
-                        },
+                        subtitle: Text('Session number $id'),
+                        onChanged: (_) => toggle(id),
                       );
                     }).toList(),
                   ),
+                  actions: [
+                    TextButton(
+                      focusNode: cancelSessionsNode,
+                      onPressed: () => Navigator.pop(ctx, false),
+                      child: const Text('0: Cancel'),
+                    ),
+                    ElevatedButton(
+                      focusNode: confirmSessionsNode,
+                      onPressed: () => Navigator.pop(ctx, true),
+                      child: const Text('1: Confirm'),
+                    ),
+                  ],
                 ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(ctx, false),
-                  child: const Text('Cancel'),
-                ),
-                ElevatedButton(
-                  onPressed: () => Navigator.pop(ctx, true),
-                  child: const Text('Confirm'),
-                ),
-              ],
-            ),
+              );
+            },
           ),
         );
+        for (final node in [
+          ...sessionNodes.values,
+          cancelSessionsNode,
+          confirmSessionsNode,
+        ]) {
+          node.dispose();
+        }
         if (confirmedSessions != true || selectedSessionIds.isEmpty) {
-          _showError('Please select at least one session');
+          _showError(
+            'Upload cancelled. Select at least one session, then press 3 to add audio again.',
+          );
           return;
         }
       }
+      await _setLibraryStatus(
+        'Uploading $title. Please wait; you will hear when it finishes.',
+      );
 
       Map<String, dynamic>? uploadResult;
       final currentSession = _teacherSessions
@@ -2997,16 +3203,12 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
       }
 
       if (uploadResult != null) {
-        await _speakIfEnabled("Upload complete");
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Audio uploaded successfully!'),
-            backgroundColor: Colors.green,
-          ),
-        );
+        await _setLibraryStatus('$title uploaded.');
         _loadAudioFiles(); // Refresh the list
       } else {
-        _showError("Upload failed");
+        _showError(
+          '$title could not be uploaded. Check your connection, then press 3 to try again.',
+        );
       }
     } catch (e) {
       print('[UPLOAD] Error: $e');
@@ -3091,45 +3293,35 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
     final bool tiny = UIUtils.isTiny(context);
     final bool compact = tiny || UIUtils.isShort(context);
 
-    // Role-aware key mappings
+    // Role-aware key mappings; must match the labels map exactly.
     final labels = widget.isTeacher
         ? classAudioTeacherKeyLabels
         : classAudioStudentKeyLabels;
 
-    final actions = widget.isTeacher
-        ? <int, VoidCallback>{
-            1: _loadAudioFiles,
-            2: _handleAddAudio,
-            3: _togglePlayPause,
-            4: _stopAudio,
-            5: _toggleTts,
-            6: _cycleSubjectFilter,
-            7: () => _changeSpeed(-0.25),
-            9: () => _changeSpeed(0.25),
-            0: () {
-              _stopAudio();
-              Navigator.of(context).pop();
-            },
-          }
-        : <int, VoidCallback>{
-            1: _loadAudioFiles,
-            2: _togglePlayPause,
-            3: _stopAudio,
-            4: _toggleTts,
-            6: _cycleSubjectFilter,
-            7: () => _changeSpeed(-0.25),
-            9: () => _changeSpeed(0.25),
-            0: () {
-              _stopAudio();
-              Navigator.of(context).pop();
-            },
-          };
+    final actions = <int, VoidCallback>{
+      1: _loadAudioFiles,
+      2: _cycleSubjectFilter,
+      if (widget.isTeacher) 3: _handleAddAudio,
+      playerRewindKey: () => _seekBy(-10),
+      playerPlayPauseKey: _togglePlayPause,
+      playerForwardKey: () => _seekBy(10),
+      playerSlowerKey: () => _changeSpeed(-0.25),
+      8: _stopAudio,
+      playerFasterKey: () => _changeSpeed(0.25),
+      0: () {
+        _stopAudio();
+        Navigator.of(context).pop();
+      },
+    };
+    final textStyle = TextStyle(
+      color: UIUtils.textColor,
+      fontSize: UIUtils.fontSize(context, 16),
+    );
 
     return KeypadInstructionWrapper(
       screenName: 'Class Audio Library',
       navigationSections:
-          'subject filters and recordings, playback controls, bookmarks and learning progress, downloads, and teacher upload tools when available',
-      onSpeechRescued: () => setState(() => _ttsEnabled = TtsService.isEnabled),
+          'playback controls, bookmarks and learning progress, subject filter, downloads, recordings, and teacher upload tools when available',
       labels: labels,
       actions: actions,
       focusTargets: _focusTargets,
@@ -3153,16 +3345,17 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
-              Text(
-                'Audio Library • Session #${widget.sessionId}',
-                style: TextStyle(
-                  fontSize: UIUtils.fontSize(context, 11),
-                  color: UIUtils.subtextColor,
-                  fontWeight: FontWeight.w400,
+              if (!tiny)
+                Text(
+                  'Audio Library, session ${widget.sessionId}',
+                  style: TextStyle(
+                    fontSize: UIUtils.fontSize(context, 14),
+                    color: UIUtils.subtextColor,
+                    fontWeight: FontWeight.w400,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
             ],
           ),
           backgroundColor: UIUtils.cardColor,
@@ -3171,50 +3364,36 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
           toolbarHeight: tiny ? 48 : 56,
           actions: [
             IconButton(
-              focusNode: _controlNode('tts'),
-              icon: Icon(
-                _ttsEnabled
-                    ? Icons.volume_up_rounded
-                    : Icons.volume_off_rounded,
-                size: UIUtils.iconSize(context, 20),
-                color: UIUtils.accentColor,
-              ),
-              tooltip: _ttsEnabled
-                  ? 'Turn text-to-speech off'
-                  : 'Turn text-to-speech on',
-              onPressed: _toggleTts,
-            ),
-            IconButton(
               focusNode: _controlNode('refresh'),
               icon: Icon(
                 Icons.refresh_rounded,
-                size: UIUtils.iconSize(context, 20),
+                size: UIUtils.iconSize(context, 24),
                 color: UIUtils.accentColor,
               ),
-              tooltip: 'Refresh',
+              tooltip: 'Refresh audio files',
               onPressed: _loadAudioFiles,
             ),
           ],
         ),
         backgroundColor: UIUtils.backgroundColor,
-        // Upload FAB for teachers only
+        // Upload button for teachers only
         floatingActionButton: widget.isTeacher
             ? compact
                   ? FloatingActionButton(
                       focusNode: _controlNode('upload'),
                       onPressed: _isUploadingAudio ? null : _handleAddAudio,
                       backgroundColor: UIUtils.accentColor,
-                      foregroundColor: Colors.white,
+                      foregroundColor: UIUtils.onAccentColor,
                       tooltip: _isUploadingAudio
                           ? 'Uploading audio'
-                          : 'Upload Audio',
+                          : 'Add audio, key 3',
                       child: _isUploadingAudio
-                          ? const SizedBox(
+                          ? SizedBox(
                               width: 18,
                               height: 18,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                color: Colors.white,
+                                color: UIUtils.onAccentColor,
                               ),
                             )
                           : const Icon(Icons.upload_file_rounded),
@@ -3223,44 +3402,78 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
                       focusNode: _controlNode('upload'),
                       onPressed: _isUploadingAudio ? null : _handleAddAudio,
                       icon: _isUploadingAudio
-                          ? const SizedBox(
+                          ? SizedBox(
                               width: 18,
                               height: 18,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                color: Colors.white,
+                                color: UIUtils.onAccentColor,
                               ),
                             )
                           : const Icon(Icons.upload_file_rounded),
                       label: Text(
-                        _isUploadingAudio ? 'Uploading…' : 'Upload Audio',
+                        _isUploadingAudio ? 'Uploading' : '3: Add audio',
                       ),
                       backgroundColor: UIUtils.accentColor,
-                      foregroundColor: Colors.white,
+                      foregroundColor: UIUtils.onAccentColor,
                     )
             : null,
         body: _isLoading
             ? const Center(child: CircularProgressIndicator())
             : SingleChildScrollView(
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // ── Now-Playing bar ─────────────────────────────────
-                    if (_playingAudioId != null)
-                      Column(
-                        children: [
-                          _buildNowPlayingBar(),
-                          Padding(
-                            padding: const EdgeInsets.all(8),
-                            child: _learningControls,
+                    if (_libraryStatus != null)
+                      Padding(
+                        padding: UIUtils.paddingSymmetric(
+                          context,
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        child: Semantics(
+                          liveRegion: true,
+                          child: Text(
+                            _libraryStatus!,
+                            style: textStyle.copyWith(
+                              color: _libraryError
+                                  ? UIUtils.errorColor
+                                  : UIUtils.textColor,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
-                        ],
+                        ),
+                      ),
+                    // ── Now-Playing bar ─────────────────────────────────
+                    if (_playingAudioId != null) ...[
+                      _buildNowPlayingBar(),
+                      Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: _learningControls,
+                      ),
+                    ] else
+                      Padding(
+                        padding: UIUtils.paddingSymmetric(
+                          context,
+                          horizontal: 12,
+                        ),
+                        child: Semantics(
+                          liveRegion: true,
+                          child: Text(
+                            _playbackStatus == 'Stopped'
+                                ? 'Nothing playing. Select a lesson or press 5.'
+                                : _playbackStatus,
+                            style: textStyle,
+                          ),
+                        ),
                       ),
 
                     // ── Upload progress ─────────────────────────────────
                     if (_isUploadingAudio)
-                      const LinearProgressIndicator(
-                        color: Colors.teal,
-                        minHeight: 3,
+                      LinearProgressIndicator(
+                        color: UIUtils.accentColor,
+                        backgroundColor: UIUtils.cardBorderColor,
+                        minHeight: 4,
                       ),
 
                     if (widget.subjectId == null &&
@@ -3277,7 +3490,7 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
                           initialValue: _selectedSubjectId,
                           isExpanded: true,
                           decoration: const InputDecoration(
-                            labelText: 'Subject filter (key 6)',
+                            labelText: 'Subject filter (key 2)',
                             prefixIcon: Icon(Icons.menu_book_outlined),
                           ),
                           items: [
@@ -3299,30 +3512,15 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
                     // ── Header ──────────────────────────────────────────
                     Padding(
                       padding: UIUtils.paddingAll(context, compact ? 8 : 12),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.audiotrack_rounded,
-                            size: UIUtils.iconSize(context, 20),
-                            color: UIUtils.accentColor,
+                      child: Semantics(
+                        header: true,
+                        child: Text(
+                          '${_audioFiles.length} recordings',
+                          style: textStyle.copyWith(
+                            fontSize: UIUtils.fontSize(context, 18),
+                            fontWeight: FontWeight.w700,
                           ),
-                          SizedBox(width: UIUtils.spacing(context, 6)),
-                          Expanded(
-                            child: Text(
-                              '${_audioFiles.length} Audio Files',
-                              style: TextStyle(
-                                fontSize: UIUtils.fontSize(
-                                  context,
-                                  compact ? 13 : 15,
-                                ),
-                                fontWeight: FontWeight.w700,
-                                color: UIUtils.textColor,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
                     ),
 
@@ -3347,258 +3545,60 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
                       ],
                     ),
                     // ── Audio list ──────────────────────────────────────
-                    Padding(
-                      padding: EdgeInsets.zero,
-                      child: _audioFiles.isEmpty
-                          ? Center(
-                              child: SingleChildScrollView(
-                                padding: UIUtils.paddingAll(
-                                  context,
-                                  compact ? 8 : 16,
-                                ),
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.audiotrack_rounded,
-                                      size: UIUtils.iconSize(
-                                        context,
-                                        compact ? 36 : 52,
-                                      ),
-                                      color: UIUtils.subtextColor,
-                                    ),
-                                    SizedBox(
-                                      height: UIUtils.spacing(
-                                        context,
-                                        compact ? 6 : 10,
-                                      ),
-                                    ),
-                                    Text(
-                                      widget.isTeacher
-                                          ? 'No audio files for this class yet.'
-                                          : 'No audio files available yet.\nAsk your teacher to upload some!',
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        fontSize: UIUtils.fontSize(
-                                          context,
-                                          compact ? 13 : 15,
-                                        ),
-                                        color: UIUtils.subtextColor,
-                                      ),
-                                    ),
-                                    if (widget.isTeacher && !compact) ...[
-                                      SizedBox(
-                                        height: UIUtils.spacing(context, 10),
-                                      ),
-                                      ElevatedButton.icon(
-                                        focusNode: _controlNode('upload-empty'),
-                                        onPressed: _uploadAudio,
-                                        icon: const Icon(
-                                          Icons.upload_file_rounded,
-                                        ),
-                                        label: const Text('Upload first audio'),
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: UIUtils.accentColor,
-                                          foregroundColor: Colors.white,
-                                        ),
-                                      ),
-                                    ],
-                                    SizedBox(
-                                      height: UIUtils.spacing(context, 6),
-                                    ),
-                                    TextButton.icon(
-                                      focusNode: _controlNode('empty-retry'),
-                                      onPressed: _loadAudioFiles,
-                                      icon: const Icon(Icons.refresh, size: 16),
-                                      label: const Text("Refresh"),
-                                    ),
-                                  ],
+                    if (_audioFiles.isEmpty)
+                      Padding(
+                        padding: UIUtils.paddingAll(context, compact ? 8 : 16),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              widget.isTeacher
+                                  ? 'No recordings for this class yet.'
+                                  : 'No recordings available yet. Ask your teacher to upload some.',
+                              textAlign: TextAlign.center,
+                              style: textStyle,
+                            ),
+                            if (widget.isTeacher) ...[
+                              SizedBox(height: UIUtils.spacing(context, 10)),
+                              ElevatedButton.icon(
+                                focusNode: _controlNode('upload-empty'),
+                                onPressed: _uploadAudio,
+                                icon: const Icon(Icons.upload_file_rounded),
+                                label: const Text('Upload first audio'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: UIUtils.accentColor,
+                                  foregroundColor: UIUtils.onAccentColor,
                                 ),
                               ),
-                            )
-                          : ListView.builder(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              padding: UIUtils.paddingAll(context, 8),
-                              itemCount: _audioFiles.length,
-                              itemBuilder: (context, index) {
-                                final audio = _audioFiles[index];
-                                final audioId =
-                                    audio['audio_id'] ?? audio['id'] ?? 0;
-                                final title = audio['title'] ?? 'Untitled';
-                                final description = audio['description'] ?? '';
-                                final subjectName =
-                                    audio['subject_name'] ?? 'Subject';
-                                final className =
-                                    audio['class_name'] ?? 'Class';
-                                final duration = audio['duration'] as double?;
-                                final isCurrentlyPlaying =
-                                    _playingAudioId == audioId;
-
-                                return Card(
-                                  margin: EdgeInsets.only(
-                                    bottom: UIUtils.spacing(context, 8),
-                                    left: 4,
-                                    right: 4,
-                                  ),
-                                  elevation: isCurrentlyPlaying ? 3 : 0,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    side: isCurrentlyPlaying
-                                        ? BorderSide(
-                                            color: UIUtils.accentColor,
-                                            width: 2,
-                                          )
-                                        : BorderSide(
-                                            color: Colors.grey.withOpacity(0.1),
-                                          ),
-                                  ),
-                                  color: isCurrentlyPlaying
-                                      ? UIUtils.accentColor.withOpacity(0.12)
-                                      : UIUtils.cardColor,
-                                  child: InkWell(
-                                    focusNode: _audioNode(audioId),
-                                    onTap: () =>
-                                        _playOrPauseAudio(audioId, title),
-                                    borderRadius: BorderRadius.circular(12),
-                                    child: Padding(
-                                      padding: UIUtils.paddingAll(context, 12),
-                                      child: Row(
-                                        children: [
-                                          // Play/Pause icon
-                                          Container(
-                                            width: 46 * UIUtils.scale(context),
-                                            height: 46 * UIUtils.scale(context),
-                                            decoration: BoxDecoration(
-                                              color: isCurrentlyPlaying
-                                                  ? (_isPlaying
-                                                        ? Colors.orange
-                                                        : Colors.green)
-                                                  : UIUtils.accentColor,
-                                              shape: BoxShape.circle,
-                                            ),
-                                            child: Icon(
-                                              isCurrentlyPlaying && _isPlaying
-                                                  ? Icons.pause_rounded
-                                                  : Icons.play_arrow_rounded,
-                                              color: Colors.white,
-                                              size: UIUtils.iconSize(
-                                                context,
-                                                24,
-                                              ),
-                                            ),
-                                          ),
-
-                                          SizedBox(
-                                            width: UIUtils.spacing(context, 10),
-                                          ),
-
-                                          // Title + description
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  title,
-                                                  style: TextStyle(
-                                                    fontSize: UIUtils.fontSize(
-                                                      context,
-                                                      14,
-                                                    ),
-                                                    fontWeight: FontWeight.w700,
-                                                    color: UIUtils.textColor,
-                                                  ),
-                                                  maxLines: 1,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                ),
-                                                Text(
-                                                  '$className • $subjectName',
-                                                  style: TextStyle(
-                                                    fontSize: UIUtils.fontSize(
-                                                      context,
-                                                      11,
-                                                    ),
-                                                    color: UIUtils.subtextColor,
-                                                  ),
-                                                  maxLines: 1,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                ),
-                                                if (description.isNotEmpty &&
-                                                    !tiny) ...[
-                                                  SizedBox(
-                                                    height: UIUtils.spacing(
-                                                      context,
-                                                      2,
-                                                    ),
-                                                  ),
-                                                  Text(
-                                                    description,
-                                                    style: TextStyle(
-                                                      fontSize:
-                                                          UIUtils.fontSize(
-                                                            context,
-                                                            11,
-                                                          ),
-                                                      color:
-                                                          UIUtils.subtextColor,
-                                                    ),
-                                                    maxLines: 1,
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                  ),
-                                                ],
-                                                if (duration != null &&
-                                                    !tiny) ...[
-                                                  SizedBox(
-                                                    height: UIUtils.spacing(
-                                                      context,
-                                                      2,
-                                                    ),
-                                                  ),
-                                                  Text(
-                                                    'Duration: ${_formatDuration(duration)}',
-                                                    style: TextStyle(
-                                                      fontSize:
-                                                          UIUtils.fontSize(
-                                                            context,
-                                                            10,
-                                                          ),
-                                                      color:
-                                                          UIUtils.subtextColor,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ],
-                                            ),
-                                          ),
-
-                                          // Stop button
-                                          if (isCurrentlyPlaying)
-                                            IconButton(
-                                              focusNode: _controlNode('stop'),
-                                              icon: Icon(
-                                                Icons.stop_rounded,
-                                                color: Colors.red,
-                                                size: UIUtils.iconSize(
-                                                  context,
-                                                  24,
-                                                ),
-                                              ),
-                                              tooltip: 'Stop',
-                                              onPressed: _stopAudio,
-                                            ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              },
+                            ],
+                            SizedBox(height: UIUtils.spacing(context, 6)),
+                            TextButton.icon(
+                              focusNode: _controlNode('empty-retry'),
+                              onPressed: _loadAudioFiles,
+                              icon: const Icon(Icons.refresh),
+                              label: const Text('Refresh'),
                             ),
-                    ),
+                          ],
+                        ),
+                      )
+                    else
+                      Padding(
+                        padding: UIUtils.paddingAll(context, 8),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            for (
+                              var index = 0;
+                              index < _audioFiles.length;
+                              index++
+                            )
+                              _audioTile(index, tiny),
+                          ],
+                        ),
+                      ),
+                    // Leave room so the floating upload button never covers
+                    // the last recording.
+                    if (widget.isTeacher) const SizedBox(height: 72),
                   ],
                 ),
               ),
@@ -3606,214 +3606,225 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
     );
   }
 
-  /// Now-playing bar with seek, speed, and transport controls.
+  Widget _audioTile(int index, bool tiny) {
+    final audio = _audioFiles[index];
+    final audioId = _idOf(audio);
+    final title = '${audio['title'] ?? 'Untitled'}';
+    final description = '${audio['description'] ?? ''}';
+    final duration = audio['duration'] is num
+        ? (audio['duration'] as num).toDouble()
+        : null;
+    final status = _audioStatus(audioId);
+    return AccessibleTile(
+      focusNode: _audioNode(audioId),
+      leadingIcon: status == 'Playing'
+          ? Icons.pause_circle_filled
+          : Icons.play_circle_fill,
+      title: title,
+      status: status,
+      selected: status != null,
+      semanticLabel: _audioLabel(index),
+      subtitle: [
+        '${audio['class_name'] ?? 'Class'}, ${audio['subject_name'] ?? 'Subject'}',
+        if (duration != null) 'Length ${_formatDuration(duration)}',
+        if (description.isNotEmpty && !tiny) description,
+      ].join('. '),
+      onActivate: () => _playOrPauseAudio(audioId, title),
+    );
+  }
+
+  /// Now-playing panel: status, seek bar, then transport keys laid out like
+  /// the keypad (4 5 6 above 7 8 9).
   Widget _buildNowPlayingBar() {
-    final bool compact = UIUtils.isTiny(context) || UIUtils.isShort(context);
-    final barColor = _isPlaying
-        ? Colors.deepPurple.shade700
-        : Colors.grey.shade800;
+    final stacked = UIUtils.isTiny(context) || UIUtils.useStackedLayout(context);
+    final title = _playingAudioTitle ?? 'Audio';
+    final textStyle = TextStyle(
+      color: UIUtils.textColor,
+      fontSize: UIUtils.fontSize(context, 16),
+    );
+
+    Widget control({
+      required String node,
+      required int key,
+      required IconData icon,
+      required String text,
+      required String semantics,
+      required VoidCallback? onPressed,
+      bool primary = false,
+    }) {
+      final style = primary
+          ? FilledButton.styleFrom(
+              backgroundColor: UIUtils.accentColor,
+              foregroundColor: UIUtils.onAccentColor,
+              minimumSize: const Size(48, 48),
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              textStyle: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+              ),
+            )
+          : OutlinedButton.styleFrom(
+              foregroundColor: UIUtils.textColor,
+              side: BorderSide(color: UIUtils.cardBorderColor, width: 1.5),
+              minimumSize: const Size(48, 48),
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              textStyle: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            );
+      final label = Text(
+        '$key $text',
+        semanticsLabel: semantics,
+        textAlign: TextAlign.center,
+      );
+      return primary
+          ? FilledButton.icon(
+              focusNode: _controlNode(node),
+              style: style,
+              onPressed: onPressed,
+              icon: Icon(icon),
+              label: label,
+            )
+          : OutlinedButton.icon(
+              focusNode: _controlNode(node),
+              style: style,
+              onPressed: onPressed,
+              icon: Icon(icon),
+              label: label,
+            );
+    }
+
+    final focus = _focusTargets;
+    String labelOf(String node) => focus
+        .firstWhere((target) => identical(target.node, _controlNode(node)))
+        .label;
+    final rows = <List<Widget>>[
+      [
+        control(
+          node: 'rewind',
+          key: playerRewindKey,
+          icon: Icons.replay_10,
+          text: 'Back 10 s',
+          semantics: labelOf('rewind'),
+          onPressed: () => _seekBy(-10),
+        ),
+        control(
+          node: 'play',
+          key: playerPlayPauseKey,
+          icon: _isPlaying ? Icons.pause : Icons.play_arrow,
+          text: _isPlaying ? 'Pause' : 'Play',
+          semantics: labelOf('play'),
+          onPressed: _togglePlayPause,
+          primary: true,
+        ),
+        control(
+          node: 'forward',
+          key: playerForwardKey,
+          icon: Icons.forward_10,
+          text: 'Forward 10 s',
+          semantics: labelOf('forward'),
+          onPressed: () => _seekBy(10),
+        ),
+      ],
+      [
+        control(
+          node: 'slower',
+          key: playerSlowerKey,
+          icon: Icons.remove,
+          text: 'Slower',
+          semantics: labelOf('slower'),
+          onPressed: _audioSpeed > 0.25 ? () => _changeSpeed(-0.25) : null,
+        ),
+        control(
+          node: 'stop',
+          key: 8,
+          icon: Icons.stop,
+          text: 'Stop',
+          semantics: labelOf('stop'),
+          onPressed: _stopAudio,
+        ),
+        control(
+          node: 'faster',
+          key: playerFasterKey,
+          icon: Icons.add,
+          text: 'Faster',
+          semantics: labelOf('faster'),
+          onPressed: _audioSpeed < 3.0 ? () => _changeSpeed(0.25) : null,
+        ),
+      ],
+    ];
 
     return Container(
-      padding: EdgeInsets.fromLTRB(
-        compact ? 10 : 16,
-        compact ? 6 : 10,
-        compact ? 10 : 16,
-        compact ? 4 : 6,
+      padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
+      decoration: BoxDecoration(
+        color: UIUtils.cardColor,
+        border: Border.all(color: UIUtils.accentColor, width: 2),
+        borderRadius: BorderRadius.circular(12),
       ),
-      color: barColor,
+      margin: const EdgeInsets.all(8),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Title + speed + time
-          Row(
-            children: [
-              Icon(
-                _isPlaying ? Icons.music_note : Icons.audiotrack,
-                color: Colors.white,
-                size: 18,
+          Semantics(
+            liveRegion: true,
+            child: Text(
+              _playbackStatus,
+              style: textStyle.copyWith(
+                fontSize: UIUtils.fontSize(context, 18),
+                fontWeight: FontWeight.w700,
               ),
-              SizedBox(width: compact ? 4 : 6),
-              Expanded(
-                child: Text(
-                  _playingAudioTitle ?? 'Audio',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: compact ? 12 : 14,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                decoration: BoxDecoration(
-                  color: Colors.white24,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  '${_audioSpeed.toStringAsFixed(1)}×',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 11,
-                  ),
-                ),
-              ),
-              if (!compact) ...[
-                const SizedBox(width: 6),
-                Text(
-                  '${_formatDuration(_currentPosition)} / '
-                  '${_totalDuration != null ? _formatDuration(_totalDuration!) : "--:--"}',
-                  style: const TextStyle(color: Colors.white70, fontSize: 11),
-                ),
-              ],
-            ],
-          ),
-
-          // Seek bar
-          SliderTheme(
-            data: SliderThemeData(
-              trackHeight: compact ? 2.0 : 3.0,
-              thumbShape: RoundSliderThumbShape(
-                enabledThumbRadius: compact ? 5.0 : 6.0,
-              ),
-              activeTrackColor: Colors.tealAccent,
-              inactiveTrackColor: Colors.white30,
-              thumbColor: Colors.tealAccent,
-              overlayColor: Colors.tealAccent.withOpacity(0.2),
-            ),
-            child: Slider(
-              focusNode: _controlNode('seek'),
-              value: (_totalDuration != null && _totalDuration! > 0)
-                  ? (_currentPosition / _totalDuration!).clamp(0.0, 1.0)
-                  : 0.0,
-              onChanged: _totalDuration != null
-                  ? (v) =>
-                        setState(() => _currentPosition = v * _totalDuration!)
-                  : null,
-              onChangeEnd: _totalDuration != null
-                  ? (v) => _seekTo(v * _totalDuration!)
-                  : null,
             ),
           ),
-
-          // Transport controls
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  icon: Icon(
-                    Icons.fast_rewind,
-                    color: Colors.white70,
-                    size: compact ? 20 : 22,
-                  ),
-                  tooltip: 'Slower',
-                  focusNode: _controlNode('slower'),
-                  onPressed: _audioSpeed > 0.25
-                      ? () => _changeSpeed(-0.25)
-                      : null,
-                  padding: EdgeInsets.zero,
-                  constraints: BoxConstraints.tightFor(
-                    width: compact ? 30 : 34,
-                    height: compact ? 28 : 32,
-                  ),
-                ),
-                SizedBox(width: compact ? 4 : 8),
-                IconButton(
-                  icon: Icon(
-                    Icons.replay_10,
-                    color: Colors.white70,
-                    size: compact ? 20 : 22,
-                  ),
-                  tooltip: 'Back 10s',
-                  focusNode: _controlNode('rewind'),
-                  onPressed: () => _seekTo(
-                    (_currentPosition - 10).clamp(0.0, _totalDuration ?? 0.0),
-                  ),
-                  padding: EdgeInsets.zero,
-                  constraints: BoxConstraints.tightFor(
-                    width: compact ? 30 : 34,
-                    height: compact ? 28 : 32,
-                  ),
-                ),
-                SizedBox(width: compact ? 4 : 8),
-                ElevatedButton.icon(
-                  focusNode: _controlNode('play'),
-                  onPressed: _playingAudioId != null
-                      ? () => _playOrPauseAudio(
-                          _playingAudioId!,
-                          _playingAudioTitle ?? 'Audio',
-                        )
-                      : null,
-                  icon: Icon(
-                    _isPlaying ? Icons.pause : Icons.play_arrow,
-                    size: compact ? 18 : 20,
-                  ),
-                  label: Text(
-                    _isPlaying ? 'Pause' : 'Play',
-                    style: TextStyle(fontSize: compact ? 12 : 13),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _isPlaying ? Colors.orange : Colors.green,
-                    foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(
-                      horizontal: compact ? 10 : 16,
-                      vertical: compact ? 5 : 6,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(18),
-                    ),
-                  ),
-                ),
-                SizedBox(width: compact ? 4 : 8),
-                IconButton(
-                  icon: Icon(
-                    Icons.forward_10,
-                    color: Colors.white70,
-                    size: compact ? 20 : 22,
-                  ),
-                  tooltip: 'Forward 10s',
-                  focusNode: _controlNode('forward'),
-                  onPressed: () => _seekTo(
-                    (_currentPosition + 10).clamp(0.0, _totalDuration ?? 0.0),
-                  ),
-                  padding: EdgeInsets.zero,
-                  constraints: BoxConstraints.tightFor(
-                    width: compact ? 30 : 34,
-                    height: compact ? 28 : 32,
-                  ),
-                ),
-                SizedBox(width: compact ? 4 : 8),
-                IconButton(
-                  icon: Icon(
-                    Icons.fast_forward,
-                    color: Colors.white70,
-                    size: compact ? 20 : 22,
-                  ),
-                  tooltip: 'Faster',
-                  focusNode: _controlNode('faster'),
-                  onPressed: _audioSpeed < 3.0
-                      ? () => _changeSpeed(0.25)
-                      : null,
-                  padding: EdgeInsets.zero,
-                  constraints: BoxConstraints.tightFor(
-                    width: compact ? 30 : 34,
-                    height: compact ? 28 : 32,
-                  ),
-                ),
-              ],
+          ExcludeSemantics(
+            child: Text(
+              '${_formatDuration(_currentPosition)} of '
+              '${_totalDuration != null ? _formatDuration(_totalDuration!) : '--:--'}. '
+              'Speed ${learningSpeedNumber(_audioSpeed)}x',
+              style: textStyle.copyWith(color: UIUtils.subtextColor),
             ),
           ),
-          SizedBox(height: compact ? 2 : 4),
+          PlayerSeekBar(
+            focusNode: _controlNode('seek'),
+            position: _position,
+            duration: _duration,
+            onPreview: (value) => setState(
+              () => _currentPosition = value.inMilliseconds / 1000,
+            ),
+            onSeek: (value) => _seekTo(value.inMilliseconds / 1000),
+          ),
+          if (stacked)
+            for (final button in rows.expand((row) => row))
+              Padding(padding: const EdgeInsets.only(top: 6), child: button)
+          else
+            for (final row in rows)
+              Padding(
+                padding: const EdgeInsets.only(top: 6),
+                child: Row(
+                  children: [
+                    for (var i = 0; i < row.length; i++) ...[
+                      if (i > 0) const SizedBox(width: 6),
+                      Expanded(child: row[i]),
+                    ],
+                  ],
+                ),
+              ),
+          ExcludeSemantics(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                'Now playing: $title',
+                style: textStyle.copyWith(color: UIUtils.subtextColor),
+              ),
+            ),
+          ),
         ],
       ),
     );
   }
 }
 
-class AddAudioOptionsScreen extends StatelessWidget {
+class AddAudioOptionsScreen extends StatefulWidget {
   final int sessionId;
   final VoidCallback onUploadNew;
   final VoidCallback onAddExisting;
@@ -3826,64 +3837,106 @@ class AddAudioOptionsScreen extends StatelessWidget {
   });
 
   @override
+  State<AddAudioOptionsScreen> createState() => _AddAudioOptionsScreenState();
+}
+
+class _AddAudioOptionsScreenState extends State<AddAudioOptionsScreen> {
+  final _closeNode = FocusNode(debugLabel: 'add-audio-close');
+  final _uploadNode = FocusNode(debugLabel: 'add-audio-upload');
+  final _existingNode = FocusNode(debugLabel: 'add-audio-existing');
+
+  @override
+  void dispose() {
+    _closeNode.dispose();
+    _uploadNode.dispose();
+    _existingNode.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final textStyle = TextStyle(
+      color: UIUtils.textColor,
+      fontSize: UIUtils.fontSize(context, 16),
+      fontWeight: FontWeight.w600,
+    );
     return KeypadInstructionWrapper(
       screenName: 'Add Audio Options',
       labels: addAudioOptionsKeyLabels,
       actions: {
-        1: onUploadNew,
-        2: onAddExisting,
+        1: widget.onUploadNew,
+        2: widget.onAddExisting,
         0: () => Navigator.of(context).pop(),
       },
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 320, maxHeight: 220),
+      focusTargets: [
+        KeypadFocusTarget(
+          node: _closeNode,
+          label: 'Close add audio options',
+          onActivate: () => Navigator.of(context).pop(),
+        ),
+        KeypadFocusTarget(
+          node: _uploadNode,
+          label: 'Upload new file, key 1',
+          onActivate: widget.onUploadNew,
+        ),
+        KeypadFocusTarget(
+          node: _existingNode,
+          label: 'Select from existing library, key 2',
+          onActivate: widget.onAddExisting,
+        ),
+      ],
+      child: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor,
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(4),
-                  topRight: Radius.circular(4),
-                ),
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              color: UIUtils.primaryColor,
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    'Add Audio',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                  Expanded(
+                    child: Semantics(
+                      header: true,
+                      child: Text(
+                        'Add Audio',
+                        style: TextStyle(
+                          color: UIUtils.onPrimaryColor,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close, color: Colors.white),
+                    focusNode: _closeNode,
+                    tooltip: 'Close add audio options',
+                    icon: Icon(Icons.close, color: UIUtils.onPrimaryColor),
                     onPressed: () => Navigator.of(context).pop(),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
                   ),
                 ],
               ),
             ),
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.all(8),
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  ListTile(
-                    leading: const Icon(Icons.upload_file),
-                    title: const Text('1. Upload New File'),
-                    onTap: onUploadNew,
+                  AccessibleTile(
+                    focusNode: _uploadNode,
+                    leadingIcon: Icons.upload_file,
+                    title: '1: Upload New File',
+                    semanticLabel: 'Upload new file, key 1',
+                    onActivate: widget.onUploadNew,
                   ),
-                  ListTile(
-                    leading: const Icon(Icons.library_music),
-                    title: const Text('2. Select from Existing Library'),
-                    onTap: onAddExisting,
+                  AccessibleTile(
+                    focusNode: _existingNode,
+                    leadingIcon: Icons.library_music,
+                    title: '2: Select from Existing Library',
+                    semanticLabel: 'Select from existing library, key 2',
+                    onActivate: widget.onAddExisting,
                   ),
+                  Text('0: Cancel', style: textStyle),
                 ],
               ),
             ),
@@ -3919,6 +3972,9 @@ class _SelectExistingAudioScreenState extends State<SelectExistingAudioScreen> {
   final Map<int, FocusNode> _itemNodes = {};
   final _backNode = FocusNode(debugLabel: 'existing-audio-back');
   final _refreshNode = FocusNode(debugLabel: 'existing-audio-refresh');
+  final _searchNode = FocusNode(debugLabel: 'existing-audio-search');
+  final _searchController = TextEditingController();
+  final _navigation = KeypadNavigationController();
 
   FocusNode _itemNode(int id) => _itemNodes.putIfAbsent(
     id,
@@ -3927,14 +3983,65 @@ class _SelectExistingAudioScreenState extends State<SelectExistingAudioScreen> {
   bool _isLoading = true;
   List<Map<String, dynamic>> _availableAudio = [];
   bool _linking = false;
+  String? _status;
+  bool _statusIsError = false;
+  String _query = '';
+
+  int _idOf(Map<String, dynamic> audio) =>
+      (audio['audio_id'] ?? audio['id']) as int;
+
+  List<Map<String, dynamic>> get _visibleAudio {
+    final query = _query.trim().toLowerCase();
+    if (query.isEmpty) return _availableAudio;
+    return _availableAudio
+        .where(
+          (audio) =>
+              '${audio['title'] ?? ''} ${audio['description'] ?? ''}'
+                  .toLowerCase()
+                  .contains(query),
+        )
+        .toList();
+  }
 
   @override
   void initState() {
     super.initState();
+    _searchController.addListener(_queryChanged);
     _loadAvailableAudio();
   }
 
+  void _queryChanged() {
+    if (_searchController.text == _query) return;
+    setState(() => _query = _searchController.text);
+  }
+
+  void _announce(String message, {bool error = false, SpeechPriority? priority}) {
+    if (!mounted) return;
+    setState(() {
+      _status = message;
+      _statusIsError = error;
+    });
+    TtsService.speak(
+      message,
+      priority:
+          priority ??
+          (error ? SpeechPriority.critical : SpeechPriority.requested),
+    );
+  }
+
+  void _announceMatches() {
+    final count = _visibleAudio.length;
+    _announce(
+      _query.trim().isEmpty
+          ? '$count recordings available.'
+          : count == 0
+          ? 'No recordings match ${_query.trim()}.'
+          : '$count recordings match ${_query.trim()}.',
+    );
+  }
+
   Future<void> _loadAvailableAudio() async {
+    final firstLoad = _status == null;
     setState(() => _isLoading = true);
     final allAudio = await ApiService.getAudioList();
     if (allAudio != null && mounted) {
@@ -3965,12 +4072,22 @@ class _SelectExistingAudioScreenState extends State<SelectExistingAudioScreen> {
         _availableAudio = available;
         _isLoading = false;
       });
+      _announce(
+        available.isEmpty
+            ? 'No unlinked recordings available for this class.'
+            : '${available.length} recordings available. Use up and down to choose, or search by title.',
+        priority: firstLoad ? SpeechPriority.incidental : null,
+      );
     } else {
       if (mounted) setState(() => _isLoading = false);
+      _announce(
+        'Could not load recordings. Check your internet connection, then press 1 to retry.',
+        error: true,
+      );
     }
   }
 
-  Future<void> _linkAudio(int audioId) async {
+  Future<void> _linkAudio(int audioId, String title) async {
     if (_linking) return;
     setState(() => _linking = true);
     final result = await ApiService.linkAudioToSession(
@@ -3983,13 +4100,12 @@ class _SelectExistingAudioScreenState extends State<SelectExistingAudioScreen> {
     if (result != null) {
       widget.onAudioAdded();
       Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Audio linked successfully!')),
-      );
+      TtsService.speak('$title added to this session.');
     } else {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Failed to link audio')));
+      _announce(
+        'Could not add $title. Check your connection and try again.',
+        error: true,
+      );
     }
   }
 
@@ -3997,6 +4113,8 @@ class _SelectExistingAudioScreenState extends State<SelectExistingAudioScreen> {
   void dispose() {
     _backNode.dispose();
     _refreshNode.dispose();
+    _searchNode.dispose();
+    _searchController.dispose();
     for (final node in _itemNodes.values) {
       node.dispose();
     }
@@ -4005,34 +4123,20 @@ class _SelectExistingAudioScreenState extends State<SelectExistingAudioScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Generate dynamic actions where keys 1-9 map to the first available items
-    final actions = <int, VoidCallback>{
-      1: _loadAvailableAudio,
-      0: () => Navigator.of(context).pop(),
-    };
-
-    for (int i = 0; i < _availableAudio.length && i < 8; i++) {
-      actions[i + 2] = () {
-        if (!_linking) {
-          _linkAudio(
-            _availableAudio[i]['audio_id'] ?? _availableAudio[i]['id'] as int,
-          );
-        }
-      };
-    }
-
+    final visible = _visibleAudio;
+    final textStyle = TextStyle(
+      color: UIUtils.textColor,
+      fontSize: UIUtils.fontSize(context, 16),
+    );
     return KeypadInstructionWrapper(
       screenName: 'Select Existing Audio',
-      labels: {
-        ...selectExistingAudioKeyLabels,
-        for (
-          var index = 0;
-          index < _availableAudio.length && index < 8;
-          index++
-        )
-          index + 2: 'Add ${_availableAudio[index]['title']}',
+      navigationSections: 'search and every available recording',
+      labels: selectExistingAudioKeyLabels,
+      actions: {
+        1: _loadAvailableAudio,
+        0: () => Navigator.of(context).pop(),
       },
-      actions: actions,
+      navigationController: _navigation,
       focusTargets: [
         KeypadFocusTarget(
           node: _backNode,
@@ -4041,25 +4145,23 @@ class _SelectExistingAudioScreenState extends State<SelectExistingAudioScreen> {
         ),
         KeypadFocusTarget(
           node: _refreshNode,
-          label: 'Refresh available audio',
+          label: 'Refresh available audio, key 1',
           onActivate: _loadAvailableAudio,
           isEnabled: () => !_linking,
         ),
-        for (var index = 0; index < _availableAudio.length; index++)
+        KeypadFocusTarget(
+          node: _searchNode,
+          label: _query.isEmpty
+              ? 'Search recordings by title. Press OK to type'
+              : 'Search recordings, $_query. ${visible.length} matches',
+          isTextField: true,
+        ),
+        for (final audio in visible)
           KeypadFocusTarget(
-            node: _itemNode(
-              (_availableAudio[index]['audio_id'] ??
-                      _availableAudio[index]['id'])
-                  as int,
-            ),
-            label:
-                'Add ${_availableAudio[index]['title']}. '
-                'Item ${index + 1} of ${_availableAudio.length}',
-            onActivate: () => _linkAudio(
-              (_availableAudio[index]['audio_id'] ??
-                      _availableAudio[index]['id'])
-                  as int,
-            ),
+            node: _itemNode(_idOf(audio)),
+            label: 'Add ${audio['title'] ?? 'Untitled'} to this session',
+            onActivate: () =>
+                _linkAudio(_idOf(audio), '${audio['title'] ?? 'Untitled'}'),
             isEnabled: () => !_linking,
           ),
       ],
@@ -4083,39 +4185,79 @@ class _SelectExistingAudioScreenState extends State<SelectExistingAudioScreen> {
         ),
         body: _isLoading
             ? const Center(child: CircularProgressIndicator())
-            : _availableAudio.isEmpty
-            ? const Center(
-                child: Text(
-                  'No unlinked audio available.',
-                  style: TextStyle(fontSize: 16),
+            : SingleChildScrollView(
+                padding: UIUtils.paddingAll(context, 8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    if (_status != null)
+                      Semantics(
+                        liveRegion: true,
+                        child: Text(
+                          _status!,
+                          style: textStyle.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: _statusIsError
+                                ? UIUtils.errorColor
+                                : UIUtils.textColor,
+                          ),
+                        ),
+                      ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: TextField(
+                        controller: _searchController,
+                        focusNode: _searchNode,
+                        onTap: () => _navigation.enterTextEditing(_searchNode),
+                        onSubmitted: (_) {
+                          _navigation.exitTextEditing();
+                          _announceMatches();
+                        },
+                        style: textStyle,
+                        decoration: InputDecoration(
+                          labelText: 'Search by title',
+                          prefixIcon: const Icon(Icons.search),
+                          border: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: UIUtils.cardBorderColor,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Text(
+                      _query.trim().isEmpty
+                          ? '${visible.length} recordings'
+                          : '${visible.length} of ${_availableAudio.length} recordings match',
+                      style: textStyle,
+                    ),
+                    if (visible.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Text(
+                          _availableAudio.isEmpty
+                              ? 'No unlinked audio available.'
+                              : 'No recordings match your search.',
+                          style: textStyle,
+                        ),
+                      ),
+                    for (final audio in visible)
+                      AccessibleTile(
+                        focusNode: _itemNode(_idOf(audio)),
+                        leadingIcon: Icons.library_add,
+                        title: '${audio['title'] ?? 'Untitled'}',
+                        semanticLabel:
+                            'Add ${audio['title'] ?? 'Untitled'} to this session',
+                        subtitle: '${audio['description'] ?? ''}',
+                        onActivate: _linking
+                            ? null
+                            : () => _linkAudio(
+                                _idOf(audio),
+                                '${audio['title'] ?? 'Untitled'}',
+                              ),
+                      ),
+                  ],
                 ),
-              )
-            : ListView.builder(
-                itemCount: _availableAudio.length,
-                itemBuilder: (context, index) {
-                  final item = _availableAudio[index];
-                  final title = item['title'] ?? 'Untitled';
-                  final keyNum = index < 8 ? index + 2 : null;
-
-                  return ListTile(
-                    focusNode: _itemNode(
-                      (item['audio_id'] ?? item['id']) as int,
-                    ),
-                    enabled: !_linking,
-                    leading: CircleAvatar(
-                      child: Text(keyNum != null ? '$keyNum' : '-'),
-                    ),
-                    title: Text(
-                      title,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    onTap: () {
-                      if (!_linking) {
-                        _linkAudio(item['audio_id'] ?? item['id'] as int);
-                      }
-                    },
-                  );
-                },
               ),
       ),
     );

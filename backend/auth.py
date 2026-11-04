@@ -94,6 +94,7 @@ async def get_current_user_from_token(
     if not user:
         raise HTTPException(status_code=401, detail="User not found")
     _check_session(user, version, allow_password_change=allow_password_change)
+    db.info["actor_id"] = user.user_id
     return user
 
 

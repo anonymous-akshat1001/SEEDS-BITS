@@ -15,6 +15,8 @@ import 'package:frontend/screens/private_notes_screen.dart';
 import 'package:frontend/services/offline_lesson_store.dart';
 import 'package:frontend/services/learning_progress_store.dart';
 import 'package:frontend/services/tts_service.dart';
+import 'package:frontend/utils/keypad_actions.dart';
+import 'package:frontend/widgets/key_instruction_wrapper.dart';
 import 'package:frontend/widgets/keypad_confirmation_dialog.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -308,6 +310,63 @@ void main() {
   );
 
   testWidgets(
+    'class player keys follow the shared 4 5 6 7 8 9 grammar and the seek bar speaks words',
+    (tester) async {
+      await seed(tester);
+      await http.runWithClient(() async {
+        await tester.pumpWidget(
+          const MaterialApp(
+            home: ClassAudioScreen(
+              sessionId: 0,
+              sessionTitle: 'Lessons',
+              initialAudioId: 1,
+            ),
+          ),
+        );
+        await waitFor(tester, () => calls.any((call) => call.method == 'seek'));
+        final wrapper = tester.widget<KeypadInstructionWrapper>(
+          find.byType(KeypadInstructionWrapper).first,
+        );
+        expect(wrapper.actions.keys.toSet(), wrapper.labels.keys.toSet());
+        expect(wrapper.labels, classAudioStudentKeyLabels);
+        final semantics = tester.ensureSemantics();
+        expect(find.bySemanticsLabel('Lesson position'), findsOneWidget);
+        expect(
+          tester.getSemantics(find.bySemanticsLabel('Lesson position')).value,
+          '25 seconds of 3 minutes',
+        );
+        semantics.dispose();
+        await tester.sendKeyEvent(LogicalKeyboardKey.digit6);
+        await waitFor(
+          tester,
+          () =>
+              calls
+                  .where((call) => call.method == 'seek')
+                  .last
+                  .arguments['position'] ==
+              35000,
+        );
+        await tester.sendKeyEvent(LogicalKeyboardKey.digit9);
+        await waitFor(
+          tester,
+          () =>
+              calls
+                  .where((call) => call.method == 'setPlaybackRate')
+                  .last
+                  .arguments['playbackRate'] ==
+              1.75,
+        );
+        await tester.sendKeyEvent(LogicalKeyboardKey.digit8);
+        await waitFor(
+          tester,
+          () => find.textContaining('Nothing playing').evaluate().isNotEmpty,
+        );
+        await close(tester);
+      }, client);
+    },
+  );
+
+  testWidgets(
     'named bookmarks, confirmed removal, and progress work across class and playlist players',
     (tester) async {
       await seed(tester);
@@ -378,12 +437,12 @@ void main() {
           MaterialApp(home: PlaylistDetailScreen.studentClass(playlistId: 1)),
         );
         await tester.pumpAndSettle();
-        await tester.tap(find.text('3 Play'));
+        await tester.tap(find.text('5 Play'));
         await waitFor(
           tester,
           () => find.text('Add bookmark').evaluate().isNotEmpty,
         );
-        await waitFor(tester, () => find.text('3 Pause').evaluate().isNotEmpty);
+        await waitFor(tester, () => find.text('5 Pause').evaluate().isNotEmpty);
         expect(
           calls
               .where((call) => call.method == 'seek')
@@ -408,7 +467,7 @@ void main() {
                   .arguments['position'] ==
               15000,
         );
-        expect(find.text('3 Pause'), findsOneWidget);
+        expect(find.text('5 Pause'), findsOneWidget);
         await keyActivate(tester, 'playlist-learning-forward-ten');
         await waitFor(
           tester,
@@ -420,7 +479,7 @@ void main() {
               25000,
         );
         await emit('audio.onComplete');
-        await waitFor(tester, () => find.text('3 Play').evaluate().isNotEmpty);
+        await waitFor(tester, () => find.text('5 Play').evaluate().isNotEmpty);
         await close(tester);
         final completed = await tester.runAsync(() => store.lesson(1));
         expect(completed!.completed, isTrue);
@@ -513,9 +572,9 @@ void main() {
         await tester.pumpWidget(
           MaterialApp(home: PlaylistDetailScreen.studentClass(playlistId: 1)),
         );
-        await waitFor(tester, () => find.text('3 Play').evaluate().isNotEmpty);
-        await tester.tap(find.text('3 Play'));
-        await waitFor(tester, () => find.text('3 Pause').evaluate().isNotEmpty);
+        await waitFor(tester, () => find.text('5 Play').evaluate().isNotEmpty);
+        await tester.tap(find.text('5 Play'));
+        await waitFor(tester, () => find.text('5 Pause').evaluate().isNotEmpty);
         positionMs = 5000;
         await tester.pump(const Duration(milliseconds: 300));
         await keyActivate(tester, 'playlist-repeat-a');
@@ -560,7 +619,7 @@ void main() {
               .arguments['releaseMode'],
           ReleaseMode.stop.toString(),
         );
-        expect(find.text('3 Pause'), findsOneWidget);
+        expect(find.text('5 Pause'), findsOneWidget);
         await close(tester);
         final saved = await tester.runAsync(() => store.lesson(1));
         expect(saved!.completed, isFalse);
@@ -578,9 +637,9 @@ void main() {
         await tester.pumpWidget(
           MaterialApp(home: PlaylistDetailScreen.studentClass(playlistId: 1)),
         );
-        await waitFor(tester, () => find.text('3 Play').evaluate().isNotEmpty);
-        await tester.tap(find.text('3 Play'));
-        await waitFor(tester, () => find.text('3 Pause').evaluate().isNotEmpty);
+        await waitFor(tester, () => find.text('5 Play').evaluate().isNotEmpty);
+        await tester.tap(find.text('5 Play'));
+        await waitFor(tester, () => find.text('5 Pause').evaluate().isNotEmpty);
         available = false;
         await tester.sendKeyEvent(LogicalKeyboardKey.digit1);
         await waitFor(
@@ -590,9 +649,9 @@ void main() {
               .evaluate()
               .isNotEmpty,
         );
-        expect(find.text('3 Play'), findsOneWidget);
+        expect(find.text('5 Play'), findsOneWidget);
         final resumes = calls.where((call) => call.method == 'resume').length;
-        await tester.tap(find.text('3 Play'));
+        await tester.tap(find.text('5 Play'));
         await tester.pump(const Duration(milliseconds: 300));
         expect(calls.where((call) => call.method == 'resume').length, resumes);
         await close(tester);

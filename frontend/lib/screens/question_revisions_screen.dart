@@ -5,7 +5,44 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../services/api_service.dart';
 import '../services/tts_service.dart';
+import '../utils/ui_utils.dart';
 import '../widgets/key_instruction_wrapper.dart';
+
+const _monthNames = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+];
+
+/// Speaks a server timestamp as a local date and time, e.g.
+/// "14 March 2026, 3 30 PM". Timestamps without a zone are treated as UTC.
+String spokenRevisionTime(Object? raw) {
+  final text = raw?.toString().trim() ?? '';
+  if (text.isEmpty) return 'date unknown';
+  final hasTime = text.contains('T') || text.contains(' ');
+  final hasZone = RegExp(r'(Z|[+-]\d{2}:?\d{2})$').hasMatch(text);
+  final parsed = DateTime.tryParse(
+    hasTime && !hasZone ? '${text.replaceFirst(' ', 'T')}Z' : text,
+  );
+  if (parsed == null) return text;
+  final value = hasTime ? parsed.toLocal() : parsed;
+  final date = '${value.day} ${_monthNames[value.month - 1]} ${value.year}';
+  if (!hasTime) return date;
+  final hour = value.hour % 12 == 0 ? 12 : value.hour % 12;
+  final minute = value.minute == 0
+      ? ''
+      : ' ${value.minute.toString().padLeft(2, '0')}';
+  return '$date, $hour$minute ${value.hour < 12 ? 'AM' : 'PM'}';
+}
 
 class QuestionRevisionsScreen extends StatefulWidget {
   const QuestionRevisionsScreen({super.key, required this.questionId});
@@ -85,7 +122,21 @@ class _QuestionRevisionsScreenState extends State<QuestionRevisionsScreen> {
       _hasMore = false;
     });
     debugPrint('[QUIZ] $message');
-    await TtsService.speak(message);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final retry = _node('refresh');
+      if (retry.context != null && retry.canRequestFocus) {
+        retry.requestFocus();
+      }
+      // Runs after the focus change so the error is not cut off by the
+      // focus announcement of the retry control.
+      scheduleMicrotask(
+        () => TtsService.speak(
+          '$message Focus is on Refresh revisions.',
+          priority: SpeechPriority.critical,
+        ),
+      );
+    });
   }
 
   Future<void> _load(int offset, {bool last = false}) async {
@@ -141,7 +192,10 @@ class _QuestionRevisionsScreenState extends State<QuestionRevisionsScreen> {
       await TtsService.speak(
         _revisions.isEmpty
             ? 'No tracked revisions. Older question history is unknown, not reconstructed.'
-            : 'Read-only question revision ${_revisions[_index]['revision']}. Existing quiz and attempt snapshots are not changed.',
+            : '${_revisions.length} ${_revisions.length == 1 ? 'revision' : 'revisions'} loaded. '
+                  'Read-only question revision ${_revisions[_index]['revision']}, '
+                  'saved ${spokenRevisionTime(_revisions[_index]['recorded_at'])}. '
+                  'Existing quiz and attempt snapshots are not changed.',
       );
     } on TimeoutException {
       await _fail(
@@ -196,7 +250,7 @@ class _QuestionRevisionsScreenState extends State<QuestionRevisionsScreen> {
     final sections = <String, String>{
       if (revision != null)
         'version':
-            'Revision ${revision['revision']}. Saved ${revision['recorded_at']}. Read-only.',
+            'Revision ${revision['revision']}. Saved ${spokenRevisionTime(revision['recorded_at'])}. Read-only.',
       if (content != null) ...{
         'question':
             'Question: ${content['spoken_question_text'] ?? content['question_text']}',
@@ -211,6 +265,26 @@ class _QuestionRevisionsScreenState extends State<QuestionRevisionsScreen> {
       'notice':
           'Only revisions saved after tracking was introduced are available. Older history is unknown. Existing quiz and attempt snapshots are never rewritten.',
     };
+    final titles = <String, String>{
+      if (revision != null)
+        'version':
+            'Revision ${revision['revision']}, ${spokenRevisionTime(revision['recorded_at'])}',
+      if (content != null) ...{
+        'question': 'Question text',
+        'topics': 'Topics',
+        for (var i = 0; i < options.length; i++)
+          'option-$i':
+              'Option ${i + 1}${content['correct_option_index'] == i ? ', correct answer' : ''}',
+        'explanation': 'Explanation',
+      },
+      'notice': 'About revision history',
+    };
+    String fullRevision() => sections.entries
+        .where((entry) => entry.key != 'notice')
+        .map((entry) => entry.value)
+        .join(' ');
+    String readText(String key) =>
+        key == 'version' ? fullRevision() : sections[key]!;
     final canOlder = !_loading && (_index + 1 < _revisions.length || _hasMore);
     final canNewer = !_loading && (_index > 0 || _offset > 0);
     return KeypadInstructionWrapper(
@@ -246,9 +320,9 @@ class _QuestionRevisionsScreenState extends State<QuestionRevisionsScreen> {
           KeypadFocusTarget(
             node: _node(section.key),
             label: _sameAccount
-                ? section.value
+                ? '${titles[section.key]}. Press OK to hear it'
                 : 'Account changed. Return and sign in again.',
-            onActivate: () => _read(section.value),
+            onActivate: () => _read(readText(section.key)),
           ),
       ],
       child: Scaffold(
@@ -256,6 +330,7 @@ class _QuestionRevisionsScreenState extends State<QuestionRevisionsScreen> {
           title: const Text('Question revisions'),
           leading: IconButton(
             focusNode: _node('back'),
+            tooltip: 'Go back from question revisions',
             onPressed: () => Navigator.pop(context),
             icon: const Icon(Icons.arrow_back),
           ),
@@ -267,7 +342,17 @@ class _QuestionRevisionsScreenState extends State<QuestionRevisionsScreen> {
             children: [
               if (_loading) const LinearProgressIndicator(),
               if (_error != null)
-                Semantics(liveRegion: true, child: Text(_error!)),
+                Semantics(
+                  liveRegion: true,
+                  child: Text(
+                    _error!,
+                    style: TextStyle(
+                      color: UIUtils.errorColor,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
               TextButton(
                 focusNode: _node('refresh'),
                 onPressed: _loading ? null : () => _load(_offset),
@@ -284,10 +369,46 @@ class _QuestionRevisionsScreenState extends State<QuestionRevisionsScreen> {
                 child: const Text('Older revision'),
               ),
               for (final section in sections.entries)
-                TextButton(
-                  focusNode: _node(section.key),
-                  onPressed: () => _read(section.value),
-                  child: Text(section.value),
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Semantics(
+                    button: true,
+                    excludeSemantics: true,
+                    label: _sameAccount
+                        ? '${titles[section.key]}. Double tap to hear it'
+                        : 'Account changed. Return and sign in again.',
+                    onTap: () => _read(readText(section.key)),
+                    child: OutlinedButton(
+                      focusNode: _node(section.key),
+                      onPressed: () => _read(readText(section.key)),
+                      style: OutlinedButton.styleFrom(
+                        alignment: Alignment.centerLeft,
+                        padding: const EdgeInsets.all(12),
+                        side: BorderSide(color: UIUtils.cardBorderColor),
+                        backgroundColor: UIUtils.cardColor,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            titles[section.key]!,
+                            style: TextStyle(
+                              color: UIUtils.textColor,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            section.value,
+                            style: TextStyle(
+                              color: UIUtils.subtextColor,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
             ],
           ),

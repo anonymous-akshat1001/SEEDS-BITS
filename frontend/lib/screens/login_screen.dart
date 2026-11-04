@@ -20,7 +20,13 @@ import '../widgets/sim_suggestion_dialog.dart';
 
 // Defining the Login screen widget as a statefu widget - loading state/input/switch toggle reloads UI
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  const LoginScreen({super.key, this.justRegistered = false, this.initialRole});
+
+  /// Set after a successful registration: says so and focuses the phone field.
+  final bool justRegistered;
+
+  /// Preselected account type: 'student', 'teacher' or 'admin'.
+  final String? initialRole;
 
   // Links UI to logic/state
   @override
@@ -38,6 +44,7 @@ class _LoginScreenState extends State<LoginScreen> {
   bool isLoading = false;
   bool _passwordVisible = false;
   String? _errorMessage;
+  bool _errorOnPhone = false;
   final KeypadNavigationController _keypadController =
       KeypadNavigationController();
   final FocusNode _phoneFocus = FocusNode(debugLabel: 'login-phone');
@@ -66,6 +73,24 @@ class _LoginScreenState extends State<LoginScreen> {
       cleaned = cleaned.substring(2);
     }
     return cleaned;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    const roles = ['student', 'teacher', 'admin'];
+    if (roles.contains(widget.initialRole)) _selectedRole = widget.initialRole!;
+    if (widget.justRegistered) {
+      // Runs before the keypad wrapper's own first-frame focus request, so
+      // this message replaces the plain field announcement.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _keypadController.focusAndAnnounce(
+          _phoneFocus,
+          'Registered. Now log in. Phone number field. Press star for help.',
+        );
+      });
+    }
   }
 
   @override
@@ -266,13 +291,18 @@ class _LoginScreenState extends State<LoginScreen> {
     final phone = phoneCtrl.text.trim();
     final password = passCtrl.text;
 
-    if (phone.isEmpty || password.isEmpty) {
-      _setLoginError("Please fill both phone number and password");
+    if (phone.isEmpty) {
+      _setLoginError('Enter your phone number.', fix: _phoneFocus);
       return;
     }
 
     if (!RegExp(r'^\d{10}$').hasMatch(phone)) {
-      _setLoginError('Enter a valid 10-digit phone number.');
+      _setLoginError('Enter a valid 10-digit phone number.', fix: _phoneFocus);
+      return;
+    }
+
+    if (password.isEmpty) {
+      _setLoginError('Enter your password.');
       return;
     }
 
@@ -314,7 +344,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (roleText != _selectedRole) {
         _setLoginError(
-          'This phone number is not registered as a $_selectedRole account.',
+          'This phone number is not registered as a $_selectedRole account. '
+          'Press 1, 2 or 3 to choose the account type.',
+          fix: _roleFocus,
         );
         return;
       }
@@ -364,13 +396,29 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  void _setLoginError(String message) {
+  /// Shows [message] on the field to fix, moves focus there and speaks the
+  /// error with critical priority so it is never lost behind navigation.
+  void _setLoginError(String message, {FocusNode? fix}) {
     if (!mounted) return;
+    final target = fix ?? _passwordFocus;
     setState(() {
       _errorMessage = message;
+      _errorOnPhone = identical(target, _phoneFocus);
       isLoading = false;
     });
-    TtsService.speak(message);
+    final fieldName = identical(target, _phoneFocus)
+        ? 'phone number field'
+        : identical(target, _roleFocus)
+        ? 'account type'
+        : 'password field';
+    // An empty override keeps the focus move silent so it cannot cut off
+    // the critical error below.
+    _keypadController.focusAndAnnounce(target, ' ');
+    final sentence = message.trimRight();
+    TtsService.speak(
+      '$sentence${sentence.endsWith('.') ? '' : '.'} Moved to $fieldName.',
+      priority: SpeechPriority.critical,
+    );
   }
 
   void _selectRole(String role) {
@@ -382,51 +430,102 @@ class _LoginScreenState extends State<LoginScreen> {
     TtsService.speak('${_roleName(role)} account selected');
   }
 
-  void _moveRole(int direction) {
-    const roles = ['student', 'teacher', 'admin'];
-    final current = roles.indexOf(_selectedRole);
-    var next = (current + direction) % roles.length;
-    if (next < 0) next += roles.length;
-    _selectRole(roles[next]);
-  }
+  void _moveRole(int direction) => _selectRole(_neighbourRole(direction));
 
   String _roleName(String role) {
     if (role == 'admin') return 'Administrator';
     return '${role[0].toUpperCase()}${role.substring(1)}';
   }
 
+  static const _recoverySteps = [
+    'Ask your school administrator to reset your password. They must check '
+        'who you are in person. A phone number or SIM alone does not prove it. '
+        'Never send anyone your permanent password.',
+    'The administrator gives you a private 12-digit temporary password. '
+        'It works for 24 hours. Ask for a new one if it expires.',
+    'Sign in with your phone number and the temporary password, then choose '
+        'a new password.',
+    'After 10 wrong tries, sign-in pauses for 15 minutes. Recovery needs '
+        'internet. Files already on other phones are not removed instantly.',
+  ];
+
   Future<void> _showRecoveryHelp() async {
     final close = FocusNode(debugLabel: 'recovery-help-close');
-    const message =
-        'Ask your school administrator for password recovery. They must verify your identity outside SEEDS. Do not send them your permanent password. A phone number or SIM suggestion alone does not verify identity. An administrator can issue a private 12-digit temporary credential, valid for 24 hours. After 10 wrong attempts, temporary-credential sign-in pauses for 15 minutes. Sign in with your phone number and temporary credential, then choose a new password. Ask the administrator for a replacement if the credential expires. Recovery requires internet and does not instantly revoke files on disconnected phones.';
+    final stepNodes = [
+      for (var i = 0; i < _recoverySteps.length; i++)
+        FocusNode(debugLabel: 'recovery-help-step-${i + 1}'),
+    ];
     await showDialog<void>(
       context: context,
       builder: (dialogContext) => KeypadInstructionWrapper(
-        screenName: message,
+        screenName: 'Password recovery help',
+        introduction:
+            '${_recoverySteps.length} short steps. Press down to hear each step.',
         labels: const {0: 'Back to login'},
         actions: {0: () => Navigator.pop(dialogContext)},
         focusTargets: [
+          for (var i = 0; i < _recoverySteps.length; i++)
+            KeypadFocusTarget(
+              node: stepNodes[i],
+              label: 'Step ${i + 1}. ${_recoverySteps[i]}',
+              onActivate: () =>
+                  TtsService.speak('Step ${i + 1}. ${_recoverySteps[i]}'),
+            ),
           KeypadFocusTarget(
             node: close,
-            label: 'Back to login',
+            label: 'Back to login, button',
             onActivate: () => Navigator.pop(dialogContext),
           ),
         ],
         child: AlertDialog(
+          backgroundColor: UIUtils.cardColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(color: UIUtils.cardBorderColor, width: 1.5),
+          ),
+          insetPadding: const EdgeInsets.all(8),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text(
-                  'School-admin recovery',
-                  style: Theme.of(dialogContext).textTheme.headlineSmall,
+                Semantics(
+                  header: true,
+                  child: Text(
+                    'Password recovery help',
+                    style: TextStyle(
+                      color: UIUtils.textColor,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
-                const Text(message),
+                for (var i = 0; i < _recoverySteps.length; i++)
+                  Focus(
+                    focusNode: stepNodes[i],
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 10),
+                      child: Text(
+                        '${i + 1}. ${_recoverySteps[i]}',
+                        style: TextStyle(
+                          color: UIUtils.textColor,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ),
+                const SizedBox(height: 8),
                 TextButton(
                   focusNode: close,
                   onPressed: () => Navigator.pop(dialogContext),
-                  child: const Text('0: Back to login'),
+                  child: Text(
+                    '0: Back to login',
+                    style: TextStyle(
+                      color: UIUtils.accentColor,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -435,21 +534,101 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
     close.dispose();
+    for (final node in stepNodes) {
+      node.dispose();
+    }
   }
 
   // UI for the LOGIN SCREEN
+  /// One full-width account-type choice for narrow screens. Semantics come
+  /// from the single "Account type" control that wraps all three rows.
+  Widget _roleRow({
+    required String label,
+    required IconData icon,
+    required bool selected,
+    required VoidCallback onTap,
+  }) => Material(
+    color: selected ? UIUtils.accentColor : UIUtils.cardColor,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(10),
+      side: BorderSide(
+        color: selected ? UIUtils.accentColor : UIUtils.cardBorderColor,
+        width: 1.5,
+      ),
+    ),
+    child: InkWell(
+      onTap: onTap,
+      canRequestFocus: false,
+      borderRadius: BorderRadius.circular(10),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 48),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          child: Row(
+            children: [
+              Icon(
+                selected ? Icons.check_circle : icon,
+                color: selected ? UIUtils.onAccentColor : UIUtils.textColor,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    color: selected ? UIUtils.onAccentColor : UIUtils.textColor,
+                    fontSize: UIUtils.fontSize(context, 16),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              if (selected)
+                Text(
+                  'Selected',
+                  style: TextStyle(
+                    color: UIUtils.onAccentColor,
+                    fontSize: UIUtils.fontSize(context, 14),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
+
   @override
   Widget build(BuildContext context) {
+    final roleName = _roleName(_selectedRole);
+    final roleLabel =
+        'Account type: $roleName, selected. Press 1, 2 or 3 to change';
+    OutlineInputBorder fieldBorder(Color color, double width) =>
+        OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: color, width: width),
+        );
+    final labelStyle = TextStyle(
+      fontSize: UIUtils.fontSize(context, 14),
+      color: UIUtils.subtextColor,
+    );
+    final fieldStyle = TextStyle(
+      fontSize: UIUtils.fontSize(context, 16),
+      color: UIUtils.textColor,
+    );
+    final simBusy = _simRequestPending || _simDetecting || isLoading;
+
     return KeypadInstructionWrapper(
       screenName: 'Login Screen',
+      initialFocusNode: widget.justRegistered ? _phoneFocus : null,
       navigationSections:
-          'phone number, password, account type, login, registration and recovery help',
+          'phone number, password, account type, login, registration, SIM suggestions and recovery help',
       labels: {
         ...loginKeyLabels,
         6: 'Read optional SIM phone-number suggestions',
         7: 'School-admin password recovery help',
       },
       navigationController: _keypadController,
+      // Same order as the controls appear on screen, top to bottom.
       focusTargets: [
         KeypadFocusTarget(
           node: _phoneFocus,
@@ -469,21 +648,20 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
         KeypadFocusTarget(
           node: _roleFocus,
-          label:
-              '${_roleName(_selectedRole)} account selected. Use left or right to change account type',
+          label: '$roleLabel, or use left and right',
           onActivate: () => _moveRole(1),
           onDecrease: () => _moveRole(-1),
           onIncrease: () => _moveRole(1),
         ),
         KeypadFocusTarget(
           node: _submitFocus,
-          label: 'Login button',
+          label: 'Login as $roleName, button',
           onActivate: isLoading ? null : _login,
           isEnabled: () => !isLoading,
         ),
         KeypadFocusTarget(
           node: _registerFocus,
-          label: 'Register account link',
+          label: 'Register a new account, button',
           onActivate: () => Navigator.pushNamed(context, '/register'),
         ),
         KeypadFocusTarget(
@@ -495,7 +673,7 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
         KeypadFocusTarget(
           node: _recoveryFocus,
-          label: 'School-admin password recovery help',
+          label: 'Forgot password? School-admin recovery help',
           onActivate: _showRecoveryHelp,
         ),
       ],
@@ -504,310 +682,406 @@ class _LoginScreenState extends State<LoginScreen> {
         2: () => _selectRole('teacher'),
         3: () => _selectRole('admin'),
         4: _login,
-        7: _showRecoveryHelp,
         5: () => Navigator.pushNamed(context, '/register'),
         6: _initMobileNumber,
+        7: _showRecoveryHelp,
       },
       child: Scaffold(
         backgroundColor: UIUtils.backgroundColor,
-        body: Padding(
-          padding: UIUtils.paddingAll(context, 16.0),
-          child: Center(
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    "Welcome Back",
-                    style: TextStyle(
-                      fontSize: UIUtils.fontSize(context, 22),
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(height: UIUtils.spacing(context, 8)),
-
-                  // ===== SIM DETECTION STATUS CARD =====
-                  Container(
-                    width: double.infinity,
-                    padding: UIUtils.paddingSymmetric(
-                      context,
-                      horizontal: 10,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: UIUtils.isHighContrast
-                          ? UIUtils.cardColor
-                          : (!_simDetecting && _simCards.isNotEmpty
-                                ? Colors.teal.shade50
-                                : Colors.grey.shade100),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: UIUtils.isHighContrast
-                            ? UIUtils.accentColor
-                            : (!_simDetecting && _simCards.isNotEmpty
-                                  ? Colors.teal.shade300
-                                  : Colors.grey.shade300),
+        body: SafeArea(
+          child: Padding(
+            padding: UIUtils.paddingAll(context, 16.0),
+            child: Center(
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Semantics(
+                      header: true,
+                      child: Text(
+                        'Welcome Back',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: UIUtils.fontSize(context, 22),
+                          fontWeight: FontWeight.bold,
+                          color: UIUtils.textColor,
+                        ),
                       ),
                     ),
-                    child: Row(
-                      children: [
-                        // Icon / spinner
-                        if (_simDetecting)
-                          SizedBox(
-                            width: UIUtils.iconSize(context, 16),
-                            height: UIUtils.iconSize(context, 16),
-                            child: const CircularProgressIndicator(
-                              strokeWidth: 2,
+                    SizedBox(height: UIUtils.spacing(context, 12)),
+                    if (widget.justRegistered) ...[
+                      // Already spoken as part of the screen announcement.
+                      ExcludeSemantics(
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: UIUtils.cardColor,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: UIUtils.successColor,
+                              width: 2,
                             ),
-                          )
-                        else
-                          Icon(
-                            _simCards.isNotEmpty
-                                ? Icons.sim_card
-                                : Icons.info_outline,
+                          ),
+                          child: Text(
+                            'Registered. Now log in.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: UIUtils.successColor,
+                              fontSize: UIUtils.fontSize(context, 16),
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: UIUtils.spacing(context, 12)),
+                    ],
+
+                    TextField(
+                      controller: phoneCtrl,
+                      focusNode: _phoneFocus,
+                      onChanged: (_) {
+                        if (_errorMessage != null) {
+                          setState(() => _errorMessage = null);
+                        }
+                      },
+                      style: fieldStyle,
+                      decoration: InputDecoration(
+                        label: const Text('Phone number'),
+                        labelStyle: labelStyle,
+                        filled: true,
+                        fillColor: UIUtils.cardColor,
+                        border: fieldBorder(UIUtils.cardBorderColor, 1.5),
+                        enabledBorder: fieldBorder(
+                          UIUtils.cardBorderColor,
+                          1.5,
+                        ),
+                        focusedBorder: fieldBorder(UIUtils.accentColor, 3),
+                        errorText: _errorOnPhone ? _errorMessage : null,
+                        errorMaxLines: 4,
+                        errorStyle: TextStyle(
+                          color: UIUtils.errorColor,
+                          fontSize: UIUtils.fontSize(context, 14),
+                        ),
+                        prefixIcon: ExcludeSemantics(
+                          child: Icon(
+                            Icons.phone_iphone_rounded,
                             size: UIUtils.iconSize(context, 18),
-                            color: UIUtils.isHighContrast
-                                ? UIUtils.accentColor
-                                : (_simCards.isNotEmpty
-                                      ? Colors.teal
-                                      : Colors.grey.shade700),
+                            color: UIUtils.accentColor,
                           ),
-                        SizedBox(width: UIUtils.spacing(context, 8)),
-                        // Status text
-                        Expanded(
-                          child: Semantics(
-                            liveRegion: true,
-                            child: Text(
-                              _simStatusMessage,
-                              style: TextStyle(
-                                fontSize: UIUtils.fontSize(context, 12),
-                                fontWeight: FontWeight.w500,
-                                color: UIUtils.isHighContrast
-                                    ? UIUtils.textColor
-                                    : (_simDetecting
-                                          ? Colors.grey.shade700
-                                          : (_simCards.isNotEmpty
-                                                ? Colors.teal.shade800
-                                                : Colors.grey.shade700)),
+                        ),
+                        contentPadding: UIUtils.paddingSymmetric(
+                          context,
+                          horizontal: 16,
+                          vertical: 16,
+                        ),
+                        isDense: true,
+                      ),
+                      keyboardType: TextInputType.phone,
+                      onTap: () {
+                        _keypadController.enterTextEditing(_phoneFocus);
+                        TtsService.speak('Enter phone number');
+                      },
+                    ),
+                    SizedBox(height: UIUtils.spacing(context, 12)),
+
+                    TextField(
+                      controller: passCtrl,
+                      focusNode: _passwordFocus,
+                      obscureText: !_passwordVisible,
+                      onChanged: (_) {
+                        if (_errorMessage != null) {
+                          setState(() => _errorMessage = null);
+                        }
+                      },
+                      style: fieldStyle,
+                      decoration: InputDecoration(
+                        label: const Text('Password'),
+                        labelStyle: labelStyle,
+                        filled: true,
+                        fillColor: UIUtils.cardColor,
+                        border: fieldBorder(UIUtils.cardBorderColor, 1.5),
+                        enabledBorder: fieldBorder(
+                          UIUtils.cardBorderColor,
+                          1.5,
+                        ),
+                        focusedBorder: fieldBorder(UIUtils.accentColor, 3),
+                        prefixIcon: ExcludeSemantics(
+                          child: Icon(
+                            Icons.lock_outline_rounded,
+                            size: UIUtils.iconSize(context, 18),
+                            color: UIUtils.accentColor,
+                          ),
+                        ),
+                        suffixIcon: IconButton(
+                          focusNode: _passwordVisibilityFocus,
+                          icon: Icon(
+                            _passwordVisible
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                            size: UIUtils.iconSize(context, 18),
+                            color: UIUtils.textColor,
+                          ),
+                          tooltip: _passwordVisible
+                              ? 'Hide password'
+                              : 'Show password',
+                          onPressed: () => setState(
+                            () => _passwordVisible = !_passwordVisible,
+                          ),
+                        ),
+                        errorText: _errorOnPhone ? null : _errorMessage,
+                        errorMaxLines: 4,
+                        errorStyle: TextStyle(
+                          color: UIUtils.errorColor,
+                          fontSize: UIUtils.fontSize(context, 14),
+                        ),
+                        contentPadding: UIUtils.paddingSymmetric(
+                          context,
+                          horizontal: 16,
+                          vertical: 16,
+                        ),
+                        isDense: true,
+                      ),
+                      onTap: () {
+                        _keypadController.enterTextEditing(_passwordFocus);
+                        TtsService.speak('Enter password');
+                      },
+                    ),
+                    SizedBox(height: UIUtils.spacing(context, 12)),
+
+                    // One control for screen readers: the value changes,
+                    // the three segments are not separate stops.
+                    Focus(
+                      focusNode: _roleFocus,
+                      child: Semantics(
+                        container: true,
+                        label: 'Account type',
+                        value: '$roleName, selected. Press 1, 2 or 3 to change',
+                        increasedValue: _roleName(_neighbourRole(1)),
+                        decreasedValue: _roleName(_neighbourRole(-1)),
+                        onIncrease: () => _moveRole(1),
+                        onDecrease: () => _moveRole(-1),
+                        onTap: () => _moveRole(1),
+                        excludeSemantics: true,
+                        child: LayoutBuilder(
+                          builder: (context, constraints) {
+                            const roles = [
+                              ('student', '1 Student', Icons.school_outlined),
+                              ('teacher', '2 Teacher', Icons.person_outline),
+                              (
+                                'admin',
+                                '3 Admin',
+                                Icons.admin_panel_settings_outlined,
                               ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  SizedBox(height: UIUtils.spacing(context, 8)),
-
-                  TextButton(
-                    focusNode: _simFocus,
-                    onPressed: _simRequestPending || _simDetecting || isLoading
-                        ? null
-                        : _initMobileNumber,
-                    child: const Text('6: Read optional SIM suggestions'),
-                  ),
-                  TextButton(
-                    focusNode: _recoveryFocus,
-                    onPressed: _showRecoveryHelp,
-                    child: const Text('7: School-admin password recovery help'),
-                  ),
-                  TextField(
-                    controller: phoneCtrl,
-                    focusNode: _phoneFocus,
-                    onChanged: (_) {
-                      if (_errorMessage != null) {
-                        setState(() => _errorMessage = null);
-                      }
-                    },
-                    style: TextStyle(
-                      fontSize: UIUtils.fontSize(context, 14),
-                      color: UIUtils.textColor,
-                    ),
-                    decoration: InputDecoration(
-                      label: const Text("Phone number"),
-                      labelStyle: TextStyle(
-                        fontSize: UIUtils.fontSize(context, 13),
-                        color: UIUtils.subtextColor,
-                      ),
-                      filled: true,
-                      fillColor: UIUtils.cardColor,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
-                      ),
-                      prefixIcon: Icon(
-                        Icons.phone_iphone_rounded,
-                        size: UIUtils.iconSize(context, 18),
-                        color: UIUtils.accentColor,
-                      ),
-                      contentPadding: UIUtils.paddingSymmetric(
-                        context,
-                        horizontal: 16,
-                        vertical: 16,
-                      ),
-                      isDense: true,
-                    ),
-                    keyboardType: TextInputType.phone,
-                    // TTS
-                    onTap: () {
-                      _keypadController.enterTextEditing(_phoneFocus);
-                      TtsService.speak('Enter phone number');
-                    },
-                  ),
-                  SizedBox(height: UIUtils.spacing(context, 12)),
-
-                  TextField(
-                    controller: passCtrl,
-                    focusNode: _passwordFocus,
-                    obscureText: !_passwordVisible,
-                    onChanged: (_) {
-                      if (_errorMessage != null) {
-                        setState(() => _errorMessage = null);
-                      }
-                    },
-                    style: TextStyle(
-                      fontSize: UIUtils.fontSize(context, 14),
-                      color: UIUtils.textColor,
-                    ),
-                    decoration: InputDecoration(
-                      label: const Text("Password"),
-                      labelStyle: TextStyle(
-                        fontSize: UIUtils.fontSize(context, 13),
-                        color: UIUtils.subtextColor,
-                      ),
-                      filled: true,
-                      fillColor: UIUtils.cardColor,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
-                      ),
-                      prefixIcon: Icon(
-                        Icons.lock_outline_rounded,
-                        size: UIUtils.iconSize(context, 18),
-                        color: UIUtils.accentColor,
-                      ),
-                      suffixIcon: IconButton(
-                        focusNode: _passwordVisibilityFocus,
-                        icon: Icon(
-                          _passwordVisible
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                          size: UIUtils.iconSize(context, 18),
-                          color: UIUtils.subtextColor,
-                        ),
-                        tooltip: _passwordVisible
-                            ? 'Hide password'
-                            : 'Show password',
-                        onPressed: () => setState(
-                          () => _passwordVisible = !_passwordVisible,
+                            ];
+                            // Three segments do not fit a 240 px keypad
+                            // screen; stack full-width rows there instead.
+                            if (constraints.maxWidth < 330 ||
+                                UIUtils.useStackedLayout(context)) {
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  for (final (value, label, icon) in roles)
+                                    Padding(
+                                      padding: const EdgeInsets.only(bottom: 6),
+                                      child: _roleRow(
+                                        label: label,
+                                        icon: icon,
+                                        selected: _selectedRole == value,
+                                        onTap: () => _selectRole(value),
+                                      ),
+                                    ),
+                                ],
+                              );
+                            }
+                            return SegmentedButton<String>(
+                              showSelectedIcon: true,
+                              style: SegmentedButton.styleFrom(
+                                foregroundColor: UIUtils.textColor,
+                                selectedForegroundColor: UIUtils.onAccentColor,
+                                selectedBackgroundColor: UIUtils.accentColor,
+                                side: BorderSide(
+                                  color: UIUtils.cardBorderColor,
+                                  width: 1.5,
+                                ),
+                                textStyle: TextStyle(
+                                  fontSize: UIUtils.fontSize(context, 14),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              segments: [
+                                for (final (value, label, icon) in roles)
+                                  ButtonSegment(
+                                    value: value,
+                                    label: Text(label),
+                                    icon: Icon(icon),
+                                  ),
+                              ],
+                              selected: {_selectedRole},
+                              onSelectionChanged: (selection) =>
+                                  _selectRole(selection.first),
+                            );
+                          },
                         ),
                       ),
-                      errorText: _errorMessage,
-                      errorMaxLines: 2,
-                      contentPadding: UIUtils.paddingSymmetric(
-                        context,
-                        horizontal: 16,
-                        vertical: 16,
-                      ),
-                      isDense: true,
                     ),
-                    onTap: () {
-                      _keypadController.enterTextEditing(_passwordFocus);
-                      TtsService.speak('Enter password');
-                    },
-                  ),
-                  SizedBox(height: UIUtils.spacing(context, 8)),
+                    SizedBox(height: UIUtils.spacing(context, 12)),
 
-                  Focus(
-                    focusNode: _roleFocus,
-                    child: Semantics(
-                      label:
-                          'Account type. ${_roleName(_selectedRole)} selected. Use left and right arrows to change.',
-                      liveRegion: true,
-                      child: SegmentedButton<String>(
-                        showSelectedIcon: true,
-                        segments: const [
-                          ButtonSegment(
-                            value: 'student',
-                            label: Text('1 Student'),
-                            icon: Icon(Icons.school_outlined),
-                          ),
-                          ButtonSegment(
-                            value: 'teacher',
-                            label: Text('2 Teacher'),
-                            icon: Icon(Icons.person_outline),
-                          ),
-                          ButtonSegment(
-                            value: 'admin',
-                            label: Text('3 Admin'),
-                            icon: Icon(Icons.admin_panel_settings_outlined),
-                          ),
-                        ],
-                        selected: {_selectedRole},
-                        onSelectionChanged: (selection) =>
-                            _selectRole(selection.first),
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: UIUtils.spacing(context, 8)),
-
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
+                    ElevatedButton(
                       focusNode: _submitFocus,
                       onPressed: isLoading ? null : _login,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: UIUtils.primaryColor,
+                        foregroundColor: UIUtils.onPrimaryColor,
+                        disabledBackgroundColor: UIUtils.cardColor,
                         padding: UIUtils.paddingSymmetric(
                           context,
-                          horizontal: 24,
+                          horizontal: 16,
                           vertical: 14,
                         ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
+                          side: BorderSide(
+                            color: UIUtils.cardBorderColor,
+                            width: 1.5,
+                          ),
                         ),
                         elevation: 0,
                       ),
                       child: isLoading
-                          ? SizedBox(
-                              height: UIUtils.iconSize(context, 20),
-                              width: UIUtils.iconSize(context, 20),
-                              child: const CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
+                          ? Semantics(
+                              liveRegion: true,
+                              label: 'Signing in, please wait',
+                              child: SizedBox(
+                                height: UIUtils.iconSize(context, 20),
+                                width: UIUtils.iconSize(context, 20),
+                                child: CircularProgressIndicator(
+                                  color: UIUtils.accentColor,
+                                  strokeWidth: 2,
+                                ),
                               ),
                             )
                           : Text(
-                              "4: Login as ${_roleName(_selectedRole)}",
+                              '4: Login as $roleName',
+                              textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: UIUtils.fontSize(context, 16),
                                 fontWeight: FontWeight.w600,
-                                color: Colors.white,
+                                color: UIUtils.onPrimaryColor,
                               ),
                             ),
                     ),
-                  ),
-                  SizedBox(height: UIUtils.spacing(context, 16)),
+                    SizedBox(height: UIUtils.spacing(context, 12)),
 
-                  // Add "Create account" option
-                  TextButton(
-                    focusNode: _registerFocus,
-                    onPressed: () => Navigator.pushNamed(context, '/register'),
-                    child: Text(
-                      "5: Don't have an account? Register",
-                      style: TextStyle(
-                        fontSize: UIUtils.fontSize(context, 14),
-                        color: UIUtils.accentColor,
-                        fontWeight: FontWeight.w500,
+                    TextButton(
+                      focusNode: _registerFocus,
+                      onPressed: () =>
+                          Navigator.pushNamed(context, '/register'),
+                      child: Text(
+                        "5: Don't have an account? Register",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: UIUtils.fontSize(context, 16),
+                          color: UIUtils.accentColor,
+                          fontWeight: FontWeight.w600,
+                          decoration: TextDecoration.underline,
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                    SizedBox(height: UIUtils.spacing(context, 12)),
+
+                    // ===== OPTIONAL SIM SUGGESTIONS =====
+                    Container(
+                      padding: UIUtils.paddingSymmetric(
+                        context,
+                        horizontal: 10,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: UIUtils.cardColor,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: UIUtils.cardBorderColor,
+                          width: 1.5,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          ExcludeSemantics(
+                            child: _simDetecting
+                                ? SizedBox(
+                                    width: UIUtils.iconSize(context, 16),
+                                    height: UIUtils.iconSize(context, 16),
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: UIUtils.accentColor,
+                                    ),
+                                  )
+                                : Icon(
+                                    _simCards.isNotEmpty
+                                        ? Icons.sim_card
+                                        : Icons.info_outline,
+                                    size: UIUtils.iconSize(context, 18),
+                                    color: UIUtils.accentColor,
+                                  ),
+                          ),
+                          SizedBox(width: UIUtils.spacing(context, 8)),
+                          Expanded(
+                            child: Semantics(
+                              liveRegion: true,
+                              child: Text(
+                                _simStatusMessage,
+                                style: TextStyle(
+                                  fontSize: UIUtils.fontSize(context, 14),
+                                  fontWeight: FontWeight.w500,
+                                  color: UIUtils.textColor,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    TextButton(
+                      focusNode: _simFocus,
+                      onPressed: simBusy ? null : _initMobileNumber,
+                      child: Text(
+                        '6: Read optional SIM suggestions',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: UIUtils.fontSize(context, 16),
+                          color: simBusy
+                              ? UIUtils.subtextColor
+                              : UIUtils.accentColor,
+                        ),
+                      ),
+                    ),
+                    TextButton(
+                      focusNode: _recoveryFocus,
+                      onPressed: _showRecoveryHelp,
+                      child: Text(
+                        '7: Forgot password? Recovery help',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: UIUtils.fontSize(context, 16),
+                          color: UIUtils.accentColor,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
         ),
       ),
     );
+  }
+
+  String _neighbourRole(int direction) {
+    const roles = ['student', 'teacher', 'admin'];
+    var next = (roles.indexOf(_selectedRole) + direction) % roles.length;
+    if (next < 0) next += roles.length;
+    return roles[next];
   }
 }

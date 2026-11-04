@@ -8,6 +8,7 @@ import '../services/api_service.dart';
 import '../services/auth_session_service.dart';
 import '../services/notification_services.dart';
 import '../services/tts_service.dart';
+import '../utils/ui_utils.dart';
 import '../widgets/key_instruction_wrapper.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
@@ -26,35 +27,63 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   final _repeatFocus = FocusNode(debugLabel: 'recovery-repeat');
   final _saveFocus = FocusNode(debugLabel: 'recovery-save');
   final _signOutFocus = FocusNode(debugLabel: 'recovery-sign-out');
+  final _keypadController = KeypadNavigationController();
   String? _error;
   bool _busy = false;
+  static const _busyMessage = 'Saving. Waiting for password-change confirmation.';
 
-  void _fail(String message) {
+  /// Shows and speaks [message] once at critical priority; when a field
+  /// needs fixing, focus moves there without a competing announcement.
+  void _fail(String message, {FocusNode? fix}) {
     if (!mounted) return;
-    setState(() => _error = message);
-    TtsService.speak(message);
+    setState(() {
+      _error = message;
+      _busy = false;
+    });
+    if (fix != null && fix.context != null) {
+      _keypadController.focusAndAnnounce(fix, ' ');
+    }
+    TtsService.speak(message, priority: SpeechPriority.critical);
   }
 
   Future<void> _save() async {
     if (_busy) return;
-    if (_current.text.isEmpty || _password.text.length < 6) {
+    if (_current.text.isEmpty) {
       _fail(
-        'Enter your temporary credential and a new password of at least 6 characters.',
+        'Enter your temporary credential. Moved to that field.',
+        fix: _currentFocus,
+      );
+      return;
+    }
+    if (_password.text.length < 6) {
+      _fail(
+        'Enter a new password of at least 6 characters. Moved to new password.',
+        fix: _passwordFocus,
       );
       return;
     }
     if (_password.text != _repeat.text) {
-      _fail('The new passwords do not match.');
+      _fail(
+        'The new passwords do not match. Moved to repeat new password.',
+        fix: _repeatFocus,
+      );
       return;
     }
     if (_password.text == _current.text) {
-      _fail('Choose a password different from the temporary credential.');
+      _fail(
+        'Choose a password different from the temporary credential. Moved to new password.',
+        fix: _passwordFocus,
+      );
       return;
     }
     setState(() {
       _busy = true;
       _error = null;
     });
+    // TalkBack hears the live region; self-voicing users need speech.
+    if (TtsService.mode == SpeechMode.selfVoicing) {
+      TtsService.speak(_busyMessage);
+    }
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
@@ -144,105 +173,190 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   }
 
   @override
-  Widget build(BuildContext context) => PopScope(
-    canPop: false,
-    onPopInvokedWithResult: (didPop, _) {
-      if (!didPop) _signOut();
-    },
-    child: KeypadInstructionWrapper(
-      screenName:
-          'Change your temporary password. Internet is required. No dashboard is available until your new password is confirmed.',
-      labels: const {4: 'Save new password', 0: 'Sign out'},
-      actions: {4: _save, 0: _signOut},
-      onHashKey: _signOut,
-      focusTargets: [
-        KeypadFocusTarget(
-          node: _currentFocus,
-          label: 'Temporary credential. Hidden input.',
-          isTextField: true,
-        ),
-        KeypadFocusTarget(
-          node: _passwordFocus,
-          label: 'New password. At least 6 characters. Hidden input.',
-          isTextField: true,
-        ),
-        KeypadFocusTarget(
-          node: _repeatFocus,
-          label: 'Repeat new password. Hidden input.',
-          isTextField: true,
-        ),
-        KeypadFocusTarget(
-          node: _saveFocus,
-          label: 'Save new password',
-          onActivate: _save,
-          isEnabled: () => !_busy,
-        ),
-        KeypadFocusTarget(
-          node: _signOutFocus,
-          label: 'Sign out without bypassing password change',
-          onActivate: _signOut,
-          isEnabled: () => !_busy,
-        ),
-      ],
-      child: Scaffold(
-        body: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(
-                  'Change password',
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
-                const Text(
-                  'Your school administrator issued a temporary credential. It lasts 24 hours. After 10 wrong attempts, temporary-credential sign-in pauses for 15 minutes. Choose a different password of at least 6 characters. This requires internet.',
-                ),
-                for (final field in [
-                  (
-                    controller: _current,
-                    node: _currentFocus,
-                    label: 'Temporary credential',
+  Widget build(BuildContext context) {
+    final fields = [
+      (
+        controller: _current,
+        node: _currentFocus,
+        label: 'Temporary credential',
+      ),
+      (controller: _password, node: _passwordFocus, label: 'New password'),
+      (controller: _repeat, node: _repeatFocus, label: 'Repeat new password'),
+    ];
+    OutlineInputBorder border(Color color, double width) => OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: BorderSide(color: color, width: width),
+    );
+    final bodyStyle = TextStyle(
+      color: UIUtils.textColor,
+      fontSize: UIUtils.fontSize(context, 16),
+    );
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _signOut();
+      },
+      child: KeypadInstructionWrapper(
+        screenName: 'Change temporary password',
+        introduction:
+            'Enter the temporary credential from your administrator, then a '
+            'new password of at least 6 characters, twice. Internet is '
+            'required. The dashboard opens after the new password is confirmed.',
+        labels: const {4: 'Save new password', 0: 'Sign out'},
+        navigationController: _keypadController,
+        actions: {4: _save, 0: _signOut},
+        focusTargets: [
+          KeypadFocusTarget(
+            node: _currentFocus,
+            label: 'Temporary credential. Hidden input.',
+            isTextField: true,
+          ),
+          KeypadFocusTarget(
+            node: _passwordFocus,
+            label: 'New password. At least 6 characters. Hidden input.',
+            isTextField: true,
+          ),
+          KeypadFocusTarget(
+            node: _repeatFocus,
+            label: 'Repeat new password. Hidden input.',
+            isTextField: true,
+          ),
+          KeypadFocusTarget(
+            node: _saveFocus,
+            label: 'Save new password, button',
+            onActivate: _save,
+            isEnabled: () => !_busy,
+          ),
+          KeypadFocusTarget(
+            node: _signOutFocus,
+            label: 'Sign out, asks to confirm',
+            onActivate: _signOut,
+            isEnabled: () => !_busy,
+          ),
+        ],
+        child: Scaffold(
+          backgroundColor: UIUtils.backgroundColor,
+          body: SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Semantics(
+                    header: true,
+                    child: Text(
+                      'Change password',
+                      style: TextStyle(
+                        color: UIUtils.textColor,
+                        fontSize: UIUtils.fontSize(context, 22),
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
-                  (
-                    controller: _password,
-                    node: _passwordFocus,
-                    label: 'New password',
+                  const SizedBox(height: 8),
+                  Text(
+                    'Your school administrator issued a temporary credential. '
+                    'It lasts 24 hours. After 10 wrong attempts, sign-in '
+                    'pauses for 15 minutes. Choose a different password of at '
+                    'least 6 characters. This requires internet.',
+                    style: bodyStyle,
                   ),
-                  (
-                    controller: _repeat,
-                    node: _repeatFocus,
-                    label: 'Repeat new password',
+                  for (final field in fields) ...[
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: field.controller,
+                      focusNode: field.node,
+                      style: bodyStyle,
+                      decoration: InputDecoration(
+                        label: Text(field.label),
+                        labelStyle: TextStyle(
+                          color: UIUtils.subtextColor,
+                          fontSize: UIUtils.fontSize(context, 14),
+                        ),
+                        filled: true,
+                        fillColor: UIUtils.cardColor,
+                        border: border(UIUtils.cardBorderColor, 1.5),
+                        enabledBorder: border(UIUtils.cardBorderColor, 1.5),
+                        disabledBorder: border(UIUtils.subtextColor, 1),
+                        focusedBorder: border(UIUtils.accentColor, 3),
+                      ),
+                      obscureText: true,
+                      autocorrect: false,
+                      enableSuggestions: false,
+                      enabled: !_busy,
+                    ),
+                  ],
+                  const SizedBox(height: 12),
+                  // Errors are spoken once by TtsService (which also reaches
+                  // TalkBack), so this text is not a live region.
+                  if (_error != null)
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: UIUtils.errorColor, width: 2),
+                      ),
+                      child: Text(
+                        _error!,
+                        style: bodyStyle.copyWith(color: UIUtils.errorColor),
+                      ),
+                    ),
+                  if (_busy)
+                    Semantics(
+                      liveRegion: true,
+                      child: Text(
+                        _busyMessage,
+                        style: bodyStyle.copyWith(color: UIUtils.subtextColor),
+                      ),
+                    ),
+                  const SizedBox(height: 12),
+                  ElevatedButton(
+                    focusNode: _saveFocus,
+                    onPressed: _busy ? null : _save,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: UIUtils.primaryColor,
+                      foregroundColor: UIUtils.onPrimaryColor,
+                      disabledBackgroundColor: UIUtils.cardColor,
+                      disabledForegroundColor: UIUtils.subtextColor,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: BorderSide(
+                          color: UIUtils.cardBorderColor,
+                          width: 1.5,
+                        ),
+                      ),
+                    ),
+                    child: Text(
+                      '4: Save new password',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: UIUtils.fontSize(context, 16),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
-                ])
-                  TextField(
-                    controller: field.controller,
-                    focusNode: field.node,
-                    decoration: InputDecoration(label: Text(field.label)),
-                    obscureText: true,
-                    autocorrect: false,
-                    enableSuggestions: false,
-                    enabled: !_busy,
+                  const SizedBox(height: 8),
+                  TextButton(
+                    focusNode: _signOutFocus,
+                    onPressed: _busy ? null : _signOut,
+                    child: Text(
+                      '0: Sign out',
+                      style: TextStyle(
+                        fontSize: UIUtils.fontSize(context, 16),
+                        color: _busy
+                            ? UIUtils.subtextColor
+                            : UIUtils.accentColor,
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
                   ),
-                if (_error != null)
-                  Semantics(liveRegion: true, child: Text(_error!)),
-                if (_busy)
-                  const Text('Waiting for password-change confirmation.'),
-                ElevatedButton(
-                  focusNode: _saveFocus,
-                  onPressed: _busy ? null : _save,
-                  child: const Text('4: Save new password'),
-                ),
-                TextButton(
-                  focusNode: _signOutFocus,
-                  onPressed: _busy ? null : _signOut,
-                  child: const Text('0: Sign out'),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
       ),
-    ),
-  );
+    );
+  }
 }

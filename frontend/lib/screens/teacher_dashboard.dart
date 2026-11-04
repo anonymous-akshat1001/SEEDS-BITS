@@ -15,6 +15,7 @@ import '../utils/keypad_actions.dart';
 import '../services/auth_session_service.dart';
 import '../utils/session_search.dart';
 import '../widgets/keypad_paged_list.dart';
+import '../widgets/accessible_tile.dart';
 
 // Create Teacher Dashboard Widget
 class TeacherDashboard extends StatefulWidget {
@@ -36,6 +37,10 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
   // Controls loading spinner
   bool isLoading = true;
   bool _isRefreshing = false;
+  String _status = '';
+  // Spoken once with the screen help; later counts are announced directly so
+  // the full help is not repeated on every refresh.
+  String? _introduction;
   List<dynamic> _workspaces = const [];
   Map<String, dynamic>? _selectedWorkspace;
   final TextEditingController _searchController = TextEditingController();
@@ -101,7 +106,8 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
 
     // load session only if user exists
     if (currentUserId != null) {
-      await _loadSessions();
+      // The screen introduction reads the count once the dashboard appears.
+      await _loadSessions(announce: false);
     }
 
     // data loading complete
@@ -109,14 +115,28 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     setState(() {
       // spinner removed
       isLoading = false;
+      if (_status.isEmpty && currentUserId != null) {
+        _status = _sessionCountSummary();
+      }
+      _introduction = _status.isEmpty ? null : '$_status.';
     });
   }
 
   // Fetch active and ended sessions for this teacher.
-  Future<void> _loadSessions() async {
+  // [doneMessage] is spoken together with the new count so a completed
+  // action is not cut off by the refresh announcement.
+  Future<void> _loadSessions({
+    String? doneMessage,
+    bool announce = true,
+  }) async {
     final previousFocus = FocusManager.instance.primaryFocus;
     if (mounted) setState(() => _isRefreshing = true);
-    await TtsService.speak('Refreshing sessions');
+    if (doneMessage == null && announce) {
+      await TtsService.speak(
+        'Refreshing sessions',
+        priority: SpeechPriority.navigation,
+      );
+    }
     final result = await ApiService.getResult(
       '/sessions/active?include_ended=true',
       useAuth: true,
@@ -134,19 +154,24 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
       setState(() {
         sessions = teacherSessions;
         _isRefreshing = false;
+        _status = _sessionCountSummary();
+      });
+      if (announce) {
+        await TtsService.speak(
+          doneMessage == null ? _status : '$doneMessage. $_status',
+        );
+      }
+    } else {
+      final message =
+          '${result.failure!.message} Sessions were not refreshed. Press 1 to try again.';
+      setState(() {
+        _isRefreshing = false;
+        _status = message;
       });
       await TtsService.speak(
-        sessions.isEmpty
-            ? 'No sessions found'
-            : '${sessions.length} sessions found',
+        doneMessage == null ? message : '$doneMessage. $message',
+        priority: SpeechPriority.critical,
       );
-    } else {
-      setState(() => _isRefreshing = false);
-      final message = result.failure!.message;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(message)));
-      await TtsService.speak(message);
     }
     if (previousFocus != null && previousFocus.canRequestFocus) {
       previousFocus.requestFocus();
@@ -157,10 +182,8 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
   Future<void> createSession() async {
     // If user not logged in
     if (currentUserId == null || currentUserName == null) {
-      TtsService.speak("User not logged in");
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Please log in first")));
+      TtsService.speak('Please log in first');
+      _showSnack('Please log in first');
       // stop execution
       return;
     }
@@ -189,7 +212,13 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
       context: context,
       // blocks any other interaction and prevents accidental close
       barrierDismissible: false,
-      builder: (context) => const Center(child: CircularProgressIndicator()),
+      builder: (context) => Center(
+        child: Semantics(
+          liveRegion: true,
+          label: 'Creating session',
+          child: const CircularProgressIndicator(),
+        ),
+      ),
     );
 
     // send session creation request to backend
@@ -239,12 +268,8 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
       final message =
           result.failure?.message ??
           'We could not complete that request. Check your connection and try again.';
-      TtsService.speak(message);
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(message)));
-      }
+      TtsService.speak(message, priority: SpeechPriority.critical);
+      _showSnack(message);
     }
   }
 
@@ -303,10 +328,11 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     if (next < 0) next += _workspaces.length;
     setState(() {
       _selectedWorkspace = Map<String, dynamic>.from(_workspaces[next] as Map);
+      _status = _sessionCountSummary();
     });
     TtsService.speak(
       '${_selectedWorkspace!['class_name']}, '
-      '${_selectedWorkspace!['subject_name']} selected',
+      '${_selectedWorkspace!['subject_name']} selected. $_status',
     );
   }
 
@@ -349,13 +375,16 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
       ),
     );
     if (!mounted || selected == null) return;
-    setState(() => _selectedWorkspace = selected);
+    setState(() {
+      _selectedWorkspace = selected;
+      _status = _sessionCountSummary();
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       _keypadController.focusAndAnnounce(
         _workspaceFocusNode,
         '${selected['class_name']}, ${selected['subject_name']} selected. '
-        'Class and subject button. Press 7 to choose another workspace.',
+        '$_status. Press 7 to choose another workspace.',
       );
     });
   }
@@ -433,25 +462,85 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
 
   Future<void> _logout() => AuthSessionService.logoutFrom(context);
 
-  List get _filteredSessions {
+  /// Shows a visual-only message; callers speak the same text through
+  /// TtsService, so screen readers must not read the SnackBar a second time.
+  void _showSnack(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: ExcludeSemantics(child: Text(message))));
+  }
+
+  List get _workspaceSessions {
     final workspace = _selectedWorkspace;
-    final workspaceSessions = workspace == null
-        ? <dynamic>[]
-        : sessions
-              .where(
-                (session) =>
-                    session['class_id'] == workspace['class_id'] &&
-                    session['subject_id'] == workspace['subject_id'],
-              )
-              .toList();
-    return filterSessionsByNameOrId(workspaceSessions, _searchController.text);
+    if (workspace == null) return const [];
+    return sessions
+        .where(
+          (session) =>
+              session['class_id'] == workspace['class_id'] &&
+              session['subject_id'] == workspace['subject_id'],
+        )
+        .toList();
+  }
+
+  String _sessionCountSummary() {
+    final all = _workspaceSessions;
+    if (all.isEmpty) return 'No sessions yet. Press 2 to create one';
+    final live = all.where((s) => s['is_active'] == true).length;
+    return '${all.length} ${all.length == 1 ? 'session' : 'sessions'}'
+        '${live > 0 ? ', $live live now' : ''}';
+  }
+
+  static final _digitsOnly = RegExp(r'^\d+$');
+
+  /// Name or session-number search. Keypad users often type only digits, so
+  /// a digit-only query lists the exact session number first, then numbers
+  /// that start with or contain those digits, then title matches.
+  List get _filteredSessions {
+    final query = _searchController.text.trim();
+    final matches = filterSessionsByNameOrId(_workspaceSessions, query);
+    if (!_digitsOnly.hasMatch(query)) return matches;
+    int rank(dynamic session) {
+      final id = '${session['session_id'] ?? ''}';
+      if (id == query) return 0;
+      if (id.startsWith(query)) return 1;
+      if (id.contains(query)) return 2;
+      return 3;
+    }
+
+    final indexed = matches.asMap().entries.toList()
+      ..sort((a, b) {
+        final byRank = rank(a.value).compareTo(rank(b.value));
+        return byRank != 0 ? byRank : a.key.compareTo(b.key);
+      });
+    return indexed.map((entry) => entry.value).toList();
+  }
+
+  String _sessionLabel(dynamic session) {
+    final id = session['session_id'];
+    final title = '${session['title'] ?? 'Untitled session'}';
+    final place = [
+      session['class_name'],
+      session['subject_name'],
+    ].where((part) => part != null && '$part'.isNotEmpty).join(', ');
+    final joined = session['participant_count'];
+    final isActive = session['is_active'] == true;
+    return [
+          title,
+          if (place.isNotEmpty) place,
+          if (isActive) 'live now' else 'ended',
+          if (isActive && joined is int) '$joined joined',
+          'session number $id',
+        ].join(', ') +
+        (isActive ? '. Press OK to open' : '. Press OK to reactivate');
   }
 
   void _focusSessionSearch() {
     _keypadController.exitTextEditing();
     _searchFocusNode.requestFocus();
     TtsService.speak(
-      'Session search. Press OK to edit, then enter a session name or ID. '
+      'Session search. Press OK to edit, then type a session name, or the '
+      'session number using the number keys. '
       'Use up or down to leave the field and browse results.',
     );
   }
@@ -462,7 +551,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     final results = _filteredSessions;
     final query = _searchController.text.trim();
     final message = results.isEmpty
-        ? 'No sessions match $query'
+        ? 'No sessions match $query. Clear the search to list all sessions.'
         : query.isEmpty
         ? 'Showing all ${results.length} sessions. Use down to browse.'
         : '${results.length} sessions match $query. Use down to browse.';
@@ -484,6 +573,11 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
         label: 'Refresh sessions',
         onActivate: _loadSessions,
         isEnabled: () => !_isRefreshing,
+      ),
+      KeypadFocusTarget(
+        node: _logoutFocusNode,
+        label: 'Log out, asks to confirm',
+        onActivate: _logout,
       ),
       KeypadFocusTarget(
         node: _workspaceFocusNode,
@@ -521,7 +615,8 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
       ),
       KeypadFocusTarget(
         node: _searchFocusNode,
-        label: 'Search sessions by name or ID',
+        label:
+            'Search sessions. Press OK, then type a name or the session number',
         isTextField: true,
       ),
       KeypadFocusTarget(
@@ -532,7 +627,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     ];
     for (final session in _filteredSessions) {
       final id = int.tryParse((session['session_id'] ?? '').toString()) ?? 0;
-      final title = session['title'] ?? 'session';
+      final title = '${session['title'] ?? 'session'}';
       final isActive = session['is_active'] == true;
       targets.add(
         KeypadFocusTarget(
@@ -540,9 +635,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
             id,
             () => FocusNode(debugLabel: 'teacher-open-$id'),
           ),
-          label: isActive
-              ? 'Session $id, $title. Press OK to open'
-              : 'Ended session $id, $title. Press OK to reactivate',
+          label: _sessionLabel(session),
           onActivate: isActive
               ? () => _openSession(id)
               : () => _reactivateSession(id, title),
@@ -557,21 +650,14 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
             ),
           ),
           label: isActive
-              ? 'End $title for all participants'
-              : 'Permanently delete ended session $title',
+              ? 'End $title for everyone, asks to confirm'
+              : 'Delete ended session $title permanently, asks to confirm',
           onActivate: isActive
               ? () => _endSession(id, title)
               : () => _permanentlyDeleteSession(id, title),
         ),
       );
     }
-    targets.add(
-      KeypadFocusTarget(
-        node: _logoutFocusNode,
-        label: 'Log out',
-        onActivate: _logout,
-      ),
-    );
     return targets;
   }
 
@@ -595,25 +681,14 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     final ended = await ApiService.endSession(sessionId);
 
     if (ended) {
-      await _loadSessions();
-      await TtsService.speak(
-        'Session ended for everyone and kept in session history',
+      await _loadSessions(
+        doneMessage: 'Session ended for everyone and kept in session history',
       );
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Session ended and retained in history'),
-          ),
-        );
-      }
+      _showSnack('Session ended and retained in history');
     } else {
       const message = 'The session could not be ended. Please try again.';
-      TtsService.speak(message);
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(message)));
-      }
+      TtsService.speak(message, priority: SpeechPriority.critical);
+      _showSnack(message);
     }
   }
 
@@ -635,17 +710,12 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     final reactivated = await ApiService.reactivateSession(sessionId);
     if (!reactivated) {
       const message = 'The session could not be reactivated. Please try again.';
-      await TtsService.speak(message);
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text(message)));
-      }
+      await TtsService.speak(message, priority: SpeechPriority.critical);
+      _showSnack(message);
       return;
     }
 
-    await _loadSessions();
-    await TtsService.speak('Session reactivated');
+    await _loadSessions(doneMessage: 'Session reactivated');
     if (!mounted) return;
     final openNow = await showDialog<bool>(
       context: context,
@@ -683,12 +753,13 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     final message = deleted
         ? 'Session permanently deleted'
         : 'The session could not be deleted. Please try again.';
-    await TtsService.speak(message);
+    if (deleted) {
+      await _loadSessions(doneMessage: message);
+    } else {
+      await TtsService.speak(message, priority: SpeechPriority.critical);
+    }
     if (!mounted) return;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
-    if (deleted) await _loadSessions();
+    _showSnack(message);
   }
 
   // Frees memory
@@ -737,6 +808,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
 
     return KeypadInstructionWrapper(
       screenName: 'Teacher Dashboard',
+      introduction: _introduction,
       navigationSections:
           'class and subject selection, teaching tools, session search, and active or ended sessions',
       labels: teacherDashboardKeyLabels,
@@ -789,18 +861,22 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                 vertical: 8,
               ),
               child: Center(
-                child: Row(
-                  children: [
-                    Icon(Icons.person, size: UIUtils.iconSize(context, 16)),
-                    SizedBox(width: UIUtils.spacing(context, 4)),
-                    Text(
-                      currentUserName!,
-                      style: TextStyle(
-                        fontSize: UIUtils.fontSize(context, 14),
-                        fontWeight: FontWeight.w500,
+                child: Semantics(
+                  label: 'Signed in as ${currentUserName!}',
+                  excludeSemantics: true,
+                  child: Row(
+                    children: [
+                      Icon(Icons.person, size: UIUtils.iconSize(context, 16)),
+                      SizedBox(width: UIUtils.spacing(context, 4)),
+                      Text(
+                        currentUserName!,
+                        style: TextStyle(
+                          fontSize: UIUtils.fontSize(context, 14),
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -812,32 +888,15 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
               size: UIUtils.iconSize(context, 22),
               color: UIUtils.accentColor,
             ),
-            tooltip: "Refresh Sessions",
-            onPressed: () {
-              TtsService.speak("Refreshing sessions");
-              _loadSessions();
-            },
+            tooltip: '1: Refresh sessions',
+            onPressed: _loadSessions,
           ),
           IconButton(
             focusNode: _logoutFocusNode,
-            tooltip: 'Log out',
+            tooltip: '0: Log out',
             onPressed: _logout,
             icon: Icon(Icons.logout, color: UIUtils.accentColor),
           ),
-          if (UIUtils.isKeypad(context))
-            Padding(
-              padding: const EdgeInsets.only(right: 12.0),
-              child: Center(
-                child: Text(
-                  "1",
-                  style: TextStyle(
-                    color: UIUtils.accentColor,
-                    fontSize: UIUtils.fontSize(context, 14),
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
         ],
       ),
 
@@ -870,11 +929,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                   color: UIUtils.cardColor,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(
-                      color: UIUtils.isHighContrast
-                          ? UIUtils.accentColor
-                          : Colors.grey.withValues(alpha: 0.1),
-                    ),
+                    side: BorderSide(color: UIUtils.cardBorderColor),
                   ),
                   child: Padding(
                     padding: UIUtils.paddingAll(context, 16),
@@ -894,7 +949,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                           Text(
                             "Manage your sessions and connect with students",
                             style: TextStyle(
-                              fontSize: UIUtils.fontSize(context, 13),
+                              fontSize: UIUtils.fontSize(context, 14),
                               color: UIUtils.subtextColor,
                             ),
                           ),
@@ -906,18 +961,15 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
 
                 SizedBox(height: UIUtils.spacing(context, 12)),
 
-                Semantics(
-                  label: 'Selected class and subject workspace',
-                  child: OutlinedButton.icon(
-                    focusNode: _workspaceFocusNode,
-                    icon: const Icon(Icons.workspaces_outline),
-                    label: Text(
-                      _selectedWorkspace == null
-                          ? '7: Choose class and subject workspace'
-                          : '7: ${_selectedWorkspace!['class_name']}, ${_selectedWorkspace!['subject_name']}. Change workspace',
-                    ),
-                    onPressed: _chooseWorkspace,
+                OutlinedButton.icon(
+                  focusNode: _workspaceFocusNode,
+                  icon: const Icon(Icons.workspaces_outline),
+                  label: Text(
+                    _selectedWorkspace == null
+                        ? '7: Choose class and subject workspace'
+                        : '7: ${_selectedWorkspace!['class_name']}, ${_selectedWorkspace!['subject_name']}. Change workspace',
                   ),
+                  onPressed: _chooseWorkspace,
                 ),
 
                 SizedBox(height: UIUtils.spacing(context, 8)),
@@ -960,7 +1012,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                   ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: UIUtils.primaryColor,
-                    foregroundColor: Colors.white,
+                    foregroundColor: UIUtils.onPrimaryColor,
                     padding: UIUtils.paddingSymmetric(context, vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -998,39 +1050,48 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                 Card(
                   elevation: 0,
                   color: UIUtils.cardColor,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(color: UIUtils.cardBorderColor),
+                  ),
                   child: Padding(
                     padding: UIUtils.paddingAll(context, 10),
-                    child: Row(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Expanded(
-                          child: TextField(
-                            controller: _searchController,
-                            focusNode: _searchFocusNode,
-                            keyboardType: TextInputType.text,
-                            textInputAction: TextInputAction.search,
-                            onTap: () => _keypadController.enterTextEditing(
-                              _searchFocusNode,
+                        TextField(
+                          controller: _searchController,
+                          focusNode: _searchFocusNode,
+                          keyboardType: TextInputType.text,
+                          textInputAction: TextInputAction.search,
+                          onTap: () => _keypadController.enterTextEditing(
+                            _searchFocusNode,
+                          ),
+                          onChanged: (_) => setState(() {}),
+                          onSubmitted: (_) => _showSearchResults(),
+                          decoration: const InputDecoration(
+                            label: Text('4: Search by name or number'),
+                            prefixIcon: ExcludeSemantics(
+                              child: Icon(Icons.search),
                             ),
-                            onChanged: (_) => setState(() {}),
-                            onSubmitted: (_) => _showSearchResults(),
-                            decoration: const InputDecoration(
-                              label: Text('4. Session name or ID'),
-                              helper: Text('Leave empty to list all sessions'),
-                              prefixIcon: Icon(Icons.search),
-                              border: OutlineInputBorder(),
-                            ),
+                            border: OutlineInputBorder(),
                           ),
                         ),
-                        SizedBox(width: UIUtils.spacing(context, 8)),
-                        Semantics(
-                          button: true,
-                          label: 'Show matching sessions',
-                          child: IconButton.filled(
-                            focusNode: _searchResultsFocusNode,
-                            onPressed: _showSearchResults,
-                            tooltip: 'Show matching sessions',
-                            icon: const Icon(Icons.manage_search),
+                        SizedBox(height: UIUtils.spacing(context, 4)),
+                        Text(
+                          'Type a session name, or the session number with '
+                          'the number keys. Leave empty to list all.',
+                          style: TextStyle(
+                            fontSize: UIUtils.fontSize(context, 14),
+                            color: UIUtils.subtextColor,
                           ),
+                        ),
+                        SizedBox(height: UIUtils.spacing(context, 8)),
+                        OutlinedButton.icon(
+                          focusNode: _searchResultsFocusNode,
+                          onPressed: _showSearchResults,
+                          icon: const Icon(Icons.manage_search),
+                          label: const Text('Show matching sessions'),
                         ),
                       ],
                     ),
@@ -1040,251 +1101,166 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                 SizedBox(height: UIUtils.spacing(context, 12)),
 
                 // Sessions Header
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        "Your Sessions",
-                        style: TextStyle(
-                          fontSize: UIUtils.fontSize(context, 16),
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: UIUtils.spacing(context, 6)),
-                    if (_filteredSessions.isNotEmpty)
-                      Container(
-                        padding: UIUtils.paddingSymmetric(
-                          context,
-                          horizontal: 8,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.indigo,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
+                Semantics(
+                  header: true,
+                  label: _filteredSessions.isEmpty
+                      ? 'Your sessions'
+                      : 'Your sessions, ${_filteredSessions.length}',
+                  excludeSemantics: true,
+                  child: Row(
+                    children: [
+                      Expanded(
                         child: Text(
-                          '${_filteredSessions.length}',
+                          "Your Sessions",
                           style: TextStyle(
-                            color: Colors.white,
+                            fontSize: UIUtils.fontSize(context, 18),
                             fontWeight: FontWeight.bold,
-                            fontSize: UIUtils.fontSize(context, 13),
+                            color: UIUtils.textColor,
                           ),
                         ),
                       ),
-                  ],
+                      SizedBox(width: UIUtils.spacing(context, 6)),
+                      if (_filteredSessions.isNotEmpty)
+                        Container(
+                          padding: UIUtils.paddingSymmetric(
+                            context,
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: UIUtils.accentColor,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            '${_filteredSessions.length}',
+                            style: TextStyle(
+                              color: UIUtils.onAccentColor,
+                              fontWeight: FontWeight.bold,
+                              fontSize: UIUtils.fontSize(context, 14),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
+
+                if (_status.isNotEmpty)
+                  Semantics(
+                    liveRegion: true,
+                    child: Padding(
+                      padding: EdgeInsets.only(
+                        top: UIUtils.spacing(context, 4),
+                      ),
+                      child: Text(
+                        _status,
+                        style: TextStyle(
+                          fontSize: UIUtils.fontSize(context, 16),
+                          color: UIUtils.subtextColor,
+                        ),
+                      ),
+                    ),
+                  ),
 
                 SizedBox(height: UIUtils.spacing(context, 8)),
 
                 // Sessions List
                 if (_filteredSessions.isEmpty)
-                  Center(
-                    child: Padding(
-                      padding: UIUtils.paddingAll(context, 24),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
+                  Padding(
+                    padding: UIUtils.paddingAll(context, 16),
+                    child: Column(
+                      children: [
+                        ExcludeSemantics(
+                          child: Icon(
                             Icons.school_outlined,
-                            size: UIUtils.iconSize(context, 56),
+                            size: UIUtils.iconSize(context, 48),
                             color: UIUtils.subtextColor,
                           ),
-                          SizedBox(height: UIUtils.spacing(context, 10)),
-                          Text(
-                            _searchController.text.trim().isEmpty
-                                ? "No sessions yet"
-                                : "No matching sessions",
-                            style: TextStyle(
-                              fontSize: UIUtils.fontSize(context, 15),
-                              color: UIUtils.subtextColor,
-                            ),
+                        ),
+                        SizedBox(height: UIUtils.spacing(context, 10)),
+                        Text(
+                          _searchController.text.trim().isEmpty
+                              ? 'No sessions yet. Press 2 to create one.'
+                              : 'No matching sessions. Clear the search to '
+                                    'list all sessions.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: UIUtils.fontSize(context, 16),
+                            color: UIUtils.textColor,
                           ),
-                          if (!tiny &&
-                              _searchController.text.trim().isEmpty) ...[
-                            SizedBox(height: UIUtils.spacing(context, 4)),
-                            Text(
-                              "Create your first session to get started",
-                              style: TextStyle(
-                                fontSize: UIUtils.fontSize(context, 12),
-                                color: UIUtils.subtextColor,
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   )
                 else
                   ..._filteredSessions.map((s) {
-                    final sessionId = s['session_id'] ?? 0;
-                    final title = s['title'] ?? 'Untitled Session';
+                    final sessionId =
+                        int.tryParse('${s['session_id'] ?? ''}') ?? 0;
+                    final title = '${s['title'] ?? 'Untitled Session'}';
                     final isActive = s['is_active'] == true;
-                    // final participantCount = s['participant_count'] ?? 0;
+                    final joined = s['participant_count'];
+                    final place = [
+                      s['class_name'],
+                      s['subject_name'],
+                    ].where((part) => part != null).join(', ');
+                    final endLabel = isActive
+                        ? 'End $title for everyone'
+                        : 'Delete $title permanently';
 
-                    return Card(
-                      margin: EdgeInsets.only(
-                        bottom: UIUtils.spacing(context, 8),
+                    return AccessibleTile(
+                      focusNode: _sessionOpenFocusNodes.putIfAbsent(
+                        sessionId,
+                        () => FocusNode(debugLabel: 'teacher-open-$sessionId'),
                       ),
-                      elevation: 3,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: InkWell(
-                        onTap: isActive ? () => _openSession(sessionId) : null,
-                        borderRadius: BorderRadius.circular(12),
-                        child: Padding(
-                          padding: UIUtils.paddingAll(context, 12),
-                          child: Row(
-                            children: [
-                              // Session Icon
-                              Container(
-                                width: 40 * UIUtils.scale(context),
-                                height: 40 * UIUtils.scale(context),
-                                decoration: BoxDecoration(
-                                  color: UIUtils.backgroundColor,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    '$sessionId',
-                                    style: TextStyle(
-                                      fontSize: UIUtils.fontSize(context, 14),
-                                      fontWeight: FontWeight.bold,
-                                      color: UIUtils.primaryColor,
-                                    ),
-                                  ),
-                                ),
+                      title: title,
+                      status: isActive
+                          ? 'Live now${joined is int ? ', $joined joined' : ''}'
+                          : 'Ended',
+                      statusColor: isActive
+                          ? UIUtils.successColor
+                          : UIUtils.subtextColor,
+                      subtitle:
+                          '${place.isEmpty ? '' : '$place. '}Session number $sessionId',
+                      semanticLabel: _sessionLabel(s),
+                      onActivate: isActive
+                          ? () => _openSession(sessionId)
+                          : () => _reactivateSession(sessionId, title),
+                      trailing: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Semantics(
+                          button: true,
+                          label: endLabel,
+                          excludeSemantics: true,
+                          child: OutlinedButton.icon(
+                            focusNode: _sessionDeleteFocusNodes.putIfAbsent(
+                              sessionId,
+                              () => FocusNode(
+                                debugLabel: isActive
+                                    ? 'teacher-end-$sessionId'
+                                    : 'teacher-delete-$sessionId',
                               ),
-
-                              SizedBox(width: UIUtils.spacing(context, 8)),
-
-                              // Session Details
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      title,
-                                      style: TextStyle(
-                                        fontSize: UIUtils.fontSize(context, 14),
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    Text(
-                                      '${s['class_name'] ?? 'Class'} · ${s['subject_name'] ?? 'Subject'}',
-                                      style: TextStyle(
-                                        fontSize: UIUtils.fontSize(context, 11),
-                                        color: UIUtils.subtextColor,
-                                      ),
-                                    ),
-                                    Text(
-                                      isActive ? 'Active' : 'Ended',
-                                      style: TextStyle(
-                                        fontSize: UIUtils.fontSize(context, 11),
-                                        color: isActive
-                                            ? Colors.green.shade700
-                                            : UIUtils.subtextColor,
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
-                                    // SizedBox(height: UIUtils.spacing(context, 3)),
-                                    // Row(
-                                    //   children: [
-                                    //     Icon(
-                                    //       Icons.people,
-                                    //       size: UIUtils.iconSize(context, 14),
-                                    //       color: Colors.grey.shade600,
-                                    //     ),
-                                    //     SizedBox(width: UIUtils.spacing(context, 3)),
-                                    //     Text(
-                                    //       '$participantCount participant${participantCount != 1 ? 's' : ''}',
-                                    //       style: TextStyle(
-                                    //         fontSize: UIUtils.fontSize(context, 11),
-                                    //         color: Colors.grey.shade600,
-                                    //       ),
-                                    //     ),
-                                    //   ],
-                                    // ),
-                                  ],
-                                ),
-                              ),
-
-                              // Action Buttons
-                              Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  ElevatedButton(
-                                    focusNode: _sessionOpenFocusNodes
-                                        .putIfAbsent(
-                                          sessionId,
-                                          () => FocusNode(
-                                            debugLabel:
-                                                'teacher-open-$sessionId',
-                                          ),
-                                        ),
-                                    onPressed: isActive
-                                        ? () => _openSession(sessionId)
-                                        : () => _reactivateSession(
-                                            sessionId,
-                                            title,
-                                          ),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: isActive
-                                          ? Colors.green
-                                          : Colors.blue,
-                                      foregroundColor: Colors.white,
-                                      padding: UIUtils.paddingSymmetric(
-                                        context,
-                                        horizontal: 10,
-                                        vertical: 4,
-                                      ),
-                                      minimumSize: Size.zero,
-                                      tapTargetSize:
-                                          MaterialTapTargetSize.shrinkWrap,
-                                    ),
-                                    child: Text(
-                                      isActive ? "Open" : "Reactivate",
-                                      style: TextStyle(
-                                        fontSize: UIUtils.fontSize(context, 12),
-                                      ),
-                                    ),
+                            ),
+                            onPressed: isActive
+                                ? () => _endSession(sessionId, title)
+                                : () => _permanentlyDeleteSession(
+                                    sessionId,
+                                    title,
                                   ),
-                                  SizedBox(height: UIUtils.spacing(context, 4)),
-                                  IconButton(
-                                    focusNode: _sessionDeleteFocusNodes
-                                        .putIfAbsent(
-                                          sessionId as int,
-                                          () => FocusNode(
-                                            debugLabel: isActive
-                                                ? 'teacher-end-$sessionId'
-                                                : 'teacher-delete-$sessionId',
-                                          ),
-                                        ),
-                                    onPressed: isActive
-                                        ? () => _endSession(sessionId, title)
-                                        : () => _permanentlyDeleteSession(
-                                            sessionId,
-                                            title,
-                                          ),
-                                    icon: Icon(
-                                      isActive
-                                          ? Icons.stop_circle_outlined
-                                          : Icons.delete_forever,
-                                      size: UIUtils.iconSize(context, 18),
-                                    ),
-                                    color: Colors.red,
-                                    tooltip: isActive
-                                        ? 'End Session for Everyone'
-                                        : 'Delete Session Permanently',
-                                    padding: EdgeInsets.zero,
-                                    constraints: const BoxConstraints(),
-                                  ),
-                                ],
+                            icon: Icon(
+                              isActive
+                                  ? Icons.stop_circle_outlined
+                                  : Icons.delete_forever,
+                            ),
+                            label: Text(
+                              isActive ? 'End for everyone' : 'Delete',
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: UIUtils.errorColor,
+                              side: BorderSide(color: UIUtils.errorColor),
+                              textStyle: TextStyle(
+                                fontSize: UIUtils.fontSize(context, 14),
+                                fontWeight: FontWeight.w700,
                               ),
-                            ],
+                            ),
                           ),
                         ),
                       ),

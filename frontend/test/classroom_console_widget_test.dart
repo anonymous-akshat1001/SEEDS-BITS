@@ -142,17 +142,26 @@ void main() {
     'FIFO next/previous selection and summary are keypad accessible at 240x320 with large text',
     (tester) async {
       await open(tester, textScale: 1.5);
-      expect(find.textContaining('First. Hand 1 of 2.'), findsOneWidget);
+      expect(
+        find.textContaining('Hand 1 of 2, First, waiting.'),
+        findsOneWidget,
+      );
       expect(spoken.any((text) => text.contains('Snapshot summary.')), isFalse);
       await activate(tester, 'summary');
       await tester.pumpAndSettle();
       expect(spoken.any((text) => text.contains('Snapshot summary.')), isTrue);
       await activate(tester, 'next');
       await tester.pumpAndSettle();
-      expect(find.textContaining('Later. Hand 2 of 2.'), findsOneWidget);
+      expect(
+        find.textContaining('Hand 2 of 2, Later, waiting.'),
+        findsOneWidget,
+      );
       await activate(tester, 'previous');
       await tester.pumpAndSettle();
-      expect(find.textContaining('First. Hand 1 of 2.'), findsOneWidget);
+      expect(
+        find.textContaining('Hand 1 of 2, First, waiting.'),
+        findsOneWidget,
+      );
       expect(acknowledged, isEmpty);
       await activate(tester, 'stop');
       await activate(tester, 'back');
@@ -172,7 +181,10 @@ void main() {
         'is_muted': true,
       });
       await open(tester);
-      expect(find.textContaining('Legacy. Hand 1 of 3.'), findsOneWidget);
+      expect(
+        find.textContaining('Hand 1 of 3, Legacy, waiting.'),
+        findsOneWidget,
+      );
       expect(
         find.textContaining('Original raise order unknown'),
         findsOneWidget,
@@ -182,7 +194,10 @@ void main() {
       participants = participants.reversed.toList();
       revision.value++;
       await tester.pump();
-      expect(find.textContaining('First. Hand 2 of 3.'), findsOneWidget);
+      expect(
+        find.textContaining('Hand 2 of 3, First, waiting.'),
+        findsOneWidget,
+      );
       participants.removeWhere((p) => p['id'] == 2);
       revision.value++;
       await tester.pump();
@@ -192,7 +207,10 @@ void main() {
       );
       await activate(tester, 'next');
       await tester.pumpAndSettle();
-      expect(find.textContaining('Legacy. Hand 1 of 2.'), findsOneWidget);
+      expect(
+        find.textContaining('Hand 1 of 2, Legacy, waiting.'),
+        findsOneWidget,
+      );
       expect(acknowledged, isEmpty);
     },
   );
@@ -208,7 +226,10 @@ void main() {
         find.textContaining('Waiting for server acknowledgment.'),
         findsOneWidget,
       );
-      expect(find.textContaining('First. Hand 1 of 2.'), findsOneWidget);
+      expect(
+        find.textContaining('Hand 1 of 2, First, waiting.'),
+        findsOneWidget,
+      );
       await tester.sendKeyEvent(LogicalKeyboardKey.enter);
       await tester.pump();
       expect(acknowledged, [2]);
@@ -217,7 +238,10 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.textContaining('The server did not confirm'), findsOneWidget);
-      expect(find.textContaining('First. Hand 1 of 2.'), findsOneWidget);
+      expect(
+        find.textContaining('Hand 1 of 2, First, waiting.'),
+        findsOneWidget,
+      );
       expect(participants.every((p) => p['is_muted'] == true), isTrue);
       await activate(tester, 'read');
       await tester.pumpAndSettle();

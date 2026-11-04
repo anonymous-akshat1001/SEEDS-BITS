@@ -7,6 +7,8 @@ import '../services/tts_service.dart';
 import '../services/learning_playback_controller.dart';
 import '../services/learning_progress_store.dart';
 import '../utils/ui_utils.dart';
+import '../utils/keypad_actions.dart';
+import '../widgets/accessible_tile.dart';
 import '../widgets/key_instruction_wrapper.dart';
 import '../widgets/keypad_confirmation_dialog.dart';
 import '../widgets/learning_controls.dart';
@@ -72,7 +74,9 @@ class _TeacherPlaylistsScreenState extends State<TeacherPlaylistsScreen> {
       _loading = false;
     });
     TtsService.speak(
-      '${_playlists.length} playlists for ${widget.className}, ${widget.subjectName}',
+      _playlists.isEmpty
+          ? 'No playlists yet for ${widget.className}, ${widget.subjectName}. Press 2 to create one.'
+          : '${_playlists.length} playlists loaded for ${widget.className}, ${widget.subjectName}',
     );
   }
 
@@ -195,7 +199,7 @@ class _TeacherPlaylistsScreenState extends State<TeacherPlaylistsScreen> {
             () => FocusNode(debugLabel: 'teacher-playlist-$id'),
           ),
           label:
-              '${playlist['title']}, ${playlist['item_count']} items, ${playlist['is_published'] == true ? 'published' : 'draft'}, ${playlist['is_archived'] == true ? 'archived' : 'active'}',
+              '${playlist['title']}. ${_teacherStatus(playlist)}. ${playlist['item_count']} items',
           onActivate: () => _open(id),
         ),
       );
@@ -223,49 +227,67 @@ class _TeacherPlaylistsScreenState extends State<TeacherPlaylistsScreen> {
       focusTargets: _targets(),
       child: Scaffold(
         appBar: AppBar(
+          leading: IconButton(
+            focusNode: _backNode,
+            tooltip: 'Back',
+            onPressed: () => Navigator.pop(context),
+            icon: const Icon(Icons.arrow_back),
+          ),
           title: Text('${widget.className} · ${widget.subjectName} Playlists'),
+          actions: [
+            IconButton(
+              focusNode: _refreshNode,
+              tooltip: 'Refresh playlists',
+              onPressed: _load,
+              icon: const Icon(Icons.refresh),
+            ),
+          ],
         ),
         body: _loading
             ? const Center(child: CircularProgressIndicator())
             : ListView(
-                padding: UIUtils.paddingAll(context, 16),
+                padding: UIUtils.paddingAll(context, 12),
                 children: [
                   FilledButton.icon(
                     focusNode: _createNode,
+                    style: FilledButton.styleFrom(
+                      backgroundColor: UIUtils.accentColor,
+                      foregroundColor: UIUtils.onAccentColor,
+                      minimumSize: const Size(48, 48),
+                    ),
                     onPressed: _create,
                     icon: const Icon(Icons.playlist_add),
                     label: const Text('2: Create playlist'),
                   ),
                   if (_playlists.isEmpty)
-                    const Padding(
-                      padding: EdgeInsets.all(24),
-                      child: Text('No playlists in this class and subject.'),
+                    Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Semantics(
+                        liveRegion: true,
+                        child: Text(
+                          'No playlists in this class and subject. Press 2 to create one.',
+                          style: TextStyle(
+                            color: UIUtils.textColor,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
                     ),
                   ..._playlists.map((entry) {
                     final playlist = Map<String, dynamic>.from(entry as Map);
                     final id = playlist['playlist_id'] as int;
-                    return Card(
-                      child: ListTile(
-                        focusNode: _playlistNodes.putIfAbsent(
-                          id,
-                          () => FocusNode(debugLabel: 'teacher-playlist-$id'),
-                        ),
-                        leading: Icon(
-                          playlist['is_published'] == true
-                              ? Icons.public
-                              : Icons.edit_note,
-                        ),
-                        title: Text('${playlist['title']}'),
-                        subtitle: Text(
-                          '${playlist['item_count']} items · ${playlist['is_archived'] == true
-                              ? 'Archived'
-                              : playlist['is_published'] == true
-                              ? 'Published'
-                              : 'Draft'}',
-                        ),
-                        trailing: const Icon(Icons.chevron_right),
-                        onTap: () => _open(id),
+                    return AccessibleTile(
+                      focusNode: _playlistNodes.putIfAbsent(
+                        id,
+                        () => FocusNode(debugLabel: 'teacher-playlist-$id'),
                       ),
+                      leadingIcon: playlist['is_published'] == true
+                          ? Icons.public
+                          : Icons.edit_note,
+                      title: '${playlist['title']}',
+                      status: _teacherStatus(playlist),
+                      subtitle: '${playlist['item_count']} items',
+                      onActivate: () => _open(id),
                     );
                   }),
                 ],
@@ -273,6 +295,13 @@ class _TeacherPlaylistsScreenState extends State<TeacherPlaylistsScreen> {
       ),
     );
   }
+
+  String _teacherStatus(Map<String, dynamic> playlist) =>
+      playlist['is_archived'] == true
+      ? 'Archived'
+      : playlist['is_published'] == true
+      ? 'Published'
+      : 'Draft';
 }
 
 class StudentPlaylistsScreen extends StatefulWidget {
@@ -322,7 +351,9 @@ class _StudentPlaylistsScreenState extends State<StudentPlaylistsScreen> {
       _loading = false;
     });
     TtsService.speak(
-      '${_private.length} private playlists and ${_classPlaylists.length} class playlists',
+      _private.isEmpty && _classPlaylists.isEmpty
+          ? 'No playlists yet. Press 2 to create a private playlist.'
+          : '${_private.length} private playlists and ${_classPlaylists.length} class playlists loaded',
     );
   }
 
@@ -478,41 +509,80 @@ class _StudentPlaylistsScreenState extends State<StudentPlaylistsScreen> {
       navigationController: _keypad,
       focusTargets: _targets(),
       child: Scaffold(
-        appBar: AppBar(title: const Text('My Playlists')),
+        appBar: AppBar(
+          leading: IconButton(
+            focusNode: _backNode,
+            tooltip: 'Back',
+            onPressed: () => Navigator.pop(context),
+            icon: const Icon(Icons.arrow_back),
+          ),
+          title: const Text('My Playlists'),
+          actions: [
+            IconButton(
+              focusNode: _refreshNode,
+              tooltip: 'Refresh playlists',
+              onPressed: _load,
+              icon: const Icon(Icons.refresh),
+            ),
+          ],
+        ),
         body: _loading
             ? const Center(child: CircularProgressIndicator())
             : ListView(
-                padding: UIUtils.paddingAll(context, 16),
+                padding: UIUtils.paddingAll(context, 12),
                 children: [
-                  Semantics(
-                    label: 'Private. Only you can see your playlist contents.',
-                    child: Card(
-                      child: ListTile(
-                        leading: const Icon(Icons.lock),
-                        title: const Text('Your playlists are private'),
-                        subtitle: const Text(
-                          'Teachers, administrators, and other students cannot view them.',
-                        ),
-                      ),
-                    ),
+                  const AccessibleTile(
+                    leadingIcon: Icons.lock,
+                    title: 'Your playlists are private',
+                    subtitle:
+                        'Teachers, administrators, and other students cannot view them.',
                   ),
                   FilledButton.icon(
                     focusNode: _createNode,
+                    style: FilledButton.styleFrom(
+                      backgroundColor: UIUtils.accentColor,
+                      foregroundColor: UIUtils.onAccentColor,
+                      minimumSize: const Size(48, 48),
+                    ),
                     onPressed: _create,
                     icon: const Icon(Icons.playlist_add),
                     label: const Text('2: Create private playlist'),
                   ),
                   const SizedBox(height: 16),
-                  Text(
-                    'My private playlists',
-                    style: Theme.of(context).textTheme.titleLarge,
+                  Semantics(
+                    header: true,
+                    child: Text(
+                      'My private playlists',
+                      style: TextStyle(
+                        color: UIUtils.textColor,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                   ),
+                  if (_private.isEmpty)
+                    Text(
+                      'No private playlists yet.',
+                      style: TextStyle(color: UIUtils.textColor, fontSize: 16),
+                    ),
                   ..._private.map((entry) => _playlistTile(entry, true)),
                   const SizedBox(height: 16),
-                  Text(
-                    'Class playlists',
-                    style: Theme.of(context).textTheme.titleLarge,
+                  Semantics(
+                    header: true,
+                    child: Text(
+                      'Class playlists',
+                      style: TextStyle(
+                        color: UIUtils.textColor,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                   ),
+                  if (_classPlaylists.isEmpty)
+                    Text(
+                      'No class playlists published yet.',
+                      style: TextStyle(color: UIUtils.textColor, fontSize: 16),
+                    ),
                   ..._classPlaylists.map(
                     (entry) => _playlistTile(entry, false),
                   ),
@@ -526,19 +596,15 @@ class _StudentPlaylistsScreenState extends State<StudentPlaylistsScreen> {
     final playlist = Map<String, dynamic>.from(entry as Map);
     final id = playlist['playlist_id'] as int;
     final key = '${private ? 'private' : 'class'}-$id';
-    return Card(
-      child: ListTile(
-        focusNode: _nodes.putIfAbsent(key, () => FocusNode(debugLabel: key)),
-        leading: Icon(private ? Icons.lock_outline : Icons.school_outlined),
-        title: Text('${playlist['title']}'),
-        subtitle: Text(
-          private
-              ? 'Private · ${playlist['item_count']} items'
-              : '${playlist['class_name']} · ${playlist['subject_name']} · ${playlist['item_count']} items',
-        ),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: () => private ? _openPrivate(id) : _openClass(id),
-      ),
+    return AccessibleTile(
+      focusNode: _nodes.putIfAbsent(key, () => FocusNode(debugLabel: key)),
+      leadingIcon: private ? Icons.lock_outline : Icons.school_outlined,
+      title: '${playlist['title']}',
+      status: private ? 'Private' : 'Class playlist',
+      subtitle: private
+          ? '${playlist['item_count']} items'
+          : '${playlist['class_name']}, ${playlist['subject_name']}, ${playlist['item_count']} items',
+      onActivate: () => private ? _openPrivate(id) : _openClass(id),
     );
   }
 }
@@ -618,6 +684,10 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
   final _nextNode = FocusNode(debugLabel: 'playlist-detail-next');
   final _publishNode = FocusNode(debugLabel: 'playlist-detail-publish');
   final _archiveNode = FocusNode(debugLabel: 'playlist-detail-archive');
+  final _seekNode = FocusNode(debugLabel: 'playlist-detail-seek');
+  final _moveUpNode = FocusNode(debugLabel: 'playlist-detail-move-up');
+  final _moveDownNode = FocusNode(debugLabel: 'playlist-detail-move-down');
+  String _playbackStatus = 'Stopped';
   final Map<int, FocusNode> _itemNodes = {};
   final Map<int, FocusNode> _removeNodes = {};
   Map<String, dynamic>? _playlist;
@@ -634,6 +704,12 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _learning.addListener(_learningChanged);
+    _player.onPlayerStateChanged.listen((state) {
+      if (mounted &&
+          (state == PlayerState.playing || state == PlayerState.paused)) {
+        _learning.observePlayback(state == PlayerState.playing);
+      }
+    });
     _player.onPositionChanged.listen((position) {
       if (mounted) _learning.updatePosition(position);
     });
@@ -678,9 +754,9 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
 
   void _learningIssue(String message) {
     if (!mounted) return;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: ExcludeSemantics(child: Text(message))),
+    );
     TtsService.speak(message, priority: SpeechPriority.critical);
   }
 
@@ -715,6 +791,9 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
     _nextNode.dispose();
     _publishNode.dispose();
     _archiveNode.dispose();
+    _seekNode.dispose();
+    _moveUpNode.dispose();
+    _moveDownNode.dispose();
     for (final node in _itemNodes.values) {
       node.dispose();
     }
@@ -786,6 +865,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
       setState(() {
         _playing = false;
         _playPending = false;
+        _playbackStatus = 'Stopped';
       });
       _learningIssue(
         'The current lesson is no longer available in this playlist. Playback stopped. Your saved progress and bookmarks are kept.',
@@ -924,13 +1004,16 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
       await _player.play(UrlSource(url), position: _learning.position);
       if (!mounted || revision != _playRevision) return;
       _learning.activate();
-      setState(() => _playing = true);
+      setState(() {
+        _playing = true;
+        _playbackStatus = 'Playing ${item['title']}';
+      });
       final duration = await _player.getDuration();
       if (!mounted || revision != _playRevision) return;
       if (duration != null) _learning.updateDuration(duration);
       TtsService.speak(
-        'Playing ${item['title']}. Item ${index + 1} of ${_items.length}. '
-        'Position ${learningTime(_learning.position)}.',
+        '${learningPlayingAnnouncement('${item['title']}', _learning.position, _learning.duration, _learning.speed)} '
+        'Item ${index + 1} of ${_items.length}.',
       );
     } on Exception catch (error) {
       debugPrint('[LEARNING] Playlist playback failed (${error.runtimeType})');
@@ -959,14 +1042,34 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
     }
     if (_playing) {
       await _player.pause();
-      if (mounted) setState(() => _playing = false);
+      if (mounted) {
+        setState(() {
+          _playing = false;
+          _playbackStatus = 'Paused ${_learning.lesson?.title ?? ''}'.trim();
+        });
+      }
       await _learning.flush();
-      TtsService.speak('Paused');
+      TtsService.speak(
+        'Paused at ${learningSpokenPosition(_learning.position, _learning.duration)}.',
+      );
     } else {
       if (_player.state == PlayerState.paused && _learning.ready) {
         await _player.resume();
-        if (mounted) setState(() => _playing = true);
-        TtsService.speak('Playback resumed');
+        final title = _learning.lesson?.title ?? 'Lesson';
+        if (mounted) {
+          setState(() {
+            _playing = true;
+            _playbackStatus = 'Playing $title';
+          });
+        }
+        TtsService.speak(
+          learningPlayingAnnouncement(
+            title,
+            _learning.position,
+            _learning.duration,
+            _learning.speed,
+          ),
+        );
       } else {
         await _selectAndPlay(_selectedIndex);
       }
@@ -991,8 +1094,13 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
       await _learning.flush();
       _learning.abort();
       await _player.stop();
-      if (mounted) setState(() => _playing = false);
-      TtsService.speak('End of playlist');
+      if (mounted) {
+        setState(() {
+          _playing = false;
+          _playbackStatus = 'Finished. End of playlist';
+        });
+      }
+      TtsService.speak('End of playlist. Playback stopped.');
       return;
     }
     await _selectAndPlay(_selectedIndex + 1);
@@ -1082,7 +1190,15 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
   Future<void> _move(int delta) async {
     if (!_editable || _items.length < 2) return;
     final destination = _selectedIndex + delta;
-    if (destination < 0 || destination >= _items.length) return;
+    if (destination < 0 || destination >= _items.length) {
+      TtsService.speak(
+        delta < 0
+            ? 'The selected item is already first.'
+            : 'The selected item is already last.',
+      );
+      return;
+    }
+    final title = '${_items[_selectedIndex]['title']}';
     final currentIds = _items
         .map<int>((item) => item['item_id'] as int)
         .toList();
@@ -1093,35 +1209,57 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
     if (result != null) {
       setState(() => _selectedIndex = destination);
       await _load();
-      TtsService.speak('Item moved to position ${destination + 1}');
+      TtsService.speak('$title moved to position ${destination + 1}');
+    } else {
+      TtsService.speak(
+        'Could not move $title. Check your connection and try again.',
+        priority: SpeechPriority.critical,
+      );
     }
   }
 
   Future<void> _remove(int itemId, String title) async {
+    final playlistTitle = '${_playlist?['title'] ?? 'this playlist'}';
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => KeypadConfirmationDialog(
-        title: 'Remove audio?',
-        message: 'Remove $title from this playlist?',
-        cancelLabel: 'Keep',
-        confirmLabel: 'Remove',
+        title: 'Remove $title?',
+        message:
+            'Remove $title from $playlistTitle? The recording itself is kept in the library.',
+        cancelLabel: 'Keep $title',
+        confirmLabel: 'Remove $title',
         cancelKey: 0,
         confirmKey: 1,
       ),
     );
-    if (confirmed != true) return;
+    if (confirmed != true) {
+      _removeNodes[itemId]?.requestFocus();
+      return;
+    }
+    final index = _items.indexWhere((item) => item['item_id'] == itemId);
     final removed = _teacher
         ? await ApiService.removeTeacherPlaylistItem(widget.playlistId, itemId)
         : await ApiService.removeStudentPlaylistItem(widget.playlistId, itemId);
     if (removed) {
       await _load();
-      TtsService.speak('Audio removed');
+      if (!mounted) return;
+      TtsService.speak('$title removed from $playlistTitle');
+      final next = _items.isEmpty
+          ? null
+          : _items[index.clamp(0, _items.length - 1)]['item_id'] as int;
+      (next == null ? _playNode : _itemNodes[next])?.requestFocus();
+    } else {
+      TtsService.speak(
+        'Could not remove $title. Check your connection and try again.',
+        priority: SpeechPriority.critical,
+      );
     }
   }
 
   Future<void> _publish() async {
     if (!_teacher || _playlist == null) return;
     final publishing = _playlist!['is_published'] != true;
+    final title = '${_playlist!['title']}';
     final result = await ApiService.setTeacherPlaylistPublished(
       widget.playlistId,
       publishing,
@@ -1130,8 +1268,13 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
       await _load();
       TtsService.speak(
         publishing
-            ? 'Playlist published to the class'
-            : 'Playlist returned to draft',
+            ? '$title published to the class'
+            : '$title returned to draft',
+      );
+    } else {
+      TtsService.speak(
+        'Could not change $title. Check your connection and try again.',
+        priority: SpeechPriority.critical,
       );
     }
   }
@@ -1140,30 +1283,34 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
     if (_playlist == null || !_editable) return;
     final deleting = widget.mode == PlaylistMode.studentPrivate;
     final restoring = _teacher && _playlist!['is_archived'] == true;
+    final title = '${_playlist!['title']}';
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => KeypadConfirmationDialog(
         title: deleting
-            ? 'Delete private playlist?'
+            ? 'Delete $title?'
             : restoring
-            ? 'Restore class playlist?'
-            : 'Archive class playlist?',
+            ? 'Restore $title?'
+            : 'Archive $title?',
         message: deleting
-            ? 'This removes the private playlist and its ordered items.'
+            ? 'This removes the private playlist $title and its ordered items. Recordings stay in the library.'
             : restoring
-            ? 'This returns the playlist to draft so it can be edited and published again.'
-            : 'Students will no longer see this playlist. Teacher history is retained.',
+            ? 'This returns $title to draft so it can be edited and published again.'
+            : 'Students will no longer see $title. Teacher history is retained.',
         cancelLabel: 'Cancel',
         confirmLabel: deleting
-            ? 'Delete'
+            ? 'Delete $title'
             : restoring
-            ? 'Restore'
-            : 'Archive',
+            ? 'Restore $title'
+            : 'Archive $title',
         cancelKey: 0,
         confirmKey: 1,
       ),
     );
-    if (confirmed != true) return;
+    if (confirmed != true) {
+      _archiveNode.requestFocus();
+      return;
+    }
     final success = deleting
         ? await ApiService.deleteStudentPlaylist(widget.playlistId)
         : await ApiService.setTeacherPlaylistArchived(
@@ -1174,16 +1321,31 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
     if (success && mounted) {
       TtsService.speak(
         deleting
-            ? 'Private playlist deleted'
+            ? '$title deleted'
             : restoring
-            ? 'Class playlist restored as a draft'
-            : 'Class playlist archived',
+            ? '$title restored as a draft'
+            : '$title archived',
       );
       if (deleting) {
         Navigator.pop(context);
       } else {
         await _load();
       }
+    }
+  }
+
+  String get _selectedTitle => _items.isEmpty
+      ? 'selected item'
+      : '${_items[_selectedIndex.clamp(0, _items.length - 1)]['title']}';
+
+  Future<void> _seekTo(Duration position) async {
+    try {
+      await _learning.moveTo(position);
+    } on Exception catch (error) {
+      debugPrint('[LEARNING] Seek failed (${error.runtimeType})');
+      _learningIssue('Could not move to that lesson position. Try again.');
+    } on ArgumentError catch (error) {
+      _learningIssue(error.message.toString());
     }
   }
 
@@ -1202,35 +1364,38 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
       if (_editable)
         KeypadFocusTarget(
           node: _editNode,
-          label: 'Rename playlist',
+          label: 'Rename ${_playlist?['title'] ?? 'playlist'}',
           onActivate: _rename,
         ),
       if (_editable)
-        KeypadFocusTarget(node: _addNode, label: 'Add audio', onActivate: _add),
+        KeypadFocusTarget(
+          node: _addNode,
+          label: 'Add audio, key 2',
+          onActivate: _add,
+        ),
       KeypadFocusTarget(
         node: _playNode,
-        label: _playing ? 'Pause' : 'Play',
+        label: _playing
+            ? 'Pause $_selectedTitle, key $playerPlayPauseKey'
+            : 'Play $_selectedTitle, key $playerPlayPauseKey',
         onActivate: _playPause,
       ),
       KeypadFocusTarget(
         node: _previousNode,
-        label: 'Previous item',
+        label: 'Previous item, key 3',
         onActivate: _previous,
       ),
-      KeypadFocusTarget(node: _nextNode, label: 'Next item', onActivate: _next),
       KeypadFocusTarget(
-        node: _downloadsNode,
-        label:
-            'Download playlist recordings. Select individually or confirm all listed recordings',
-        onActivate: _openDownloads,
+        node: _nextNode,
+        label: 'Next item, key 8',
+        onActivate: _next,
       ),
-      if (_learning.lesson != null) ..._learningControls.focusTargets(context),
       if (_teacher && _playlist?['is_archived'] != true)
         KeypadFocusTarget(
           node: _publishNode,
           label: _playlist?['is_published'] == true
-              ? 'Return playlist to draft'
-              : 'Publish playlist',
+              ? 'Return ${_playlist?['title']} to draft'
+              : 'Publish ${_playlist?['title']} to the class',
           onActivate: _publish,
         ),
       if (_editable)
@@ -1238,11 +1403,41 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
           node: _archiveNode,
           label: _teacher
               ? (_playlist?['is_archived'] == true
-                    ? 'Restore playlist'
-                    : 'Archive playlist')
-              : 'Delete private playlist',
+                    ? 'Restore ${_playlist?['title']}'
+                    : 'Archive ${_playlist?['title']}, asks to confirm')
+              : 'Delete ${_playlist?['title']}, asks to confirm',
           onActivate: _archiveOrDelete,
         ),
+      if (_learning.lesson != null) ...[
+        KeypadFocusTarget(
+          node: _seekNode,
+          label:
+              'Lesson position ${learningSpokenPosition(_learning.position, _learning.duration)}. '
+              'Use left or right to move 10 seconds',
+          isEnabled: () => _learning.ready && _learning.duration != null,
+          onDecrease: () => _learningControls.seekBy(context, -10),
+          onIncrease: () => _learningControls.seekBy(context, 10),
+        ),
+        ..._learningControls.focusTargets(context),
+      ],
+      KeypadFocusTarget(
+        node: _downloadsNode,
+        label:
+            'Download playlist recordings. Select individually or confirm all listed recordings',
+        onActivate: _openDownloads,
+      ),
+      if (_editable && _items.length > 1) ...[
+        KeypadFocusTarget(
+          node: _moveUpNode,
+          label: 'Move $_selectedTitle up',
+          onActivate: () => _move(-1),
+        ),
+        KeypadFocusTarget(
+          node: _moveDownNode,
+          label: 'Move $_selectedTitle down',
+          onActivate: () => _move(1),
+        ),
+      ],
     ];
     for (var index = 0; index < _items.length; index++) {
       final item = _items[index];
@@ -1253,8 +1448,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
             itemId,
             () => FocusNode(debugLabel: 'playlist-item-$itemId'),
           ),
-          label:
-              '${item['title']}, ${item['subject_name'] ?? ''}, item ${index + 1} of ${_items.length}${item['available'] == false ? ', unavailable in your current class' : ''}',
+          label: _itemLabel(index),
           onActivate: () => _selectAndPlay(index),
         ),
       );
@@ -1265,7 +1459,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
               itemId,
               () => FocusNode(debugLabel: 'playlist-remove-$itemId'),
             ),
-            label: 'Remove ${item['title']} from playlist',
+            label: 'Remove ${item['title']} from playlist, asks to confirm',
             onActivate: () => _remove(itemId, '${item['title']}'),
           ),
         );
@@ -1274,23 +1468,113 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
     return targets;
   }
 
+  String? _itemStatus(int index) {
+    final item = _items[index];
+    if (item['available'] == false) return 'Unavailable in your current class';
+    if (index != _selectedIndex || _learning.lesson == null) {
+      return index == _selectedIndex ? 'Selected' : null;
+    }
+    return _playing ? 'Playing' : 'Selected, paused';
+  }
+
+  String _itemLabel(int index) {
+    final item = _items[index];
+    final status = _itemStatus(index);
+    return [
+      '${item['title']}',
+      if (status != null) status,
+      if ((item['subject_name'] ?? '').toString().isNotEmpty)
+        '${item['subject_name']}',
+    ].join('. ');
+  }
+
   @override
   Widget build(BuildContext context) {
+    final controls = _learningControls;
     final labels = <int, String>{
       0: 'Back',
       1: 'Refresh',
       if (_editable) 2: 'Add Audio',
-      3: 'Play or Pause',
-      4: 'Previous',
-      5: 'Next',
-      if (_teacher && _playlist?['is_archived'] != true) 6: 'Publish or Draft',
-      if (_editable)
-        7: _teacher
-            ? (_playlist?['is_archived'] == true ? 'Restore' : 'Archive')
-            : 'Delete Private Playlist',
-      if (_editable) 8: 'Move Selected Item Up',
-      if (_editable) 9: 'Move Selected Item Down',
+      3: 'Previous item',
+      ...playerTransportKeyLabels,
+      ...playerSpeedKeyLabels,
+      8: 'Next item',
     };
+    final stacked = UIUtils.isTiny(context) || UIUtils.useStackedLayout(context);
+    final textStyle = TextStyle(color: UIUtils.textColor, fontSize: 16);
+    final borderStyle = OutlinedButton.styleFrom(
+      foregroundColor: UIUtils.textColor,
+      side: BorderSide(color: UIUtils.cardBorderColor, width: 1.5),
+      minimumSize: const Size(48, 48),
+      textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+    );
+    final playerButtons = <Widget>[
+      if (_editable)
+        OutlinedButton.icon(
+          focusNode: _addNode,
+          style: borderStyle,
+          onPressed: _add,
+          icon: const Icon(Icons.add),
+          label: const Text('2 Add', semanticsLabel: 'Add audio, key 2'),
+        ),
+      FilledButton.icon(
+        focusNode: _playNode,
+        style: FilledButton.styleFrom(
+          backgroundColor: UIUtils.accentColor,
+          foregroundColor: UIUtils.onAccentColor,
+          minimumSize: const Size(48, 48),
+          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+        ),
+        onPressed: _playPause,
+        icon: Icon(_playing ? Icons.pause : Icons.play_arrow),
+        label: Text(
+          _playing ? '5 Pause' : '5 Play',
+          semanticsLabel: _playing
+              ? 'Pause $_selectedTitle, key 5'
+              : 'Play $_selectedTitle, key 5',
+        ),
+      ),
+      OutlinedButton(
+        focusNode: _previousNode,
+        style: borderStyle,
+        onPressed: _previous,
+        child: const Text('3 Previous', semanticsLabel: 'Previous item, key 3'),
+      ),
+      OutlinedButton(
+        focusNode: _nextNode,
+        style: borderStyle,
+        onPressed: _next,
+        child: const Text('8 Next', semanticsLabel: 'Next item, key 8'),
+      ),
+      if (_teacher && _playlist?['is_archived'] != true)
+        OutlinedButton(
+          focusNode: _publishNode,
+          style: borderStyle,
+          onPressed: _publish,
+          child: Text(
+            _playlist?['is_published'] == true ? 'Make draft' : 'Publish',
+            semanticsLabel: _playlist?['is_published'] == true
+                ? 'Return ${_playlist?['title']} to draft'
+                : 'Publish ${_playlist?['title']} to the class',
+          ),
+        ),
+      if (_editable)
+        OutlinedButton(
+          focusNode: _archiveNode,
+          style: borderStyle,
+          onPressed: _archiveOrDelete,
+          child: Text(
+            _teacher
+                ? (_playlist?['is_archived'] == true ? 'Restore' : 'Archive')
+                : 'Delete playlist',
+            semanticsLabel: _teacher
+                ? (_playlist?['is_archived'] == true
+                      ? 'Restore ${_playlist?['title']}'
+                      : 'Archive ${_playlist?['title']}')
+                : 'Delete ${_playlist?['title']}',
+          ),
+        ),
+    ];
     return KeypadInstructionWrapper(
       screenName: _playlist == null
           ? 'Playlist'
@@ -1300,25 +1584,34 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
         0: () => Navigator.pop(context),
         1: _load,
         if (_editable) 2: _add,
-        3: _playPause,
-        4: _previous,
-        5: _next,
-        if (_teacher && _playlist?['is_archived'] != true) 6: _publish,
-        if (_editable) 7: _archiveOrDelete,
-        if (_editable) 8: () => _move(-1),
-        if (_editable) 9: () => _move(1),
+        3: _previous,
+        ...controls.playerKeyActions(context),
+        playerPlayPauseKey: _playPause,
+        8: _next,
       },
       navigationController: _keypad,
       focusTargets: _targets(),
       child: Scaffold(
         appBar: AppBar(
+          leading: IconButton(
+            focusNode: _backNode,
+            tooltip: 'Back',
+            onPressed: () => Navigator.pop(context),
+            icon: const Icon(Icons.arrow_back),
+          ),
           title: Text('${_playlist?['title'] ?? 'Playlist'}'),
           actions: [
+            IconButton(
+              focusNode: _refreshNode,
+              onPressed: _load,
+              tooltip: 'Refresh playlist',
+              icon: const Icon(Icons.refresh),
+            ),
             if (_editable)
               IconButton(
                 focusNode: _editNode,
                 onPressed: _rename,
-                tooltip: 'Rename playlist',
+                tooltip: 'Rename ${_playlist?['title'] ?? 'playlist'}',
                 icon: const Icon(Icons.edit_outlined),
               ),
           ],
@@ -1326,147 +1619,153 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
         body: _loading
             ? const Center(child: CircularProgressIndicator())
             : _playlist == null
-            ? const Center(child: Text('Playlist is unavailable.'))
+            ? Center(
+                child: Semantics(
+                  liveRegion: true,
+                  child: Text(
+                    'Playlist is unavailable. Press 1 to try again.',
+                    style: textStyle,
+                  ),
+                ),
+              )
             : ListView(
-                padding: UIUtils.paddingAll(context, 16),
+                padding: UIUtils.paddingAll(context, 12),
                 children: [
-                  Card(
-                    child: ListTile(
-                      leading: Icon(
-                        widget.mode == PlaylistMode.studentPrivate
-                            ? Icons.lock
-                            : Icons.playlist_play,
-                      ),
-                      title: Text('${_playlist!['title']}'),
-                      subtitle: Text(
-                        [
-                          if (_playlist!['class_name'] != null)
-                            '${_playlist!['class_name']}',
-                          if (_playlist!['subject_name'] != null)
-                            '${_playlist!['subject_name']}',
-                          '${_items.length} items',
-                          if (_teacher)
-                            _playlist!['is_published'] == true
-                                ? 'Published'
-                                : 'Draft',
-                          if (widget.mode == PlaylistMode.studentPrivate)
-                            'Private',
-                        ].join(' · '),
+                  AccessibleTile(
+                    title: '${_playlist!['title']}',
+                    leadingIcon: widget.mode == PlaylistMode.studentPrivate
+                        ? Icons.lock
+                        : Icons.playlist_play,
+                    status: [
+                      '${_items.length} items',
+                      if (_teacher)
+                        _playlist!['is_archived'] == true
+                            ? 'Archived'
+                            : _playlist!['is_published'] == true
+                            ? 'Published'
+                            : 'Draft',
+                      if (widget.mode == PlaylistMode.studentPrivate)
+                        'Private',
+                    ].join(', '),
+                    subtitle: [
+                      if (_playlist!['class_name'] != null)
+                        '${_playlist!['class_name']}',
+                      if (_playlist!['subject_name'] != null)
+                        '${_playlist!['subject_name']}',
+                    ].join(', '),
+                  ),
+                  Semantics(
+                    liveRegion: true,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 6),
+                      child: Text(
+                        _playbackStatus,
+                        style: textStyle.copyWith(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 18,
+                        ),
                       ),
                     ),
                   ),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      if (_editable)
-                        OutlinedButton.icon(
-                          focusNode: _addNode,
-                          onPressed: _add,
-                          icon: const Icon(Icons.add),
-                          label: const Text('2 Add'),
-                        ),
-                      FilledButton.icon(
-                        focusNode: _playNode,
-                        onPressed: _playPause,
-                        icon: Icon(_playing ? Icons.pause : Icons.play_arrow),
-                        label: Text(_playing ? '3 Pause' : '3 Play'),
+                  if (stacked)
+                    for (final button in playerButtons)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 6),
+                        child: button,
+                      )
+                  else
+                    Wrap(spacing: 8, runSpacing: 8, children: playerButtons),
+                  if (_learning.lesson != null) ...[
+                    ExcludeSemantics(
+                      child: Text(
+                        '${learningTime(_learning.position)} of '
+                        '${_learning.duration == null ? '--:--' : learningTime(_learning.duration!)}. '
+                        'Speed ${learningSpeedNumber(_learning.speed)}x',
+                        style: textStyle,
                       ),
-                      OutlinedButton(
-                        focusNode: _previousNode,
-                        onPressed: _previous,
-                        child: const Text('4 Previous'),
-                      ),
-                      OutlinedButton(
-                        focusNode: _nextNode,
-                        onPressed: _next,
-                        child: const Text('5 Next'),
-                      ),
-                      if (_teacher && _playlist!['is_archived'] != true)
-                        OutlinedButton(
-                          focusNode: _publishNode,
-                          onPressed: _publish,
-                          child: Text(
-                            _playlist!['is_published'] == true
-                                ? '6 Make draft'
-                                : '6 Publish',
-                          ),
-                        ),
-                      if (_editable)
-                        OutlinedButton(
-                          focusNode: _archiveNode,
-                          onPressed: _archiveOrDelete,
-                          child: Text(
-                            _teacher
-                                ? _playlist!['is_archived'] == true
-                                      ? '7 Restore'
-                                      : '7 Archive'
-                                : '7 Delete',
-                          ),
-                        ),
-                    ],
-                  ),
-                  if (_learning.lesson != null) _learningControls,
+                    ),
+                    PlayerSeekBar(
+                      focusNode: _seekNode,
+                      position: _learning.position,
+                      duration: _learning.duration,
+                      onSeek: _seekTo,
+                    ),
+                    controls,
+                  ],
                   OutlinedButton(
                     focusNode: _downloadsNode,
+                    style: borderStyle,
                     onPressed: _openDownloads,
                     child: const Text('Download playlist recordings'),
                   ),
-                  if (_editable && _items.isNotEmpty)
+                  if (_editable && _items.length > 1) ...[
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       child: Text(
-                        'Select an item, then press 8 to move up or 9 to move down.',
+                        'Play or select an item, then move it up or down.',
+                        style: textStyle,
                       ),
                     ),
+                    OutlinedButton(
+                      focusNode: _moveUpNode,
+                      style: borderStyle,
+                      onPressed: () => _move(-1),
+                      child: Text('Move $_selectedTitle up'),
+                    ),
+                    OutlinedButton(
+                      focusNode: _moveDownNode,
+                      style: borderStyle,
+                      onPressed: () => _move(1),
+                      child: Text('Move $_selectedTitle down'),
+                    ),
+                  ],
                   if (_items.isEmpty)
-                    const Padding(
-                      padding: EdgeInsets.all(24),
-                      child: Text('This playlist has no audio yet.'),
+                    Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Text(
+                        'This playlist has no audio yet.',
+                        style: textStyle,
+                      ),
                     ),
                   ...List.generate(_items.length, (index) {
                     final item = _items[index];
                     final itemId = item['item_id'] as int;
-                    final selected = index == _selectedIndex;
                     final available = item['available'] != false;
-                    return Card(
-                      color: selected
-                          ? UIUtils.accentColor.withValues(alpha: 0.18)
-                          : UIUtils.cardColor,
-                      child: ListTile(
-                        focusNode: _itemNodes.putIfAbsent(
-                          itemId,
-                          () => FocusNode(debugLabel: 'playlist-item-$itemId'),
-                        ),
-                        leading: CircleAvatar(child: Text('${index + 1}')),
-                        title: Text(
-                          available
-                              ? '${item['title']}'
-                              : '${item['title']} (Unavailable)',
-                        ),
-                        subtitle: Text(
-                          '${item['subject_name'] ?? ''}${selected ? ' · Selected' : ''}',
-                        ),
-                        onTap: available
-                            ? () => _selectAndPlay(index)
-                            : () => TtsService.speak(
-                                '${item['title']} is unavailable in your current class',
-                              ),
-                        trailing: _editable
-                            ? IconButton(
-                                focusNode: _removeNodes.putIfAbsent(
-                                  itemId,
-                                  () => FocusNode(
-                                    debugLabel: 'playlist-remove-$itemId',
-                                  ),
-                                ),
-                                tooltip: 'Remove',
-                                onPressed: () =>
-                                    _remove(itemId, '${item['title']}'),
-                                icon: const Icon(Icons.remove_circle_outline),
-                              )
-                            : const Icon(Icons.play_arrow),
+                    return AccessibleTile(
+                      title: '${index + 1}. ${item['title']}',
+                      semanticLabel: _itemLabel(index),
+                      status: _itemStatus(index),
+                      statusColor: available ? null : UIUtils.errorColor,
+                      subtitle: '${item['subject_name'] ?? ''}',
+                      selected: index == _selectedIndex,
+                      focusNode: _itemNodes.putIfAbsent(
+                        itemId,
+                        () => FocusNode(debugLabel: 'playlist-item-$itemId'),
                       ),
+                      onActivate: available
+                          ? () => _selectAndPlay(index)
+                          : () => TtsService.speak(
+                              '${item['title']} is unavailable in your current class',
+                            ),
+                      trailing: _editable
+                          ? OutlinedButton.icon(
+                              focusNode: _removeNodes.putIfAbsent(
+                                itemId,
+                                () => FocusNode(
+                                  debugLabel: 'playlist-remove-$itemId',
+                                ),
+                              ),
+                              style: borderStyle,
+                              onPressed: () =>
+                                  _remove(itemId, '${item['title']}'),
+                              icon: const Icon(Icons.remove_circle_outline),
+                              label: Text(
+                                'Remove',
+                                semanticsLabel:
+                                    'Remove ${item['title']} from playlist',
+                              ),
+                            )
+                          : null,
                     );
                   }),
                 ],

@@ -4,6 +4,9 @@ from google.oauth2 import service_account
 from google.auth.transport.requests import Request
 from typing import List, Optional
 import os
+import logging
+
+logger = logging.getLogger("seeds")
 
 # Path to your Firebase service account key JSON file
 SERVICE_ACCOUNT_FILE = (
@@ -34,9 +37,9 @@ class FCMNotificationService:
                     scopes=SCOPES,
                 )
             
-            print(f"[FCM] Loaded credentials for project: {self.project_id}")
+            logger.info("fcm_ready", extra={"event_code": "fcm_ready"})
         except Exception as e:
-            print(f"[FCM] Error loading credentials: {e}")
+            logger.error("fcm_credentials_failed", extra={"event_code": "fcm_credentials_failed", "error_type": type(e).__name__})
             self.credentials = None
     
     def _get_access_token(self) -> Optional[str]:
@@ -49,7 +52,7 @@ class FCMNotificationService:
             self.credentials.refresh(Request())
             return self.credentials.token
         except Exception as e:
-            print(f"[FCM] Error getting access token: {e}")
+            logger.error("fcm_auth_failed", extra={"event_code": "fcm_auth_failed", "error_type": type(e).__name__})
             return None
     
     async def send_notification(
@@ -73,7 +76,7 @@ class FCMNotificationService:
         try:
             access_token = self._get_access_token()
             if not access_token:
-                print("[FCM] No access token available")
+                logger.error("fcm_unavailable", extra={"event_code": "fcm_unavailable"})
                 return False
             
             # FCM v1 API endpoint
@@ -132,14 +135,14 @@ class FCMNotificationService:
                 response = await client.post(url, json=message, headers=headers)
                 
                 if response.status_code == 200:
-                    print(f"[FCM] Notification sent successfully to {token[:20]}...")
+                    logger.info("fcm_accepted", extra={"event_code": "fcm_accepted"})
                     return True
                 else:
-                    print(f"[FCM] Error sending notification: {response.status_code} - {response.text}")
+                    logger.error("fcm_rejected", extra={"event_code": "fcm_rejected", "status": response.status_code})
                     return False
                     
         except Exception as e:
-            print(f"[FCM] Exception sending notification: {e}")
+            logger.error("fcm_send_failed", extra={"event_code": "fcm_send_failed", "error_type": type(e).__name__})
             return False
     
     async def send_to_multiple(

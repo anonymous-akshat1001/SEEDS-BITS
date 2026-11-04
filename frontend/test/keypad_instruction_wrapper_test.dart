@@ -17,6 +17,88 @@ void main() {
         );
   });
 
+  testWidgets('focus announces position and wrap-around at list ends', (
+    tester,
+  ) async {
+    final spoken = <String>[];
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      const MethodChannel('flutter_tts'),
+      (call) async {
+        if (call.method == 'speak') spoken.add('${call.arguments}');
+        return 1;
+      },
+    );
+    final nodes = List.generate(3, (i) => FocusNode(debugLabel: 'item$i'));
+    await tester.pumpWidget(
+      MaterialApp(
+        home: KeypadInstructionWrapper(
+          autoPlay: false,
+          actions: const {},
+          focusTargets: [
+            for (var i = 0; i < 3; i++)
+              KeypadFocusTarget(node: nodes[i], label: 'Item ${i + 1}'),
+          ],
+          child: Scaffold(
+            body: Column(
+              children: [
+                for (var i = 0; i < 3; i++)
+                  Focus(focusNode: nodes[i], child: Text('Item ${i + 1}')),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    for (var i = 0; i < 4; i++) {
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+    expect(spoken, contains('Item 1, 1 of 3'));
+    expect(spoken, contains('Item 3, 3 of 3'));
+    expect(spoken.last, 'End of list. Back to the first item. Item 1, 1 of 3');
+    await tester.pumpWidget(const SizedBox.shrink());
+    for (final node in nodes) {
+      node.dispose();
+    }
+  });
+
+  testWidgets('screen-reader mode hands announcements to TalkBack', (
+    tester,
+  ) async {
+    final announced = <String>[];
+    final ttsCalls = <String>[];
+    tester.binding.defaultBinaryMessenger.setMockMessageHandler(
+      SystemChannels.accessibility.name,
+      (message) async {
+        final data =
+            SystemChannels.accessibility.codec.decodeMessage(message) as Map;
+        if (data['type'] == 'announce') {
+          announced.add('${(data['data'] as Map)['message']}');
+        }
+        return null;
+      },
+    );
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      const MethodChannel('flutter_tts'),
+      (call) async {
+        if (call.method == 'speak') ttsCalls.add('${call.arguments}');
+        return 1;
+      },
+    );
+    await TtsService.configure(mode: SpeechMode.screenReader);
+    try {
+      await TtsService.speak('Connection restored');
+      expect(announced, ['Connection restored']);
+      expect(ttsCalls, isEmpty);
+    } finally {
+      await TtsService.configure(mode: SpeechMode.selfVoicing);
+      tester.binding.defaultBinaryMessenger.setMockMessageHandler(
+        SystemChannels.accessibility.name,
+        null,
+      );
+    }
+  });
+
   testWidgets(
     'D-pad traverses, edit mode suppresses shortcuts, and Up exits editing',
     (tester) async {
@@ -167,7 +249,6 @@ void main() {
     final input = FocusNode(debugLabel: 'punctuation-input');
     final navigation = KeypadNavigationController();
     var repeats = 0;
-    var exits = 0;
     await tester.pumpWidget(
       MaterialApp(
         home: KeypadInstructionWrapper(
@@ -175,7 +256,6 @@ void main() {
           actions: const {},
           navigationController: navigation,
           onStarKey: () => repeats++,
-          onHashKey: () => exits++,
           focusTargets: [
             KeypadFocusTarget(node: input, label: 'Message', isTextField: true),
           ],
@@ -195,7 +275,6 @@ void main() {
       physicalKey: PhysicalKeyboardKey.digit3,
     );
     expect(repeats, 0);
-    expect(exits, 0);
     expect(input.hasFocus, isTrue);
     await tester.pumpWidget(const SizedBox.shrink());
     input.dispose();
@@ -592,10 +671,7 @@ void main() {
     await tester.sendKeyEvent(LogicalKeyboardKey.enter);
     await tester.pumpAndSettle();
     expect(find.text('Details'), findsOneWidget);
-    await tester.sendKeyEvent(
-      LogicalKeyboardKey.numberSign,
-      physicalKey: PhysicalKeyboardKey.digit3,
-    );
+    await tester.sendKeyEvent(LogicalKeyboardKey.digit0);
     await tester.pumpAndSettle();
     expect(find.text('Details'), findsNothing);
     expect(opener.hasFocus, isTrue);

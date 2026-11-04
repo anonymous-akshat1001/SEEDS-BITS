@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'notification_services.dart';
 import 'api_service.dart';
+import 'activity_telemetry.dart';
 import 'tts_service.dart';
 import '../widgets/keypad_confirmation_dialog.dart';
 
@@ -23,6 +24,7 @@ class AuthSessionService {
   };
 
   static Future<void> clearLoginState() async {
+    ActivityTelemetry.accountChanged();
     ApiService.cachedToken = null;
     await TtsService.stop();
     final preferences = await SharedPreferences.getInstance();
@@ -84,6 +86,7 @@ class AuthSessionService {
 
   static Future<bool> logoutFrom(BuildContext context) async {
     if (!await confirmLogout(context)) return false;
+    ActivityTelemetry.record('logout_observed');
     try {
       await NotificationService().removeToken().timeout(
         const Duration(seconds: 2),

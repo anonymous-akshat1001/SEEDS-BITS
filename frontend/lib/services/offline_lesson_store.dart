@@ -9,6 +9,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'api_service.dart';
+import 'activity_telemetry.dart';
 
 class OfflineLessonException implements Exception {
   const OfflineLessonException(
@@ -496,6 +497,7 @@ class OfflineLessonStore {
     }
     await _write(fresh, complete: existing.complete);
     await _writeClock(fresh.authorizedAt);
+    ActivityTelemetry.record('download_renewed', audioId: id);
   });
 
   Future<void> download(
@@ -508,6 +510,7 @@ class OfflineLessonStore {
       );
     }
     final manifest = await _manifest(id);
+    ActivityTelemetry.record('download_requested', audioId: id);
     final existing = await _read(id);
     if (existing != null &&
         (existing.digest != manifest.digest ||
@@ -650,17 +653,33 @@ class OfflineLessonStore {
       await part.rename(media.path);
       await _write(manifest, complete: true);
       operation._progress(manifest.bytes, manifest.bytes);
+      ActivityTelemetry.record('download_completed', audioId: id);
     } on TimeoutException {
+      ActivityTelemetry.record(
+        'download_failed',
+        audioId: id,
+        details: {'reason_code': 'network'},
+      );
       throw const OfflineLessonException(
         'Download timed out. Partial data is kept; activate Download to retry.',
       );
     } on http.ClientException {
+      ActivityTelemetry.record(
+        operation.cancelled ? 'download_cancelled' : 'download_failed',
+        audioId: id,
+        details: {'reason_code': operation.cancelled ? 'cancelled' : 'network'},
+      );
       throw OfflineLessonException(
         operation.cancelled
             ? 'Download cancelled. Partial data is kept for retry.'
             : 'Download interrupted. Partial data is kept; activate Download to retry.',
       );
     } on SocketException {
+      ActivityTelemetry.record(
+        'download_failed',
+        audioId: id,
+        details: {'reason_code': 'network'},
+      );
       throw const OfflineLessonException(
         'Download interrupted. Partial data is kept; activate Download to retry.',
       );
@@ -680,5 +699,6 @@ class OfflineLessonStore {
       final file = _file(id, suffix);
       if (await file.exists()) await file.delete();
     }
+    ActivityTelemetry.record('download_removed', audioId: id);
   });
 }

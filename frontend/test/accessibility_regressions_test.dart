@@ -203,7 +203,7 @@ void main() {
           );
           expect(
             spoken.last,
-            contains('Account type filter button. Students only.'),
+            contains('Account type filter: Students only, selected'),
           );
           await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
           await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
@@ -212,7 +212,10 @@ void main() {
             FocusManager.instance.primaryFocus?.debugLabel,
             'admin-assignment-filter',
           );
-          expect(spoken.last, contains('Assignment filter button. Enrolled.'));
+          expect(
+            spoken.last,
+            contains('Assignment filter: Enrolled, selected'),
+          );
           await tester.sendKeyEvent(LogicalKeyboardKey.digit7);
           await tester.pumpAndSettle();
           await tester.sendKeyEvent(LogicalKeyboardKey.digit2);
@@ -229,6 +232,98 @@ void main() {
           }
           return http.Response('[]', 200);
         }),
+      );
+    },
+  );
+
+  testWidgets(
+    'teacher sessions are labelled keypad targets, digit search ranks the session number first, and 0 asks before logging out',
+    (tester) async {
+      Map<String, dynamic> session(
+        int id,
+        String title, {
+        bool active = true,
+      }) => {
+        'session_id': id,
+        'title': title,
+        'created_by': 7,
+        'is_active': active,
+        'class_id': 1,
+        'subject_id': 2,
+        'class_name': 'Class 6',
+        'subject_name': 'Science',
+        if (active) 'participant_count': 12,
+      };
+      await http.runWithClient(
+        () async {
+          await open(tester, const TeacherDashboard());
+          expect(find.text('3 sessions, 2 live now'), findsOneWidget);
+          List<KeypadFocusTarget> sessionTargets() => tester
+              .widget<KeypadInstructionWrapper>(
+                find.byType(KeypadInstructionWrapper),
+              )
+              .focusTargets
+              .where(
+                (target) =>
+                    target.node.debugLabel?.startsWith('teacher-open-') ??
+                    false,
+              )
+              .toList();
+          final live = sessionTargets().firstWhere(
+            (target) => target.node.debugLabel == 'teacher-open-142',
+          );
+          expect(live.enabled, isTrue);
+          expect(
+            live.label,
+            startsWith('Plants, Class 6, Science, live now, 12 joined'),
+          );
+          expect(live.label, endsWith('Press OK to open'));
+          final ended = sessionTargets().firstWhere(
+            (target) => target.node.debugLabel == 'teacher-open-7',
+          );
+          expect(ended.label, contains('ended'));
+          expect(ended.label, endsWith('Press OK to reactivate'));
+
+          await tester.sendKeyEvent(LogicalKeyboardKey.digit0);
+          await tester.pumpAndSettle();
+          expect(find.text('Log out of SEEDS?'), findsOneWidget);
+          await tester.sendKeyEvent(LogicalKeyboardKey.digit1);
+          await tester.pumpAndSettle();
+          expect(find.byType(TeacherDashboard), findsOneWidget);
+
+          await tester.enterText(find.byType(TextField), '42');
+          await tester.pump();
+          expect(sessionTargets().map((target) => target.node.debugLabel), [
+            'teacher-open-42',
+            'teacher-open-142',
+            'teacher-open-7',
+          ]);
+          await tester.pumpWidget(const SizedBox.shrink());
+        },
+        () => MockClient(
+          (request) async => http.Response(
+            jsonEncode(
+              request.url.path == '/me/access-context'
+                  ? {
+                      'teacher_workspaces': [
+                        {
+                          'assignment_id': 1,
+                          'class_id': 1,
+                          'subject_id': 2,
+                          'class_name': 'Class 6',
+                          'subject_name': 'Science',
+                        },
+                      ],
+                    }
+                  : [
+                      session(7, 'Review of 42 seeds', active: false),
+                      session(142, 'Plants'),
+                      session(42, 'Science'),
+                    ],
+            ),
+            200,
+          ),
+        ),
       );
     },
   );

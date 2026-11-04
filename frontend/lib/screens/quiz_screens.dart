@@ -22,6 +22,109 @@ void _revealQuizError(GlobalKey key) {
   });
 }
 
+String _plural(int count, String noun) =>
+    '$count ${count == 1 ? noun : '${noun}s'}';
+
+/// Spoken duration such as "4 minutes 30 seconds" or "1 minute".
+String _spokenDuration(Duration value) {
+  final total = value.inSeconds;
+  final minutes = total ~/ 60;
+  final seconds = total % 60;
+  if (minutes == 0) return _plural(seconds, 'second');
+  if (seconds == 0) return _plural(minutes, 'minute');
+  return '${_plural(minutes, 'minute')} ${_plural(seconds, 'second')}';
+}
+
+const _answerLockNotice = 'Each answer is saved and locked when you press 5.';
+
+/// Two-choice confirmation whose safe choice (key 1) has focus when it opens,
+/// so pressing OK straight away never confirms.
+class _SafeConfirmationDialog extends StatefulWidget {
+  const _SafeConfirmationDialog({
+    required this.title,
+    required this.message,
+    required this.confirmLabel,
+    required this.cancelLabel,
+  });
+
+  final String title;
+  final String message;
+  final String confirmLabel;
+  final String cancelLabel;
+
+  @override
+  State<_SafeConfirmationDialog> createState() =>
+      _SafeConfirmationDialogState();
+}
+
+class _SafeConfirmationDialogState extends State<_SafeConfirmationDialog> {
+  final _cancelFocus = FocusNode(debugLabel: 'dialog-cancel');
+  final _confirmFocus = FocusNode(debugLabel: 'dialog-confirm');
+
+  @override
+  void dispose() {
+    _cancelFocus.dispose();
+    _confirmFocus.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    void close(bool confirmed) => Navigator.pop(context, confirmed);
+    return KeypadInstructionWrapper(
+      screenName: '${widget.title}. ${widget.message}',
+      initialFocusNode: _cancelFocus,
+      labels: {1: widget.cancelLabel, 2: widget.confirmLabel},
+      actions: {1: () => close(false), 2: () => close(true)},
+      focusTargets: [
+        KeypadFocusTarget(
+          node: _cancelFocus,
+          label: widget.cancelLabel,
+          onActivate: () => close(false),
+        ),
+        KeypadFocusTarget(
+          node: _confirmFocus,
+          label: widget.confirmLabel,
+          onActivate: () => close(true),
+        ),
+      ],
+      child: AlertDialog(
+        scrollable: true,
+        title: Text(widget.title),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Semantics(
+              liveRegion: true,
+              child: Text(
+                widget.message,
+                style: TextStyle(color: UIUtils.textColor, fontSize: 18),
+              ),
+            ),
+            const SizedBox(height: 16),
+            OutlinedButton(
+              focusNode: _cancelFocus,
+              onPressed: () => close(false),
+              child: Text('1: ${widget.cancelLabel}'),
+            ),
+            const SizedBox(height: 12),
+            ElevatedButton(
+              focusNode: _confirmFocus,
+              onPressed: () => close(true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: UIUtils.primaryColor,
+                foregroundColor: UIUtils.onPrimaryColor,
+              ),
+              child: Text('2: ${widget.confirmLabel}'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 String _attemptsText(Map quiz) => quiz['mode'] == 'practice'
     ? 'Unlimited practice attempts. Not graded.'
     : '${quiz['attempts_remaining']} attempts remaining.';
@@ -2082,7 +2185,7 @@ class _StudentQuizScreenState extends State<StudentQuizScreen> {
         message:
             '${quiz['title']}. ${_attemptsText(quiz)} '
             '${quiz['time_limit_minutes'] == null ? 'No per-attempt time limit.' : 'Time limit ${quiz['time_limit_minutes']} minutes.'} '
-            'Each confirmed answer is locked. ${_quizFeedbackText(quiz)}',
+            '$_answerLockNotice You cannot go back to change it. ${_quizFeedbackText(quiz)}',
         confirmLabel: inProgress == null ? 'Start attempt' : 'Resume attempt',
       ),
     );
@@ -2434,6 +2537,16 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
   String? _completionError;
   Timer? _timer;
   Duration? _remaining;
+  // Each warning is spoken once when its threshold is crossed, so a late or
+  // skipped timer tick can never swallow it.
+  static const _timeWarnings = [
+    Duration(minutes: 5),
+    Duration(minutes: 2),
+    Duration(minutes: 1),
+    Duration(seconds: 30),
+    Duration(seconds: 10),
+  ];
+  final Set<Duration> _spokenWarnings = {};
   DateTime? _serverAnchor;
   DateTime? _deadline;
   final Stopwatch _elapsed = Stopwatch();
@@ -2498,9 +2611,34 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
     });
     if (remaining.isNegative || remaining == Duration.zero) {
       _timer?.cancel();
+      final saved = _attempt['answered_count'] as int? ?? 0;
+      unawaited(
+        TtsService.speak(
+          'Time is up. ${_plural(saved, 'answer')} saved. Finishing the quiz.',
+          priority: SpeechPriority.critical,
+        ),
+      );
       _complete();
-    } else if (remaining.inSeconds == 60 || remaining.inSeconds == 300) {
-      TtsService.speak('${remaining.inMinutes} minutes remaining');
+      return;
+    }
+    final crossed = _timeWarnings.where(
+      (threshold) =>
+          remaining <= threshold && !_spokenWarnings.contains(threshold),
+    );
+    if (crossed.isNotEmpty) {
+      // Several thresholds can be crossed at once (for example when the quiz
+      // opens late or the phone resumes); speak once, with the true time.
+      final smallest = crossed.last;
+      _spokenWarnings.addAll(crossed);
+      final spoken = smallest - remaining < const Duration(seconds: 2)
+          ? smallest
+          : Duration(seconds: remaining.inSeconds);
+      unawaited(
+        TtsService.speak(
+          '${_spokenDuration(spoken)} remaining.',
+          priority: SpeechPriority.critical,
+        ),
+      );
     }
   }
 
@@ -2894,7 +3032,6 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
       },
       child: KeypadInstructionWrapper(
         navigationController: _keypad,
-        onHashKey: _exit,
         screenName: 'Quiz attempt, ${widget.quizTitle}',
         introduction: completed
             ? 'Attempt complete. Your result remains private. $_navigationHelp'
@@ -3141,40 +3278,56 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
                         child: Column(
                           children: [
                             for (var index = 0; index < options.length; index++)
-                              Semantics(
-                                selected:
-                                    _selectedOptionId ==
-                                    options[index]['quiz_option_id'],
-                                button: true,
-                                label:
-                                    'Option ${index + 1}, ${options[index]['spoken_option_text'] ?? options[index]['option_text']}',
-                                child: Card(
-                                  shape: RoundedRectangleBorder(
-                                    side: BorderSide(
-                                      color:
-                                          _selectedOptionId ==
-                                              options[index]['quiz_option_id']
-                                          ? UIUtils.accentColor
-                                          : Colors.transparent,
-                                      width: 3,
-                                    ),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: RadioListTile<int>(
-                                    focusNode: _optionFocuses[index],
-                                    value:
-                                        options[index]['quiz_option_id'] as int,
-                                    enabled: _canAnswer,
-                                    title: Semantics(
-                                      label:
-                                          '${index + 1}. ${options[index]['spoken_option_text'] ?? options[index]['option_text']}',
-                                      excludeSemantics: true,
-                                      child: Text(
-                                        '${index + 1}. ${options[index]['option_text']}',
+                              Builder(
+                                builder: (context) {
+                                  final option = options[index];
+                                  final selected =
+                                      _selectedOptionId ==
+                                      option['quiz_option_id'];
+                                  final spoken =
+                                      option['spoken_option_text'] ??
+                                      option['option_text'];
+                                  // RadioListTile merges its title into one
+                                  // radio node that already reports checked
+                                  // state, so no outer wrapper is needed.
+                                  return Card(
+                                    shape: RoundedRectangleBorder(
+                                      side: BorderSide(
+                                        color: selected
+                                            ? UIUtils.accentColor
+                                            : UIUtils.cardBorderColor,
+                                        width: selected ? 4 : 1.5,
                                       ),
+                                      borderRadius: BorderRadius.circular(12),
                                     ),
-                                  ),
-                                ),
+                                    child: RadioListTile<int>(
+                                      focusNode: _optionFocuses[index],
+                                      value: option['quiz_option_id'] as int,
+                                      enabled: _canAnswer,
+                                      title: Semantics(
+                                        label:
+                                            'Option ${index + 1} of ${options.length}, $spoken',
+                                        excludeSemantics: true,
+                                        child: Text(
+                                          '${index + 1}. ${option['option_text']}',
+                                          style: const TextStyle(fontSize: 18),
+                                        ),
+                                      ),
+                                      subtitle: selected
+                                          ? ExcludeSemantics(
+                                              child: Text(
+                                                'Selected',
+                                                style: TextStyle(
+                                                  color: UIUtils.accentColor,
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w700,
+                                                ),
+                                              ),
+                                            )
+                                          : null,
+                                    ),
+                                  );
+                                },
                               ),
                           ],
                         ),
@@ -3205,9 +3358,18 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
                           button: true,
                           onTap: _readPrivateFeedback,
                           child: Card(
-                            color: _feedback!['is_correct'] == true
-                                ? Colors.green.shade100
-                                : Colors.orange.shade100,
+                            color: UIUtils.cardColor,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              side: BorderSide(
+                                color: _feedback!['feedback_released'] == false
+                                    ? UIUtils.cardBorderColor
+                                    : _feedback!['is_correct'] == true
+                                    ? UIUtils.successColor
+                                    : UIUtils.errorColor,
+                                width: 4,
+                              ),
+                            ),
                             child: ListTile(
                               leading: Icon(
                                 _feedback!['feedback_released'] == false
@@ -3215,7 +3377,11 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
                                     : _feedback!['is_correct'] == true
                                     ? Icons.check_circle
                                     : Icons.cancel,
-                                color: Colors.black,
+                                color: _feedback!['feedback_released'] == false
+                                    ? UIUtils.textColor
+                                    : _feedback!['is_correct'] == true
+                                    ? UIUtils.successColor
+                                    : UIUtils.errorColor,
                               ),
                               title: Text(
                                 _feedback!['feedback_released'] == false
@@ -3223,15 +3389,19 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
                                     : _feedback!['is_correct'] == true
                                     ? 'Correct'
                                     : 'Incorrect',
-                                style: const TextStyle(
-                                  color: Colors.black,
+                                style: TextStyle(
+                                  color: UIUtils.textColor,
+                                  fontSize: 18,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                               subtitle: Text(
                                 'You selected: ${_feedback!['selected_option_text']}\n'
                                 '${_feedback!['feedback_released'] == false ? _feedback!['feedback_message'] : 'Correct answer: ${_feedback!['correct_option_text']}\n${_feedback!['explanation'] ?? 'No explanation provided.'}'}',
-                                style: const TextStyle(color: Colors.black),
+                                style: TextStyle(
+                                  color: UIUtils.textColor,
+                                  fontSize: 16,
+                                ),
                               ),
                               onTap: _readPrivateFeedback,
                             ),
@@ -3561,8 +3731,8 @@ class _QuizReviewScreenState extends State<QuizReviewScreen> {
                           leading: Icon(
                             correct ? Icons.check_circle : Icons.cancel,
                             color: correct
-                                ? Colors.green.shade800
-                                : Colors.red.shade800,
+                                ? UIUtils.successColor
+                                : UIUtils.errorColor,
                           ),
                           title: Text(
                             '${index + 1}. ${question['question_text']}',

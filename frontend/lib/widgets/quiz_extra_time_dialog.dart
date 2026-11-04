@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/tts_service.dart';
+import '../utils/ui_utils.dart';
 import 'key_instruction_wrapper.dart';
 
 class QuizExtraTimeDialog extends StatefulWidget {
@@ -27,7 +28,10 @@ class _QuizExtraTimeDialogState extends State<QuizExtraTimeDialog> {
         () => _error =
             'Enter a whole number of minutes, zero or more, within the server integer range.',
       );
-      TtsService.speak(_error!);
+      TtsService.speak(
+        '${_error!} Move up to Extra minutes to correct it.',
+        priority: SpeechPriority.critical,
+      );
       return;
     }
     Navigator.pop(context, minutes);
@@ -45,13 +49,13 @@ class _QuizExtraTimeDialogState extends State<QuizExtraTimeDialog> {
   @override
   Widget build(BuildContext context) => KeypadInstructionWrapper(
     screenName:
-        'Extra time for ${widget.studentName}. Future attempts only; active attempt deadlines stay fixed. Quiz closing time still applies. Zero removes extra time.',
+        'Extra time for ${widget.studentName}. Future attempts only; active attempt deadlines stay fixed. Quiz closing time still applies. Entering zero minutes removes extra time. Press 0 outside the field to cancel.',
     actions: const {},
-    onHashKey: () => Navigator.pop(context),
     focusTargets: [
       KeypadFocusTarget(
         node: _field,
-        label: 'Extra minutes. Press OK to edit',
+        label:
+            'Extra minutes, currently ${_text.text.trim().isEmpty ? 'empty' : _text.text.trim()}. Press OK to edit',
         isTextField: true,
       ),
       KeypadFocusTarget(
@@ -72,16 +76,30 @@ class _QuizExtraTimeDialogState extends State<QuizExtraTimeDialog> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text(
+          Text(
             'Future attempts only. Existing deadlines do not change. Quiz closing time still applies; extend availability separately if needed. Zero removes extra minutes.',
+            style: TextStyle(color: UIUtils.textColor, fontSize: 16),
           ),
           TextField(
             focusNode: _field,
             controller: _text,
             keyboardType: TextInputType.number,
+            style: TextStyle(color: UIUtils.textColor, fontSize: 18),
             decoration: const InputDecoration(labelText: 'Extra minutes'),
+            onChanged: (_) => setState(() {}),
           ),
-          if (_error != null) Text(_error!),
+          if (_error != null)
+            Semantics(
+              liveRegion: true,
+              child: Text(
+                _error!,
+                style: TextStyle(
+                  color: UIUtils.errorColor,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
           TextButton(
             focusNode: _save,
             onPressed: save,
@@ -90,7 +108,7 @@ class _QuizExtraTimeDialogState extends State<QuizExtraTimeDialog> {
           TextButton(
             focusNode: _cancel,
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: const Text('0: Cancel'),
           ),
         ],
       ),

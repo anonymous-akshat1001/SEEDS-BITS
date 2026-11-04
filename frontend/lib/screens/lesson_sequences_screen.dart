@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../services/api_service.dart';
 import '../services/tts_service.dart';
+import '../utils/ui_utils.dart';
 import '../widgets/key_instruction_wrapper.dart';
 import '../widgets/keypad_confirmation_dialog.dart';
 import '../widgets/keypad_paged_list.dart';
@@ -152,8 +153,14 @@ class _LessonSequencesScreenState extends State<LessonSequencesScreen> {
       _busy = true;
       _issue = null;
     });
+    final statusBefore = _status;
+    final pageBefore = _page;
     try {
       await action();
+      // A page change replays that page's help; otherwise say what happened.
+      if (mounted && _page == pageBefore && _status != statusBefore) {
+        unawaited(TtsService.speak(_status));
+      }
     } on Exception catch (error) {
       debugPrint('[SEQUENCE] Action failed (${error.runtimeType}).');
       _error(
@@ -784,10 +791,24 @@ class _LessonSequencesScreenState extends State<LessonSequencesScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                if (_busy) const LinearProgressIndicator(),
+                if (_busy)
+                  Semantics(
+                    label: 'Working. Please wait',
+                    child: const LinearProgressIndicator(),
+                  ),
                 if (_issue != null)
-                  Semantics(liveRegion: true, child: Text(_issue!)),
-                Text(_status),
+                  Semantics(
+                    liveRegion: true,
+                    child: Text(
+                      _issue!,
+                      style: TextStyle(
+                        color: UIUtils.errorColor,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                Semantics(liveRegion: true, child: Text(_status)),
                 if (_page != _LessonPage.plans) ...[
                   Text(
                     'Selected: ${_plan!.title}. Revision ${_plan!.revision}.',
@@ -845,13 +866,45 @@ class _SequenceTextDialogState extends State<_SequenceTextDialog> {
   final _save = FocusNode(debugLabel: 'sequence-entry-save');
   final _cancel = FocusNode(debugLabel: 'sequence-entry-cancel');
   String? _issue;
+  bool _limitAnnounced = false;
+
+  void _fail(String message) {
+    setState(() => _issue = message);
+    unawaited(TtsService.speak(message, priority: SpeechPriority.critical));
+  }
+
   void save() {
-    if (_text.text.trim().isEmpty) {
-      setState(() => _issue = 'Enter text before saving.');
-      unawaited(TtsService.speak(_issue!));
+    final value = _text.text.trim();
+    if (value.isEmpty) {
+      _fail(
+        'Nothing to save. Press OK on the text field and type, '
+        'or press 0 to cancel.',
+      );
       return;
     }
-    Navigator.pop(context, _text.text.trim());
+    if (value.length > widget.maximum) {
+      _fail('Text is too long. Use at most ${widget.maximum} characters.');
+      return;
+    }
+    Navigator.pop(context, value);
+  }
+
+  void _changed(String value) {
+    final atLimit = value.length >= widget.maximum;
+    if (atLimit && !_limitAnnounced) {
+      unawaited(
+        TtsService.speak(
+          'Maximum of ${widget.maximum} characters reached.',
+          priority: SpeechPriority.critical,
+        ),
+      );
+    }
+    if (_issue != null || atLimit != _limitAnnounced) {
+      setState(() {
+        _issue = null;
+        _limitAnnounced = atLimit;
+      });
+    }
   }
 
   @override
@@ -868,17 +921,17 @@ class _SequenceTextDialogState extends State<_SequenceTextDialog> {
     interactionPolicy: KeypadInteractionPolicy.numbered,
     screenName: widget.title,
     introduction:
-        'Use D-pad down to reach the text field. Enter the text, then press OK to leave editing. '
+        'Use D-pad down to reach the text field. Enter up to ${widget.maximum} characters, then press OK to leave editing. '
         'Outside the field, press 1 to save or 0 to cancel without saving.',
     navigationSections: 'the text field, save text and cancel',
-    labels: const {1: 'Save text', 2: 'Cancel without saving'},
-    actions: {
-      0: () => Navigator.pop(context),
-      1: save,
-      2: () => Navigator.pop(context),
-    },
+    labels: const {0: 'Cancel without saving', 1: 'Save text'},
+    actions: {0: () => Navigator.pop(context), 1: save},
     focusTargets: [
-      KeypadFocusTarget(node: _field, label: widget.title, isTextField: true),
+      KeypadFocusTarget(
+        node: _field,
+        label: '${widget.title}. Up to ${widget.maximum} characters',
+        isTextField: true,
+      ),
       KeypadFocusTarget(
         node: _save,
         label: 'Save entered text',
@@ -902,19 +955,35 @@ class _SequenceTextDialogState extends State<_SequenceTextDialog> {
             maxLength: widget.maximum,
             maxLines: null,
             textInputAction: TextInputAction.done,
+            onChanged: _changed,
             onSubmitted: (_) => _save.requestFocus(),
-            decoration: InputDecoration(labelText: widget.title),
+            decoration: InputDecoration(
+              labelText: widget.title,
+              helperText: 'Up to ${widget.maximum} characters',
+              helperMaxLines: 10,
+            ),
           ),
-          if (_issue != null) Text(_issue!),
+          if (_issue != null)
+            Semantics(
+              liveRegion: true,
+              child: Text(
+                _issue!,
+                style: TextStyle(
+                  color: UIUtils.errorColor,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
           TextButton(
             focusNode: _save,
             onPressed: save,
-            child: const Text('1. Save text'),
+            child: const Text('1: Save text'),
           ),
           TextButton(
             focusNode: _cancel,
             onPressed: () => Navigator.pop(context),
-            child: const Text('0. Cancel'),
+            child: const Text('0: Cancel without saving'),
           ),
         ],
       ),

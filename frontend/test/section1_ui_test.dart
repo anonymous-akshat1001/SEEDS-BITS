@@ -63,6 +63,7 @@ void main() {
     await tester.enterText(fields.at(0), 'Student');
     await tester.enterText(fields.at(1), '9876543210');
     await tester.enterText(fields.at(2), 'short');
+    await tester.ensureVisible(find.text('1: Register'));
     await tester.tap(find.text('1: Register'));
     await tester.pump();
     expect(
@@ -78,37 +79,41 @@ void main() {
     expect(passwordField.obscureText, isFalse);
   });
 
-  testWidgets('Settings hides sync tolerance and persists high contrast', (
-    tester,
-  ) async {
-    await tester.pumpWidget(const MaterialApp(home: SettingsScreen()));
-    await tester.pumpAndSettle();
-    expect(find.text('Sync Tolerance'), findsNothing);
-    expect(
-      find.textContaining(
-        'Enable Listen for command in sessions. No automatic listening.',
-      ),
-      findsOneWidget,
-    );
+  testWidgets(
+    'Settings hides sync tolerance and persists turning high contrast off',
+    (tester) async {
+      await tester.pumpWidget(const MaterialApp(home: SettingsScreen()));
+      await tester.pumpAndSettle();
+      expect(find.text('Sync Tolerance'), findsNothing);
+      expect(
+        find.textContaining(
+          'Enable Listen for command in sessions. No automatic listening.',
+        ),
+        findsOneWidget,
+      );
 
-    await tester.scrollUntilVisible(
-      find.text('High Contrast'),
-      300,
-      scrollable: find.byType(Scrollable).last,
-    );
-    await tester.tap(find.text('High Contrast'));
-    await tester.pump();
-    await tester.scrollUntilVisible(
-      find.text('Save Settings'),
-      300,
-      scrollable: find.byType(Scrollable).last,
-    );
-    await tester.tap(find.text('Save Settings'));
-    await tester.pump();
-    final prefs = await SharedPreferences.getInstance();
-    expect(prefs.getBool('high_contrast_mode'), isTrue);
-    expect(prefs.containsKey('audio_sync_tolerance'), isFalse);
-  });
+      await tester.scrollUntilVisible(
+        find.text('High Contrast'),
+        300,
+        scrollable: find.byType(Scrollable).last,
+      );
+      await tester.tap(find.text('High Contrast'));
+      await tester.pump();
+      await tester.scrollUntilVisible(
+        find.text('Save Settings'),
+        300,
+        scrollable: find.byType(Scrollable).last,
+      );
+      await tester.tap(find.text('Save Settings'));
+      await tester.pump();
+      final prefs = await SharedPreferences.getInstance();
+      // High contrast is on by default for low-vision users.
+      expect(prefs.getBool('high_contrast_mode'), isFalse);
+      expect(prefs.containsKey('audio_sync_tolerance'), isFalse);
+      // Saving must not pin a speech mode, or TalkBack auto-detection stops.
+      expect(prefs.containsKey('speech_mode'), isFalse);
+    },
+  );
 
   testWidgets('Settings supports D-pad, Enter, sliders, and reset dialog', (
     tester,
@@ -148,7 +153,8 @@ void main() {
     await tester.tap(find.byTooltip('Reset to Defaults'));
     await tester.pumpAndSettle();
     expect(find.text('Reset Settings'), findsOneWidget);
-    await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
+    // The safe choice, Cancel, is focused as soon as the dialog opens.
+    await tester.pump();
     expect(
       FocusManager.instance.primaryFocus?.debugLabel,
       'settings-reset-cancel',
@@ -161,6 +167,7 @@ void main() {
     await tester.sendKeyEvent(LogicalKeyboardKey.enter);
     await tester.pumpAndSettle();
     expect(find.text('Reset Settings'), findsNothing);
+    expect(FocusManager.instance.primaryFocus?.debugLabel, 'settings-reset');
     expect(
       tester.widget<SwitchListTile>(find.byType(SwitchListTile).first).value,
       isTrue,

@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart'
     show MissingPlatformDirectoryException;
 
 import 'learning_progress_store.dart';
+import 'activity_telemetry.dart';
 
 class LearningPlaybackController extends ChangeNotifier {
   LearningPlaybackController({
@@ -36,6 +37,8 @@ class LearningPlaybackController extends ChangeNotifier {
   bool _repeatEnabled = false;
   Future<void>? _loopOperation;
   bool _resumeAfterLoop = false;
+  bool _observedPlaying = false;
+  bool _offlinePlayback = false;
   String? _issue;
   Timer? _saveTimer;
   int _generation = 0;
@@ -126,11 +129,25 @@ class LearningPlaybackController extends ChangeNotifier {
     }
   }
 
-  void activate() {
+  void activate({bool offline = false}) {
     if (_closed || _lesson == null) return;
     _ready = true;
+    _offlinePlayback = offline;
+    _observedPlaying = false;
+    observePlayback(true);
     notifyListeners();
     if (!_readOnly) unawaited(flush());
+  }
+
+  void observePlayback(bool playing) {
+    if (_closed || !_ready || _lesson == null || playing == _observedPlaying)
+      return;
+    _observedPlaying = playing;
+    ActivityTelemetry.record(
+      playing ? 'learning_play' : 'learning_pause',
+      audioId: _lesson!.audioId,
+      details: {'offline': _offlinePlayback},
+    );
   }
 
   void abort() {
@@ -253,6 +270,13 @@ class LearningPlaybackController extends ChangeNotifier {
       _repeatEnabled = false;
     }
     _position = position;
+    if (_lesson != null) {
+      ActivityTelemetry.record(
+        'learning_seek',
+        audioId: _lesson!.audioId,
+        details: {'position': position.inMilliseconds / 1000},
+      );
+    }
     notifyListeners();
     if (!_readOnly) await flush();
   }
@@ -265,6 +289,13 @@ class LearningPlaybackController extends ChangeNotifier {
     await setSpeed(speed);
     if (_closed || generation != _generation) return;
     _speed = speed;
+    if (_lesson != null) {
+      ActivityTelemetry.record(
+        'learning_speed',
+        audioId: _lesson!.audioId,
+        details: {'speed': speed},
+      );
+    }
     notifyListeners();
     if (!_readOnly) await flush();
   }
@@ -287,6 +318,7 @@ class LearningPlaybackController extends ChangeNotifier {
     final updated = await storage.addBookmark(audioId, position, label: label);
     if (_closed || generation != _generation) return;
     _lesson = updated;
+    ActivityTelemetry.record('bookmark_added', audioId: audioId);
     notifyListeners();
   }
 
@@ -303,6 +335,7 @@ class LearningPlaybackController extends ChangeNotifier {
     final updated = await storage.removeBookmark(audioId, id);
     if (_closed || generation != _generation) return;
     _lesson = updated;
+    ActivityTelemetry.record('bookmark_removed', audioId: audioId);
     notifyListeners();
   }
 
@@ -326,6 +359,7 @@ class LearningPlaybackController extends ChangeNotifier {
     if (_closed || generation != _generation) return;
     _lesson = updated;
     _repeatEnabled = false;
+    ActivityTelemetry.record('learning_repeat', audioId: audioId);
     notifyListeners();
   }
 
@@ -377,6 +411,7 @@ class LearningPlaybackController extends ChangeNotifier {
     }
     if (_lesson == null || !_ready) return false;
     final snapshot = _snapshot(completed: true);
+    ActivityTelemetry.record('learning_complete', audioId: _lesson!.audioId);
     _ready = false;
     _position = Duration.zero;
     _saveTimer?.cancel();

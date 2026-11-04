@@ -133,7 +133,6 @@ void main() {
         await expectKeypadTargets(tester, {
           'audio-library-back',
           'audio-library-refresh',
-          'audio-library-tts',
           'audio-library-pause-session',
           'audio-library-upload',
           for (var id = 1; id <= 12; id++) ...[
@@ -211,8 +210,14 @@ void main() {
         await expectKeypadTargets(tester, {
           'existing-audio-back',
           'existing-audio-refresh',
+          'existing-audio-search',
           for (var id = 2; id <= 20; id++) 'existing-audio-$id',
         });
+        expect(find.textContaining('19 recordings'), findsWidgets);
+        await tester.enterText(find.byType(TextField), 'Lesson 17');
+        await tester.pump();
+        expect(find.text('Lesson 2'), findsNothing);
+        expect(find.textContaining('1 of 19 recordings match'), findsOneWidget);
         await tester.pumpWidget(const SizedBox.shrink());
         await tester.pumpAndSettle();
       }, () => MockClient((_) async => http.Response(jsonEncode(audio), 200)));

@@ -94,6 +94,11 @@ def test_class_subject_migration_backfills_legacy_pairs(tmp_path, monkeypatch):
                 (3, 1, 'duplicate-same-account'),
                 (4, 1, 'duplicate-same-account'),
                 (5, 2, 'unambiguous-token');
+            ALTER TABLE sessions ADD COLUMN created_by INTEGER;
+            ALTER TABLE sessions ADD COLUMN created_at TIMESTAMP;
+            ALTER TABLE sessions ADD COLUMN is_active BOOLEAN;
+            ALTER TABLE sessions ADD COLUMN ended_at TIMESTAMP;
+            UPDATE sessions SET created_by=1, created_at='2025-01-01 00:00:00', is_active=1;
         """)
         before_policy.execute(
             "INSERT INTO quizzes (quiz_id, class_id, subject_id, title, status) VALUES (1, 1, 1, 'Legacy quiz', 'published')"
@@ -129,9 +134,16 @@ def test_class_subject_migration_backfills_legacy_pairs(tmp_path, monkeypatch):
         "quiz_attempts",
         "quiz_responses",
     }.issubset(table_names)
-    assert version == ("20261020_08",)
+    assert version == ("20261102_09",)
+    assert {"analytics_sessions", "session_runs", "analytics_attendance",
+            "analytics_attendance_joins", "analytics_maintenance"}.issubset(table_names)
     assert "lesson_sequences" in table_names
     with sqlite3.connect(database_path) as migrated:
+        assert migrated.execute(
+            "SELECT session_id, owner_teacher_id, created_at, provenance FROM analytics_sessions"
+        ).fetchone() == (1, 1, "2025-01-01 00:00:00", "partial")
+        assert migrated.execute("SELECT count(*) FROM session_runs").fetchone() == (0,)
+        assert migrated.execute("SELECT count(*) FROM analytics_attendance").fetchone() == (0,)
         assert migrated.execute(
             "SELECT user_id, token FROM fcm_tokens"
         ).fetchall() == [(2, "unambiguous-token")]

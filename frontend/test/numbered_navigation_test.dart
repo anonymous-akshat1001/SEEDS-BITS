@@ -441,25 +441,38 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
-  testWidgets('legacy hash behavior is retained for unmigrated screens', (
+  testWidgets('hash only stops speech and 0 goes back on every screen', (
     tester,
   ) async {
-    var hashActions = 0;
+    final navigator = GlobalKey<NavigatorState>();
     await tester.pumpWidget(
-      app(
-        KeypadInstructionWrapper(
-          autoPlay: false,
-          actions: const {},
-          onHashKey: () => hashActions++,
-          child: const Scaffold(body: Text('Legacy')),
+      MaterialApp(
+        navigatorKey: navigator,
+        home: const Scaffold(body: Text('Home')),
+      ),
+    );
+    unawaited(
+      navigator.currentState!.push(
+        MaterialPageRoute<void>(
+          builder: (_) => const KeypadInstructionWrapper(
+            autoPlay: false,
+            actions: {},
+            child: Scaffold(body: Text('Legacy')),
+          ),
         ),
       ),
     );
+    await tester.pumpAndSettle();
     await tester.sendKeyEvent(
       LogicalKeyboardKey.numberSign,
       physicalKey: PhysicalKeyboardKey.digit3,
     );
-    expect(hashActions, 1);
+    await tester.pumpAndSettle();
+    expect(find.text('Legacy'), findsOneWidget);
+    await tester.sendKeyEvent(LogicalKeyboardKey.digit0);
+    await tester.pumpAndSettle();
+    expect(find.text('Legacy'), findsNothing);
+    expect(find.text('Home'), findsOneWidget);
     await tester.pumpWidget(const SizedBox.shrink());
   });
 }

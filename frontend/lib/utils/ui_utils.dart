@@ -6,9 +6,7 @@ import 'dart:math' as math;
 /// like the Blackzone Winx 4G (240x320) while still looking
 /// good on normal phones.
 class UIUtils {
-  static final ValueNotifier<bool> highContrastListenable = ValueNotifier(
-    false,
-  );
+  static final ValueNotifier<bool> highContrastListenable = ValueNotifier(true);
   static final ValueNotifier<double> textScaleListenable = ValueNotifier(1.0);
 
   static bool get isHighContrast => highContrastListenable.value;
@@ -58,9 +56,9 @@ class UIUtils {
     return isTiny(context) && ratio > 0.6;
   }
 
-  /// Scaled font size
+  /// Scaled font size, never below [minimumFontSize].
   static double fontSize(BuildContext context, double base) {
-    return math.max(base * math.max(scale(context), 1.0), 10.0);
+    return math.max(base * math.max(scale(context), 1.0), minimumFontSize);
   }
 
   static TextScaler combinedTextScaler(TextScaler system, double appScale) =>
@@ -106,19 +104,40 @@ class UIUtils {
     );
   }
 
-  // --- Modern Minimal Theme Colors ---
+  // --- Colours ---
+  // Most SEEDS users are blind; some have low vision. High contrast (yellow
+  // and white on black) is the default. Every foreground/background pair
+  // below meets WCAG AAA (7:1) in high contrast and AA (4.5:1) otherwise.
   static Color get primaryColor =>
-      isHighContrast ? const Color(0xFF005BBB) : const Color(0xFF2D3436);
+      isHighContrast ? const Color(0xFFFFD600) : const Color(0xFF1F2A30);
+  static Color get onPrimaryColor =>
+      isHighContrast ? Colors.black : Colors.white;
   static Color get accentColor =>
-      isHighContrast ? const Color(0xFFFFD600) : const Color(0xFF0984E3);
+      isHighContrast ? const Color(0xFFFFD600) : const Color(0xFF004A99);
+  static Color get onAccentColor =>
+      isHighContrast ? Colors.black : Colors.white;
   static Color get backgroundColor =>
       isHighContrast ? Colors.black : const Color(0xFFF5F6FA);
   static Color get cardColor =>
-      isHighContrast ? const Color(0xFF111111) : Colors.white;
+      isHighContrast ? const Color(0xFF121212) : Colors.white;
+  static Color get cardBorderColor =>
+      isHighContrast ? Colors.white : const Color(0xFF5F6B73);
   static Color get textColor =>
-      isHighContrast ? Colors.white : const Color(0xFF2D3436);
+      isHighContrast ? Colors.white : const Color(0xFF1F2A30);
   static Color get subtextColor =>
-      isHighContrast ? const Color(0xFFFFF176) : const Color(0xFF455A64);
+      isHighContrast ? const Color(0xFFFFF59D) : const Color(0xFF37474F);
+  static Color get errorColor =>
+      isHighContrast ? const Color(0xFFFF8A80) : const Color(0xFFB00020);
+  static Color get successColor =>
+      isHighContrast ? const Color(0xFF69F0AE) : const Color(0xFF1B5E20);
+
+  /// Focus indicator: thick yellow ring with a black outline so it stays
+  /// visible on any background colour.
+  static const Color focusRingColor = Color(0xFFFFD600);
+  static const double focusRingWidth = 4;
+
+  /// Smallest font size used anywhere; low-vision users cannot read less.
+  static const double minimumFontSize = 14;
 }
 
 class _AppTextScaler extends TextScaler {

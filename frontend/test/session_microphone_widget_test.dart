@@ -531,7 +531,15 @@ void main() {
         );
         await tester.sendKeyEvent(LogicalKeyboardKey.enter);
         await tester.pumpAndSettle();
-        expect(find.text('Classroom console'), findsOneWidget);
+        // The session also shows a visible "Classroom console" button; the
+        // dialog title is the one that matters here.
+        expect(
+          find.descendant(
+            of: find.byType(AlertDialog),
+            matching: find.text('Classroom console'),
+          ),
+          findsOneWidget,
+        );
         for (
           var press = 0;
           press < 30 &&
@@ -550,7 +558,7 @@ void main() {
           'target_participant_id': 11,
           'hand_queue_order': 2,
         });
-        expect(find.textContaining('Hand 1 of 1.'), findsOneWidget);
+        expect(find.textContaining('Hand 1 of 1,'), findsOneWidget);
         if (outcome == 'reraised') {
           server.emit({
             'type': 'hand_raised',
@@ -585,7 +593,7 @@ void main() {
             isTrue,
           );
         } else {
-          expect(find.textContaining('Hand 1 of 1.'), findsOneWidget);
+          expect(find.textContaining('Hand 1 of 1,'), findsOneWidget);
           if (outcome == 'reraised') {
             expect(
               spoken.any(

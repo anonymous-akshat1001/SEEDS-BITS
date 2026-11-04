@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/semantics.dart';
+import 'package:flutter/widgets.dart' show TextDirection;
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'speech_engine.dart'
@@ -88,6 +90,22 @@ class TtsService {
     } finally {
       _initializing = null;
     }
+  }
+
+  /// Follows Android TalkBack unless the user explicitly chose a speech mode
+  /// in Settings, so app speech and the screen reader never talk together.
+  static Future<void> syncWithPlatformScreenReader(bool active) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.containsKey('speech_mode')) return;
+    final mode = active ? SpeechMode.screenReader : SpeechMode.selfVoicing;
+    if (mode == _mode) return;
+    await configure(mode: mode);
+    await speak(
+      active
+          ? 'Screen reader detected. SEEDS will send its announcements to your screen reader.'
+          : 'Screen reader turned off. SEEDS will speak for itself.',
+      priority: SpeechPriority.critical,
+    );
   }
 
   static Future<void> loadFromPreferences() async {
@@ -232,9 +250,7 @@ class TtsService {
     SpeechPriority priority = SpeechPriority.requested,
     String? group,
   }) async {
-    if (!_enabled || _mode == SpeechMode.screenReader || text.trim().isEmpty) {
-      return;
-    }
+    if (!_enabled || text.trim().isEmpty) return;
     if (priority == SpeechPriority.incidental) {
       final key = group ?? text;
       if (_updates.containsKey(key) || _updates.length < 8) {
@@ -247,6 +263,16 @@ class TtsService {
         );
       }
       _scheduleUpdates();
+      return;
+    }
+    if (_mode == SpeechMode.screenReader) {
+      // The screen reader owns the voice; hand it the message instead of
+      // dropping it, otherwise status changes would be silent for its users.
+      try {
+        await SemanticsService.announce(text, TextDirection.ltr);
+      } catch (error) {
+        debugPrint('[TTS] Screen reader announcement failed: $error');
+      }
       return;
     }
     final generation = ++_speechGeneration;

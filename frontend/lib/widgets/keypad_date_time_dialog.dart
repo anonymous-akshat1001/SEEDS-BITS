@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../services/tts_service.dart';
+import '../utils/ui_utils.dart';
 import 'key_instruction_wrapper.dart';
 
 class KeypadDateTimeDialog extends StatefulWidget {
@@ -22,6 +23,7 @@ class KeypadDateTimeDialog extends StatefulWidget {
 
 class _KeypadDateTimeDialogState extends State<KeypadDateTimeDialog> {
   static const _labels = ['Year', 'Month', 'Day', 'Hour (0 to 23)', 'Minute'];
+  static const _names = ['Year', 'Month', 'Day', 'Hour', 'Minute'];
   final _navigation = KeypadNavigationController();
   final _cancel = FocusNode(debugLabel: 'date-time-cancel');
   final _save = FocusNode(debugLabel: 'date-time-save');
@@ -93,12 +95,35 @@ class _KeypadDateTimeDialogState extends State<KeypadDateTimeDialog> {
     Navigator.pop(context, value);
   }
 
+  String _range(int index) {
+    switch (index) {
+      case 0:
+        return widget.firstDate.year == widget.lastDate.year
+            ? '${widget.firstDate.year}'
+            : '${widget.firstDate.year} to ${widget.lastDate.year}';
+      case 1:
+        return '1 to 12';
+      case 2:
+        return '1 to 31';
+      case 3:
+        return '0 to 23';
+      default:
+        return '0 to 59';
+    }
+  }
+
+  String _fieldLabel(int index) {
+    final value = _fields[index].text.trim();
+    return '${_names[index]}, ${_range(index)}, '
+        '${value.isEmpty ? 'currently empty' : 'currently $value'}';
+  }
+
   String _dateLabel(DateTime value) =>
       '${value.day}/${value.month}/${value.year}';
 
   void _showError(String message) {
     setState(() => _error = message);
-    TtsService.speak(message);
+    TtsService.speak(message, priority: SpeechPriority.critical);
   }
 
   @override
@@ -128,7 +153,7 @@ class _KeypadDateTimeDialogState extends State<KeypadDateTimeDialog> {
         for (var index = 0; index < _nodes.length; index++)
           KeypadFocusTarget(
             node: _nodes[index],
-            label: '${_labels[index]}, ${_fields[index].text}',
+            label: _fieldLabel(index),
             isTextField: true,
           ),
         KeypadFocusTarget(
@@ -144,29 +169,45 @@ class _KeypadDateTimeDialogState extends State<KeypadDateTimeDialog> {
       ],
       child: AlertDialog(
         title: const Text('Set date and time'),
-        content: SizedBox(
-          width: 300,
-          child: ListView(
-            shrinkWrap: true,
-            children: [
-              const Text('Use local time. Press OK to edit each number.'),
-              for (var index = 0; index < _fields.length; index++)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: TextField(
-                    controller: _fields[index],
-                    focusNode: _nodes[index],
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    decoration: InputDecoration(labelText: _labels[index]),
-                    onTap: () => _navigation.enterTextEditing(_nodes[index]),
-                    onChanged: (_) => setState(() {}),
+        scrollable: true,
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              'Use local time. Press OK to edit each number.',
+              style: TextStyle(color: UIUtils.textColor, fontSize: 16),
+            ),
+            for (var index = 0; index < _fields.length; index++)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: TextField(
+                  controller: _fields[index],
+                  focusNode: _nodes[index],
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  style: TextStyle(color: UIUtils.textColor, fontSize: 18),
+                  decoration: InputDecoration(
+                    labelText: _labels[index],
+                    helperText: _range(index),
+                  ),
+                  onTap: () => _navigation.enterTextEditing(_nodes[index]),
+                  onChanged: (_) => setState(() {}),
+                ),
+              ),
+            if (_error != null)
+              Semantics(
+                liveRegion: true,
+                child: Text(
+                  _error!,
+                  style: TextStyle(
+                    color: UIUtils.errorColor,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-              if (_error != null)
-                Semantics(liveRegion: true, child: Text(_error!)),
-            ],
-          ),
+              ),
+          ],
         ),
         actions: [
           TextButton(

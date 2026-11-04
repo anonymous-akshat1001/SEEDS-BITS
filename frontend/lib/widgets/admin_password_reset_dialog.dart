@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../services/api_service.dart';
 import '../services/tts_service.dart';
+import '../utils/ui_utils.dart';
 import 'key_instruction_wrapper.dart';
 import 'keypad_confirmation_dialog.dart';
 
@@ -43,7 +44,20 @@ class _AdminPasswordResetDialogState extends State<AdminPasswordResetDialog> {
   void _fail(String message) {
     if (!mounted) return;
     setState(() => _error = message);
-    TtsService.speak(message);
+    TtsService.speak(message, priority: SpeechPriority.critical);
+  }
+
+  /// Moves keypad focus once the frame that re-enables controls is built,
+  /// falling back to Close so focus is never stranded on a hidden control.
+  void _focusAfter(FocusNode node) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (node.context != null && node.canRequestFocus) {
+        node.requestFocus();
+      } else if (_close.context != null) {
+        _close.requestFocus();
+      }
+    });
   }
 
   void _verify() {
@@ -59,6 +73,7 @@ class _AdminPasswordResetDialogState extends State<AdminPasswordResetDialog> {
   Future<void> _issue() async {
     if (_busy || _attempted || !_verified) return;
     setState(() => _busy = true);
+    var next = _reset;
     try {
       final confirmed = await showDialog<bool>(
         context: context,
@@ -79,6 +94,11 @@ class _AdminPasswordResetDialogState extends State<AdminPasswordResetDialog> {
         return;
       }
       setState(() => _attempted = true);
+      next = _close;
+      TtsService.speak(
+        'Sending reset. Waiting for server confirmation.',
+        priority: SpeechPriority.navigation,
+      );
       final result = await ApiService.postAcknowledged(
         '/admin/users/${widget.accountId}/reset-password',
         {
@@ -115,6 +135,7 @@ class _AdminPasswordResetDialogState extends State<AdminPasswordResetDialog> {
         _credential = credential;
         _expires = expires;
       });
+      next = _read;
       TtsService.speak(
         'Password reset confirmed. The credential is hidden. Use Read credential only when it is private. Closing discards this copy.',
       );
@@ -127,7 +148,10 @@ class _AdminPasswordResetDialogState extends State<AdminPasswordResetDialog> {
         'Account storage is unavailable. Close recovery and restart SEEDS before considering a reset.',
       );
     } finally {
-      if (mounted) setState(() => _busy = false);
+      if (mounted) {
+        setState(() => _busy = false);
+        _focusAfter(next);
+      }
     }
   }
 
@@ -156,7 +180,11 @@ class _AdminPasswordResetDialogState extends State<AdminPasswordResetDialog> {
             confirmLabel: 'Close and discard',
           ),
         );
-        if (close != true || !mounted) return;
+        if (!mounted) return;
+        if (close != true) {
+          _focusAfter(_close);
+          return;
+        }
       }
       if (mounted) Navigator.pop(context);
     } finally {
@@ -183,7 +211,6 @@ class _AdminPasswordResetDialogState extends State<AdminPasswordResetDialog> {
           'Administrator password recovery. Verify identity outside SEEDS before resetting. Credentials are hidden until explicitly requested.',
       labels: const {0: 'Close recovery'},
       actions: {0: _closeDialog},
-      onHashKey: _closeDialog,
       focusTargets: [
         KeypadFocusTarget(
           node: _identity,
@@ -231,7 +258,10 @@ class _AdminPasswordResetDialogState extends State<AdminPasswordResetDialog> {
                 'Password recovery',
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
-              Text('${widget.accountName}\n${widget.phoneNumber}'),
+              Text(
+                '${widget.accountName}\n${widget.phoneNumber}',
+                style: const TextStyle(fontSize: 18),
+              ),
               TextButton(
                 focusNode: _identity,
                 onPressed: () => TtsService.speak(
@@ -255,12 +285,32 @@ class _AdminPasswordResetDialogState extends State<AdminPasswordResetDialog> {
                   child: const Text('Reset password and end online sessions'),
                 ),
               ],
-              if (_busy) const Text('Waiting for reset confirmation.'),
+              if (_busy)
+                Semantics(
+                  liveRegion: true,
+                  child: const Text('Waiting for reset confirmation.'),
+                ),
               if (_error != null)
-                Semantics(liveRegion: true, child: Text(_error!)),
+                Semantics(
+                  liveRegion: true,
+                  child: Text(
+                    _error!,
+                    style: TextStyle(
+                      color: UIUtils.errorColor,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
               if (_credential != null) ...[
-                const Text(
-                  'Reset confirmed. Credential hidden until requested. It is valid for 24 hours. Closing discards this copy. Deliver privately; never post it in a class.',
+                Semantics(
+                  liveRegion: true,
+                  child: Text(
+                    'Reset confirmed. Credential hidden until requested. It is valid for 24 hours. Closing discards this copy. Deliver privately; never post it in a class.',
+                    style: TextStyle(
+                      color: UIUtils.successColor,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
                 ),
                 TextButton(
                   focusNode: _read,

@@ -763,13 +763,20 @@ The current accessibility work targets Android keypad phones. Support on a
 particular phone still requires checking its physical key events, Android
 version, English TTS engine, audio, and available memory.
 
-- Existing numeric shortcuts are retained. Up/Down traverses enabled controls
-  and wraps; OK activates a control or enters a text field's edit mode.
+- Up/Down traverses enabled controls and wraps; each focused control is
+  announced with its position ("3 of 7"), and wrapping says "End of list.
+  Back to the first item." OK activates a control or enters a text field's
+  edit mode.
 - Up/Down exits text editing. While editing, digits, star, and hash belong to
   the field rather than triggering screen shortcuts.
-- Outside editing, star repeats screen help and hash goes Back. Back does not
-  log out. Logout and leaving a live session require confirmation; cancelling
-  a dialog returns to the underlying screen.
+- Outside editing, every screen uses the same keys: **0** goes back or
+  cancels, **star** repeats screen help, **hash** stops app speech (it never
+  navigates). Back does not log out. Logout, leaving a live session and ending
+  a session require confirmation; cancelling a dialog returns focus to the
+  control that opened it.
+- Audio players share one layout around the raised 5 key: **4** back 10
+  seconds, **5** play or pause, **6** forward 10 seconds, **7** slower,
+  **9** faster. Turning app speech off is only offered in Settings.
 - Recorded-library controls, lesson rows, private preview, and session
   broadcast controls have explicit spoken focus targets. Private preview and
   playback for everyone are described separately.
@@ -780,12 +787,23 @@ version, English TTS engine, audio, and available memory.
 
 ### Speech and recorded audio
 
-Self-voicing is the default. Settings offers a manual **Use Android screen
-reader** switch that silences app narration; it does not enable or install an
-Android screen reader. Essential narration shortens automatic page help and
+Self-voicing is the default. When Android TalkBack is turned on, SEEDS
+switches automatically to screen-reader mode and sends its announcements
+(status changes, errors, results) to TalkBack instead of speaking over it;
+it switches back when TalkBack is turned off. Choosing a speech mode in
+Settings overrides this automatic behaviour, and choosing **Automatic**
+restores it. Essential narration shortens automatic page help and
 suppresses automatic incidental updates. Standard groups incidental updates;
 Detailed includes more update groups. Explicit reads and star help remain
 available regardless of narration level.
+
+### Visual design for low vision
+
+High contrast (white and yellow on black) is on by default and can be turned
+off in Settings. Text is never smaller than 14 points, cards and inputs have
+visible borders, the keypad-focused control always has a thick yellow ring,
+and states are written in words ("Live now", "Selected", "Muted") rather
+than shown by colour alone. Layouts stack into one column on 240×320 screens.
 
 The default native TTS rate is **0.75**, 1.5 times the former 0.5 default.
 Fresh settings, session fallbacks and Reset defaults use this shared value;
@@ -1440,6 +1458,68 @@ permanently deleted after a separate destructive confirmation; active sessions
 must be ended before permanent deletion is allowed.
 
 ## Session logging
+
+### Analytics dashboard and local queries
+
+The separate [Flutter analytics dashboard](analytics_dashboard/README.md)
+targets web and Android. It reuses existing admin/teacher accounts, accepts
+English text and reviewed English voice transcripts, and supports ordinary
+teacher/student/class/subject names rather than requiring database IDs.
+Numbers come from parameterized backend queries; the model only proposes a
+validated metric/filter intent. Students are denied. Teachers remain restricted
+to currently assigned class-subject pairs AND their own resources.
+
+Apply Alembic migrations before enabling the disabled-by-default flags in
+[.env.example](.env.example); `create_all` does not upgrade existing tables.
+See the [analytics deployment section](BACKEND_DEPLOYMENT.md#analytics-and-local-query-services).
+
+- `POST /analytics/query`: question OR structured `intent`.
+- `GET /analytics/catalog`: bounded scoped name lookup.
+- `GET /analytics/health`: admin request/error charts and service state.
+- `POST /analytics/transcribe`: authenticated campus English transcription.
+- `POST /activity/events`: bounded, deduplicated client event ingestion.
+
+Example (works without a model):
+
+```json
+{"intent":{"metric":"sessions_created","teacher":"Teacher X","subject":"Subject Y","class_name":"Class Z"}}
+```
+
+Default reports cover the last 30 days, displayed as Asia/Kolkata. Explicit
+timestamps need an offset; educational `all_time` covers retained records only.
+
+**Session semantics:** ending/reopening preserves the original creation
+identity. `sessions_created` counts it once; `session_openings` counts each run.
+Attendance records authenticated student SSE connections, not enrollment,
+invitations or teacher-added rows. Reconnects do not inflate unique students.
+Ambiguous old participant/log rows are not backfilled as attendance.
+
+**Quiz semantics:** `quiz_average` averages finalized graded attempt percentages
+equally, including timeouts and excluding practice/in-progress attempts.
+The existing quiz `average_highest_score` is unchanged.
+
+**Retention:** logs/activity cover 30 days. Attendance and finalized
+attempts/responses expire 18 calendar months after run end/finalization.
+Session deletion retains minimal title-free history; explicit administrative
+erasure removes identity-linked analytics. Reopening does not extend an older
+run's expiry. Self-listen log history becomes a 30-day view.
+
+ORM mutations receive transaction-coupled, content-free events; live controls
+and external effects have separate observed outcomes. Passwords, tokens, chat,
+question/answer bodies, private notes and bookmark labels are excluded.
+Private-playlist operations expose only global admin counts. Classroom checks
+stay transient/ungraded; only open/close and anonymous observed counts are stored.
+
+Build the learning app with `--dart-define=TELEMETRY_ENABLED=true` only after
+the notice/server ingestion are ready. Approved bookmark, seek/speed/repeat/
+completion, download and settings actions use a bounded per-account queue.
+They are `client_reported`, not verified learning/attendance. Missing, expired
+or revoked offline uploads are coverage gaps; notes are never instrumented.
+
+Local adapters support Ollama and OpenAI-compatible llama.cpp/Foundry Local
+endpoints. **Qwen is a model, not an alternative to Ollama.** Foundry Local
+shared-server suitability and exact model quality require campus benchmarks;
+no Azure deployment or automatic cloud fallback is included.
 
 Significant session actions are stored with a timestamp and JSON event details.
 Examples include:

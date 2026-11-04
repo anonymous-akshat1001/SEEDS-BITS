@@ -164,11 +164,8 @@ class ApiService {
 
   static void _debugFailure(String operation, ApiFailure failure) {
     if (kDebugMode) {
-      final sensitive =
-          operation.toLowerCase().contains('password') ||
-          operation.toLowerCase().contains('login');
       debugPrint(
-        '[API] $operation failed (${failure.statusCode}): ${sensitive ? failure.kind.name : failure.debugDetails}',
+        '[API] Request failed (${failure.statusCode}, ${failure.kind.name}).',
       );
     }
   }
@@ -574,7 +571,7 @@ class ApiService {
         // Converts response JSON → Dart map
         return jsonDecode(res.body);
       } else {
-        print('POST $path failed: ${res.statusCode} ${res.body}');
+        debugPrint('[API] POST failed (${res.statusCode}).');
         try {
           final decoded = jsonDecode(res.body);
           if (decoded is Map<String, dynamic>) {
@@ -589,7 +586,7 @@ class ApiService {
         };
       }
     } catch (e) {
-      print('POST $path error: $e');
+      debugPrint('[API] POST error (${e.runtimeType}).');
       return null;
     }
   }
@@ -608,11 +605,11 @@ class ApiService {
         // Converts JSON array/object automatically
         return jsonDecode(res.body);
       } else {
-        print('GET $path failed: ${res.statusCode} ${res.body}');
+        debugPrint('[API] GET failed (${res.statusCode}).');
         return null;
       }
     } catch (e) {
-      print('GET $path error: $e');
+      debugPrint('[API] GET error (${e.runtimeType}).');
       return null;
     }
   }
@@ -629,11 +626,11 @@ class ApiService {
       if (res.statusCode >= 200 && res.statusCode < 300) {
         return true;
       } else {
-        print('DELETE $path failed: ${res.statusCode} ${res.body}');
+        debugPrint('[API] DELETE failed (${res.statusCode}).');
         return false;
       }
     } catch (e) {
-      print('DELETE $path error: $e');
+      debugPrint('[API] DELETE error (${e.runtimeType}).');
       return false;
     }
   }
@@ -655,11 +652,11 @@ class ApiService {
       if (res.statusCode >= 200 && res.statusCode < 300) {
         return jsonDecode(res.body);
       } else {
-        print('PUT $path failed: ${res.statusCode} ${res.body}');
+        debugPrint('[API] PUT failed (${res.statusCode}).');
         return null;
       }
     } catch (e) {
-      print('PUT $path error: $e');
+      debugPrint('[API] PUT error (${e.runtimeType}).');
       return null;
     }
   }
@@ -684,7 +681,7 @@ class ApiService {
       }
       return null;
     } catch (error) {
-      debugPrint('PATCH $path error: $error');
+      debugPrint('[API] PATCH error (${error.runtimeType}).');
       return null;
     }
   }
@@ -731,11 +728,11 @@ class ApiService {
       if (res.statusCode >= 200 && res.statusCode < 300) {
         return jsonDecode(body);
       } else {
-        print('UPLOAD $path failed: ${res.statusCode} $body');
+        debugPrint('[API] Upload failed (${res.statusCode}).');
         return null;
       }
     } catch (e) {
-      print('UPLOAD $path error: $e');
+      debugPrint('[API] Upload error (${e.runtimeType}).');
       return null;
     }
   }
@@ -783,11 +780,11 @@ class ApiService {
 
         return data;
       } else {
-        print('LOGIN failed: ${res.statusCode} ${res.body}');
+        debugPrint('[API] Login failed (${res.statusCode}).');
         return null;
       }
     } catch (e) {
-      print('LOGIN error: $e');
+      debugPrint('[API] Login error (${e.runtimeType}).');
       return null;
     }
   }
@@ -869,11 +866,11 @@ class ApiService {
       if (res.statusCode >= 200 && res.statusCode < 300) {
         return jsonDecode(body);
       } else {
-        print('JOIN SESSION failed: ${res.statusCode} $body');
+        debugPrint('[API] Join failed (${res.statusCode}).');
         return null;
       }
     } catch (e) {
-      print('JOIN SESSION error: $e');
+      debugPrint('[API] Join error (${e.runtimeType}).');
       return null;
     }
   }
@@ -905,7 +902,7 @@ class ApiService {
       }
       return null;
     } catch (e) {
-      print('ADD STUDENT error: $e');
+      debugPrint('[API] Add participant error (${e.runtimeType}).');
       return null;
     }
   }
@@ -958,11 +955,11 @@ class ApiService {
       if (res.statusCode >= 200 && res.statusCode < 300) {
         return body.isEmpty ? {'ok': true} : jsonDecode(body);
       } else {
-        print('INVITE STUDENT failed: ${res.statusCode} $body');
+        debugPrint('[API] Invite failed (${res.statusCode}).');
         return null;
       }
     } catch (e) {
-      print('INVITE STUDENT error: $e');
+      debugPrint('[API] Invite error (${e.runtimeType}).');
       return null;
     }
   }
@@ -1034,11 +1031,11 @@ class ApiService {
       if (res.statusCode >= 200 && res.statusCode < 300) {
         return jsonDecode(body);
       } else {
-        print('UPLOAD BYTES $path failed: ${res.statusCode} $body');
+        debugPrint('[API] Upload failed (${res.statusCode}).');
         return null;
       }
     } catch (e) {
-      print('UPLOAD BYTES $path error: $e');
+      debugPrint('[API] Upload error (${e.runtimeType}).');
       return null;
     }
   }
@@ -1608,7 +1605,7 @@ class ApiService {
       );
       return result;
     } catch (e) {
-      print('[API] Error getting playback state: $e');
+      debugPrint('[API] Playback state error (${e.runtimeType}).');
       return null;
     }
   }

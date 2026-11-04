@@ -195,7 +195,7 @@ class Session(Base):
     participants = relationship("Participant", back_populates="session", cascade="all, delete-orphan")
     playbacks = relationship("Playback", back_populates="session", cascade="all, delete-orphan")
     # questions = relationship("Question", back_populates="session", cascade="all, delete-orphan")
-    logs = relationship("Log", back_populates="session", cascade="all, delete-orphan")
+    logs = relationship("Log", back_populates="session", passive_deletes=True)
     chat_messages = relationship("ChatMessage", back_populates="session", cascade="all, delete-orphan")
     # audio_messages = relationship("AudioMessage", back_populates="session", cascade="all, delete-orphan")
     session_audios = relationship("SessionAudio", back_populates="session", cascade="all, delete-orphan")
@@ -310,7 +310,7 @@ class Log(Base):
     __tablename__ = "logs"
 
     log_id = Column(Integer, primary_key=True, index=True)
-    session_id = Column(Integer, ForeignKey("sessions.session_id", ondelete="CASCADE"))
+    session_id = Column(Integer, ForeignKey("sessions.session_id", ondelete="SET NULL"))
     user_id = Column(Integer, ForeignKey("users.user_id", ondelete="SET NULL"))
     event_type = Column(String(50), nullable=False)
     event_details = Column(JSON)
@@ -319,6 +319,21 @@ class Log(Base):
     # Relationships
     session = relationship("Session", back_populates="logs")
     user = relationship("User")
+    event_id = Column(String(36), unique=True)
+    schema_version = Column(Integer, nullable=False, server_default=text("1"))
+    resource_type = Column(String(40))
+    resource_id = Column(Integer)
+    owner_teacher_id = Column(Integer, index=True)
+    class_id = Column(Integer)
+    subject_id = Column(Integer)
+    source = Column(String(24), nullable=False, server_default="legacy")
+    outcome = Column(String(24), nullable=False, server_default="observed")
+    received_at = Column(TIMESTAMP, server_default=func.now())
+    request_id = Column(String(36))
+    __table_args__ = (
+        Index("ix_logs_scope_time", "owner_teacher_id", "class_id", "subject_id", "created_at"),
+        Index("ix_logs_type_time", "event_type", "created_at"),
+    )
 
 
 # Stores authentication tokens
@@ -640,6 +655,7 @@ class QuizAttempt(Base):
     deadline_at = Column(TIMESTAMP)
     extra_time_minutes = Column(Integer, nullable=False, server_default=text("0"))
     completed_at = Column(TIMESTAMP)
+    retention_expires_at = Column(TIMESTAMP, index=True)
     correct_count = Column(Integer, nullable=False, server_default=text("0"))
     total_questions = Column(Integer, nullable=False)
     percentage_score = Column(Float, nullable=False, server_default=text("0"))
@@ -698,3 +714,52 @@ class QuizResponse(Base):
         UniqueConstraint("attempt_id", "quiz_question_id", name="uq_quiz_response_question"),
         Index("ix_quiz_response_question", "quiz_question_id"),
     )
+
+
+class AnalyticsSession(Base):
+    __tablename__ = "analytics_sessions"
+    session_id = Column(Integer, primary_key=True, autoincrement=False)
+    owner_teacher_id = Column(Integer, nullable=True, index=True)
+    class_id = Column(Integer, nullable=False)
+    subject_id = Column(Integer, nullable=False)
+    created_at = Column(TIMESTAMP, nullable=False)
+    provenance = Column(String(24), nullable=False, server_default="verified")
+    deleted_at = Column(TIMESTAMP)
+
+
+class SessionRun(Base):
+    __tablename__ = "session_runs"
+    run_id = Column(String(36), primary_key=True)
+    session_id = Column(Integer, ForeignKey("analytics_sessions.session_id", ondelete="CASCADE"), nullable=False)
+    opened_at = Column(TIMESTAMP, nullable=False)
+    ended_at = Column(TIMESTAMP)
+    expires_at = Column(TIMESTAMP, index=True)
+    __table_args__ = (
+        Index("ix_session_run_end", "ended_at"),
+        Index("uq_open_session_run", "session_id", unique=True,
+              postgresql_where=text("ended_at IS NULL"), sqlite_where=text("ended_at IS NULL")),
+    )
+
+
+class Attendance(Base):
+    __tablename__ = "analytics_attendance"
+    run_id = Column(String(36), ForeignKey("session_runs.run_id", ondelete="CASCADE"), primary_key=True)
+    student_id = Column(Integer, ForeignKey("users.user_id", ondelete="CASCADE"), primary_key=True)
+    first_joined_at = Column(TIMESTAMP, nullable=False)
+    last_joined_at = Column(TIMESTAMP, nullable=False)
+
+
+class AttendanceJoin(Base):
+    __tablename__ = "analytics_attendance_joins"
+    join_id = Column(String(36), primary_key=True)
+    run_id = Column(String(36), ForeignKey("session_runs.run_id", ondelete="CASCADE"), nullable=False)
+    student_id = Column(Integer, ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False)
+    joined_at = Column(TIMESTAMP, nullable=False, index=True)
+
+
+class MaintenanceState(Base):
+    __tablename__ = "analytics_maintenance"
+    name = Column(String(60), primary_key=True)
+    succeeded_at = Column(TIMESTAMP)
+    status = Column(String(24), nullable=False)
+    count = Column(Integer, nullable=False, server_default=text("0"))

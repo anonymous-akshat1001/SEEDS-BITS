@@ -65,9 +65,10 @@ class _ChatPanelState extends State<ChatPanel> {
       TtsService.speak('Message sent.');
     } else {
       final error = result.failure!.message;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(error)));
+      ScaffoldMessenger.of(context).showSnackBar(
+        // Spoken below; excluded so TalkBack does not read it twice.
+        SnackBar(content: ExcludeSemantics(child: Text(error))),
+      );
       TtsService.speak(error, priority: SpeechPriority.critical);
     }
   }
@@ -80,10 +81,10 @@ class _ChatPanelState extends State<ChatPanel> {
           msg['sender_name'] ?? msg['participant_id']?.toString() ?? 'unknown';
       if (text.toString().isEmpty) return;
       setState(() => messages.add({'from': from, 'text': text.toString()}));
+      // Incidental: batched and deferred while live audio is active.
       TtsService.speak(
-        'New chat messages.',
+        'Message from $from: $text',
         priority: SpeechPriority.incidental,
-        group: 'New chat messages',
       );
     }
   }
@@ -106,84 +107,122 @@ class _ChatPanelState extends State<ChatPanel> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: UIUtils.scale(context) * 260,
-      color: UIUtils.cardColor,
-      padding: UIUtils.paddingAll(context, 6),
-      child: Column(
-        children: [
-          Focus(
-            canRequestFocus: false,
-            onFocusChange: (focused) {
-              if (focused) {
-                TtsService.speak(
-                  'Read latest message',
-                  priority: SpeechPriority.navigation,
-                );
-              }
-            },
-            child: IconButton(
-              focusNode: _readFocus,
-              tooltip: 'Read latest message',
-              onPressed: _readLatest,
-              icon: const Icon(Icons.mark_chat_read_outlined),
+    final textSize = UIUtils.fontSize(context, 16);
+    // Fills the space it is given instead of a fixed width, so it never
+    // overflows a 240 px keypad-phone screen.
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 420),
+      child: Container(
+        decoration: BoxDecoration(
+          color: UIUtils.cardColor,
+          border: Border.all(color: UIUtils.cardBorderColor, width: 1.5),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        padding: UIUtils.paddingAll(context, 6),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Focus(
+              canRequestFocus: false,
+              onFocusChange: (focused) {
+                if (focused) {
+                  TtsService.speak(
+                    'Read latest message',
+                    priority: SpeechPriority.navigation,
+                  );
+                }
+              },
+              child: OutlinedButton.icon(
+                focusNode: _readFocus,
+                onPressed: _readLatest,
+                icon: const Icon(Icons.mark_chat_read_outlined),
+                label: const Text('Read latest message'),
+              ),
             ),
-          ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: messages.length,
-              itemBuilder: (_, i) {
-                final m = messages[i];
-                final me = m['from'] == 'me';
-                return Align(
-                  alignment: me ? Alignment.centerRight : Alignment.centerLeft,
-                  child: Container(
-                    margin: UIUtils.paddingSymmetric(context, vertical: 2),
-                    padding: UIUtils.paddingAll(context, 6),
-                    decoration: BoxDecoration(
-                      color: me ? Colors.teal.shade200 : Colors.grey.shade700,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      '${m['text'] ?? ''}${m['delivery'] == null ? '' : '\n${m['delivery']}'}',
-                      style: TextStyle(
-                        color: me ? Colors.black : Colors.white,
-                        fontSize: UIUtils.fontSize(context, 12),
+            Expanded(
+              child: ListView.builder(
+                itemCount: messages.length,
+                itemBuilder: (_, i) {
+                  final m = messages[i];
+                  final me = m['from'] == 'me';
+                  final delivery = m['delivery'];
+                  return Semantics(
+                    label:
+                        '${me ? 'You said' : '${m['from']} said'}: ${m['text'] ?? ''}'
+                        '${delivery == null ? '' : '. $delivery'}',
+                    excludeSemantics: true,
+                    child: Align(
+                      alignment: me
+                          ? Alignment.centerRight
+                          : Alignment.centerLeft,
+                      child: Container(
+                        margin: UIUtils.paddingSymmetric(context, vertical: 3),
+                        padding: UIUtils.paddingAll(context, 8),
+                        decoration: BoxDecoration(
+                          color: me
+                              ? UIUtils.accentColor
+                              : UIUtils.backgroundColor,
+                          border: Border.all(
+                            color: UIUtils.cardBorderColor,
+                            width: 1.5,
+                          ),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (!me)
+                              Text(
+                                '${m['from']}',
+                                style: TextStyle(
+                                  color: UIUtils.subtextColor,
+                                  fontSize: UIUtils.fontSize(context, 14),
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            Text(
+                              '${m['text'] ?? ''}${delivery == null ? '' : '\n$delivery'}',
+                              style: TextStyle(
+                                color: me
+                                    ? UIUtils.onAccentColor
+                                    : UIUtils.textColor,
+                                fontSize: textSize,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
-          ),
-          Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: _ctrl,
-                  style: TextStyle(fontSize: UIUtils.fontSize(context, 12)),
-                  decoration: InputDecoration(
-                    hintText: 'Message',
-                    hintStyle: TextStyle(
-                      fontSize: UIUtils.fontSize(context, 12),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _ctrl,
+                    style: TextStyle(fontSize: textSize),
+                    decoration: InputDecoration(
+                      labelText: 'Chat message',
+                      contentPadding: UIUtils.paddingSymmetric(
+                        context,
+                        horizontal: 8,
+                        vertical: 8,
+                      ),
                     ),
-                    isDense: true,
-                    contentPadding: UIUtils.paddingSymmetric(
-                      context,
-                      horizontal: 8,
-                      vertical: 6,
-                    ),
+                    onSubmitted: (_) => _sendText(),
                   ),
-                  onSubmitted: (_) => _sendText(),
                 ),
-              ),
-              IconButton(
-                onPressed: _sending ? null : _sendText,
-                icon: Icon(Icons.send, size: UIUtils.iconSize(context, 18)),
-              ),
-            ],
-          ),
-        ],
+                IconButton(
+                  tooltip: 'Send message',
+                  onPressed: _sending ? null : _sendText,
+                  icon: Icon(Icons.send, size: UIUtils.iconSize(context, 24)),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

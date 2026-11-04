@@ -7,6 +7,7 @@ Client→server actions arrive as plain HTTP POST requests.
 """
 
 import asyncio
+import logging
 from typing import Dict, Any, Optional, Set
 
 # ─────────────────────────────────────────────────────────────────
@@ -114,8 +115,7 @@ class WebSocketManager:
                 "is_teacher": is_teacher,
             }
 
-        print(f"[SSE MGR] Connected  session={session_id} participant={participant_id} "
-              f"name={name!r} teacher={is_teacher}")
+        logging.getLogger("seeds").info("sse_connected", extra={"event_code": "sse_connected"})
         
         # This queue is used by SSE endpoint
         return q
@@ -144,7 +144,7 @@ class WebSocketManager:
                     {"type": "participant_left", "participant_id": participant_id},
                 )
 
-        print(f"[SSE MGR] Disconnected session={session_id} participant={participant_id}")
+        logging.getLogger("seeds").info("sse_disconnected", extra={"event_code": "sse_disconnected"})
         return True
 
 
@@ -155,7 +155,7 @@ class WebSocketManager:
         try:
             queue.put_nowait(message)   # Add message to queue
         except asyncio.QueueFull:
-            print("[SSE MGR] Queue full — dropping personal message")
+            logging.getLogger("seeds").warning("sse_queue_full", extra={"event_code": "sse_queue_full"})
 
 
     # Send message to ALL users in session
@@ -172,12 +172,8 @@ class WebSocketManager:
         conns = list(self.active.get(session_id, {}).items())
 
         if not conns:
-            print(f"[SSE MGR] No connections for session {session_id} "
-                  f"(type={message.get('type')})")
             return
 
-        print(f"[SSE MGR] Broadcast session={session_id} "
-              f"type={message.get('type')} excluding={exclude}")
 
         # Loop through each participant
         for pid, q in conns:
@@ -187,7 +183,7 @@ class WebSocketManager:
                 # Send message
                 q.put_nowait(message)
             except asyncio.QueueFull:
-                print(f"[SSE MGR] Queue full for participant {pid}")
+                logging.getLogger("seeds").warning("sse_queue_full", extra={"event_code": "sse_queue_full"})
 
 
     # Ends session for all participants
@@ -206,7 +202,7 @@ class WebSocketManager:
             self.active.pop(session_id, None)
             SESSION_STATE.pop(session_id, None)
 
-        print(f"[SSE MGR] Session {session_id} closed")
+        logging.getLogger("seeds").info("sse_session_closed", extra={"event_code": "sse_session_closed"})
 
 
 
@@ -228,7 +224,7 @@ class WebSocketManager:
             session_id,
             {"type": "participant_muted", "participant_id": participant_id, "is_muted": mute},
         )
-        print(f"[SSE MGR] Muted participant={participant_id} mute={mute} session={session_id}")
+        logging.getLogger("seeds").info("sse_mute_changed", extra={"event_code": "sse_mute_changed"})
 
 
     # Kick any participant - only accessible by teacher
@@ -248,7 +244,7 @@ class WebSocketManager:
                 q.put_nowait(None)   # sentinel
             except asyncio.QueueFull:
                 pass
-            print(f"[SSE MGR] Kicked participant={participant_id} session={session_id}")
+            logging.getLogger("seeds").info("sse_participant_kicked", extra={"event_code": "sse_participant_kicked"})
 
         await self.broadcast(
             session_id,

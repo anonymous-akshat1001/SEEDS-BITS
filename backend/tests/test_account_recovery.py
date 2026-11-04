@@ -16,6 +16,7 @@ from sqlalchemy.pool import StaticPool
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import auth
+import database as database_module
 import main
 import models
 from database import get_db
@@ -29,6 +30,7 @@ async def recovery(monkeypatch):
     async with engine.begin() as connection:
         await connection.run_sync(models.Base.metadata.create_all)
     sessions = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+    monkeypatch.setattr(database_module, "AsyncSessionLocal", sessions)
     async with sessions() as db:
         users = {}
         for index, role in enumerate(("admin", "teacher", "student")):
@@ -118,6 +120,19 @@ async def test_reset_is_admin_only_attested_versioned_and_preserves_accounts(rec
     assert stale.status_code == 409
     assert (await login(client, student, "old-password")).status_code == 401
     assert auth.verify_password("old-password", users["teacher"].password_hash)
+
+
+@pytest.mark.asyncio
+async def test_request_diagnostics_use_the_isolated_recovery_database(recovery, monkeypatch):
+    client, db, users = recovery
+    monkeypatch.setenv("ACTIVITY_COLLECTION_ENABLED", "true")
+    response = await client.get("/catalog/classes", headers=headers(users["admin"]))
+    assert response.status_code == 200
+    events = (await db.execute(select(models.Log).where(
+        models.Log.event_type == "http_request",
+    ))).scalars().all()
+    assert len(events) == 1
+    assert events[0].event_details["status"] == 200
 
 
 @pytest.mark.asyncio

@@ -84,7 +84,6 @@ class KeypadInstructionWrapper extends StatefulWidget {
     this.autoPlay = true,
     this.showDebugOverlay = const bool.fromEnvironment('SEEDS_KEYPAD_QA'),
     this.onStarKey,
-    this.onHashKey,
     this.onSpeechRescued,
     this.focusTargets = const [],
     this.navigationController,
@@ -102,7 +101,6 @@ class KeypadInstructionWrapper extends StatefulWidget {
   final bool autoPlay;
   final bool showDebugOverlay;
   final VoidCallback? onStarKey;
-  final VoidCallback? onHashKey;
   final VoidCallback? onSpeechRescued;
   final List<KeypadFocusTarget> focusTargets;
   final KeypadNavigationController? navigationController;
@@ -125,6 +123,7 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
   final Map<int, DateTime> _lastFiredAt = {};
   FocusNode? _navigationOnlyTextNode;
   FocusNode? _returnFocusNode;
+  String? _wrapNotice;
   Timer? _instructionTimer;
   VoidCallback? _speechCompletionListener;
   bool _returnHelpPending = false;
@@ -243,9 +242,13 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
             return;
           }
           _cancelInstructions();
+          final override = _navigationController._focusAnnouncements.remove(
+            target.node,
+          );
+          final wrapNotice = _wrapNotice;
+          _wrapNotice = null;
           _speakSafely(
-            _navigationController._focusAnnouncements.remove(target.node) ??
-                target.label,
+            '${wrapNotice ?? ''}${override ?? '${target.label}${_positionOf(target)}'}',
           );
         }
       }
@@ -253,6 +256,20 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
       _focusListeners[target.node] = listener;
       target.node.addListener(listener);
     }
+  }
+
+  static final _hasPosition = RegExp(r'\b\d+ of \d+\b');
+
+  /// Spoken ", 3 of 7" suffix so blind users always know where they are.
+  String _positionOf(KeypadFocusTarget target) {
+    if (TtsService.verbosity == SpeechVerbosity.essential ||
+        _hasPosition.hasMatch(target.label)) {
+      return '';
+    }
+    final targets = widget.focusTargets.where((item) => item.enabled).toList();
+    final index = targets.indexOf(target);
+    if (targets.length < 2 || index < 0) return '';
+    return ', ${index + 1} of ${targets.length}';
   }
 
   void _detachFocusListeners() {
@@ -263,10 +280,18 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
   }
 
   Future<void> _playInstructions({bool detailed = false}) async {
-    if (TtsService.mode == SpeechMode.screenReader) return;
     if (kIsWeb && !_userInteracted) return;
     final route = ModalRoute.of(context);
     if (route != null && !route.isCurrent) return;
+    if (TtsService.mode == SpeechMode.screenReader) {
+      // TalkBack reads the screen itself; announce only where the user is
+      // unless they asked for full help with star.
+      final text = detailed
+          ? _instructionText(detailed: true)
+          : '${widget.screenName ?? 'SEEDS'}. Press star for keypad help.';
+      await TtsService.speak(text, priority: SpeechPriority.navigation);
+      return;
+    }
     try {
       if (widget.audioAsset != null) {
         await TtsService.stop();
@@ -355,7 +380,9 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
           '$introduction${sections.isEmpty ? 'Use up and down to move, and OK to select. ' : sections}Press star for all shortcuts.';
     }
     if (widget.labels.isNotEmpty) {
-      return '$introduction${buildTtsInstructions(widget.labels, screenName: widget.screenName)} '
+      final back = widget.labels.containsKey(0) ? '' : 'Press 0 to go back. ';
+      return '$introduction${buildTtsInstructions(widget.labels, screenName: widget.screenName, includeRepeatHint: false)} '
+          '${back}Press hash to stop speech. Press star to repeat these instructions. '
           '${sections.isEmpty ? 'Use the direction keys to move. ' : sections}Press OK to activate a control or edit a field. '
           'While editing, press OK or use up or down to leave the field.';
     }
@@ -458,7 +485,15 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
         ? (direction > 0 ? -1 : 0)
         : targets.indexOf(current);
     if (index < 0) index = direction > 0 ? -1 : 0;
-    index = (index + direction) % targets.length;
+    final unwrapped = index + direction;
+    _wrapNotice = current == null || targets.length < 2
+        ? null
+        : unwrapped >= targets.length
+        ? 'End of list. Back to the first item. '
+        : unwrapped < 0
+        ? 'Top of list. Moved to the last item. '
+        : null;
+    index = unwrapped % targets.length;
     if (index < 0) index += targets.length;
 
     _navigationController.exitTextEditing();
@@ -560,13 +595,8 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
       return KeyEventResult.handled;
     }
     if (isHashKey(key)) {
-      if (widget.interactionPolicy == KeypadInteractionPolicy.numbered) {
-        unawaited(TtsService.stop());
-      } else if (widget.onHashKey != null) {
-        widget.onHashKey!();
-      } else {
-        unawaited(Navigator.of(context).maybePop());
-      }
+      // One meaning on every screen: stop the app talking. Never navigates.
+      unawaited(TtsService.stop());
       _updateDebug(key.keyLabel, character, null, true, isHash: true);
       return KeyEventResult.handled;
     }
@@ -629,6 +659,19 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
       }
       _lastFiredAt[digit] = now;
       widget.actions[digit]!();
+      _updateDebug(key.keyLabel, character, digit, true);
+      return KeyEventResult.handled;
+    }
+    if (digit == 0) {
+      // 0 always means back, even on screens that did not map it.
+      final navigator = Navigator.of(context);
+      if (navigator.canPop()) {
+        unawaited(navigator.maybePop());
+      } else {
+        _speakSafely(
+          'This is the main screen. There is nothing to go back to.',
+        );
+      }
       _updateDebug(key.keyLabel, character, digit, true);
       return KeyEventResult.handled;
     }

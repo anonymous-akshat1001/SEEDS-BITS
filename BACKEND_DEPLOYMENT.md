@@ -1,5 +1,226 @@
 # Backend Deployment Runbook
 
+## Analytics and local-query services
+
+Features default off in [.env.example](.env.example). Back up under the approved
+retention policy, run `python -m alembic upgrade head` using the existing service
+environment, and verify the schema before starting the updated backend, not
+only before enabling collection. The migration
+clears legacy free-text event payloads, preserves event types/timestamps and
+backfills available logical creation metadata without inventing attendance or
+opening runs. Downgrade is deliberately refused: disable flags
+or roll back application code without dropping educational history.
+
+1. Enable `ACTIVITY_COLLECTION_ENABLED` after privacy-notice approval.
+2. Provision a separate PostgreSQL analytics login; review/apply
+   [analytics_readonly.sql](backend/analytics_readonly.sql), grant its NOLOGIN
+   role to that login, then set `ANALYTICS_DATABASE_URL` through server config.
+   Never commit credentials. Queries also use read-only transactions and a
+   five-second PostgreSQL statement timeout.
+3. Configure `CORS_ORIGINS` for the actual dashboard HTTPS origin(s).
+4. Enable `ANALYTICS_ENABLED`; verify admin access, teacher ownership/current
+   assignments, student denial and assignment revocation.
+5. Enable `CLIENT_TELEMETRY_ENABLED` only with the approved learning-app build.
+
+### Selecting campus inference
+
+Inspect CPU/RAM/GPU and OS compatibility first. Benchmark Qwen and a suitable
+comparator, explicitly evaluating Foundry Local against viable llama.cpp/Ollama
+configurations. Select one runtime, not all of them. Foundry Local is documented
+as device/single-user oriented; shared-server suitability is not assumed.
+Use an isolated compatible campus host if needed, not an implicit live-OS upgrade.
+
+Set `LOCAL_MODEL_RUNTIME` (`ollama`, `llama_cpp`, `foundry_local`),
+`LOCAL_MODEL_URL` (loopback/private IP), and the provisioned exact model name.
+Enable `ANALYTICS_MODEL_ENABLED` only after validating output schema support,
+bounded concurrency, accuracy and resource isolation. OpenAI compatibility alone
+does not prove schema support. Preload artifacts/components and enforce runtime
+egress restrictions. There is no Azure/public endpoint fallback.
+The 95% intent benchmark is a release gate, not a result of contract unit tests.
+With the selected local runtime configured, run `python benchmark_intents.py`
+from the backend directory for a content-free synthetic intent report. This
+smoke corpus is not a substitute for date/ambiguity/adversarial, memory,
+concurrency and actual approved voice benchmarks.
+Use `python benchmark_intents.py --progress` for content-free per-case progress,
+or `--limit 3 --progress` for a short plumbing check. Partial runs cannot pass
+the full quality gate. Reports distinguish timeouts, runtime HTTP failures,
+invalid intents, explicit clarification and field mismatches, without saving
+questions or raw responses. Compare all fields, not just metric classification.
+The model must omit unrequested filters; the backend supplies the default
+reporting period. Invented or invalid dates are rejected, not silently removed.
+
+### Held-out evaluation and seeded answer tests
+
+Keep the original 63-case smoke benchmark for development. The separate
+[heldout_intents.py](backend/heldout_intents.py) corpus (`seeds-heldout-v1`)
+contains 200 synthetic evaluation cases: 60 metric/no-invented-filter cases,
+48 named-entity cases, 24 absolute-date cases, 24 contextual follow-ups/resets,
+24 ambiguous/unsupported requests and 20 adversarial/data-boundary cases.
+Of these, 168 expect an exact complete intent and 32 expect explicit clarification.
+Names and questions are synthetic; no production database is read.
+Duplicate-name ambiguity needs the database and is tested at the HTTP layer,
+not inferred from a name alone by the model.
+
+Do not add these cases or expected answers to the prompt, use them as few-shot
+examples or tune against their failures. They are separate from the smoke corpus
+and current prompt examples, not a statistically independent human-authored
+validation set. If used for tuning, retire this version and create a fresh holdout.
+Some questions share templates; report category scores rather than treating 200
+cases as 200 independent samples of real users. Absolute dates keep scoring
+reproducible across runs; they test extraction, not historical data availability.
+Relative-date interpretation and real approved voice still need separate evaluation.
+
+On Windows, with a compatible runtime running and the exact model already installed:
+
+```powershell
+Set-Location C:\dev\SEEDS
+$env:ANALYTICS_MODEL_ENABLED = 'true'
+$env:LOCAL_MODEL_RUNTIME = 'ollama'
+$env:LOCAL_MODEL_URL = 'http://127.0.0.1:11434'
+$env:LOCAL_MODEL_NAME = 'YOUR-INSTALLED-MODEL'
+.\.venv\Scripts\python.exe backend\benchmark_heldout.py --progress
+```
+
+The runner sends only questions and optional prior typed filters through the
+unchanged production interpreter, never expected answers. JSON reports contain a
+corpus SHA-256/version, category scores, separate answerable/clarification accuracy,
+nearest-rank p95 and content-free case IDs/error codes/differing field names.
+Invalid JSON, invalid intents and timeouts are failures, not successful
+clarifications. Refusing every question cannot pass.
+
+The held-out gate is deliberately stricter than the smoke gate: complete corpus,
+at least 95% exact answerable intents, and 100% on explicit clarification,
+adversarial and unfiltered-metric challenges. A `--limit 5 --progress` run is a
+plumbing check only and cannot pass. Exit 1 means the gate failed.
+There is no automated latency/resource/concurrency acceptance gate. Warm up each
+candidate separately, record exact model digest/quantization/runtime, avoid
+competing workloads and compare repeated warm runs and cold starts separately.
+Qwen3 thinking controls still require adapter/runtime validation before comparison.
+
+The [seeded HTTP/database tests](backend/tests/test_analytics_e2e.py) use the
+actual FastAPI app, signed synthetic users, isolated in-memory SQLite (foreign
+keys enabled), and a fixed reporting clock of November 4, 2026 at 12:00 IST.
+They check all six metrics, equal-attempt quiz averaging, timeout/practice/
+in-progress exclusion, retained versus expired history, repeated attendance,
+reopening, IST boundaries, no-data responses, duplicate names, authentication,
+ownership/current assignments, selected-ID reauthorization and revocation.
+Deterministic question-to-answer tests mock only the model HTTP response;
+parsing, schema validation, authorization and database calculations remain real.
+Those are integration regressions, not measured model quality.
+
+Run them without any model/database service:
+
+```powershell
+Set-Location C:\dev\SEEDS
+$env:DATABASE_URL = 'sqlite+aiosqlite://'
+$env:ANALYTICS_DATABASE_URL = ''
+$env:ANALYTICS_MODEL_ENABLED = 'false'
+$env:RUN_ANALYTICS_MODEL_E2E = 'false'
+.\.venv\Scripts\python.exe -m pytest backend\tests\test_heldout_intents.py backend\tests\test_analytics_e2e.py -q --tb=short -W ignore
+```
+
+Seven opt-in cases additionally exercise **real model -> authenticated HTTP
+query -> seeded database -> expected exact intent and numeric answer**:
+
+```powershell
+$env:ANALYTICS_MODEL_ENABLED = 'true'
+$env:LOCAL_MODEL_RUNTIME = 'ollama'
+$env:LOCAL_MODEL_URL = 'http://127.0.0.1:11434'
+$env:LOCAL_MODEL_NAME = 'YOUR-INSTALLED-MODEL'
+$env:RUN_ANALYTICS_MODEL_E2E = 'true'
+.\.venv\Scripts\python.exe -m pytest backend\tests\test_analytics_e2e.py -k live_model -q --tb=short -W ignore
+$env:RUN_ANALYTICS_MODEL_E2E = 'false'
+```
+
+Keep the synthetic database environment settings from the previous block.
+These tests never seed or query your configured application database. They
+download no models and contact only the explicitly configured local/private
+inference endpoint. They use no explicit-date questions because only the
+database reporting clock is fixed, not the live model's current-time prompt.
+This SQLite suite does not prove PostgreSQL read-only grants, statement timeout,
+advisory locks or migration compatibility; retain the PostgreSQL deployment gates.
+Passing these checks does not qualify ASR, devices or production load.
+
+### Campus English transcription
+
+On an isolated compatible worker, install the optional
+[speech requirements](backend/requirements-speech.txt), provision a local
+Whisper model directory and set `WHISPER_MODEL_DIRECTORY` and a strong
+`SPEECH_WORKER_KEY`. Use the same key in backend server-only configuration.
+From the backend directory, run one worker:
+
+```text
+python -m uvicorn speech_worker:app --host 127.0.0.1 --port 8001 --workers 1 --no-access-log
+```
+
+The worker loads local artifacts, serializes transcription, bounds raw size to
+10 MB and decoded duration to 60 seconds, and does not persist audio/transcripts.
+The dashboard posts raw WAV bytes to `/analytics/transcribe`, not a multipart
+file upload; both services consume bounded memory buffers without upload spooling.
+Use a private authenticated hop on a separate host. Configure `SPEECH_WORKER_URL`,
+then `TRANSCRIPTION_ENABLED`. Validate real codecs, noisy English names and
+permission/interruption behavior on browsers and target Android devices.
+
+### Maintenance, erasure and monitoring
+
+Schedule bounded commands independently with systemd services/timers, using the
+existing backend environment:
+
+```text
+python maintenance.py retain
+python maintenance.py reconcile
+python maintenance.py check
+python maintenance.py check --test-alert
+```
+
+Retention drains batches of 500 expired records until none remain; schedule
+frequently and monitor its completion. Queries hide expired facts even when deletion lags. Reconciliation
+finalizes overdue quiz attempts. PostgreSQL advisory locks serialize maintenance.
+The independent watchdog probes `/healthz`, checks maintenance freshness and
+uses a one-hour email cooldown stored in the DB.
+
+Configure/test `ALERT_SMTP_*`, sender and recipient; failures exit nonzero.
+Also wire systemd `OnFailure` or an existing campus monitor for DB/host failure:
+a DB-backed watchdog cannot record cooldown when the DB is unreachable.
+Do not claim email readiness until an actual recipient receives the test.
+
+After reviewing the irreversible operation, an authorized system administrator
+can explicitly erase a selected student's analytics:
+
+```text
+python maintenance.py erase --student-id SELECTED_STUDENT --confirm
+```
+
+This removes attendance, attempts/responses and actor/target-linked audit data, not the
+account or unrelated students. Institutional device/account erasure must also
+remove that account's local telemetry queue. Ordinary session deletion does not
+perform this institutional erasure.
+
+Use the content-free structured `seeds` diagnostic stream. Optional
+`LOG_DIRECTORY` enables service-specific daily JSONL rotation. Enforce rolling
+30-day expiry for its active file and stdout/journald/proxy/inference sinks too,
+for example service-specific logrotate with `copytruncate` scheduled during quiet
+periods. Maintenance purges expired rotated files, not unrelated service logs.
+Disable raw Uvicorn access URLs and model request-content logging.
+
+Before production, verify PostgreSQL role/locking/migration behavior, model/ASR
+quality/resource isolation, SMTP receipt, independent outage alerts, actual
+voice/accessibility behavior, Android release signing, footprint baselines,
+institutional notices, and backup/WAL/export expiry plus restore-erasure replay.
+Database deletion alone is not instant physical erasure from old backups.
+
+### Instrumentation coverage
+
+ORM mutations are audited in their transaction. Existing session-observation
+helpers retain their historical commit behavior; they are not a second proof
+of attendance. HTTP observations describe requests, not semantic read/prefetch
+actions or proof that a notification was delivered. Client telemetry currently
+covers observed playback transitions, seek/speed/repeat/completion, bookmark
+operations, download lifecycle, settings and best-effort logout intent; it is
+explicitly client-reported and never records private-note actions. Screen views
+and comprehensive semantic read/dispatch events still require dedicated integration and tests
+before claiming the entire planned action matrix.
+
 This runbook deploys the backend from a Windows development machine to:
 
 ```text
@@ -53,6 +274,13 @@ python -m pytest backend\tests
 ```
 
 Do not deploy if the relevant tests fail.
+
+HTTP test fixtures must override both `get_db` and
+`database.AsyncSessionLocal`: request diagnostics open a separate session when
+collection is enabled. Otherwise tests can inadvertently use the configured
+database, including pooled connections tied to a previous test event loop.
+Account-recovery and push-token fixtures route both paths to their disposable
+test databases, and regression tests verify diagnostics persist there.
 
 ## 2. Create the deployment archive
 

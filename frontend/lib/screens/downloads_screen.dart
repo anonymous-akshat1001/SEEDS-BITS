@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../services/offline_lesson_store.dart';
 import '../services/tts_service.dart';
+import '../utils/ui_utils.dart';
+import '../widgets/accessible_tile.dart';
 import '../widgets/key_instruction_wrapper.dart';
 import '../widgets/keypad_confirmation_dialog.dart';
 import 'audio_library_screen.dart';
@@ -24,6 +26,7 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
   late List<Map<String, dynamic>> _candidates;
   OfflineDownload? _operation;
   int? _downloadingId;
+  int _lastMilestone = 0;
   bool _loading = true;
   bool _busy = false;
   String? _issue;
@@ -85,6 +88,13 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
   Future<void> _load() => _run(() async {
     try {
       await _readLocal();
+      if (!mounted) return;
+      final complete = _lessons.where((lesson) => lesson.complete).length;
+      final message = _lessons.isEmpty
+          ? 'No downloads yet. Press 2 to find recordings online.'
+          : '$complete downloaded lessons ready to play'
+                '${_lessons.length > complete ? ', ${_lessons.length - complete} partial downloads' : ''}.';
+      unawaited(TtsService.speak(message, priority: SpeechPriority.incidental));
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -109,13 +119,33 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
   });
 
   void _progressChanged() {
-    if (mounted) setState(() {});
+    if (!mounted) return;
+    setState(() {});
+    final operation = _operation;
+    if (operation == null || operation.total <= 0) return;
+    final percent = (operation.received * 100 ~/ operation.total).clamp(0, 100);
+    final milestone = percent ~/ 25 * 25;
+    if (milestone > _lastMilestone) {
+      _lastMilestone = milestone;
+      TtsService.speak('${_titleFor(_downloadingId)} $milestone percent downloaded.');
+    }
+  }
+
+  String _titleFor(int? id) {
+    for (final audio in _candidates) {
+      if (audio['audio_id'] == id) return '${audio['title']}';
+    }
+    for (final lesson in _lessons) {
+      if (lesson.audioId == id) return lesson.title;
+    }
+    return 'Recording $id';
   }
 
   Future<void> _transfer(int id) async {
     final operation = OfflineDownload();
     _operation = operation;
     _downloadingId = id;
+    _lastMilestone = 0;
     operation.addListener(_progressChanged);
     if (mounted) setState(() {});
     try {
@@ -139,7 +169,7 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
         );
       }
       await TtsService.speak(
-        'Download verified and saved for offline playback.',
+        '${_titleFor(id)} downloaded, verified and saved for offline playback.',
       );
     } finally {
       await _readLocal();
@@ -209,19 +239,22 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => KeypadConfirmationDialog(
-        title: 'Remove this download?',
+        title: 'Remove download of $title?',
         message:
             'Remove the downloaded or partial audio for $title? Learning progress and bookmarks are kept. Other recordings and accounts are not affected.',
         confirmLabel: 'Remove download',
         cancelLabel: 'Keep download',
       ),
     );
-    if (confirmed != true || !mounted) return;
+    if (confirmed != true || !mounted) {
+      if (mounted) _node('remove-$id').requestFocus();
+      return;
+    }
     await _run(() async {
       await _store!.remove(id);
       await _readLocal();
       await TtsService.speak(
-        'Selected download removed. Progress and bookmarks kept.',
+        'Download of $title removed. Progress and bookmarks kept.',
       );
     });
     if (mounted) _node('refresh').requestFocus();
@@ -271,52 +304,69 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
     super.dispose();
   }
 
+  static const _months = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+  ];
+
+  String _date(DateTime value) {
+    final local = value.toLocal();
+    return '${local.day} ${_months[local.month - 1]} ${local.year}';
+  }
+
   @override
   Widget build(BuildContext context) {
     final storageStatus = _reservedBytes == null
         ? 'Storage reservation unavailable. Refresh downloads or remove the selected unreadable records before downloading.'
         : '${(_reservedBytes! / 1000000).toStringAsFixed(2)} of 50 MB reserved for this account.';
     final progress = _operation;
+    final percent = progress == null || progress.total <= 0
+        ? null
+        : (progress.received * 100 ~/ progress.total).clamp(0, 100);
     final targets = <KeypadFocusTarget>[
       KeypadFocusTarget(node: _node('back'), label: 'Back', onActivate: _back),
       KeypadFocusTarget(
         node: _node('refresh'),
-        label: 'Refresh saved downloads',
+        label: 'Refresh saved downloads, key 1',
         isEnabled: () => !_busy,
         onActivate: _load,
       ),
       KeypadFocusTarget(
         node: _node('online'),
-        label: 'Find recordings to download. Requires internet',
+        label: 'Find recordings to download, key 2. Requires internet',
         isEnabled: () => !_busy,
         onActivate: _onlineList,
       ),
       KeypadFocusTarget(
         node: _node('status'),
-        label: 'Read download status',
+        label: 'Read download status, key 3',
         onActivate: () => TtsService.speak(
           '$storageStatus $_status ${_issue ?? ''} '
-          '${progress == null ? '' : '${progress.received} of ${progress.total} bytes received.'}',
+          '${progress == null ? '' : '${_titleFor(_downloadingId)} ${percent ?? 0} percent downloaded.'}',
         ),
       ),
       if (progress != null)
         KeypadFocusTarget(
           node: _node('cancel'),
-          label: 'Cancel download. Keep partial data for retry',
+          label:
+              'Cancel download of ${_titleFor(_downloadingId)}, key 4. Keep partial data for retry',
           onActivate: progress.cancel,
-        ),
-      if (_candidates.isNotEmpty)
-        KeypadFocusTarget(
-          node: _node('pack'),
-          label: 'Download all listed recordings with confirmation',
-          isEnabled: () => !_busy,
-          onActivate: _pack,
         ),
       for (final id in _unreadableIds)
         KeypadFocusTarget(
           node: _node('remove-$id'),
           label:
-              'Unreadable download record $id. Remove only this download with confirmation',
+              'Unreadable download record $id. Remove only this download, asks to confirm',
           isEnabled: () => !_busy,
           onActivate: () => _removeId(id, 'unreadable recording $id'),
         ),
@@ -324,7 +374,7 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
         KeypadFocusTarget(
           node: _node('play-${lesson.audioId}'),
           label:
-              'Play downloaded ${lesson.title}. ${lesson.complete ? 'Verified download' : 'Incomplete download'}',
+              'Play ${lesson.title}. ${lesson.complete ? 'Downloaded' : 'Partial download, cannot play yet'}',
           isEnabled: () => !_busy && lesson.complete,
           onActivate: () => _play(lesson),
         ),
@@ -336,11 +386,18 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
         ),
         KeypadFocusTarget(
           node: _node('remove-${lesson.audioId}'),
-          label: 'Remove downloaded ${lesson.title}. Requires confirmation',
+          label: 'Remove download of ${lesson.title}, asks to confirm',
           isEnabled: () => !_busy,
           onActivate: () => _remove(lesson),
         ),
       ],
+      if (_candidates.isNotEmpty)
+        KeypadFocusTarget(
+          node: _node('pack'),
+          label: 'Download all listed recordings, key 5, asks to confirm',
+          isEnabled: () => !_busy,
+          onActivate: _pack,
+        ),
       for (final audio in _candidates)
         if (audio['audio_id'] is int)
           KeypadFocusTarget(
@@ -350,21 +407,36 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
             onActivate: () => _download(audio['audio_id'] as int),
           ),
     ];
+    final textStyle = TextStyle(color: UIUtils.textColor, fontSize: 16);
     Widget button(String id, String label) {
       final target = targets.firstWhere((target) => target.node == _node(id));
-      return OutlinedButton(
-        focusNode: target.node,
-        onPressed: target.isEnabled?.call() == false ? null : target.onActivate,
-        child: Text(label),
+      return Padding(
+        padding: const EdgeInsets.only(top: 6),
+        child: OutlinedButton(
+          focusNode: target.node,
+          style: OutlinedButton.styleFrom(
+            foregroundColor: UIUtils.textColor,
+            side: BorderSide(color: UIUtils.cardBorderColor, width: 1.5),
+            minimumSize: const Size(48, 48),
+            textStyle: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          onPressed: target.isEnabled?.call() == false
+              ? null
+              : target.onActivate,
+          child: Text(label, semanticsLabel: target.label),
+        ),
       );
     }
 
     return KeypadInstructionWrapper(
-      screenName:
-          'Downloaded Lessons. 50 MB per account. Up to 30 days offline before online access renewal. Files and progress stay separate.',
+      screenName: 'Downloaded Lessons',
+      introduction:
+          '50 MB per account. Up to 30 days offline before online access renewal. Files and progress stay separate.',
       navigationSections:
           'saved files to play, renew or remove, and online recordings to download or resume',
-      onHashKey: _back,
       actions: {
         0: _back,
         for (final (key, id) in [
@@ -418,73 +490,104 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
               children: [
                 Text(
                   '$storageStatus Partial files reserve their complete size.',
+                  style: textStyle,
                 ),
-                const Text(
+                Text(
                   '30-day offline access. Other accounts have separate allowances. No automatic deletion.',
+                  style: textStyle.copyWith(color: UIUtils.subtextColor),
                 ),
                 if (_loading) const LinearProgressIndicator(),
                 if (_issue != null)
-                  Semantics(liveRegion: true, child: Text(_issue!)),
-                if (_status.isNotEmpty) Text(_status),
-                for (final id in _unreadableIds) ...[
-                  Text(
-                    'Download record $id could not be read. Files are kept. Remove only this download to recover; progress and bookmarks are kept.',
+                  Semantics(
+                    liveRegion: true,
+                    child: Text(
+                      _issue!,
+                      style: textStyle.copyWith(
+                        color: UIUtils.errorColor,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                   ),
-                  button('remove-$id', 'Remove unreadable download $id'),
-                ],
-                Wrap(
-                  spacing: 8,
-                  children: [
-                    button('refresh', '1: Refresh downloads'),
-                    button('online', '2: Find recordings online'),
-                    button('status', '3: Read status'),
-                  ],
-                ),
+                if (_status.isNotEmpty)
+                  Semantics(
+                    liveRegion: true,
+                    child: Text(
+                      _status,
+                      style: textStyle.copyWith(fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                button('refresh', '1: Refresh downloads'),
+                button('online', '2: Find recordings online'),
+                button('status', '3: Read status'),
                 if (progress != null) ...[
-                  Text(
-                    'Recording $_downloadingId: ${progress.received} / ${progress.total} bytes',
+                  Semantics(
+                    liveRegion: true,
+                    child: Text(
+                      '${_titleFor(_downloadingId)}: '
+                      '${percent == null ? 'starting' : '${percent ~/ 25 * 25} percent'} downloaded',
+                      style: textStyle,
+                    ),
                   ),
-                  LinearProgressIndicator(
-                    value: progress.total > 0
-                        ? progress.received / progress.total
-                        : null,
+                  ExcludeSemantics(
+                    child: LinearProgressIndicator(
+                      minHeight: 8,
+                      color: UIUtils.accentColor,
+                      backgroundColor: UIUtils.cardBorderColor,
+                      value: progress.total > 0
+                          ? progress.received / progress.total
+                          : null,
+                    ),
                   ),
                   button('cancel', '4: Cancel download'),
                 ],
+                for (final id in _unreadableIds) ...[
+                  Text(
+                    'Download record $id could not be read. Files are kept. Remove only this download to recover; progress and bookmarks are kept.',
+                    style: textStyle.copyWith(color: UIUtils.errorColor),
+                  ),
+                  button('remove-$id', 'Remove unreadable download $id'),
+                ],
                 if (_lessons.isEmpty && !_loading)
-                  const Text(
-                    'No downloads yet. Find recordings online or open Downloads from a class or playlist.',
+                  Semantics(
+                    liveRegion: true,
+                    child: Text(
+                      'No downloads yet. Find recordings online or open Downloads from a class or playlist.',
+                      style: textStyle,
+                    ),
                   ),
                 for (final lesson in _lessons)
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(8),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Text(lesson.title),
-                          Text(
-                            '${lesson.complete ? 'Downloaded' : 'Partial download'}. '
-                            '${(lesson.bytes / 1000000).toStringAsFixed(2)} MB. '
-                            '${lesson.revoked ? 'Access renewal required.' : 'Access expires ${lesson.expiresAt.toLocal()}.'}',
-                          ),
-                          button(
-                            'play-${lesson.audioId}',
-                            'Play downloaded lesson',
-                          ),
-                          button(
-                            'renew-${lesson.audioId}',
-                            'Renew access online',
-                          ),
-                          button('remove-${lesson.audioId}', 'Remove download'),
-                        ],
-                      ),
+                  AccessibleTile(
+                    leadingIcon: lesson.complete
+                        ? Icons.download_done
+                        : Icons.downloading,
+                    title: lesson.title,
+                    status: lesson.complete ? 'Downloaded' : 'Partial download',
+                    statusColor: lesson.complete
+                        ? UIUtils.successColor
+                        : UIUtils.errorColor,
+                    subtitle:
+                        '${(lesson.bytes / 1000000).toStringAsFixed(2)} MB. '
+                        '${lesson.revoked ? 'Access renewal required.' : 'Access expires on ${_date(lesson.expiresAt)}.'}',
+                    trailing: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        button(
+                          'play-${lesson.audioId}',
+                          'Play downloaded lesson',
+                        ),
+                        button(
+                          'renew-${lesson.audioId}',
+                          'Renew access online',
+                        ),
+                        button('remove-${lesson.audioId}', 'Remove download'),
+                      ],
                     ),
                   ),
                 if (_candidates.isNotEmpty) ...[
                   button('pack', '5: Download listed recordings'),
-                  const Text(
+                  Text(
                     'Available recordings. Downloads use internet data.',
+                    style: textStyle,
                   ),
                   for (final audio in _candidates)
                     if (audio['audio_id'] is int)

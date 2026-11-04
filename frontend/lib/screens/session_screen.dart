@@ -2,7 +2,7 @@
 
 import 'dart:async';
 import 'dart:convert';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, setEquals;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show PlatformException;
 import 'package:flutter_webrtc/flutter_webrtc.dart';
@@ -121,7 +121,6 @@ class _SessionScreenState extends State<SessionScreen>
   );
   bool get _muted => _microphone.muted;
   bool _handRaised = false;
-  bool _ttsEnabled = true;
   bool _voiceCommandsEnabled = false;
   bool _isInitializing = true;
 
@@ -148,6 +147,16 @@ class _SessionScreenState extends State<SessionScreen>
   bool _endingSession = false;
   int _handRevision = 0;
   String _connectionMessage = 'Connecting to the class.';
+  bool _everConnected = false;
+  bool _connectionLossAnnounced = false;
+  String? _speechWhenIdle;
+  // Participant ids whose incoming audio is currently above the speaking
+  // threshold. Exposed in labels instead of announced (too chatty).
+  final Set<int> _speakingParticipants = {};
+  Timer? _speakingTimer;
+  bool _speakingPollBusy = false;
+  // Mobile tab: 0 participants, 1 chat. Only the visible tab has targets.
+  int _mobileTab = 0;
   final _connectionFocus = FocusNode(debugLabel: 'session-connection-status');
   final _retryConnectionFocus = FocusNode(
     debugLabel: 'session-retry-connection',
@@ -176,7 +185,6 @@ class _SessionScreenState extends State<SessionScreen>
   };
   final KeypadNavigationController _keypadController =
       KeypadNavigationController();
-  final FocusNode _ttsFocusNode = FocusNode(debugLabel: 'session-tts');
   final FocusNode _inviteFocusNode = FocusNode(debugLabel: 'session-invite');
   final FocusNode _endFocusNode = FocusNode(debugLabel: 'session-end');
   final FocusNode _audioPanelFocusNode = FocusNode(
@@ -185,20 +193,10 @@ class _SessionScreenState extends State<SessionScreen>
   final FocusNode _leaveFocusNode = FocusNode(debugLabel: 'session-leave');
   final FocusNode _muteFocusNode = FocusNode(debugLabel: 'session-mute');
   final FocusNode _handFocusNode = FocusNode(debugLabel: 'session-hand');
-  final FocusNode _bottomInviteFocusNode = FocusNode(
-    debugLabel: 'session-bottom-invite',
-  );
-  final FocusNode _bottomAudioFocusNode = FocusNode(
-    debugLabel: 'session-bottom-audio',
-  );
-  final FocusNode _bottomLeaveFocusNode = FocusNode(
-    debugLabel: 'session-bottom-leave',
-  );
   final FocusNode _participantsTabFocusNode = FocusNode(
     debugLabel: 'session-participants-tab',
   );
   final FocusNode _chatTabFocusNode = FocusNode(debugLabel: 'session-chat-tab');
-  final FocusNode _chatTtsFocusNode = FocusNode(debugLabel: 'session-chat-tts');
   final _readMessageFocus = FocusNode(debugLabel: 'session-read-message');
   final _readUpdatesFocus = FocusNode(debugLabel: 'session-read-updates');
   final _stopSpeechFocus = FocusNode(debugLabel: 'session-stop-speech');
@@ -239,6 +237,7 @@ class _SessionScreenState extends State<SessionScreen>
   final FocusNode _closeAudioFocusNode = FocusNode(
     debugLabel: 'session-audio-close',
   );
+  final Map<int, FocusNode> _participantRowFocusNodes = {};
   final Map<int, FocusNode> _participantMuteFocusNodes = {};
   final Map<int, FocusNode> _participantKickFocusNodes = {};
   final Map<int, FocusNode> _previewAudioFocusNodes = {};
@@ -350,7 +349,6 @@ class _SessionScreenState extends State<SessionScreen>
 
     if (!mounted) return;
     setState(() {
-      _ttsEnabled = ttsEnabled;
       _voiceCommandsEnabled = voiceEnabled;
     });
   }
@@ -470,14 +468,7 @@ class _SessionScreenState extends State<SessionScreen>
           unawaited(_onAuthenticationRevoked());
           return;
         }
-        if (_sse.state == SessionConnectionState.reconnecting ||
-            _sse.state == SessionConnectionState.authenticationExpired ||
-            _sse.state == SessionConnectionState.unavailable) {
-          _speakIfEnabled(
-            _connectionMessage,
-            priority: SpeechPriority.critical,
-          );
-        }
+        _announceConnection(_sse.state);
       case 'action_unconfirmed':
         _showSnackError('${data['message']}');
       // ── connection bootstrap ─────────────────────────────────────────
@@ -586,6 +577,46 @@ class _SessionScreenState extends State<SessionScreen>
   }
 
   // ── session state snapshot ──────────────────────────────────────────────
+
+  void _announceConnection(SessionConnectionState state) {
+    switch (state) {
+      case SessionConnectionState.connecting:
+        // The joining instructions already include the connection message.
+        if (!_isInitializing) _speakIfEnabled(_connectionMessage);
+      case SessionConnectionState.connected:
+        final restored = _everConnected || _connectionLossAnnounced;
+        _everConnected = true;
+        _connectionLossAnnounced = false;
+        if (restored) {
+          _speakIfEnabled('Connection restored. $_connectionMessage');
+        } else {
+          _speakWhenIdle(_connectionMessage);
+        }
+      case SessionConnectionState.reconnecting:
+        // Each retry republishes "reconnecting"; only the first loss is spoken.
+        if (_connectionLossAnnounced) return;
+        _connectionLossAnnounced = true;
+        _speakIfEnabled(
+          '${_everConnected ? 'Connection lost.' : 'Could not connect.'} '
+          '$_connectionMessage',
+          priority: SpeechPriority.critical,
+        );
+      case SessionConnectionState.unavailable:
+        _speakIfEnabled(_connectionMessage, priority: SpeechPriority.critical);
+      default:
+        break;
+    }
+  }
+
+  /// Speaks [text] once current speech (such as joining help) has finished,
+  /// instead of interrupting it.
+  void _speakWhenIdle(String text) {
+    if (!TtsService.speaking.value) {
+      _speakIfEnabled(text);
+    } else {
+      _speechWhenIdle = text;
+    }
+  }
 
   void _updateSessionState(Map<String, dynamic> data) {
     print('[STATE] Updating session state…');
@@ -759,12 +790,9 @@ class _SessionScreenState extends State<SessionScreen>
       }
     });
 
-    if (raised && widget.isTeacher) {
-      _speakIfEnabled(
-        'A participant raised their hand.',
-        priority: SpeechPriority.incidental,
-        group: 'Hands raised',
-      );
+    if (raised && widget.isTeacher && pid != _participantId) {
+      // Requested (not incidental) so teachers hear it during live audio.
+      _speakIfEnabled('${participant['name'] ?? 'A participant'} raised hand');
     }
   }
 
@@ -793,9 +821,8 @@ class _SessionScreenState extends State<SessionScreen>
 
     _scrollChatToBottom();
     _speakIfEnabled(
-      'New chat messages. Use Read latest message to listen.',
+      'Message from $senderName: $text',
       priority: SpeechPriority.incidental,
-      group: 'New chat messages',
     );
   }
 
@@ -1077,13 +1104,19 @@ class _SessionScreenState extends State<SessionScreen>
     if (TtsService.speaking.value && _voice.hasWindow) {
       unawaited(_voice.stop());
     }
+    final pending = _speechWhenIdle;
+    if (!TtsService.speaking.value && pending != null && mounted) {
+      _speechWhenIdle = null;
+      unawaited(_speakIfEnabled(pending));
+    }
   }
 
   void _voiceIssue(String message) {
     if (!mounted) return;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context).showSnackBar(
+      // Spoken below; excluded so TalkBack does not read it twice.
+      SnackBar(content: ExcludeSemantics(child: Text(message))),
+    );
     TtsService.speak(message, priority: SpeechPriority.critical);
   }
 
@@ -1224,18 +1257,10 @@ class _SessionScreenState extends State<SessionScreen>
       'lesson playback, participants and the hand queue, chat'
       '${widget.isTeacher ? ', and teacher classroom tools' : ''}. '
       'Press OK to activate a control or edit chat. While editing chat, numbers '
-      'are typed into the message. Press hash to leave the session.',
+      'are typed into the message. Press 0 to '
+      '${widget.isTeacher ? 'end the session' : 'leave the session'}. '
+      'Press hash to stop speech.',
     );
-  }
-
-  void _toggleTts() {
-    setState(() => _ttsEnabled = !TtsService.isEnabled);
-    TtsService.configure(enabled: _ttsEnabled);
-    if (_ttsEnabled) {
-      _speakIfEnabled('Text to speech enabled');
-    } else {
-      TtsService.stop();
-    }
   }
 
   void _toggleAudioPanel() {
@@ -1263,17 +1288,73 @@ class _SessionScreenState extends State<SessionScreen>
   }
 
   void _focusChat() {
-    _keypadController.enterTextEditing(_chatFieldFocusNode);
-    _speakIfEnabled(
-      'Chat message. Editing. Use up or down to leave the field.',
-    );
+    void enterChat() {
+      if (!mounted || _chatFieldFocusNode.context == null) return;
+      _keypadController.enterTextEditing(_chatFieldFocusNode);
+      _speakIfEnabled(
+        'Chat message. Editing. Use up or down to leave the field.',
+      );
+    }
+
+    if (_chatFieldFocusNode.context == null) {
+      _selectTab(1, moveFocus: false);
+      WidgetsBinding.instance.addPostFrameCallback((_) => enterChat());
+    } else {
+      enterChat();
+    }
   }
 
-  void _uploadAudioShortcut() {
-    if (!_showAudioPanel) {
-      setState(() => _showAudioPanel = true);
+  /// Shows the participants (0) or chat (1) tab on phone layouts, announces
+  /// it, and moves focus to the first control inside it.
+  void _selectTab(int index, {bool moveFocus = true}) {
+    final tabContext =
+        _participantsTabFocusNode.context ?? _chatTabFocusNode.context;
+    if (tabContext != null) {
+      final controller = DefaultTabController.maybeOf(tabContext);
+      if (controller != null && controller.index != index) {
+        controller.animateTo(index);
+      }
     }
-    if (!_isUploadingAudio) _uploadAudio();
+    if (_mobileTab != index) setState(() => _mobileTab = index);
+    if (!moveFocus) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final tabName = index == 0 ? 'Participants tab' : 'Chat tab';
+      if (index == 1) {
+        if (_readMessageFocus.context != null) {
+          _keypadController.focusAndAnnounce(
+            _readMessageFocus,
+            '$tabName. Read latest message',
+          );
+          return;
+        }
+      } else {
+        final people = _participants.values.toList();
+        if (people.isNotEmpty) {
+          final pid = people.first['id'] as int;
+          final node = _participantRowFocusNodes[pid];
+          if (node != null && node.context != null) {
+            _keypadController.focusAndAnnounce(
+              node,
+              '$tabName. ${_participantSummary(people.first)}',
+            );
+            return;
+          }
+        }
+        _speakIfEnabled('$tabName. Waiting for participants.');
+        return;
+      }
+      _speakIfEnabled(tabName);
+    });
+  }
+
+  void _restoreFocus(FocusNode? node) {
+    if (node == null) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && node.context != null && node.canRequestFocus) {
+        node.requestFocus();
+      }
+    });
   }
 
   Future<void> _confirmEndSession() async {
@@ -1282,26 +1363,31 @@ class _SessionScreenState extends State<SessionScreen>
       _speakIfEnabled('Waiting for end-session confirmation.');
       return;
     }
+    final opener = FocusManager.instance.primaryFocus;
     setState(() => _endingSession = true);
+    var confirmed = false;
     try {
-      final confirmed = await showDialog<bool>(
-        context: context,
-        builder: (_) => const KeypadConfirmationDialog(
-          title: 'End session?',
-          message:
-              'This stops the session for every participant and returns '
-              'everyone to their dashboard. Nobody will be logged out.',
-          cancelLabel: 'Cancel',
-          confirmLabel: 'End for everyone',
-          cancelKey: 0,
-          confirmKey: 1,
-        ),
-      );
-      if (confirmed == true && mounted) {
+      confirmed =
+          await showDialog<bool>(
+            context: context,
+            builder: (_) => const KeypadConfirmationDialog(
+              title: 'End session?',
+              message:
+                  'This stops the session for every participant and returns '
+                  'everyone to their dashboard. Nobody will be logged out.',
+              cancelLabel: 'Cancel',
+              confirmLabel: 'End for everyone',
+              cancelKey: 0,
+              confirmKey: 1,
+            ),
+          ) ==
+          true;
+      if (confirmed && mounted) {
         await _sse.send({'type': 'end_session'});
       }
     } finally {
       if (mounted) setState(() => _endingSession = false);
+      if (!confirmed) _restoreFocus(opener);
     }
   }
 
@@ -1340,30 +1426,39 @@ class _SessionScreenState extends State<SessionScreen>
     }
   }
 
-  void _muteParticipant(int participantId) {
+  Future<void> _muteParticipant(int participantId) async {
     final participant = _participants[participantId];
+    final name = participant?['name'] as String? ?? 'This participant';
     if (participant?['is_muted'] == true) {
-      _speakIfEnabled(
-        '${participant?['name'] ?? 'This participant'} is muted. '
-        'Only they can unmute their microphone.',
-      );
+      _speakIfEnabled('$name is muted. Only $name can unmute.');
       return;
     }
 
-    _sse.send({
+    final result = await _sse.send({
       'type': 'mute_participant',
       'target_participant_id': participantId,
     });
+    if (!mounted) return;
+    if (result.isSuccess) {
+      _speakIfEnabled('$name muted.');
+    } else {
+      _showSnackError(result.failure!.message);
+    }
   }
 
   String _classroomSummary() {
     final people = _participants.values;
     final hands = people.where((p) => p['raised_hand'] == true).length;
     final muted = people.where((p) => p['is_muted'] == true).length;
+    final speakingNames = _speakingParticipants
+        .map((id) => _participants[id]?['name'])
+        .whereType<String>()
+        .toList();
     return 'Local connection: $_connectionMessage. '
         'Last received classroom state: ${people.length} participants, '
         '$hands raised hands, $muted microphones reported muted. '
-        'Remote reconnecting counts and active speaker identification are unavailable. '
+        'Remote reconnecting counts are unavailable. '
+        '${speakingNames.isEmpty ? 'Nobody detected speaking.' : 'Detected speaking: ${speakingNames.join(', ')}.'} '
         '${_currentAudioId == null ? 'No class recording selected.' : 'Class recording $_currentAudioTitle. ${_isPlayingSessionAudio ? 'Playing requested.' : 'Paused.'}'} '
         '${_previewingAudioId == null ? 'Private preview stopped.' : 'Private preview active on this phone only.'} '
         'Microphone flags and accepted playback requests do not prove that anyone spoke or heard audio.';
@@ -1513,11 +1608,38 @@ class _SessionScreenState extends State<SessionScreen>
     }
   }
 
-  void _kickParticipant(int participantId) {
-    _sse.send({
+  Future<void> _kickParticipant(int participantId) async {
+    final participant = _participants[participantId];
+    if (participant == null) return;
+    final name = participant['name'] as String? ?? 'This participant';
+    final opener = FocusManager.instance.primaryFocus;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (_) => KeypadConfirmationDialog(
+        title: 'Remove $name?',
+        message:
+            '$name will be removed from this session and returned to their '
+            'dashboard. They can be invited again later.',
+        cancelLabel: 'Keep $name',
+        confirmLabel: 'Remove $name',
+      ),
+    );
+    if (!mounted) return;
+    if (confirmed != true) {
+      _restoreFocus(opener);
+      return;
+    }
+    final result = await _sse.send({
       'type': 'kick_participant',
       'target_participant_id': participantId,
     });
+    if (!mounted) return;
+    if (result.isSuccess) {
+      _speakIfEnabled('$name removed from the session.');
+    } else {
+      _showSnackError(result.failure!.message);
+      _restoreFocus(opener);
+    }
   }
 
   Future<void> _returnToDashboard() async {
@@ -1536,6 +1658,7 @@ class _SessionScreenState extends State<SessionScreen>
   Future<void> _leaveSession() async {
     if (!mounted || _leaveConfirmationOpen || _isReturningToDashboard) return;
     _leaveConfirmationOpen = true;
+    final opener = FocusManager.instance.primaryFocus;
     final confirmed = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
@@ -1567,10 +1690,13 @@ class _SessionScreenState extends State<SessionScreen>
         );
         if (leaveLocally != true || !mounted) {
           _leaveConfirmationOpen = false;
+          _restoreFocus(opener);
           return;
         }
       }
       await _returnToDashboard();
+    } else {
+      _restoreFocus(opener);
     }
     _leaveConfirmationOpen = false;
   }
@@ -1721,12 +1847,12 @@ class _SessionScreenState extends State<SessionScreen>
               ),
               ElevatedButton(
                 focusNode: uploadNode,
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.teal),
-                onPressed: () => submit(dialogContext),
-                child: const Text(
-                  'Upload (3)',
-                  style: TextStyle(color: Colors.white),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: UIUtils.primaryColor,
+                  foregroundColor: UIUtils.onPrimaryColor,
                 ),
+                onPressed: () => submit(dialogContext),
+                child: const Text('Upload (3)'),
               ),
             ],
           ),
@@ -2016,12 +2142,12 @@ class _SessionScreenState extends State<SessionScreen>
               ),
               ElevatedButton(
                 focusNode: playNode,
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-                onPressed: () => Navigator.pop(dialogContext, true),
-                child: const Text(
-                  'Play Now (1)',
-                  style: TextStyle(color: Colors.white),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: UIUtils.primaryColor,
+                  foregroundColor: UIUtils.onPrimaryColor,
                 ),
+                onPressed: () => Navigator.pop(dialogContext, true),
+                child: const Text('Play Now (1)'),
               ),
             ],
           ),
@@ -2086,6 +2212,7 @@ class _SessionScreenState extends State<SessionScreen>
 
     final pc = await createPeerConnection(_iceServers);
     _peerConnections[participantId] = pc;
+    _ensureSpeakingPoll();
 
     _localStream?.getTracks().forEach(
       (track) => pc.addTrack(track, _localStream!),
@@ -2248,6 +2375,59 @@ class _SessionScreenState extends State<SessionScreen>
     _pendingIceCandidates.remove(participantId);
     _peerConnections.remove(participantId)?.close();
     _remoteRenderers.remove(participantId)?.dispose();
+    _speakingParticipants.remove(participantId);
+    if (_peerConnections.isEmpty) {
+      _speakingTimer?.cancel();
+      _speakingTimer = null;
+    }
+  }
+
+  void _ensureSpeakingPoll() {
+    if (_speakingTimer != null || _peerConnections.isEmpty) return;
+    _speakingTimer = Timer.periodic(
+      const Duration(milliseconds: 1500),
+      (_) => unawaited(_pollSpeaking()),
+    );
+  }
+
+  /// Reads incoming audio levels so participant labels can say "speaking".
+  /// Not announced: speech for every speaker change would be too chatty.
+  Future<void> _pollSpeaking() async {
+    if (_speakingPollBusy || !mounted) return;
+    _speakingPollBusy = true;
+    final speaking = <int>{};
+    try {
+      for (final entry in _peerConnections.entries.toList()) {
+        if (_participants[entry.key]?['is_muted'] == true) continue;
+        try {
+          final reports = await entry.value.getStats();
+          for (final report in reports) {
+            if (report.type != 'inbound-rtp') continue;
+            final values = report.values;
+            final kind = values['kind'] ?? values['mediaType'];
+            if (kind != null && kind != 'audio') continue;
+            final raw = values['audioLevel'];
+            final level = raw is num
+                ? raw.toDouble()
+                : double.tryParse('${raw ?? ''}');
+            if (level != null && level > 0.05) {
+              speaking.add(entry.key);
+              break;
+            }
+          }
+        } catch (error) {
+          debugPrint('[WebRTC] Audio level unavailable: $error');
+        }
+      }
+    } finally {
+      _speakingPollBusy = false;
+    }
+    if (!mounted || setEquals(speaking, _speakingParticipants)) return;
+    setState(() {
+      _speakingParticipants
+        ..clear()
+        ..addAll(speaking);
+    });
   }
 
   // ── helpers ─────────────────────────────────────────────────────────────
@@ -2277,9 +2457,16 @@ class _SessionScreenState extends State<SessionScreen>
 
   void _showSnackError(String msg) {
     if (!mounted) return;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(msg), backgroundColor: Colors.red));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        // Spoken below; excluded so TalkBack does not read it twice.
+        content: ExcludeSemantics(
+          child: Text(msg, style: TextStyle(color: UIUtils.textColor)),
+        ),
+        backgroundColor: UIUtils.cardColor,
+        shape: Border.all(color: UIUtils.errorColor, width: 2),
+      ),
+    );
     unawaited(_speakIfEnabled(msg));
   }
 
@@ -2338,19 +2525,71 @@ class _SessionScreenState extends State<SessionScreen>
       _sse.state == SessionConnectionState.interrupted ||
       _sse.state == SessionConnectionState.reconnecting;
 
+  bool get _stackedLayout =>
+      UIUtils.isTiny(context) || UIUtils.useStackedLayout(context);
+
+  /// Phones show participants and chat as tabs; wide screens show both.
+  bool get _usesTabs =>
+      _stackedLayout || MediaQuery.sizeOf(context).width < 600;
+
+  bool get _audioCompact => UIUtils.isTiny(context) || UIUtils.isShort(context);
+
+  String get _micStatus => _mutePending
+      ? 'Microphone waiting for confirmation'
+      : _muted
+      ? 'Microphone muted'
+      : 'Microphone on';
+
+  String get _handStatus => _handPending
+      ? 'Hand waiting for confirmation'
+      : _handRaised
+      ? 'Hand raised'
+      : 'Hand down';
+
+  String get _statusText => '${_sse.state.label}. $_micStatus. $_handStatus.';
+
+  bool _isParticipantMuted(Map<String, dynamic> participant) =>
+      participant['id'] == _participantId
+      ? _muted
+      : participant['is_muted'] == true;
+
+  /// Read-only participant description, most important word first:
+  /// "Asha, student, hand raised, muted, speaking".
+  String _participantSummary(Map<String, dynamic> participant) {
+    final pid = participant['id'];
+    final name = participant['name'] as String? ?? 'Participant';
+    return [
+      pid == _participantId ? '$name, you' : name,
+      participant['is_teacher'] == true ? 'teacher' : 'student',
+      if (participant['raised_hand'] == true) 'hand raised',
+      _isParticipantMuted(participant) ? 'muted' : 'unmuted',
+      if (_speakingParticipants.contains(pid)) 'speaking',
+    ].join(', ');
+  }
+
+  String _participantMuteLabel(String name, bool muted) =>
+      muted ? '$name is muted. Only $name can unmute' : 'Mute $name';
+
+  // Order matches the visual order built in [_buildMainScaffold].
   List<KeypadFocusTarget> get _sessionFocusTargets {
+    final usesTabs = _usesTabs;
+    final showParticipants = !usesTabs || _mobileTab == 0;
+    final showChat = !usesTabs || _mobileTab == 1;
+    final hasAudio = widget.isTeacher && _currentAudioId != null;
     final targets = <KeypadFocusTarget>[
       KeypadFocusTarget(
         node: _connectionFocus,
-        label: 'Connection status. $_connectionMessage',
-        onActivate: () => TtsService.speak(_connectionMessage),
+        label: 'Status. $_statusText',
+        onActivate: () =>
+            TtsService.speak('$_connectionMessage $_micStatus. $_handStatus.'),
       ),
-      KeypadFocusTarget(
-        node: _retryConnectionFocus,
-        label: 'Retry class connection',
-        onActivate: _sse.reconnect,
-        isEnabled: () => _canRetryConnection,
-      ),
+      if (_canRetryConnection)
+        KeypadFocusTarget(
+          node: _retryConnectionFocus,
+          label: 'Retry class connection',
+          onActivate: _sse.reconnect,
+          isEnabled: () => _canRetryConnection,
+        ),
       if (widget.isTeacher)
         KeypadFocusTarget(
           node: _consoleFocus,
@@ -2368,93 +2607,6 @@ class _SessionScreenState extends State<SessionScreen>
           label: 'Reusable lesson sequences. Select before explicit Run',
           onActivate: _openSequences,
         ),
-      KeypadFocusTarget(
-        node: _ttsFocusNode,
-        label: _ttsEnabled
-            ? 'Turn text to speech off'
-            : 'Turn text to speech on',
-        onActivate: _toggleTts,
-      ),
-      if (widget.isTeacher)
-        KeypadFocusTarget(
-          node: _inviteFocusNode,
-          label: 'Invite students',
-          onActivate: _openInviteScreen,
-        ),
-      if (widget.isTeacher)
-        KeypadFocusTarget(
-          node: _endFocusNode,
-          label: 'End session for everyone',
-          onActivate: _confirmEndSession,
-          isEnabled: () => !_endingSession,
-        ),
-      if (widget.isTeacher)
-        KeypadFocusTarget(
-          node: _audioPanelFocusNode,
-          label: _showAudioPanel ? 'Close audio library' : 'Open audio library',
-          onActivate: _toggleAudioPanel,
-        ),
-      KeypadFocusTarget(
-        node: _leaveFocusNode,
-        label: 'Leave session and return to dashboard',
-        onActivate: _leaveSession,
-      ),
-      KeypadFocusTarget(
-        node: _participantsTabFocusNode,
-        label: 'Participants tab',
-        onActivate: () {
-          final nodeContext = _participantsTabFocusNode.context;
-          if (nodeContext != null) {
-            DefaultTabController.of(nodeContext).animateTo(0);
-          }
-        },
-      ),
-      KeypadFocusTarget(
-        node: _chatTabFocusNode,
-        label: 'Chat tab',
-        onActivate: () {
-          final nodeContext = _chatTabFocusNode.context;
-          if (nodeContext != null) {
-            DefaultTabController.of(nodeContext).animateTo(1);
-          }
-        },
-      ),
-    ];
-
-    for (final participant in _participants.values) {
-      final participantId = participant['id'] as int?;
-      if (!widget.isTeacher ||
-          participantId == null ||
-          participantId == _participantId) {
-        continue;
-      }
-      final name = participant['name'] as String? ?? 'participant';
-      final isMuted = participant['is_muted'] as bool? ?? false;
-      targets.addAll([
-        KeypadFocusTarget(
-          node: _focusNodeFor(
-            _participantMuteFocusNodes,
-            participantId,
-            'participant-mute',
-          ),
-          label: isMuted
-              ? '$name is muted. Read microphone status'
-              : 'Mute $name',
-          onActivate: () => _muteParticipant(participantId),
-        ),
-        KeypadFocusTarget(
-          node: _focusNodeFor(
-            _participantKickFocusNodes,
-            participantId,
-            'participant-remove',
-          ),
-          label: 'Remove $name from session',
-          onActivate: () => _kickParticipant(participantId),
-        ),
-      ]);
-    }
-
-    targets.addAll([
       if (_voiceCommandsEnabled)
         KeypadFocusTarget(
           node: _voiceFocus,
@@ -2462,11 +2614,6 @@ class _SessionScreenState extends State<SessionScreen>
               '${_voice.busy ? 'Stop listening' : 'Listen for command'}. ${_voice.status}',
           onActivate: _toggleVoiceListening,
         ),
-      KeypadFocusTarget(
-        node: _readMessageFocus,
-        label: 'Read latest message',
-        onActivate: _readLatestMessage,
-      ),
       KeypadFocusTarget(
         node: _readUpdatesFocus,
         label: 'Read class updates',
@@ -2482,32 +2629,14 @@ class _SessionScreenState extends State<SessionScreen>
         label: 'Repeat session help',
         onActivate: _repeatSessionInstructions,
       ),
-      KeypadFocusTarget(
-        node: _chatTtsFocusNode,
-        label: _ttsEnabled ? 'Turn chat speech off' : 'Turn chat speech on',
-        onActivate: _toggleTts,
-      ),
-      KeypadFocusTarget(
-        node: _chatFieldFocusNode,
-        label: 'Chat message',
-        isTextField: true,
-      ),
-      KeypadFocusTarget(
-        node: _chatSendFocusNode,
-        label: 'Send chat message',
-        onActivate: _sendMessage,
-        isEnabled: () => !_chatPending,
-      ),
-    ]);
-
-    if (widget.isTeacher && _currentAudioId != null) {
-      targets.addAll([
+      if (hasAudio && !_audioCompact)
         KeypadFocusTarget(
           node: _seekFocusNode,
           label: 'Audio position. Use left and right to seek ten seconds',
           onDecrease: () => _seekBy(-10),
           onIncrease: () => _seekBy(10),
         ),
+      if (hasAudio) ...[
         KeypadFocusTarget(
           node: _slowerFocusNode,
           label: 'Decrease audio speed',
@@ -2536,6 +2665,82 @@ class _SessionScreenState extends State<SessionScreen>
           onActivate: () =>
               _changeAudioSpeed((_audioSpeed + 0.25).clamp(0.5, 2.0)),
           isEnabled: () => _audioSpeed < 2.0,
+        ),
+      ],
+      if (usesTabs) ...[
+        KeypadFocusTarget(
+          node: _participantsTabFocusNode,
+          label: 'Participants tab${_mobileTab == 0 ? ', selected' : ''}',
+          onActivate: () => _selectTab(0),
+        ),
+        KeypadFocusTarget(
+          node: _chatTabFocusNode,
+          label: 'Chat tab${_mobileTab == 1 ? ', selected' : ''}',
+          onActivate: () => _selectTab(1),
+        ),
+      ],
+    ];
+
+    if (showParticipants) {
+      for (final participant in _participants.values) {
+        final participantId = participant['id'] as int?;
+        if (participantId == null) continue;
+        final name = participant['name'] as String? ?? 'Participant';
+        targets.add(
+          KeypadFocusTarget(
+            node: _focusNodeFor(
+              _participantRowFocusNodes,
+              participantId,
+              'participant-row',
+            ),
+            label: _participantSummary(participant),
+            onActivate: () => _speakIfEnabled(_participantSummary(participant)),
+          ),
+        );
+        if (!widget.isTeacher || participantId == _participantId) continue;
+        targets.addAll([
+          KeypadFocusTarget(
+            node: _focusNodeFor(
+              _participantMuteFocusNodes,
+              participantId,
+              'participant-mute',
+            ),
+            label: _participantMuteLabel(
+              name,
+              _isParticipantMuted(participant),
+            ),
+            onActivate: () => _muteParticipant(participantId),
+          ),
+          KeypadFocusTarget(
+            node: _focusNodeFor(
+              _participantKickFocusNodes,
+              participantId,
+              'participant-remove',
+            ),
+            label: 'Remove $name from session',
+            onActivate: () => _kickParticipant(participantId),
+          ),
+        ]);
+      }
+    }
+
+    if (showChat) {
+      targets.addAll([
+        KeypadFocusTarget(
+          node: _readMessageFocus,
+          label: 'Read latest message',
+          onActivate: _readLatestMessage,
+        ),
+        KeypadFocusTarget(
+          node: _chatFieldFocusNode,
+          label: 'Chat message',
+          isTextField: true,
+        ),
+        KeypadFocusTarget(
+          node: _chatSendFocusNode,
+          label: 'Send message',
+          onActivate: _sendMessage,
+          isEnabled: () => !_chatPending,
         ),
       ]);
     }
@@ -2603,20 +2808,26 @@ class _SessionScreenState extends State<SessionScreen>
         onActivate: _toggleHandRaise,
         isEnabled: () => !_handPending,
       ),
-      if (widget.isTeacher)
+      if (widget.isTeacher) ...[
         KeypadFocusTarget(
-          node: _bottomInviteFocusNode,
+          node: _inviteFocusNode,
           label: 'Invite students',
           onActivate: _openInviteScreen,
         ),
-      if (widget.isTeacher)
         KeypadFocusTarget(
-          node: _bottomAudioFocusNode,
+          node: _audioPanelFocusNode,
           label: _showAudioPanel ? 'Close audio library' : 'Open audio library',
           onActivate: _toggleAudioPanel,
         ),
+        KeypadFocusTarget(
+          node: _endFocusNode,
+          label: 'End session for everyone',
+          onActivate: _confirmEndSession,
+          isEnabled: () => !_endingSession,
+        ),
+      ],
       KeypadFocusTarget(
-        node: _bottomLeaveFocusNode,
+        node: _leaveFocusNode,
         label: 'Leave session and return to dashboard',
         onActivate: _leaveSession,
       ),
@@ -2627,14 +2838,12 @@ class _SessionScreenState extends State<SessionScreen>
   Map<int, VoidCallback> get _sessionKeyActions => {
     1: _toggleMute,
     2: _toggleHandRaise,
-    3: widget.isTeacher ? _openInviteScreen : _toggleTts,
-    4: widget.isTeacher ? _toggleAudioPanel : _focusChat,
-    if (widget.isTeacher) 5: _uploadAudioShortcut,
-    if (widget.isTeacher) 6: _loadAudioLibrary,
-    if (widget.isTeacher) 7: () => _seekBy(-10),
-    if (widget.isTeacher) 8: _toggleSessionAudio,
-    if (widget.isTeacher) 9: () => _seekBy(10),
-    if (widget.isTeacher) 0: _confirmEndSession,
+    3: widget.isTeacher ? _openInviteScreen : _focusChat,
+    if (widget.isTeacher) playerRewindKey: () => _seekBy(-10),
+    if (widget.isTeacher) playerPlayPauseKey: _toggleSessionAudio,
+    if (widget.isTeacher) playerForwardKey: () => _seekBy(10),
+    if (widget.isTeacher) 8: _toggleAudioPanel,
+    0: widget.isTeacher ? _confirmEndSession : _leaveSession,
   };
 
   @override
@@ -2673,12 +2882,12 @@ class _SessionScreenState extends State<SessionScreen>
     for (final t in _iceTimers.values) {
       t.cancel();
     }
+    _speakingTimer?.cancel();
 
     _sessionAudioPlayer.dispose();
     _previewPlayer.stop();
     _previewPlayer.dispose();
     for (final node in [
-      _ttsFocusNode,
       _inviteFocusNode,
       _endFocusNode,
       _audioPanelFocusNode,
@@ -2688,12 +2897,8 @@ class _SessionScreenState extends State<SessionScreen>
       _consoleFocus,
       _checkFocus,
       _sequencesFocus,
-      _bottomInviteFocusNode,
-      _bottomAudioFocusNode,
-      _bottomLeaveFocusNode,
       _participantsTabFocusNode,
       _chatTabFocusNode,
-      _chatTtsFocusNode,
       _chatFieldFocusNode,
       _chatSendFocusNode,
       _seekFocusNode,
@@ -2705,6 +2910,7 @@ class _SessionScreenState extends State<SessionScreen>
       _uploadFocusNode,
       _refreshAudioFocusNode,
       _closeAudioFocusNode,
+      ..._participantRowFocusNodes.values,
       ..._participantMuteFocusNodes.values,
       ..._participantKickFocusNodes.values,
       ..._previewAudioFocusNodes.values,
@@ -2736,8 +2942,6 @@ class _SessionScreenState extends State<SessionScreen>
           ? sessionTeacherKeyLabels
           : sessionStudentKeyLabels,
       onStarKey: _repeatSessionInstructions,
-      onSpeechRescued: () => setState(() => _ttsEnabled = TtsService.isEnabled),
-      onHashKey: _leaveSession,
       navigationController: _keypadController,
       focusTargets: _sessionFocusTargets,
       child: PopScope(
@@ -2750,379 +2954,511 @@ class _SessionScreenState extends State<SessionScreen>
     );
   }
 
+  TextStyle _textStyle({double size = 14, Color? color, FontWeight? weight}) =>
+      TextStyle(
+        color: color ?? UIUtils.textColor,
+        fontSize: UIUtils.fontSize(context, size),
+        fontWeight: weight,
+      );
+
   Widget _buildMainScaffold(BuildContext context) {
     if (_isInitializing) {
       return Scaffold(
-        backgroundColor: Colors.grey.shade900,
+        backgroundColor: UIUtils.backgroundColor,
         body: Center(
           child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const CircularProgressIndicator(color: Colors.teal),
-                SizedBox(height: UIUtils.spacing(context, 12)),
-                Text(
-                  'Initializing session...',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: UIUtils.fontSize(context, 14),
+            padding: UIUtils.paddingAll(context, 12),
+            child: Semantics(
+              liveRegion: true,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircularProgressIndicator(color: UIUtils.accentColor),
+                  SizedBox(height: UIUtils.spacing(context, 12)),
+                  Text(
+                    'Joining session…',
+                    textAlign: TextAlign.center,
+                    style: _textStyle(size: 16),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
       );
     }
 
-    final bool tiny = UIUtils.isTiny(context);
-    final List<Map<String, dynamic>> participantsList = _participants.values
-        .toList();
-    final bool isMobile = MediaQuery.of(context).size.width < 600;
-    final toolbarWidth = MediaQuery.sizeOf(context).width;
-    final statusWidth = toolbarWidth.clamp(0, 96).toDouble();
-    final toolbarIcons =
-        2 + (widget.isTeacher ? 2 : 0) + (_voiceCommandsEnabled ? 1 : 0);
-    final firstRowIcons = ((toolbarWidth - statusWidth) / 48).floor();
-    final remainingIcons = (toolbarIcons - firstRowIcons).clamp(
-      0,
-      toolbarIcons,
-    );
-    final rowCapacity = (toolbarWidth / 48).floor().clamp(1, toolbarIcons);
-    final toolbarRows = 1 + ((remainingIcons + rowCapacity - 1) ~/ rowCapacity);
+    final stacked = _stackedLayout;
+    final participantsList = _participants.values.toList();
+    final content = _usesTabs
+        ? _buildMobileLayout(participantsList, scrollable: stacked)
+        : _buildDesktopLayout(participantsList);
+    final title = widget.isTeacher
+        ? '${widget.sessionTitle} (Teacher)'
+        : widget.sessionTitle;
+    final subtitle = [
+      widget.className,
+      widget.subjectName,
+    ].whereType<String>().join(' · ');
+
+    final before = <Widget>[
+      if (stacked)
+        Container(
+          color: UIUtils.cardColor,
+          padding: UIUtils.paddingSymmetric(
+            context,
+            horizontal: 8,
+            vertical: 6,
+          ),
+          child: Semantics(
+            header: true,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: _textStyle(size: 18, weight: FontWeight.bold),
+                ),
+                if (subtitle.isNotEmpty)
+                  Text(
+                    subtitle,
+                    style: _textStyle(color: UIUtils.subtextColor),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      _buildStatusLine(),
+      _buildToolsSection(stacked),
+      _buildAudioControlSection(),
+    ];
+    final after = <Widget>[
+      if (widget.isTeacher && _showAudioPanel) _buildAudioLibraryPanel(),
+      _buildActionBar(stacked),
+    ];
 
     return Scaffold(
-      appBar: AppBar(
-        bottom: PreferredSize(
-          preferredSize: Size.fromHeight(48.0 * toolbarRows),
-          child: Wrap(
-            children: [
-              SizedBox(
-                width: statusWidth,
-                height: 48,
-                child: TextButton(
-                  focusNode: _connectionFocus,
-                  onPressed: () => TtsService.speak(_connectionMessage),
-                  child: Text(
-                    _sse.state.label,
-                    style: const TextStyle(color: Colors.white),
+      backgroundColor: UIUtils.backgroundColor,
+      appBar: stacked
+          ? null
+          : AppBar(
+              backgroundColor: UIUtils.cardColor,
+              foregroundColor: UIUtils.textColor,
+              automaticallyImplyLeading: false,
+              title: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: _textStyle(size: 18, weight: FontWeight.bold),
                   ),
+                  if (subtitle.isNotEmpty)
+                    Text(
+                      subtitle,
+                      style: _textStyle(color: UIUtils.subtextColor),
+                    ),
+                ],
+              ),
+            ),
+      body: stacked
+          // Tiny screens and large text: one full-width scrolling column so
+          // nothing is clipped at 240x320.
+          ? SafeArea(
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [...before, content, ...after],
                 ),
               ),
-              IconButton(
-                focusNode: _retryConnectionFocus,
-                tooltip: 'Retry class connection',
-                onPressed: _canRetryConnection ? _sse.reconnect : null,
-                icon: const Icon(Icons.refresh, color: Colors.white),
+            )
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                ...before,
+                Expanded(child: content),
+                ...after,
+              ],
+            ),
+    );
+  }
+
+  Widget _buildStatusLine() {
+    final state = _sse.state;
+    final problem = const {
+      SessionConnectionState.interrupted,
+      SessionConnectionState.reconnecting,
+      SessionConnectionState.authenticationExpired,
+      SessionConnectionState.unavailable,
+      SessionConnectionState.closed,
+    }.contains(state);
+    final showMessage = state != SessionConnectionState.connected;
+    return Focus(
+      focusNode: _connectionFocus,
+      child: Semantics(
+        container: true,
+        liveRegion: true,
+        label: showMessage ? '$_statusText $_connectionMessage' : _statusText,
+        child: ExcludeSemantics(
+          child: Container(
+            padding: UIUtils.paddingSymmetric(
+              context,
+              horizontal: 8,
+              vertical: 6,
+            ),
+            decoration: BoxDecoration(
+              color: UIUtils.cardColor,
+              border: Border(
+                bottom: BorderSide(
+                  color: problem ? UIUtils.errorColor : UIUtils.cardBorderColor,
+                  width: problem ? 3 : 1,
+                ),
               ),
-              if (widget.isTeacher)
-                IconButton(
-                  focusNode: _consoleFocus,
-                  tooltip: 'Classroom console',
-                  onPressed: _openClassroomConsole,
-                  icon: const Icon(
-                    Icons.pan_tool_outlined,
-                    color: Colors.white,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(_statusText, style: _textStyle(weight: FontWeight.bold)),
+                if (showMessage)
+                  Text(
+                    _connectionMessage,
+                    style: _textStyle(
+                      color: problem
+                          ? UIUtils.errorColor
+                          : UIUtils.subtextColor,
+                    ),
                   ),
-                ),
-              IconButton(
-                focusNode: _checkFocus,
-                tooltip: 'Private classroom check',
-                onPressed: _openClassroomCheck,
-                icon: const Icon(
-                  Icons.question_answer_outlined,
-                  color: Colors.white,
-                ),
-              ),
-              if (widget.isTeacher)
-                IconButton(
-                  focusNode: _sequencesFocus,
-                  tooltip: 'Lesson sequences',
-                  onPressed: _openSequences,
-                  icon: const Icon(
-                    Icons.format_list_numbered,
-                    color: Colors.white,
-                  ),
-                ),
-              if (_voiceCommandsEnabled)
-                IconButton(
-                  focusNode: _voiceFocus,
-                  tooltip:
-                      '${_voice.busy ? 'Stop listening' : 'Listen for command'}. ${_voice.status}',
-                  icon: Icon(
-                    _voice.busy
-                        ? Icons.mic_off_outlined
-                        : Icons.keyboard_voice_outlined,
-                  ),
-                  color: Colors.white,
-                  onPressed: _toggleVoiceListening,
-                ),
-            ],
+              ],
+            ),
           ),
         ),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              widget.isTeacher
-                  ? '${widget.sessionTitle} (Teacher)'
-                  : widget.sessionTitle,
-              style: TextStyle(fontSize: UIUtils.fontSize(context, 16)),
-            ),
-            if (widget.className != null || widget.subjectName != null)
-              Text(
-                [
-                  widget.className,
-                  widget.subjectName,
-                ].whereType<String>().join(' · '),
-                style: TextStyle(fontSize: UIUtils.fontSize(context, 11)),
-              ),
-          ],
-        ),
-        backgroundColor: Colors.teal,
-        toolbarHeight: tiny ? 40 : null,
-        actions: [
-          // TTS toggle
-          IconButton(
-            focusNode: _ttsFocusNode,
-            icon: Icon(
-              _ttsEnabled ? Icons.volume_up : Icons.volume_off,
-              size: UIUtils.iconSize(context, 20),
-            ),
-            tooltip: _ttsEnabled
-                ? 'Turn text-to-speech off'
-                : 'Turn text-to-speech on',
-            onPressed: _toggleTts,
-          ),
-          // Invite students — teacher only
-          if (widget.isTeacher)
-            IconButton(
-              focusNode: _inviteFocusNode,
-              icon: Icon(Icons.person_add, size: UIUtils.iconSize(context, 20)),
-              tooltip: 'Invite Students',
-              onPressed: _openInviteScreen,
-            ),
-          // End session — teacher only
-          if (widget.isTeacher)
-            IconButton(
-              focusNode: _endFocusNode,
-              icon: Icon(
-                Icons.stop_circle,
-                color: Colors.red,
-                size: UIUtils.iconSize(context, 20),
-              ),
-              tooltip: 'End session',
-              onPressed: _endingSession ? null : _confirmEndSession,
-            ),
-          // Audio Library — teacher only
-          if (widget.isTeacher)
-            IconButton(
-              focusNode: _audioPanelFocusNode,
-              icon: Icon(
-                Icons.library_music,
-                size: UIUtils.iconSize(context, 20),
-              ),
-              tooltip: 'Audio Library',
-              onPressed: _toggleAudioPanel,
-            ),
-          // Leave
-          IconButton(
-            focusNode: _leaveFocusNode,
-            icon: Icon(Icons.exit_to_app, size: UIUtils.iconSize(context, 20)),
-            tooltip: 'Leave',
-            onPressed: _leaveSession,
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          // ── Audio playback bar (visible to everyone when audio is active) ──
-          _buildAudioControlSection(),
-
-          // ── Main content ───────────────────────────────────────────────
-          Expanded(
-            child: isMobile
-                ? _buildMobileLayout(participantsList)
-                : _buildDesktopLayout(participantsList),
-          ),
-
-          // ── Audio library panel (teacher only, slides in above action bar) ─
-          if (widget.isTeacher && _showAudioPanel) _buildAudioLibraryPanel(),
-
-          // ── Bottom action bar ──────────────────────────────────────────
-          _buildActionBar(),
-        ],
       ),
     );
   }
 
-  Widget _buildActionBar() {
-    final bool isKeypad = UIUtils.isKeypad(context);
-    final bool short = UIUtils.isShort(context);
+  /// Full-width column on small screens, wrapping row otherwise.
+  Widget _buttonGroup(
+    List<Widget> buttons,
+    bool stacked, {
+    WrapAlignment alignment = WrapAlignment.center,
+  }) {
+    if (stacked) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          for (final button in buttons)
+            Padding(
+              padding: EdgeInsets.symmetric(
+                vertical: UIUtils.spacing(context, 2),
+              ),
+              child: button,
+            ),
+        ],
+      );
+    }
+    return Wrap(
+      alignment: alignment,
+      spacing: UIUtils.spacing(context, 6),
+      runSpacing: UIUtils.spacing(context, 6),
+      children: buttons,
+    );
+  }
+
+  /// Outlined button whose visible text may be short (or carry a key hint)
+  /// while its accessible name identifies the action and its target.
+  Widget _labelledButton({
+    required FocusNode node,
+    required IconData icon,
+    required String text,
+    required String semanticLabel,
+    required VoidCallback? onPressed,
+    required bool stacked,
+    Color? iconColor,
+    bool selected = false,
+  }) {
+    final foreground = selected ? UIUtils.onAccentColor : UIUtils.textColor;
+    return OutlinedButton.icon(
+      focusNode: node,
+      onPressed: onPressed,
+      icon: Icon(
+        icon,
+        color: selected ? foreground : iconColor ?? foreground,
+        size: UIUtils.iconSize(context, 20),
+      ),
+      label: Semantics(
+        label: semanticLabel,
+        selected: selected ? true : null,
+        child: ExcludeSemantics(
+          child: Text(
+            text,
+            textAlign: stacked ? TextAlign.start : TextAlign.center,
+            style: _textStyle(color: foreground, weight: FontWeight.w600),
+          ),
+        ),
+      ),
+      style: OutlinedButton.styleFrom(
+        foregroundColor: foreground,
+        backgroundColor: selected ? UIUtils.accentColor : UIUtils.cardColor,
+        side: BorderSide(
+          color: selected ? UIUtils.accentColor : UIUtils.cardBorderColor,
+          width: selected ? 2 : 1,
+        ),
+        minimumSize: const Size(48, 44),
+        alignment: stacked ? Alignment.centerLeft : Alignment.center,
+        padding: UIUtils.paddingSymmetric(context, horizontal: 8, vertical: 6),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      ),
+    );
+  }
+
+  Widget _buildToolsSection(bool stacked) {
+    final buttons = <Widget>[
+      if (_canRetryConnection)
+        _labelledButton(
+          node: _retryConnectionFocus,
+          icon: Icons.refresh,
+          text: 'Retry connection',
+          semanticLabel: 'Retry class connection',
+          onPressed: _sse.reconnect,
+          stacked: stacked,
+          iconColor: UIUtils.errorColor,
+        ),
+      if (widget.isTeacher)
+        _labelledButton(
+          node: _consoleFocus,
+          icon: Icons.pan_tool_outlined,
+          text: 'Classroom console',
+          semanticLabel:
+              'Open classroom console. Raised hands and classroom summary',
+          onPressed: _openClassroomConsole,
+          stacked: stacked,
+        ),
+      _labelledButton(
+        node: _checkFocus,
+        icon: Icons.question_answer_outlined,
+        text: 'Classroom check',
+        semanticLabel: 'Open private classroom check. Ungraded responses',
+        onPressed: _openClassroomCheck,
+        stacked: stacked,
+      ),
+      if (widget.isTeacher)
+        _labelledButton(
+          node: _sequencesFocus,
+          icon: Icons.format_list_numbered,
+          text: 'Lesson sequences',
+          semanticLabel:
+              'Reusable lesson sequences. Select before explicit Run',
+          onPressed: _openSequences,
+          stacked: stacked,
+        ),
+      if (_voiceCommandsEnabled)
+        _labelledButton(
+          node: _voiceFocus,
+          icon: _voice.busy
+              ? Icons.mic_off_outlined
+              : Icons.keyboard_voice_outlined,
+          text: _voice.busy ? 'Stop listening' : 'Listen for command',
+          semanticLabel:
+              '${_voice.busy ? 'Stop listening' : 'Listen for command'}. ${_voice.status}',
+          onPressed: _toggleVoiceListening,
+          stacked: stacked,
+        ),
+      _labelledButton(
+        node: _readUpdatesFocus,
+        icon: Icons.notifications_active_outlined,
+        text: 'Class updates',
+        semanticLabel: 'Read class updates',
+        onPressed: TtsService.readPendingUpdates,
+        stacked: stacked,
+      ),
+      _labelledButton(
+        node: _stopSpeechFocus,
+        icon: Icons.stop_circle_outlined,
+        text: 'Stop speech',
+        semanticLabel: 'Stop speech',
+        onPressed: TtsService.stop,
+        stacked: stacked,
+      ),
+      _labelledButton(
+        node: _repeatHelpFocus,
+        icon: Icons.help_outline,
+        text: 'Help',
+        semanticLabel: 'Repeat session help',
+        onPressed: _repeatSessionInstructions,
+        stacked: stacked,
+      ),
+    ];
+    return Padding(
+      padding: UIUtils.paddingAll(context, 6),
+      child: _buttonGroup(buttons, stacked),
+    );
+  }
+
+  Widget _buildActionBar(bool stacked) {
+    final keypad = UIUtils.isKeypad(context);
+    String hint(int key, String text) => keypad ? '$key:$text' : text;
+
+    final buttons = <Widget>[
+      _labelledButton(
+        node: _muteFocusNode,
+        icon: _muted ? Icons.mic_off : Icons.mic,
+        text: _mutePending ? 'Waiting' : hint(1, _muted ? 'Unmute' : 'Mute'),
+        semanticLabel: _mutePending
+            ? 'Waiting for microphone confirmation'
+            : _muted
+            ? 'Unmute microphone'
+            : 'Mute microphone',
+        onPressed: _mutePending ? null : _toggleMute,
+        stacked: stacked,
+        iconColor: _muted ? UIUtils.errorColor : UIUtils.successColor,
+      ),
+      _labelledButton(
+        node: _handFocusNode,
+        icon: _handRaised ? Icons.pan_tool : Icons.pan_tool_outlined,
+        text: _handPending
+            ? 'Waiting'
+            : hint(2, _handRaised ? 'Lower hand' : 'Raise hand'),
+        semanticLabel: _handPending
+            ? 'Waiting for hand confirmation'
+            : _handRaised
+            ? 'Lower hand'
+            : 'Raise hand',
+        onPressed: _handPending ? null : _toggleHandRaise,
+        stacked: stacked,
+        selected: _handRaised,
+      ),
+      if (widget.isTeacher) ...[
+        _labelledButton(
+          node: _inviteFocusNode,
+          icon: Icons.person_add,
+          text: hint(3, 'Invite'),
+          semanticLabel: 'Invite students',
+          onPressed: _openInviteScreen,
+          stacked: stacked,
+        ),
+        _labelledButton(
+          node: _audioPanelFocusNode,
+          icon: Icons.library_music,
+          text: hint(8, 'Audio library'),
+          semanticLabel: _showAudioPanel
+              ? 'Close audio library'
+              : 'Open audio library',
+          onPressed: _toggleAudioPanel,
+          stacked: stacked,
+          selected: _showAudioPanel,
+        ),
+        _labelledButton(
+          node: _endFocusNode,
+          icon: Icons.stop_circle,
+          text: hint(0, 'End session'),
+          semanticLabel: 'End session for everyone',
+          onPressed: _endingSession ? null : _confirmEndSession,
+          stacked: stacked,
+          iconColor: UIUtils.errorColor,
+        ),
+      ],
+      _labelledButton(
+        node: _leaveFocusNode,
+        icon: Icons.call_end,
+        text: widget.isTeacher ? 'Leave' : hint(0, 'Leave'),
+        semanticLabel: 'Leave session and return to dashboard',
+        onPressed: _leaveSession,
+        stacked: stacked,
+        iconColor: UIUtils.errorColor,
+      ),
+    ];
 
     return Container(
-      padding: UIUtils.paddingSymmetric(
-        context,
-        horizontal: 4,
-        vertical: short ? 4 : 8,
+      decoration: BoxDecoration(
+        color: UIUtils.cardColor,
+        border: Border(top: BorderSide(color: UIUtils.cardBorderColor)),
       ),
-      color: Colors.grey.shade900,
-      child: SafeArea(
-        top: false,
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              // Mute
-              _actionBarBtn(
-                focusNode: _muteFocusNode,
-                icon: _muted ? Icons.mic_off : Icons.mic,
-                label: _mutePending
-                    ? 'Waiting'
-                    : isKeypad
-                    ? '1:${_muted ? 'Unmute' : 'Mute'}'
-                    : _muted
-                    ? 'Unmute'
-                    : 'Mute',
-                color: _muted ? Colors.red : Colors.green,
-                onTap: _toggleMute,
-                enabled: !_mutePending,
-              ),
-              SizedBox(width: UIUtils.spacing(context, 8)),
-              // Raise / lower hand
-              _actionBarBtn(
-                focusNode: _handFocusNode,
-                icon: _handRaised ? Icons.pan_tool : Icons.pan_tool_outlined,
-                label: isKeypad ? '2:Hand' : 'Raise',
-                color: _handRaised ? Colors.amber : Colors.grey.shade400,
-                onTap: _toggleHandRaise,
-                enabled: !_handPending,
-              ),
-              if (widget.isTeacher) ...[
-                SizedBox(width: UIUtils.spacing(context, 8)),
-                _actionBarBtn(
-                  focusNode: _bottomInviteFocusNode,
-                  icon: Icons.person_add,
-                  label: isKeypad ? '3:Invite' : 'Invite',
-                  color: Colors.lightBlue,
-                  onTap: _openInviteScreen,
-                ),
-                SizedBox(width: UIUtils.spacing(context, 8)),
-                _actionBarBtn(
-                  focusNode: _bottomAudioFocusNode,
-                  icon: Icons.library_music,
-                  label: isKeypad ? '4:Audio' : 'Audio',
-                  color: Colors.purple.shade300,
-                  onTap: _toggleAudioPanel,
-                  active: _showAudioPanel,
-                ),
-              ],
-              SizedBox(width: UIUtils.spacing(context, 8)),
-              // Leave
-              _actionBarBtn(
-                focusNode: _bottomLeaveFocusNode,
-                icon: Icons.call_end,
-                label: isKeypad ? '#:Exit' : 'Leave',
-                color: Colors.red.shade400,
-                onTap: _leaveSession,
-              ),
-            ],
-          ),
-        ),
-      ),
+      padding: UIUtils.paddingAll(context, 6),
+      child: SafeArea(top: false, child: _buttonGroup(buttons, stacked)),
     );
   }
 
-  Widget _actionBarBtn({
-    required FocusNode focusNode,
-    required IconData icon,
-    required String label,
-    required Color color,
-    required VoidCallback onTap,
-    bool active = false,
-    bool enabled = true,
+  Widget _buildMobileLayout(
+    List<Map<String, dynamic>> participantsList, {
+    required bool scrollable,
   }) {
-    final bool isKeypad = UIUtils.isKeypad(context);
-    final bool short = UIUtils.isShort(context);
-    final double btnSize = short ? 34 : (isKeypad ? 40 : 48);
+    final content = _mobileTab == 0
+        ? _buildParticipantsList(participantsList, scrollable: scrollable)
+        : _buildChatPanel(scrollable: scrollable);
+    final participantsName = 'Participants (${participantsList.length})';
 
-    return InkWell(
-      focusNode: focusNode,
-      onTap: enabled ? onTap : null,
-      focusColor: color.withOpacity(0.28),
-      borderRadius: BorderRadius.circular(12),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: UIUtils.scale(context) * btnSize,
-              height: UIUtils.scale(context) * btnSize,
-              decoration: BoxDecoration(
-                color: active ? color.withOpacity(0.3) : Colors.transparent,
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: active ? color : color.withOpacity(0.6),
-                  width: 2,
-                ),
+    if (scrollable) {
+      // Full-width tab buttons: a TabBar clips at 240 px with large text.
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: UIUtils.paddingSymmetric(context, horizontal: 6),
+            child: _buttonGroup([
+              _labelledButton(
+                node: _participantsTabFocusNode,
+                icon: Icons.people,
+                text: participantsName,
+                semanticLabel: 'Participants tab',
+                onPressed: () => _selectTab(0),
+                stacked: true,
+                selected: _mobileTab == 0,
               ),
-              child: Icon(
-                icon,
-                color: color,
-                size: UIUtils.iconSize(context, short || isKeypad ? 18 : 24),
+              _labelledButton(
+                node: _chatTabFocusNode,
+                icon: Icons.chat,
+                text: 'Chat',
+                semanticLabel: 'Chat tab',
+                onPressed: () => _selectTab(1),
+                stacked: true,
+                selected: _mobileTab == 1,
               ),
-            ),
-            SizedBox(height: UIUtils.spacing(context, short ? 2 : 4)),
-            Text(
-              label,
-              style: TextStyle(
-                color: Colors.grey.shade400,
-                fontSize: UIUtils.fontSize(context, short ? 8 : 9),
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+            ], true),
+          ),
+          content,
+        ],
+      );
+    }
 
-  Widget _buildMobileLayout(List<Map<String, dynamic>> participantsList) {
+    final tabHeight =
+        MediaQuery.textScalerOf(context).scale(UIUtils.fontSize(context, 14)) *
+            1.4 +
+        16;
     return DefaultTabController(
       length: 2,
+      initialIndex: _mobileTab,
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           TabBar(
+            onTap: (index) => _selectTab(index),
             tabs: [
               Focus(
                 focusNode: _participantsTabFocusNode,
-                child: Tab(
-                  text: 'Participants',
-                  height: MediaQuery.textScalerOf(context).scale(11) + 16,
+                child: Semantics(
+                  label: 'Participants tab',
+                  child: ExcludeSemantics(
+                    child: Tab(text: participantsName, height: tabHeight),
+                  ),
                 ),
               ),
               Focus(
                 focusNode: _chatTabFocusNode,
-                child: Tab(
-                  text: 'Chat',
-                  height: MediaQuery.textScalerOf(context).scale(11) + 16,
+                child: Semantics(
+                  label: 'Chat tab',
+                  child: ExcludeSemantics(
+                    child: Tab(text: 'Chat', height: tabHeight),
+                  ),
                 ),
               ),
             ],
-            labelColor: Colors.teal,
-            labelStyle: TextStyle(fontSize: UIUtils.fontSize(context, 11)),
+            labelColor: UIUtils.accentColor,
+            unselectedLabelColor: UIUtils.textColor,
+            indicatorColor: UIUtils.accentColor,
+            indicatorWeight: 4,
+            labelStyle: _textStyle(weight: FontWeight.bold),
+            unselectedLabelStyle: _textStyle(),
           ),
-          Expanded(
-            child: TabBarView(
-              children: [
-                _buildParticipantsList(participantsList),
-                _buildChatPanel(),
-              ],
-            ),
-          ),
+          Expanded(child: content),
         ],
       ),
     );
@@ -3130,157 +3466,201 @@ class _SessionScreenState extends State<SessionScreen>
 
   Widget _buildDesktopLayout(List<Map<String, dynamic>> participantsList) {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Expanded(flex: 2, child: _buildParticipantsList(participantsList)),
-        const VerticalDivider(width: 1),
+        VerticalDivider(width: 1, color: UIUtils.cardBorderColor),
         Expanded(flex: 3, child: _buildChatPanel()),
       ],
     );
   }
 
-  Widget _buildParticipantsList(List<Map<String, dynamic>> participantsList) {
+  Widget _buildParticipantsList(
+    List<Map<String, dynamic>> participantsList, {
+    bool scrollable = false,
+  }) {
     if (participantsList.isEmpty) {
-      return Center(
+      return Padding(
+        padding: UIUtils.paddingAll(context, 12),
         child: Text(
           'Waiting for participants...',
-          style: TextStyle(
-            color: UIUtils.subtextColor,
-            fontSize: UIUtils.fontSize(context, 13),
-          ),
+          textAlign: TextAlign.center,
+          style: _textStyle(color: UIUtils.subtextColor),
         ),
       );
     }
 
-    final bool tiny = UIUtils.isTiny(context);
-
+    final stacked = _stackedLayout;
+    if (scrollable) {
+      return Padding(
+        padding: UIUtils.paddingAll(context, 6),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            for (final participant in participantsList)
+              _buildParticipantRow(participant, stacked),
+          ],
+        ),
+      );
+    }
     return ListView.builder(
-      padding: UIUtils.paddingAll(context, 8),
+      padding: UIUtils.paddingAll(context, 6),
       itemCount: participantsList.length,
-      itemBuilder: (_, i) {
-        final p = participantsList[i];
-        final pid = p['id'] as int;
-        final isSelf = pid == _participantId;
-        final isMuted = p['is_muted'] as bool? ?? false;
-        final isTeacher = p['is_teacher'] as bool? ?? false;
-        final raisedHand = p['raised_hand'] as bool? ?? false;
-        final name = p['name'] as String? ?? '?';
-
-        return Card(
-          margin: EdgeInsets.only(bottom: UIUtils.spacing(context, 4)),
-          child: ListTile(
-            dense: tiny,
-            contentPadding: UIUtils.paddingSymmetric(
-              context,
-              horizontal: 8,
-              vertical: 4,
-            ),
-            leading: CircleAvatar(
-              backgroundColor: isMuted ? Colors.red : Colors.green,
-              radius: UIUtils.iconSize(context, 18),
-              child: Icon(
-                isMuted ? Icons.mic_off : Icons.mic,
-                color: Colors.white,
-                size: UIUtils.iconSize(context, 16),
-              ),
-            ),
-            title: Text(
-              isSelf ? '$name (You)' : name,
-              style: TextStyle(
-                fontWeight: isSelf ? FontWeight.bold : FontWeight.normal,
-                fontSize: UIUtils.fontSize(context, 14),
-              ),
-              overflow: TextOverflow.ellipsis,
-            ),
-            subtitle: Text(
-              isTeacher ? 'Teacher' : 'Student',
-              style: TextStyle(
-                color: isTeacher ? Colors.teal : Colors.grey,
-                fontSize: UIUtils.fontSize(context, 12),
-              ),
-            ),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (raisedHand)
-                  Padding(
-                    padding: const EdgeInsets.only(right: 4),
-                    child: Icon(
-                      Icons.pan_tool,
-                      color: Colors.amber,
-                      size: UIUtils.iconSize(context, 18),
-                    ),
-                  ),
-                if (widget.isTeacher && !isSelf) ...[
-                  IconButton(
-                    focusNode: _focusNodeFor(
-                      _participantMuteFocusNodes,
-                      pid,
-                      'participant-mute',
-                    ),
-                    icon: Icon(
-                      isMuted ? Icons.info_outline : Icons.mic_off,
-                      size: UIUtils.iconSize(context, 18),
-                    ),
-                    color: Colors.blue,
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                    onPressed: () => _muteParticipant(pid),
-                    tooltip: isMuted
-                        ? 'Muted. Only this participant can unmute'
-                        : 'Mute',
-                  ),
-                  SizedBox(width: UIUtils.spacing(context, 2)),
-                  IconButton(
-                    focusNode: _focusNodeFor(
-                      _participantKickFocusNodes,
-                      pid,
-                      'participant-remove',
-                    ),
-                    icon: Icon(
-                      Icons.remove_circle,
-                      size: UIUtils.iconSize(context, 18),
-                    ),
-                    color: Colors.red,
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                    onPressed: () => _kickParticipant(pid),
-                    tooltip: 'Kick',
-                  ),
-                ],
-              ],
-            ),
-          ),
-        );
-      },
+      itemBuilder: (_, i) => _buildParticipantRow(participantsList[i], stacked),
     );
   }
 
-  Widget _buildChatPanel() {
+  Widget _buildParticipantRow(Map<String, dynamic> p, bool stacked) {
+    final pid = p['id'] as int;
+    final isSelf = pid == _participantId;
+    final name = p['name'] as String? ?? 'Participant';
+    final raisedHand = p['raised_hand'] == true;
+    final isMuted = _isParticipantMuted(p);
+    final speaking = _speakingParticipants.contains(pid);
+    final statusWords = [
+      p['is_teacher'] == true ? 'Teacher' : 'Student',
+      isMuted ? 'Muted' : 'Unmuted',
+      if (raisedHand) 'Hand raised',
+      if (speaking) 'Speaking',
+    ].join(' · ');
+    final buttons = <Widget>[
+      if (widget.isTeacher && !isSelf) ...[
+        _labelledButton(
+          node: _focusNodeFor(
+            _participantMuteFocusNodes,
+            pid,
+            'participant-mute',
+          ),
+          icon: isMuted ? Icons.mic_off : Icons.mic_off_outlined,
+          text: isMuted ? '$name muted' : 'Mute $name',
+          semanticLabel: _participantMuteLabel(name, isMuted),
+          onPressed: () => _muteParticipant(pid),
+          stacked: stacked,
+        ),
+        _labelledButton(
+          node: _focusNodeFor(
+            _participantKickFocusNodes,
+            pid,
+            'participant-remove',
+          ),
+          icon: Icons.person_remove,
+          text: 'Remove $name',
+          semanticLabel: 'Remove $name from session',
+          onPressed: () => _kickParticipant(pid),
+          stacked: stacked,
+          iconColor: UIUtils.errorColor,
+        ),
+      ],
+    ];
+
+    return Card(
+      color: UIUtils.cardColor,
+      margin: EdgeInsets.only(bottom: UIUtils.spacing(context, 6)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+        side: BorderSide(
+          color: raisedHand ? UIUtils.accentColor : UIUtils.cardBorderColor,
+          width: raisedHand ? 3 : 1,
+        ),
+      ),
+      child: Padding(
+        padding: UIUtils.paddingAll(context, 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Focus(
+              focusNode: _focusNodeFor(
+                _participantRowFocusNodes,
+                pid,
+                'participant-row',
+              ),
+              child: Semantics(
+                container: true,
+                label: _participantSummary(p),
+                child: ExcludeSemantics(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(
+                        raisedHand
+                            ? Icons.pan_tool
+                            : isMuted
+                            ? Icons.mic_off
+                            : Icons.mic,
+                        color: raisedHand
+                            ? UIUtils.accentColor
+                            : isMuted
+                            ? UIUtils.errorColor
+                            : UIUtils.successColor,
+                        size: UIUtils.iconSize(context, 20),
+                      ),
+                      SizedBox(width: UIUtils.spacing(context, 8)),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              isSelf ? '$name (You)' : name,
+                              style: _textStyle(
+                                size: 16,
+                                weight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              statusWords,
+                              style: _textStyle(color: UIUtils.subtextColor),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            if (buttons.isNotEmpty)
+              Padding(
+                padding: EdgeInsets.only(top: UIUtils.spacing(context, 6)),
+                child: _buttonGroup(
+                  buttons,
+                  stacked,
+                  alignment: WrapAlignment.start,
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildChatPanel({bool scrollable = false}) {
+    if (scrollable) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildChatHeader(),
+          _buildMessagesColumn(),
+          _buildChatInput(),
+        ],
+      );
+    }
     return LayoutBuilder(
       builder: (context, constraints) {
-        final compact = constraints.maxHeight < 180;
-
-        if (compact) {
+        if (constraints.maxHeight < 180) {
           return SingleChildScrollView(
-            padding: EdgeInsets.zero,
             child: Column(
-              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                _buildChatHeader(compact: true),
-                ConstrainedBox(
-                  constraints: BoxConstraints(
-                    minHeight: constraints.maxHeight >= 120 ? 34 : 24,
-                    maxHeight: constraints.maxHeight >= 120 ? 72 : 42,
-                  ),
-                  child: _buildMessagesList(compact: true),
-                ),
-                _buildChatInput(compact: true),
+                _buildChatHeader(),
+                _buildMessagesColumn(),
+                _buildChatInput(),
               ],
             ),
           );
         }
-
         return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             _buildChatHeader(),
             Expanded(child: _buildMessagesList()),
@@ -3291,265 +3671,178 @@ class _SessionScreenState extends State<SessionScreen>
     );
   }
 
-  Widget _buildChatHeader({bool compact = false}) {
+  Widget _buildChatHeader() {
     return Container(
-      padding: UIUtils.paddingSymmetric(
-        context,
-        horizontal: compact ? 6 : 8,
-        vertical: compact ? 4 : 8,
-      ),
-      color: UIUtils.isHighContrast ? UIUtils.cardColor : Colors.teal.shade50,
+      padding: UIUtils.paddingSymmetric(context, horizontal: 8, vertical: 4),
+      color: UIUtils.cardColor,
       child: Row(
         children: [
           Icon(
             Icons.chat,
             color: UIUtils.accentColor,
-            size: UIUtils.iconSize(context, compact ? 14 : 16),
+            size: UIUtils.iconSize(context, 16),
           ),
           SizedBox(width: UIUtils.spacing(context, 4)),
           Expanded(
-            child: Text(
-              'Chat',
-              style: TextStyle(
-                fontSize: UIUtils.fontSize(context, compact ? 12 : 14),
-                fontWeight: FontWeight.bold,
+            child: Semantics(
+              header: true,
+              child: Text(
+                'Chat',
+                style: _textStyle(size: 16, weight: FontWeight.bold),
               ),
             ),
           ),
           IconButton(
             focusNode: _readMessageFocus,
             tooltip: 'Read latest message',
-            icon: const Icon(Icons.mark_chat_read_outlined),
-            onPressed: _readLatestMessage,
-            visualDensity: VisualDensity.compact,
-            constraints: compact
-                ? const BoxConstraints.tightFor(width: 28, height: 28)
-                : null,
-            padding: EdgeInsets.zero,
-          ),
-          IconButton(
-            focusNode: _readUpdatesFocus,
-            tooltip: 'Read class updates',
-            icon: const Icon(Icons.notifications_active_outlined),
-            onPressed: TtsService.readPendingUpdates,
-            visualDensity: VisualDensity.compact,
-            constraints: compact
-                ? const BoxConstraints.tightFor(width: 28, height: 28)
-                : null,
-            padding: EdgeInsets.zero,
-          ),
-          IconButton(
-            focusNode: _stopSpeechFocus,
-            tooltip: 'Stop speech',
-            icon: const Icon(Icons.stop_circle_outlined),
-            onPressed: TtsService.stop,
-            visualDensity: VisualDensity.compact,
-            constraints: compact
-                ? const BoxConstraints.tightFor(width: 28, height: 28)
-                : null,
-            padding: EdgeInsets.zero,
-          ),
-          IconButton(
-            focusNode: _repeatHelpFocus,
-            tooltip: 'Repeat session help',
-            icon: const Icon(Icons.help_outline),
-            onPressed: _repeatSessionInstructions,
-            visualDensity: VisualDensity.compact,
-            constraints: compact
-                ? const BoxConstraints.tightFor(width: 28, height: 28)
-                : null,
-            padding: EdgeInsets.zero,
-          ),
-          IconButton(
-            focusNode: _chatTtsFocusNode,
             icon: Icon(
-              _ttsEnabled ? Icons.volume_up : Icons.volume_off,
-              size: UIUtils.iconSize(context, compact ? 14 : 16),
+              Icons.mark_chat_read_outlined,
+              color: UIUtils.textColor,
+              size: UIUtils.iconSize(context, 22),
             ),
-            tooltip: _ttsEnabled
-                ? 'Turn text-to-speech off'
-                : 'Turn text-to-speech on',
-            padding: EdgeInsets.zero,
-            constraints: BoxConstraints.tightFor(
-              width: UIUtils.iconSize(context, compact ? 24 : 28),
-              height: UIUtils.iconSize(context, compact ? 24 : 28),
-            ),
-            onPressed: _toggleTts,
+            onPressed: _readLatestMessage,
+            constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildMessagesList({bool compact = false}) {
-    if (_messages.isEmpty) {
-      return Center(
-        child: Text(
-          'No messages yet',
-          style: TextStyle(
-            color: UIUtils.subtextColor,
-            fontSize: UIUtils.fontSize(context, compact ? 10 : 12),
-          ),
-        ),
-      );
-    }
+  Widget _emptyChat() => Padding(
+    padding: UIUtils.paddingAll(context, 8),
+    child: Text(
+      'No messages yet',
+      textAlign: TextAlign.center,
+      style: _textStyle(color: UIUtils.subtextColor),
+    ),
+  );
 
-    final itemCount = compact
-        ? (_messages.length > 2 ? 2 : _messages.length)
-        : _messages.length;
-    final startIndex = compact ? _messages.length - itemCount : 0;
+  Widget _buildMessagesColumn() {
+    if (_messages.isEmpty) return _emptyChat();
+    return Padding(
+      padding: UIUtils.paddingAll(context, 4),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [for (final msg in _messages) _buildMessageBubble(msg)],
+      ),
+    );
+  }
 
+  Widget _buildMessagesList() {
+    if (_messages.isEmpty) return Center(child: _emptyChat());
     return ListView.builder(
-      controller: compact ? null : _chatScrollController,
-      shrinkWrap: compact,
-      physics: compact ? const NeverScrollableScrollPhysics() : null,
-      padding: UIUtils.paddingAll(context, compact ? 2 : 4),
-      itemCount: itemCount,
-      itemBuilder: (context, index) {
-        final msg = _messages[startIndex + index];
-        final isMe = msg['isMe'] ?? false;
+      controller: _chatScrollController,
+      padding: UIUtils.paddingAll(context, 4),
+      itemCount: _messages.length,
+      itemBuilder: (context, index) => _buildMessageBubble(_messages[index]),
+    );
+  }
 
-        return Align(
+  /// One semantic node per message: "Ravi said: ...".
+  Widget _buildMessageBubble(Map<String, dynamic> msg) {
+    final isMe = msg['isMe'] == true;
+    final sender = isMe ? 'You' : '${msg['sender'] ?? 'Unknown'}';
+    final text = '${msg['text'] ?? ''}';
+    final delivery = msg['delivery'];
+    final foreground = isMe ? UIUtils.onPrimaryColor : UIUtils.textColor;
+    return Semantics(
+      container: true,
+      label: '$sender said: $text${delivery == null ? '' : '. $delivery'}',
+      child: ExcludeSemantics(
+        child: Align(
           alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
           child: Container(
-            margin: EdgeInsets.only(
-              bottom: UIUtils.spacing(context, compact ? 2 : 4),
-            ),
+            margin: EdgeInsets.only(bottom: UIUtils.spacing(context, 4)),
             padding: UIUtils.paddingSymmetric(
               context,
-              horizontal: compact ? 6 : 8,
-              vertical: compact ? 3 : 4,
+              horizontal: 8,
+              vertical: 4,
             ),
             constraints: BoxConstraints(
-              maxWidth: MediaQuery.of(context).size.width * 0.7,
+              maxWidth: MediaQuery.sizeOf(context).width * 0.85,
             ),
             decoration: BoxDecoration(
-              color: isMe
-                  ? (UIUtils.isHighContrast
-                        ? UIUtils.primaryColor
-                        : Colors.teal.shade100)
-                  : (UIUtils.isHighContrast
-                        ? UIUtils.cardColor
-                        : Colors.grey.shade200),
-              borderRadius: BorderRadius.circular(compact ? 8 : 10),
-              border: UIUtils.isHighContrast
-                  ? Border.all(color: UIUtils.accentColor.withOpacity(0.5))
-                  : null,
+              color: isMe ? UIUtils.primaryColor : UIUtils.cardColor,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: UIUtils.cardBorderColor),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  msg['sender'],
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: UIUtils.fontSize(context, compact ? 9 : 10),
-                    color: UIUtils.textColor,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                  sender,
+                  style: _textStyle(color: foreground, weight: FontWeight.bold),
                 ),
-                if (!compact) SizedBox(height: UIUtils.spacing(context, 2)),
-                Text(
-                  msg['text'],
-                  style: TextStyle(
-                    fontSize: UIUtils.fontSize(context, compact ? 10 : 12),
-                    color: UIUtils.textColor,
-                  ),
-                  maxLines: compact ? 1 : null,
-                  overflow: compact ? TextOverflow.ellipsis : null,
-                ),
-                if (msg['delivery'] != null)
-                  Text(
-                    '${msg['delivery']}',
-                    style: TextStyle(
-                      fontSize: UIUtils.fontSize(context, compact ? 10 : 12),
-                      color: UIUtils.textColor,
-                    ),
-                  ),
+                Text(text, style: _textStyle(color: foreground)),
+                if (delivery != null)
+                  Text('$delivery', style: _textStyle(color: foreground)),
               ],
             ),
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 
-  Widget _buildChatInput({bool compact = false}) {
+  Widget _buildChatInput() {
+    final keypadHint = UIUtils.isKeypad(context) && !widget.isTeacher;
     return Container(
-      padding: UIUtils.paddingSymmetric(
-        context,
-        horizontal: compact ? 6 : 8,
-        vertical: compact ? 4 : 8,
-      ),
+      padding: UIUtils.paddingSymmetric(context, horizontal: 8, vertical: 6),
       decoration: BoxDecoration(
         color: UIUtils.cardColor,
-        boxShadow: compact
-            ? null
-            : [
-                BoxShadow(
-                  color: Colors.grey.shade300,
-                  blurRadius: 4,
-                  offset: const Offset(0, -2),
-                ),
-              ],
+        border: Border(top: BorderSide(color: UIUtils.cardBorderColor)),
       ),
       child: SafeArea(
         top: false,
         child: Row(
           children: [
             Expanded(
-              child: SizedBox(
-                height: compact ? 32 : null,
-                child: TextField(
-                  controller: _chatController,
-                  focusNode: _chatFieldFocusNode,
-                  onTap: _focusChat,
-                  decoration: InputDecoration(
-                    hintText: "Message...",
-                    hintStyle: TextStyle(
-                      fontSize: UIUtils.fontSize(context, compact ? 10 : 12),
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    contentPadding: UIUtils.paddingSymmetric(
-                      context,
-                      horizontal: compact ? 8 : 10,
-                      vertical: compact ? 2 : 4,
-                    ),
-                    isDense: true,
+              child: TextField(
+                controller: _chatController,
+                focusNode: _chatFieldFocusNode,
+                onTap: _focusChat,
+                decoration: InputDecoration(
+                  hintText: keypadHint ? '3: chat message' : 'Chat message',
+                  hintStyle: _textStyle(color: UIUtils.subtextColor),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: UIUtils.cardBorderColor),
                   ),
-                  onSubmitted: (_) => _sendMessage(),
-                  style: TextStyle(
-                    fontSize: UIUtils.fontSize(context, compact ? 10 : 12),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(
+                      color: UIUtils.accentColor,
+                      width: 2,
+                    ),
                   ),
-                  maxLines: 1,
+                  contentPadding: UIUtils.paddingSymmetric(
+                    context,
+                    horizontal: 8,
+                    vertical: 6,
+                  ),
+                  isDense: true,
                 ),
+                onSubmitted: (_) => _sendMessage(),
+                style: _textStyle(),
+                maxLines: 1,
               ),
             ),
             SizedBox(width: UIUtils.spacing(context, 4)),
-            SizedBox(
-              width: UIUtils.iconSize(context, compact ? 28 : 30),
-              height: UIUtils.iconSize(context, compact ? 28 : 30),
-              child: DecoratedBox(
-                decoration: const BoxDecoration(
-                  color: Colors.teal,
-                  shape: BoxShape.circle,
-                ),
-                child: IconButton(
-                  focusNode: _chatSendFocusNode,
-                  icon: Icon(
-                    Icons.send,
-                    color: Colors.white,
-                    size: UIUtils.iconSize(context, compact ? 12 : 14),
-                  ),
-                  tooltip: 'Send message',
-                  padding: EdgeInsets.zero,
-                  onPressed: _chatPending ? null : _sendMessage,
-                ),
+            IconButton(
+              focusNode: _chatSendFocusNode,
+              tooltip: 'Send message',
+              icon: Icon(
+                Icons.send,
+                color: UIUtils.onPrimaryColor,
+                size: UIUtils.iconSize(context, 20),
               ),
+              style: IconButton.styleFrom(
+                backgroundColor: UIUtils.primaryColor,
+                disabledBackgroundColor: UIUtils.cardBorderColor,
+              ),
+              constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+              onPressed: _chatPending ? null : _sendMessage,
             ),
           ],
         ),
@@ -3561,88 +3854,87 @@ class _SessionScreenState extends State<SessionScreen>
     if (_currentAudioId == null) return const SizedBox.shrink();
 
     final isPlaying = _isPlayingSessionAudio;
-    final barColor = isPlaying
-        ? Colors.deepPurple.shade700
-        : Colors.grey.shade800;
-    final compact = UIUtils.isTiny(context) || UIUtils.isShort(context);
+    final compact = _audioCompact;
+    final progress = (_audioDuration != null && _audioDuration! > 0)
+        ? (_currentPosition / _audioDuration!).clamp(0.0, 1.0)
+        : 0.0;
+    final time =
+        '${_formatDuration(_currentPosition)} / '
+        '${_audioDuration != null ? _formatDuration(_audioDuration!) : '--:--'}';
+    final stateWords = isPlaying
+        ? (widget.isTeacher ? 'Playing' : 'Playing, synced')
+        : (widget.isTeacher ? 'Paused' : 'Paused by teacher');
+    final title = _currentAudioTitle ?? 'Class recording';
+    final speed = '${_audioSpeed.toStringAsFixed(2)}×';
+
+    Widget transport(
+      FocusNode node,
+      IconData icon,
+      String tooltip,
+      VoidCallback? onPressed, {
+      bool primary = false,
+    }) => IconButton(
+      focusNode: node,
+      tooltip: tooltip,
+      icon: Icon(
+        icon,
+        color: primary ? UIUtils.onPrimaryColor : UIUtils.textColor,
+        size: UIUtils.iconSize(context, primary ? 26 : 22),
+      ),
+      style: primary
+          ? IconButton.styleFrom(backgroundColor: UIUtils.primaryColor)
+          : null,
+      constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+      onPressed: onPressed,
+    );
 
     return Container(
-      padding: EdgeInsets.fromLTRB(12, compact ? 6 : 10, 12, compact ? 4 : 6),
-      color: barColor,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Title + speed + time
-          Row(
-            children: [
-              Icon(
-                isPlaying ? Icons.music_note : Icons.audiotrack,
-                color: Colors.white,
-                size: compact ? 16 : 20,
-              ),
-              SizedBox(width: compact ? 6 : 8),
-              Expanded(
-                child: Text(
-                  _currentAudioTitle ?? 'Audio',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: compact ? 12 : 15,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: compact ? 6 : 8,
-                  vertical: compact ? 2 : 3,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white24,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  '${_audioSpeed.toStringAsFixed(1)}×',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: compact ? 10 : 12,
-                  ),
-                ),
-              ),
-              if (!compact) ...[
-                const SizedBox(width: 8),
-                Text(
-                  '${_formatDuration(_currentPosition)} / '
-                  '${_audioDuration != null ? _formatDuration(_audioDuration!) : "--:--"}',
-                  style: const TextStyle(color: Colors.white70, fontSize: 12),
-                ),
-              ],
-            ],
+      padding: UIUtils.paddingSymmetric(context, horizontal: 8, vertical: 6),
+      decoration: BoxDecoration(
+        color: UIUtils.cardColor,
+        border: Border(
+          bottom: BorderSide(
+            color: isPlaying ? UIUtils.accentColor : UIUtils.cardBorderColor,
+            width: 2,
           ),
-
-          // Seek bar:
-          //   Teacher → interactive slider
-          //   Student → read-only LinearProgressIndicator
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Semantics(
+            container: true,
+            label: 'Class recording: $title. $stateWords. Speed $speed. $time',
+            child: ExcludeSemantics(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: _textStyle(size: 16, weight: FontWeight.bold),
+                  ),
+                  Text(
+                    '$stateWords · $speed · $time',
+                    style: _textStyle(color: UIUtils.subtextColor),
+                  ),
+                ],
+              ),
+            ),
+          ),
           if (widget.isTeacher && !compact)
             Focus(
               focusNode: _seekFocusNode,
               child: ExcludeFocus(
                 child: SliderTheme(
                   data: SliderThemeData(
-                    trackHeight: 3,
-                    thumbShape: const RoundSliderThumbShape(
-                      enabledThumbRadius: 7,
-                    ),
-                    activeTrackColor: Colors.tealAccent,
-                    inactiveTrackColor: Colors.white30,
-                    thumbColor: Colors.tealAccent,
-                    overlayColor: Colors.tealAccent.withOpacity(0.2),
+                    trackHeight: 4,
+                    activeTrackColor: UIUtils.accentColor,
+                    inactiveTrackColor: UIUtils.cardBorderColor,
+                    thumbColor: UIUtils.accentColor,
                   ),
                   child: Slider(
-                    value: (_audioDuration != null && _audioDuration! > 0)
-                        ? (_currentPosition / _audioDuration!).clamp(0.0, 1.0)
-                        : 0.0,
+                    value: progress,
+                    semanticFormatterCallback: (_) => time,
                     onChanged: _audioDuration != null
                         ? (v) => setState(
                             () => _currentPosition = v * _audioDuration!,
@@ -3655,183 +3947,77 @@ class _SessionScreenState extends State<SessionScreen>
                 ),
               ),
             )
-          else if (compact)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 3),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(2),
-                child: LinearProgressIndicator(
-                  value: (_audioDuration != null && _audioDuration! > 0)
-                      ? (_currentPosition / _audioDuration!).clamp(0.0, 1.0)
-                      : 0.0,
-                  backgroundColor: Colors.white24,
-                  color: Colors.tealAccent,
-                  minHeight: 2,
-                ),
-              ),
-            )
           else
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(3),
+              padding: EdgeInsets.symmetric(
+                vertical: UIUtils.spacing(context, 4),
+              ),
+              child: ExcludeSemantics(
                 child: LinearProgressIndicator(
-                  value: (_audioDuration != null && _audioDuration! > 0)
-                      ? (_currentPosition / _audioDuration!).clamp(0.0, 1.0)
-                      : 0.0,
-                  backgroundColor: Colors.white24,
-                  color: Colors.tealAccent,
+                  value: progress,
+                  backgroundColor: UIUtils.cardBorderColor,
+                  color: UIUtils.accentColor,
                   minHeight: 4,
                 ),
               ),
             ),
-
-          // Transport controls (teacher only)
-          if (widget.isTeacher)
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  IconButton(
-                    focusNode: _slowerFocusNode,
-                    icon: Icon(
-                      Icons.fast_rewind,
-                      color: Colors.white70,
-                      size: compact ? 18 : 24,
-                    ),
-                    tooltip: 'Slower',
-                    constraints: compact
-                        ? const BoxConstraints.tightFor(width: 32, height: 30)
-                        : null,
-                    padding: EdgeInsets.zero,
-                    onPressed: widget.isTeacher
-                        ? (_audioSpeed > 0.5
-                              ? () => _changeAudioSpeed(
-                                  (_audioSpeed - 0.25).clamp(0.5, 2.0),
-                                )
-                              : null)
-                        : () => _applyAudioSpeedLocally(
-                            (_audioSpeed - 0.25).clamp(0.25, 3.0),
-                          ),
-                  ),
-                  IconButton(
-                    focusNode: _rewindFocusNode,
-                    icon: Icon(
-                      Icons.replay_10,
-                      color: Colors.white70,
-                      size: compact ? 18 : 24,
-                    ),
-                    tooltip: 'Back 10s',
-                    constraints: compact
-                        ? const BoxConstraints.tightFor(width: 32, height: 30)
-                        : null,
-                    padding: EdgeInsets.zero,
-                    onPressed: () => _seekAudio(
-                      (_currentPosition - 10).clamp(0.0, _audioDuration ?? 0.0),
-                    ),
-                  ),
-                  compact
-                      ? IconButton(
-                          focusNode: _playFocusNode,
-                          icon: Icon(
-                            isPlaying ? Icons.pause_circle : Icons.play_circle,
-                            color: Colors.white,
-                            size: 24,
-                          ),
-                          tooltip: isPlaying ? 'Pause' : 'Play',
-                          constraints: const BoxConstraints.tightFor(
-                            width: 36,
-                            height: 30,
-                          ),
-                          padding: EdgeInsets.zero,
-                          onPressed: isPlaying
-                              ? _pauseSessionAudio
-                              : _playSessionAudio,
+          if (widget.isTeacher) ...[
+            Wrap(
+              alignment: WrapAlignment.center,
+              spacing: UIUtils.spacing(context, 4),
+              runSpacing: UIUtils.spacing(context, 4),
+              children: [
+                transport(
+                  _slowerFocusNode,
+                  Icons.fast_rewind,
+                  'Decrease audio speed',
+                  _audioSpeed > 0.5
+                      ? () => _changeAudioSpeed(
+                          (_audioSpeed - 0.25).clamp(0.5, 2.0),
                         )
-                      : ElevatedButton.icon(
-                          focusNode: _playFocusNode,
-                          onPressed: isPlaying
-                              ? _pauseSessionAudio
-                              : _playSessionAudio,
-                          icon: Icon(
-                            isPlaying ? Icons.pause : Icons.play_arrow,
-                          ),
-                          label: Text(isPlaying ? 'Pause' : 'Play'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: isPlaying
-                                ? Colors.orange
-                                : Colors.green,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 8,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                          ),
-                        ),
-                  IconButton(
-                    focusNode: _forwardFocusNode,
-                    icon: Icon(
-                      Icons.forward_10,
-                      color: Colors.white70,
-                      size: compact ? 18 : 24,
-                    ),
-                    tooltip: 'Forward 10s',
-                    constraints: compact
-                        ? const BoxConstraints.tightFor(width: 32, height: 30)
-                        : null,
-                    padding: EdgeInsets.zero,
-                    onPressed: () => _seekAudio(
-                      (_currentPosition + 10).clamp(0.0, _audioDuration ?? 0.0),
-                    ),
-                  ),
-                  IconButton(
-                    focusNode: _fasterFocusNode,
-                    icon: Icon(
-                      Icons.fast_forward,
-                      color: Colors.white70,
-                      size: compact ? 18 : 24,
-                    ),
-                    tooltip: 'Faster',
-                    constraints: compact
-                        ? const BoxConstraints.tightFor(width: 32, height: 30)
-                        : null,
-                    padding: EdgeInsets.zero,
-                    onPressed: _audioSpeed < 2.0
-                        ? () => _changeAudioSpeed(
-                            (_audioSpeed + 0.25).clamp(0.5, 2.0),
-                          )
-                        : null,
-                  ),
-                ],
-              ),
+                      : null,
+                ),
+                transport(
+                  _rewindFocusNode,
+                  Icons.replay_10,
+                  'Back 10 seconds',
+                  () => _seekBy(-10),
+                ),
+                transport(
+                  _playFocusNode,
+                  isPlaying ? Icons.pause : Icons.play_arrow,
+                  isPlaying ? 'Pause audio' : 'Play audio',
+                  _toggleSessionAudio,
+                  primary: true,
+                ),
+                transport(
+                  _forwardFocusNode,
+                  Icons.forward_10,
+                  'Forward 10 seconds',
+                  () => _seekBy(10),
+                ),
+                transport(
+                  _fasterFocusNode,
+                  Icons.fast_forward,
+                  'Increase audio speed',
+                  _audioSpeed < 2.0
+                      ? () => _changeAudioSpeed(
+                          (_audioSpeed + 0.25).clamp(0.5, 2.0),
+                        )
+                      : null,
+                ),
+              ],
             ),
-          // Student status row
-          if (!widget.isTeacher && !compact)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 4),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    isPlaying ? Icons.hearing : Icons.hearing_disabled,
-                    color: isPlaying ? Colors.tealAccent : Colors.white38,
-                    size: 16,
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    isPlaying ? 'Playing — synced' : 'Paused by teacher',
-                    style: TextStyle(
-                      color: isPlaying ? Colors.tealAccent : Colors.white54,
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
+            if (UIUtils.isKeypad(context))
+              ExcludeSemantics(
+                child: Text(
+                  '$playerRewindKey: back 10 s · $playerPlayPauseKey: play or pause · '
+                  '$playerForwardKey: forward 10 s',
+                  textAlign: TextAlign.center,
+                  style: _textStyle(color: UIUtils.subtextColor),
+                ),
               ),
-            ),
+          ],
         ],
       ),
     );
@@ -3841,279 +4027,186 @@ class _SessionScreenState extends State<SessionScreen>
 
   Widget _buildAudioLibraryPanel() {
     if (!_showAudioPanel) return const SizedBox.shrink();
-    final screenHeight = MediaQuery.of(context).size.height;
+    final stacked = _stackedLayout;
+    final screenHeight = MediaQuery.sizeOf(context).height;
     final panelHeight =
         (screenHeight < 520
                 ? (screenHeight * 0.36).clamp(120.0, 220.0)
                 : (screenHeight * 0.4).clamp(240.0, 320.0))
             .toDouble();
 
-    return Container(
-      height: panelHeight,
-      decoration: BoxDecoration(
-        color: UIUtils.cardColor,
-        border: Border(
-          top: BorderSide(
-            color: UIUtils.isHighContrast
-                ? UIUtils.accentColor
-                : Colors.grey.shade300,
-          ),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
+    final header = Container(
+      padding: UIUtils.paddingAll(context, 6),
+      color: UIUtils.cardColor,
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Panel header
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            color: Colors.teal.shade700,
-            child: Row(
-              children: [
-                const Icon(Icons.library_music, color: Colors.white, size: 18),
-                const SizedBox(width: 8),
-                const Expanded(
-                  child: Text(
-                    'Audio Library',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15,
-                    ),
-                  ),
-                ),
-                // Upload button
-                TextButton.icon(
-                  focusNode: _uploadFocusNode,
-                  onPressed: _isUploadingAudio ? null : _uploadAudio,
-                  icon: _isUploadingAudio
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : const Icon(
-                          Icons.upload_file,
-                          color: Colors.white,
-                          size: 18,
-                        ),
-                  label: Text(
-                    _isUploadingAudio ? 'Uploading…' : 'Upload',
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                ),
-                // Refresh
-                IconButton(
-                  focusNode: _refreshAudioFocusNode,
-                  icon: const Icon(
-                    Icons.refresh,
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                  tooltip: 'Refresh',
-                  onPressed: _loadAudioLibrary,
-                  constraints: const BoxConstraints(),
-                  padding: EdgeInsets.zero,
-                ),
-                IconButton(
-                  focusNode: _closeAudioFocusNode,
-                  icon: const Icon(Icons.close, color: Colors.white, size: 20),
-                  tooltip: 'Close audio library',
-                  onPressed: _toggleAudioPanel,
-                  constraints: const BoxConstraints(),
-                  padding: const EdgeInsets.only(left: 8),
-                ),
-              ],
+          Semantics(
+            header: true,
+            child: Text(
+              'Audio library',
+              style: _textStyle(size: 16, weight: FontWeight.bold),
             ),
           ),
-
-          // Upload progress
-          if (_isUploadingAudio)
-            const LinearProgressIndicator(color: Colors.teal, minHeight: 2),
-
-          // File list
-          Expanded(
-            child: !_audioLibraryLoaded
-                ? const Center(
-                    child: CircularProgressIndicator(color: Colors.teal),
-                  )
-                : _audioFiles.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.audiotrack,
-                          size: 48,
-                          color: UIUtils.subtextColor,
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'No audio files yet',
-                          style: TextStyle(color: UIUtils.subtextColor),
-                        ),
-                        const SizedBox(height: 8),
-                        TextButton.icon(
-                          onPressed: _uploadAudio,
-                          icon: const Icon(Icons.upload_file),
-                          label: const Text('Upload your first file'),
-                        ),
-                      ],
-                    ),
-                  )
-                : ListView.builder(
-                    padding: const EdgeInsets.all(8),
-                    itemCount: _audioFiles.length,
-                    itemBuilder: (_, i) {
-                      final audio = _audioFiles[i];
-                      final audioId = audio['audio_id'] ?? audio['id'] as int;
-                      final title = audio['title'] as String? ?? 'Untitled';
-                      final desc = audio['description'] as String? ?? '';
-                      final isPrev = _previewingAudioId == audioId;
-                      final isActive = _currentAudioId == audioId;
-
-                      return Card(
-                        margin: const EdgeInsets.only(bottom: 8),
-                        elevation: isActive ? 3 : 1,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          side: isActive
-                              ? BorderSide(
-                                  color: Colors.teal.shade400,
-                                  width: 2,
-                                )
-                              : BorderSide.none,
-                        ),
-                        child: ListTile(
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 4,
-                          ),
-                          leading: Container(
-                            width: 40,
-                            height: 40,
-                            decoration: BoxDecoration(
-                              color: isActive
-                                  ? (UIUtils.isHighContrast
-                                        ? UIUtils.backgroundColor
-                                        : Colors.teal.shade50)
-                                  : UIUtils.backgroundColor,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Icon(
-                              isPrev ? Icons.graphic_eq : Icons.audiotrack,
-                              color: isActive
-                                  ? (UIUtils.isHighContrast
-                                        ? UIUtils.accentColor
-                                        : Colors.teal.shade700)
-                                  : UIUtils.subtextColor,
-                              size: 22,
-                            ),
-                          ),
-                          title: Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  title,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              if (isActive)
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 6,
-                                    vertical: 2,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.teal.shade700,
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: const Text(
-                                    'ACTIVE',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 9,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          ),
-                          subtitle: desc.isNotEmpty
-                              ? Text(
-                                  desc,
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: UIUtils.subtextColor,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                )
-                              : null,
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              // Preview (local, not broadcast)
-                              IconButton(
-                                focusNode: _focusNodeFor(
-                                  _previewAudioFocusNodes,
-                                  audioId,
-                                  'audio-preview',
-                                ),
-                                icon: Icon(
-                                  isPrev
-                                      ? Icons.stop_circle
-                                      : Icons.headphones_rounded,
-                                  color: isPrev
-                                      ? Colors.orange
-                                      : Colors.blue.shade600,
-                                  size: 26,
-                                ),
-                                tooltip: isPrev
-                                    ? 'Stop preview (only you)'
-                                    : 'Preview (only you)',
-                                onPressed: () => _previewAudio(audioId, title),
-                                padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(),
-                              ),
-                              const SizedBox(width: 8),
-                              // Select & broadcast to all
-                              IconButton(
-                                focusNode: _focusNodeFor(
-                                  _selectAudioFocusNodes,
-                                  audioId,
-                                  'audio-select',
-                                ),
-                                icon: Icon(
-                                  Icons.campaign_rounded,
-                                  color: Colors.green.shade600,
-                                  size: 26,
-                                ),
-                                tooltip: 'Select & Play for session',
-                                onPressed: () =>
-                                    _selectAndPlayAudio(audioId, title),
-                                padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
+          SizedBox(height: UIUtils.spacing(context, 4)),
+          _buttonGroup(
+            [
+              _labelledButton(
+                node: _uploadFocusNode,
+                icon: Icons.upload_file,
+                text: _isUploadingAudio ? 'Uploading?' : 'Upload audio',
+                semanticLabel: _isUploadingAudio
+                    ? 'Audio upload in progress'
+                    : 'Upload audio',
+                onPressed: _isUploadingAudio ? null : _uploadAudio,
+                stacked: stacked,
+              ),
+              _labelledButton(
+                node: _refreshAudioFocusNode,
+                icon: Icons.refresh,
+                text: 'Refresh',
+                semanticLabel: 'Refresh audio library',
+                onPressed: _loadAudioLibrary,
+                stacked: stacked,
+              ),
+              _labelledButton(
+                node: _closeAudioFocusNode,
+                icon: Icons.close,
+                text: 'Close library',
+                semanticLabel: 'Close audio library',
+                onPressed: _toggleAudioPanel,
+                stacked: stacked,
+              ),
+            ],
+            stacked,
+            alignment: WrapAlignment.start,
           ),
+          if (_isUploadingAudio)
+            Padding(
+              padding: EdgeInsets.only(top: UIUtils.spacing(context, 4)),
+              child: LinearProgressIndicator(
+                color: UIUtils.accentColor,
+                backgroundColor: UIUtils.cardBorderColor,
+                minHeight: 3,
+              ),
+            ),
+        ],
+      ),
+    );
+
+    Widget audioCard(Map<String, dynamic> audio) {
+      final audioId = (audio['audio_id'] ?? audio['id']) as int;
+      final title = audio['title'] as String? ?? 'Untitled';
+      final desc = audio['description'] as String? ?? '';
+      final isPrev = _previewingAudioId == audioId;
+      final isActive = _currentAudioId == audioId;
+      return Card(
+        color: UIUtils.cardColor,
+        margin: EdgeInsets.only(bottom: UIUtils.spacing(context, 6)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+          side: BorderSide(
+            color: isActive ? UIUtils.accentColor : UIUtils.cardBorderColor,
+            width: isActive ? 3 : 1,
+          ),
+        ),
+        child: Padding(
+          padding: UIUtils.paddingAll(context, 6),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                isActive ? '$title (active)' : title,
+                style: _textStyle(weight: FontWeight.bold),
+              ),
+              if (desc.isNotEmpty)
+                Text(desc, style: _textStyle(color: UIUtils.subtextColor)),
+              SizedBox(height: UIUtils.spacing(context, 4)),
+              _buttonGroup(
+                [
+                  _labelledButton(
+                    node: _focusNodeFor(
+                      _previewAudioFocusNodes,
+                      audioId,
+                      'audio-preview',
+                    ),
+                    icon: isPrev ? Icons.stop_circle : Icons.headphones_rounded,
+                    text: isPrev ? 'Stop preview' : 'Preview privately',
+                    semanticLabel: isPrev
+                        ? 'Stop preview of $title'
+                        : 'Preview $title privately',
+                    onPressed: () => _previewAudio(audioId, title),
+                    stacked: stacked,
+                  ),
+                  _labelledButton(
+                    node: _focusNodeFor(
+                      _selectAudioFocusNodes,
+                      audioId,
+                      'audio-select',
+                    ),
+                    icon: Icons.campaign_rounded,
+                    text: 'Play for class',
+                    semanticLabel: 'Select and play $title for the session',
+                    onPressed: () => _selectAndPlayAudio(audioId, title),
+                    stacked: stacked,
+                  ),
+                ],
+                stacked,
+                alignment: WrapAlignment.start,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final Widget list = !_audioLibraryLoaded
+        ? Center(child: CircularProgressIndicator(color: UIUtils.accentColor))
+        : _audioFiles.isEmpty
+        ? Padding(
+            padding: UIUtils.paddingAll(context, 8),
+            child: Text(
+              'No audio files yet. Use Upload audio to add one.',
+              textAlign: TextAlign.center,
+              style: _textStyle(color: UIUtils.subtextColor),
+            ),
+          )
+        : stacked
+        ? Padding(
+            padding: UIUtils.paddingAll(context, 6),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [for (final audio in _audioFiles) audioCard(audio)],
+            ),
+          )
+        : ListView.builder(
+            padding: UIUtils.paddingAll(context, 6),
+            itemCount: _audioFiles.length,
+            itemBuilder: (_, i) => audioCard(_audioFiles[i]),
+          );
+
+    final decoration = BoxDecoration(
+      color: UIUtils.backgroundColor,
+      border: Border(top: BorderSide(color: UIUtils.accentColor, width: 2)),
+    );
+    if (stacked) {
+      // Inside the page scroll: grow with content instead of clipping.
+      return DecoratedBox(
+        decoration: decoration,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [header, list],
+        ),
+      );
+    }
+    return Container(
+      height: panelHeight,
+      decoration: decoration,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          header,
+          Expanded(child: list),
         ],
       ),
     );

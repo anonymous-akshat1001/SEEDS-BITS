@@ -897,6 +897,8 @@ async def _finalize_attempt(
     attempt.percentage_score = _score(attempt.correct_count, attempt.total_questions)
     attempt.status = final_status
     attempt.completed_at = now
+    from analytics_service import month_shift
+    attempt.retention_expires_at = month_shift(now, 18)
 
 
 @router.post("/teacher/quizzes/{quiz_id}/close", response_model=qs.QuizOut)

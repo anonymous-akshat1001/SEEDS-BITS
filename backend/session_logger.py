@@ -2,11 +2,12 @@
 # Comprehensive session logging module for SEEDS-BITS
 # This module provides centralized logging for all session activities
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional, Any
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, func
 import models
+from activity_events import record_event
 
 
 # Event type constants
@@ -48,18 +49,19 @@ class SessionLogger:
         event_type: str,
         user_id: Optional[int] = None,
         details: Optional[dict] = None
-    ) -> models.Log:
+    ) -> Optional[models.Log]:
        
-        log_entry = models.Log(
-            session_id=session_id,
-            user_id=user_id,
-            event_type=event_type,
-            event_details=details or {},
-            created_at=datetime.utcnow()
+        if (event_type, session_id) in db.info.get("audit_events", set()):
+            return None
+        room = await db.get(models.Session, session_id)
+        log_entry = record_event(
+            db, event_type, actor_id=user_id, resource_type="session",
+            resource_id=session_id,
+            owner_teacher_id=room.created_by if room else None,
+            class_id=room.class_id if room else None,
+            subject_id=room.subject_id if room else None, details=details,
         )
-        db.add(log_entry)
         await db.commit()
-        await db.refresh(log_entry)
         return log_entry
     
     
@@ -346,22 +348,16 @@ class SessionLogger:
     ):
         """Log when a teacher uploads an audio file."""
         # Note: session_id is 0 for global uploads not tied to a session
-        log_entry = models.Log(
-            session_id=None,  # Audio uploads are not session-specific
-            user_id=user_id,
-            event_type=EventType.AUDIO_UPLOADED,
-            event_details={
-                "audio_id": audio_id,
-                "title": title,
-                "file_path": file_path,
-                "duration": duration,
-                "uploaded_at": datetime.utcnow().isoformat()
-            },
-            created_at=datetime.utcnow()
+        if (EventType.AUDIO_UPLOADED, audio_id) in db.info.get("audit_events", set()):
+            return None
+        audio = await db.get(models.AudioFile, audio_id)
+        log_entry = record_event(
+            db, EventType.AUDIO_UPLOADED, actor_id=user_id, resource_type="audio",
+            resource_id=audio_id, owner_teacher_id=user_id,
+            class_id=audio.class_id if audio else None,
+            subject_id=audio.subject_id if audio else None,
         )
-        db.add(log_entry)
         await db.commit()
-        await db.refresh(log_entry)
         return log_entry
 
 
@@ -373,7 +369,10 @@ async def get_session_logs(
     limit: int = 100
 ) -> list[models.Log]:
    
-    query = select(models.Log).filter(models.Log.session_id == session_id)
+    query = select(models.Log).filter(
+        models.Log.session_id == session_id,
+        models.Log.created_at > datetime.utcnow() - timedelta(days=30),
+    )
     
     if event_type:
         query = query.filter(models.Log.event_type == event_type)
@@ -393,7 +392,10 @@ async def get_user_session_activity(
     limit: int = 100
 ) -> list[models.Log]:
     
-    query = select(models.Log).filter(models.Log.user_id == user_id)
+    query = select(models.Log).filter(
+        models.Log.user_id == user_id,
+        models.Log.created_at > datetime.utcnow() - timedelta(days=30),
+    )
     
     if session_id:
         query = query.filter(models.Log.session_id == session_id)
@@ -405,30 +407,28 @@ async def get_user_session_activity(
 
 
 async def get_session_summary(db: AsyncSession, session_id: int) -> dict:
-    
-    logs = await get_session_logs(db, session_id, limit=1000)
-    
-    # Count events by type
-    event_counts = {}
-    participants_joined = set()
-    participants_left = set()
-    
-    for log in logs:
-        event_counts[log.event_type] = event_counts.get(log.event_type, 0) + 1
-        
-        if log.event_type == EventType.PARTICIPANT_JOINED and log.event_details:
-            participants_joined.add(log.event_details.get("participant_id"))
-        elif log.event_type == EventType.PARTICIPANT_LEFT and log.event_details:
-            participants_left.add(log.event_details.get("participant_id"))
-    
+    filters = (models.Log.session_id == session_id,
+               models.Log.created_at > datetime.utcnow() - timedelta(days=30))
+    event_counts = dict((await db.execute(
+        select(models.Log.event_type, func.count()).where(*filters).group_by(models.Log.event_type)
+    )).all())
+    first, last = (await db.execute(select(
+        func.min(models.Log.created_at), func.max(models.Log.created_at),
+    ).where(*filters))).one()
+    participants = await db.scalar(select(func.count(func.distinct(models.AttendanceJoin.student_id)))
+        .join(models.SessionRun).where(
+            models.SessionRun.session_id == session_id,
+            (models.SessionRun.ended_at.is_(None)) | (models.SessionRun.expires_at > datetime.utcnow()),
+        ))
     return {
         "session_id": session_id,
-        "total_events": len(logs),
+        "total_events": sum(event_counts.values()),
         "event_counts": event_counts,
-        "unique_participants_joined": len(participants_joined),
-        "participants_left": len(participants_left),
-        "first_event": logs[-1].created_at.isoformat() if logs else None,
-        "last_event": logs[0].created_at.isoformat() if logs else None
+        "unique_participants_joined": participants,
+        "participants_left": event_counts.get(EventType.PARTICIPANT_LEFT, 0),
+        "first_event": first.isoformat() if first else None,
+        "last_event": last.isoformat() if last else None,
+        "coverage": "Events: 30 days; verified attendance since collection was enabled.",
     }
 
 

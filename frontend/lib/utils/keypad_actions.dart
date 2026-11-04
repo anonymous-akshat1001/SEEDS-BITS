@@ -7,7 +7,35 @@
 ///
 /// The actual callbacks are defined in each screen widget (they need access
 /// to setState, Navigator, etc.) — this file only stores human-readable labels.
+///
+/// App-wide key grammar (blind users learn keys by touch, so these never move):
+///   0  Back, cancel or leave. Leaving a class or logging out always asks to
+///      confirm first. Screens that do not map 0 still go back.
+///   *  Help: repeat where you are and what the keys do.
+///   #  Stop app speech. Never navigates.
+///   Audio players are built around the raised dot on 5:
+///   4  Back 10 seconds   5  Play or pause   6  Forward 10 seconds
+///   7  Slower            9  Faster
+///   Turning app speech off is only offered in Settings, never as a shortcut.
 library;
+
+// ─── Player keys shared by every audio screen ───────────────────────────────
+const int playerRewindKey = 4;
+const int playerPlayPauseKey = 5;
+const int playerForwardKey = 6;
+const int playerSlowerKey = 7;
+const int playerFasterKey = 9;
+
+const Map<int, String> playerTransportKeyLabels = {
+  playerRewindKey: 'Back 10 seconds',
+  playerPlayPauseKey: 'Play or pause',
+  playerForwardKey: 'Forward 10 seconds',
+};
+
+const Map<int, String> playerSpeedKeyLabels = {
+  playerSlowerKey: 'Slower',
+  playerFasterKey: 'Faster',
+};
 
 // ─── Welcome Screen ─────────────────────────────────────────────────────────
 const Map<int, String> welcomeKeyLabels = {
@@ -46,7 +74,7 @@ const Map<int, String> settingsKeyLabels = {
 
 // ─── Student Dashboard ──────────────────────────────────────────────────────
 const Map<int, String> studentDashboardKeyLabels = {
-  0: 'Log out',
+  0: 'Log out, asks to confirm',
   1: 'Refresh Sessions',
   2: 'Search Sessions by Name or ID',
   3: 'Recorded Audio Library',
@@ -56,7 +84,7 @@ const Map<int, String> studentDashboardKeyLabels = {
 
 // ─── Teacher Dashboard ──────────────────────────────────────────────────────
 const Map<int, String> teacherDashboardKeyLabels = {
-  0: 'Log out',
+  0: 'Log out, asks to confirm',
   1: 'Refresh Sessions',
   2: 'Create Session',
   3: 'Recorded Audio Library',
@@ -68,7 +96,7 @@ const Map<int, String> teacherDashboardKeyLabels = {
 };
 
 const Map<int, String> adminDashboardKeyLabels = {
-  0: 'Log Out',
+  0: 'Log out, asks to confirm',
   1: 'Refresh',
   2: 'Search Users',
   3: 'Change Account Type Filter',
@@ -102,34 +130,28 @@ const Map<int, String> quizAttemptKeyLabels = {
 
 // ─── Session Screen (Student) ───────────────────────────────────────────────
 const Map<int, String> sessionStudentKeyLabels = {
-  1: 'Toggle Mute',
-  2: 'Raise or Lower Hand',
-  3: 'Toggle Text to Speech',
-  4: 'Edit Chat Message',
+  1: 'Mute or unmute',
+  2: 'Raise or lower hand',
+  3: 'Go to chat message',
+  0: 'Leave session, asks to confirm',
 };
 
 // ─── Session Screen (Teacher) ───────────────────────────────────────────────
 const Map<int, String> sessionTeacherKeyLabels = {
-  1: 'Toggle Mute',
-  2: 'Raise or Lower Hand',
-  3: 'Invite Students',
-  4: 'Audio Library',
-  5: 'Upload Audio',
-  6: 'Refresh Audio Library',
-  7: 'Back Ten Seconds',
-  8: 'Play or Pause Audio',
-  9: 'Forward Ten Seconds',
-  0: 'End Session',
+  1: 'Mute or unmute',
+  2: 'Raise or lower hand',
+  3: 'Invite students',
+  ...playerTransportKeyLabels,
+  8: 'Open or close audio library',
+  0: 'End session, asks to confirm',
 };
 
 // ─── Simple Session Screen ──────────────────────────────────────────────────
 const Map<int, String> simpleSessionKeyLabels = {
-  1: 'Mute or Unmute',
-  2: 'Raise or Lower Hand',
-  3: 'Toggle T T S',
-  4: 'Leave Session',
-  7: 'Slow Down Audio',
-  9: 'Speed Up Audio',
+  1: 'Mute or unmute',
+  2: 'Raise or lower hand',
+  ...playerSpeedKeyLabels,
+  0: 'Leave session, asks to confirm',
 };
 
 // ─── Offline Audio Library (both roles) ─────────────────────────────────────
@@ -143,27 +165,23 @@ const Map<int, String> offlineAudioLibraryKeyLabels = {
 
 // ─── Class Audio Screen (Student) ───────────────────────────────────────────
 const Map<int, String> classAudioStudentKeyLabels = {
-  1: 'Refresh Files',
-  2: 'Play or Pause',
-  3: 'Stop Playback',
-  4: 'Toggle T T S',
-  6: 'Next Subject Filter',
-  7: 'Slow Down Audio',
-  9: 'Speed Up Audio',
-  0: 'Go Back',
+  1: 'Refresh files',
+  2: 'Next subject filter',
+  ...playerTransportKeyLabels,
+  ...playerSpeedKeyLabels,
+  8: 'Stop playback',
+  0: 'Go back',
 };
 
 // ─── Class Audio Screen (Teacher) ───────────────────────────────────────────
 const Map<int, String> classAudioTeacherKeyLabels = {
-  1: 'Refresh Files',
-  2: 'Add Audio File',
-  3: 'Play or Pause',
-  4: 'Stop Playback',
-  5: 'Toggle T T S',
-  6: 'Next Subject Filter',
-  7: 'Slow Down Audio',
-  9: 'Speed Up Audio',
-  0: 'Go Back',
+  1: 'Refresh files',
+  2: 'Next subject filter',
+  3: 'Add audio file',
+  ...playerTransportKeyLabels,
+  ...playerSpeedKeyLabels,
+  8: 'Stop playback',
+  0: 'Go back',
 };
 
 // ─── Add Audio Options Screen (Teacher) ──────────────────────────────────

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_service.dart';
@@ -8,6 +10,7 @@ import 'playlist_screens.dart';
 import 'quiz_screens.dart';
 import 'package:flutter/services.dart';
 import '../utils/ui_utils.dart';
+import '../widgets/accessible_tile.dart';
 import '../widgets/key_instruction_wrapper.dart';
 import '../utils/keypad_actions.dart';
 import '../services/auth_session_service.dart';
@@ -25,8 +28,10 @@ class StudentDashboard extends StatefulWidget {
 
 // Define the state class where logic resides
 class _StudentDashboardState extends State<StudentDashboard> {
-  // input/control the session id variable
+  // input/control the session search text
   final sessionCtrl = TextEditingController();
+  // Session number typed on the keypad (digits only).
+  final _sessionIdCtrl = TextEditingController();
   // Stores list of active sessions from backend
   List sessions = [];
   // Stores logged-in user’s ID, the ? means that it can be NULL
@@ -37,9 +42,17 @@ class _StudentDashboardState extends State<StudentDashboard> {
   bool _isRefreshing = false;
   String? _className;
   int? _selectedSubjectId;
+  String? _statusMessage;
+  bool _statusIsError = false;
+  Timer? _idSearchTimer;
+  Timer? _summaryTimer;
+  VoidCallback? _pendingSummaryListener;
   final KeypadNavigationController _keypadController =
       KeypadNavigationController();
   final FocusNode _refreshFocusNode = FocusNode(debugLabel: 'student-refresh');
+  final FocusNode _sessionIdFocusNode = FocusNode(
+    debugLabel: 'student-session-number',
+  );
   final FocusNode _inputFocusNode = FocusNode(debugLabel: 'student-search');
   final FocusNode _joinFocusNode = FocusNode(
     debugLabel: 'student-search-results',
@@ -74,6 +87,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
         prefs.getString('name') ??
         'Student $id';
 
+    if (!mounted) return;
     // saves data into state and rebuild UI
     setState(() {
       currentUserId = id;
@@ -88,19 +102,64 @@ class _StudentDashboardState extends State<StudentDashboard> {
 
     // Load session only if user exists
     if (currentUserId != null) {
-      await _loadSessions();
+      await _loadSessions(announce: false);
     }
 
     // data loading finished and the loading spinner is removed
     if (!mounted) return;
     setState(() => isLoading = false);
+    // The screen's own instructions play first; then say what loaded.
+    _announceAfterInstructions(_statusMessage ?? _sessionSummary());
+  }
+
+  String _sessionSummary() {
+    final count = _filteredSessions.length;
+    if (sessions.isEmpty) return 'No live sessions right now. Press 1 to refresh.';
+    if (count == 0) return 'No sessions match your filter.';
+    return '$count ${count == 1 ? 'session' : 'sessions'} available. '
+        'Use down to browse.';
+  }
+
+  void _announceAfterInstructions(String message) {
+    _summaryTimer?.cancel();
+    _summaryTimer = Timer(const Duration(milliseconds: 600), () {
+      if (!mounted) return;
+      if (!TtsService.speaking.value) {
+        TtsService.speak(message);
+        return;
+      }
+      void listener() {
+        if (TtsService.speaking.value) return;
+        TtsService.speaking.removeListener(listener);
+        _pendingSummaryListener = null;
+        if (mounted) TtsService.speak(message);
+      }
+
+      _pendingSummaryListener = listener;
+      TtsService.speaking.addListener(listener);
+    });
+  }
+
+  /// Shows a short status line and speaks it once (TtsService also reaches
+  /// TalkBack, so no SnackBar is used for the same text).
+  void _showStatus(String message, {bool error = false}) {
+    if (!mounted) return;
+    setState(() {
+      _statusMessage = message;
+      _statusIsError = error;
+    });
+    TtsService.speak(
+      message,
+      priority: error ? SpeechPriority.critical : SpeechPriority.requested,
+    );
   }
 
   // Fetch active sessions from backend
-  Future<void> _loadSessions() async {
+  Future<void> _loadSessions({bool announce = true}) async {
+    if (_isRefreshing) return;
     final previousFocus = FocusManager.instance.primaryFocus;
     if (mounted) setState(() => _isRefreshing = true);
-    await TtsService.speak('Refreshing sessions');
+    if (announce) await TtsService.speak('Refreshing sessions');
     final result = await ApiService.getResult(
       '/sessions/active',
       useAuth: true,
@@ -117,41 +176,41 @@ class _StudentDashboardState extends State<StudentDashboard> {
           _selectedSubjectId = null;
         }
         _isRefreshing = false;
+        _statusMessage = null;
       });
-      await TtsService.speak(
-        sessions.isEmpty
-            ? 'No active sessions found'
-            : '${sessions.length} active sessions found',
-      );
+      if (announce) await TtsService.speak(_sessionSummary());
     } else {
-      setState(() => _isRefreshing = false);
-      final message = result.failure!.message;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(message)));
-      await TtsService.speak(message);
+      setState(() {
+        _isRefreshing = false;
+        _statusMessage =
+            '${result.failure!.message} Press 1 to try again.';
+        _statusIsError = true;
+      });
+      if (announce) {
+        await TtsService.speak(
+          _statusMessage!,
+          priority: SpeechPriority.critical,
+        );
+      }
     }
-    if (previousFocus != null && previousFocus.canRequestFocus)
+    if (previousFocus != null &&
+        previousFocus.context != null &&
+        previousFocus.canRequestFocus) {
       previousFocus.requestFocus();
+    }
   }
 
   // Join a session using form data
   Future<void> joinSession(int sessionId) async {
     if (currentUserId == null) {
-      TtsService.speak("User not logged in");
-      // Visual feedback, appears at bottom
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Please log in first")));
+      _showStatus('You are not logged in. Please log in first.', error: true);
       return;
     }
 
     if (currentUserName == null) {
-      TtsService.speak("User name not found");
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("User name not found. Please log in again."),
-        ),
+      _showStatus(
+        'User name not found. Please log in again.',
+        error: true,
       );
       return;
     }
@@ -196,34 +255,28 @@ class _StudentDashboardState extends State<StudentDashboard> {
           });
         }
       } else {
-        final message = result.failure!.message;
-        await TtsService.speak(message);
-        if (mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(message)));
-        }
+        _showStatus(result.failure!.message, error: true);
       }
     } catch (e) {
-      final message = ApiService.mapFailure(
-        error: e,
-        context: 'session join',
-      ).message;
-      await TtsService.speak(message);
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(message)));
-      }
+      _showStatus(
+        ApiService.mapFailure(error: e, context: 'session join').message,
+        error: true,
+      );
     }
   }
 
   // Called when the screen is destroyed
   @override
   void dispose() {
+    _idSearchTimer?.cancel();
+    _summaryTimer?.cancel();
+    final listener = _pendingSummaryListener;
+    if (listener != null) TtsService.speaking.removeListener(listener);
     // Frees memory - crictical for low RAM devices like button phones
     sessionCtrl.dispose();
+    _sessionIdCtrl.dispose();
     _refreshFocusNode.dispose();
+    _sessionIdFocusNode.dispose();
     _inputFocusNode.dispose();
     _joinFocusNode.dispose();
     _libraryFocusNode.dispose();
@@ -265,16 +318,21 @@ class _StudentDashboardState extends State<StudentDashboard> {
 
   void _focusSessionInput() {
     _keypadController.exitTextEditing();
-    _inputFocusNode.requestFocus();
+    _sessionIdFocusNode.requestFocus();
     TtsService.speak(
-      'Session search. Press OK to edit, then enter a session name or ID. '
-      'Use up or down to leave the field and browse results.',
+      'Session search. Type a session number with the keypad, or move down '
+      'to search by name. Press OK to edit. Use down to browse results.',
     );
   }
 
   List get _filteredSessions {
     final bySubject = filterSessionsBySubject(sessions, _selectedSubjectId);
-    return filterSessionsByNameOrId(bySubject, sessionCtrl.text);
+    final byName = filterSessionsByNameOrId(bySubject, sessionCtrl.text);
+    final id = _sessionIdCtrl.text.trim();
+    if (id.isEmpty) return byName;
+    return byName
+        .where((session) => '${(session as Map)['session_id']}' == id)
+        .toList();
   }
 
   List<Map<String, dynamic>> get _availableSubjects {
@@ -291,6 +349,28 @@ class _StudentDashboardState extends State<StudentDashboard> {
     return byId.values.toList()..sort(
       (a, b) => '${a['subject_name']}'.compareTo('${b['subject_name']}'),
     );
+  }
+
+  /// Called as digits are typed: waits for a pause, then says whether the
+  /// session number exists so the user can move down and press OK to join.
+  void _onSessionIdChanged(String _) {
+    setState(() {});
+    _idSearchTimer?.cancel();
+    _idSearchTimer = Timer(const Duration(milliseconds: 900), () {
+      if (!mounted) return;
+      final id = _sessionIdCtrl.text.trim();
+      if (id.isEmpty) {
+        TtsService.speak('Session number cleared. ${_sessionSummary()}');
+        return;
+      }
+      final matches = _filteredSessions;
+      TtsService.speak(
+        matches.isEmpty
+            ? 'No live session number $id.'
+            : 'Found: ${_sessionLabel(matches.first as Map)}. '
+                  'Press down, then OK.',
+      );
+    });
   }
 
   void _showSearchResults() {
@@ -314,6 +394,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
     }
   }
 
+  // Asks "Log out of SEEDS?" with a keypad confirmation dialog first.
   Future<void> _logout() => AuthSessionService.logoutFrom(context);
 
   void _cycleSubjectFilter(int direction) {
@@ -334,11 +415,35 @@ class _StudentDashboardState extends State<StudentDashboard> {
           );
     TtsService.speak(
       selected == null
-          ? 'Showing all subjects'
-          : 'Showing ${selected['subject_name']} sessions',
+          ? 'Showing all subjects. ${_sessionSummary()}'
+          : 'Showing ${selected['subject_name']} sessions. ${_sessionSummary()}',
     );
   }
 
+  int _sessionIdOf(Map session) =>
+      int.tryParse((session['session_id'] ?? '').toString()) ?? 0;
+
+  /// Concise spoken label, most important first:
+  /// "Science, Class 6, Teacher Mrs Rao, live now, session 12".
+  String _sessionLabel(Map session) {
+    final title = '${session['title'] ?? 'Untitled session'}'.trim();
+    final subject = session['subject_name']?.toString().trim();
+    final className = (session['class_name'] ?? _className)?.toString().trim();
+    final teacher = session['teacher_name']?.toString().trim();
+    return [
+      title,
+      if (subject != null &&
+          subject.isNotEmpty &&
+          subject.toLowerCase() != title.toLowerCase())
+        subject,
+      if (className != null && className.isNotEmpty) className,
+      if (teacher != null && teacher.isNotEmpty) 'Teacher $teacher',
+      'live now',
+      'session ${_sessionIdOf(session)}',
+    ].join(', ');
+  }
+
+  // Same order as the controls appear on screen, top to bottom.
   List<KeypadFocusTarget> _dashboardFocusTargets() {
     final selectedSubject = _selectedSubjectId == null
         ? null
@@ -354,18 +459,51 @@ class _StudentDashboardState extends State<StudentDashboard> {
         isEnabled: () => !_isRefreshing,
       ),
       KeypadFocusTarget(
+        node: _sessionIdFocusNode,
+        label: _sessionIdCtrl.text.isEmpty
+            ? 'Session number field. Type a number to find a session'
+            : 'Session number field, ${_sessionIdCtrl.text}',
+        isTextField: true,
+      ),
+      KeypadFocusTarget(
+        node: _inputFocusNode,
+        label: 'Search sessions by name',
+        isTextField: true,
+      ),
+      KeypadFocusTarget(
+        node: _joinFocusNode,
+        label: 'Show matching sessions',
+        onActivate: _showSearchResults,
+      ),
+      KeypadFocusTarget(
         node: _subjectFocusNode,
         label: selectedSubject == null
-            ? 'All subjects. Use left or right to change'
-            : 'Subject ${selectedSubject['subject_name']}. Use left or right to change',
+            ? 'Subject filter: all subjects. Use left or right to change'
+            : 'Subject filter: ${selectedSubject['subject_name']}. Use left or right to change',
         onActivate: () => _cycleSubjectFilter(1),
         onDecrease: () => _cycleSubjectFilter(-1),
         onIncrease: () => _cycleSubjectFilter(1),
       ),
+    ];
+    for (final session in _filteredSessions) {
+      final id = _sessionIdOf(session as Map);
+      final node = _sessionFocusNodes.putIfAbsent(
+        id,
+        () => FocusNode(debugLabel: 'student-session-$id'),
+      );
+      targets.add(
+        KeypadFocusTarget(
+          node: node,
+          label: '${_sessionLabel(session)}. Press OK to join',
+          onActivate: () => joinSession(id),
+        ),
+      );
+    }
+    targets.addAll([
       KeypadFocusTarget(
-        node: _inputFocusNode,
-        label: 'Search sessions by name or ID',
-        isTextField: true,
+        node: _libraryFocusNode,
+        label: 'Recorded audio library',
+        onActivate: _openOfflineAudioLibrary,
       ),
       KeypadFocusTarget(
         node: _playlistsFocusNode,
@@ -378,38 +516,11 @@ class _StudentDashboardState extends State<StudentDashboard> {
         onActivate: _openQuizzes,
       ),
       KeypadFocusTarget(
-        node: _joinFocusNode,
-        label: 'Show matching sessions',
-        onActivate: _showSearchResults,
-      ),
-      KeypadFocusTarget(
-        node: _libraryFocusNode,
-        label: 'Offline audio library',
-        onActivate: _openOfflineAudioLibrary,
-      ),
-    ];
-    for (final session in _filteredSessions) {
-      final id = int.tryParse((session['session_id'] ?? '').toString()) ?? 0;
-      final node = _sessionFocusNodes.putIfAbsent(
-        id,
-        () => FocusNode(debugLabel: 'student-session-$id'),
-      );
-      targets.add(
-        KeypadFocusTarget(
-          node: node,
-          label:
-              'Session $id, ${session['title'] ?? 'untitled'}, ${session['subject_name'] ?? 'subject'}, teacher ${session['teacher_name'] ?? 'unknown'}. Press OK to join',
-          onActivate: () => joinSession(id),
-        ),
-      );
-    }
-    targets.add(
-      KeypadFocusTarget(
         node: _logoutFocusNode,
-        label: 'Log out',
+        label: 'Log out, asks to confirm',
         onActivate: _logout,
       ),
-    );
+    ]);
     return targets;
   }
 
@@ -423,11 +534,12 @@ class _StudentDashboardState extends State<StudentDashboard> {
           if (!didPop) SystemNavigator.pop();
         },
         child: Scaffold(
+          backgroundColor: UIUtils.backgroundColor,
           body: Center(
             child: Semantics(
               liveRegion: true,
               label: 'Student dashboard is loading',
-              child: const CircularProgressIndicator(),
+              child: CircularProgressIndicator(color: UIUtils.accentColor),
             ),
           ),
         ),
@@ -437,7 +549,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
     return KeypadInstructionWrapper(
       screenName: 'Student Dashboard',
       navigationSections:
-          'class information, active sessions, recorded lessons, playlists, quizzes, and settings',
+          'refresh, session search, live sessions, recorded lessons, playlists, quizzes, and log out',
       labels: studentDashboardKeyLabels,
       actions: {
         0: _logout,
@@ -459,49 +571,115 @@ class _StudentDashboardState extends State<StudentDashboard> {
     );
   }
 
+  OutlineInputBorder _border(Color color, double width) => OutlineInputBorder(
+    borderRadius: BorderRadius.circular(10),
+    borderSide: BorderSide(color: color, width: width),
+  );
+
+  InputDecoration _fieldDecoration(
+    BuildContext context, {
+    required String label,
+    required IconData icon,
+  }) => InputDecoration(
+    label: Text(label),
+    labelStyle: TextStyle(
+      fontSize: UIUtils.fontSize(context, 14),
+      color: UIUtils.subtextColor,
+    ),
+    filled: true,
+    fillColor: UIUtils.backgroundColor,
+    border: _border(UIUtils.cardBorderColor, 1.5),
+    enabledBorder: _border(UIUtils.cardBorderColor, 1.5),
+    focusedBorder: _border(UIUtils.accentColor, 3),
+    prefixIcon: ExcludeSemantics(
+      child: Icon(
+        icon,
+        size: UIUtils.iconSize(context, 18),
+        color: UIUtils.accentColor,
+      ),
+    ),
+    contentPadding: UIUtils.paddingSymmetric(
+      context,
+      horizontal: 12,
+      vertical: 12,
+    ),
+    isDense: true,
+  );
+
+  Widget _navButton(
+    BuildContext context, {
+    required FocusNode focusNode,
+    required VoidCallback onPressed,
+    required IconData icon,
+    required String text,
+  }) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: UIUtils.spacing(context, 8)),
+      child: OutlinedButton.icon(
+        focusNode: focusNode,
+        onPressed: onPressed,
+        icon: ExcludeSemantics(
+          child: Icon(icon, size: UIUtils.iconSize(context, 22)),
+        ),
+        label: Text(
+          text,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: UIUtils.fontSize(context, 16),
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: UIUtils.textColor,
+          side: BorderSide(color: UIUtils.cardBorderColor, width: 1.5),
+          padding: UIUtils.paddingSymmetric(
+            context,
+            horizontal: 8,
+            vertical: 12,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildScaffold(BuildContext context) {
     final bool tiny = UIUtils.isTiny(context);
     final bool compact = tiny || UIUtils.isShort(context);
     final bool largeText = MediaQuery.textScalerOf(context).scale(1) > 1.15;
+    final filtered = _filteredSessions;
+    final cardDecoration = BoxDecoration(
+      color: UIUtils.cardColor,
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(color: UIUtils.cardBorderColor, width: 1.5),
+    );
 
     return Scaffold(
+      backgroundColor: UIUtils.backgroundColor,
       appBar: AppBar(
         // Screen Title
         title: UIUtils.useStackedLayout(context)
             ? null
-            : Text(
-                "Student Dashboard",
-                style: TextStyle(
-                  fontSize: UIUtils.fontSize(context, 18),
-                  fontWeight: FontWeight.w600,
+            : Semantics(
+                header: true,
+                child: Text(
+                  'Student Dashboard',
+                  style: TextStyle(
+                    fontSize: UIUtils.fontSize(context, 18),
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
         backgroundColor: UIUtils.cardColor,
         foregroundColor: UIUtils.textColor,
         elevation: 0,
-        toolbarHeight: tiny ? 40 : null,
-        // Right side appbar actions
+        shape: Border(
+          bottom: BorderSide(color: UIUtils.cardBorderColor, width: 1.5),
+        ),
+        toolbarHeight: tiny ? 44 : null,
         actions: [
-          if (currentUserName != null && !tiny)
-            // show name of current logged in user
-            Padding(
-              padding: UIUtils.paddingSymmetric(
-                context,
-                horizontal: 8,
-                vertical: 8,
-              ),
-              child: Center(
-                child: Text(
-                  currentUserName!,
-                  style: TextStyle(
-                    fontSize: UIUtils.fontSize(context, 14),
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-            ),
-
-          // Refresh Button
           IconButton(
             focusNode: _refreshFocusNode,
             icon: Icon(
@@ -509,32 +687,9 @@ class _StudentDashboardState extends State<StudentDashboard> {
               size: UIUtils.iconSize(context, 22),
               color: UIUtils.accentColor,
             ),
-            tooltip: "Refresh Sessions",
-            onPressed: () {
-              TtsService.speak("Refreshing sessions");
-              _loadSessions();
-            },
+            tooltip: '1: Refresh sessions',
+            onPressed: _isRefreshing ? null : _loadSessions,
           ),
-          IconButton(
-            focusNode: _logoutFocusNode,
-            tooltip: 'Log out',
-            onPressed: _logout,
-            icon: Icon(Icons.logout, color: UIUtils.accentColor),
-          ),
-          if (UIUtils.isKeypad(context))
-            Padding(
-              padding: const EdgeInsets.only(right: 12.0),
-              child: Center(
-                child: Text(
-                  "1",
-                  style: TextStyle(
-                    color: UIUtils.accentColor,
-                    fontSize: UIUtils.fontSize(context, 14),
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
         ],
       ),
 
@@ -542,8 +697,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
         // prevents overflow on smaller screens
         child: SingleChildScrollView(
           child: Padding(
-            padding: UIUtils.paddingAll(context, 12),
-            // Column defines vertical alignment
+            padding: UIUtils.paddingAll(context, tiny ? 8 : 12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -552,32 +706,194 @@ class _StudentDashboardState extends State<StudentDashboard> {
                     header: true,
                     child: Text(
                       'Student Dashboard',
-                      style: Theme.of(context).textTheme.headlineSmall,
+                      style: TextStyle(
+                        fontSize: UIUtils.fontSize(context, 20),
+                        fontWeight: FontWeight.bold,
+                        color: UIUtils.textColor,
+                      ),
                     ),
                   ),
+                // Welcome and class (plain text, not a keypad stop)
+                Container(
+                  margin: EdgeInsets.only(top: UIUtils.spacing(context, 6)),
+                  padding: UIUtils.paddingAll(context, 12),
+                  decoration: cardDecoration,
+                  child: MergeSemantics(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Welcome, ${currentUserName ?? 'Student'}',
+                          style: TextStyle(
+                            fontSize: UIUtils.fontSize(context, 18),
+                            fontWeight: FontWeight.bold,
+                            color: UIUtils.textColor,
+                          ),
+                        ),
+                        SizedBox(height: UIUtils.spacing(context, 4)),
+                        Text(
+                          'Class: ${_className ?? 'assignment pending'}',
+                          style: TextStyle(
+                            fontSize: UIUtils.fontSize(context, 16),
+                            color: UIUtils.subtextColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                SizedBox(height: UIUtils.spacing(context, 10)),
+
                 if (_isRefreshing) ...[
                   Semantics(
                     liveRegion: true,
                     label: 'Refreshing sessions',
-                    child: LinearProgressIndicator(),
+                    child: LinearProgressIndicator(
+                      color: UIUtils.accentColor,
+                      backgroundColor: UIUtils.cardColor,
+                    ),
                   ),
                   SizedBox(height: UIUtils.spacing(context, 8)),
                 ],
-                Card(
-                  child: ListTile(
-                    leading: const Icon(Icons.class_outlined),
-                    title: Text(_className ?? 'Class assignment pending'),
-                    subtitle: const Text('Your assigned class'),
+
+                // Live sessions header with a visible count in words.
+                Semantics(
+                  header: true,
+                  child: Text(
+                    filtered.isEmpty
+                        ? 'Live sessions: none'
+                        : 'Live sessions: ${filtered.length}',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: UIUtils.fontSize(context, 18),
+                      color: UIUtils.textColor,
+                    ),
                   ),
                 ),
+                if (_statusMessage != null) ...[
+                  SizedBox(height: UIUtils.spacing(context, 6)),
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: _statusIsError
+                            ? UIUtils.errorColor
+                            : UIUtils.cardBorderColor,
+                        width: 2,
+                      ),
+                    ),
+                    child: Text(
+                      _statusMessage!,
+                      style: TextStyle(
+                        fontSize: UIUtils.fontSize(context, 16),
+                        color: _statusIsError
+                            ? UIUtils.errorColor
+                            : UIUtils.textColor,
+                      ),
+                    ),
+                  ),
+                ],
+                SizedBox(height: UIUtils.spacing(context, 8)),
+
+                // Find a session: by number (keypad digits) or by name.
+                TextField(
+                  controller: _sessionIdCtrl,
+                  focusNode: _sessionIdFocusNode,
+                  onTap: () =>
+                      _keypadController.enterTextEditing(_sessionIdFocusNode),
+                  onChanged: _onSessionIdChanged,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  style: TextStyle(
+                    fontSize: UIUtils.fontSize(context, 16),
+                    color: UIUtils.textColor,
+                  ),
+                  decoration: _fieldDecoration(
+                    context,
+                    label: '2: Session number',
+                    icon: Icons.pin_outlined,
+                  ),
+                ),
+                SizedBox(height: UIUtils.spacing(context, 8)),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: sessionCtrl,
+                        focusNode: _inputFocusNode,
+                        onTap: () =>
+                            _keypadController.enterTextEditing(_inputFocusNode),
+                        onChanged: (_) => setState(() {}),
+                        onSubmitted: (_) => _showSearchResults(),
+                        keyboardType: TextInputType.text,
+                        style: TextStyle(
+                          fontSize: UIUtils.fontSize(context, 16),
+                          color: UIUtils.textColor,
+                        ),
+                        decoration: _fieldDecoration(
+                          context,
+                          label: 'Session name',
+                          icon: Icons.search,
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: UIUtils.spacing(context, 6)),
+                    compact || largeText
+                        ? IconButton.filled(
+                            focusNode: _joinFocusNode,
+                            onPressed: _showSearchResults,
+                            tooltip: 'Show matching sessions',
+                            style: IconButton.styleFrom(
+                              backgroundColor: UIUtils.primaryColor,
+                              foregroundColor: UIUtils.onPrimaryColor,
+                            ),
+                            icon: Icon(
+                              Icons.search,
+                              size: UIUtils.iconSize(context, 20),
+                            ),
+                          )
+                        : ElevatedButton(
+                            focusNode: _joinFocusNode,
+                            onPressed: _showSearchResults,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: UIUtils.primaryColor,
+                              foregroundColor: UIUtils.onPrimaryColor,
+                              padding: UIUtils.paddingSymmetric(
+                                context,
+                                horizontal: 12,
+                                vertical: 12,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              elevation: 0,
+                            ),
+                            child: Text(
+                              'Results',
+                              style: TextStyle(
+                                fontSize: UIUtils.fontSize(context, 14),
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                  ],
+                ),
+                SizedBox(height: UIUtils.spacing(context, 8)),
                 DropdownButtonFormField<int?>(
                   key: ValueKey(_selectedSubjectId),
                   focusNode: _subjectFocusNode,
                   initialValue: _selectedSubjectId,
                   isExpanded: true,
-                  decoration: const InputDecoration(
-                    label: Text('Filter sessions by subject'),
-                    prefixIcon: Icon(Icons.filter_alt_outlined),
+                  dropdownColor: UIUtils.cardColor,
+                  style: TextStyle(
+                    fontSize: UIUtils.fontSize(context, 16),
+                    color: UIUtils.textColor,
+                  ),
+                  decoration: _fieldDecoration(
+                    context,
+                    label: 'Subject filter',
+                    icon: Icons.filter_alt_outlined,
                   ),
                   items: [
                     const DropdownMenuItem<int?>(
@@ -595,430 +911,105 @@ class _StudentDashboardState extends State<StudentDashboard> {
                     setState(() => _selectedSubjectId = value);
                     TtsService.speak(
                       value == null
-                          ? 'Showing all subjects'
-                          : 'Subject filter selected',
+                          ? 'Showing all subjects. ${_sessionSummary()}'
+                          : 'Subject filter selected. ${_sessionSummary()}',
                     );
                   },
                 ),
                 SizedBox(height: UIUtils.spacing(context, 8)),
-                OutlinedButton.icon(
-                  focusNode: _playlistsFocusNode,
-                  onPressed: _openMyPlaylists,
-                  icon: const Icon(Icons.queue_music),
-                  label: const Text('4: My Playlists · Private'),
-                ),
-                SizedBox(height: UIUtils.spacing(context, 8)),
-                OutlinedButton.icon(
-                  focusNode: _quizzesFocusNode,
-                  onPressed: _openQuizzes,
-                  icon: const Icon(Icons.quiz_outlined),
-                  label: const Text('5: Quizzes'),
-                ),
-                SizedBox(height: UIUtils.spacing(context, 12)),
-                // User Info Card
-                Card(
-                  elevation: 0,
-                  color: UIUtils.cardColor,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(
-                      color: UIUtils.isHighContrast
-                          ? UIUtils.accentColor
-                          : Colors.grey.withOpacity(0.1),
-                    ),
-                  ),
-                  child: Padding(
-                    padding: UIUtils.paddingAll(context, 16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "Welcome, ${currentUserName ?? 'Student'}!",
-                          style: TextStyle(
-                            fontSize: UIUtils.fontSize(context, 16),
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        SizedBox(height: UIUtils.spacing(context, 4)),
-                        Text(
-                          "User ID: $currentUserId",
-                          style: TextStyle(
-                            fontSize: UIUtils.fontSize(context, 12),
-                            color: UIUtils.subtextColor,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
 
-                SizedBox(height: UIUtils.spacing(context, 12)),
-
-                // Search and browse section
-                Card(
-                  elevation: 0,
-                  color: UIUtils.cardColor,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(
-                      color: UIUtils.isHighContrast
-                          ? UIUtils.accentColor
-                          : Colors.grey.withOpacity(0.1),
-                    ),
-                  ),
-                  child: Padding(
-                    padding: UIUtils.paddingAll(context, 16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "Find a Session",
-                          style: TextStyle(
-                            fontSize: UIUtils.fontSize(context, 14),
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        SizedBox(height: UIUtils.spacing(context, 8)),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: TextField(
-                                controller: sessionCtrl,
-                                focusNode: _inputFocusNode,
-                                onTap: () => _keypadController.enterTextEditing(
-                                  _inputFocusNode,
-                                ),
-                                onChanged: (_) => setState(() {}),
-                                onSubmitted: (_) {
-                                  _showSearchResults();
-                                },
-                                keyboardType: TextInputType.text,
-                                style: TextStyle(
-                                  fontSize: UIUtils.fontSize(context, 14),
-                                ),
-                                decoration: InputDecoration(
-                                  label: const Text("2. Session name or ID"),
-                                  labelStyle: TextStyle(
-                                    fontSize: UIUtils.fontSize(context, 12),
-                                    color: UIUtils.subtextColor,
-                                  ),
-                                  filled: true,
-                                  fillColor: UIUtils.backgroundColor,
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                    borderSide: BorderSide.none,
-                                  ),
-                                  prefixIcon: Icon(
-                                    Icons.meeting_room_rounded,
-                                    size: UIUtils.iconSize(context, 18),
-                                    color: UIUtils.accentColor,
-                                  ),
-                                  contentPadding: UIUtils.paddingSymmetric(
-                                    context,
-                                    horizontal: 12,
-                                    vertical: 12,
-                                  ),
-                                  isDense: true,
-                                ),
-                              ),
-                            ),
-                            SizedBox(width: UIUtils.spacing(context, 8)),
-                            compact || largeText
-                                ? SizedBox(
-                                    width: 40,
-                                    height: 40,
-                                    child: ElevatedButton(
-                                      focusNode: _joinFocusNode,
-                                      onPressed: _showSearchResults,
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: UIUtils.primaryColor,
-                                        foregroundColor: Colors.white,
-                                        padding: EdgeInsets.zero,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            10,
-                                          ),
-                                        ),
-                                        elevation: 0,
-                                      ),
-                                      child: Icon(
-                                        Icons.search,
-                                        size: UIUtils.iconSize(context, 18),
-                                      ),
-                                    ),
-                                  )
-                                : ElevatedButton.icon(
-                                    focusNode: _joinFocusNode,
-                                    onPressed: _showSearchResults,
-                                    icon: Icon(
-                                      Icons.search,
-                                      size: UIUtils.iconSize(context, 16),
-                                    ),
-                                    label: Text(
-                                      "Results",
-                                      style: TextStyle(
-                                        fontSize: UIUtils.fontSize(context, 13),
-                                      ),
-                                    ),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: UIUtils.primaryColor,
-                                      foregroundColor: Colors.white,
-                                      padding: UIUtils.paddingSymmetric(
-                                        context,
-                                        horizontal: 16,
-                                        vertical: 12,
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      elevation: 0,
-                                    ),
-                                  ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
-                SizedBox(height: UIUtils.spacing(context, 8)),
-
-                // Offline Audio Library Button
-                OutlinedButton.icon(
-                  focusNode: _libraryFocusNode,
-                  onPressed: _openOfflineAudioLibrary,
-                  icon: Icon(
-                    Icons.library_music_rounded,
-                    size: UIUtils.iconSize(context, 22),
-                  ),
-                  label: Text(
-                    '3: Recorded Audio Library',
-                    style: TextStyle(fontSize: UIUtils.fontSize(context, 15)),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: UIUtils.accentColor,
-                    side: BorderSide(color: UIUtils.accentColor, width: 1.5),
-                    padding: UIUtils.paddingSymmetric(context, vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-
-                SizedBox(height: UIUtils.spacing(context, 12)),
-
-                // Active sessions header
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        "Active Sessions",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: UIUtils.fontSize(context, 16),
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: UIUtils.spacing(context, 6)),
-                    if (_filteredSessions.isNotEmpty)
-                      Container(
-                        padding: UIUtils.paddingSymmetric(
-                          context,
-                          horizontal: 8,
-                          vertical: 3,
-                        ),
-                        decoration: BoxDecoration(
-                          color: UIUtils.accentColor,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          '${_filteredSessions.length}',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: UIUtils.fontSize(context, 12),
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-
-                SizedBox(height: UIUtils.spacing(context, 8)),
-
-                // Active sessions list
-                if (_filteredSessions.isEmpty)
-                  Center(
-                    child: Padding(
-                      padding: UIUtils.paddingAll(context, 24),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.event_busy,
-                            size: UIUtils.iconSize(context, 48),
-                            color: UIUtils.subtextColor,
-                          ),
-                          SizedBox(height: UIUtils.spacing(context, 10)),
-                          Text(
-                            sessionCtrl.text.trim().isEmpty
-                                ? "No active sessions"
-                                : "No matching sessions",
-                            style: TextStyle(
-                              fontSize: UIUtils.fontSize(context, 14),
-                              color: UIUtils.subtextColor,
-                            ),
-                          ),
-                          SizedBox(height: UIUtils.spacing(context, 6)),
-                          TextButton.icon(
-                            onPressed: _loadSessions,
-                            icon: Icon(
-                              Icons.refresh,
-                              size: UIUtils.iconSize(context, 16),
-                            ),
-                            label: Text(
-                              "Refresh",
-                              style: TextStyle(
-                                fontSize: UIUtils.fontSize(context, 13),
-                              ),
-                            ),
-                          ),
-                        ],
+                // Active sessions list: every session is a keypad stop.
+                if (filtered.isEmpty)
+                  Container(
+                    padding: UIUtils.paddingAll(context, 12),
+                    decoration: cardDecoration,
+                    child: Text(
+                      sessions.isEmpty
+                          ? 'No live sessions right now. Press 1 to refresh.'
+                          : 'No matching sessions. Clear the search or change the subject filter.',
+                      style: TextStyle(
+                        fontSize: UIUtils.fontSize(context, 16),
+                        color: UIUtils.textColor,
                       ),
                     ),
                   )
                 else
-                  // Converts list → widgets using ... operator
-                  ..._filteredSessions.map((s) {
-                    final sessionId = s['session_id'] ?? 0;
-                    final title = s['title'] ?? 'Untitled Session';
-                    final teacherName = s['teacher_name'] ?? 'Unknown';
-                    // final participantCount = s['participant_count'] ?? 0;
+                  for (final s in filtered)
+                    _buildSessionTile(context, s as Map),
 
-                    return Card(
-                      margin: EdgeInsets.only(
-                        bottom: UIUtils.spacing(context, 8),
-                      ),
-                      elevation: 2,
-                      child: InkWell(
-                        onTap: () => joinSession(sessionId),
-                        focusColor: Colors.teal.withOpacity(0.1),
-                        child: ListTile(
-                          dense: tiny,
-                          contentPadding: UIUtils.paddingAll(context, 10),
-                          leading: CircleAvatar(
-                            radius: UIUtils.iconSize(context, 18),
-                            backgroundColor: UIUtils.backgroundColor,
-                            child: Text(
-                              '$sessionId',
-                              style: TextStyle(
-                                color: UIUtils.primaryColor,
-                                fontWeight: FontWeight.bold,
-                                fontSize: UIUtils.fontSize(context, 12),
-                              ),
-                            ),
-                          ),
-                          title: Text(
-                            title,
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: UIUtils.fontSize(context, 14),
-                            ),
-                          ),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              SizedBox(height: UIUtils.spacing(context, 4)),
-                              Text(
-                                '${s['class_name'] ?? _className ?? 'Class'} · ${s['subject_name'] ?? 'Subject'}',
-                                style: TextStyle(
-                                  fontSize: UIUtils.fontSize(context, 11),
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              Row(
-                                children: [
-                                  Icon(
-                                    Icons.person,
-                                    size: UIUtils.iconSize(context, 14),
-                                  ),
-                                  SizedBox(width: UIUtils.spacing(context, 3)),
-                                  Expanded(
-                                    child: Text(
-                                      'Teacher: $teacherName',
-                                      style: TextStyle(
-                                        fontSize: UIUtils.fontSize(context, 11),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              // SizedBox(height: UIUtils.spacing(context, 2)),
-                              // Row(
-                              //   children: [
-                              //     Icon(Icons.people, size: UIUtils.iconSize(context, 14)),
-                              //     SizedBox(width: UIUtils.spacing(context, 3)),
-                              //     Text('$participantCount participants',
-                              //         style: TextStyle(fontSize: UIUtils.fontSize(context, 11))),
-                              //   ],
-                              // ),
-                            ],
-                          ),
-                          trailing: largeText || tiny
-                              ? IconButton.filled(
-                                  focusNode: _sessionFocusNodes.putIfAbsent(
-                                    sessionId as int,
-                                    () => FocusNode(
-                                      debugLabel: 'student-session-$sessionId',
-                                    ),
-                                  ),
-                                  onPressed: () => joinSession(sessionId),
-                                  tooltip: 'Join $title',
-                                  icon: const Icon(Icons.login),
-                                )
-                              : ElevatedButton(
-                                  focusNode: _sessionFocusNodes.putIfAbsent(
-                                    sessionId as int,
-                                    () => FocusNode(
-                                      debugLabel: 'student-session-$sessionId',
-                                    ),
-                                  ),
-                                  onPressed: () => joinSession(sessionId),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: UIUtils.primaryColor,
-                                    foregroundColor: Colors.white,
-                                    padding: UIUtils.paddingSymmetric(
-                                      context,
-                                      horizontal: 12,
-                                      vertical: 8,
-                                    ),
-                                    minimumSize: Size.zero,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    tapTargetSize:
-                                        MaterialTapTargetSize.shrinkWrap,
-                                    elevation: 0,
-                                  ),
-                                  child: Text(
-                                    "Join",
-                                    style: TextStyle(
-                                      fontSize: UIUtils.fontSize(context, 12),
-                                    ),
-                                  ),
-                                ),
-                        ),
-                      ),
-                    );
-                  }).toList(),
-
-                SizedBox(
-                  height: UIUtils.spacing(context, 12),
-                ), // Bottom padding
+                SizedBox(height: UIUtils.spacing(context, 12)),
+                Semantics(
+                  header: true,
+                  child: Text(
+                    'More',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: UIUtils.fontSize(context, 18),
+                      color: UIUtils.textColor,
+                    ),
+                  ),
+                ),
+                SizedBox(height: UIUtils.spacing(context, 8)),
+                _navButton(
+                  context,
+                  focusNode: _libraryFocusNode,
+                  onPressed: _openOfflineAudioLibrary,
+                  icon: Icons.library_music_rounded,
+                  text: '3: Recorded Audio Library',
+                ),
+                _navButton(
+                  context,
+                  focusNode: _playlistsFocusNode,
+                  onPressed: _openMyPlaylists,
+                  icon: Icons.queue_music,
+                  text: '4: My Playlists · Private',
+                ),
+                _navButton(
+                  context,
+                  focusNode: _quizzesFocusNode,
+                  onPressed: _openQuizzes,
+                  icon: Icons.quiz_outlined,
+                  text: '5: Quizzes',
+                ),
+                _navButton(
+                  context,
+                  focusNode: _logoutFocusNode,
+                  onPressed: _logout,
+                  icon: Icons.logout,
+                  text: '0: Log out',
+                ),
               ],
             ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildSessionTile(BuildContext context, Map s) {
+    final sessionId = _sessionIdOf(s);
+    final title = '${s['title'] ?? 'Untitled session'}';
+    final subject = s['subject_name']?.toString();
+    final className = (s['class_name'] ?? _className)?.toString();
+    final teacherName = s['teacher_name']?.toString() ?? 'Unknown';
+    return AccessibleTile(
+      focusNode: _sessionFocusNodes.putIfAbsent(
+        sessionId,
+        () => FocusNode(debugLabel: 'student-session-$sessionId'),
+      ),
+      title: title,
+      status: 'Live now',
+      statusColor: UIUtils.successColor,
+      subtitle: [
+        [
+          if (subject != null && subject.isNotEmpty) subject,
+          if (className != null && className.isNotEmpty) className,
+        ].join(' · '),
+        'Teacher: $teacherName',
+        'Session $sessionId. OK to join',
+      ].where((line) => line.isNotEmpty).join('\n'),
+      semanticLabel: '${_sessionLabel(s)}. Join session',
+      onActivate: () => joinSession(sessionId),
     );
   }
 }

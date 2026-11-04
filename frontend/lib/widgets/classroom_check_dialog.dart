@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../services/classroom_check_state.dart';
 import '../services/tts_service.dart';
+import '../utils/ui_utils.dart';
 import 'key_instruction_wrapper.dart';
 import 'keypad_confirmation_dialog.dart';
 
@@ -26,9 +29,30 @@ class _ClassroomCheckDialogState extends State<ClassroomCheckDialog> {
   FocusNode _node(String id) =>
       _nodes.putIfAbsent(id, () => FocusNode(debugLabel: 'check-$id'));
 
+  /// Moves keypad focus once the frame that re-enables controls is built.
+  /// Falls back to Read so focus is never lost to a disabled button.
+  void _focusAfter(String id) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final node = _node(id);
+      if (node.context != null && node.canRequestFocus) {
+        node.requestFocus();
+      } else {
+        _node('read').requestFocus();
+      }
+    });
+  }
+
   Future<void> _act(String type, {String? choice}) async {
     if (_busy) return;
     final id = widget.state.value.id;
+    final origin = switch (type) {
+      'open_check' => 'open',
+      'close_check' => 'close',
+      'read_check' => 'refresh',
+      _ => choice ?? 'read',
+    };
+    var next = origin;
     setState(() {
       _busy = true;
       _issue = null;
@@ -47,9 +71,22 @@ class _ClassroomCheckDialogState extends State<ClassroomCheckDialog> {
         );
         if (confirmed != true || !mounted) return;
       }
+      unawaited(
+        TtsService.speak(
+          'Sending. Waiting for confirmation.',
+          priority: SpeechPriority.navigation,
+        ),
+      );
       final issue = await widget.act(type, id, choice);
       if (!mounted) return;
       setState(() => _issue = issue);
+      if (issue == null) {
+        next = switch (type) {
+          'open_check' => 'close',
+          'close_check' => 'open',
+          _ => origin,
+        };
+      }
       await TtsService.speak(
         issue ?? widget.state.value.describe(widget.teacher),
         priority: issue == null
@@ -57,7 +94,10 @@ class _ClassroomCheckDialogState extends State<ClassroomCheckDialog> {
             : SpeechPriority.critical,
       );
     } finally {
-      if (mounted) setState(() => _busy = false);
+      if (mounted) {
+        setState(() => _busy = false);
+        _focusAfter(next);
+      }
     }
   }
 
@@ -142,7 +182,6 @@ class _ClassroomCheckDialogState extends State<ClassroomCheckDialog> {
             'Use Read or Refresh for confirmed state. Stop speech and Back are available.',
         actions: {0: () => Navigator.pop(context)},
         labels: const {0: 'Back'},
-        onHashKey: () => Navigator.pop(context),
         focusTargets: targets,
         child: AlertDialog(
           title: const Text('Classroom check'),
@@ -151,10 +190,26 @@ class _ClassroomCheckDialogState extends State<ClassroomCheckDialog> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(state.describe(widget.teacher)),
+              Semantics(
+                liveRegion: true,
+                child: Text(state.describe(widget.teacher)),
+              ),
               if (_issue != null)
-                Semantics(liveRegion: true, child: Text(_issue!)),
-              if (_busy) const Text('Waiting for confirmation. Do not resend.'),
+                Semantics(
+                  liveRegion: true,
+                  child: Text(
+                    _issue!,
+                    style: TextStyle(
+                      color: UIUtils.errorColor,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              if (_busy)
+                Semantics(
+                  liveRegion: true,
+                  child: const Text('Waiting for confirmation. Do not resend.'),
+                ),
               button('read', 'Read status and responses'),
               button('refresh', 'Refresh from server'),
               if (widget.teacher) ...[

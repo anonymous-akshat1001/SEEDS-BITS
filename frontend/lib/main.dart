@@ -17,6 +17,7 @@ import 'services/notification_services.dart';
 import 'services/tts_service.dart';
 import 'widgets/key_instruction_wrapper.dart';
 import 'widgets/keypad_confirmation_dialog.dart';
+import 'widgets/focus_highlight.dart';
 import 'utils/keypad_actions.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'firebase_options.dart';
@@ -72,7 +73,7 @@ WEB_VAPID_KEY=BOYVjb77moWEwSyBY-HxCkiAFBuNrCncK9oSobRL1TubgfGicL1JOiw_B0Nod74jEb
 
     try {
       final prefs = await SharedPreferences.getInstance();
-      UIUtils.setHighContrastMode(prefs.getBool('high_contrast_mode') ?? false);
+      UIUtils.setHighContrastMode(prefs.getBool('high_contrast_mode') ?? true);
       UIUtils.setTextScale(prefs.getDouble('text_scale') ?? 1.0);
       await TtsService.loadFromPreferences();
       final token = prefs.getString('token');
@@ -95,6 +96,12 @@ WEB_VAPID_KEY=BOYVjb77moWEwSyBY-HxCkiAFBuNrCncK9oSobRL1TubgfGicL1JOiw_B0Nod74jEb
     }
 
     if (!mounted) return;
+    if (_startupError != null) {
+      // Keep the loading screen up long enough for its error to be spoken.
+      setState(() {});
+      await Future<void>.delayed(const Duration(seconds: 4));
+      if (!mounted) return;
+    }
     setState(() => _ready = true);
 
     // Firebase and permission prompts are non-critical and must not hold the
@@ -200,41 +207,73 @@ class _SeedsLoadingScreenState extends State<SeedsLoadingScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      TtsService.speak('SEEDS is loading');
+      final message = widget.message;
+      if (message != null) {
+        TtsService.speak(message, priority: SpeechPriority.critical);
+      } else {
+        TtsService.speak('SEEDS is loading');
+      }
     });
   }
 
   @override
+  void didUpdateWidget(covariant SeedsLoadingScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final message = widget.message;
+    // Startup problems are spoken as soon as speech settings are loaded.
+    if (message != null && message != oldWidget.message) {
+      TtsService.speak(message, priority: SpeechPriority.critical);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final message = widget.message;
     return Scaffold(
-      backgroundColor: const Color(0xFF0B3D62),
-      body: Semantics(
-        liveRegion: true,
-        label: 'SEEDS is loading',
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.hearing_rounded, color: Colors.white, size: 72),
-              const SizedBox(height: 16),
-              const Text(
-                'SEEDS',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 2,
-                ),
+      backgroundColor: UIUtils.backgroundColor,
+      body: SafeArea(
+        child: Semantics(
+          liveRegion: true,
+          label: message ?? 'SEEDS is loading',
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ExcludeSemantics(
+                    child: Icon(
+                      Icons.hearing_rounded,
+                      color: UIUtils.accentColor,
+                      size: 64,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'SEEDS',
+                    style: TextStyle(
+                      color: UIUtils.textColor,
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 2,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  CircularProgressIndicator(color: UIUtils.accentColor),
+                  const SizedBox(height: 12),
+                  Text(
+                    message ?? 'Loading accessible learning tools…',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: message == null
+                          ? UIUtils.textColor
+                          : UIUtils.errorColor,
+                      fontSize: 18,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 18),
-              const CircularProgressIndicator(color: Color(0xFFFFD600)),
-              const SizedBox(height: 12),
-              Text(
-                widget.message ?? 'Loading accessible learning tools…',
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.white, fontSize: 16),
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -266,6 +305,49 @@ class SeedsRouteObserver extends RouteObserver<ModalRoute<void>> {
 
 final RouteObserver<ModalRoute<void>> routeObserver = SeedsRouteObserver();
 
+/// Switches app speech to the screen reader when TalkBack turns on (and back
+/// when it turns off), unless the user chose a speech mode in Settings.
+class ScreenReaderSync extends StatefulWidget {
+  const ScreenReaderSync({
+    super.key,
+    required this.active,
+    required this.child,
+  });
+
+  final bool active;
+  final Widget child;
+
+  @override
+  State<ScreenReaderSync> createState() => _ScreenReaderSyncState();
+}
+
+class _ScreenReaderSyncState extends State<ScreenReaderSync> {
+  @override
+  void initState() {
+    super.initState();
+    if (widget.active) _sync();
+  }
+
+  @override
+  void didUpdateWidget(covariant ScreenReaderSync oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.active != widget.active) _sync();
+  }
+
+  void _sync() {
+    unawaited(
+      TtsService.syncWithPlatformScreenReader(widget.active).catchError((
+        Object error,
+      ) {
+        debugPrint('[SCREEN READER] $error');
+      }),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
+}
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key, this.initialRoute = '/welcome'});
 
@@ -273,63 +355,207 @@ class MyApp extends StatelessWidget {
 
   ThemeData _buildTheme(bool highContrast) {
     final brightness = highContrast ? Brightness.dark : Brightness.light;
+    final scheme =
+        ColorScheme.fromSeed(
+          seedColor: UIUtils.accentColor,
+          brightness: brightness,
+        ).copyWith(
+          primary: UIUtils.primaryColor,
+          onPrimary: UIUtils.onPrimaryColor,
+          secondary: UIUtils.accentColor,
+          onSecondary: UIUtils.onAccentColor,
+          surface: UIUtils.cardColor,
+          onSurface: UIUtils.textColor,
+          onSurfaceVariant: UIUtils.subtextColor,
+          outline: UIUtils.cardBorderColor,
+          error: UIUtils.errorColor,
+        );
+    final buttonShape = WidgetStatePropertyAll(
+      RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    );
+    const focusSide = BorderSide(
+      color: UIUtils.focusRingColor,
+      width: UIUtils.focusRingWidth,
+    );
+    // Buttons keep a visible outline so low-vision users can find their edges;
+    // the focused control gets the thick yellow ring.
+    WidgetStateProperty<BorderSide?> buttonSide({required bool outlined}) =>
+        WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.focused)) return focusSide;
+          if (outlined || highContrast) {
+            return BorderSide(color: UIUtils.cardBorderColor, width: 2);
+          }
+          return null;
+        });
+    const minimumButtonSize = WidgetStatePropertyAll(Size(48, 48));
+    const buttonText = WidgetStatePropertyAll(
+      TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+    );
+    final baseText = ThemeData(brightness: brightness).textTheme;
     return ThemeData(
       brightness: brightness,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: UIUtils.accentColor,
-        brightness: brightness,
-      ),
+      colorScheme: scheme,
       useMaterial3: true,
       scaffoldBackgroundColor: UIUtils.backgroundColor,
-      visualDensity: VisualDensity.adaptivePlatformDensity,
+      visualDensity: VisualDensity.standard,
+      materialTapTargetSize: MaterialTapTargetSize.padded,
       focusColor: highContrast
-          ? const Color(0xFFFFD600)
-          : const Color(0xFF005BBB).withValues(alpha: 0.22),
+          ? UIUtils.focusRingColor.withValues(alpha: 0.35)
+          : const Color(0xFF004A99).withValues(alpha: 0.30),
       appBarTheme: AppBarTheme(
         centerTitle: true,
         elevation: 0,
         backgroundColor: UIUtils.backgroundColor,
         foregroundColor: UIUtils.textColor,
+        titleTextStyle: TextStyle(
+          color: UIUtils.textColor,
+          fontSize: 20,
+          fontWeight: FontWeight.w700,
+        ),
+        shape: Border(
+          bottom: BorderSide(color: UIUtils.cardBorderColor, width: 1),
+        ),
       ),
       cardTheme: CardThemeData(
-        elevation: highContrast ? 0 : 2,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(color: UIUtils.cardBorderColor, width: 1.5),
+        ),
         color: UIUtils.cardColor,
       ),
-      textTheme: ThemeData(brightness: brightness).textTheme.apply(
-        bodyColor: UIUtils.textColor,
-        displayColor: UIUtils.textColor,
-      ),
+      textTheme: baseText
+          .copyWith(
+            bodyLarge: baseText.bodyLarge?.copyWith(fontSize: 18),
+            bodyMedium: baseText.bodyMedium?.copyWith(fontSize: 16),
+            bodySmall: baseText.bodySmall?.copyWith(fontSize: 14),
+            labelMedium: baseText.labelMedium?.copyWith(fontSize: 14),
+            labelSmall: baseText.labelSmall?.copyWith(fontSize: 14),
+          )
+          .apply(bodyColor: UIUtils.textColor, displayColor: UIUtils.textColor),
       listTileTheme: ListTileThemeData(
         textColor: UIUtils.textColor,
         iconColor: UIUtils.textColor,
+        selectedColor: UIUtils.accentColor,
+        minVerticalPadding: 10,
       ),
-      dialogTheme: DialogThemeData(backgroundColor: UIUtils.cardColor),
-      dividerColor: highContrast ? UIUtils.accentColor : Colors.black12,
+      dialogTheme: DialogThemeData(
+        backgroundColor: UIUtils.cardColor,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: UIUtils.cardBorderColor, width: 2),
+        ),
+      ),
+      snackBarTheme: SnackBarThemeData(
+        backgroundColor: highContrast ? Colors.white : const Color(0xFF1F2A30),
+        contentTextStyle: TextStyle(
+          color: highContrast ? Colors.black : Colors.white,
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      dividerColor: UIUtils.cardBorderColor,
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: highContrast ? const Color(0xFF111111) : Colors.white,
-        labelStyle: TextStyle(color: UIUtils.subtextColor),
+        fillColor: highContrast ? const Color(0xFF121212) : Colors.white,
+        labelStyle: TextStyle(color: UIUtils.subtextColor, fontSize: 16),
+        helperStyle: TextStyle(color: UIUtils.subtextColor, fontSize: 14),
+        errorStyle: TextStyle(color: UIUtils.errorColor, fontSize: 14),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(
-            color: highContrast ? UIUtils.accentColor : Colors.transparent,
-          ),
+          borderSide: BorderSide(color: UIUtils.cardBorderColor, width: 2),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: UIUtils.accentColor, width: 2),
+          borderSide: focusSide,
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: UIUtils.errorColor, width: 2),
+        ),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ButtonStyle(
+          backgroundColor: WidgetStateProperty.resolveWith(
+            (states) => states.contains(WidgetState.disabled)
+                ? (highContrast
+                      ? const Color(0xFF3A3A3A)
+                      : const Color(0xFFD5D9DC))
+                : UIUtils.primaryColor,
+          ),
+          foregroundColor: WidgetStateProperty.resolveWith(
+            (states) => states.contains(WidgetState.disabled)
+                ? (highContrast
+                      ? const Color(0xFFBDBDBD)
+                      : const Color(0xFF424242))
+                : UIUtils.onPrimaryColor,
+          ),
+          side: buttonSide(outlined: false),
+          minimumSize: minimumButtonSize,
+          textStyle: buttonText,
+          shape: buttonShape,
+        ),
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: ButtonStyle(
+          side: buttonSide(outlined: false),
+          minimumSize: minimumButtonSize,
+          textStyle: buttonText,
+          shape: buttonShape,
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: ButtonStyle(
+          foregroundColor: WidgetStateProperty.resolveWith(
+            (states) => states.contains(WidgetState.disabled)
+                ? const Color(0xFF9E9E9E)
+                : UIUtils.textColor,
+          ),
+          side: buttonSide(outlined: true),
+          minimumSize: minimumButtonSize,
+          textStyle: buttonText,
+          shape: buttonShape,
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: ButtonStyle(
+          foregroundColor: WidgetStateProperty.resolveWith(
+            (states) => states.contains(WidgetState.disabled)
+                ? const Color(0xFF9E9E9E)
+                : UIUtils.accentColor,
+          ),
+          side: buttonSide(outlined: false),
+          minimumSize: minimumButtonSize,
+          textStyle: buttonText,
+          shape: buttonShape,
         ),
       ),
       iconButtonTheme: IconButtonThemeData(
         style: ButtonStyle(
-          side: WidgetStateProperty.resolveWith((states) {
-            if (states.contains(WidgetState.focused)) {
-              return BorderSide(color: UIUtils.accentColor, width: 3);
-            }
-            return BorderSide.none;
-          }),
+          minimumSize: minimumButtonSize,
+          side: WidgetStateProperty.resolveWith(
+            (states) => states.contains(WidgetState.focused)
+                ? focusSide
+                : BorderSide.none,
+          ),
         ),
+      ),
+      switchTheme: SwitchThemeData(
+        thumbColor: WidgetStateProperty.resolveWith(
+          (states) => states.contains(WidgetState.selected)
+              ? UIUtils.onAccentColor
+              : UIUtils.textColor,
+        ),
+        trackColor: WidgetStateProperty.resolveWith(
+          (states) => states.contains(WidgetState.selected)
+              ? UIUtils.accentColor
+              : UIUtils.cardColor,
+        ),
+        trackOutlineColor: WidgetStatePropertyAll(UIUtils.cardBorderColor),
+      ),
+      progressIndicatorTheme: ProgressIndicatorThemeData(
+        color: UIUtils.accentColor,
+        linearTrackColor: UIUtils.cardBorderColor,
       ),
     );
   }
@@ -357,7 +583,10 @@ class MyApp extends StatelessWidget {
                     appTextScale,
                   ),
                 ),
-                child: child,
+                child: ScreenReaderSync(
+                  active: mediaQuery.accessibleNavigation,
+                  child: FocusHighlight(child: child),
+                ),
               );
             },
 
@@ -470,10 +699,6 @@ class WelcomeScreen extends StatefulWidget {
 }
 
 class _WelcomeScreenState extends State<WelcomeScreen> {
-  final FocusNode _brandFocusNode = FocusNode(debugLabel: 'welcome-brand');
-  final FocusNode _subtitleFocusNode = FocusNode(
-    debugLabel: 'welcome-subtitle',
-  );
   final FocusNode _loginFocusNode = FocusNode(debugLabel: 'welcome-login');
   final FocusNode _registerFocusNode = FocusNode(
     debugLabel: 'welcome-register',
@@ -484,32 +709,13 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   final FocusNode _repeatFocusNode = FocusNode(
     debugLabel: 'welcome-repeat-instructions',
   );
-  final FocusNode _audioFeatureFocusNode = FocusNode(
-    debugLabel: 'welcome-feature-audio',
-  );
-  final FocusNode _accessibilityFeatureFocusNode = FocusNode(
-    debugLabel: 'welcome-feature-accessibility',
-  );
-  final FocusNode _collaborationFeatureFocusNode = FocusNode(
-    debugLabel: 'welcome-feature-collaboration',
-  );
-
-  @override
-  void initState() {
-    super.initState();
-  }
 
   @override
   void dispose() {
-    _brandFocusNode.dispose();
-    _subtitleFocusNode.dispose();
     _loginFocusNode.dispose();
     _registerFocusNode.dispose();
     _settingsFocusNode.dispose();
     _repeatFocusNode.dispose();
-    _audioFeatureFocusNode.dispose();
-    _accessibilityFeatureFocusNode.dispose();
-    _collaborationFeatureFocusNode.dispose();
     super.dispose();
   }
 
@@ -529,294 +735,254 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
       },
       focusTargets: [
         KeypadFocusTarget(
-          node: _brandFocusNode,
-          label: 'SEEDS. Accessible learning.',
-          onActivate: () => TtsService.speak('SEEDS. Accessible learning.'),
-        ),
-        KeypadFocusTarget(
-          node: _subtitleFocusNode,
-          label: 'Connecting everyone, everywhere',
-          onActivate: () => TtsService.speak('Connecting everyone, everywhere'),
-        ),
-        if (!tiny) ...[
-          KeypadFocusTarget(
-            node: _audioFeatureFocusNode,
-            label: 'Real-time Audio. Crystal clear voice communication.',
-            onActivate: () => TtsService.speak(
-              'Real-time Audio. Crystal clear voice communication.',
-            ),
-          ),
-          KeypadFocusTarget(
-            node: _accessibilityFeatureFocusNode,
-            label: 'Fully Accessible. Text to speech, large buttons and more.',
-            onActivate: () => TtsService.speak(
-              'Fully Accessible. Text to speech, large buttons and more.',
-            ),
-          ),
-          KeypadFocusTarget(
-            node: _collaborationFeatureFocusNode,
-            label: 'Collaboration. Raise hands and interact.',
-            onActivate: () =>
-                TtsService.speak('Collaboration. Raise hands and interact.'),
-          ),
-        ],
-        KeypadFocusTarget(
           node: _loginFocusNode,
-          label: 'Login button',
+          label: 'Login, button',
           onActivate: () => Navigator.pushNamed(context, '/login'),
         ),
         KeypadFocusTarget(
           node: _registerFocusNode,
-          label: 'Register button',
+          label: 'Register, button',
           onActivate: () => Navigator.pushNamed(context, '/register'),
         ),
         KeypadFocusTarget(
           node: _settingsFocusNode,
-          label: 'Settings button',
+          label: 'Settings, button',
           onActivate: () => Navigator.pushNamed(context, '/settings'),
         ),
         KeypadFocusTarget(
           node: _repeatFocusNode,
-          label: 'Repeat instructions',
+          label: 'Repeat instructions, button',
           onActivate: _repeatWelcomeInstructions,
         ),
       ],
       child: Scaffold(
         backgroundColor: UIUtils.backgroundColor,
-        body: Container(
-          color: UIUtils.backgroundColor,
-          child: SafeArea(
-            child: Center(
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: UIUtils.paddingAll(context, 32.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // App Icon/Logo
-                      Semantics(
-                        label: 'SEEDS. Accessible learning.',
-                        button: true,
-                        child: Focus(
-                          focusNode: _brandFocusNode,
-                          child: GestureDetector(
-                            onTap: () =>
-                                TtsService.speak('SEEDS. Accessible learning.'),
-                            child: Container(
-                              width: 120 * s,
-                              height: 120 * s,
-                              decoration: BoxDecoration(
-                                color: UIUtils.cardColor,
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: UIUtils.accentColor,
-                                  width: 2,
-                                ),
-                              ),
-                              child: Icon(
-                                Icons.hearing_rounded,
-                                semanticLabel: 'SEEDS accessible learning logo',
-                                size: UIUtils.iconSize(context, 64),
-                                color: UIUtils.accentColor,
-                              ),
-                            ),
+        body: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: UIUtils.paddingAll(context, tiny ? 12.0 : 32.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Decorative logo: the title below names the app.
+                    ExcludeSemantics(
+                      child: Container(
+                        width: (tiny ? 72 : 120) * s,
+                        height: (tiny ? 72 : 120) * s,
+                        decoration: BoxDecoration(
+                          color: UIUtils.cardColor,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: UIUtils.accentColor,
+                            width: 2,
                           ),
                         ),
+                        child: Icon(
+                          Icons.hearing_rounded,
+                          size: UIUtils.iconSize(context, tiny ? 40 : 64),
+                          color: UIUtils.accentColor,
+                        ),
                       ),
+                    ),
 
-                      SizedBox(height: UIUtils.spacing(context, 24)),
+                    SizedBox(height: UIUtils.spacing(context, tiny ? 8 : 24)),
 
-                      // App Title
-                      Text(
-                        "SEEDS",
+                    Semantics(
+                      header: true,
+                      child: Text(
+                        'SEEDS',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          fontSize: UIUtils.fontSize(context, 42),
+                          fontSize: UIUtils.fontSize(context, tiny ? 30 : 42),
                           fontWeight: FontWeight.w800,
                           color: UIUtils.textColor,
                           letterSpacing: 2.0,
                         ),
                       ),
+                    ),
 
-                      SizedBox(height: UIUtils.spacing(context, 12)),
+                    SizedBox(height: UIUtils.spacing(context, 12)),
 
-                      // Subtitle
-                      Semantics(
-                        label: 'Connecting everyone, everywhere',
-                        button: true,
-                        child: Focus(
-                          focusNode: _subtitleFocusNode,
-                          child: GestureDetector(
-                            onTap: () => TtsService.speak(
-                              'Connecting everyone, everywhere',
-                            ),
-                            child: Text(
-                              'Connecting everyone, everywhere',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: UIUtils.fontSize(context, 16),
-                                color: UIUtils.subtextColor,
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ),
+                    Text(
+                      'Connecting everyone, everywhere',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: UIUtils.fontSize(context, 16),
+                        color: UIUtils.subtextColor,
+                      ),
+                    ),
+
+                    SizedBox(height: UIUtils.spacing(context, tiny ? 16 : 40)),
+
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        focusNode: _loginFocusNode,
+                        onPressed: () => Navigator.pushNamed(context, '/login'),
+                        icon: Icon(
+                          Icons.login,
+                          size: UIUtils.iconSize(context, 24),
+                        ),
+                        label: Text(
+                          isKeypad ? '1. Login' : 'Login',
+                          style: TextStyle(
+                            fontSize: UIUtils.fontSize(context, 18),
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
-                      ),
-
-                      SizedBox(height: UIUtils.spacing(context, 40)),
-
-                      // Login Button
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton.icon(
-                          focusNode: _loginFocusNode,
-                          onPressed: () =>
-                              Navigator.pushNamed(context, '/login'),
-                          icon: Icon(
-                            Icons.login,
-                            size: UIUtils.iconSize(context, 24),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: UIUtils.primaryColor,
+                          foregroundColor: UIUtils.onPrimaryColor,
+                          padding: UIUtils.paddingSymmetric(
+                            context,
+                            vertical: 16,
                           ),
-                          label: Text(
-                            isKeypad ? "1. Login" : "Login",
-                            style: TextStyle(
-                              fontSize: UIUtils.fontSize(context, 18),
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: UIUtils.primaryColor,
-                            foregroundColor: Colors.white,
-                            padding: UIUtils.paddingSymmetric(
-                              context,
-                              vertical: 16,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            elevation: 0,
-                          ),
-                        ),
-                      ),
-
-                      SizedBox(height: UIUtils.spacing(context, 14)),
-
-                      // Register Button
-                      SizedBox(
-                        width: double.infinity,
-                        child: OutlinedButton.icon(
-                          focusNode: _registerFocusNode,
-                          onPressed: () =>
-                              Navigator.pushNamed(context, '/register'),
-                          icon: Icon(
-                            Icons.app_registration,
-                            size: UIUtils.iconSize(context, 24),
-                          ),
-                          label: Text(
-                            isKeypad ? "2. Register" : "Register",
-                            style: TextStyle(
-                              fontSize: UIUtils.fontSize(context, 18),
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: UIUtils.primaryColor,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
                             side: BorderSide(
-                              color: UIUtils.primaryColor,
+                              color: UIUtils.cardBorderColor,
                               width: 1.5,
                             ),
-                            padding: UIUtils.paddingSymmetric(
-                              context,
-                              vertical: 16,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
+                          ),
+                          elevation: 0,
+                        ),
+                      ),
+                    ),
+
+                    SizedBox(height: UIUtils.spacing(context, 14)),
+
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        focusNode: _registerFocusNode,
+                        onPressed: () =>
+                            Navigator.pushNamed(context, '/register'),
+                        icon: Icon(
+                          Icons.app_registration,
+                          size: UIUtils.iconSize(context, 24),
+                        ),
+                        label: Text(
+                          isKeypad ? '2. Register' : 'Register',
+                          style: TextStyle(
+                            fontSize: UIUtils.fontSize(context, 18),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: UIUtils.textColor,
+                          side: BorderSide(
+                            color: UIUtils.accentColor,
+                            width: 2,
+                          ),
+                          padding: UIUtils.paddingSymmetric(
+                            context,
+                            vertical: 16,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
                           ),
                         ),
                       ),
+                    ),
 
-                      SizedBox(height: UIUtils.spacing(context, 20)),
+                    SizedBox(height: UIUtils.spacing(context, 14)),
 
-                      // Settings button
-                      TextButton.icon(
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
                         focusNode: _settingsFocusNode,
                         onPressed: () =>
                             Navigator.pushNamed(context, '/settings'),
                         icon: Icon(
                           Icons.settings_outlined,
-                          color: UIUtils.subtextColor,
-                          size: UIUtils.iconSize(context, 20),
+                          size: UIUtils.iconSize(context, 22),
                         ),
                         label: Text(
                           isKeypad ? '3. Settings' : 'Settings',
                           style: TextStyle(
-                            color: UIUtils.subtextColor,
-                            fontSize: UIUtils.fontSize(context, 13),
+                            fontSize: UIUtils.fontSize(context, 16),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: UIUtils.textColor,
+                          side: BorderSide(
+                            color: UIUtils.cardBorderColor,
+                            width: 1.5,
+                          ),
+                          padding: UIUtils.paddingSymmetric(
+                            context,
+                            vertical: 12,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
                           ),
                         ),
                       ),
+                    ),
 
-                      TextButton.icon(
-                        focusNode: _repeatFocusNode,
-                        onPressed: _repeatWelcomeInstructions,
-                        icon: Icon(
-                          Icons.replay_rounded,
-                          color: UIUtils.subtextColor,
-                          size: UIUtils.iconSize(context, 20),
-                        ),
-                        label: Text(
-                          'Repeat instructions',
-                          style: TextStyle(
-                            color: UIUtils.subtextColor,
-                            fontSize: UIUtils.fontSize(context, 13),
-                          ),
+                    SizedBox(height: UIUtils.spacing(context, 8)),
+
+                    TextButton.icon(
+                      focusNode: _repeatFocusNode,
+                      onPressed: _repeatWelcomeInstructions,
+                      icon: Icon(
+                        Icons.replay_rounded,
+                        color: UIUtils.textColor,
+                        size: UIUtils.iconSize(context, 20),
+                      ),
+                      label: Text(
+                        'Repeat instructions',
+                        style: TextStyle(
+                          color: UIUtils.textColor,
+                          fontSize: UIUtils.fontSize(context, 16),
+                          decoration: TextDecoration.underline,
                         ),
                       ),
+                    ),
 
-                      // Hide features section on tiny screens to save space
-                      if (!tiny) ...[
-                        SizedBox(height: UIUtils.spacing(context, 16)),
-                        Container(
-                          padding: UIUtils.paddingAll(context, 16),
-                          decoration: BoxDecoration(
-                            color: UIUtils.backgroundColor,
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: Colors.grey.withValues(alpha: 0.1),
-                              width: 1,
+                    // Plain descriptive text: readable by touch exploration,
+                    // but never a keypad stop. Hidden on tiny screens.
+                    if (!tiny) ...[
+                      SizedBox(height: UIUtils.spacing(context, 16)),
+                      Container(
+                        padding: UIUtils.paddingAll(context, 16),
+                        decoration: BoxDecoration(
+                          color: UIUtils.cardColor,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: UIUtils.cardBorderColor,
+                            width: 1.5,
+                          ),
+                        ),
+                        child: Column(
+                          children: [
+                            _buildFeature(
+                              context,
+                              Icons.mic_none_rounded,
+                              'Real-time Audio',
+                              'Crystal clear voice communication',
                             ),
-                          ),
-                          child: Column(
-                            children: [
-                              _buildFeature(
-                                context,
-                                _audioFeatureFocusNode,
-                                Icons.mic_none_rounded,
-                                "Real-time Audio",
-                                "Crystal clear voice communication",
-                              ),
-                              const Divider(color: Colors.black12, height: 24),
-                              _buildFeature(
-                                context,
-                                _accessibilityFeatureFocusNode,
-                                Icons.accessibility_new_rounded,
-                                "Fully Accessible",
-                                "TTS, large buttons & more",
-                              ),
-                              const Divider(color: Colors.black12, height: 24),
-                              _buildFeature(
-                                context,
-                                _collaborationFeatureFocusNode,
-                                Icons.groups_outlined,
-                                "Collaboration",
-                                "Raise hands and interact",
-                              ),
-                            ],
-                          ),
+                            Divider(color: UIUtils.cardBorderColor, height: 24),
+                            _buildFeature(
+                              context,
+                              Icons.accessibility_new_rounded,
+                              'Fully Accessible',
+                              'Speech, large buttons and keypad control',
+                            ),
+                            Divider(color: UIUtils.cardBorderColor, height: 24),
+                            _buildFeature(
+                              context,
+                              Icons.groups_outlined,
+                              'Collaboration',
+                              'Raise hands and interact',
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
                     ],
-                  ),
+                  ],
                 ),
               ),
             ),
@@ -828,54 +994,45 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
   Widget _buildFeature(
     BuildContext context,
-    FocusNode focusNode,
     IconData icon,
     String title,
     String description,
   ) {
-    final bool tiny = UIUtils.isTiny(context);
-    return Semantics(
-      button: true,
-      label: '$title. $description',
-      child: InkWell(
-        focusNode: focusNode,
-        onTap: () => TtsService.speak('$title. $description'),
-        borderRadius: BorderRadius.circular(8),
-        child: Row(
-          children: [
-            Icon(
+    return MergeSemantics(
+      child: Row(
+        children: [
+          ExcludeSemantics(
+            child: Icon(
               icon,
               color: UIUtils.accentColor,
               size: UIUtils.iconSize(context, 28),
             ),
-            SizedBox(width: UIUtils.spacing(context, 12)),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      color: UIUtils.textColor,
-                      fontSize: UIUtils.fontSize(context, 14),
-                      fontWeight: FontWeight.w600,
-                    ),
+          ),
+          SizedBox(width: UIUtils.spacing(context, 12)),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: UIUtils.textColor,
+                    fontSize: UIUtils.fontSize(context, 16),
+                    fontWeight: FontWeight.w600,
                   ),
-                  if (!tiny) ...[
-                    SizedBox(height: UIUtils.spacing(context, 2)),
-                    Text(
-                      description,
-                      style: TextStyle(
-                        color: UIUtils.subtextColor,
-                        fontSize: UIUtils.fontSize(context, 12),
-                      ),
-                    ),
-                  ],
-                ],
-              ),
+                ),
+                SizedBox(height: UIUtils.spacing(context, 2)),
+                Text(
+                  description,
+                  style: TextStyle(
+                    color: UIUtils.subtextColor,
+                    fontSize: UIUtils.fontSize(context, 14),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
