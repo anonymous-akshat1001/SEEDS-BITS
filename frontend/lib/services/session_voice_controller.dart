@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 
+import '../announcers/session_text.dart';
+
 class SessionVoiceController extends ChangeNotifier {
   SessionVoiceController({
     required this.initialize,
@@ -34,16 +36,16 @@ class SessionVoiceController extends ChangeNotifier {
   bool get hasWindow => _window;
   bool get busy => _window || _stopping != null || _stopUnconfirmed;
   String get status => _stopUnconfirmed
-      ? 'Voice listening stop not confirmed. Retry stopping.'
+      ? SessionText.voiceStopUnconfirmed
       : _stopping != null
-      ? 'Stopping voice listening.'
+      ? SessionText.voiceStopping
       : _starting
-      ? 'Starting voice commands.'
+      ? SessionText.voiceStarting
       : _window
       ? (_nativeStopped
-            ? 'Finishing voice recognition.'
-            : 'Listening for one command, up to 12 seconds.')
-      : 'Not listening. Activate Listen for command to start.';
+            ? SessionText.voiceFinishing
+            : SessionText.voiceListening)
+      : SessionText.voiceIdle;
 
   bool _owns(int generation) =>
       !_closed && _window && generation == _generation;
@@ -64,7 +66,7 @@ class SessionVoiceController extends ChangeNotifier {
       if (!_owns(generation)) return;
       if (!quiet) {
         await _fail(
-          'App speech could not be stopped. Try Stop speech before listening.',
+          SessionText.voiceSpeechNotStopped,
         );
         return;
       }
@@ -72,7 +74,7 @@ class SessionVoiceController extends ChangeNotifier {
       if (!_owns(generation)) return;
       if (!available) {
         await _fail(
-          'Voice commands are unavailable. Check microphone permission and Android English speech services.',
+          SessionText.voiceUnavailable,
         );
         return;
       }
@@ -109,7 +111,7 @@ class SessionVoiceController extends ChangeNotifier {
       debugPrint('[VOICE] Start failed (${error.runtimeType})');
       if (_owns(generation)) {
         await _fail(
-          'Voice commands could not start. Check microphone permission and English speech services, then try again.',
+          SessionText.voiceCouldNotStart,
         );
       }
     }
@@ -131,7 +133,7 @@ class SessionVoiceController extends ChangeNotifier {
     if (_window && !_closed) {
       unawaited(
         _fail(
-          'Voice recognition could not finish. Check permission and English speech services, then activate Listen to retry.',
+          SessionText.voiceCouldNotFinish,
         ),
       );
     }
@@ -144,7 +146,7 @@ class SessionVoiceController extends ChangeNotifier {
       return;
     }
     if (command.isEmpty) {
-      onIssue('No command heard. Activate Listen for command to try again.');
+      onIssue(SessionText.voiceNoCommand);
       return;
     }
     try {
@@ -153,7 +155,7 @@ class SessionVoiceController extends ChangeNotifier {
       debugPrint('[VOICE] Command action failed (${error.runtimeType})');
       if (!_closed && canAct()) {
         onIssue(
-          'The voice command could not be completed. Use its keypad control or try again.',
+          SessionText.voiceCommandFailed,
         );
       }
     }
@@ -163,7 +165,7 @@ class SessionVoiceController extends ChangeNotifier {
     final generation = _generation;
     final stopped = await stop();
     if (stopped && !_closed && _generation == generation + 1 && canAct()) {
-      onIssue('No command heard. Activate Listen for command to try again.');
+      onIssue(SessionText.voiceNoCommand);
     }
   }
 
@@ -215,7 +217,7 @@ class SessionVoiceController extends ChangeNotifier {
       _stopUnconfirmed = true;
       if (!_closed) {
         onIssue(
-          'Voice listening could not be stopped. Retry Stop listening or leave the session and check the Android microphone indicator.',
+          SessionText.voiceCannotStop,
         );
       }
       return false;

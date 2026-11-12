@@ -37,6 +37,16 @@ const Map<int, String> playerSpeedKeyLabels = {
   playerFasterKey: 'Faster',
 };
 
+/// Spoken names for player keys a screen maps without labelling, so help
+/// never leaves out a key that does something.
+const Map<int, String> playerFallbackKeyLabels = {
+  playerRewindKey: 'Back 10 seconds',
+  playerPlayPauseKey: 'Play or pause',
+  playerForwardKey: 'Forward 10 seconds',
+  playerSlowerKey: 'Slower playback speed',
+  playerFasterKey: 'Faster playback speed',
+};
+
 // ─── Welcome Screen ─────────────────────────────────────────────────────────
 const Map<int, String> welcomeKeyLabels = {
   1: 'Login',
@@ -70,6 +80,8 @@ const Map<int, String> settingsKeyLabels = {
   5: 'Test T T S',
   6: 'Save Settings',
   7: 'Check English voice',
+  8: 'Sound cues on or off',
+  9: 'Vibration on or off',
 };
 
 // ─── Student Dashboard ──────────────────────────────────────────────────────
@@ -80,6 +92,7 @@ const Map<int, String> studentDashboardKeyLabels = {
   3: 'Recorded Audio Library',
   4: 'My Private Playlists',
   5: 'Quizzes',
+  6: 'Learning journeys',
 };
 
 // ─── Teacher Dashboard ──────────────────────────────────────────────────────
@@ -92,7 +105,7 @@ const Map<int, String> teacherDashboardKeyLabels = {
   5: 'Class Playlists',
   6: 'Quizzes',
   7: 'Choose class and subject workspace',
-  8: 'Lesson plans',
+  8: 'Learning journeys',
 };
 
 const Map<int, String> adminDashboardKeyLabels = {
@@ -119,31 +132,44 @@ const Map<int, String> studentQuizKeyLabels = {
   1: 'Refresh quizzes',
 };
 
+/// Same answer keys as learning-journey questions. "Next" is automatic after
+/// the answer is announced; finishing early is a confirmed D-pad option.
 const Map<int, String> quizAttemptKeyLabels = {
-  1: 'Select option 1',
-  2: 'Select option 2',
-  3: 'Select option 3',
-  4: 'Select option 4',
+  1: 'Choose option 1',
+  2: 'Choose option 2',
+  3: 'Choose option 3',
+  4: 'Choose option 4',
   5: 'Submit selected answer',
-  6: 'Next question or view result',
+  6: 'Repeat question and options',
+  // Same slower/faster keys as the audio players; quiz speech only.
+  playerSlowerKey: 'Slower quiz speech',
+  8: 'Where am I, including time left',
+  playerFasterKey: 'Faster quiz speech',
 };
 
-// ─── Session Screen (Student) ───────────────────────────────────────────────
+// ─── Live session (both roles) ──────────────────────────────────────────────
+// One small main screen. Everything else opens from it on demand.
 const Map<int, String> sessionStudentKeyLabels = {
   1: 'Mute or unmute',
   2: 'Raise or lower hand',
-  3: 'Go to chat message',
+  3: 'Hear class status',
+  4: 'Chat',
+  5: 'Hear what the teacher is playing',
+  6: 'Answer classroom check',
+  7: 'Who is in the class',
   0: 'Leave session, asks to confirm',
 };
 
-// ─── Session Screen (Teacher) ───────────────────────────────────────────────
 const Map<int, String> sessionTeacherKeyLabels = {
   1: 'Mute or unmute',
-  2: 'Raise or lower hand',
-  3: 'Invite students',
-  ...playerTransportKeyLabels,
-  8: 'Open or close audio library',
-  0: 'End session, asks to confirm',
+  2: 'Raised hands: acknowledge and lower them in order',
+  3: 'Hear class status',
+  4: 'Chat',
+  5: 'Class recording player: play and control the recording',
+  6: 'Classroom check: start, close and hear responses',
+  7: 'Participants: mute or remove someone',
+  9: 'Teacher tools: invite students, end class for everyone',
+  0: 'Leave session, asks to confirm',
 };
 
 // ─── Simple Session Screen ──────────────────────────────────────────────────

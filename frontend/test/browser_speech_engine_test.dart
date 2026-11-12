@@ -95,15 +95,60 @@ void main() {
     () async {
       final engine = BrowserSpeechEngine();
       final first = engine.speak('Test');
-      final failed = expectLater(first, throwsA(isA<PlatformException>()));
-      sent.last.onerror!.callAsFunction(
-        sent.last,
-        {'error': 'synthesis-unavailable'}.jsify(),
+      final failed = expectLater(
+        first,
+        throwsA(
+          isA<PlatformException>().having(
+            (error) => error.message,
+            'message',
+            'synthesis-unavailable',
+          ),
+        ),
       );
+      // The first failure is retried once with a fallback voice.
+      for (var attempt = 0; attempt < 2; attempt++) {
+        sent.last.onerror!.callAsFunction(
+          sent.last,
+          {'error': 'synthesis-unavailable'}.jsify(),
+        );
+      }
       await failed;
+      expect(sent.length, 2);
       final next = engine.speak('Retry');
       sent.last.onend!.callAsFunction(sent.last, JSObject());
       expect(await next, 1);
+    },
+  );
+
+  test('a missing language is retried once and then speaks', () async {
+    final engine = BrowserSpeechEngine();
+    final spoken = engine.speak('Welcome');
+    sent.last.onerror!.callAsFunction(
+      sent.last,
+      {'error': 'language-unavailable'}.jsify(),
+    );
+    expect(sent.length, 2);
+    expect(sent.last.text, 'Welcome');
+    sent.last.onend!.callAsFunction(sent.last, JSObject());
+    expect(await spoken, 1);
+  });
+
+  test(
+    'speech refused before any click waits for the first interaction',
+    () async {
+      await TtsService.configure(enabled: true, mode: SpeechMode.selfVoicing);
+      TtsService.issue.value = null;
+      await TtsService.speak('The class has ended.');
+      sent.last.onerror!.callAsFunction(
+        sent.last,
+        {'error': 'not-allowed'}.jsify(),
+      );
+      await Future<void>.delayed(Duration.zero);
+      expect(sent.length, 1, reason: 'not-allowed is not retried');
+      expect(TtsService.issue.value, isNull);
+      expect(TtsService.takeBlockedSpeech(), 'The class has ended.');
+      expect(TtsService.takeBlockedSpeech(), isNull);
+      await TtsService.stop();
     },
   );
 

@@ -1,5 +1,6 @@
 // lib/widgets/chat_panel.dart
 import 'package:flutter/material.dart';
+import '../services/message_center.dart';
 import '../services/tts_service.dart';
 import '../services/sse_service.dart';
 import '../utils/ui_utils.dart';
@@ -64,12 +65,7 @@ class _ChatPanelState extends State<ChatPanel> {
       if (_ctrl.text.trim() == txt) _ctrl.clear();
       TtsService.speak('Message sent.');
     } else {
-      final error = result.failure!.message;
-      ScaffoldMessenger.of(context).showSnackBar(
-        // Spoken below; excluded so TalkBack does not read it twice.
-        SnackBar(content: ExcludeSemantics(child: Text(error))),
-      );
-      TtsService.speak(error, priority: SpeechPriority.critical);
+      MessageCenter.error(result.failure!.message);
     }
   }
 

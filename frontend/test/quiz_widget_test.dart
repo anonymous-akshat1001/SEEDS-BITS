@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:frontend/services/message_center.dart';
 import 'package:frontend/screens/quiz_screens.dart';
 import 'package:frontend/utils/keypad_actions.dart';
 import 'package:frontend/utils/ui_utils.dart';
@@ -140,7 +141,7 @@ void main() {
         );
         await tester.sendKeyEvent(LogicalKeyboardKey.digit8);
         await tester.pumpAndSettle();
-        expect(spoken.join(' '), contains('100.0 percent'));
+        expect(spoken.join(' '), contains('100 percent'));
         expect(find.bySemanticsLabel(RegExp('Score 1 of 1')), findsOneWidget);
       } finally {
         semantics.dispose();
@@ -306,8 +307,8 @@ void main() {
               ),
             );
             await tester.pump();
-            await tester.sendKeyEvent(LogicalKeyboardKey.digit7);
-            await tester.pumpAndSettle();
+            // Finishing early is a confirmed D-pad option, not a digit.
+            await activate(tester, 'quiz-early-finish');
             expect(reads, 1);
             if (available) {
               expect(
@@ -351,7 +352,9 @@ void main() {
   test('dashboard keypad mappings expose quizzes', () {
     expect(studentDashboardKeyLabels[5], 'Quizzes');
     expect(teacherDashboardKeyLabels[6], 'Quizzes');
-    expect(quizAttemptKeyLabels[1], 'Select option 1');
+    expect(quizAttemptKeyLabels[1], 'Choose option 1');
+    expect(quizAttemptKeyLabels[6], 'Repeat question and options');
+    expect(quizAttemptKeyLabels[8], 'Where am I, including time left');
     expect(quizAttemptKeyLabels[5], 'Submit selected answer');
     expect(adminDashboardKeyLabels[6], 'Create Class');
     expect(teacherQuizKeyLabels[2], 'Create bank question');
@@ -688,11 +691,9 @@ void main() {
             await tester.sendKeyEvent(LogicalKeyboardKey.digit2);
             await tester.sendKeyEvent(LogicalKeyboardKey.digit5);
             await tester.pumpAndSettle();
-            expect(find.text('Answer saved and locked'), findsOneWidget);
+            // The last answer finishes the attempt by itself.
             expect(find.text('Incorrect'), findsNothing);
             expect(find.textContaining('Correct answer: null'), findsNothing);
-            await tester.sendKeyEvent(LogicalKeyboardKey.digit6);
-            await tester.pumpAndSettle();
             expect(find.text('Attempt complete'), findsOneWidget);
             expect(
               find.textContaining(
@@ -751,8 +752,7 @@ void main() {
           );
           await tester.pump();
           await tester.sendKeyEvent(LogicalKeyboardKey.digit2);
-          await tester.sendKeyEvent(LogicalKeyboardKey.digit7);
-          await tester.pumpAndSettle();
+          await activate(tester, 'quiz-early-finish');
           expect(
             find.textContaining('1 unanswered questions.'),
             findsOneWidget,
@@ -1013,6 +1013,135 @@ void main() {
     );
   });
 
+  testWidgets(
+    'quiz speech speed: 9 and 7 change only quiz speech, re-read the options, and leaving restores the Settings speed',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final spoken = <String>[];
+      final rates = <double>[];
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        const MethodChannel('flutter_tts'),
+        (call) async {
+          if (call.method == 'speak') spoken.add(call.arguments.toString());
+          if (call.method == 'setSpeechRate') {
+            rates.add((call.arguments as num).toDouble());
+          }
+          return 1;
+        },
+      );
+      await TtsService.configure(
+        enabled: true,
+        mode: SpeechMode.selfVoicing,
+        speechRate: TtsService.defaultSpeechRate,
+      );
+      final navigator = GlobalKey<NavigatorState>();
+      await tester.pumpWidget(
+        MaterialApp(
+          navigatorKey: navigator,
+          home: const Scaffold(body: Text('Quiz list')),
+        ),
+      );
+      unawaited(
+        navigator.currentState!.push(
+          MaterialPageRoute<void>(
+            builder: (_) => QuizAttemptScreen(
+              quizTitle: 'Speed quiz',
+              initialAttempt: attemptFixture(),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Quiz speech speed: 1.75×'), findsOneWidget);
+
+      // Faster while the options are being read: they are read again.
+      await TtsService.speak('Option 1. First. Option 2. Second.');
+      await tester.sendKeyEvent(LogicalKeyboardKey.digit9);
+      await tester.pumpAndSettle();
+      expect(rates.last, TtsService.defaultSpeechRate + 0.125);
+      expect(
+        spoken.last,
+        'Faster. 2 times normal speed. Option 1. First. Option 2. Second.',
+      );
+      expect(find.text('Quiz speech speed: 2×'), findsOneWidget);
+      // Settings speed is untouched.
+      expect(TtsService.speechRate, TtsService.defaultSpeechRate);
+
+      // D-pad: reach the speed control and use left to slow down.
+      for (
+        var i = 0;
+        i < 30 &&
+            FocusManager.instance.primaryFocus?.debugLabel !=
+                'quiz-speech-speed';
+        i++
+      ) {
+        await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
+        await tester.pump(const Duration(milliseconds: 30));
+      }
+      expect(
+        FocusManager.instance.primaryFocus?.debugLabel,
+        'quiz-speech-speed',
+      );
+      expect(spoken.last, contains('Quiz speech speed, 2 times normal speed'));
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowLeft);
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowLeft);
+      await tester.pumpAndSettle();
+      expect(spoken.last, startsWith('Slower. 1.5 times normal speed.'));
+      await tester.sendKeyEvent(LogicalKeyboardKey.digit7);
+      await tester.pumpAndSettle();
+      expect(rates.last, 0.625);
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getDouble('quiz_tts_speech_rate'), 0.625);
+
+      // Leaving the quiz restores the Settings speed everywhere else.
+      navigator.currentState!.pop();
+      await tester.pumpAndSettle();
+      expect(rates.last, TtsService.defaultSpeechRate);
+      expect(TtsService.effectiveSpeechRate, TtsService.defaultSpeechRate);
+      await tester.pumpWidget(const SizedBox.shrink());
+    },
+  );
+
+  testWidgets('7 and 8 never finish; Finish quiz now is a confirmed option', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    dotenv.testLoad(fileInput: 'API_BASE_URL=https://example.test');
+    await TtsService.configure(enabled: true, mode: SpeechMode.selfVoicing);
+    var requests = 0;
+    await http.runWithClient(
+      () async {
+        await tester.pumpWidget(
+          MaterialApp(
+            home: QuizAttemptScreen(
+              quizTitle: 'Keys quiz',
+              initialAttempt: attemptFixture(),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        await tester.sendKeyEvent(LogicalKeyboardKey.digit7);
+        await tester.pumpAndSettle();
+        expect(requests, 0);
+        // 8 now says where you are and the time left; it never submits.
+        await tester.sendKeyEvent(LogicalKeyboardKey.digit8);
+        await tester.pumpAndSettle();
+        expect(requests, 0);
+        expect(
+          find.text('Finish quiz now, asks to confirm'),
+          findsOneWidget,
+        );
+        await activate(tester, 'quiz-early-finish');
+        expect(requests, greaterThan(0));
+        await tester.pumpWidget(const SizedBox.shrink());
+      },
+      () => MockClient((_) async {
+        requests++;
+        return http.Response(jsonEncode(attemptFixture()), 200);
+      }),
+    );
+  });
+
   testWidgets('question prompt is spoken and reachable before its options', (
     tester,
   ) async {
@@ -1043,9 +1172,9 @@ void main() {
     ]) {
       expect(spoken.last, contains(option));
     }
-    expect(spoken.last, contains('D-pad up and down'));
-    expect(spoken.last, contains('moving focus does not select or submit'));
-    expect(spoken.last, contains('5 to save your answer'));
+    expect(spoken.last, contains('then 5 to submit'));
+    expect(spoken.last, contains('6 to repeat the question'));
+    expect(spoken.last, contains('8 to hear where you are'));
     await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
     await tester.pump();
     expect(
@@ -1112,17 +1241,13 @@ void main() {
             ),
           );
           await tester.pumpAndSettle();
-          expect(find.textContaining('Second is option two.'), findsOneWidget);
-          expect(
-            FocusManager.instance.primaryFocus?.debugLabel,
-            'quiz-feedback',
-          );
+          // The saved last answer moves on to finishing by itself; nothing
+          // can be changed or submitted again.
           await tester.sendKeyEvent(LogicalKeyboardKey.digit3);
           await tester.pump();
           expect(find.byType(RadioGroup<int>), findsNothing);
           expect(find.text('5: Submit answer'), findsNothing);
-          expect(find.text('6: View result'), findsOneWidget);
-          expect(submissions, 1);
+          expect(submissions, 2, reason: 'one answer, then one completion');
           await tester.pumpWidget(const SizedBox.shrink());
         },
         () => MockClient((_) {
@@ -1166,18 +1291,22 @@ void main() {
           await tester.sendKeyEvent(LogicalKeyboardKey.digit2);
           await tester.sendKeyEvent(LogicalKeyboardKey.digit5);
           await tester.pumpAndSettle();
-          await tester.sendKeyEvent(LogicalKeyboardKey.digit6);
-          await tester.pumpAndSettle();
+          // No key needed: the next question follows the saved answer.
           expect(find.text('Question 2 of 2'), findsOneWidget);
           expect(find.text('What comes next?'), findsOneWidget);
+          expect(spoken.join(' '), contains('confirmed saved and locked'));
+          expect(spoken.join(' '), isNot(contains('Second is option two')));
           expect(spoken.last, contains('What comes next?'));
           expect(spoken.last, contains('Option 1. First'));
           expect(spoken.last, contains('Option 4. Fourth'));
-          expect(spoken.last, contains('5 to save your answer'));
+          expect(spoken.last, contains('then 5 to submit'));
           expect(
             FocusManager.instance.primaryFocus?.debugLabel,
             'quiz-question-prompt',
           );
+          // Feedback for the first answer stays available, privately.
+          await activate(tester, 'quiz-previous-feedback');
+          expect(spoken.last, contains('Second is option two'));
           expect(
             tester
                 .widget<RadioGroup<int>>(find.byType(RadioGroup<int>))
@@ -1222,24 +1351,20 @@ void main() {
           await tester.sendKeyEvent(LogicalKeyboardKey.digit2);
           await tester.sendKeyEvent(LogicalKeyboardKey.digit5);
           await tester.pumpAndSettle();
-          await tester.sendKeyEvent(LogicalKeyboardKey.digit6);
-          await tester.pumpAndSettle();
           expect(completions, 1);
           expect(find.text('Attempt complete'), findsNothing);
-          expect(find.text('Retry completion'), findsOneWidget);
+          expect(find.text('5: Retry completion'), findsOneWidget);
           expect(
             find.textContaining('Your saved answers are preserved.'),
             findsOneWidget,
           );
           expect(find.textContaining('Second is option two.'), findsOneWidget);
 
-          await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
-          await tester.pump();
-          expect(
-            FocusManager.instance.primaryFocus?.debugLabel,
-            'quiz-next-question',
+          // Let the keypad's repeat-press debounce expire.
+          await tester.runAsync(
+            () => Future<void>.delayed(const Duration(milliseconds: 350)),
           );
-          await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+          await tester.sendKeyEvent(LogicalKeyboardKey.digit5);
           await tester.pumpAndSettle();
           expect(completions, 2);
           expect(find.text('Attempt complete'), findsOneWidget);
@@ -1301,8 +1426,8 @@ void main() {
             ),
           );
           await tester.pump();
-          expect(find.text('6: View result'), findsOneWidget);
-          await tester.sendKeyEvent(LogicalKeyboardKey.digit6);
+          expect(find.text('5: View result'), findsOneWidget);
+          await tester.sendKeyEvent(LogicalKeyboardKey.digit5);
           await tester.pumpAndSettle();
           expect(completions, 1);
           expect(find.text('Attempt complete'), findsOneWidget);
@@ -1347,8 +1472,8 @@ void main() {
             expect(requests, 1);
             expect(find.text('Correct'), findsNothing);
             expect(
-              find.textContaining('Your selection is preserved'),
-              findsOneWidget,
+              MessageCenter.last.value?.text,
+              contains('Your selection is preserved'),
             );
             expect(
               tester
@@ -1388,10 +1513,10 @@ void main() {
         ),
       );
       await tester.pump();
-      await tester.sendKeyEvent(LogicalKeyboardKey.digit6);
+      await tester.sendKeyEvent(LogicalKeyboardKey.digit5);
       await tester.pumpAndSettle();
       expect(find.text('Attempt complete'), findsNothing);
-      expect(find.text('Retry completion'), findsOneWidget);
+      expect(find.text('5: Retry completion'), findsOneWidget);
       expect(
         find.textContaining('Completion was not confirmed'),
         findsOneWidget,
@@ -1419,13 +1544,13 @@ void main() {
           );
           await tester.pumpAndSettle();
           expect(completions, 1);
-          expect(find.text('Retry completion'), findsOneWidget);
+          expect(find.text('5: Retry completion'), findsOneWidget);
           expect(find.byType(RadioListTile<int>), findsNothing);
           await tester.sendKeyEvent(LogicalKeyboardKey.digit2);
-          await tester.sendKeyEvent(LogicalKeyboardKey.digit5);
+          await tester.sendKeyEvent(LogicalKeyboardKey.digit6);
           await tester.pump();
           expect(completions, 1);
-          await tester.sendKeyEvent(LogicalKeyboardKey.digit6);
+          await tester.sendKeyEvent(LogicalKeyboardKey.digit5);
           await tester.pumpAndSettle();
           expect(completions, 2);
           expect(find.text('Attempt complete'), findsOneWidget);

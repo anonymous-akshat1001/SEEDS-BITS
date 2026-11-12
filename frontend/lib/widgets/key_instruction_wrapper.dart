@@ -5,8 +5,12 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../announcers/announce.dart';
 import '../main.dart' show routeObserver;
+import '../services/feedback_cues.dart';
+import '../services/message_center.dart';
 import '../services/tts_service.dart';
+import '../services/undo_service.dart';
 import '../utils/keypad_actions.dart';
 import '../utils/keypad_config.dart';
 
@@ -91,6 +95,7 @@ class KeypadInstructionWrapper extends StatefulWidget {
     this.initialFocusNode,
     this.navigationSections,
     this.introduction,
+    this.stateSummary,
   });
 
   final Widget child;
@@ -108,6 +113,10 @@ class KeypadInstructionWrapper extends StatefulWidget {
   final FocusNode? initialFocusNode;
   final String? navigationSections;
   final String? introduction;
+
+  /// Current state read by star after the focused item, for example
+  /// "Muted. Hand raised. 3 hands waiting. Recording playing."
+  final String? Function()? stateSummary;
 
   @override
   State<KeypadInstructionWrapper> createState() =>
@@ -173,7 +182,11 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
     if (widget.autoPlay &&
         (oldWidget.screenName != widget.screenName ||
             oldWidget.introduction != widget.introduction)) {
-      _scheduleInstructions(const Duration(milliseconds: 350));
+      // Not during this rebuild: stopping speech notifies listeners that
+      // may call setState on screens that are still building.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _scheduleInstructions(const Duration(milliseconds: 350));
+      });
     }
   }
 
@@ -279,16 +292,25 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
     _focusListeners.clear();
   }
 
-  Future<void> _playInstructions({bool detailed = false}) async {
+  /// [lead] is spoken before the screen's help, for example a message that
+  /// could not be spoken earlier.
+  Future<void> _playInstructions({bool detailed = false, String? lead}) async {
     if (kIsWeb && !_userInteracted) return;
     final route = ModalRoute.of(context);
     if (route != null && !route.isCurrent) return;
+    final arrival = detailed
+        ? lead
+        : [?lead, ?MessageCenter.takeArrivalMessage()].join(' ');
+    final opening = arrival == null || arrival.isEmpty ? null : arrival;
     if (TtsService.mode == SpeechMode.screenReader) {
       // TalkBack reads the screen itself; announce only where the user is
       // unless they asked for full help with star.
-      final text = detailed
-          ? _instructionText(detailed: true)
-          : '${widget.screenName ?? 'SEEDS'}. Press star for keypad help.';
+      final text = [
+        ?opening,
+        detailed
+            ? _whereAmIText()
+            : '${widget.screenName ?? 'SEEDS'}. Press star for keypad help.',
+      ].join(' ');
       await TtsService.speak(text, priority: SpeechPriority.navigation);
       return;
     }
@@ -302,7 +324,10 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
       // Stopping a platform audio player can complete late on some devices.
       // Do not let that delay or suppress the destination screen's TTS.
       unawaited(_audioPlayer.stop());
-      final instructions = _instructionText(detailed: detailed);
+      final instructions = [
+        ?opening,
+        detailed ? _whereAmIText() : _instructionText(detailed: detailed),
+      ].where((part) => part.isNotEmpty).join(' ');
       if (instructions.isNotEmpty) await TtsService.speak(instructions);
     } catch (error) {
       debugPrint('[KEYPAD INSTRUCTIONS] $error');
@@ -354,7 +379,45 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
     );
   }
 
-  String _instructionText({bool detailed = false}) {
+  /// The screen's labels plus a spoken name for any key that has an action
+  /// but no label, so help never leaves a working key out.
+  Map<int, String> get _labels {
+    final missing = widget.actions.keys
+        .where((key) => key != 0 && !widget.labels.containsKey(key))
+        .toList();
+    if (missing.isEmpty) return widget.labels;
+    // Player screens map 7 and 9 to speed; elsewhere those keys mean other things.
+    // Lists also use 7 and 9 (pages), so a screen counts as a player only
+    // when it has seek keys and 7 is unlabelled or means slower.
+    final slower = widget.labels[playerSlowerKey]?.toLowerCase();
+    final player =
+        widget.actions.containsKey(playerRewindKey) &&
+        widget.actions.containsKey(playerForwardKey) &&
+        widget.actions.containsKey(playerSlowerKey) &&
+        widget.actions.containsKey(playerFasterKey) &&
+        (slower == null || slower.contains('slow'));
+    final labels = Map<int, String>.of(widget.labels);
+    final unnamed = <int>[];
+    for (final key in missing) {
+      final fallback = player ? playerFallbackKeyLabels[key] : null;
+      if (fallback != null) {
+        labels[key] = fallback;
+      } else {
+        unnamed.add(key);
+      }
+    }
+    assert(() {
+      debugPrint(
+        '[KEYPAD] ${widget.screenName ?? 'Screen'} maps keys $missing without '
+        'labels${unnamed.isEmpty ? '' : '; $unnamed are not spoken'}.',
+      );
+      return true;
+    }());
+    return labels;
+  }
+
+  String _instructionText({bool detailed = false, bool withName = true}) {
+    final name = withName ? '${widget.screenName ?? 'SEEDS'}. ' : '';
     final introduction = widget.introduction == null
         ? ''
         : '${widget.introduction} ';
@@ -363,34 +426,48 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
         : 'Use D-pad up and down to move through ${widget.navigationSections}. '
               'Press OK to activate the focused control. ';
     if (widget.interactionPolicy == KeypadInteractionPolicy.numbered) {
-      final choices = widget.labels.entries
+      final choices = _labels.entries
           .where((entry) => entry.key >= 1 && entry.key <= 5)
           .map((entry) => 'Press ${entry.key} for ${entry.value}.')
           .join(' ');
       final extra =
-          '${widget.labels.entries.where((entry) => entry.key > 5).map((entry) => 'Press ${entry.key} for ${entry.value}.').join(' ')} '
+          '${_labels.entries.where((entry) => entry.key > 5).map((entry) => 'Press ${entry.key} for ${entry.value}.').join(' ')} '
           'Press 0 to go back or cancel. Press hash to stop app speech. '
           '${detailed ? 'While editing, keys enter text. Press OK to finish, or use up or down to leave the field.' : ''}';
-      return '${widget.screenName ?? 'SEEDS'}. $introduction$choices '
+      return '$name$introduction$choices '
           '${sections.isEmpty ? 'Use D-pad up and down to move between choices and OK to select. ' : sections}$extra '
           'Press star to repeat full help.';
     }
     if (!detailed && TtsService.verbosity == SpeechVerbosity.essential) {
-      return '${widget.screenName ?? 'SEEDS'}. '
+      return '$name'
           '$introduction${sections.isEmpty ? 'Use up and down to move, and OK to select. ' : sections}Press star for all shortcuts.';
     }
-    if (widget.labels.isNotEmpty) {
-      final back = widget.labels.containsKey(0) ? '' : 'Press 0 to go back. ';
-      return '$introduction${buildTtsInstructions(widget.labels, screenName: widget.screenName, includeRepeatHint: false)} '
+    if (_labels.isNotEmpty) {
+      final back = _labels.containsKey(0) ? '' : 'Press 0 to go back. ';
+      return '$introduction${buildTtsInstructions(_labels, screenName: withName ? widget.screenName : null, includeRepeatHint: false)} '
           '${back}Press hash to stop speech. Press star to repeat these instructions. '
           '${sections.isEmpty ? 'Use the direction keys to move. ' : sections}Press OK to activate a control or edit a field. '
           'While editing, press OK or use up or down to leave the field.';
     }
     if ((widget.screenName ?? '').isNotEmpty) {
-      return '${widget.screenName}. $introduction${sections.isEmpty ? 'Use the direction keys to move and OK to select. ' : sections}'
+      return '$name$introduction${sections.isEmpty ? 'Use the direction keys to move and OK to select. ' : sections}'
           'Press star to repeat these instructions.';
     }
     return '';
+  }
+
+  /// Star: screen, focused item, current state and last message, then keys.
+  String _whereAmIText() {
+    final current = _currentTarget;
+    final where = CommonText.whereAmI(
+      screen: widget.screenName ?? 'SEEDS',
+      focused: current == null || !current.enabled
+          ? null
+          : '${current.label}${_positionOf(current)}',
+      state: widget.stateSummary?.call(),
+      message: MessageCenter.spoken(),
+    );
+    return '$where ${_instructionText(detailed: true, withName: false)}';
   }
 
   Future<void> _repeatHelp() async {
@@ -414,12 +491,14 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
     if (kIsWeb) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
+        // Speech the browser refused before this first interaction.
+        final blocked = TtsService.takeBlockedSpeech();
         final current = _currentTarget;
         if (current != null) {
           _cancelInstructions();
-          _speakSafely(current.label);
+          _speakSafely([?blocked, current.label].join(' '));
         } else {
-          unawaited(_playInstructions());
+          unawaited(_playInstructions(lead: blocked));
         }
       });
     }
@@ -489,10 +568,11 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
     _wrapNotice = current == null || targets.length < 2
         ? null
         : unwrapped >= targets.length
-        ? 'End of list. Back to the first item. '
+        ? CommonText.endOfList
         : unwrapped < 0
-        ? 'Top of list. Moved to the last item. '
+        ? CommonText.topOfList
         : null;
+    if (_wrapNotice != null) unawaited(FeedbackCues.play(Cue.endOfList));
     index = unwrapped % targets.length;
     if (index < 0) index += targets.length;
 
@@ -642,6 +722,14 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
     }
 
     final digit = resolveKeyToDigit(key, character);
+    if (digit == 1 && UndoService.pending) {
+      if (_heldActionKeys.add(event.physicalKey)) UndoService.handleKey();
+      return KeyEventResult.handled;
+    }
+    if (digit == 8 && !widget.actions.containsKey(8)) {
+      MessageCenter.repeat();
+      return KeyEventResult.handled;
+    }
     if (digit != null && widget.actions.containsKey(digit)) {
       if (widget.interactionPolicy == KeypadInteractionPolicy.numbered) {
         if (!_heldActionKeys.add(event.physicalKey)) {
@@ -710,7 +798,10 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
     _detachFocusListeners();
     unawaited(_audioPlayer.stop());
     _audioPlayer.dispose();
-    unawaited(TtsService.stop());
+    // No TtsService.stop() here: navigation already stopped this screen's
+    // speech (didPop, didPushNext, route observer). Disposal happens after the
+    // exit transition, so stopping now would cut off the next screen's
+    // introduction or the feedback spoken after a dialog closes.
     _scopeFocusNode.dispose();
     super.dispose();
   }
@@ -723,9 +814,11 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
         focusNode: _scopeFocusNode,
         onKeyEvent: _handleKeyEvent,
         autofocus: true,
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: _onInteraction,
+        // A Listener sees every touch or click, including ones a button
+        // claims; browsers only allow speech after such an interaction.
+        child: Listener(
+          behavior: HitTestBehavior.translucent,
+          onPointerDown: (_) => _onInteraction(),
           child: widget.child,
         ),
       ),

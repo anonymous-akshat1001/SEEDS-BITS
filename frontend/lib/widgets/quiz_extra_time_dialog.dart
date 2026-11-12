@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../announcers/quiz_text.dart';
 import '../services/tts_service.dart';
 import '../utils/ui_utils.dart';
 import 'key_instruction_wrapper.dart';
@@ -24,12 +25,9 @@ class _QuizExtraTimeDialogState extends State<QuizExtraTimeDialog> {
   void save() {
     final minutes = int.tryParse(_text.text.trim());
     if (minutes == null || minutes < 0 || minutes > 2147483647) {
-      setState(
-        () => _error =
-            'Enter a whole number of minutes, zero or more, within the server integer range.',
-      );
+      setState(() => _error = QuizText.extraInvalid);
       TtsService.speak(
-        '${_error!} Move up to Extra minutes to correct it.',
+        '${_error!} ${QuizText.extraCorrect}',
         priority: SpeechPriority.critical,
       );
       return;
@@ -48,24 +46,23 @@ class _QuizExtraTimeDialogState extends State<QuizExtraTimeDialog> {
 
   @override
   Widget build(BuildContext context) => KeypadInstructionWrapper(
-    screenName:
-        'Extra time for ${widget.studentName}. Future attempts only; active attempt deadlines stay fixed. Quiz closing time still applies. Entering zero minutes removes extra time. Press 0 outside the field to cancel.',
+    screenName: QuizText.extraScreen(widget.studentName),
+    stateSummary: () => QuizText.extraField(_text.text.trim()),
     actions: const {},
     focusTargets: [
       KeypadFocusTarget(
         node: _field,
-        label:
-            'Extra minutes, currently ${_text.text.trim().isEmpty ? 'empty' : _text.text.trim()}. Press OK to edit',
+        label: QuizText.extraField(_text.text.trim()),
         isTextField: true,
       ),
       KeypadFocusTarget(
         node: _save,
-        label: 'Save extra time for future attempts',
+        label: QuizText.extraSave,
         onActivate: save,
       ),
       KeypadFocusTarget(
         node: _cancel,
-        label: 'Cancel without changing extra time',
+        label: QuizText.extraCancel,
         onActivate: () => Navigator.pop(context),
       ),
     ],

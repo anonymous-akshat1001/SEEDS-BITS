@@ -17,6 +17,7 @@ import '../widgets/key_instruction_wrapper.dart';
 import '../utils/keypad_actions.dart';
 import '../widgets/keypad_confirmation_dialog.dart';
 import '../widgets/sim_suggestion_dialog.dart';
+import '../announcers/auth_text.dart';
 
 // Defining the Login screen widget as a statefu widget - loading state/input/switch toggle reloads UI
 class LoginScreen extends StatefulWidget {
@@ -362,7 +363,7 @@ class _LoginScreenState extends State<LoginScreen> {
       }
       unawaited(NotificationService().registerSavedToken());
 
-      TtsService.speak("Login successful");
+      TtsService.speak(AuthText.loginSuccessful);
 
       // Navigate based on actual backend role - prevents crash in case of unexpected events
       if (!mounted) {
@@ -423,11 +424,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _selectRole(String role) {
     if (_selectedRole == role) {
-      TtsService.speak('${_roleName(role)} account already selected');
+      TtsService.speak(AuthText.roleAlreadySelected(_roleName(role)));
       return;
     }
     setState(() => _selectedRole = role);
-    TtsService.speak('${_roleName(role)} account selected');
+    TtsService.speak(AuthText.roleSelected(_roleName(role)));
   }
 
   void _moveRole(int direction) => _selectRole(_neighbourRole(direction));
@@ -469,7 +470,7 @@ class _LoginScreenState extends State<LoginScreen> {
               node: stepNodes[i],
               label: 'Step ${i + 1}. ${_recoverySteps[i]}',
               onActivate: () =>
-                  TtsService.speak('Step ${i + 1}. ${_recoverySteps[i]}'),
+                  TtsService.speak(AuthText.recoveryStep(i + 1, _recoverySteps[i])),
             ),
           KeypadFocusTarget(
             node: close,
@@ -571,25 +572,33 @@ class _LoginScreenState extends State<LoginScreen> {
                 color: selected ? UIUtils.onAccentColor : UIUtils.textColor,
               ),
               const SizedBox(width: 10),
+              // Label and state stack and wrap, so 3x text still fits 240 px.
               Expanded(
-                child: Text(
-                  label,
-                  style: TextStyle(
-                    color: selected ? UIUtils.onAccentColor : UIUtils.textColor,
-                    fontSize: UIUtils.fontSize(context, 16),
-                    fontWeight: FontWeight.w700,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
+                      style: TextStyle(
+                        color: selected
+                            ? UIUtils.onAccentColor
+                            : UIUtils.textColor,
+                        fontSize: UIUtils.fontSize(context, 16),
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    if (selected)
+                      Text(
+                        'Selected',
+                        style: TextStyle(
+                          color: UIUtils.onAccentColor,
+                          fontSize: UIUtils.fontSize(context, 14),
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                  ],
                 ),
               ),
-              if (selected)
-                Text(
-                  'Selected',
-                  style: TextStyle(
-                    color: UIUtils.onAccentColor,
-                    fontSize: UIUtils.fontSize(context, 14),
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
             ],
           ),
         ),
@@ -780,7 +789,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       keyboardType: TextInputType.phone,
                       onTap: () {
                         _keypadController.enterTextEditing(_phoneFocus);
-                        TtsService.speak('Enter phone number');
+                        TtsService.speak(AuthText.enterPhone);
                       },
                     ),
                     SizedBox(height: UIUtils.spacing(context, 12)),
@@ -844,7 +853,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       onTap: () {
                         _keypadController.enterTextEditing(_passwordFocus);
-                        TtsService.speak('Enter password');
+                        TtsService.speak(AuthText.enterPassword);
                       },
                     ),
                     SizedBox(height: UIUtils.spacing(context, 12)),

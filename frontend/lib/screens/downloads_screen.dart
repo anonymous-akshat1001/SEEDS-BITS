@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../services/offline_lesson_store.dart';
 import '../services/tts_service.dart';
+import '../services/undo_service.dart';
+import '../services/message_center.dart';
+import '../announcers/library_text.dart';
 import '../utils/ui_utils.dart';
 import '../widgets/accessible_tile.dart';
 import '../widgets/key_instruction_wrapper.dart';
@@ -21,6 +24,8 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
   final _nodes = <String, FocusNode>{};
   OfflineLessonStore? _store;
   List<OfflineLesson> _lessons = [];
+  // Removed downloads waiting for the undo window to close.
+  static final _hidden = <int>{};
   List<int> _unreadableIds = [];
   int? _reservedBytes;
   late List<Map<String, dynamic>> _candidates;
@@ -77,7 +82,9 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
         : null;
     if (mounted) {
       setState(() {
-        _lessons = records.lessons;
+        _lessons = records.lessons
+            .where((lesson) => !_hidden.contains(lesson.audioId))
+            .toList();
         _unreadableIds = records.unreadableIds;
         _reservedBytes = reserved;
         _loading = false;
@@ -127,7 +134,9 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
     final milestone = percent ~/ 25 * 25;
     if (milestone > _lastMilestone) {
       _lastMilestone = milestone;
-      TtsService.speak('${_titleFor(_downloadingId)} $milestone percent downloaded.');
+      TtsService.speak(
+        LibraryText.downloadProgress(_titleFor(_downloadingId), milestone),
+      );
     }
   }
 
@@ -250,14 +259,37 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
       if (mounted) _node('remove-$id').requestFocus();
       return;
     }
-    await _run(() async {
-      await _store!.remove(id);
-      await _readLocal();
-      await TtsService.speak(
-        'Download of $title removed. Progress and bookmarks kept.',
-      );
+    final store = _store!;
+    if (_unreadableIds.contains(id)) {
+      // A damaged record has nothing to restore; remove it at once.
+      await _run(() async {
+        await store.remove(id);
+        await _readLocal();
+        MessageCenter.success(LibraryText.downloadRemoved(title));
+      });
+      if (mounted) _node('refresh').requestFocus();
+      return;
+    }
+    // Hidden now; the file is deleted only when the undo window closes.
+    setState(() {
+      _hidden.add(id);
+      _lessons = _lessons.where((lesson) => lesson.audioId != id).toList();
     });
     if (mounted) _node('refresh').requestFocus();
+    await UndoService.offer(
+      done: LibraryText.downloadRemoved(title),
+      undo: () async {
+        _hidden.remove(id);
+        if (mounted) await _readLocal();
+      },
+      commit: () async {
+        try {
+          await store.remove(id);
+        } finally {
+          _hidden.remove(id);
+        }
+      },
+    );
   }
 
   Future<void> _play(OfflineLesson lesson) async {
@@ -352,7 +384,7 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
         label: 'Read download status, key 3',
         onActivate: () => TtsService.speak(
           '$storageStatus $_status ${_issue ?? ''} '
-          '${progress == null ? '' : '${_titleFor(_downloadingId)} ${percent ?? 0} percent downloaded.'}',
+          '${progress == null ? '' : LibraryText.downloadProgress(_titleFor(_downloadingId), percent ?? 0)}',
         ),
       ),
       if (progress != null)

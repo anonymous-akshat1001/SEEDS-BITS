@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import '../announcers/library_text.dart';
+import '../services/message_center.dart';
+import '../widgets/keypad_choice_field.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import '../utils/ui_utils.dart';
 // Allows user to pick audio files
@@ -757,7 +760,6 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
     // Stop and dispose audio player BEFORE disposing
     _audioPlayer.stop();
     _audioPlayer.dispose();
-    TtsService.stop();
 
     // Call super.dispose last
     super.dispose();
@@ -1354,10 +1356,7 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
     setState(() => _continuing = true);
     void report(String message) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: ExcludeSemantics(child: Text(message))));
-      TtsService.speak(message, priority: SpeechPriority.critical);
+      MessageCenter.error(message);
     }
 
     try {
@@ -1521,14 +1520,7 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
 
     final matches = exact.isNotEmpty ? exact : partial;
     if (matches.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: ExcludeSemantics(
-            child: Text('No class found with this session name'),
-          ),
-        ),
-      );
-      TtsService.speak('No class found with this session name.');
+      MessageCenter.show(LibraryText.noClassForSession);
       return;
     }
 
@@ -1555,7 +1547,7 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
 
   void _focusFirstActiveClass() {
     if (_isLoading) {
-      TtsService.speak('Classes are still loading. Try key 5 again shortly.');
+      TtsService.speak(LibraryText.classesLoading);
       return;
     }
     if (_sessionsIssue != null) {
@@ -1583,7 +1575,7 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
 
   void _openMyPlaylists() {
     if (_isTeacher) return;
-    TtsService.speak('Opening My Playlists. Playlist contents are private.');
+    TtsService.speak(LibraryText.openingPlaylists);
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => const StudentPlaylistsScreen()),
@@ -2307,8 +2299,11 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
     if (widget.subjectId == null && _availableSubjects.isNotEmpty)
       KeypadFocusTarget(
         node: _subjectFilterFocusNode,
-        label:
-            'Subject filter, ${_selectedSubjectName ?? 'All subjects'}, key 2. Use left or right to change',
+        label: LibraryText.subjectFilterLabel(
+          _selectedSubjectName,
+          _subjectChoices.indexOf(_selectedSubjectId),
+          _subjectChoices.length,
+        ),
         onActivate: _cycleSubjectFilter,
         onDecrease: () => _cycleSubjectFilter(-1),
         onIncrease: _cycleSubjectFilter,
@@ -2481,7 +2476,7 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
           _playingAudioTitle = null;
           _playbackStatus = 'Finished $title';
         });
-        _speakIfEnabled('$title finished.');
+        _speakIfEnabled(LibraryText.finished(title));
       }
     });
   }
@@ -2656,9 +2651,14 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
     );
   }
 
+  List<int?> get _subjectChoices => [
+    null,
+    ..._availableSubjects.map((entry) => entry['subject_id'] as int),
+  ];
+
   void _cycleSubjectFilter([int direction = 1]) {
     if (widget.subjectId != null) {
-      _speakIfEnabled('This library is already limited to one subject');
+      _speakIfEnabled(LibraryText.alreadyOneSubject);
       return;
     }
     final ids = <int?>[
@@ -2673,7 +2673,7 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
 
   Future<void> _playOrPauseAudio(int audioId, String title) async {
     if (_playPending) {
-      await _speakIfEnabled('Please wait for the lesson player.');
+      await _speakIfEnabled(LibraryText.waitForPlayer);
       return;
     }
     final revision = ++_playRevision;
@@ -2861,7 +2861,7 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
 
   Future<void> _changeSpeed(double delta) async {
     if (_playingAudioId == null) {
-      await _speakIfEnabled('No lesson is playing.');
+      await _speakIfEnabled(LibraryText.noLessonIsPlaying);
       return;
     }
     final newSpeed = (_audioSpeed + delta).clamp(0.25, 3.0);
@@ -2876,7 +2876,7 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
     try {
       await _learning.changeSpeed(newSpeed);
       if (mounted) {
-        _speakIfEnabled('Speed ${learningSpeedNumber(newSpeed)} times');
+        _speakIfEnabled(LibraryText.speedChanged(newSpeed));
       }
     } on Exception catch (error) {
       debugPrint('[LEARNING] Speed change failed (${error.runtimeType})');
@@ -3284,7 +3284,6 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
     for (final node in [..._controlNodes.values, ..._audioNodes.values]) {
       node.dispose();
     }
-    TtsService.stop();
     super.dispose();
   }
 
@@ -3484,27 +3483,14 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
                           horizontal: 12,
                           vertical: 6,
                         ),
-                        child: DropdownButtonFormField<int?>(
-                          key: ValueKey(_selectedSubjectId),
+                        child: KeypadChoiceField<int?>(
+                          label: 'Subject filter (key 2)',
                           focusNode: _subjectFilterFocusNode,
-                          initialValue: _selectedSubjectId,
-                          isExpanded: true,
-                          decoration: const InputDecoration(
-                            labelText: 'Subject filter (key 2)',
-                            prefixIcon: Icon(Icons.menu_book_outlined),
-                          ),
-                          items: [
-                            const DropdownMenuItem<int?>(
-                              value: null,
-                              child: Text('All subjects'),
-                            ),
-                            ..._availableSubjects.map(
-                              (subject) => DropdownMenuItem<int?>(
-                                value: subject['subject_id'] as int,
-                                child: Text('${subject['subject_name']}'),
-                              ),
-                            ),
-                          ],
+                          values: _subjectChoices,
+                          value: _selectedSubjectId,
+                          nameOf: (id) => id == null
+                              ? 'All subjects'
+                              : '${_availableSubjects.firstWhere((s) => s['subject_id'] == id)['subject_name']}',
                           onChanged: _selectSubject,
                         ),
                       ),
@@ -3788,9 +3774,6 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
             focusNode: _controlNode('seek'),
             position: _position,
             duration: _duration,
-            onPreview: (value) => setState(
-              () => _currentPosition = value.inMilliseconds / 1000,
-            ),
             onSeek: (value) => _seekTo(value.inMilliseconds / 1000),
           ),
           if (stacked)
@@ -4100,7 +4083,7 @@ class _SelectExistingAudioScreenState extends State<SelectExistingAudioScreen> {
     if (result != null) {
       widget.onAudioAdded();
       Navigator.of(context).pop();
-      TtsService.speak('$title added to this session.');
+      TtsService.speak(LibraryText.addedToSession(title));
     } else {
       _announce(
         'Could not add $title. Check your connection and try again.',

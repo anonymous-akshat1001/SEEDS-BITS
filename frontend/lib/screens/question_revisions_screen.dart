@@ -3,46 +3,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../announcers/quiz_text.dart';
 import '../services/api_service.dart';
 import '../services/tts_service.dart';
 import '../utils/ui_utils.dart';
 import '../widgets/key_instruction_wrapper.dart';
-
-const _monthNames = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
-];
-
-/// Speaks a server timestamp as a local date and time, e.g.
-/// "14 March 2026, 3 30 PM". Timestamps without a zone are treated as UTC.
-String spokenRevisionTime(Object? raw) {
-  final text = raw?.toString().trim() ?? '';
-  if (text.isEmpty) return 'date unknown';
-  final hasTime = text.contains('T') || text.contains(' ');
-  final hasZone = RegExp(r'(Z|[+-]\d{2}:?\d{2})$').hasMatch(text);
-  final parsed = DateTime.tryParse(
-    hasTime && !hasZone ? '${text.replaceFirst(' ', 'T')}Z' : text,
-  );
-  if (parsed == null) return text;
-  final value = hasTime ? parsed.toLocal() : parsed;
-  final date = '${value.day} ${_monthNames[value.month - 1]} ${value.year}';
-  if (!hasTime) return date;
-  final hour = value.hour % 12 == 0 ? 12 : value.hour % 12;
-  final minute = value.minute == 0
-      ? ''
-      : ' ${value.minute.toString().padLeft(2, '0')}';
-  return '$date, $hour$minute ${value.hour < 12 ? 'AM' : 'PM'}';
-}
 
 class QuestionRevisionsScreen extends StatefulWidget {
   const QuestionRevisionsScreen({super.key, required this.questionId});
@@ -132,7 +97,7 @@ class _QuestionRevisionsScreenState extends State<QuestionRevisionsScreen> {
       // focus announcement of the retry control.
       scheduleMicrotask(
         () => TtsService.speak(
-          '$message Focus is on Refresh revisions.',
+          QuizText.revisionFailed(message),
           priority: SpeechPriority.critical,
         ),
       );
@@ -151,9 +116,7 @@ class _QuestionRevisionsScreenState extends State<QuestionRevisionsScreen> {
     }
     if (!mounted) return;
     if (!_sameAccount) {
-      return _fail(
-        'Your account changed. Return and sign in again before viewing private question history.',
-      );
+      return _fail(QuizText.revisionsAccount);
     }
     try {
       final result = await ApiService.getResult(
@@ -161,26 +124,18 @@ class _QuestionRevisionsScreenState extends State<QuestionRevisionsScreen> {
         useAuth: true,
       ).timeout(const Duration(seconds: 10));
       if (!mounted) return;
-      if (!_sameAccount) {
-        return _fail(
-          'Your account changed. Private question history was cleared.',
-        );
-      }
+      if (!_sameAccount) return _fail(QuizText.revisionsCleared);
       if (!result.isSuccess) return _fail(result.failure!.message);
       final data = result.data;
       if (data is! Map ||
           data['question_id'] != widget.questionId ||
           data['has_more'] is! bool ||
           data['revisions'] is! List) {
-        return _fail(
-          'Question revision history could not be verified. Retry loading.',
-        );
+        return _fail(QuizText.revisionsUnverified);
       }
       final rows = data['revisions'] as List;
       if (rows.any((row) => !_validRevision(row))) {
-        return _fail(
-          'Question revision content could not be verified. Retry loading.',
-        );
+        return _fail(QuizText.revisionsContentUnverified);
       }
       setState(() {
         _revisions = rows.cast<Map<String, dynamic>>();
@@ -191,31 +146,30 @@ class _QuestionRevisionsScreenState extends State<QuestionRevisionsScreen> {
       });
       await TtsService.speak(
         _revisions.isEmpty
-            ? 'No tracked revisions. Older question history is unknown, not reconstructed.'
-            : '${_revisions.length} ${_revisions.length == 1 ? 'revision' : 'revisions'} loaded. '
-                  'Read-only question revision ${_revisions[_index]['revision']}, '
-                  'saved ${spokenRevisionTime(_revisions[_index]['recorded_at'])}. '
-                  'Existing quiz and attempt snapshots are not changed.',
+            ? QuizText.noRevisions
+            : QuizText.revisionsLoaded(
+                _revisions.length,
+                _revisions[_index]['revision'],
+                _revisions[_index]['recorded_at'],
+              ),
       );
     } on TimeoutException {
-      await _fail(
-        'Question history timed out. Check your connection and retry.',
-      );
+      await _fail(QuizText.revisionsTimedOut);
     }
   }
 
   Future<void> _move(bool older) async {
     if (_loading) return;
-    if (!_sameAccount) {
-      return _fail(
-        'Your account changed. Private question history was cleared.',
-      );
-    }
+    if (!_sameAccount) return _fail(QuizText.revisionsCleared);
     final next = _index + (older ? 1 : -1);
     if (next >= 0 && next < _revisions.length) {
       setState(() => _index = next);
       await TtsService.speak(
-        'Revision ${_revisions[_index]['revision']} selected. Read-only.',
+        QuizText.revisionSelected(
+          _revisions[_index]['revision'],
+          _offset + _index + 1,
+          _hasMore ? null : _offset + _revisions.length,
+        ),
       );
     } else if (older && _hasMore) {
       await _load(_offset + 20);
@@ -225,11 +179,7 @@ class _QuestionRevisionsScreenState extends State<QuestionRevisionsScreen> {
   }
 
   Future<void> _read(String text) async {
-    if (!_sameAccount) {
-      return _fail(
-        'Your account changed. Private question history was cleared.',
-      );
-    }
+    if (!_sameAccount) return _fail(QuizText.revisionsCleared);
     await TtsService.speak(text);
   }
 
@@ -244,41 +194,8 @@ class _QuestionRevisionsScreenState extends State<QuestionRevisionsScreen> {
   @override
   Widget build(BuildContext context) {
     final revision = _revisions.isEmpty ? null : _revisions[_index];
-    final content = revision?['content'] as Map<String, dynamic>?;
-    final options = content?['options'] as List? ?? const [];
-    final spokenOptions = content?['spoken_options'] as List? ?? const [];
-    final sections = <String, String>{
-      if (revision != null)
-        'version':
-            'Revision ${revision['revision']}. Saved ${spokenRevisionTime(revision['recorded_at'])}. Read-only.',
-      if (content != null) ...{
-        'question':
-            'Question: ${content['spoken_question_text'] ?? content['question_text']}',
-        'topics':
-            'Topics: ${(content['topics'] as List? ?? const []).join(', ')}',
-        for (var i = 0; i < options.length; i++)
-          'option-$i':
-              'Option ${i + 1}: ${i < spokenOptions.length ? spokenOptions[i] : options[i]}. ${content['correct_option_index'] == i ? 'Correct answer.' : ''}',
-        'explanation':
-            'Explanation: ${content['spoken_explanation'] ?? content['explanation'] ?? 'Not provided'}',
-      },
-      'notice':
-          'Only revisions saved after tracking was introduced are available. Older history is unknown. Existing quiz and attempt snapshots are never rewritten.',
-    };
-    final titles = <String, String>{
-      if (revision != null)
-        'version':
-            'Revision ${revision['revision']}, ${spokenRevisionTime(revision['recorded_at'])}',
-      if (content != null) ...{
-        'question': 'Question text',
-        'topics': 'Topics',
-        for (var i = 0; i < options.length; i++)
-          'option-$i':
-              'Option ${i + 1}${content['correct_option_index'] == i ? ', correct answer' : ''}',
-        'explanation': 'Explanation',
-      },
-      'notice': 'About revision history',
-    };
+    final sections = QuizText.revisionSections(revision);
+    final titles = QuizText.revisionTitles(revision);
     String fullRevision() => sections.entries
         .where((entry) => entry.key != 'notice')
         .map((entry) => entry.value)
@@ -288,40 +205,41 @@ class _QuestionRevisionsScreenState extends State<QuestionRevisionsScreen> {
     final canOlder = !_loading && (_index + 1 < _revisions.length || _hasMore);
     final canNewer = !_loading && (_index > 0 || _offset > 0);
     return KeypadInstructionWrapper(
-      screenName:
-          'Private read-only question revision history. Use older and newer revision controls, then read each section.',
-      labels: const {0: 'Go back'},
+      screenName: QuizText.revisionsScreen,
+      stateSummary: () => QuizText.revisionState(revision?['revision']),
+      labels: const {0: QuizText.goBack},
       actions: {0: () => Navigator.pop(context)},
       focusTargets: [
         KeypadFocusTarget(
           node: _node('back'),
-          label: 'Go back',
+          label: QuizText.goBack,
           onActivate: () => Navigator.pop(context),
         ),
         KeypadFocusTarget(
           node: _node('refresh'),
-          label: 'Refresh revisions',
+          label: QuizText.refreshRevisions,
           onActivate: () => _load(_offset),
           isEnabled: () => !_loading,
         ),
         KeypadFocusTarget(
           node: _node('newer'),
-          label: 'Newer revision',
+          label: QuizText.newerRevision,
           onActivate: () => _move(false),
           isEnabled: () => canNewer,
         ),
         KeypadFocusTarget(
           node: _node('older'),
-          label: 'Older revision',
+          label: QuizText.olderRevision,
           onActivate: () => _move(true),
           isEnabled: () => canOlder,
         ),
         for (final section in sections.entries)
           KeypadFocusTarget(
             node: _node(section.key),
-            label: _sameAccount
-                ? '${titles[section.key]}. Press OK to hear it'
-                : 'Account changed. Return and sign in again.',
+            label: QuizText.revisionSection(
+              titles[section.key]!,
+              sameAccount: _sameAccount,
+            ),
             onActivate: () => _read(readText(section.key)),
           ),
       ],

@@ -79,6 +79,8 @@ flowchart LR
 | `playlist_routes.py` | Playlist APIs |
 | `quiz_routes.py` | Question banks, quiz authoring, attempts, grading, and results |
 | `quiz_schemas.py` | Typed quiz request and response contracts |
+| `journey_routes.py` | Learning journey authoring, publication, student play, offline sync, and results |
+| `journey_schemas.py` | Typed learning-journey step and sync contracts |
 | `auth.py` | Password hashing, JWT handling, and role dependencies |
 | `database.py` | Async SQLAlchemy engine and session factory |
 | `models.py` | SQLAlchemy database models |
@@ -140,6 +142,7 @@ SEEDS-BITS/
 |   |-- main.py                  FastAPI entry point
 |   |-- admin_routes.py          Administrator routes
 |   |-- playlist_routes.py       Playlist routes
+|   |-- journey_routes.py        Learning journey routes
 |   |-- auth.py                  Authentication and authorization
 |   |-- database.py              Database engine and sessions
 |   |-- models.py                SQLAlchemy models
@@ -323,18 +326,24 @@ actionable error if legacy rows refer to missing classes or subjects; repair
 those references and rerun it.
 
 The current head also adds the quiz tables, classroom hand-queue columns
-(`20261020_03`) and private reusable lesson sequences (`20261020_04`).
+(`20261020_03`) and private reusable lesson sequences (`20261020_04`, removed
+again by `20261109_10`).
 Assessment policies and future-attempt extra time are added by `20261020_05`;
 `20261020_06` adds reviewed spoken question metadata and traceable bank
 revisions without reconstructing legacy history. Revision
 `20261020_07` adds versioned authentication sessions and administrator-assisted
 password recovery. Existing password hashes and accounts are preserved, with
 no forced change until an authorized administrator explicitly resets an account.
-The current head, `20261020_08`, makes each push token exclusive to one account.
+Revision `20261020_08` makes each push token exclusive to one account.
 As approved, every ambiguous legacy duplicate association is revoked, including
 duplicates within one account; unambiguous links remain. Affected phones regain
 notifications on their next normal signed-in registration. No accounts, lessons,
 notes or assessment records are removed.
+Revision `20261102_09` adds analytics history. The current head,
+`20261109_10`, adds learning journeys (`learning_journeys`,
+`journey_snapshots`, `journey_runs`, `journey_answers`) and **drops the former
+`lesson_sequences` table and its saved teacher lesson plans**; back up first if
+they are needed. Its downgrade recreates an empty `lesson_sequences` table.
 Upgrade an existing database **before starting this backend
 version**; `create_all` at startup does not add columns to existing tables.
 The hand migration retains existing raised-hand flags and leaves their
@@ -579,12 +588,9 @@ mappings unless explicitly listed below.
   requests. Empty classroom hand/summary actions speak their unavailable state
   rather than silently doing nothing.
 
-Lesson plans require the current backend's `/teacher-sequences` routes and
-database migrations. A deployed `404 Not Found` is not a successful empty
-workspace: creation stays disabled and the screen gives administrator recovery
-instructions. Verify the backend version and proxy routing, back up the
-database, run `alembic upgrade head`, then restart the updated backend. Refresh
-plans afterward. This frontend change does not deploy or migrate a server.
+Learning journeys require the current backend's `/teacher/journeys` and
+`/student/journeys` routes and the `20261109_10` migration. Back up the
+database, run `alembic upgrade head`, then restart the updated backend.
 
 Run the foundation and compatibility tests from `frontend`:
 
@@ -738,6 +744,7 @@ backend is running. Major endpoint groups include:
 | Notifications | Register and remove FCM device tokens |
 | Logs | Retrieve session events and aggregated summaries |
 | Quizzes | Question bank, authoring, publication, attempts, feedback, review, and results |
+| Learning journeys | `GET/POST /teacher/journeys`, `PUT /teacher/journeys/{id}`, `.../preview`, `.../publish`, `.../archive`, `.../restore`, `.../duplicate`, `.../results`, `GET /student/journeys`, `GET /student/journeys/{id}`, `POST /student/journeys/sync` |
 
 Authentication uses JWTs. Query-parameter user impersonation is available only
 when `ALLOW_DEV_USER_IMPERSONATION` is explicitly enabled.
@@ -777,6 +784,30 @@ version, English TTS engine, audio, and available memory.
 - Audio players share one layout around the raised 5 key: **4** back 10
   seconds, **5** play or pause, **6** forward 10 seconds, **7** slower,
   **9** faster. Turning app speech off is only offered in Settings.
+- A live session is one short screen. Students: **1** mute or unmute,
+  **2** raise or lower hand, **3** hear class status, **4** chat (its own
+  screen), **5** hear what the teacher is playing (read only: only the
+  teacher can play, pause, seek or change the class recording), **6**
+  answer the classroom check, **7** who is in the class (teacher first, then
+  you, then everyone by name, with raised hands and microphones; read only),
+  **0** leave (asks to confirm: 0 stays, 1 leaves). Teachers get their own
+  session screen with only teacher options (they have no hand to raise):
+  **1** mute or unmute, **2** raised hands queue, **3** class status,
+  **4** chat, **5** the **Class recording player** (it starts the
+  selected recording for the class; inside, 4/6 seek 10 seconds, 5 play or
+  pause, 7/9 speed, 1 choose, 2 upload, 3 status), **6** run the classroom
+  check, **7** participants (mute or remove someone, classroom summary),
+  **9** teacher tools (invite students, end class for everyone) and **0**
+  leave (the class keeps running). Only the teacher's player controls the
+  class recording, for everyone at once.
+- While answering or reviewing a quiz, **7** and **9** make quiz speech
+  slower or faster (also the D-pad **Quiz speech speed** control: left or
+  right). If options were being read, they are read again at the new speed.
+  The quiz speed is remembered for the next quiz and never changes the
+  Settings speed used everywhere else. Quiz answer keys match learning
+  journeys: **1–4** choose, **5** submit, **6** repeat the question, **8**
+  where am I (including time left). **Finish quiz now** is a D-pad item that
+  asks to confirm.
 - Recorded-library controls, lesson rows, private preview, and session
   broadcast controls have explicit spoken focus targets. Private preview and
   playback for everyone are described separately.
@@ -784,6 +815,39 @@ version, English TTS engine, audio, and available memory.
   label. Finding online recordings and streaming require internet. Its
   **Downloaded Lessons** action opens locally saved recordings without
   waiting for an online list.
+
+### Blind-user accessibility features
+
+- **Sound cues and vibration.** Short distinct sounds for correct, wrong,
+  saved, error, end of list, loading, unmuted (your turn to speak), muted and
+  leaving. They work while speech is stopped. On Android they are paired with
+  vibration: one short buzz for OK, two for an error, a long one for leaving
+  or ending. Settings **8** turns sound cues on or off and **9** turns
+  vibration on or off.
+- **One place for spoken text.** Sentences live in `frontend/lib/announcers/`
+  (dashboard, admin, settings, sign-in, library, quiz, session, journeys and
+  notifications), so wording stays consistent and can be translated.
+- **Messages you can hear again.** Pop-up SnackBars are replaced by a
+  persistent last-message bar at the bottom of every screen. Press **8** (on
+  screens where 8 has no other job) or **star** to hear it again.
+- **Star always answers "where am I".** Screen name, focused item, current
+  state (for example "Muted. Hand raised. 3 hands waiting. Recording
+  playing."), the last message, then the keys.
+- **Natural numbers and times.** Phone numbers digit by digit, session IDs as
+  "session four two", times as "10:30 in the morning", durations as
+  "2 minutes 10 seconds" (`frontend/lib/utils/spoken_format.dart`).
+- **No touch-only controls.** Dropdowns and sliders (subject and quiz state
+  pickers, admin pickers, quiz timings, Settings volume, text size and speech
+  rate, lesson position) are left/right controls that announce their value.
+- **Undo.** Removing a journey step, a download or a playlist item says
+  "Press 1 within 10 seconds to undo". The removal is only made permanent
+  after that window.
+- **Fewer timers.** Nothing acts just because the user was silent; searches
+  run only when asked. Where a time limit applies (quizzes), 8 says the time
+  left and warnings are spoken before it runs out.
+- **Notifications that open the right item.** Tapping a live-class, journey
+  or quiz notification opens a spoken page, for example "Your teacher started
+  a class. Press 1 to join."
 
 ### Speech and recorded audio
 
@@ -805,10 +869,12 @@ visible borders, the keypad-focused control always has a thick yellow ring,
 and states are written in words ("Live now", "Selected", "Muted") rather
 than shown by colour alone. Layouts stack into one column on 240×320 screens.
 
-The default native TTS rate is **0.75**, 1.5 times the former 0.5 default.
-Fresh settings, session fallbacks and Reset defaults use this shared value;
-an explicitly saved speech rate is preserved. Settings still provides rate
-adjustment and Test TTS so each user can choose a comfortable speed.
+The default speech speed is **1.75 times** the TTS engine's normal speed
+(flutter_tts rate 0.875). Settings offers **0.5 to 4 times** in 0.25 steps,
+spoken as "times normal speed", plus Test TTS. Phones that still had the
+previous 1.5-times default saved move to the new default once; any other
+saved speed is kept. Android and web now use the same scale (the web engine
+previously played the default at 0.75 times).
 
 Focus/navigation and requested speech replace stale utterances. Incidental
 joins, departures and hand updates cannot interrupt requested speech. Live
@@ -1121,7 +1187,7 @@ Target phones/Android versions, classroom scale, performance/resource limits,
 signing and distribution still require approval and measured evidence.
 Physical-device tests and sessions with blind teachers/students have not been
 run; automated checks do not establish accessibility certification or release
-readiness. Teacher sequences, checks, private notes and assessment changes have
+readiness. Learning journeys, checks, private notes and assessment changes have
 software-level evidence below. Direct English-voice guidance, core magnified
 reflow, private assessment readout and exclusive push-token ownership now have
 automated evidence. Broader populated-route/dialog reflow and shared-phone speech/
@@ -1129,10 +1195,14 @@ identity coverage, device/operational thresholds and integrated release acceptan
 remain unfinished. The user reconfirmed device models/hardware, classroom scale
 and performance/distribution limits are not yet known; these gates remain blocked.
 
-### Teacher classroom console
+### Teacher classroom controls
 
-The teacher's session connection row exposes **Classroom console**, reachable
-by D-pad/OK independently of the Chat tab. The console provides:
+In a live session teachers press **2** for the raised hands queue, **6** for
+the classroom check, **7** for participants and **9** for **Teacher tools**
+(**1** invite, **2** end class, asks to confirm, **3** classroom summary).
+The class keeps running underneath. Participants offers the raised hands
+queue, the participants list and the classroom summary. The
+raised hands queue provides:
 
 - **Read classroom summary** on demand: the local connection state, last
   received participant/hand/microphone counts, requested class playback and
@@ -1165,33 +1235,81 @@ A fresh join resets the hand and starts muted.
 
 The queue requires the database migration described above.
 
-### Reusable teacher lesson sequences
+### Learning journeys
 
-**Lesson sequences** is available from the teacher's selected class/subject
-dashboard and live-session connection toolbar. Plans are server-saved and
-private to their owning teacher and authorized workspace. They can contain
-authorized recordings, teacher instruction prompts and the approved ungraded
-understanding checks, but no graded-quiz steps.
+A **learning journey** joins content and checking into one flow, replacing the
+former teacher-only lesson plans. A teacher bundles recordings, narration read
+by the phone, questions and polls in order, for example: *"Let us hear about
+some food today"* (narration), a food story (recording), *"Which grain is in
+the story?"* (question) and *"Have you eaten rice this week?"* (poll). A wrong
+answer replays the part it came from, then asks again; after the allowed
+tries the answer and explanation are read and the journey moves on. Polls have
+no wrong answer. Live-session lesson plans were removed; the classroom
+console and checks are unchanged. Standalone quizzes and playlists remain.
 
-Selecting a plan, Previous or Next only changes the teacher's selection.
-**Run selected step** requires confirmation and revalidates the saved revision,
-workspace, session ownership and recording availability. A changed/unavailable
-step is not silently replaced. No step automatically advances, records,
-unmutes or starts class playback.
+**Teachers** open **8: Learning Journeys** from the dashboard (workspace
+required). Every screen is one small job with at most five numbered choices,
+the same keys as everywhere else (0 back, 8 read details, star help, hash stop
+speech) and a matching D-pad focus order, so blind teachers can author end to
+end without touch:
 
-Outside a live session, recordings open private lesson playback and check
-prompts are read on this phone without collecting responses. In a live
-session, a confirmed recording step selects the recording for the class and
-then opens the existing separate Play confirmation; this is explicitly not
-private preview. Check steps read the teacher prompt and open check controls;
-starting a new check still needs its own confirmation. Preparing a sequence
-step on the server never broadcasts, opens a check or changes microphones.
+- Home: 1 create, 2 drafts, 3 published, 4 archived, 5 refresh.
+- A journey: 1 hear and edit steps, 2 add a step, 3 preview as a student,
+  4 publish (or results when nothing is unpublished), 5 more options
+  (results, rename, grading and tries, duplicate, archive/restore/delete).
+- Each step: hear in full, edit, move earlier/later (spoken new position),
+  remove with confirmation. Moving or removing keeps each question's replay
+  point on the same content, or falls back to automatic.
+- Adding a step is a guided sequence of single-field screens with a read-back
+  before saving. Recordings can be picked from your library, uploaded, or
+  recorded through Private notes and published to the class. Questions can be
+  written (2-4 options) or taken from your question bank. A question replays
+  automatically from the first recording or narration since the previous
+  question, or from a step you choose.
+- Publishing first reads a summary with blocking problems (for example a
+  missing recording, or grading with no question) and warnings (no
+  explanation, nothing to replay), then needs confirmation. Students get a
+  notification. Later edits stay in the draft until published again.
+- Results read a class summary, each student, each question's first-try rate
+  and average tries (which content needs teaching again) and poll tallies.
 
-Teachers can name/rename plans, add prompts/checks/recordings, edit prompts,
-reorder steps and confirm selected step/plan removal. Saves use optimistic
-revision checks; ambiguous acknowledgments require refresh rather than
-claiming success or automatically retrying. Removing a plan does not delete
-recordings or change a live classroom. Existing audio playlists are unchanged.
+**Students** open **6: Learning Journeys**: 1 continue the last journey,
+2 new, 3 in progress, 4 completed, 5 downloaded (opens without internet).
+A journey can be started, described, downloaded or restarted. In the player:
+
+| Step | Keys |
+|------|------|
+| Recording or narration | 1 where am I, 2 next step, 3 repeat step, 4/6 back/forward 10 seconds, 5 play/pause, 7/9 slower/faster, 8 previous recording or narration |
+| Question or poll | 1-4 choose (read back), 5 submit, 6 repeat question, 7/9 quiz speech speed, 8 where am I |
+| Finished | 1 play again |
+
+0 leaves with confirmation; the place is saved on the phone. A recording that
+finishes moves on automatically and the next step is announced. The finished
+summary reads the first-try score.
+
+**Offline and sync.** A download saves the published version and every
+recording on the phone, sharing the account's 50 MB allowance, integrity checks
+and 30-day access of downloaded lessons. Removing a journey keeps recordings
+still used by another downloaded journey. Progress and answers are saved per
+account after each step and queued; they are sent when the journeys screen
+opens or a journey ends with internet. The server recomputes correctness and
+scores from the exact published version played, ignores device judgments,
+accepts repeats of the same run idempotently and rejects runs from other
+accounts or impossible answers.
+
+**Grading.** Ungraded by default. A graded journey's score is the share of
+questions answered correctly on the first try in the student's first finished
+run; replays help learning but do not raise it. Because answers are on the
+phone to allow offline replays, graded journeys suit low-stakes checks; use
+the Quiz module for protected assessments.
+
+Automated tests cover the engine (replay, retries, polls, resume), offline
+queueing and downloads, keypad menus, the player key flow, confirmation on
+leaving, and 240x320 at 1.5x text. Before release, check on a physical keypad
+phone, with TalkBack on and off: a blind teacher authors and publishes a
+five-step journey without touch; a student plays it in airplane mode after
+downloading, answers wrongly to hear the replay, leaves and resumes, then
+reconnects and the teacher sees the results.
 
 ### Private classroom understanding checks
 
@@ -1373,19 +1491,23 @@ Touch, pointer, Tab/Shift+Tab, D-pad arrows, and OK/Enter remain available.
   settings without publishing, and **8** requests Publish confirmation;
   Back to adding questions remains reachable by D-pad/OK or touch.
 - During an attempt: **1–4** select an option, **5** explicitly submits it,
-  and **6** moves to the next question or result only after the answer is
-  confirmed saved. It cannot finish an unanswered question.
-  Only the controls relevant to the current stage are shown: options/Submit
-  while choosing, explicit private feedback and Next after saving, and result/
-  return controls after completion. Choosing an option never automatically submits.
-- **7** requests early final submission. The app first checks the server's
-  current saved-answer count, then confirms unanswered questions, saved-only
-  answers and irreversibility. An unavailable/unverified count blocks this
-  action rather than guessing from stale local state.
+  **6** repeats the question and options, and **8** says where you are and
+  the time left. Once the server confirms the answer is saved, the next
+  question (or finishing) follows automatically; it cannot finish an
+  unanswered question. Correct or wrong is never spoken aloud automatically,
+  so classmates cannot overhear: the previous answer's feedback stays
+  available privately on the next question. Choosing an option never
+  automatically submits.
+- **Finish quiz now** (a D-pad item) requests early final submission. The
+  app first checks the server's current saved-answer count, then confirms
+  unanswered questions, saved-only answers and irreversibility. An
+  unavailable/unverified count blocks this action rather than guessing from
+  stale local state.
 - Back, hash, **0** and the app-bar Back control offer **Leave without
   submitting** for active attempts. An unsaved selection may be lost; timers
   continue, and resume remains subject to server availability and authorization.
-- After completion: **0** or **6** returns to the Quizzes screen.
+- After completion: **0** or **6** returns to the Quizzes screen and **8**
+  reads the result privately.
 - Outside text editing, **star** repeats the current screen instructions
   and **hash** goes Back.
 - D-pad arrows move through controls; OK/Enter activates the focused control.
@@ -1413,9 +1535,15 @@ focus moves to a live feedback region. Correctness is communicated with text,
 an icon, semantics, and speech rather than color alone. Connectivity failures
 retain the local selection and do not show success until the server confirms
 the response. Failed or malformed completion responses preserve saved
-feedback and expose **Retry completion**, rather than announcing a result.
+feedback and expose **5: Retry completion**, rather than announcing a result.
 An in-progress attempt resumed with every answer already saved also exposes
-**View result** without requiring another answer submission.
+**5: View result** without requiring another answer submission.
+
+A teacher's saved questions can be reused in any number of quizzes,
+including quizzes for their other classes and subjects. **Choose a saved
+question** lists this class and subject first and names the class and subject
+of the others. Each quiz keeps its own copy, so editing the saved question
+later never changes a quiz that already uses it.
 
 ### Quiz migration and retention
 

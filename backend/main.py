@@ -27,7 +27,7 @@ from sqlalchemy.dialects.postgresql import insert as postgres_insert
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 
 import models, schemas, auth, ws_manager, access_control as access, bootstrap
-import admin_routes, playlist_routes, quiz_routes, classroom_checks, sequence_routes
+import admin_routes, playlist_routes, quiz_routes, classroom_checks, journey_routes
 import account_recovery
 from database import AsyncSessionLocal, engine, get_db
 from notification_service import fcm_service
@@ -61,7 +61,7 @@ app.include_router(analytics_routes.router)
 app.include_router(admin_routes.router)
 app.include_router(playlist_routes.router)
 app.include_router(quiz_routes.router)
-app.include_router(sequence_routes.router)
+app.include_router(journey_routes.router)
 app.include_router(account_recovery.router)
 
 

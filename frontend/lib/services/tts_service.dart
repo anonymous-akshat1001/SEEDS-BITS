@@ -1,7 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/semantics.dart';
+import 'package:flutter/services.dart' show PlatformException;
 import 'package:flutter/widgets.dart' show TextDirection;
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -33,7 +35,33 @@ class _RecordedPlayback {
 }
 
 class TtsService {
-  static const defaultSpeechRate = 0.75;
+  // Rates use flutter_tts's scale: on Android 0.5 is the engine's normal
+  // speed (the plugin doubles the value), so the default 0.875 is 1.75 times
+  // normal. The web engine applies the same scale (see speech_engine_web).
+  static const defaultSpeechRate = 0.875;
+  static const minSpeechRate = 0.25;
+  static const maxSpeechRate = 2.0;
+  static const speechRateStep = 0.125;
+  static const _previousDefaultSpeechRate = 0.75;
+  static const _speechRateVersionKey = 'tts_speech_rate_version';
+  static const _speechRateVersion = 2;
+
+  /// Speed relative to the engine's normal voice, e.g. 1.75.
+  static double speedMultiple(double rate) => rate * 2;
+
+  /// Spoken and visible form, e.g. "1.75 times normal speed".
+  static String describeSpeed(double rate) =>
+      '${formatSpeedMultiple(rate)} times normal speed';
+
+  /// "1.75", "2", "0.5": no trailing zeros.
+  static String formatSpeedMultiple(double rate) {
+    final text = speedMultiple(rate).toStringAsFixed(2);
+    return text.replaceFirst(RegExp(r'\.?0+$'), '');
+  }
+
+  static double clampSpeechRate(double rate) =>
+      rate.clamp(minSpeechRate, maxSpeechRate).toDouble();
+
   static final FlutterTts _tts = createSpeechEngine();
   static final ValueNotifier<String?> issue = ValueNotifier(null);
   static final ValueNotifier<bool> speaking = ValueNotifier(false);
@@ -43,6 +71,10 @@ class TtsService {
   static String _englishLanguage = 'en-IN';
   static bool _enabled = true;
   static double _speechRate = defaultSpeechRate;
+  // Temporary speeds for particular screens (only the quiz uses this). The
+  // most recently set one wins; removing it restores the Settings speed.
+  static final Map<Object, double> _rateOverrides = {};
+  static String? _currentText;
   static double _volume = 1.0;
   static double _pitch = 1.0;
   static SpeechMode _mode = SpeechMode.selfVoicing;
@@ -60,6 +92,57 @@ class TtsService {
   static double get volume => _volume;
   static SpeechMode get mode => _mode;
   static SpeechVerbosity get verbosity => _verbosity;
+
+  /// The speed chosen in Settings.
+  static double get speechRate => _speechRate;
+
+  /// The speed in use now: a screen's temporary speed, else Settings.
+  static double get effectiveSpeechRate =>
+      _rateOverrides.isEmpty ? _speechRate : _rateOverrides.values.last;
+
+  /// What app speech is saying right now, if anything.
+  static String? get currentText => _speakingNow ? _currentText : null;
+
+  static bool _speakingNow = false;
+  static bool _speakingUpdateScheduled = false;
+
+  /// Updates [speaking]. Speech can stop while a frame is being built (a
+  /// screen rebuilding stops the previous announcement); listeners that call
+  /// setState would then fail, so the change is published after the frame.
+  static void _setSpeaking(bool value) {
+    _speakingNow = value;
+    final SchedulerBinding binding;
+    try {
+      binding = SchedulerBinding.instance;
+    } catch (_) {
+      speaking.value = value;
+      return;
+    }
+    if (binding.schedulerPhase != SchedulerPhase.persistentCallbacks) {
+      speaking.value = value;
+      return;
+    }
+    if (_speakingUpdateScheduled) return;
+    _speakingUpdateScheduled = true;
+    binding.addPostFrameCallback((_) {
+      _speakingUpdateScheduled = false;
+      speaking.value = _speakingNow;
+    });
+  }
+
+  /// Sets ([rate]) or removes (null) a temporary speed owned by [owner].
+  /// Settings and every other screen keep their own speed.
+  static Future<void> setSpeechRateOverride(Object owner, double? rate) async {
+    _rateOverrides.remove(owner);
+    if (rate != null) _rateOverrides[owner] = clampSpeechRate(rate);
+    await init();
+    if (!_isInitialized) return;
+    try {
+      await _tts.setSpeechRate(effectiveSpeechRate).timeout(_engineTimeout);
+    } catch (error) {
+      _report('Speech speed could not be changed. Try again.', error);
+    }
+  }
 
   static Future<void> init() async {
     if (_isInitialized) return;
@@ -110,6 +193,7 @@ class TtsService {
 
   static Future<void> loadFromPreferences() async {
     final prefs = await SharedPreferences.getInstance();
+    await _migrateSpeechRate(prefs);
     await configure(
       enabled: prefs.getBool('tts_enabled') ?? true,
       volume: prefs.getDouble('tts_volume') ?? 1.0,
@@ -123,6 +207,19 @@ class TtsService {
         _ => SpeechVerbosity.standard,
       },
     );
+  }
+
+  /// Settings used to save the old default (1.5 times) on every save, so a
+  /// stored 0.75 almost always means "never changed". Move those phones to
+  /// the new default once; any other saved speed is kept.
+  static Future<void> _migrateSpeechRate(SharedPreferences prefs) async {
+    if ((prefs.getInt(_speechRateVersionKey) ?? 1) >= _speechRateVersion) {
+      return;
+    }
+    if (prefs.getDouble('tts_speech_rate') == _previousDefaultSpeechRate) {
+      await prefs.remove('tts_speech_rate');
+    }
+    await prefs.setInt(_speechRateVersionKey, _speechRateVersion);
   }
 
   static Future<String> checkEnglishVoice() async {
@@ -192,7 +289,7 @@ class TtsService {
     SpeechVerbosity? verbosity,
   }) async {
     if (enabled != null) _enabled = enabled;
-    if (speechRate != null) _speechRate = speechRate.clamp(0.1, 1.0).toDouble();
+    if (speechRate != null) _speechRate = clampSpeechRate(speechRate);
     if (volume != null) _volume = volume.clamp(0.0, 1.0).toDouble();
     if (pitch != null) _pitch = pitch.clamp(0.5, 2.0).toDouble();
     if (mode != null) _mode = mode;
@@ -212,7 +309,7 @@ class TtsService {
   }
 
   static Future<void> _applyVoiceSettings() async {
-    await _tts.setSpeechRate(_speechRate);
+    await _tts.setSpeechRate(effectiveSpeechRate);
     await _tts.setVolume(_volume);
     await _tts.setPitch(_pitch);
   }
@@ -277,7 +374,8 @@ class TtsService {
     }
     final generation = ++_speechGeneration;
     _activePriority = priority;
-    speaking.value = true;
+    _currentText = text;
+    _setSpeaking(true);
     try {
       await init();
       if (generation != _speechGeneration) return;
@@ -316,7 +414,18 @@ class TtsService {
       if (result == 0 && generation == _speechGeneration) {
         _report('Speech was not available. Try Test TTS in Settings.', result);
       } else if (generation == _speechGeneration) {
+        _blocked = null;
         issue.value = null;
+      }
+    } on PlatformException catch (error) {
+      if (generation != _speechGeneration) return;
+      if (_isAwaitingUserGesture(error)) {
+        // Browsers allow speech only after a click or key press on the page.
+        // Not a failure: keep the sentence for the first interaction.
+        _blocked = text;
+        debugPrint('[TTS] Waiting for a click or key press before speaking.');
+      } else {
+        _report('Speech failed. Try Test TTS in Settings.', error);
       }
     } catch (error) {
       if (generation == _speechGeneration) {
@@ -327,10 +436,24 @@ class TtsService {
     }
   }
 
+  static String? _blocked;
+
+  static bool _isAwaitingUserGesture(PlatformException error) =>
+      error.code == 'browser_speech' && error.message == 'not-allowed';
+
+  /// The latest sentence the browser refused to speak because the page had
+  /// no click or key press yet, once. The first interaction speaks it.
+  static String? takeBlockedSpeech() {
+    final text = _blocked;
+    _blocked = null;
+    return text;
+  }
+
   static Future<void> _finish(int generation) async {
     if (generation != _speechGeneration) return;
     _activePriority = null;
-    speaking.value = false;
+    _currentText = null;
+    _setSpeaking(false);
     await _resumePaused(generation);
     _scheduleUpdates();
   }
@@ -404,7 +527,8 @@ class TtsService {
   static Future<bool> stopForVoiceCommands() async {
     final generation = ++_speechGeneration;
     _activePriority = null;
-    speaking.value = false;
+    _currentText = null;
+    _setSpeaking(false);
     _updateTimer?.cancel();
     _updateTimer = null;
     _updates.clear();
@@ -447,8 +571,31 @@ class TtsService {
   static Future<void> setLanguage(String language) =>
       _tts.setLanguage(language);
 
+  // Web Speech error codes are a fixed list and never contain spoken text,
+  // so they are safe to log. Other platform messages may echo private text.
+  static const _browserErrorCodes = {
+    'canceled',
+    'interrupted',
+    'audio-busy',
+    'audio-hardware',
+    'network',
+    'synthesis-unavailable',
+    'synthesis-failed',
+    'language-unavailable',
+    'voice-unavailable',
+    'text-too-long',
+    'invalid-argument',
+    'not-allowed',
+  };
+
   static void _report(String message, Object error) {
     issue.value = message;
-    debugPrint('[TTS] $message (${error.runtimeType})');
+    final detail =
+        error is PlatformException &&
+            error.code == 'browser_speech' &&
+            _browserErrorCodes.contains(error.message)
+        ? 'browser: ${error.message}'
+        : error.runtimeType;
+    debugPrint('[TTS] $message ($detail)');
   }
 }

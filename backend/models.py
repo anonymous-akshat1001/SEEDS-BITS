@@ -10,18 +10,101 @@ from sqlalchemy.orm import relationship
 from database import Base
 
 
-# Stores all teachers + users and helps distiguinsh between them
-class LessonSequence(Base):
-    __tablename__ = "lesson_sequences"
+class LearningJourney(Base):
+    """A teacher-authored bundle of recordings, narration, questions and polls."""
 
-    sequence_id = Column(Integer, primary_key=True)
-    owner_teacher_id = Column(Integer, ForeignKey("users.user_id", ondelete="RESTRICT"), nullable=False, index=True)
+    __tablename__ = "learning_journeys"
+
+    journey_id = Column(Integer, primary_key=True)
+    owner_teacher_id = Column(Integer, ForeignKey("users.user_id", ondelete="SET NULL"), index=True)
     class_id = Column(Integer, ForeignKey("classes.class_id", ondelete="RESTRICT"), nullable=False)
     subject_id = Column(Integer, ForeignKey("subjects.subject_id", ondelete="RESTRICT"), nullable=False)
     title = Column(String(160), nullable=False)
+    description = Column(Text)
+    status = Column(String(20), nullable=False, server_default="draft")
+    graded = Column(Boolean, nullable=False, server_default=text("false"))
+    max_retries = Column(Integer, nullable=False, server_default=text("1"))
+    # Draft content and its optimistic-lock revision.
     revision = Column(Integer, nullable=False, server_default=text("1"))
     steps = Column(JSON, nullable=False)
+    # The draft revision that produced the latest published snapshot.
+    published_from_revision = Column(Integer)
+    published_revision = Column(Integer)
+    published_at = Column(TIMESTAMP)
+    created_at = Column(TIMESTAMP, nullable=False, server_default=func.now())
+    updated_at = Column(TIMESTAMP, nullable=False, server_default=func.now(), onupdate=func.now())
 
+    subject = relationship("Subject")
+
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["class_id", "subject_id"],
+            ["class_subject_associations.class_id", "class_subject_associations.subject_id"],
+            name="fk_journey_class_subject",
+            ondelete="RESTRICT",
+        ),
+        CheckConstraint("status IN ('draft', 'published', 'archived')", name="check_journey_status"),
+        CheckConstraint("max_retries >= 0 AND max_retries <= 5", name="check_journey_retries"),
+        Index("ix_journey_workspace_status", "class_id", "subject_id", "status"),
+    )
+
+
+class JourneySnapshot(Base):
+    """Immutable published content; runs are graded against their own snapshot."""
+
+    __tablename__ = "journey_snapshots"
+
+    journey_id = Column(Integer, ForeignKey("learning_journeys.journey_id", ondelete="CASCADE"), primary_key=True)
+    revision = Column(Integer, primary_key=True)
+    content = Column(JSON, nullable=False)
+    published_at = Column(TIMESTAMP, nullable=False, server_default=func.now())
+
+
+class JourneyRun(Base):
+    __tablename__ = "journey_runs"
+
+    run_id = Column(String(36), primary_key=True)
+    journey_id = Column(Integer, ForeignKey("learning_journeys.journey_id", ondelete="RESTRICT"), nullable=False)
+    journey_revision = Column(Integer, nullable=False)
+    student_id = Column(Integer, ForeignKey("users.user_id", ondelete="SET NULL"))
+    status = Column(String(20), nullable=False, server_default="in_progress")
+    started_at = Column(TIMESTAMP, nullable=False)
+    completed_at = Column(TIMESTAMP)
+    synced_at = Column(TIMESTAMP, nullable=False, server_default=func.now())
+    played_offline = Column(Boolean, nullable=False, server_default=text("false"))
+    question_count = Column(Integer, nullable=False, server_default=text("0"))
+    first_try_correct = Column(Integer, nullable=False, server_default=text("0"))
+    replays = Column(Integer, nullable=False, server_default=text("0"))
+    percentage_score = Column(Float)
+
+    answers = relationship("JourneyAnswer", back_populates="run", cascade="all, delete-orphan")
+
+    __table_args__ = (
+        CheckConstraint("status IN ('in_progress', 'completed')", name="check_journey_run_status"),
+        Index("ix_journey_run_student", "journey_id", "student_id", "status"),
+    )
+
+
+class JourneyAnswer(Base):
+    __tablename__ = "journey_answers"
+
+    answer_id = Column(Integer, primary_key=True)
+    run_id = Column(String(36), ForeignKey("journey_runs.run_id", ondelete="CASCADE"), nullable=False)
+    step_index = Column(Integer, nullable=False)
+    attempt = Column(Integer, nullable=False)
+    selected_option = Column(Integer, nullable=False)
+    # Computed by the server from the snapshot; null for polls.
+    is_correct = Column(Boolean)
+    answered_at = Column(TIMESTAMP, nullable=False)
+
+    run = relationship("JourneyRun", back_populates="answers")
+
+    __table_args__ = (
+        UniqueConstraint("run_id", "step_index", "attempt", name="uq_journey_answer_attempt"),
+    )
+
+
+# Stores all teachers + users and helps distiguinsh between them
 
 class User(Base):
     __tablename__ = "users"

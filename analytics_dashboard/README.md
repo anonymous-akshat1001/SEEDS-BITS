@@ -7,13 +7,20 @@ database, LLM weights or transcription models are bundled.
 From this directory:
 
 ```powershell
+Copy-Item .env.example .env   # then set API_BASE_URL, e.g. https://YOUR-CAMPUS-HOST/seeds
 flutter pub get
 flutter analyze
 flutter test
-flutter run -d chrome --dart-define=API_BASE_URL=https://YOUR-CAMPUS-HOST/seeds
-flutter build web --release --no-web-resources-cdn --dart-define=API_BASE_URL=https://YOUR-CAMPUS-HOST/seeds
-flutter build apk --debug --dart-define=API_BASE_URL=https://YOUR-CAMPUS-HOST/seeds
+flutter run -d chrome
+flutter build web --release --no-web-resources-cdn
+flutter build apk --debug
 ```
+
+The backend URL comes from `API_BASE_URL` in `.env` (gitignored, bundled as an
+asset, so rebuild after changing it). A
+`--dart-define=API_BASE_URL=https://YOUR-CAMPUS-HOST/seeds` build flag overrides
+it; with neither, the dashboard uses `http://127.0.0.1:8000`. The `.env` file
+must exist for builds; copy `.env.example` if it is missing.
 
 Configure production signing before distributing an Android release; generated
 development signing is not a production key. Host web output over HTTPS and

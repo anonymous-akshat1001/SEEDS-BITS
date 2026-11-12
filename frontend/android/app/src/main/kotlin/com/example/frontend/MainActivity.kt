@@ -5,6 +5,9 @@ import android.app.NotificationManager
 import android.os.Build
 import android.media.MediaRecorder
 import android.os.SystemClock
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.os.VibratorManager
 import java.io.File
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.embedding.android.FlutterActivity
@@ -44,6 +47,28 @@ class MainActivity: FlutterActivity() {
             "error" to failure)
     }
 
+    private fun vibratePattern(onOff: List<Long>) {
+        // Android waveforms start with an "off" delay; ours start with "on".
+        val timings = (listOf(0L) + onOff).toLongArray()
+        try {
+            val vibrator: Vibrator? = if (Build.VERSION.SDK_INT >= 31) {
+                (getSystemService(VIBRATOR_MANAGER_SERVICE) as? VibratorManager)?.defaultVibrator
+            } else {
+                @Suppress("DEPRECATION")
+                getSystemService(VIBRATOR_SERVICE) as? Vibrator
+            }
+            if (vibrator == null || !vibrator.hasVibrator()) return
+            if (Build.VERSION.SDK_INT >= 26) {
+                vibrator.vibrate(VibrationEffect.createWaveform(timings, -1))
+            } else {
+                @Suppress("DEPRECATION")
+                vibrator.vibrate(timings, -1)
+            }
+        } catch (error: RuntimeException) {
+            android.util.Log.w("SEEDS Feedback", "Vibration unavailable", error)
+        }
+    }
+
     override fun onPause() {
         noteCaptureForeground = false
         if (noteRecorder != null) notesChannel?.invokeMethod("stopped", finishNote("interrupted"))
@@ -58,6 +83,22 @@ class MainActivity: FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         GeneratedPluginRegistrant.registerWith(flutterEngine)
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "seeds/feedback")
+            .setMethodCallHandler { call, result ->
+                if (call.method != "vibrate") {
+                    result.notImplemented()
+                    return@setMethodCallHandler
+                }
+                val pattern = call.argument<List<Number>>("pattern")
+                    ?.map { it.toLong().coerceIn(0L, 1000L) }
+                    ?.take(12)
+                if (pattern.isNullOrEmpty()) {
+                    result.success(null)
+                    return@setMethodCallHandler
+                }
+                vibratePattern(pattern)
+                result.success(null)
+            }
         notesChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "seeds/private_notes")
         notesChannel?.setMethodCallHandler { call, result ->
             when (call.method) {

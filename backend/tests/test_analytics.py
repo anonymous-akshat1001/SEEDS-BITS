@@ -453,6 +453,41 @@ async def test_legacy_creation_is_counted_without_inventing_a_run(data):
 
 
 @pytest.mark.asyncio
+async def test_session_created_while_collection_off_is_counted_and_gaps_are_explicit(
+    data, monkeypatch,
+):
+    db, admin, teacher, other, _, room, _ = data
+    monkeypatch.setenv("ACTIVITY_COLLECTION_ENABLED", "false")
+    unrecorded = models.Session(
+        title="Rivers today", created_by=teacher.user_id, class_id=room.class_id,
+        subject_id=room.subject_id, is_active=True, created_at=datetime.utcnow(),
+    )
+    db.add(unrecorded)
+    await db.flush()
+    await ensure_history(db, unrecorded, opening=True)
+    await db.commit()
+    assert await db.get(models.AnalyticsSession, unrecorded.session_id) is None
+
+    created = await execute(db, admin, Intent(metric="sessions_created"))
+    assert (created["status"], created["value"]) == ("answered", 2)
+    assert (await execute(db, teacher, Intent(metric="sessions_created")))["value"] == 2
+    assert (await execute(db, other, Intent(metric="sessions_created")))["value"] == 0
+    picked = await catalog(db, admin, "session", "Rivers")
+    assert [item["id"] for item in picked["items"]] == [unrecorded.session_id]
+    one = await execute(db, admin, Intent(metric="sessions_created", session="Rivers today"))
+    assert one["value"] == 1
+
+    # Recorded before collection stopped: still answered, with a warning.
+    openings = await execute(db, admin, Intent(metric="session_openings"))
+    assert (openings["status"], openings["value"]) == ("answered", 1)
+    assert "not being recorded" in openings["answer"]
+    # Nothing recorded: never a misleading zero.
+    attendance = await execute(db, admin, Intent(metric="attendance"))
+    assert (attendance["status"], attendance["value"]) == ("not_collected", None)
+    assert "ACTIVITY_COLLECTION_ENABLED" in attendance["answer"]
+
+
+@pytest.mark.asyncio
 async def test_quiz_child_audit_inherits_scope_and_publishing_is_semantic(data):
     db, _, teacher, other, students, room, _ = data
     quiz = models.Quiz(owner_teacher_id=teacher.user_id, class_id=room.class_id,

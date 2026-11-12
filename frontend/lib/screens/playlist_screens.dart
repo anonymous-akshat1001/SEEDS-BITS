@@ -1,6 +1,9 @@
 import 'dart:async';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
+import '../services/message_center.dart';
+import '../services/undo_service.dart';
+import '../announcers/library_text.dart';
 
 import '../services/api_service.dart';
 import '../services/tts_service.dart';
@@ -89,7 +92,7 @@ class _TeacherPlaylistsScreenState extends State<TeacherPlaylistsScreen> {
       subjectId: widget.subjectId,
     );
     if (playlist == null) {
-      TtsService.speak('Playlist could not be created');
+      TtsService.speak(LibraryText.playlistNotCreated);
       return;
     }
     await _load();
@@ -424,7 +427,7 @@ class _StudentPlaylistsScreenState extends State<StudentPlaylistsScreen> {
     if (title == null || title.isEmpty) return;
     final result = await ApiService.createStudentPlaylist(title: title);
     if (result == null) {
-      TtsService.speak('Private playlist could not be created');
+      TtsService.speak(LibraryText.privatePlaylistNotCreated);
       return;
     }
     await _load();
@@ -754,10 +757,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
 
   void _learningIssue(String message) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: ExcludeSemantics(child: Text(message))),
-    );
-    TtsService.speak(message, priority: SpeechPriority.critical);
+    MessageCenter.error(message);
   }
 
   Future<void> _openDownloads() async {
@@ -898,7 +898,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
       return true;
     }).toList();
     if (candidates.isEmpty) {
-      TtsService.speak('No eligible audio is available to add');
+      TtsService.speak(LibraryText.noEligibleAudio);
       return;
     }
     final dialogKeypad = KeypadNavigationController();
@@ -956,14 +956,14 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
         : await ApiService.addStudentPlaylistItem(widget.playlistId, selected);
     if (result != null) {
       await _load();
-      TtsService.speak('Audio added to playlist');
+      TtsService.speak(LibraryText.audioAddedToPlaylist);
     }
   }
 
   Future<void> _selectAndPlay(int index) async {
     if (index < 0 || index >= _items.length) return;
     if (_playPending) {
-      TtsService.speak('Please wait for the lesson player.');
+      TtsService.speak(LibraryText.waitForPlayer);
       return;
     }
     final item = _items[index];
@@ -975,7 +975,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
     }
     final streamPath = item['stream_path']?.toString();
     if (streamPath == null || streamPath.isEmpty) {
-      TtsService.speak('${item['title']} is unavailable');
+      TtsService.speak(LibraryText.unavailable(item['title']));
       return;
     }
     final revision = ++_playRevision;
@@ -1033,11 +1033,11 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
 
   Future<void> _playPause() async {
     if (_playPending) {
-      TtsService.speak('Please wait for the lesson player.');
+      TtsService.speak(LibraryText.waitForPlayer);
       return;
     }
     if (_items.isEmpty) {
-      TtsService.speak('Playlist is empty');
+      TtsService.speak(LibraryText.playlistEmpty);
       return;
     }
     if (_playing) {
@@ -1085,7 +1085,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
 
   Future<void> _next() async {
     if (_playPending) {
-      TtsService.speak('Please wait for the lesson player.');
+      TtsService.speak(LibraryText.waitForPlayer);
       return;
     }
     if (_items.isEmpty) return;
@@ -1100,7 +1100,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
           _playbackStatus = 'Finished. End of playlist';
         });
       }
-      TtsService.speak('End of playlist. Playback stopped.');
+      TtsService.speak(LibraryText.playlistEnded);
       return;
     }
     await _selectAndPlay(_selectedIndex + 1);
@@ -1183,7 +1183,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
           );
     if (result != null) {
       await _load();
-      TtsService.speak('Playlist renamed to $title');
+      TtsService.speak(LibraryText.playlistRenamed(title));
     }
   }
 
@@ -1209,7 +1209,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
     if (result != null) {
       setState(() => _selectedIndex = destination);
       await _load();
-      TtsService.speak('$title moved to position ${destination + 1}');
+      TtsService.speak(LibraryText.movedTo(title, destination + 1));
     } else {
       TtsService.speak(
         'Could not move $title. Check your connection and try again.',
@@ -1237,23 +1237,51 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
       return;
     }
     final index = _items.indexWhere((item) => item['item_id'] == itemId);
+    final audioId = index < 0 ? null : _items[index]['audio_id'] as int?;
     final removed = _teacher
         ? await ApiService.removeTeacherPlaylistItem(widget.playlistId, itemId)
         : await ApiService.removeStudentPlaylistItem(widget.playlistId, itemId);
     if (removed) {
       await _load();
       if (!mounted) return;
-      TtsService.speak('$title removed from $playlistTitle');
       final next = _items.isEmpty
           ? null
           : _items[index.clamp(0, _items.length - 1)]['item_id'] as int;
       (next == null ? _playNode : _itemNodes[next])?.requestFocus();
+      if (audioId != null) {
+        await UndoService.offer(
+          done: LibraryText.removedFromPlaylist(title, playlistTitle),
+          undo: () => _restoreItem(audioId, index, title),
+        );
+      }
     } else {
       TtsService.speak(
         'Could not remove $title. Check your connection and try again.',
         priority: SpeechPriority.critical,
       );
     }
+  }
+
+  /// Undo for a removed item: adds the recording back at its old position.
+  Future<void> _restoreItem(int audioId, int index, String title) async {
+    final before = _items.map((item) => item['item_id'] as int).toSet();
+    final added = _teacher
+        ? await ApiService.addTeacherPlaylistItem(widget.playlistId, audioId)
+        : await ApiService.addStudentPlaylistItem(widget.playlistId, audioId);
+    if (added == null) throw StateError('Playlist item was not restored');
+    await _load();
+    final ids = _items.map((item) => item['item_id'] as int).toList();
+    final restored = ids.where((id) => !before.contains(id)).firstOrNull;
+    if (restored != null && index >= 0 && index < ids.length - 1) {
+      ids
+        ..remove(restored)
+        ..insert(index, restored);
+      final reordered = _teacher
+          ? await ApiService.reorderTeacherPlaylist(widget.playlistId, ids)
+          : await ApiService.reorderStudentPlaylist(widget.playlistId, ids);
+      if (reordered != null) await _load();
+    }
+    if (mounted) MessageCenter.success(LibraryText.restoredToPlaylist(title));
   }
 
   Future<void> _publish() async {

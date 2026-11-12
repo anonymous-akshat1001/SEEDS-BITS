@@ -12,6 +12,11 @@ import 'screens/audio_library_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/invite_students_screen.dart';
 import 'screens/admin_dashboard.dart';
+import 'screens/notification_landing_screen.dart';
+import 'announcers/announce.dart';
+import 'announcers/notification_text.dart';
+import 'services/feedback_cues.dart';
+import 'services/message_center.dart';
 import 'utils/ui_utils.dart';
 import 'services/notification_services.dart';
 import 'services/tts_service.dart';
@@ -76,6 +81,7 @@ WEB_VAPID_KEY=BOYVjb77moWEwSyBY-HxCkiAFBuNrCncK9oSobRL1TubgfGicL1JOiw_B0Nod74jEb
       UIUtils.setHighContrastMode(prefs.getBool('high_contrast_mode') ?? true);
       UIUtils.setTextScale(prefs.getDouble('text_scale') ?? 1.0);
       await TtsService.loadFromPreferences();
+      await FeedbackCues.loadFromPreferences();
       final token = prefs.getString('token');
       final role = prefs.getString('role');
       if (token != null &&
@@ -140,20 +146,30 @@ WEB_VAPID_KEY=BOYVjb77moWEwSyBY-HxCkiAFBuNrCncK9oSobRL1TubgfGicL1JOiw_B0Nod74jEb
       }
       await notificationService.initialize();
       notificationService.onNotificationTap = _handleNotificationTap;
-      notificationService.notificationStream.listen(
-        (data) => debugPrint('[MAIN] Notification received in-app: $data'),
-      );
+      notificationService.foregroundMessages.listen((data) {
+        MessageCenter.show(
+          NotificationText.foreground('${data['type'] ?? ''}'),
+          kind: MessageKind.success,
+        );
+      });
     } catch (error) {
       debugPrint('[MAIN] Deferred notification initialization failed: $error');
     }
   }
 
+  /// A tapped notification opens a spoken landing page; nothing is joined
+  /// or opened until the user presses 1.
   Future<void> _handleNotificationTap(Map<String, dynamic> data) async {
-    if (data['type'] != 'session_invitation') return;
-    final sessionId = int.tryParse(data['session_id']?.toString() ?? '');
-    if (sessionId == null) return;
+    const known = {
+      'session_invitation',
+      'journey_published',
+      'quiz_published',
+      'quiz_reminder',
+    };
+    if (!known.contains(data['type'])) return;
     final prefs = await SharedPreferences.getInstance();
     if ((prefs.getString('token') ?? '').isEmpty) {
+      MessageCenter.show(CommonText.signInFirst);
       navigatorKey.currentState?.pushNamed('/login');
       return;
     }
@@ -164,20 +180,9 @@ WEB_VAPID_KEY=BOYVjb77moWEwSyBY-HxCkiAFBuNrCncK9oSobRL1TubgfGicL1JOiw_B0Nod74jEb
       );
       return;
     }
-    final userId = prefs.getInt('user_id');
-    final userName = prefs.getString('user_name') ?? prefs.getString('name');
-    if (userId == null || userName == null) return;
-    navigatorKey.currentState?.pushNamed(
-      '/session',
-      arguments: {
-        'sessionId': sessionId,
-        'userId': userId,
-        'userName': userName,
-        'isTeacher': false,
-        'sessionTitle': data['session_title'] ?? 'Session',
-        'className': data['class_name'],
-        'subjectName': data['subject_name'],
-      },
+    if (prefs.getString('role') != 'student') return;
+    navigatorKey.currentState?.push(
+      MaterialPageRoute(builder: (_) => NotificationLandingScreen(data: data)),
     );
   }
 
@@ -287,6 +292,8 @@ class SeedsRouteObserver extends RouteObserver<ModalRoute<void>> {
   @override
   void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
     unawaited(TtsService.stop());
+    // A new page starts with no stale message; dialogs keep the context.
+    if (route is PageRoute) MessageCenter.pageChanged();
     super.didPush(route, previousRoute);
   }
 
@@ -299,6 +306,7 @@ class SeedsRouteObserver extends RouteObserver<ModalRoute<void>> {
   @override
   void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) {
     unawaited(TtsService.stop());
+    if (newRoute is PageRoute) MessageCenter.pageChanged();
     super.didReplace(newRoute: newRoute, oldRoute: oldRoute);
   }
 }
@@ -585,7 +593,14 @@ class MyApp extends StatelessWidget {
                 ),
                 child: ScreenReaderSync(
                   active: mediaQuery.accessibleNavigation,
-                  child: FocusHighlight(child: child),
+                  child: FocusHighlight(
+                    child: Column(
+                      children: [
+                        Expanded(child: child),
+                        const LastMessageBar(),
+                      ],
+                    ),
+                  ),
                 ),
               );
             },
@@ -620,15 +635,23 @@ class MyApp extends StatelessWidget {
 
                   if (sessionId is int && userId is int && userName is String) {
                     return MaterialPageRoute(
-                      builder: (_) => SessionScreen(
-                        sessionId: sessionId,
-                        userId: userId,
-                        userName: userName,
-                        isTeacher: isTeacher,
-                        sessionTitle: sessionTitle,
-                        className: className,
-                        subjectName: subjectName,
-                      ),
+                      builder: (_) => isTeacher == true
+                          ? TeacherSessionScreen(
+                              sessionId: sessionId,
+                              userId: userId,
+                              userName: userName,
+                              sessionTitle: sessionTitle,
+                              className: className,
+                              subjectName: subjectName,
+                            )
+                          : StudentSessionScreen(
+                              sessionId: sessionId,
+                              userId: userId,
+                              userName: userName,
+                              sessionTitle: sessionTitle,
+                              className: className,
+                              subjectName: subjectName,
+                            ),
                       settings: settings,
                     );
                   }

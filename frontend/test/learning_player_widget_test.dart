@@ -8,6 +8,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:frontend/services/message_center.dart';
+import 'package:frontend/services/undo_service.dart';
 import 'package:frontend/screens/audio_library_screen.dart';
 import 'package:frontend/screens/playlist_screens.dart';
 import 'package:frontend/screens/downloads_screen.dart';
@@ -194,6 +196,12 @@ void main() {
       headers: {'content-type': 'application/json'},
     );
   });
+
+  // Messages appear in the app-wide message bar, which these bare test apps
+  // do not render, so also check the message centre.
+  bool shown(String text) =>
+      find.textContaining(text).evaluate().isNotEmpty ||
+      (MessageCenter.last.value?.text.contains(text) ?? false);
 
   Future<void> waitFor(WidgetTester tester, bool Function() ready) async {
     for (var tries = 0; tries < 300 && !ready(); tries++) {
@@ -504,10 +512,7 @@ void main() {
         await tester.tap(find.text('Continue Learning'));
         await waitFor(
           tester,
-          () => find
-              .textContaining('unfinished lessons are not currently available')
-              .evaluate()
-              .isNotEmpty,
+          () => shown('unfinished lessons are not currently available'),
         );
         expect(find.byType(ClassAudioScreen), findsNothing);
         expect(calls.where((call) => call.method == 'setSourceUrl'), isEmpty);
@@ -644,10 +649,7 @@ void main() {
         await tester.sendKeyEvent(LogicalKeyboardKey.digit1);
         await waitFor(
           tester,
-          () => find
-              .textContaining('Playback stopped. Your saved progress')
-              .evaluate()
-              .isNotEmpty,
+          () => shown('Playback stopped. Your saved progress'),
         );
         expect(find.text('5 Play'), findsOneWidget);
         final resumes = calls.where((call) => call.method == 'resume').length;
@@ -1013,6 +1015,22 @@ void main() {
         await waitFor(
           tester,
           () => find.text('Play downloaded lesson').evaluate().isEmpty,
+        );
+        // Hidden immediately, but the file is only deleted after the undo
+        // window closes.
+        expect(UndoService.pending, isTrue);
+        expect(
+          await tester.runAsync(
+            () async => (await offlineStore!.list()).map((l) => l.audioId),
+          ),
+          contains(1),
+        );
+        await tester.runAsync(UndoService.commitPending);
+        expect(
+          await tester.runAsync(
+            () async => (await offlineStore!.list()).map((l) => l.audioId),
+          ),
+          isNot(contains(1)),
         );
         final retained = await tester.runAsync(() => store.lesson(1));
         expect(retained!.position.inSeconds, 25);

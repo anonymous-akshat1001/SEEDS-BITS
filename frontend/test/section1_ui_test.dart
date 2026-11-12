@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:frontend/widgets/key_instruction_wrapper.dart';
 import 'package:frontend/main.dart';
 import 'package:frontend/screens/login_screen.dart';
 import 'package:frontend/screens/register_screen.dart';
@@ -144,8 +145,8 @@ void main() {
     await tester.sendKeyEvent(LogicalKeyboardKey.arrowLeft);
     await tester.pump();
     expect(
-      tester.widget<Slider>(find.byType(Slider).first).value,
-      closeTo(0.9, 0.001),
+      settingsTarget(tester, 'settings-volume').label,
+      startsWith('Volume 90 percent'),
     );
     await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
     expect(FocusManager.instance.primaryFocus?.debugLabel, 'settings-rate');
@@ -212,10 +213,12 @@ void main() {
     await tester.pumpWidget(const MaterialApp(home: SettingsScreen()));
     await tester.pumpAndSettle();
 
-    final textSizeSlider = find.byType(Slider).last;
-    tester.widget<Slider>(textSizeSlider).onChanged!(1.4);
-    await tester.pump();
-    expect(UIUtils.textScaleListenable.value, 1.4);
+    // Text size is a left/right value control, not a touch slider.
+    for (var i = 0; i < 4; i++) {
+      settingsTarget(tester, 'settings-text-scale').onIncrease!();
+      await tester.pump();
+    }
+    expect(UIUtils.textScaleListenable.value, closeTo(1.4, 0.001));
 
     await tester.scrollUntilVisible(
       find.text('Save Settings'),
@@ -226,7 +229,7 @@ void main() {
     await tester.pump();
 
     final prefs = await SharedPreferences.getInstance();
-    expect(prefs.getDouble('text_scale'), 1.4);
+    expect(prefs.getDouble('text_scale'), closeTo(1.4, 0.001));
   });
 
   testWidgets('permission explanations support keypad choices', (tester) async {
@@ -264,3 +267,8 @@ void main() {
     expect(result, isTrue);
   });
 }
+
+KeypadFocusTarget settingsTarget(WidgetTester tester, String debugLabel) => tester
+    .widget<KeypadInstructionWrapper>(find.byType(KeypadInstructionWrapper).first)
+    .focusTargets
+    .singleWhere((target) => target.node.debugLabel == debugLabel);

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:seeds_analytics/main.dart';
 import 'package:http/http.dart' as http;
@@ -31,6 +32,19 @@ void main() {
     expect(find.text('Sign in'), findsOneWidget);
     expect(find.text('Record English question'), findsNothing);
     expect(find.byType(TextField), findsNWidgets(2));
+  });
+
+  testWidgets('sign-in uses API_BASE_URL from the .env file', (tester) async {
+    dotenv.testLoad(fileInput: 'API_BASE_URL=https://campus.example/seeds/');
+    addTearDown(() => dotenv.testLoad(fileInput: ''));
+    Uri? called;
+    final client = MockClient((request) async {
+      called = request.url;
+      return login('teacher');
+    });
+    await tester.pumpWidget(AnalyticsApp(client: client));
+    await signIn(tester);
+    expect(called.toString(), 'https://campus.example/seeds/auth/login');
   });
 
   test('voice PCM is wrapped in a bounded mono 16kHz WAV', () {

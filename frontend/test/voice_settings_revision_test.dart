@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:frontend/widgets/key_instruction_wrapper.dart';
 import 'package:frontend/main.dart';
 import 'package:frontend/screens/settings_screen.dart';
 import 'package:frontend/services/tts_service.dart';
@@ -49,22 +50,73 @@ void main() {
 
   for (final saved in <double?>[null, 0.4]) {
     testWidgets(
-      'native rate uses 1.5x default without replacing saved rate $saved',
+      'native rate uses 1.75x default without replacing saved rate $saved',
       (tester) async {
         SharedPreferences.setMockInitialValues({
           if (saved != null) 'tts_speech_rate': saved,
         });
         await TtsService.loadFromPreferences();
-        expect(TtsService.defaultSpeechRate, 0.5 * 1.5);
+        expect(TtsService.defaultSpeechRate, 0.5 * 1.75);
         expect(
           calls.lastWhere((call) => call.method == 'setSpeechRate').arguments,
-          saved ?? 0.75,
+          saved ?? TtsService.defaultSpeechRate,
         );
         final prefs = await SharedPreferences.getInstance();
         expect(prefs.getDouble('tts_speech_rate'), saved);
       },
     );
   }
+
+  testWidgets('the old saved 1.5x default moves to the new default once', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({'tts_speech_rate': 0.75});
+    await TtsService.loadFromPreferences();
+    expect(
+      calls.lastWhere((call) => call.method == 'setSpeechRate').arguments,
+      TtsService.defaultSpeechRate,
+    );
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.containsKey('tts_speech_rate'), isFalse);
+    // A 1.5x speed chosen after the upgrade is kept.
+    await prefs.setDouble('tts_speech_rate', 0.75);
+    await TtsService.loadFromPreferences();
+    expect(
+      calls.lastWhere((call) => call.method == 'setSpeechRate').arguments,
+      0.75,
+    );
+  });
+
+  testWidgets('Settings speech speed has a wider range in 0.25x steps', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    await tester.pumpWidget(const MaterialApp(home: SettingsScreen()));
+    await tester.pumpAndSettle();
+    expect(TtsService.minSpeechRate, 0.25);
+    expect(TtsService.maxSpeechRate, 2.0);
+    final wrapper = tester.widget<KeypadInstructionWrapper>(
+      find.byType(KeypadInstructionWrapper).first,
+    );
+    final rate = wrapper.focusTargets.singleWhere(
+      (target) => target.node.debugLabel == 'settings-rate',
+    );
+    rate.onIncrease!();
+    await tester.pump();
+    final prefsRate = tester
+        .widget<KeypadInstructionWrapper>(find.byType(KeypadInstructionWrapper).first)
+        .focusTargets
+        .singleWhere((target) => target.node.debugLabel == 'settings-rate')
+        .label;
+    expect(prefsRate, contains('2 times normal speed'));
+    expect(TtsService.describeSpeed(2.0), '4 times normal speed');
+    expect(TtsService.describeSpeed(0.25), '0.5 times normal speed');
+    expect(
+      TtsService.describeSpeed(TtsService.defaultSpeechRate),
+      '1.75 times normal speed',
+    );
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
 
   testWidgets('Settings reset persists the faster default after confirmation', (
     tester,
@@ -77,10 +129,10 @@ void main() {
     await tester.sendKeyEvent(LogicalKeyboardKey.digit2);
     await tester.pumpAndSettle();
     final prefs = await SharedPreferences.getInstance();
-    expect(prefs.getDouble('tts_speech_rate'), 0.75);
+    expect(prefs.getDouble('tts_speech_rate'), TtsService.defaultSpeechRate);
     expect(
       calls.lastWhere((call) => call.method == 'setSpeechRate').arguments,
-      0.75,
+      TtsService.defaultSpeechRate,
     );
     await tester.pumpWidget(const SizedBox.shrink());
   });

@@ -1,12 +1,18 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_service.dart';
 import '../services/tts_service.dart';
 import 'package:flutter/services.dart';
 import 'session_screen.dart';
+import '../announcers/announce.dart';
+import '../announcers/dashboard_text.dart';
+import '../services/feedback_cues.dart';
+import '../services/message_center.dart';
 import 'audio_library_screen.dart';
 import 'playlist_screens.dart';
-import 'lesson_sequences_screen.dart';
+import 'journeys/teacher_journeys_screen.dart';
 import 'quiz_screens.dart';
 import '../utils/ui_utils.dart';
 import '../widgets/key_instruction_wrapper.dart';
@@ -60,7 +66,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
   final FocusNode _playlistsFocusNode = FocusNode(
     debugLabel: 'teacher-playlists',
   );
-  final _sequencesFocus = FocusNode(debugLabel: 'teacher-sequences');
+  final _journeysFocus = FocusNode(debugLabel: 'teacher-journeys');
   final FocusNode _quizzesFocusNode = FocusNode(debugLabel: 'teacher-quizzes');
   final Map<int, FocusNode> _sessionOpenFocusNodes = {};
   final Map<int, FocusNode> _sessionDeleteFocusNodes = {};
@@ -133,7 +139,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     if (mounted) setState(() => _isRefreshing = true);
     if (doneMessage == null && announce) {
       await TtsService.speak(
-        'Refreshing sessions',
+        DashboardText.refreshing,
         priority: SpeechPriority.navigation,
       );
     }
@@ -157,21 +163,19 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
         _status = _sessionCountSummary();
       });
       if (announce) {
-        await TtsService.speak(
-          doneMessage == null ? _status : '$doneMessage. $_status',
-        );
+        if (doneMessage == null) {
+          await TtsService.speak(_status);
+        } else {
+          MessageCenter.success(DashboardText.withDone(doneMessage, _status));
+        }
       }
     } else {
-      final message =
-          '${result.failure!.message} Sessions were not refreshed. Press 1 to try again.';
+      final message = DashboardText.notRefreshed(result.failure!.message);
       setState(() {
         _isRefreshing = false;
         _status = message;
       });
-      await TtsService.speak(
-        doneMessage == null ? message : '$doneMessage. $message',
-        priority: SpeechPriority.critical,
-      );
+      MessageCenter.error(DashboardText.withDone(doneMessage, message));
     }
     if (previousFocus != null && previousFocus.canRequestFocus) {
       previousFocus.requestFocus();
@@ -182,16 +186,13 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
   Future<void> createSession() async {
     // If user not logged in
     if (currentUserId == null || currentUserName == null) {
-      TtsService.speak('Please log in first');
-      _showSnack('Please log in first');
+      MessageCenter.error(CommonText.signInFirst);
       // stop execution
       return;
     }
     final workspace = _selectedWorkspace;
     if (workspace == null) {
-      await TtsService.speak(
-        'No class and subject assignment is available. Ask an administrator to assign one.',
-      );
+      MessageCenter.error(DashboardText.noAssignment);
       return;
     }
 
@@ -215,7 +216,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
       builder: (context) => Center(
         child: Semantics(
           liveRegion: true,
-          label: 'Creating session',
+          label: DashboardText.creatingSession,
           child: const CircularProgressIndicator(),
         ),
       ),
@@ -243,7 +244,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
       final res = result.data!;
       // adds new session to the list
       setState(() => sessions.add(res));
-      TtsService.speak("Session $title created successfully");
+      MessageCenter.success(DashboardText.created(title));
 
       // Ask if they want to start the session now
       if (mounted) {
@@ -251,8 +252,8 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
           context: context,
           barrierDismissible: false,
           builder: (_) => KeypadConfirmationDialog(
-            title: 'Session created',
-            message: 'Do you want to start "$title" now?',
+            title: DashboardText.createdTitle,
+            message: DashboardText.startNow(title),
             cancelLabel: 'Later',
             confirmLabel: 'Start now',
             cancelKey: 0,
@@ -265,17 +266,13 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
         }
       }
     } else {
-      final message =
-          result.failure?.message ??
-          'We could not complete that request. Check your connection and try again.';
-      TtsService.speak(message, priority: SpeechPriority.critical);
-      _showSnack(message);
+      MessageCenter.error(result.failure?.message ?? DashboardText.requestFailed);
     }
   }
 
   void _openSession(int sessionId) {
     if (currentUserId == null || currentUserName == null) {
-      TtsService.speak("User not logged in");
+      MessageCenter.error(CommonText.signInFirst);
       return;
     }
 
@@ -292,17 +289,16 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
       }
     }
 
-    TtsService.speak("Opening session");
+    TtsService.speak(DashboardText.openingSession);
 
     // opens new screen
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => SessionScreen(
+        builder: (_) => TeacherSessionScreen(
           sessionId: sessionId,
           userId: currentUserId!, // the ! claims that these fields are not null
           userName: currentUserName!,
-          isTeacher: true,
           sessionTitle: sessionTitle,
           className: className,
           subjectName: subjectName,
@@ -316,7 +312,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
 
   void _cycleWorkspace(int direction) {
     if (_workspaces.isEmpty) {
-      TtsService.speak('No class and subject workspace is assigned');
+      MessageCenter.error(DashboardText.noAssignment);
       return;
     }
     final currentId = _selectedWorkspace?['assignment_id'];
@@ -331,14 +327,18 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
       _status = _sessionCountSummary();
     });
     TtsService.speak(
-      '${_selectedWorkspace!['class_name']}, '
-      '${_selectedWorkspace!['subject_name']} selected. $_status',
+      DashboardText.workspaceSelected(
+        _workspaceName!,
+        next,
+        _workspaces.length,
+        _status,
+      ),
     );
   }
 
   Future<void> _chooseWorkspace() async {
     if (_workspaces.isEmpty) {
-      await TtsService.speak('No class and subject workspace is assigned.');
+      MessageCenter.error(DashboardText.noAssignment);
       return;
     }
     final workspaces = _workspaces
@@ -391,7 +391,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
 
   // Open offline audio library (no session context)
   void _openOfflineAudioLibrary() {
-    TtsService.speak('Opening recorded audio library. Internet is required.');
+    TtsService.speak(DashboardText.openingLibrary());
     final workspace = _selectedWorkspace;
     Navigator.push(
       context,
@@ -407,7 +407,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
   void _openPlaylists() {
     final workspace = _selectedWorkspace;
     if (workspace == null) {
-      TtsService.speak('No class and subject workspace is assigned');
+      MessageCenter.error(DashboardText.noAssignment);
       return;
     }
 
@@ -424,18 +424,20 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     );
   }
 
-  void _openSequences() {
+  void _openJourneys() {
     final workspace = _selectedWorkspace;
     if (workspace == null) {
-      TtsService.speak('No class and subject workspace is assigned');
+      MessageCenter.error(DashboardText.noAssignment);
       return;
     }
     Navigator.push<void>(
       context,
       MaterialPageRoute(
-        builder: (_) => LessonSequencesScreen(
+        builder: (_) => TeacherJourneysScreen(
           classId: workspace['class_id'] as int,
           subjectId: workspace['subject_id'] as int,
+          workspaceName:
+              '${workspace['class_name']}, ${workspace['subject_name']}',
         ),
       ),
     );
@@ -444,7 +446,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
   void _openQuizzes() {
     final workspace = _selectedWorkspace;
     if (workspace == null) {
-      TtsService.speak('No class and subject workspace is assigned');
+      MessageCenter.error(DashboardText.noAssignment);
       return;
     }
     Navigator.push(
@@ -462,13 +464,14 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
 
   Future<void> _logout() => AuthSessionService.logoutFrom(context);
 
-  /// Shows a visual-only message; callers speak the same text through
-  /// TtsService, so screen readers must not read the SnackBar a second time.
-  void _showSnack(String message) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: ExcludeSemantics(child: Text(message))));
+  String? get _workspaceName {
+    final workspace = _selectedWorkspace;
+    return workspace == null
+        ? null
+        : DashboardText.workspace(
+            '${workspace['class_name']}',
+            '${workspace['subject_name']}',
+          );
   }
 
   List get _workspaceSessions {
@@ -485,10 +488,9 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
 
   String _sessionCountSummary() {
     final all = _workspaceSessions;
-    if (all.isEmpty) return 'No sessions yet. Press 2 to create one';
+    if (all.isEmpty) return DashboardText.noSessionsYet;
     final live = all.where((s) => s['is_active'] == true).length;
-    return '${all.length} ${all.length == 1 ? 'session' : 'sessions'}'
-        '${live > 0 ? ', $live live now' : ''}';
+    return DashboardText.teacherCount(all.length, live);
   }
 
   static final _digitsOnly = RegExp(r'^\d+$');
@@ -523,26 +525,19 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
       session['class_name'],
       session['subject_name'],
     ].where((part) => part != null && '$part'.isNotEmpty).join(', ');
-    final joined = session['participant_count'];
-    final isActive = session['is_active'] == true;
-    return [
-          title,
-          if (place.isNotEmpty) place,
-          if (isActive) 'live now' else 'ended',
-          if (isActive && joined is int) '$joined joined',
-          'session number $id',
-        ].join(', ') +
-        (isActive ? '. Press OK to open' : '. Press OK to reactivate');
+    return DashboardText.teacherSession(
+      title: title,
+      place: place,
+      active: session['is_active'] == true,
+      joined: session['participant_count'],
+      id: id is int ? id : int.tryParse('$id') ?? 0,
+    );
   }
 
   void _focusSessionSearch() {
     _keypadController.exitTextEditing();
     _searchFocusNode.requestFocus();
-    TtsService.speak(
-      'Session search. Press OK to edit, then type a session name, or the '
-      'session number using the number keys. '
-      'Use up or down to leave the field and browse results.',
-    );
+    TtsService.speak(DashboardText.teacherSearchHelp);
   }
 
   void _showSearchResults() {
@@ -551,66 +546,82 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     final results = _filteredSessions;
     final query = _searchController.text.trim();
     final message = results.isEmpty
-        ? 'No sessions match $query. Clear the search to list all sessions.'
+        ? DashboardText.teacherNoMatch(query)
         : query.isEmpty
-        ? 'Showing all ${results.length} sessions. Use down to browse.'
-        : '${results.length} sessions match $query. Use down to browse.';
-    TtsService.speak(message);
-    if (results.isNotEmpty) {
-      final id = int.tryParse((results.first['session_id'] ?? '').toString());
-      if (id != null) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) _sessionOpenFocusNodes[id]?.requestFocus();
-        });
-      }
+        ? DashboardText.showingAll(results.length)
+        : DashboardText.nameMatches(results.length, query);
+    final first = results.isEmpty
+        ? null
+        : int.tryParse((results.first['session_id'] ?? '').toString());
+    if (first == null) {
+      TtsService.speak(message);
+      return;
     }
+    // Focus moves to the first result; its label must not cut off the
+    // result message, so both are one announcement.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final node = _sessionOpenFocusNodes[first];
+      if (!mounted || node == null) {
+        TtsService.speak(message);
+        return;
+      }
+      _keypadController.focusAndAnnounce(node, message);
+    });
   }
 
   List<KeypadFocusTarget> _dashboardFocusTargets() {
     final targets = <KeypadFocusTarget>[
       KeypadFocusTarget(
         node: _refreshFocusNode,
-        label: 'Refresh sessions',
+        label: DashboardText.refresh,
         onActivate: _loadSessions,
         isEnabled: () => !_isRefreshing,
       ),
       KeypadFocusTarget(
         node: _logoutFocusNode,
-        label: 'Log out, asks to confirm',
+        label: DashboardText.logout,
         onActivate: _logout,
       ),
       KeypadFocusTarget(
         node: _workspaceFocusNode,
-        label: _selectedWorkspace == null
-            ? 'No class and subject workspace assigned'
-            : 'Workspace ${_selectedWorkspace!['class_name']}, ${_selectedWorkspace!['subject_name']}. Press OK or 7 to choose from numbered assignments',
+        label: DashboardText.workspaceLabel(
+          _workspaceName,
+          _workspaces
+              .indexWhere(
+                (entry) =>
+                    entry['assignment_id'] ==
+                    _selectedWorkspace?['assignment_id'],
+              )
+              .clamp(0, _workspaces.length),
+          _workspaces.length,
+        ),
         onActivate: _chooseWorkspace,
         onDecrease: () => _cycleWorkspace(-1),
         onIncrease: () => _cycleWorkspace(1),
       ),
       KeypadFocusTarget(
         node: _createFocusNode,
-        label: 'Create new session',
+        label: DashboardText.create,
         onActivate: createSession,
       ),
       KeypadFocusTarget(
         node: _playlistsFocusNode,
-        label: 'Class playlists',
+        label: DashboardText.classPlaylists,
         onActivate: _openPlaylists,
       ),
       KeypadFocusTarget(
-        node: _sequencesFocus,
-        label: 'Reusable teacher lesson sequences',
-        onActivate: _openSequences,
+        node: _journeysFocus,
+        label: DashboardText.teacherJourneys,
+        onActivate: _openJourneys,
       ),
       KeypadFocusTarget(
         node: _quizzesFocusNode,
-        label: 'Quizzes and private question bank',
+        label: DashboardText.teacherQuizzes,
         onActivate: _openQuizzes,
       ),
       KeypadFocusTarget(
         node: _libraryFocusNode,
-        label: 'Offline audio library',
+        label: DashboardText.offlineLibrary,
         onActivate: _openOfflineAudioLibrary,
       ),
       KeypadFocusTarget(
@@ -621,7 +632,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
       ),
       KeypadFocusTarget(
         node: _searchResultsFocusNode,
-        label: 'Show matching sessions',
+        label: DashboardText.showMatching,
         onActivate: _showSearchResults,
       ),
     ];
@@ -650,8 +661,8 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
             ),
           ),
           label: isActive
-              ? 'End $title for everyone, asks to confirm'
-              : 'Delete ended session $title permanently, asks to confirm',
+              ? DashboardText.endLabel(title)
+              : DashboardText.deleteLabel(title),
           onActivate: isActive
               ? () => _endSession(id, title)
               : () => _permanentlyDeleteSession(id, title),
@@ -666,9 +677,8 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
       context: context,
       barrierDismissible: false,
       builder: (_) => KeypadConfirmationDialog(
-        title: 'End session for everyone?',
-        message:
-            'End "$title" and close it for every participant? The session will remain in your dashboard history.',
+        title: DashboardText.endTitle,
+        message: DashboardText.endMessage(title),
         cancelLabel: 'Keep session open',
         confirmLabel: 'End for everyone',
         cancelKey: 0,
@@ -681,14 +691,10 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     final ended = await ApiService.endSession(sessionId);
 
     if (ended) {
-      await _loadSessions(
-        doneMessage: 'Session ended for everyone and kept in session history',
-      );
-      _showSnack('Session ended and retained in history');
+      unawaited(FeedbackCues.play(Cue.leave));
+      await _loadSessions(doneMessage: DashboardText.ended);
     } else {
-      const message = 'The session could not be ended. Please try again.';
-      TtsService.speak(message, priority: SpeechPriority.critical);
-      _showSnack(message);
+      MessageCenter.error(DashboardText.endFailed);
     }
   }
 
@@ -697,8 +703,8 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
       context: context,
       barrierDismissible: false,
       builder: (_) => KeypadConfirmationDialog(
-        title: 'Reactivate session?',
-        message: 'Reactivate "$title" so participants can join it again?',
+        title: DashboardText.reactivateTitle,
+        message: DashboardText.reactivateMessage(title),
         cancelLabel: 'Keep ended',
         confirmLabel: 'Reactivate',
         cancelKey: 0,
@@ -709,21 +715,18 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
 
     final reactivated = await ApiService.reactivateSession(sessionId);
     if (!reactivated) {
-      const message = 'The session could not be reactivated. Please try again.';
-      await TtsService.speak(message, priority: SpeechPriority.critical);
-      _showSnack(message);
+      MessageCenter.error(DashboardText.reactivateFailed);
       return;
     }
 
-    await _loadSessions(doneMessage: 'Session reactivated');
+    await _loadSessions(doneMessage: DashboardText.reactivated);
     if (!mounted) return;
     final openNow = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
       builder: (_) => KeypadConfirmationDialog(
-        title: 'Open session now?',
-        message:
-            '"$title" is active again. Open it now, or return to it later from the dashboard.',
+        title: DashboardText.openNowTitle,
+        message: DashboardText.openNowMessage(title),
         cancelLabel: 'Open later',
         confirmLabel: 'Open now',
         cancelKey: 0,
@@ -738,9 +741,8 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
       context: context,
       barrierDismissible: false,
       builder: (_) => KeypadConfirmationDialog(
-        title: 'Permanently delete session?',
-        message:
-            'Permanently delete "$title", including its participants, chat, and logs? This cannot be undone.',
+        title: DashboardText.deleteTitle,
+        message: DashboardText.deleteMessage(title),
         cancelLabel: 'Keep session',
         confirmLabel: 'Delete permanently',
         cancelKey: 0,
@@ -750,16 +752,11 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     if (confirmed != true) return;
 
     final deleted = await ApiService.permanentlyDeleteSession(sessionId);
-    final message = deleted
-        ? 'Session permanently deleted'
-        : 'The session could not be deleted. Please try again.';
     if (deleted) {
-      await _loadSessions(doneMessage: message);
+      await _loadSessions(doneMessage: DashboardText.deleted);
     } else {
-      await TtsService.speak(message, priority: SpeechPriority.critical);
+      MessageCenter.error(DashboardText.deleteFailed);
     }
-    if (!mounted) return;
-    _showSnack(message);
   }
 
   // Frees memory
@@ -774,7 +771,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     _logoutFocusNode.dispose();
     _workspaceFocusNode.dispose();
     _playlistsFocusNode.dispose();
-    _sequencesFocus.dispose();
+    _journeysFocus.dispose();
     _quizzesFocusNode.dispose();
     for (final node in _sessionOpenFocusNodes.values) {
       node.dispose();
@@ -798,7 +795,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
           body: Center(
             child: Semantics(
               liveRegion: true,
-              label: 'Teacher dashboard is loading',
+              label: DashboardText.teacherLoading,
               child: const CircularProgressIndicator(),
             ),
           ),
@@ -807,10 +804,16 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     }
 
     return KeypadInstructionWrapper(
-      screenName: 'Teacher Dashboard',
+      screenName: DashboardText.teacherScreen,
       introduction: _introduction,
-      navigationSections:
-          'class and subject selection, teaching tools, session search, and active or ended sessions',
+      navigationSections: DashboardText.teacherSections,
+      stateSummary: () => DashboardText.teacherState(
+        workspace: _workspaceName,
+        all: _workspaceSessions.length,
+        live: _workspaceSessions.where((s) => s['is_active'] == true).length,
+        search: _searchController.text.trim(),
+        refreshing: _isRefreshing,
+      ),
       labels: teacherDashboardKeyLabels,
       actions: {
         0: _logout,
@@ -821,7 +824,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
         5: _openPlaylists,
         6: _openQuizzes,
         7: _chooseWorkspace,
-        8: _openSequences,
+        8: _openJourneys,
       },
       navigationController: _keypadController,
       focusTargets: _dashboardFocusTargets(),
@@ -981,10 +984,10 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                   label: const Text('5: Class Playlists'),
                 ),
                 OutlinedButton.icon(
-                  focusNode: _sequencesFocus,
-                  onPressed: _openSequences,
+                  focusNode: _journeysFocus,
+                  onPressed: _openJourneys,
                   icon: const Icon(Icons.format_list_numbered),
-                  label: const Text('8: Lesson plans'),
+                  label: const Text('8: Learning Journeys'),
                 ),
 
                 SizedBox(height: UIUtils.spacing(context, 8)),

@@ -4,10 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_service.dart';
 import '../services/tts_service.dart';
+import '../announcers/announce.dart';
+import '../announcers/dashboard_text.dart';
+import '../services/feedback_cues.dart';
+import '../services/message_center.dart';
+import '../widgets/keypad_choice_field.dart';
 import 'session_screen.dart';
 import 'audio_library_screen.dart';
 import 'playlist_screens.dart';
 import 'quiz_screens.dart';
+import 'journeys/student_journeys_screen.dart';
 import 'package:flutter/services.dart';
 import '../utils/ui_utils.dart';
 import '../widgets/accessible_tile.dart';
@@ -44,7 +50,6 @@ class _StudentDashboardState extends State<StudentDashboard> {
   int? _selectedSubjectId;
   String? _statusMessage;
   bool _statusIsError = false;
-  Timer? _idSearchTimer;
   Timer? _summaryTimer;
   VoidCallback? _pendingSummaryListener;
   final KeypadNavigationController _keypadController =
@@ -66,6 +71,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
     debugLabel: 'student-playlists',
   );
   final FocusNode _quizzesFocusNode = FocusNode(debugLabel: 'student-quizzes');
+  final FocusNode _journeysFocusNode = FocusNode(debugLabel: 'student-journeys');
   final Map<int, FocusNode> _sessionFocusNodes = {};
 
   // Called once when widget is created
@@ -114,10 +120,9 @@ class _StudentDashboardState extends State<StudentDashboard> {
 
   String _sessionSummary() {
     final count = _filteredSessions.length;
-    if (sessions.isEmpty) return 'No live sessions right now. Press 1 to refresh.';
-    if (count == 0) return 'No sessions match your filter.';
-    return '$count ${count == 1 ? 'session' : 'sessions'} available. '
-        'Use down to browse.';
+    if (sessions.isEmpty) return DashboardText.noLiveSessions;
+    if (count == 0) return DashboardText.noFilterMatch;
+    return DashboardText.available(count);
   }
 
   void _announceAfterInstructions(String message) {
@@ -159,7 +164,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
     if (_isRefreshing) return;
     final previousFocus = FocusManager.instance.primaryFocus;
     if (mounted) setState(() => _isRefreshing = true);
-    if (announce) await TtsService.speak('Refreshing sessions');
+    if (announce) await TtsService.speak(DashboardText.refreshing);
     final result = await ApiService.getResult(
       '/sessions/active',
       useAuth: true,
@@ -182,16 +187,10 @@ class _StudentDashboardState extends State<StudentDashboard> {
     } else {
       setState(() {
         _isRefreshing = false;
-        _statusMessage =
-            '${result.failure!.message} Press 1 to try again.';
+        _statusMessage = DashboardText.refreshFailed(result.failure!.message);
         _statusIsError = true;
       });
-      if (announce) {
-        await TtsService.speak(
-          _statusMessage!,
-          priority: SpeechPriority.critical,
-        );
-      }
+      if (announce) MessageCenter.error(_statusMessage!);
     }
     if (previousFocus != null &&
         previousFocus.context != null &&
@@ -203,23 +202,21 @@ class _StudentDashboardState extends State<StudentDashboard> {
   // Join a session using form data
   Future<void> joinSession(int sessionId) async {
     if (currentUserId == null) {
-      _showStatus('You are not logged in. Please log in first.', error: true);
+      _showStatus(CommonText.signInFirst, error: true);
       return;
     }
 
     if (currentUserName == null) {
-      _showStatus(
-        'User name not found. Please log in again.',
-        error: true,
-      );
+      _showStatus(CommonText.accountChanged, error: true);
       return;
     }
 
     try {
-      await TtsService.speak('Joining session');
+      await TtsService.speak(DashboardText.joining);
       final result = await ApiService.joinSessionResult(sessionId);
       if (result.isSuccess) {
-        TtsService.speak("Joined session $sessionId");
+        unawaited(FeedbackCues.play(Cue.ok));
+        TtsService.speak(DashboardText.joined(sessionId));
 
         // Navigate to Session Screen once the session has been joined
         if (mounted) {
@@ -239,11 +236,10 @@ class _StudentDashboardState extends State<StudentDashboard> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => SessionScreen(
+              builder: (_) => StudentSessionScreen(
                 sessionId: sessionId,
                 userId: currentUserId!,
                 userName: currentUserName!,
-                isTeacher: false,
                 sessionTitle: sessionTitle,
                 className: className,
                 subjectName: subjectName,
@@ -268,7 +264,6 @@ class _StudentDashboardState extends State<StudentDashboard> {
   // Called when the screen is destroyed
   @override
   void dispose() {
-    _idSearchTimer?.cancel();
     _summaryTimer?.cancel();
     final listener = _pendingSummaryListener;
     if (listener != null) TtsService.speaking.removeListener(listener);
@@ -284,6 +279,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
     _subjectFocusNode.dispose();
     _playlistsFocusNode.dispose();
     _quizzesFocusNode.dispose();
+    _journeysFocusNode.dispose();
     for (final node in _sessionFocusNodes.values) {
       node.dispose();
     }
@@ -293,7 +289,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
 
   // Open offline audio library (no session context)
   void _openOfflineAudioLibrary() {
-    TtsService.speak('Opening recorded audio library. Internet is required.');
+    TtsService.speak(DashboardText.openingLibrary());
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => const OfflineAudioLibraryScreen()),
@@ -301,7 +297,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
   }
 
   void _openMyPlaylists() {
-    TtsService.speak('Opening My Playlists. These playlists are private.');
+    TtsService.speak(DashboardText.openingPlaylists);
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => const StudentPlaylistsScreen()),
@@ -309,10 +305,17 @@ class _StudentDashboardState extends State<StudentDashboard> {
   }
 
   void _openQuizzes() {
-    TtsService.speak('Opening quizzes');
+    TtsService.speak(DashboardText.openingQuizzes());
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => const StudentQuizScreen()),
+    );
+  }
+
+  void _openJourneys() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const StudentJourneysScreen()),
     );
   }
 
@@ -351,47 +354,42 @@ class _StudentDashboardState extends State<StudentDashboard> {
     );
   }
 
-  /// Called as digits are typed: waits for a pause, then says whether the
-  /// session number exists so the user can move down and press OK to join.
-  void _onSessionIdChanged(String _) {
-    setState(() {});
-    _idSearchTimer?.cancel();
-    _idSearchTimer = Timer(const Duration(milliseconds: 900), () {
-      if (!mounted) return;
-      final id = _sessionIdCtrl.text.trim();
-      if (id.isEmpty) {
-        TtsService.speak('Session number cleared. ${_sessionSummary()}');
-        return;
-      }
-      final matches = _filteredSessions;
-      TtsService.speak(
-        matches.isEmpty
-            ? 'No live session number $id.'
-            : 'Found: ${_sessionLabel(matches.first as Map)}. '
-                  'Press down, then OK.',
-      );
-    });
-  }
+  /// Typing only updates the field. Searching happens when the user chooses
+  /// Show matching sessions; nothing happens just because typing paused.
+  void _onSessionIdChanged(String _) => setState(() {});
 
   void _showSearchResults() {
     _keypadController.exitTextEditing();
     FocusScope.of(context).unfocus();
     final results = _filteredSessions;
     final query = sessionCtrl.text.trim();
-    final message = results.isEmpty
-        ? 'No sessions match $query'
+    final id = _sessionIdCtrl.text.trim();
+    final message = id.isNotEmpty
+        ? results.isEmpty
+              ? DashboardText.noSessionNumber(id)
+              : DashboardText.found(_sessionLabel(results.first as Map))
+        : results.isEmpty
+        ? DashboardText.noNameMatch(query)
         : query.isEmpty
-        ? 'Showing all ${results.length} active sessions. Use down to browse.'
-        : '${results.length} sessions match $query. Use down to browse.';
-    TtsService.speak(message);
-    if (results.isNotEmpty) {
-      final id = int.tryParse((results.first['session_id'] ?? '').toString());
-      if (id != null) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) _sessionFocusNodes[id]?.requestFocus();
-        });
-      }
+        ? DashboardText.showingAll(results.length)
+        : DashboardText.nameMatches(results.length, query);
+    final first = results.isEmpty
+        ? null
+        : int.tryParse((results.first['session_id'] ?? '').toString());
+    if (first == null) {
+      TtsService.speak(message);
+      return;
     }
+    // Focus moves to the first result; its label must not cut off the
+    // result message, so both are one announcement.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final node = _sessionFocusNodes[first];
+      if (!mounted || node == null) {
+        TtsService.speak(message);
+        return;
+      }
+      _keypadController.focusAndAnnounce(node, message);
+    });
   }
 
   // Asks "Log out of SEEDS?" with a keypad confirmation dialog first.
@@ -408,15 +406,13 @@ class _StudentDashboardState extends State<StudentDashboard> {
     var next = (current + direction) % ids.length;
     if (next < 0) next += ids.length;
     setState(() => _selectedSubjectId = ids[next]);
-    final selected = ids[next] == null
-        ? null
-        : _availableSubjects.firstWhere(
-            (entry) => entry['subject_id'] == ids[next],
-          );
     TtsService.speak(
-      selected == null
-          ? 'Showing all subjects. ${_sessionSummary()}'
-          : 'Showing ${selected['subject_name']} sessions. ${_sessionSummary()}',
+      DashboardText.subjectFilterChanged(
+        _subjectName(ids[next]),
+        next,
+        ids.length,
+        _sessionSummary(),
+      ),
     );
   }
 
@@ -430,18 +426,26 @@ class _StudentDashboardState extends State<StudentDashboard> {
     final subject = session['subject_name']?.toString().trim();
     final className = (session['class_name'] ?? _className)?.toString().trim();
     final teacher = session['teacher_name']?.toString().trim();
-    return [
-      title,
-      if (subject != null &&
-          subject.isNotEmpty &&
-          subject.toLowerCase() != title.toLowerCase())
-        subject,
-      if (className != null && className.isNotEmpty) className,
-      if (teacher != null && teacher.isNotEmpty) 'Teacher $teacher',
-      'live now',
-      'session ${_sessionIdOf(session)}',
-    ].join(', ');
+    return DashboardText.studentSession(
+      title: title,
+      subject: subject,
+      className: className,
+      teacher: teacher,
+      id: _sessionIdOf(session),
+    );
   }
+
+  String? _subjectName(int? id) => id == null
+      ? null
+      : _availableSubjects
+            .where((entry) => entry['subject_id'] == id)
+            .map((entry) => '${entry['subject_name']}')
+            .firstOrNull;
+
+  List<int?> get _subjectChoices => [
+    null,
+    ..._availableSubjects.map((entry) => entry['subject_id'] as int),
+  ];
 
   // Same order as the controls appear on screen, top to bottom.
   List<KeypadFocusTarget> _dashboardFocusTargets() {
@@ -454,32 +458,32 @@ class _StudentDashboardState extends State<StudentDashboard> {
     final targets = <KeypadFocusTarget>[
       KeypadFocusTarget(
         node: _refreshFocusNode,
-        label: 'Refresh sessions',
+        label: DashboardText.refresh,
         onActivate: _loadSessions,
         isEnabled: () => !_isRefreshing,
       ),
       KeypadFocusTarget(
         node: _sessionIdFocusNode,
-        label: _sessionIdCtrl.text.isEmpty
-            ? 'Session number field. Type a number to find a session'
-            : 'Session number field, ${_sessionIdCtrl.text}',
+        label: DashboardText.sessionNumberField(_sessionIdCtrl.text),
         isTextField: true,
       ),
       KeypadFocusTarget(
         node: _inputFocusNode,
-        label: 'Search sessions by name',
+        label: DashboardText.nameField,
         isTextField: true,
       ),
       KeypadFocusTarget(
         node: _joinFocusNode,
-        label: 'Show matching sessions',
+        label: DashboardText.showMatching,
         onActivate: _showSearchResults,
       ),
       KeypadFocusTarget(
         node: _subjectFocusNode,
-        label: selectedSubject == null
-            ? 'Subject filter: all subjects. Use left or right to change'
-            : 'Subject filter: ${selectedSubject['subject_name']}. Use left or right to change',
+        label: DashboardText.subjectFilterLabel(
+          selectedSubject == null ? null : '${selectedSubject['subject_name']}',
+          _subjectChoices.indexOf(_selectedSubjectId).clamp(0, _subjectChoices.length),
+          _subjectChoices.length,
+        ),
         onActivate: () => _cycleSubjectFilter(1),
         onDecrease: () => _cycleSubjectFilter(-1),
         onIncrease: () => _cycleSubjectFilter(1),
@@ -502,22 +506,27 @@ class _StudentDashboardState extends State<StudentDashboard> {
     targets.addAll([
       KeypadFocusTarget(
         node: _libraryFocusNode,
-        label: 'Recorded audio library',
+        label: DashboardText.library,
         onActivate: _openOfflineAudioLibrary,
       ),
       KeypadFocusTarget(
         node: _playlistsFocusNode,
-        label: 'My private playlists',
+        label: DashboardText.playlists,
         onActivate: _openMyPlaylists,
       ),
       KeypadFocusTarget(
         node: _quizzesFocusNode,
-        label: 'Quizzes',
+        label: DashboardText.quizzes,
         onActivate: _openQuizzes,
       ),
       KeypadFocusTarget(
+        node: _journeysFocusNode,
+        label: DashboardText.studentJourneys,
+        onActivate: _openJourneys,
+      ),
+      KeypadFocusTarget(
         node: _logoutFocusNode,
-        label: 'Log out, asks to confirm',
+        label: DashboardText.logout,
         onActivate: _logout,
       ),
     ]);
@@ -547,9 +556,16 @@ class _StudentDashboardState extends State<StudentDashboard> {
     }
 
     return KeypadInstructionWrapper(
-      screenName: 'Student Dashboard',
-      navigationSections:
-          'refresh, session search, live sessions, recorded lessons, playlists, quizzes, and log out',
+      screenName: DashboardText.studentScreen,
+      navigationSections: DashboardText.studentSections,
+      stateSummary: () => DashboardText.studentState(
+        live: sessions.length,
+        shown: _filteredSessions.length,
+        subject: _subjectName(_selectedSubjectId),
+        sessionNumber: _sessionIdCtrl.text.trim(),
+        nameSearch: sessionCtrl.text.trim(),
+        refreshing: _isRefreshing,
+      ),
       labels: studentDashboardKeyLabels,
       actions: {
         0: _logout,
@@ -558,6 +574,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
         3: _openOfflineAudioLibrary,
         4: _openMyPlaylists,
         5: _openQuizzes,
+        6: _openJourneys,
       },
       navigationController: _keypadController,
       focusTargets: _dashboardFocusTargets(),
@@ -880,41 +897,16 @@ class _StudentDashboardState extends State<StudentDashboard> {
                   ],
                 ),
                 SizedBox(height: UIUtils.spacing(context, 8)),
-                DropdownButtonFormField<int?>(
-                  key: ValueKey(_selectedSubjectId),
+                // Left/right control, not a drop-down; the focus target
+                // above handles the keypad and announces each change.
+                KeypadChoiceField<int?>(
+                  label: 'Subject filter',
                   focusNode: _subjectFocusNode,
-                  initialValue: _selectedSubjectId,
-                  isExpanded: true,
-                  dropdownColor: UIUtils.cardColor,
-                  style: TextStyle(
-                    fontSize: UIUtils.fontSize(context, 16),
-                    color: UIUtils.textColor,
-                  ),
-                  decoration: _fieldDecoration(
-                    context,
-                    label: 'Subject filter',
-                    icon: Icons.filter_alt_outlined,
-                  ),
-                  items: [
-                    const DropdownMenuItem<int?>(
-                      value: null,
-                      child: Text('All subjects'),
-                    ),
-                    ..._availableSubjects.map(
-                      (entry) => DropdownMenuItem<int?>(
-                        value: entry['subject_id'] as int,
-                        child: Text('${entry['subject_name']}'),
-                      ),
-                    ),
-                  ],
-                  onChanged: (value) {
-                    setState(() => _selectedSubjectId = value);
-                    TtsService.speak(
-                      value == null
-                          ? 'Showing all subjects. ${_sessionSummary()}'
-                          : 'Subject filter selected. ${_sessionSummary()}',
-                    );
-                  },
+                  values: _subjectChoices,
+                  value: _selectedSubjectId,
+                  nameOf: (id) => DashboardText.subjectName(_subjectName(id)),
+                  onChanged: (value) =>
+                      setState(() => _selectedSubjectId = value),
                 ),
                 SizedBox(height: UIUtils.spacing(context, 8)),
 
@@ -925,8 +917,8 @@ class _StudentDashboardState extends State<StudentDashboard> {
                     decoration: cardDecoration,
                     child: Text(
                       sessions.isEmpty
-                          ? 'No live sessions right now. Press 1 to refresh.'
-                          : 'No matching sessions. Clear the search or change the subject filter.',
+                          ? DashboardText.noLiveSessions
+                          : DashboardText.noMatchVisible,
                       style: TextStyle(
                         fontSize: UIUtils.fontSize(context, 16),
                         color: UIUtils.textColor,
@@ -970,6 +962,13 @@ class _StudentDashboardState extends State<StudentDashboard> {
                   onPressed: _openQuizzes,
                   icon: Icons.quiz_outlined,
                   text: '5: Quizzes',
+                ),
+                _navButton(
+                  context,
+                  focusNode: _journeysFocusNode,
+                  onPressed: _openJourneys,
+                  icon: Icons.route,
+                  text: '6: Learning Journeys',
                 ),
                 _navButton(
                   context,

@@ -7,6 +7,16 @@ from fastapi import HTTPException
 from sqlalchemy import select, func, exists, and_, or_, cast, String
 
 import models
+from activity_events import enabled as collection_enabled
+
+# Known only from events recorded at the time (unlike sessions and quizzes,
+# which also exist in the live tables).
+RECORDED_ONLY_METRICS = {"session_openings", "attendance", "activity_counts"}
+NOT_COLLECTED = (
+    "Activity collection is turned off on the server "
+    "(ACTIVITY_COLLECTION_ENABLED), so session openings, attendance and "
+    "activity are not being recorded."
+)
 
 
 def month_shift(value, months):
@@ -88,6 +98,13 @@ async def catalog(db, user, kind, search="", page=1, selected_id=None):
             .select_from(h).outerjoin(s, s.session_id == h.session_id) \
             .join(models.SchoolClass, models.SchoolClass.class_id == h.class_id) \
             .join(models.Subject, models.Subject.subject_id == h.subject_id).where(hs)
+        # Sessions created while activity collection was off have no history.
+        unrecorded = select(s.session_id.label("id"), s.title.label("label")).where(
+            teacher_scope(user, s.created_by, s.class_id, s.subject_id),
+            ~exists(select(h.session_id).where(h.session_id == s.session_id)),
+        )
+        combined = query.union(unrecorded).subquery()
+        query = select(combined.c.id, combined.c.label)
     else:
         raise HTTPException(422, "Unknown catalog kind.")
     label = query.selected_columns.label
@@ -129,6 +146,17 @@ async def resolve(db, user, kind, name, selected_id=None):
     return matches[0]["id"]
 
 
+async def _anything_recorded(db, metric, start, end):
+    """Whether any event behind [metric] was recorded in the period, for
+    anyone. Says nothing about whose data it is."""
+    column = {
+        "session_openings": models.SessionRun.opened_at,
+        "attendance": models.AttendanceJoin.joined_at,
+        "activity_counts": models.Log.created_at,
+    }[metric]
+    return await db.scalar(select(exists().where(column >= start, column < end)))
+
+
 async def execute(db, user, intent):
     now = datetime.utcnow()
     start = intent.start or (datetime.min if intent.all_time else now - timedelta(days=30))
@@ -154,17 +182,32 @@ async def execute(db, user, intent):
         live_retention = or_(run.ended_at.is_(None), run.expires_at > now)
         if metric == "sessions_created":
             source = models.Session
+            retained = or_(source.is_active.is_(True), source.ended_at > month_shift(now, -18))
             known_legacy = and_(
                 h.provenance == "partial",
                 exists(select(source.session_id).where(
-                    source.session_id == h.session_id,
-                    or_(source.is_active.is_(True), source.ended_at > month_shift(now, -18)),
+                    source.session_id == h.session_id, retained,
                 )),
             )
-            query = select(func.count(func.distinct(h.session_id))).where(
+            recorded = select(h.session_id).where(
                 visible_history(user), h.created_at >= start, h.created_at < end,
                 or_(known_legacy, exists(select(run.run_id).where(run.session_id == h.session_id, live_retention))),
+                *filters,
             )
+            # Sessions created while activity collection was off have no
+            # history row; the live table still knows they exist.
+            unrecorded = select(source.session_id).where(
+                teacher_scope(user, source.created_by, source.class_id, source.subject_id),
+                source.created_at >= start, source.created_at < end, retained,
+                ~exists(select(h.session_id).where(h.session_id == source.session_id)),
+            )
+            for column, key in ((source.created_by, "teacher"), (source.class_id, "class_name"),
+                                (source.subject_id, "subject"), (source.session_id, "session")):
+                if ids[key]:
+                    unrecorded = unrecorded.where(column == ids[key])
+            created = recorded.union(unrecorded).subquery()
+            query = select(func.count()).select_from(created)
+            filters = []
         elif metric == "session_openings":
             query = select(func.count(run.run_id)).join(h, h.session_id == run.session_id).where(
                 visible_history(user), live_retention, run.opened_at >= start, run.opened_at < end,
@@ -222,11 +265,21 @@ async def execute(db, user, intent):
     rows = rows[:100]
     names = {key: getattr(intent, key) for key in ids if getattr(intent, key)}
     suffix = " " + ", ".join(f"{key}: {value}" for key, value in names.items()) if names else ""
+    label = metric.replace('_', ' ').capitalize()
+    status = "no_data" if value is None else "answered"
     answer = ("No finalized graded attempts." if value is None else
-              f"{metric.replace('_', ' ').capitalize()}: {value}"
+              f"{label}: {value}"
               + ("%" if metric == "quiz_average" else "") + suffix + ".")
+    if metric in RECORDED_ONLY_METRICS and not collection_enabled():
+        # These exist only if recorded when they happened. With nothing
+        # recorded in the period for anyone, 0 would be a guess.
+        if not value and not await _anything_recorded(db, metric, start, end):
+            status, value = "not_collected", None
+            answer = f"{label}: not recorded{suffix}. {NOT_COLLECTED}"
+        else:
+            answer += f" {NOT_COLLECTED} Anything since then is missing."
     return {
-        "status": "no_data" if value is None else "answered", "answer": answer,
+        "status": status, "answer": answer,
         "metric": metric, "value": value, "count": count, "rows": rows, "has_more": has_more,
         "filters": {**names, "start": start.isoformat() + "Z", "end": end.isoformat() + "Z"},
         "timezone": "Asia/Kolkata", "as_of": now.isoformat() + "Z",

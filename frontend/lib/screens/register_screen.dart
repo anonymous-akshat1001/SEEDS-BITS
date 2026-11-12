@@ -12,6 +12,7 @@ import '../utils/ui_utils.dart';
 import '../widgets/key_instruction_wrapper.dart';
 import '../services/notification_services.dart';
 import '../utils/keypad_actions.dart';
+import '../announcers/auth_text.dart';
 // import 'login_screen.dart';
 
 // In flutter everything is a widget, we extend our Register screen to Stateful Widget which is a widget whose UI can be dynamic
@@ -112,7 +113,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       isLoading = true;
       _errorMessage = null;
     });
-    TtsService.speak('Registering, please wait.');
+    TtsService.speak(AuthText.registering);
 
     // The input we took using TextEditingController is accessed using <var>.text
     // A dart map which is to be sent to the backend
@@ -355,7 +356,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                       onTap: () {
                         _keypadController.enterTextEditing(_nameFocus);
-                        TtsService.speak('Enter name');
+                        TtsService.speak(AuthText.enterName);
                       },
                     ),
                     SizedBox(height: UIUtils.spacing(context, 12)),
@@ -374,7 +375,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       keyboardType: TextInputType.phone,
                       onTap: () {
                         _keypadController.enterTextEditing(_phoneFocus);
-                        TtsService.speak('Enter phone number');
+                        TtsService.speak(AuthText.enterPhone);
                       },
                     ),
                     SizedBox(height: UIUtils.spacing(context, 12)),
@@ -409,7 +410,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                       onTap: () {
                         _keypadController.enterTextEditing(_passwordFocus);
-                        TtsService.speak('Enter password');
+                        TtsService.speak(AuthText.enterPassword);
                       },
                     ),
                     SizedBox(height: UIUtils.spacing(context, 10)),

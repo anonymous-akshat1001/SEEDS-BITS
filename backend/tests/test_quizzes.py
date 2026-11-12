@@ -669,3 +669,43 @@ async def test_schedule_and_timeout_are_server_enforced(quiz_db):
             quiz["quiz_id"], student=data["student"], db=db,
         )
     assert scheduled.value.status_code == 409
+
+
+@pytest.mark.asyncio
+async def test_one_bank_question_can_be_used_in_many_quizzes_across_classes(quiz_db):
+    db, data = quiz_db
+    teacher = data["teacher"]
+    db.add(models.TeacherClassSubjectAssignment(
+        teacher_id=teacher.user_id,
+        class_id=data["other_class"].class_id,
+        subject_id=data["subject"].subject_id,
+    ))
+    await db.commit()
+    subject_id = data["subject"].subject_id
+    bank = await quiz_routes.create_bank_question(qs.BankQuestionCreate(
+        class_id=data["classroom"].class_id, subject_id=subject_id, **valid_question(),
+    ), teacher, db)
+    used = []
+    for class_id, title in [
+        (data["classroom"].class_id, "First quiz"),
+        (data["classroom"].class_id, "Second quiz"),
+        (data["other_class"].class_id, "Other class quiz"),
+    ]:
+        quiz = await quiz_routes.create_quiz(qs.QuizCreate(
+            class_id=class_id, subject_id=subject_id, title=title,
+        ), teacher, db)
+        quiz = await quiz_routes.add_bank_question_to_quiz(
+            quiz["quiz_id"], qs.AddBankQuestion(question_id=bank["question_id"]), teacher, db,
+        )
+        used.append(quiz["questions"][0]["question_text"])
+    assert used == [valid_question()["question_text"]] * 3
+
+    other = await quiz_routes.create_quiz(qs.QuizCreate(
+        class_id=data["classroom"].class_id, subject_id=subject_id, title="Not theirs",
+    ), data["other_teacher"], db)
+    with pytest.raises(HTTPException) as denied:
+        await quiz_routes.add_bank_question_to_quiz(
+            other["quiz_id"], qs.AddBankQuestion(question_id=bank["question_id"]),
+            data["other_teacher"], db,
+        )
+    assert denied.value.status_code in (403, 404)

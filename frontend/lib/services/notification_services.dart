@@ -45,6 +45,7 @@ class NotificationService {
       'type',
       'session_id',
       'quiz_id',
+      'journey_id',
       'class_id',
       'subject_id',
     ])
@@ -76,6 +77,14 @@ class NotificationService {
   // Public getter
   Stream<Map<String, dynamic>> get notificationStream =>
       _notificationController.stream;
+
+  final StreamController<Map<String, dynamic>> _foregroundController =
+      StreamController<Map<String, dynamic>>.broadcast();
+
+  /// Updates received while the app is open (not taps), so the app can say
+  /// what arrived without opening anything.
+  Stream<Map<String, dynamic>> get foregroundMessages =>
+      _foregroundController.stream;
 
   /// Checks authorization without triggering an operating-system prompt.
   Future<bool> hasNotificationPermission() async {
@@ -293,6 +302,7 @@ class NotificationService {
 
     // Emits event to stream(app listeners)
     _notificationController.add(privatePayload(message.data));
+    _foregroundController.add(privatePayload(message.data));
   }
 
   /// Handle foreground message on web
@@ -304,6 +314,7 @@ class NotificationService {
 
     // Emit to stream
     _notificationController.add(privatePayload(message.data));
+    _foregroundController.add(privatePayload(message.data));
   }
 
   // Show local notification (mobile only)

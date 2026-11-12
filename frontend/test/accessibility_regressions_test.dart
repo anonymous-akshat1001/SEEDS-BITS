@@ -8,7 +8,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:frontend/main.dart' show routeObserver;
 import 'package:frontend/screens/admin_dashboard.dart';
 import 'package:frontend/screens/audio_library_screen.dart';
-import 'package:frontend/screens/lesson_sequences_screen.dart';
 import 'package:frontend/screens/login_screen.dart';
 import 'package:frontend/screens/quiz_screens.dart';
 import 'package:frontend/screens/register_screen.dart';
@@ -257,7 +256,7 @@ void main() {
       await http.runWithClient(
         () async {
           await open(tester, const TeacherDashboard());
-          expect(find.text('3 sessions, 2 live now'), findsOneWidget);
+          expect(find.text('3 sessions, 2 live now.'), findsOneWidget);
           List<KeypadFocusTarget> sessionTargets() => tester
               .widget<KeypadInstructionWrapper>(
                 find.byType(KeypadInstructionWrapper),
@@ -439,6 +438,7 @@ void main() {
               expect(spoken.last, contains('no active classes'));
             }
             await tester.pumpWidget(const SizedBox.shrink());
+            await TtsService.stop();
           },
           () => MockClient(
             (request) async => http.Response(
@@ -455,41 +455,6 @@ void main() {
       },
     );
   }
-
-  testWidgets(
-    'missing lesson routes show an actionable error and cannot submit a null workspace',
-    (tester) async {
-      var mutations = 0;
-      await http.runWithClient(
-        () async {
-          await open(
-            tester,
-            const LessonSequencesScreen(classId: 1, subjectId: 2),
-          );
-          expect(
-            find.textContaining('teacher-sequences backend routes'),
-            findsOneWidget,
-          );
-          final wrapper = tester.widget<KeypadInstructionWrapper>(
-            find.byType(KeypadInstructionWrapper),
-          );
-          final create = wrapper.focusTargets.singleWhere(
-            (target) => target.node.debugLabel == 'sequence-create',
-          );
-          expect(create.enabled, isTrue);
-          create.onActivate!();
-          await tester.pumpAndSettle();
-          expect(spoken.last, contains('Create lesson plan is unavailable'));
-          expect(mutations, 0);
-          await tester.pumpWidget(const SizedBox.shrink());
-        },
-        () => MockClient((request) async {
-          if (request.method != 'GET') mutations++;
-          return http.Response('{"detail":"Not Found"}', 404);
-        }),
-      );
-    },
-  );
 
   testWidgets(
     'correct-answer cycling announces every option and real keypad editing preserves 0 and 1',

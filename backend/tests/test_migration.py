@@ -134,10 +134,11 @@ def test_class_subject_migration_backfills_legacy_pairs(tmp_path, monkeypatch):
         "quiz_attempts",
         "quiz_responses",
     }.issubset(table_names)
-    assert version == ("20261102_09",)
+    assert version == ("20261112_11",)
     assert {"analytics_sessions", "session_runs", "analytics_attendance",
             "analytics_attendance_joins", "analytics_maintenance"}.issubset(table_names)
-    assert "lesson_sequences" in table_names
+    assert "lesson_sequences" not in table_names
+    assert {"learning_journeys", "journey_snapshots", "journey_runs", "journey_answers"}.issubset(table_names)
     with sqlite3.connect(database_path) as migrated:
         assert migrated.execute(
             "SELECT session_id, owner_teacher_id, created_at, provenance FROM analytics_sessions"

@@ -3,8 +3,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:frontend/services/message_center.dart';
 import 'package:frontend/services/tts_service.dart';
 import 'package:frontend/widgets/key_instruction_wrapper.dart';
+import 'package:frontend/widgets/keypad_confirmation_dialog.dart';
 import 'package:frontend/main.dart' show routeObserver;
 
 void main() {
@@ -678,6 +680,239 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
     opener.dispose();
   });
+
+  testWidgets(
+    'closing a keypad dialog does not cut off the feedback spoken after it',
+    (tester) async {
+      final calls = <String>[];
+      final feedback = Completer<int>();
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        const MethodChannel('flutter_tts'),
+        (call) async {
+          final text = '${call.arguments}';
+          calls.add(call.method == 'speak' ? 'speak $text' : call.method);
+          if (text == 'Microphone muted') return feedback.future;
+          return 1;
+        },
+      );
+      await TtsService.configure(enabled: true, mode: SpeechMode.selfVoicing);
+      await tester.pumpWidget(
+        MaterialApp(
+          navigatorObservers: [routeObserver],
+          home: Builder(
+            builder: (context) => Scaffold(
+              body: TextButton(
+                onPressed: () async {
+                  final confirmed = await showDialog<bool>(
+                    context: context,
+                    builder: (_) => const KeypadConfirmationDialog(
+                      title: 'Mute?',
+                      message: 'Mute your microphone.',
+                      confirmLabel: 'Mute',
+                    ),
+                  );
+                  if (confirmed == true) {
+                    unawaited(TtsService.speak('Microphone muted'));
+                  }
+                },
+                child: const Text('Open'),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+      await tester.sendKeyEvent(LogicalKeyboardKey.digit2);
+      await tester.pumpAndSettle();
+      final said = calls.lastIndexOf('speak Microphone muted');
+      expect(said, isNot(-1));
+      expect(calls.sublist(said), isNot(contains('stop')));
+      feedback.complete(1);
+      await tester.pumpWidget(const SizedBox.shrink());
+    },
+  );
+
+  testWidgets(
+    'a replaced screen disposed late does not silence the new screen',
+    (tester) async {
+      final calls = <String>[];
+      final intro = Completer<int>();
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        const MethodChannel('flutter_tts'),
+        (call) async {
+          final text = '${call.arguments}';
+          calls.add(call.method == 'speak' ? 'speak $text' : call.method);
+          if (text.startsWith('Dashboard')) return intro.future;
+          return 1;
+        },
+      );
+      await TtsService.configure(enabled: true, mode: SpeechMode.selfVoicing);
+      await tester.pumpWidget(
+        MaterialApp(
+          navigatorObservers: [routeObserver],
+          home: Builder(
+            builder: (context) => KeypadInstructionWrapper(
+              autoPlay: false,
+              screenName: 'Sign in',
+              actions: const {},
+              child: Scaffold(
+                body: TextButton(
+                  // A slow phone: the transition outlasts the 350 ms delay
+                  // before the destination screen speaks.
+                  onPressed: () => Navigator.pushReplacement(
+                    context,
+                    PageRouteBuilder<void>(
+                      transitionDuration: const Duration(milliseconds: 900),
+                      pageBuilder: (_, _, _) => const KeypadInstructionWrapper(
+                        screenName: 'Dashboard',
+                        actions: {},
+                        child: Scaffold(body: Text('Dashboard body')),
+                      ),
+                    ),
+                  ),
+                  child: const Text('Sign in'),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('Sign in'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+      final said = calls.indexWhere((call) => call.startsWith('speak Dashboard'));
+      expect(said, isNot(-1));
+      await tester.pumpAndSettle();
+      expect(find.text('Sign in'), findsNothing);
+      expect(calls.sublist(said), isNot(contains('stop')));
+      intro.complete(1);
+      await tester.pumpWidget(const SizedBox.shrink());
+    },
+  );
+
+  testWidgets(
+    'a message carried across a page change opens the next screen',
+    (tester) async {
+      final spoken = <String>[];
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        const MethodChannel('flutter_tts'),
+        (call) async {
+          if (call.method == 'speak') spoken.add('${call.arguments}');
+          return 1;
+        },
+      );
+      await TtsService.configure(enabled: true, mode: SpeechMode.selfVoicing);
+      await tester.pumpWidget(
+        MaterialApp(
+          navigatorObservers: [routeObserver],
+          routes: {
+            '/dashboard': (_) => const KeypadInstructionWrapper(
+              screenName: 'Student dashboard',
+              actions: {},
+              child: Scaffold(body: Text('Dashboard body')),
+            ),
+          },
+          home: Builder(
+            builder: (context) => Scaffold(
+              body: TextButton(
+                onPressed: () {
+                  MessageCenter.carryToNextScreen('The class has ended.');
+                  Navigator.of(
+                    context,
+                  ).pushNamedAndRemoveUntil('/dashboard', (_) => false);
+                },
+                child: const Text('Leave'),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('Leave'));
+      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(spoken.last, startsWith('The class has ended. Student dashboard.'));
+      expect(MessageCenter.last.value?.text, 'The class has ended.');
+      await tester.pump(const Duration(seconds: 3));
+      expect(
+        spoken.where((text) => text.contains('The class has ended')).length,
+        1,
+      );
+      await tester.pumpWidget(const SizedBox.shrink());
+    },
+  );
+
+  testWidgets(
+    'a screen rebuilding while speech plays never setStates during build',
+    (tester) async {
+      final pending = Completer<int>();
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        const MethodChannel('flutter_tts'),
+        (call) async => call.method == 'speak' ? pending.future : 1,
+      );
+      await TtsService.configure(enabled: true, mode: SpeechMode.selfVoicing);
+      await tester.pumpWidget(const MaterialApp(home: _SpeechListeningPage()));
+      await tester.pump(const Duration(milliseconds: 500));
+      unawaited(TtsService.speak('Answer saved.'));
+      await tester.pump();
+      expect(TtsService.speaking.value, isTrue);
+      // Submitting changes the introduction; the wrapper stops speech.
+      await tester.tap(find.text('Submit'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(tester.takeException(), isNull);
+      expect(find.text('Speech ended 1 times'), findsOneWidget);
+      pending.complete(1);
+      await tester.pumpWidget(const SizedBox.shrink());
+    },
+  );
+}
+
+/// Like the quiz: listens to speech and calls setState when it ends.
+class _SpeechListeningPage extends StatefulWidget {
+  const _SpeechListeningPage();
+
+  @override
+  State<_SpeechListeningPage> createState() => _SpeechListeningPageState();
+}
+
+class _SpeechListeningPageState extends State<_SpeechListeningPage> {
+  var _submitted = false;
+  var _ended = 0;
+
+  void _speechChanged() {
+    if (!TtsService.speaking.value) setState(() => _ended++);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    TtsService.speaking.addListener(_speechChanged);
+  }
+
+  @override
+  void dispose() {
+    TtsService.speaking.removeListener(_speechChanged);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => KeypadInstructionWrapper(
+    screenName: 'Quiz',
+    introduction: _submitted ? 'Answer saved.' : 'Question 1.',
+    actions: const {},
+    child: Scaffold(
+      body: Column(
+        children: [
+          TextButton(
+            onPressed: () => setState(() => _submitted = true),
+            child: const Text('Submit'),
+          ),
+          Text('Speech ended $_ended times'),
+        ],
+      ),
+    ),
+  );
 }
 
 class _AnnouncementPage extends StatelessWidget {

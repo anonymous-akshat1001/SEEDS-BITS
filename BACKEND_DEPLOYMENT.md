@@ -12,6 +12,10 @@ opening runs. Downgrade is deliberately refused: disable flags
 or roll back application code without dropping educational history.
 
 1. Enable `ACTIVITY_COLLECTION_ENABLED` after privacy-notice approval.
+   Session openings, attendance and activity counts exist only for periods
+   when it was on; while it is off the dashboard answers "not recorded"
+   rather than 0. Sessions created and quiz results also come from the live
+   tables, so they stay correct either way.
 2. Provision a separate PostgreSQL analytics login; review/apply
    [analytics_readonly.sql](backend/analytics_readonly.sql), grant its NOLOGIN
    role to that login, then set `ANALYTICS_DATABASE_URL` through server config.

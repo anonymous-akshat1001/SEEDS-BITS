@@ -6,10 +6,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../services/api_service.dart';
 import '../services/auth_session_service.dart';
+import '../services/message_center.dart';
 import '../services/notification_services.dart';
 import '../services/tts_service.dart';
 import '../utils/ui_utils.dart';
 import '../widgets/key_instruction_wrapper.dart';
+import '../announcers/auth_text.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
   const ChangePasswordScreen({super.key});
@@ -127,7 +129,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       _repeat.clear();
       unawaited(NotificationService().registerSavedToken());
       if (!mounted) return;
-      TtsService.speak('Password changed. Signed in.');
+      MessageCenter.carryToNextScreen(AuthText.passwordChanged);
       Navigator.of(
         context,
       ).pushNamedAndRemoveUntil('/${data['role']}_dashboard', (_) => false);

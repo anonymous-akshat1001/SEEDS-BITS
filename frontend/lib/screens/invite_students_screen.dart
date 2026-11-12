@@ -290,7 +290,6 @@ class _InviteStudentsScreenState extends State<InviteStudentsScreen> {
     for (final node in _studentFocusNodes.values) {
       node.dispose();
     }
-    TtsService.stop();
     super.dispose();
   }
 

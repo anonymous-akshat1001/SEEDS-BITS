@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../services/feedback_cues.dart';
 import '../services/tts_service.dart';
 import 'key_instruction_wrapper.dart';
 import 'keypad_text_step.dart';
@@ -107,6 +108,7 @@ class _KeypadPagedListState<T> extends State<KeypadPagedList<T>> {
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted && generation == _generation && _loading) {
+        unawaited(FeedbackCues.play(Cue.loading));
         _announce('Loading ${widget.title}. Press 0 to go back.');
       }
     });
@@ -168,11 +170,13 @@ class _KeypadPagedListState<T> extends State<KeypadPagedList<T>> {
   void _move(bool next) {
     if (_loading) return;
     if (!next && _index == 0) {
+      unawaited(FeedbackCues.play(Cue.endOfList));
       _announce('This is the first page.');
       return;
     }
     final cursor = next ? _page?.nextCursor : _cursors[_index - 1];
     if (next && cursor == null) {
+      unawaited(FeedbackCues.play(Cue.endOfList));
       _announce('This is the last page.');
       return;
     }

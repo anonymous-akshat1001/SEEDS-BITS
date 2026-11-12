@@ -4,10 +4,31 @@ import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:record/record.dart';
 
-void main() => runApp(const AnalyticsApp());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  // Optional so a missing or empty .env still starts on the default URL.
+  await dotenv.load(fileName: '.env', isOptional: true);
+  runApp(const AnalyticsApp());
+}
+
+/// Backend URL: a `--dart-define=API_BASE_URL=...` build flag wins, then
+/// API_BASE_URL from the .env file, then a local backend.
+String apiBaseUrl() {
+  const defined = String.fromEnvironment('API_BASE_URL');
+  if (defined.isNotEmpty) return _withoutTrailingSlash(defined);
+  final fromEnv = dotenv.isInitialized ? dotenv.maybeGet('API_BASE_URL') : null;
+  if (fromEnv != null && fromEnv.trim().isNotEmpty) {
+    return _withoutTrailingSlash(fromEnv.trim());
+  }
+  return 'http://127.0.0.1:8000';
+}
+
+String _withoutTrailingSlash(String url) =>
+    url.endsWith('/') ? url.substring(0, url.length - 1) : url;
 
 class AnalyticsApp extends StatelessWidget {
   const AnalyticsApp({super.key, this.client});
@@ -91,10 +112,7 @@ class AnalyticsHome extends StatefulWidget {
 
 class _AnalyticsHomeState extends State<AnalyticsHome>
     with WidgetsBindingObserver {
-  static const base = String.fromEnvironment(
-    'API_BASE_URL',
-    defaultValue: 'http://127.0.0.1:8000',
-  );
+  final base = apiBaseUrl();
   late final _client = widget.client ?? http.Client();
   final _phone = TextEditingController();
   final _password = TextEditingController();

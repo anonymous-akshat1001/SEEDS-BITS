@@ -16,6 +16,7 @@ import '../utils/ui_utils.dart';
 import '../widgets/accessible_tile.dart';
 import '../widgets/key_instruction_wrapper.dart';
 import '../widgets/keypad_confirmation_dialog.dart';
+import '../announcers/library_text.dart';
 
 class PrivateNotesScreen extends StatefulWidget {
   const PrivateNotesScreen({
@@ -288,7 +289,7 @@ class _PrivateNotesScreenState extends State<PrivateNotesScreen>
     if (title == null) return;
     await _store!.rename(note.id, title);
     await _read();
-    await TtsService.speak('Private note renamed.');
+    await TtsService.speak(LibraryText.noteRenamed);
   });
   Future<void> _remove(PrivateNote note) => _run(() async {
     await _stopReview();

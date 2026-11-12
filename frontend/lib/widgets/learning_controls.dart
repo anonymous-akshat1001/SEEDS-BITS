@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import '../services/message_center.dart';
 
+import '../announcers/library_text.dart';
 import '../services/learning_playback_controller.dart';
 import '../services/learning_progress_store.dart';
 import '../services/tts_service.dart';
 import '../screens/private_notes_screen.dart';
 import '../utils/keypad_actions.dart';
+import '../utils/spoken_format.dart';
 import '../utils/ui_utils.dart';
 import 'key_instruction_wrapper.dart';
 import 'keypad_confirmation_dialog.dart';
@@ -16,28 +19,15 @@ String learningTime(Duration position) {
 }
 
 /// Spoken form of a lesson time: "3 minutes 20 seconds".
-String learningSpokenTime(Duration time) {
-  String unit(int value, String name) => '$value $name${value == 1 ? '' : 's'}';
-  final hours = time.inHours;
-  final minutes = time.inMinutes.remainder(60);
-  final seconds = time.inSeconds.remainder(60);
-  return [
-    if (hours > 0) unit(hours, 'hour'),
-    if (minutes > 0) unit(minutes, 'minute'),
-    if (seconds > 0 || (hours == 0 && minutes == 0)) unit(seconds, 'second'),
-  ].join(' ');
-}
+String learningSpokenTime(Duration time) => SpokenFormat.duration(time);
 
 /// "3 minutes 20 seconds of 12 minutes" (or only the position when the
 /// length is not known yet).
 String learningSpokenPosition(Duration position, Duration? duration) =>
-    duration == null || duration <= Duration.zero
-    ? learningSpokenTime(position)
-    : '${learningSpokenTime(position)} of ${learningSpokenTime(duration)}';
+    LibraryText.position(position, duration);
 
 /// "1.5" for 1.5x, "1" for 1x.
-String learningSpeedNumber(double speed) =>
-    speed.toStringAsFixed(2).replaceFirst(RegExp(r'\.?0+$'), '');
+String learningSpeedNumber(double speed) => LibraryText.speedNumber(speed);
 
 /// Announcement used whenever a lesson starts or resumes.
 String learningPlayingAnnouncement(
@@ -45,40 +35,43 @@ String learningPlayingAnnouncement(
   Duration position,
   Duration? duration,
   double speed,
-) =>
-    '$title, playing from ${learningSpokenPosition(position, duration)}, '
-    'speed ${learningSpeedNumber(speed)} times.';
+) => LibraryText.playing(title, position, duration, speed);
 
 /// Spoken reminder of the shared audio player keys.
-String get learningPlayerKeyHelp =>
-    'Press $playerRewindKey to go back 10 seconds, '
-    '$playerPlayPauseKey to play or pause, '
-    '$playerForwardKey to go forward 10 seconds, '
-    '$playerSlowerKey for slower and $playerFasterKey for faster.';
+String get learningPlayerKeyHelp => LibraryText.playerKeyHelp(
+  rewind: playerRewindKey,
+  playPause: playerPlayPauseKey,
+  forward: playerForwardKey,
+  slower: playerSlowerKey,
+  faster: playerFasterKey,
+);
 
-/// Seek slider that speaks its position in words and supports the screen
-/// reader's increase and decrease gestures in 10 second steps.
+/// Lesson position bar. It is a keypad focus stop (not a touch-only slider):
+/// left and right move 10 seconds through the screen's [KeypadFocusTarget]
+/// `onDecrease`/`onIncrease`, the screen reader's increase and decrease
+/// gestures do the same, and a tap moves to that point.
 class PlayerSeekBar extends StatelessWidget {
   const PlayerSeekBar({
     super.key,
     required this.position,
     required this.duration,
     required this.onSeek,
-    this.onPreview,
     this.focusNode,
   });
 
   final Duration position;
   final Duration? duration;
   final ValueChanged<Duration> onSeek;
-  final ValueChanged<Duration>? onPreview;
   final FocusNode? focusNode;
 
-  Duration _offset(int seconds) {
+  /// Seconds moved by one left or right press.
+  static const step = 10;
+
+  /// [position] moved by [seconds], kept inside the lesson.
+  static Duration offset(Duration position, Duration? duration, int seconds) {
     final next = position + Duration(seconds: seconds);
     if (next.isNegative) return Duration.zero;
-    final end = duration;
-    return end != null && next > end ? end : next;
+    return duration != null && next > duration ? duration : next;
   }
 
   @override
@@ -88,33 +81,63 @@ class PlayerSeekBar extends StatelessWidget {
     final value = enabled
         ? (position.inMilliseconds / total.inMilliseconds).clamp(0.0, 1.0)
         : 0.0;
-    Duration at(double fraction) =>
-        Duration(milliseconds: (fraction * total!.inMilliseconds).round());
     return Semantics(
       slider: true,
       label: 'Lesson position',
-      value: learningSpokenPosition(position, total),
+      value: LibraryText.position(position, total),
       increasedValue: enabled
-          ? learningSpokenPosition(_offset(10), total)
+          ? LibraryText.position(offset(position, total, step), total)
           : null,
       decreasedValue: enabled
-          ? learningSpokenPosition(_offset(-10), total)
+          ? LibraryText.position(offset(position, total, -step), total)
           : null,
-      onIncrease: enabled ? () => onSeek(_offset(10)) : null,
-      onDecrease: enabled ? () => onSeek(_offset(-10)) : null,
+      onIncrease: enabled ? () => onSeek(offset(position, total, step)) : null,
+      onDecrease: enabled ? () => onSeek(offset(position, total, -step)) : null,
       excludeSemantics: true,
-      child: SliderTheme(
-        data: SliderThemeData(
-          trackHeight: 4,
-          activeTrackColor: UIUtils.accentColor,
-          inactiveTrackColor: UIUtils.cardBorderColor,
-          thumbColor: UIUtils.accentColor,
-        ),
-        child: Slider(
-          focusNode: focusNode,
-          value: value,
-          onChanged: enabled ? (v) => onPreview?.call(at(v)) : null,
-          onChangeEnd: enabled ? (v) => onSeek(at(v)) : null,
+      child: Focus(
+        focusNode: focusNode,
+        canRequestFocus: enabled,
+        child: Builder(
+          builder: (context) {
+            final focused = Focus.of(context).hasFocus;
+            return LayoutBuilder(
+              builder: (context, constraints) => GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTapUp: enabled && constraints.maxWidth > 0
+                    ? (details) => onSeek(
+                        Duration(
+                          milliseconds:
+                              (details.localPosition.dx /
+                                      constraints.maxWidth *
+                                      total.inMilliseconds)
+                                  .clamp(0, total.inMilliseconds)
+                                  .round(),
+                        ),
+                      )
+                    : null,
+                child: Container(
+                  constraints: const BoxConstraints(minHeight: 48),
+                  alignment: Alignment.center,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: focused
+                          ? UIUtils.accentColor
+                          : UIUtils.cardBorderColor,
+                      width: focused ? 3 : 1.5,
+                    ),
+                  ),
+                  child: LinearProgressIndicator(
+                    value: value,
+                    minHeight: 8,
+                    color: UIUtils.accentColor,
+                    backgroundColor: UIUtils.cardBorderColor,
+                  ),
+                ),
+              ),
+            );
+          },
         ),
       ),
     );
@@ -237,10 +260,7 @@ class LearningControls extends StatelessWidget {
 
   static void _error(BuildContext context, String message) {
     if (!context.mounted) return;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: ExcludeSemantics(child: Text(message))));
-    TtsService.speak(message, priority: SpeechPriority.critical);
+    MessageCenter.error(message);
   }
 
   Future<bool> _run(

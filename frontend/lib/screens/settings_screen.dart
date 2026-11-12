@@ -1,6 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/tts_service.dart';
+import '../announcers/settings_text.dart';
+import '../services/feedback_cues.dart';
+import '../services/message_center.dart';
 import '../services/activity_telemetry.dart';
 import '../utils/ui_utils.dart';
 import '../utils/keypad_actions.dart';
@@ -55,6 +60,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     debugLabel: 'settings-text-scale',
   );
   final FocusNode _saveFocus = FocusNode(debugLabel: 'settings-save');
+  final FocusNode _cuesFocus = FocusNode(debugLabel: 'settings-sound-cues');
+  final FocusNode _vibrationFocus = FocusNode(debugLabel: 'settings-vibration');
 
   static const _voiceHelpText =
       'In a session, activate Listen for command, then say mute, unmute, '
@@ -63,7 +70,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   SpeechMode get _speechMode =>
       _speechModeChoice ??
-      (_platformScreenReader ? SpeechMode.screenReader : SpeechMode.selfVoicing);
+      (_platformScreenReader
+          ? SpeechMode.screenReader
+          : SpeechMode.selfVoicing);
 
   String get _speechModeDescription => switch (_speechModeChoice) {
     null =>
@@ -158,27 +167,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     ActivityTelemetry.record('settings_saved');
     if (!mounted) return;
 
-    // Visual confirmation at bottom of the screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: UIUtils.cardColor,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-          side: BorderSide(color: UIUtils.successColor, width: 2),
-        ),
-        behavior: SnackBarBehavior.floating,
-        content: ExcludeSemantics(
-          child: Text(
-            message,
-            style: TextStyle(
-              color: UIUtils.successColor,
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ),
-      ),
-    );
+    // Spoken above; the message bar keeps it readable.
+    MessageCenter.show(message, kind: MessageKind.success, speak: false);
   }
 
   // Applies TTS settings to system engine
@@ -213,7 +203,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _testTTS() async {
     await _configureTTS();
     await TtsService.speak(
-      "This is a test of the text to speech system. Volume is ${_percent(_ttsVolume)} percent. Speech rate is ${_percent(_ttsSpeechRate)} percent.",
+      "This is a test of the text to speech system. Volume is ${_percent(_ttsVolume)} percent. Speech speed is ${TtsService.describeSpeed(_ttsSpeechRate)}.",
     );
   }
 
@@ -239,21 +229,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final next = value.clamp(0.0, 1.0).toDouble();
     setState(() => _ttsVolume = next);
     _configureTTS();
-    if (announce) _speakIfEnabled('Volume ${_percent(next)} percent');
+    if (announce) _speakIfEnabled(SettingsText.volume(_percent(next)));
   }
 
   void _setSpeechRate(double value, {bool announce = true}) {
-    final next = value.clamp(0.1, 1.0).toDouble();
+    // Snap to the 0.25-times steps so D-pad and slider land on the same values.
+    final steps = (value / TtsService.speechRateStep).round();
+    final next = TtsService.clampSpeechRate(steps * TtsService.speechRateStep);
+    final atLimit = next == _ttsSpeechRate && next != value;
     setState(() => _ttsSpeechRate = next);
     _configureTTS();
-    if (announce) _speakIfEnabled('Speech rate ${_percent(next)} percent');
+    if (announce) {
+      _speakIfEnabled(
+        atLimit
+            ? '${next >= TtsService.maxSpeechRate ? 'Fastest' : 'Slowest'} speech speed, '
+                  '${TtsService.describeSpeed(next)}'
+            : 'Speech speed ${TtsService.describeSpeed(next)}',
+      );
+    }
   }
 
   void _setTextScale(double value, {bool announce = true}) {
     final next = value.clamp(0.9, 1.5).toDouble();
     setState(() => _textScale = next);
     UIUtils.setTextScale(next);
-    if (announce) _speakIfEnabled('Text size ${_percent(next)} percent');
+    if (announce) _speakIfEnabled(SettingsText.textSize(_percent(next)));
   }
 
   // Function to restore the original values
@@ -291,7 +291,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       // Announce before disabling; once the engine is disabled it must remain
       // silent until the user explicitly enables it again.
       setState(() => _ttsEnabled = false);
-      await TtsService.speak('App speech off');
+      await TtsService.speak(SettingsText.speechOff);
       if (!mounted) return;
       await _saveBoolSetting('tts_enabled', false);
       await _configureTTS();
@@ -301,7 +301,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     setState(() => _ttsEnabled = true);
     await _saveBoolSetting('tts_enabled', true);
     await _configureTTS();
-    await TtsService.speak('App speech on');
+    await TtsService.speak(SettingsText.speechOn);
   }
 
   /// Cycles Automatic -> Screen reader -> Self-voicing -> Automatic.
@@ -322,7 +322,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
     await _configureTTS();
     if (!mounted) return;
-    await TtsService.speak('Speech mode. $_speechModeDescription');
+    await TtsService.speak(SettingsText.speechMode(_speechModeDescription));
   }
 
   Future<void> _cycleVerbosity() async {
@@ -333,13 +333,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('speech_verbosity', _verbosity.name);
     await _configureTTS();
-    await TtsService.speak('Narration level ${_verbosity.name}.');
+    await TtsService.speak(SettingsText.narration(_verbosity.name));
   }
 
   void _repeatHelp() {
     TtsService.speak(
       buildTtsInstructions(settingsKeyLabels, screenName: 'Settings'),
     );
+  }
+
+  Future<void> _toggleSoundCues() async {
+    final enabled = !FeedbackCues.soundEnabled;
+    await FeedbackCues.setSoundEnabled(enabled);
+    if (!mounted) return;
+    setState(() {});
+    _speakIfEnabled(SettingsText.soundCues(enabled));
+    if (enabled) unawaited(FeedbackCues.play(Cue.saved));
+  }
+
+  Future<void> _toggleVibration() async {
+    final enabled = !FeedbackCues.vibrationEnabled;
+    await FeedbackCues.setVibrationEnabled(enabled);
+    if (!mounted) return;
+    setState(() {});
+    _speakIfEnabled(SettingsText.vibration(enabled));
+    if (enabled) unawaited(FeedbackCues.play(Cue.ok));
   }
 
   void _toggleVoiceCommands() {
@@ -450,8 +468,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  // Reusable slider + label UI. The Slider keeps its own semantics
-  // (adjustable value) and uses the keypad focus node directly.
+  // Adjustable value: a keypad focus stop changed with D-pad left/right
+  // (registered in the focus targets), the screen reader's increase and
+  // decrease actions, or the - and + buttons. Not a touch-only slider.
   Widget _buildSliderTile(
     BuildContext context, {
     required String title,
@@ -491,21 +510,65 @@ class _SettingsScreenState extends State<SettingsScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 4),
           child: Text(subtitle, style: _subtitleStyle(context)),
         ),
-        Semantics(
-          label: title,
-          child: Slider(
-            focusNode: focusNode,
-            value: value,
-            min: min,
-            max: max,
-            divisions: divisions,
-            label: valueText(value),
-            semanticFormatterCallback: valueText,
-            onChanged: onChanged,
-            activeColor: UIUtils.accentColor,
-            inactiveColor: UIUtils.cardBorderColor,
-            thumbColor: UIUtils.accentColor,
-          ),
+        Builder(
+          builder: (context) {
+            final step = (max - min) / divisions;
+            double clamp(double next) => next.clamp(min, max).toDouble();
+            return Semantics(
+              label: title,
+              value: valueText(value),
+              increasedValue: valueText(clamp(value + step)),
+              decreasedValue: valueText(clamp(value - step)),
+              onIncrease: () => onChanged(clamp(value + step)),
+              onDecrease: () => onChanged(clamp(value - step)),
+              excludeSemantics: true,
+              child: Focus(
+                focusNode: focusNode,
+                child: Builder(
+                  builder: (context) {
+                    final focused = Focus.of(context).hasFocus;
+                    return Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: focused
+                              ? UIUtils.focusRingColor
+                              : UIUtils.cardBorderColor,
+                          width: focused ? 3 : 1.5,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          ExcludeFocus(
+                            child: IconButton(
+                              tooltip: 'Decrease $title',
+                              onPressed: () => onChanged(clamp(value - step)),
+                              icon: const Icon(Icons.remove),
+                            ),
+                          ),
+                          Expanded(
+                            child: LinearProgressIndicator(
+                              value: ((value - min) / (max - min)).clamp(0.0, 1.0),
+                              minHeight: 8,
+                              color: UIUtils.accentColor,
+                              backgroundColor: UIUtils.cardBorderColor,
+                            ),
+                          ),
+                          ExcludeFocus(
+                            child: IconButton(
+                              tooltip: 'Increase $title',
+                              onPressed: () => onChanged(clamp(value + step)),
+                              icon: const Icon(Icons.add),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+            );
+          },
         ),
       ],
     );
@@ -531,6 +594,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _contrastFocus.dispose();
     _textScaleFocus.dispose();
     _saveFocus.dispose();
+    _cuesFocus.dispose();
+    _vibrationFocus.dispose();
     super.dispose();
   }
 
@@ -551,9 +616,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           side: BorderSide(color: UIUtils.cardBorderColor, width: 1.5),
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
           alignment: Alignment.centerLeft,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
         child: Row(
           children: [
@@ -607,6 +670,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
       screenName: 'Settings',
       navigationSections:
           'four sections: Speech, Display, Keys and help, then Save settings',
+      stateSummary: () => SettingsText.state(
+        speech: _ttsEnabled,
+        speed: TtsService.describeSpeed(_ttsSpeechRate),
+        volume: _percent(_ttsVolume),
+        textSize: _percent(_textScale),
+        highContrast: _highContrastMode,
+        soundCues: FeedbackCues.soundEnabled,
+        vibration: FeedbackCues.vibrationEnabled,
+      ),
       onSpeechRescued: () => setState(() {
         _ttsEnabled = TtsService.isEnabled;
         _ttsVolume = TtsService.volume;
@@ -639,9 +711,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
         KeypadFocusTarget(
           node: _rateFocus,
           label:
-              'Speech rate ${_percent(_ttsSpeechRate)} percent. Left or right to change',
-          onDecrease: () => _setSpeechRate(_ttsSpeechRate - 0.1),
-          onIncrease: () => _setSpeechRate(_ttsSpeechRate + 0.1),
+              'Speech speed ${TtsService.describeSpeed(_ttsSpeechRate)}. Left or right to change',
+          onDecrease: () =>
+              _setSpeechRate(_ttsSpeechRate - TtsService.speechRateStep),
+          onIncrease: () =>
+              _setSpeechRate(_ttsSpeechRate + TtsService.speechRateStep),
         ),
         KeypadFocusTarget(
           node: _testFocus,
@@ -692,9 +766,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
         KeypadFocusTarget(
           node: _voiceFocus,
-          label:
-              'Voice commands in sessions, ${_onOff(_voiceCommandsEnabled)}',
+          label: 'Voice commands in sessions, ${_onOff(_voiceCommandsEnabled)}',
           onActivate: _toggleVoiceCommands,
+        ),
+        KeypadFocusTarget(
+          node: _cuesFocus,
+          label: SettingsText.soundCuesLabel(FeedbackCues.soundEnabled),
+          onActivate: () => unawaited(_toggleSoundCues()),
+        ),
+        KeypadFocusTarget(
+          node: _vibrationFocus,
+          label: SettingsText.vibrationLabel(FeedbackCues.vibrationEnabled),
+          onActivate: () => unawaited(_toggleVibration()),
         ),
         if (!tiny)
           KeypadFocusTarget(
@@ -722,6 +805,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         5: _testTTS,
         6: _saveSettings,
         7: _checkEnglishVoice,
+        8: () => unawaited(_toggleSoundCues()),
+        9: () => unawaited(_toggleVibration()),
       },
       child: Scaffold(
         appBar: AppBar(
@@ -819,15 +904,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 _buildSliderTile(
                   context,
-                  title: 'Speech rate',
-                  subtitle: 'How fast app speech is',
+                  title: 'Speech speed',
+                  subtitle:
+                      'How fast app speech is. Quizzes can use their own speed',
                   value: _ttsSpeechRate,
-                  min: 0.1,
-                  max: 1.0,
-                  divisions: 9,
+                  min: TtsService.minSpeechRate,
+                  max: TtsService.maxSpeechRate,
+                  divisions:
+                      ((TtsService.maxSpeechRate - TtsService.minSpeechRate) /
+                              TtsService.speechRateStep)
+                          .round(),
                   onChanged: (value) =>
                       _setSpeechRate(value, announce: _speakSliderChanges),
-                  valueText: (val) => '${_percent(val)} percent',
+                  valueText: (val) =>
+                      '${TtsService.formatSpeedMultiple(val)} times normal',
                   focusNode: _rateFocus,
                 ),
                 _buildActionButton(
@@ -920,6 +1010,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   value: _voiceCommandsEnabled,
                   onChanged: (_) => _toggleVoiceCommands(),
                   focusNode: _voiceFocus,
+                ),
+                _buildSwitchTile(
+                  context,
+                  title: '8: Sound cues',
+                  subtitle: SettingsText.soundCuesHelp,
+                  value: FeedbackCues.soundEnabled,
+                  onChanged: (_) => unawaited(_toggleSoundCues()),
+                  focusNode: _cuesFocus,
+                ),
+                _buildSwitchTile(
+                  context,
+                  title: '9: Vibration',
+                  subtitle: SettingsText.vibrationHelp,
+                  value: FeedbackCues.vibrationEnabled,
+                  onChanged: (_) => unawaited(_toggleVibration()),
+                  focusNode: _vibrationFocus,
                 ),
                 if (!tiny)
                   _buildActionButton(

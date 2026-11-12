@@ -261,8 +261,8 @@ void main() {
               .map((target) => target.label)
               .toList();
           expect(sessionLabels, [
-            'Science, Class 6, Teacher Mrs Rao, live now, session 12. Press OK to join',
-            'Maths revision, Maths, Class 6, Teacher Mr Das, live now, session 34. Press OK to join',
+            'Science, Class 6, Teacher Mrs Rao, live now, session one two. Press OK to join',
+            'Maths revision, Maths, Class 6, Teacher Mr Das, live now, session three four. Press OK to join',
           ]);
           expect(spoken.join(' '), contains('2 sessions available'));
           expect(wrapper.labels[0], 'Log out, asks to confirm');
@@ -275,9 +275,21 @@ void main() {
             ),
             '34',
           );
-          await tester.pump(const Duration(seconds: 1));
+          await tester.pump(const Duration(seconds: 2));
           expect(find.text('Science'), findsNothing);
           expect(find.text('Maths revision'), findsOneWidget);
+          // A pause in typing never searches; Show matching sessions does.
+          expect(spoken.last, isNot(contains('Found:')));
+          tester
+              .widget<KeypadInstructionWrapper>(
+                find.byType(KeypadInstructionWrapper),
+              )
+              .focusTargets
+              .singleWhere(
+                (target) => target.node.debugLabel == 'student-search-results',
+              )
+              .onActivate!();
+          await tester.pump();
           expect(spoken.last, contains('Found: Maths revision'));
 
           await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);

@@ -21,8 +21,6 @@ import main  # noqa: E402
 import models  # noqa: E402
 import playlist_routes  # noqa: E402
 import classroom_checks  # noqa: E402
-import sequence_routes as sequences  # noqa: E402
-from pydantic import ValidationError
 
 
 @pytest.mark.asyncio
@@ -60,104 +58,6 @@ async def test_active_sse_reset_closes_after_revocation_instead_of_delivering_qu
     assert "Queued private" not in frame
     with pytest.raises(StopAsyncIteration):
         await anext(response.body_iterator)
-
-
-@pytest_asyncio.fixture
-async def sequence_plan(live_room, tmp_path):
-    db, data, room, teacher, student, logs, broadcast = live_room
-    path = tmp_path / "sequence.m4a"
-    path.write_bytes(b"private teacher lesson")
-    audio = models.AudioFile(
-        title="Sequence recording", file_path=str(path), mime_type="audio/mp4",
-        uploaded_by=data["teacher"].user_id, class_id=room.class_id, subject_id=room.subject_id,
-    )
-    db.add(audio)
-    await db.commit()
-    result = await sequences.create_plan(sequences.CreatePlan(
-        title="Reusable lesson", class_id=room.class_id, subject_id=room.subject_id,
-        steps=[sequences.Step(kind="prompt", text="Introduce the concept"),
-               sequences.Step(kind="audio", text=audio.title, audio_id=audio.audio_id),
-               sequences.Step(kind="check", text="Ask whether to repeat")],
-    ), data["teacher"], db)
-    return live_room, result["plan"], audio, path
-
-
-@pytest.mark.asyncio
-async def test_reusable_sequences_persist_without_classroom_side_effects(sequence_plan):
-    (db, data, room, _, _, _, broadcast), plan, audio, _ = sequence_plan
-    loaded = await sequences.list_plans(session_id=room.session_id, teacher=data["teacher"], db=db)
-    assert loaded["plans"] == [plan]
-    assert [step["kind"] for step in plan["steps"]] == ["prompt", "audio", "check"]
-    for index in range(3):
-        result = await sequences.prepare_step(plan["sequence_id"], index, 1, room.session_id, data["teacher"], db)
-        assert result["position"] == index
-        assert result["step"]["kind"] == plan["steps"][index]["kind"]
-    assert main.SESSION_STATE[room.session_id]["playback"]["audio_id"] is None
-    assert "classroom_check" not in main.SESSION_STATE[room.session_id]
-    assert all(person["is_muted"] for person in main.SESSION_STATE[room.session_id]["participants"].values())
-    broadcast.assert_not_awaited()
-
-
-@pytest.mark.asyncio
-async def test_sequence_revision_guards_edit_prepare_and_selected_removal(sequence_plan):
-    (db, data, room, *_), plan, _, _ = sequence_plan
-    changed = await sequences.update_plan(plan["sequence_id"], sequences.UpdatePlan(
-        title="Changed plan", revision=1, steps=[sequences.Step(kind="prompt", text="New first step")],
-    ), data["teacher"], db)
-    assert changed["plan"]["revision"] == 2
-    for operation in (
-        sequences.update_plan(plan["sequence_id"], sequences.UpdatePlan(title="Stale", revision=1), data["teacher"], db),
-        sequences.prepare_step(plan["sequence_id"], 0, 1, room.session_id, data["teacher"], db),
-        sequences.delete_plan(plan["sequence_id"], 1, data["teacher"], db),
-    ):
-        with pytest.raises(HTTPException) as stale:
-            await operation
-        assert stale.value.status_code == 409
-    await sequences.delete_plan(plan["sequence_id"], 2, data["teacher"], db)
-    assert (await sequences.list_plans(session_id=room.session_id, teacher=data["teacher"], db=db))["plans"] == []
-
-
-@pytest.mark.asyncio
-async def test_sequence_owner_workspace_and_current_assignment_are_revalidated(sequence_plan):
-    (db, data, room, *_), plan, _, _ = sequence_plan
-    other = models.User(name="Other sequence teacher", phone_number="9000000111", role="teacher", password_hash="test")
-    db.add(other)
-    await db.flush()
-    db.add(models.TeacherClassSubjectAssignment(teacher_id=other.user_id, class_id=room.class_id, subject_id=room.subject_id))
-    await db.commit()
-    with pytest.raises(HTTPException) as denied:
-        await sequences.prepare_step(plan["sequence_id"], 0, 1, None, other, db)
-    assert denied.value.status_code == 403
-    assignment = (await db.execute(select(models.TeacherClassSubjectAssignment).where(
-        models.TeacherClassSubjectAssignment.teacher_id == data["teacher"].user_id,
-    ))).scalar_one()
-    assignment.is_active = False
-    await db.commit()
-    with pytest.raises(HTTPException) as revoked:
-        await sequences.prepare_step(plan["sequence_id"], 0, 1, room.session_id, data["teacher"], db)
-    assert revoked.value.status_code == 403
-
-
-@pytest.mark.asyncio
-async def test_missing_sequence_recording_is_retained_but_not_prepared(sequence_plan):
-    (db, data, room, *_), plan, _, path = sequence_plan
-    path.unlink()
-    with pytest.raises(HTTPException) as missing:
-        await sequences.prepare_step(plan["sequence_id"], 1, 1, room.session_id, data["teacher"], db)
-    assert missing.value.status_code == 409
-    loaded = await sequences.list_plans(session_id=room.session_id, teacher=data["teacher"], db=db)
-    assert len(loaded["plans"][0]["steps"]) == 3
-
-
-@pytest.mark.parametrize("step", [
-    {"kind": "quiz", "text": "Graded quizzes are not sequence steps"},
-    {"kind": "audio", "text": "Missing identity"},
-    {"kind": "prompt", "text": "Not audio", "audio_id": 1},
-    {"kind": "check", "text": "   "},
-])
-def test_sequence_step_contract_excludes_graded_or_malformed_actions(step):
-    with pytest.raises(ValidationError):
-        sequences.Step(**step)
 
 
 @pytest.mark.asyncio

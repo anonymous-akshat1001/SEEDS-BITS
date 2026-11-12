@@ -31,6 +31,7 @@ dependencies:
   flutter:
     sdk: flutter
 
+  flutter_dotenv: ^5.1.0
   http: ^1.6.0
   record: ^6.2.1
 
@@ -55,6 +56,10 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+
+  # API_BASE_URL for the backend. Copy .env.example to .env (not committed).
+  assets:
+    - .env
 
   # To add assets to your application, add an assets section, like this:
   # assets:

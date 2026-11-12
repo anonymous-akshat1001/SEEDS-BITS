@@ -675,8 +675,9 @@ async def add_bank_question_to_quiz(
     access.require_bank_question_owner(teacher, question)
     if question.is_archived:
         raise HTTPException(status_code=409, detail="Archived questions cannot be added.")
-    if question.class_id != quiz.class_id or question.subject_id != quiz.subject_id:
-        raise HTTPException(status_code=400, detail="Question must match the quiz workspace.")
+    # A teacher may reuse their own question in any of their quizzes, in any
+    # class or subject: the quiz keeps its own snapshot, so later edits to
+    # the bank question never change a quiz that already uses it.
     db.add(_snapshot_from_bank(quiz, question))
     await db.commit()
     return _quiz_payload(await _get_quiz(db, quiz_id), include_questions=True)

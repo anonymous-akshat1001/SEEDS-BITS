@@ -1,9 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../services/api_service.dart';
 import '../services/auth_session_service.dart';
 import '../services/tts_service.dart';
+import '../announcers/admin_text.dart';
+import '../services/message_center.dart';
+import '../widgets/keypad_choice_field.dart';
 import '../utils/keypad_actions.dart';
 import '../utils/ui_utils.dart';
 import '../widgets/key_instruction_wrapper.dart';
@@ -454,7 +459,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
     );
     if (name == null) return;
     if (name.isEmpty) {
-      await TtsService.speak('No subject name entered. Nothing was created.');
+      await TtsService.speak(AdminText.noSubjectName);
       return;
     }
     final result = await ApiService.createSubject(name);
@@ -465,7 +470,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
     final name = await _textDialog(title: 'Create class', label: 'Class name');
     if (name == null) return;
     if (name.isEmpty) {
-      await TtsService.speak('No class name entered. Nothing was created.');
+      await TtsService.speak(AdminText.noClassName);
       return;
     }
     final activeOrders = _classes
@@ -481,21 +486,15 @@ class _AdminDashboardState extends State<AdminDashboard> {
   Future<void> _announceResult(
     bool success,
     String successMessage, {
-    String failureMessage =
-        'The change could not be saved. Press 1 to refresh, then try again.',
+    String failureMessage = AdminText.saveFailed,
   }) async {
     final message = success ? successMessage : failureMessage;
-    if (mounted) {
-      // Spoken below; hide from screen readers so it is not read twice.
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: ExcludeSemantics(child: Text(message))));
-    }
     if (success) {
       // The refresh speaks this message together with the new counts.
+      MessageCenter.show('$message.', kind: MessageKind.success, speak: false);
       await _refresh(filterFeedback: '$message.');
     } else {
-      await TtsService.speak(message, priority: SpeechPriority.critical);
+      MessageCenter.error(message);
     }
   }
 
@@ -782,7 +781,11 @@ class _AdminDashboardState extends State<AdminDashboard> {
       if (next < 0) next += activeClasses.length;
       updateDialog(() => classId = activeClasses[next]['class_id'] as int);
       TtsService.speak(
-        '${activeClasses[next]['name']} selected. Use left or right to change class.',
+        AdminText.choiceChanged(
+          '${activeClasses[next]['name']}',
+          next,
+          activeClasses.length,
+        ),
       );
     }
 
@@ -805,7 +808,12 @@ class _AdminDashboardState extends State<AdminDashboard> {
         focusTargets: [
           KeypadFocusTarget(
             node: classNode,
-            label: 'Choose class. Use left or right to change',
+            label: AdminText.choiceLabel(
+              'Class',
+              '${activeClasses.firstWhere((e) => e['class_id'] == classId, orElse: () => activeClasses.first)['name']}',
+              activeClasses.indexWhere((e) => e['class_id'] == classId).clamp(0, activeClasses.length),
+              activeClasses.length,
+            ),
             onActivate: () => moveClass(1),
             onDecrease: () => moveClass(-1),
             onIncrease: () => moveClass(1),
@@ -835,23 +843,16 @@ class _AdminDashboardState extends State<AdminDashboard> {
               scrollable: true,
               insetPadding: const EdgeInsets.all(8),
               title: Text('Assign class to ${student['name']}'),
-              content: DropdownButtonFormField<int>(
-                key: ValueKey(classId),
+              content: KeypadChoiceField<int>(
+                label: 'Class',
                 focusNode: classNode,
-                initialValue: classId,
-                isExpanded: true,
-                decoration: const InputDecoration(labelText: 'Class'),
-                items: activeClasses
-                    .map<DropdownMenuItem<int>>(
-                      (entry) => DropdownMenuItem(
-                        value: entry['class_id'] as int,
-                        child: Text('${entry['name']}'),
-                      ),
-                    )
-                    .toList(),
-                onChanged: (value) {
-                  if (value != null) setLocal(() => classId = value);
-                },
+                values: [
+                  for (final entry in activeClasses) entry['class_id'] as int,
+                ],
+                value: classId,
+                nameOf: (id) =>
+                    '${activeClasses.firstWhere((e) => e['class_id'] == id)['name']}',
+                onChanged: (value) => setLocal(() => classId = value),
               ),
               actions: [
                 TextButton(
@@ -939,7 +940,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
     var classSubjects = await ApiService.getClassSubjects(classId);
     if (!mounted) return;
     if (classSubjects.isEmpty) {
-      await TtsService.speak('This class has no active subjects.');
+      await TtsService.speak(AdminText.noActiveSubjects);
       return;
     }
     int subjectId = classSubjects.first['subject_id'] as int;
@@ -957,7 +958,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
     Future<void> selectClass(int value) async {
       final subjects = await ApiService.getClassSubjects(value);
       if (subjects.isEmpty) {
-        await TtsService.speak('The selected class has no active subjects.');
+        MessageCenter.error(AdminText.noSubjects);
         return;
       }
       final selectedClass = activeClasses.firstWhere(
@@ -969,8 +970,10 @@ class _AdminDashboardState extends State<AdminDashboard> {
         subjectId = subjects.first['subject_id'] as int;
       });
       await TtsService.speak(
-        '${selectedClass['name']} selected. '
-        '${subjects.first['subject_name']} subject selected.',
+        AdminText.classAndSubject(
+          '${selectedClass['name']}',
+          '${subjects.first['subject_name']}',
+        ),
       );
     }
 
@@ -991,8 +994,11 @@ class _AdminDashboardState extends State<AdminDashboard> {
       if (next < 0) next += classSubjects.length;
       updateDialog(() => subjectId = classSubjects[next]['subject_id'] as int);
       TtsService.speak(
-        '${classSubjects[next]['subject_name']} selected. '
-        'Use left or right to change subject.',
+        AdminText.choiceChanged(
+          '${classSubjects[next]['subject_name']}',
+          next,
+          classSubjects.length,
+        ),
       );
     }
 
@@ -1020,14 +1026,26 @@ class _AdminDashboardState extends State<AdminDashboard> {
             ),
           KeypadFocusTarget(
             node: classNode,
-            label: 'Choose class. Use left or right to change',
+            label: AdminText.choiceLabel(
+              'Class',
+              '${activeClasses.firstWhere((e) => e['class_id'] == classId, orElse: () => activeClasses.first)['name']}',
+              activeClasses.indexWhere((e) => e['class_id'] == classId).clamp(0, activeClasses.length),
+              activeClasses.length,
+            ),
             onActivate: () => moveTeacherClass(1),
             onDecrease: () => moveTeacherClass(-1),
             onIncrease: () => moveTeacherClass(1),
           ),
           KeypadFocusTarget(
             node: subjectNode,
-            label: 'Choose subject. Use left or right to change',
+            label: classSubjects.isEmpty
+                ? AdminText.noSubjects
+                : AdminText.choiceLabel(
+                    'Subject',
+                    '${classSubjects.firstWhere((e) => e['subject_id'] == subjectId, orElse: () => classSubjects.first)['subject_name']}',
+                    classSubjects.indexWhere((e) => e['subject_id'] == subjectId).clamp(0, classSubjects.length),
+                    classSubjects.length,
+                  ),
             onActivate: () => moveSubject(1),
             onDecrease: () => moveSubject(-1),
             onIncrease: () => moveSubject(1),
@@ -1091,42 +1109,30 @@ class _AdminDashboardState extends State<AdminDashboard> {
                       child: Text('Add an assignment'),
                     ),
                   ],
-                  DropdownButtonFormField<int>(
-                    key: ValueKey('teacher-class-$classId'),
+                  KeypadChoiceField<int>(
+                    label: 'Class',
                     focusNode: classNode,
-                    initialValue: classId,
-                    isExpanded: true,
-                    decoration: const InputDecoration(labelText: 'Class'),
-                    items: activeClasses
-                        .map<DropdownMenuItem<int>>(
-                          (entry) => DropdownMenuItem(
-                            value: entry['class_id'] as int,
-                            child: Text('${entry['name']}'),
-                          ),
-                        )
-                        .toList(),
-                    onChanged: (value) {
-                      if (value != null) selectClass(value);
-                    },
+                    values: [
+                      for (final entry in activeClasses)
+                        entry['class_id'] as int,
+                    ],
+                    value: classId,
+                    nameOf: (id) =>
+                        '${activeClasses.firstWhere((e) => e['class_id'] == id)['name']}',
+                    onChanged: (value) => unawaited(selectClass(value)),
                   ),
                   const SizedBox(height: 12),
-                  DropdownButtonFormField<int>(
-                    key: ValueKey('teacher-subject-$subjectId'),
+                  KeypadChoiceField<int>(
+                    label: 'Subject',
                     focusNode: subjectNode,
-                    initialValue: subjectId,
-                    isExpanded: true,
-                    decoration: const InputDecoration(labelText: 'Subject'),
-                    items: classSubjects
-                        .map<DropdownMenuItem<int>>(
-                          (entry) => DropdownMenuItem(
-                            value: entry['subject_id'] as int,
-                            child: Text('${entry['subject_name']}'),
-                          ),
-                        )
-                        .toList(),
-                    onChanged: (value) {
-                      if (value != null) setLocal(() => subjectId = value);
-                    },
+                    values: [
+                      for (final entry in classSubjects)
+                        entry['subject_id'] as int,
+                    ],
+                    value: subjectId,
+                    nameOf: (id) =>
+                        '${classSubjects.firstWhere((e) => e['subject_id'] == id)['subject_name']}',
+                    onChanged: (value) => setLocal(() => subjectId = value),
                   ),
                 ],
               ),
@@ -1359,16 +1365,31 @@ class _AdminDashboardState extends State<AdminDashboard> {
     return KeypadInstructionWrapper(
       screenName: _sectionTitle,
       navigationSections: _sectionNavigation,
+      stateSummary: () => AdminText.state(
+        section: _section.name,
+        shown: switch (_section) {
+          _AdminSection.accounts => _users.length,
+          _AdminSection.classes => _classes.length,
+          _AdminSection.subjects => _subjects.length,
+        },
+        filter: _section == _AdminSection.accounts
+            ? _assignmentFilterLabel()
+            : null,
+        search: _searchController.text.trim(),
+      ),
       labels: _sectionKeyLabels,
       autoPlay: false,
       actions: {
         0: () => AuthSessionService.logoutFrom(context),
         1: _refresh,
-        2: _focusSearch,
-        3: () => _cycleRoleFilter(1),
-        4: () => _cycleAssignmentFilter(1),
-        5: _addSubject,
-        6: _addClass,
+        // Only the keys the current section announces do anything.
+        if (_section == _AdminSection.accounts) ...{
+          2: _focusSearch,
+          3: () => _cycleRoleFilter(1),
+          4: () => _cycleAssignmentFilter(1),
+        },
+        if (_section == _AdminSection.subjects) 5: _addSubject,
+        if (_section == _AdminSection.classes) 6: _addClass,
         7: _chooseSection,
       },
       navigationController: _keypad,
