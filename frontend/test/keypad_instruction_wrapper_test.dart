@@ -17,6 +17,11 @@ void main() {
           const MethodChannel('flutter_tts'),
           (_) async => 1,
         );
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(
+          const MethodChannel('seeds/keypad'),
+          (_) async => null,
+        );
   });
 
   testWidgets('focus announces position and wrap-around at list ends', (
@@ -241,6 +246,167 @@ void main() {
     await tester.sendKeyEvent(LogicalKeyboardKey.digit1);
     expect(shortcuts, 0);
 
+    await tester.pumpWidget(const SizedBox.shrink());
+    input.dispose();
+  });
+
+  for (final finishKey in [
+    LogicalKeyboardKey.enter,
+    LogicalKeyboardKey.numpadEnter,
+    LogicalKeyboardKey.select,
+  ]) {
+    testWidgets('OK ($finishKey) leaves consecutive fields for shortcuts', (
+      tester,
+    ) async {
+      final nativeReleases = <bool>[];
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        const MethodChannel('seeds/keypad'),
+        (call) async {
+          expect(call.method, 'finishTextEditing');
+          nativeReleases.add(tester.testTextInput.hasAnyClients);
+          return null;
+        },
+      );
+      final phone = FocusNode();
+      final password = FocusNode();
+      final submit = FocusNode();
+      final text = TextEditingController();
+      final navigation = KeypadNavigationController();
+      var shortcuts = 0;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: KeypadInstructionWrapper(
+            autoPlay: false,
+            navigationController: navigation,
+            actions: {2: () => shortcuts++, 3: () => shortcuts++},
+            focusTargets: [
+              KeypadFocusTarget(node: phone, label: 'Phone', isTextField: true),
+              KeypadFocusTarget(
+                node: password,
+                label: 'Password',
+                isTextField: true,
+              ),
+              KeypadFocusTarget(node: submit, label: 'Login'),
+            ],
+            child: Scaffold(
+              body: Column(
+                children: [
+                  TextField(focusNode: phone, controller: text),
+                  TextField(focusNode: password),
+                  TextButton(
+                    focusNode: submit,
+                    onPressed: () {},
+                    child: const Text('Login'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
+      expect(phone.hasFocus, isTrue);
+      await tester.enterText(find.byType(TextField).first, '9000000000');
+      await tester.sendKeyEvent(LogicalKeyboardKey.digit2);
+      expect(shortcuts, 0);
+
+      await tester.sendKeyEvent(finishKey);
+      await tester.pump();
+      expect(navigation.isEditing, isFalse);
+      expect(phone.hasFocus, isFalse);
+      expect(password.hasFocus, isFalse);
+      expect(tester.testTextInput.hasAnyClients, isFalse);
+      expect(nativeReleases, [false]);
+      await tester.sendKeyEvent(LogicalKeyboardKey.digit2);
+      expect(shortcuts, 1);
+      expect(text.text, '9000000000');
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowUp);
+      expect(password.hasFocus, isTrue);
+      await tester.pump();
+      expect(nativeReleases, [false]);
+      await tester.sendKeyEvent(LogicalKeyboardKey.digit2);
+      expect(shortcuts, 1);
+
+      await tester.enterText(find.byType(TextField).at(1), 'password');
+      await tester.sendKeyEvent(finishKey);
+      await tester.pump();
+      await tester.sendKeyEvent(LogicalKeyboardKey.digit3);
+      expect(shortcuts, 2);
+
+      await tester.pumpWidget(const SizedBox.shrink());
+      phone.dispose();
+      password.dispose();
+      submit.dispose();
+      text.dispose();
+    });
+  }
+
+  for (final registered in [true, false]) {
+    testWidgets('OK releases a lone text field (registered: $registered)', (
+      tester,
+    ) async {
+      final input = FocusNode();
+      var shortcuts = 0;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: KeypadInstructionWrapper(
+            autoPlay: false,
+            actions: {2: () => shortcuts++},
+            focusTargets: [
+              if (registered)
+                KeypadFocusTarget(
+                  node: input,
+                  label: 'Input',
+                  isTextField: true,
+                ),
+            ],
+            child: Scaffold(body: TextField(focusNode: input)),
+          ),
+        ),
+      );
+      await tester.tap(find.byType(TextField));
+      await tester.pump();
+      await tester.sendKeyEvent(LogicalKeyboardKey.select);
+      await tester.pump();
+      expect(input.hasFocus, isFalse);
+      expect(tester.testTextInput.hasAnyClients, isFalse);
+      await tester.sendKeyEvent(LogicalKeyboardKey.digit2);
+      expect(shortcuts, 1);
+      await tester.pumpWidget(const SizedBox.shrink());
+      input.dispose();
+    });
+  }
+
+  testWidgets('native Done returns focus to keypad shortcuts', (tester) async {
+    final input = FocusNode();
+    final navigation = KeypadNavigationController();
+    var shortcuts = 0;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: KeypadInstructionWrapper(
+          autoPlay: false,
+          navigationController: navigation,
+          actions: {2: () => shortcuts++},
+          focusTargets: [
+            KeypadFocusTarget(node: input, label: 'Input', isTextField: true),
+          ],
+          child: Scaffold(
+            body: TextField(
+              focusNode: input,
+              textInputAction: TextInputAction.done,
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.enterText(find.byType(TextField), 'Retained text');
+    navigation.enterTextEditing(input);
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pump();
+    await tester.sendKeyEvent(LogicalKeyboardKey.digit2);
+    expect(shortcuts, 1);
+    expect(navigation.isEditing, isFalse);
     await tester.pumpWidget(const SizedBox.shrink());
     input.dispose();
   });
@@ -781,7 +947,9 @@ void main() {
       await tester.tap(find.text('Sign in'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 500));
-      final said = calls.indexWhere((call) => call.startsWith('speak Dashboard'));
+      final said = calls.indexWhere(
+        (call) => call.startsWith('speak Dashboard'),
+      );
       expect(said, isNot(-1));
       await tester.pumpAndSettle();
       expect(find.text('Sign in'), findsNothing);
@@ -791,56 +959,55 @@ void main() {
     },
   );
 
-  testWidgets(
-    'a message carried across a page change opens the next screen',
-    (tester) async {
-      final spoken = <String>[];
-      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
-        const MethodChannel('flutter_tts'),
-        (call) async {
-          if (call.method == 'speak') spoken.add('${call.arguments}');
-          return 1;
+  testWidgets('a message carried across a page change opens the next screen', (
+    tester,
+  ) async {
+    final spoken = <String>[];
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      const MethodChannel('flutter_tts'),
+      (call) async {
+        if (call.method == 'speak') spoken.add('${call.arguments}');
+        return 1;
+      },
+    );
+    await TtsService.configure(enabled: true, mode: SpeechMode.selfVoicing);
+    await tester.pumpWidget(
+      MaterialApp(
+        navigatorObservers: [routeObserver],
+        routes: {
+          '/dashboard': (_) => const KeypadInstructionWrapper(
+            screenName: 'Student dashboard',
+            actions: {},
+            child: Scaffold(body: Text('Dashboard body')),
+          ),
         },
-      );
-      await TtsService.configure(enabled: true, mode: SpeechMode.selfVoicing);
-      await tester.pumpWidget(
-        MaterialApp(
-          navigatorObservers: [routeObserver],
-          routes: {
-            '/dashboard': (_) => const KeypadInstructionWrapper(
-              screenName: 'Student dashboard',
-              actions: {},
-              child: Scaffold(body: Text('Dashboard body')),
-            ),
-          },
-          home: Builder(
-            builder: (context) => Scaffold(
-              body: TextButton(
-                onPressed: () {
-                  MessageCenter.carryToNextScreen('The class has ended.');
-                  Navigator.of(
-                    context,
-                  ).pushNamedAndRemoveUntil('/dashboard', (_) => false);
-                },
-                child: const Text('Leave'),
-              ),
+        home: Builder(
+          builder: (context) => Scaffold(
+            body: TextButton(
+              onPressed: () {
+                MessageCenter.carryToNextScreen('The class has ended.');
+                Navigator.of(
+                  context,
+                ).pushNamedAndRemoveUntil('/dashboard', (_) => false);
+              },
+              child: const Text('Leave'),
             ),
           ),
         ),
-      );
-      await tester.tap(find.text('Leave'));
-      await tester.pumpAndSettle();
-      await tester.pump(const Duration(milliseconds: 500));
-      expect(spoken.last, startsWith('The class has ended. Student dashboard.'));
-      expect(MessageCenter.last.value?.text, 'The class has ended.');
-      await tester.pump(const Duration(seconds: 3));
-      expect(
-        spoken.where((text) => text.contains('The class has ended')).length,
-        1,
-      );
-      await tester.pumpWidget(const SizedBox.shrink());
-    },
-  );
+      ),
+    );
+    await tester.tap(find.text('Leave'));
+    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(spoken.last, startsWith('The class has ended. Student dashboard.'));
+    expect(MessageCenter.last.value?.text, 'The class has ended.');
+    await tester.pump(const Duration(seconds: 3));
+    expect(
+      spoken.where((text) => text.contains('The class has ended')).length,
+      1,
+    );
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
 
   testWidgets(
     'a screen rebuilding while speech plays never setStates during build',

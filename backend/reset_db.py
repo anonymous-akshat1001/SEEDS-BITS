@@ -1,4 +1,4 @@
-"""Destructively reset the test database and seed SEEDS reference data.
+"""Destructively reset the configured database and seed SEEDS reference data.
 
 Usage from the repository root:
 
@@ -15,6 +15,7 @@ import sys
 from pathlib import Path
 
 from dotenv import load_dotenv
+from sqlalchemy import MetaData, Table
 from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import sessionmaker
@@ -37,6 +38,10 @@ async def reset_and_seed() -> None:
 
     async with engine.begin() as connection:
         print("Dropping all SEEDS tables...")
+        # Retired tables are absent from model metadata but still reference current tables.
+        await connection.run_sync(
+            Table("lesson_sequences", MetaData()).drop, checkfirst=True,
+        )
         await connection.run_sync(models.Base.metadata.drop_all)
         print("Creating class-aware SEEDS tables...")
         await connection.run_sync(models.Base.metadata.create_all)

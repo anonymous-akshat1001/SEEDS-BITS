@@ -6,6 +6,18 @@ Release Android artifacts must be named `SEEDS-v<version>.apk` (for example,
 Firebase Cloud Messaging setup and verification steps are documented in
 [FCM_SETUP.md](FCM_SETUP.md).
 
+## Physical keypad text entry
+
+While a text field is focused, digits, star and hash belong to text entry.
+Typing starts editing even without an initial OK press.
+After editing, press OK/Enter to close text input and move to the next
+non-text control (or the screen's keypad scope if there is none). The next
+number key runs its screen action. Native keyboard Done also returns control
+to the screen's keypad shortcuts. Use Up/Down to move between fields and
+controls when more text needs to be entered.
+On Android, leaving text input also restarts the native input connection so
+T9 keyboards cannot keep consuming shortcut keys after the field loses focus.
+
 A new Flutter project.
 
 ## Getting Started

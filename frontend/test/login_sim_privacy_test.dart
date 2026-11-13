@@ -63,6 +63,10 @@ void main() {
       (_) async => 1,
     );
     messenger.setMockMethodCallHandler(
+      const MethodChannel('seeds/keypad'),
+      (_) async => null,
+    );
+    messenger.setMockMethodCallHandler(
       const MethodChannel('flutter.baseflow.com/permissions/methods'),
       (call) async {
         phoneCalls.add(call);
@@ -88,12 +92,39 @@ void main() {
         TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
     for (final channel in [
       'mobile_number',
+      'seeds/keypad',
       'flutter.baseflow.com/permissions/methods',
       'dexterous.com/flutter/local_notifications',
     ]) {
       messenger.setMockMethodCallHandler(MethodChannel(channel), null);
     }
   });
+
+  androidTestWidgets(
+    'OK after editing the phone number restores role shortcuts without editing the password',
+    (tester) async {
+      await tester.pumpWidget(const MaterialApp(home: LoginScreen()));
+      await tester.pump();
+      await tester.enterText(find.byType(TextField).first, '9000000002');
+      await tester.sendKeyEvent(LogicalKeyboardKey.select);
+      await tester.pump();
+      expect(tester.testTextInput.hasAnyClients, isFalse);
+      await tester.sendKeyEvent(LogicalKeyboardKey.digit2);
+      await tester.pump();
+      expect(find.text('4: Login as Teacher'), findsOneWidget);
+      expect(
+        tester.widget<TextField>(find.byType(TextField).first).controller!.text,
+        '9000000002',
+      );
+      expect(
+        tester.widget<TextField>(find.byType(TextField).at(1)).controller!.text,
+        isEmpty,
+      );
+      expect(phoneCalls, isEmpty);
+      expect(simCalls, isEmpty);
+      await tester.pumpWidget(const SizedBox.shrink());
+    },
+  );
 
   androidTestWidgets(
     'login never reads SIM information automatically even when permission already exists; declining keeps manual entry',

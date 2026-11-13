@@ -8,9 +8,11 @@ import android.os.SystemClock
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
+import android.view.inputmethod.InputMethodManager
 import java.io.File
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.android.FlutterView
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugins.GeneratedPluginRegistrant
 
@@ -83,6 +85,22 @@ class MainActivity: FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         GeneratedPluginRegistrant.registerWith(flutterEngine)
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "seeds/keypad")
+            .setMethodCallHandler { call, result ->
+                if (call.method != "finishTextEditing") {
+                    result.notImplemented()
+                    return@setMethodCallHandler
+                }
+                val view = currentFocus as? FlutterView
+                if (view == null) {
+                    result.error("no_flutter_view", "The app no longer has keypad focus.", null)
+                    return@setMethodCallHandler
+                }
+                // T9 IMEs can keep consuming physical keys after Flutter clears its client.
+                val inputMethod = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+                inputMethod.restartInput(view)
+                result.success(null)
+            }
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "seeds/feedback")
             .setMethodCallHandler { call, result ->
                 if (call.method != "vibrate") {

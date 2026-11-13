@@ -346,37 +346,45 @@ All remaining commands in this runbook run on the backend server.
 
 ## 4. Verify and stage the archive
 
+Run as `seeds`. Do not paste commands while SSH or `sudo` is asking for a
+password; wait for the normal shell prompt. Staging does not require `sudo`.
+Use a fresh directory rather than deleting a previous staging directory.
+
 ```bash
-set -e
+set +e
 
 SERVICE=seeds-backend
 ARCHIVE=/tmp/seeds-backend-deploy.tar.gz
-STAGING=/tmp/seeds-backend-staging
+STAGING=$(mktemp -d /tmp/seeds-backend-staging.XXXXXX)
 
-test -f "$ARCHIVE" || {
-  echo "ERROR: $ARCHIVE is missing"
-  exit 1
-}
+(
+  set -e
 
-sudo rm -rf "$STAGING"
-sudo install -d -o seeds -g seeds -m 755 "$STAGING"
-tar -xzf "$ARCHIVE" -C "$STAGING"
+  test -n "$STAGING" && test -d "$STAGING"
+  test -r "$ARCHIVE" || {
+    echo "ERROR: $ARCHIVE is missing or unreadable"
+    exit 1
+  }
 
-test -f "$STAGING/backend/main.py" || {
-  echo "ERROR: backend/main.py is missing from the archive"
-  exit 1
-}
+  tar -tzf "$ARCHIVE" > /dev/null
+  tar -xzf "$ARCHIVE" -C "$STAGING"
 
-test -f "$STAGING/backend/requirements.txt" || {
-  echo "ERROR: backend/requirements.txt is missing from the archive"
-  exit 1
-}
+  for FILE in backend/main.py backend/requirements.txt alembic.ini; do
+    test -f "$STAGING/$FILE" || {
+      echo "ERROR: $FILE is missing from the archive"
+      exit 1
+    }
+  done
 
-test -f "$STAGING/alembic.ini" || {
-  echo "ERROR: alembic.ini is missing from the archive"
-  exit 1
-}
+  printf 'Staging verified: %s\n' "$STAGING"
+)
 ```
+
+Continue only after `Staging verified` appears. The parentheses confine
+`set -e` and `exit` to a subshell, so a staging failure does not close SSH.
+Keep this shell open: `$STAGING` contains the fresh directory name. After
+reconnecting, rerun this step and step 5.2 before continuing. Never run
+`rsync --delete` with missing or unverified staging files.
 
 ## 5. Confirm the production prerequisites
 
@@ -595,36 +603,54 @@ credentials and dumps out of the repository.
 
 ## 8. Stop the service and deploy
 
+Authenticate separately and wait for the shell prompt before pasting the
+deployment block:
+
 ```bash
-sudo systemctl stop "$SERVICE"
-sudo systemctl is-active "$SERVICE"
+sudo -v
 ```
 
-The expected state is `inactive`.
-
-Synchronize the code while preserving production data, credentials, and
-virtual environments:
+The block rechecks staging before stopping the service, then synchronizes code
+while preserving production data, credentials, and virtual environments.
+Any failure stops the block; do not proceed to step 9 after an error.
 
 ```bash
-rsync -av --delete \
-  --exclude='data/' \
-  --exclude='.env' \
-  --exclude='venv/' \
-  --exclude='venv310/' \
-  --exclude='venv311/' \
-  --exclude='.venv/' \
-  --exclude='__pycache__/' \
-  --exclude='*.pyc' \
-  --exclude='*firebase*.json' \
-  --exclude='*service-account*.json' \
-  --exclude='*service_account*.json' \
-  "$STAGING/backend/" \
-  /home/seeds/backend/
+(
+  set -e
 
-install -m 644 "$STAGING/alembic.ini" /home/seeds/alembic.ini
+  test "${SERVICE:-}" = seeds-backend
+  test -n "${STAGING:-}"
+  for FILE in backend/main.py backend/requirements.txt alembic.ini; do
+    test -f "$STAGING/$FILE" || {
+      echo "ERROR: staging is incomplete; rerun step 4"
+      exit 1
+    }
+  done
 
-sudo chown -R seeds:seeds /home/seeds/backend
-sudo chown seeds:seeds /home/seeds/alembic.ini
+  sudo systemctl stop "$SERVICE"
+  test "$(sudo systemctl show "$SERVICE" -p ActiveState --value)" = inactive
+
+  rsync -av --delete \
+    --exclude='data/' \
+    --exclude='.env' \
+    --exclude='venv/' \
+    --exclude='venv310/' \
+    --exclude='venv311/' \
+    --exclude='.venv/' \
+    --exclude='__pycache__/' \
+    --exclude='*.pyc' \
+    --exclude='*firebase*.json' \
+    --exclude='*service-account*.json' \
+    --exclude='*service_account*.json' \
+    "$STAGING/backend/" \
+    /home/seeds/backend/
+
+  install -m 644 "$STAGING/alembic.ini" /home/seeds/alembic.ini
+
+  sudo chown -R seeds:seeds /home/seeds/backend
+  sudo chown seeds:seeds /home/seeds/alembic.ini
+  echo "Code deployment complete; service remains stopped"
+)
 ```
 
 ## 9. Validate imports and apply migrations
@@ -654,11 +680,282 @@ cd /home/seeds
   current
 ```
 
-Never run `backend.reset_db` in production.
+Do not run `backend.reset_db` for a routine deployment. For an explicitly
+authorized destructive reset, use the separate procedure below.
 
 The migration configuration is `/home/seeds/alembic.ini`, **not**
 `/home/seeds/backend/alembic.ini`. Run Alembic from `/home/seeds`, as shown,
 because its script paths are relative to the repository root.
+
+### 9.1 Optional: destructive full application database reset
+
+**Skip this section for normal upgrades.** This deletes all data in the
+SQLAlchemy-managed application tables, including users, classes, sessions,
+quizzes, learning journeys and analytics. It recreates the current schema,
+seeds 14 classes and three subjects, and creates the configured bootstrap
+administrator. The reset also drops the retired SEEDS `lesson_sequences` table,
+if present, before dropping current application tables. It does not delete
+uploaded files, Firebase accounts, PostgreSQL roles, or unrelated tables.
+
+Use only with explicit authorization and a verified, restorable backup of the
+exact target database. Stop the backend and all other database writers,
+including maintenance timers/workers, before taking that backup and resetting.
+Keep them stopped until reset and verification finish. Code rollback cannot
+recover deleted database data.
+
+Complete code deployment and dependency installation first. Run from
+`/home/seeds` using the selected Python, not unqualified `python`:
+
+```bash
+cd /home/seeds
+SERVICE=seeds-backend
+VENV=/home/seeds/.venv-seeds311
+PYTHON="$VENV/bin/python"
+
+"$PYTHON" -c \
+  "import sys; sys.path.insert(0, 'backend'); from database import engine; import bootstrap; bootstrap.required_admin_environment(); print('Reset target:', engine.url.render_as_string(hide_password=True))"
+```
+
+Stop if this check fails. Verify the printed database host/name against the
+service configuration and backup. Commands load `/home/seeds/.env`, but
+exported shell variables take precedence; do not reset a different database
+from the one used by systemd. The protected server configuration must supply
+`BOOTSTRAP_ADMIN_NAME`, `BOOTSTRAP_ADMIN_PHONE` and
+`BOOTSTRAP_ADMIN_PASSWORD` (at least eight characters). Do not put credentials
+in command history or the repository.
+
+After stopping all writers and verifying the backup, set `DB_BACKUP` to its
+actual PostgreSQL custom-format dump path. The listing check below checks dump
+readability, not a successful restore; validate restoration separately.
+
+```bash
+DB_BACKUP=/home/seeds/deployment-backups/REPLACE_WITH_TIMESTAMP/seeds_db.dump
+
+(
+  set -e
+  cd /home/seeds
+  test "$SERVICE" = seeds-backend
+  test -x "$PYTHON"
+  test -s "$DB_BACKUP"
+  pg_restore --list "$DB_BACKUP" > /dev/null
+  test "$(sudo systemctl show "$SERVICE" -p ActiveState --value)" = inactive
+
+  read -r -p "Type RESET SEEDS DATABASE to permanently delete application data: " CONFIRM
+  test "$CONFIRM" = "RESET SEEDS DATABASE" || {
+    echo "ERROR: reset cancelled"
+    exit 1
+  }
+
+  "$PYTHON" -m backend.reset_db --confirm-reset
+  "$PYTHON" -m alembic -c /home/seeds/alembic.ini stamp --purge head
+  "$PYTHON" -m alembic -c /home/seeds/alembic.ini current
+  echo "Reset and Alembic bookkeeping complete; service remains stopped"
+)
+```
+
+Continue only after the final success message. `reset_db` creates the current
+model schema directly but does not reset Alembic's version table. Only after a
+successful reset, `stamp --purge head` replaces stale revision bookkeeping;
+do not use stamping to bypass migrations on an existing populated database.
+If any command fails, keep the service stopped and investigate or restore the
+backup; do not assume the reset rolled back.
+
+After the reset commands above succeed, reapply and verify the analytics
+read-only grants using section 9.2. Then start and verify the backend using
+step 10, check bootstrap administrator login and seeded reference data, and
+re-enable the maintenance jobs that were stopped.
+
+### 9.2 Reapply analytics read-only grants after a reset
+
+Run in this order while the backend and other database writers remain stopped:
+
+1. Complete section 9.1, including `backend.reset_db --confirm-reset` and
+   Alembic stamping. Do not reset again just to repair permissions.
+2. Confirm the target database and separately provisioned analytics login.
+3. Ensure the NOLOGIN role exists, reapply the SQL grants, and grant role
+   membership to the analytics login.
+4. Verify effective read permissions and absence of write/private-column access.
+5. Verify the configured analytics connection, then continue with step 10.
+
+The following administrator commands assume the application database is in the
+**local PostgreSQL cluster on port 5432**. Match this against the reset target
+printed in section 9.1 first. If PostgreSQL runs elsewhere, use its approved
+administrator connection instead; do not apply grants to a different local
+database. Replace the database/login names below with the actual production
+values. Never use the application writer account as the analytics login.
+
+```bash
+cd /home/seeds
+DB_NAME=seeds_db
+ANALYTICS_LOGIN=seeds_analytics_reader
+PYTHON=/home/seeds/.venv-seeds311/bin/python
+```
+
+**Only if the dedicated analytics login does not already exist**, create it.
+This prompts for its password rather than putting the password in shell history.
+Wait for the prompt to finish before pasting subsequent commands:
+
+```bash
+sudo -u postgres createuser \
+  --host=/var/run/postgresql --port=5432 \
+  --login --inherit --no-superuser --no-createdb --no-createrole \
+  --pwprompt "$ANALYTICS_LOGIN"
+```
+
+Reapply grants using the updated SQL file, which creates the NOLOGIN role only
+if missing and can be reapplied when it already exists. Do not filter SQL with
+an exact-line `sed` expression: Windows CRLF line endings can prevent a match
+and leave the old unconditional `CREATE ROLE` statement in the input.
+Table grants must be reapplied because reset recreated the tables; PostgreSQL
+roles and their memberships survive the reset.
+
+If the server still has the old SQL file, upload the updated one from Windows
+PowerShell before running the grant block:
+
+```powershell
+scp -o ProxyJump=seeds@182.75.45.22:10022 `
+  "C:\dev\SEEDS\backend\analytics_readonly.sql" `
+  seeds@172.16.108.26:/tmp/seeds-analytics-readonly.sql
+```
+
+Then install it on the Ubuntu VM, stopping if installation fails:
+
+```bash
+sudo install -o seeds -g seeds -m 644 \
+  /tmp/seeds-analytics-readonly.sql /home/seeds/backend/analytics_readonly.sql
+```
+
+Run this grant block on the Ubuntu VM:
+
+```bash
+(
+  set -e
+  test -n "$DB_NAME"
+  test -n "$ANALYTICS_LOGIN"
+  test -f /home/seeds/backend/analytics_readonly.sql
+
+  sudo -u postgres psql -X \
+    --host=/var/run/postgresql --port=5432 \
+    --dbname="$DB_NAME" --set=ON_ERROR_STOP=1 --single-transaction \
+    < /home/seeds/backend/analytics_readonly.sql
+
+  sudo -u postgres psql -X \
+    --host=/var/run/postgresql --port=5432 \
+    --dbname="$DB_NAME" --set=ON_ERROR_STOP=1 \
+    --set=database_name="$DB_NAME" \
+    --set=analytics_login="$ANALYTICS_LOGIN" <<'SQL'
+GRANT CONNECT ON DATABASE :"database_name" TO :"analytics_login";
+GRANT seeds_analytics TO :"analytics_login";
+SQL
+
+  echo "Analytics grants reapplied"
+)
+```
+
+Stop on any error; continue only after `Analytics grants reapplied`. Do not
+replace a failed grant with `GRANT ALL` or grant unrestricted access to `users`
+or other private columns.
+
+Check permissions as the actual analytics login, not as the database owner.
+The `LIMIT 0` queries validate access without printing application records:
+
+```bash
+sudo -u postgres psql -X \
+  --host=/var/run/postgresql --port=5432 \
+  --dbname="$DB_NAME" --set=ON_ERROR_STOP=1 \
+  --set=analytics_login="$ANALYTICS_LOGIN" <<'SQL'
+SET ROLE :"analytics_login";
+BEGIN READ ONLY;
+SELECT user_id, name, role FROM users LIMIT 0;
+SELECT session_id, title, created_by, class_id, subject_id, is_active,
+       created_at, ended_at FROM sessions LIMIT 0;
+SELECT quiz_id, owner_teacher_id, class_id, subject_id, mode FROM quizzes LIMIT 0;
+SELECT attempt_id, quiz_id, student_id, status, percentage_score,
+       completed_at, retention_expires_at FROM quiz_attempts LIMIT 0;
+SELECT event_type, source, created_at, owner_teacher_id, class_id,
+       subject_id, user_id, resource_type, resource_id, event_details FROM logs LIMIT 0;
+SELECT * FROM analytics_sessions LIMIT 0;
+SELECT * FROM session_runs LIMIT 0;
+SELECT * FROM analytics_attendance LIMIT 0;
+SELECT * FROM analytics_attendance_joins LIMIT 0;
+SELECT * FROM analytics_maintenance LIMIT 0;
+SELECT * FROM classes LIMIT 0;
+SELECT * FROM subjects LIMIT 0;
+SELECT * FROM class_subject_associations LIMIT 0;
+SELECT * FROM teacher_class_subject_assignments LIMIT 0;
+
+SELECT table_name,
+       has_table_privilege(
+         current_user, format('%I.%I', table_schema, table_name),
+         'INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER'
+       ) AS has_write_privilege
+FROM information_schema.tables
+WHERE table_schema = 'public' AND table_type = 'BASE TABLE'
+ORDER BY table_name;
+
+SELECT has_column_privilege(
+  current_user, 'public.users', 'password_hash', 'SELECT'
+) AS can_read_password_hash;
+ROLLBACK;
+RESET ROLE;
+SQL
+```
+
+All read queries must succeed. Every `has_write_privilege` value and
+`can_read_password_hash` must be **`f`**. If not, stop and have the database
+administrator review ownership, superuser status, PUBLIC grants and other role
+memberships. Adding the read-only role does not revoke existing broader rights.
+
+In the protected `/home/seeds/.env` (or the matching systemd environment),
+configure `ANALYTICS_DATABASE_URL` with this dedicated login and the same
+database. Use the `postgresql+asyncpg://` URL scheme and URL-encode password
+characters as needed. Do not copy the writer's `DATABASE_URL` into it.
+Ensure `ANALYTICS_ENABLED=true` when ready to expose analytics; collection and
+optional model/speech flags remain subject to the rollout gates above.
+
+Verify the actual configured analytics connection from `/home/seeds`, using
+the same environment as the service. This does not print its password:
+
+```bash
+(
+  set -e
+  cd /home/seeds
+  "$PYTHON" - <<'PY'
+import asyncio
+import os
+import sys
+
+sys.path.insert(0, "backend")
+from sqlalchemy import text
+from database import analytics_engine
+
+if not os.getenv("ANALYTICS_DATABASE_URL"):
+    raise RuntimeError("ANALYTICS_DATABASE_URL must use the dedicated analytics login")
+
+async def check():
+    try:
+        async with analytics_engine.connect() as connection:
+            await connection.execute(text("SET TRANSACTION READ ONLY"))
+            identity = (await connection.execute(
+                text("SELECT current_user, current_database()")
+            )).one()
+            print("Analytics login/database:", identity)
+            await connection.execute(text("SELECT user_id, name, role FROM users LIMIT 0"))
+            await connection.execute(text("SELECT * FROM analytics_sessions LIMIT 0"))
+    finally:
+        await analytics_engine.dispose()
+
+asyncio.run(check())
+print("Configured analytics connection verified")
+PY
+)
+```
+
+The printed login/database must match `ANALYTICS_LOGIN` and `DB_NAME`. Stop on
+authentication, connection or permission errors. After successful verification,
+use step 10 to start the backend, sign in as an administrator in the analytics
+dashboard and verify Health plus a structured query. A freshly reset database
+has no historical activity to report.
 
 ## 10. Start and verify the service
 
@@ -722,9 +1019,17 @@ service.
 ## 11. Clean up after a successful deployment
 
 ```bash
-sudo rm -rf "$STAGING"
-rm -f "$ARCHIVE"
-rm -f /tmp/seeds-production-requirements.txt
+(
+  set -e
+  case "${STAGING:-}" in
+    /tmp/seeds-backend-staging.??????) ;;
+    *) echo "ERROR: unexpected staging path; refusing cleanup"; exit 1 ;;
+  esac
+  test -f "$STAGING/backend/main.py"
+  rm -rf -- "$STAGING"
+  rm -f /tmp/seeds-backend-deploy.tar.gz
+  rm -f /tmp/seeds-production-requirements.txt
+)
 ```
 
 Exit the server:
@@ -809,7 +1114,17 @@ With `set -e`, a failed command in an interactive SSH shell can terminate the
 shell and close the connection. Reconnect using step 3, then troubleshoot
 commands individually **without `set -e`** (or run `set +e` in an existing
 shell). Stop manually after any failed check; do not continue deployment with
-missing prerequisites. Restore the step 4 variables when resuming deployment.
+missing prerequisites. Step 4 now confines fail-fast behavior to a subshell;
+rerun it and step 5.2 when resuming deployment.
+
+### `rsync: change_dir ... staging/backend failed`
+
+Staging extraction did not complete, or `$STAGING` refers to an old/missing
+directory. This is not a Python environment error. Do not retry
+`rsync --delete`, stop the service, or change live backend permissions to fix
+it. Rerun step 4 and require its `Staging verified` message first.
+If archive checks fail, recreate/upload the archive using steps 2 and 3.
+Wait for password prompts to finish before pasting further shell commands.
 
 ### `ModuleNotFoundError: No module named 'dotenv'`
 
@@ -827,7 +1142,9 @@ Use the verified `$PYTHON` path selected in step 5.
 
 For routine production upgrades, run the data-preserving Alembic commands in
 step 9. **Reset deletes existing database data** and is not a deployment step.
-Only on a disposable development/test database, with confirmed target
+For an authorized full production reset, follow section 9.1, including backup,
+writer shutdown, target verification and Alembic bookkeeping. On a disposable
+development/test database only, with confirmed target
 configuration and bootstrap administrator variables, use:
 
 ```bash
@@ -843,6 +1160,49 @@ python --version
 ```
 
 Activation affects only that shell, not systemd or subsequent SSH sessions.
+
+### Reset cannot drop `subjects` because `lesson_sequences` depends on it
+
+The database still contains the legacy SEEDS `lesson_sequences` table. Migration
+`20261109_10` replaces it with learning journeys, so current model metadata no
+longer includes it. An older reset script tries to drop its parent tables
+without first dropping that legacy table.
+
+The updated `backend/reset_db.py` drops only this known retired table, if it
+exists, inside the same transaction as the current-table reset. It does not use
+`CASCADE`; unknown dependencies still fail rather than deleting unrelated
+objects. Do not drop the whole `public` schema or stamp Alembic after a failed
+reset.
+
+Deploy the updated backend using steps 2 through 8, or transfer only the reset
+script from Windows PowerShell:
+
+```powershell
+scp -o ProxyJump=seeds@182.75.45.22:10022 `
+  "C:\dev\SEEDS\backend\reset_db.py" `
+  seeds@172.16.108.26:/tmp/seeds-reset_db.py
+```
+
+On the Ubuntu VM, keep all database writers stopped and install that script:
+
+```bash
+(
+  set -e
+  sudo systemctl stop seeds-backend
+  test "$(sudo systemctl show seeds-backend -p ActiveState --value)" = inactive
+  test -f /tmp/seeds-reset_db.py
+  sudo install -o seeds -g seeds -m 644 \
+    /tmp/seeds-reset_db.py /home/seeds/backend/reset_db.py
+  rm /tmp/seeds-reset_db.py
+  echo "Updated reset script installed; service remains stopped"
+)
+```
+
+After confirming the backup, target database and bootstrap configuration, rerun
+section 9.1. Only after reset succeeds, stamp Alembic as shown there, reapply
+analytics grants using section 9.2, and start/verify the service using step 10.
+No data-preserving migration is required before an explicitly authorized full
+reset.
 
 ### Service reports `activating (auto-restart)`
 

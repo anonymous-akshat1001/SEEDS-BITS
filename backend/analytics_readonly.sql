@@ -1,6 +1,13 @@
 -- Apply as a database administrator, then grant this NOLOGIN role to a separately
 -- provisioned login. Never reuse the application writer account in production.
-CREATE ROLE seeds_analytics NOLOGIN;
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'seeds_analytics') THEN
+        CREATE ROLE seeds_analytics NOLOGIN;
+    END IF;
+END;
+$$;
+ALTER ROLE seeds_analytics NOLOGIN;
 GRANT USAGE ON SCHEMA public TO seeds_analytics;
 GRANT SELECT (user_id, name, role) ON users TO seeds_analytics;
 GRANT SELECT ON analytics_sessions, session_runs, analytics_attendance,

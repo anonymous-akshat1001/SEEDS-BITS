@@ -1,7 +1,8 @@
 import 'dart:async';
 
 import 'package:audioplayers/audioplayers.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart'
+    show TargetPlatform, defaultTargetPlatform, kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -17,7 +18,7 @@ import '../utils/keypad_config.dart';
 enum KeypadInteractionPolicy { legacy, numbered }
 
 /// Explicit navigation state shared by a screen and its keypad wrapper.
-/// OK/Enter explicitly enters editing; focused inputs always retain text keys.
+/// OK/Enter or typing enters editing; focused inputs always retain text keys.
 class KeypadNavigationController {
   FocusNode? _editingNode;
   final _focusAnnouncements = <FocusNode, String>{};
@@ -75,8 +76,9 @@ class KeypadFocusTarget {
 /// Shared physical-keypad layer.
 ///
 /// D-pad traverses [focusTargets], OK/Enter activates the selected target or
-/// enters text editing, OK or Up/Down exits editing, and text inputs always
-/// retain digits, star and hash instead of triggering screen shortcuts.
+/// enters text editing, OK leaves text input for the next non-text control,
+/// and Up/Down moves between fields and controls. Text inputs retain digits,
+/// star and hash instead of triggering screen shortcuts.
 class KeypadInstructionWrapper extends StatefulWidget {
   const KeypadInstructionWrapper({
     super.key,
@@ -131,6 +133,8 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
   final Map<FocusNode, VoidCallback> _focusListeners = {};
   final Map<int, DateTime> _lastFiredAt = {};
   FocusNode? _navigationOnlyTextNode;
+  TextEditingController? _observedInput;
+  VoidCallback? _inputListener;
   FocusNode? _returnFocusNode;
   String? _wrapNotice;
   Timer? _instructionTimer;
@@ -158,6 +162,7 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
     _audioPlayer = AudioPlayer();
     _navigationController =
         widget.navigationController ?? KeypadNavigationController();
+    _scopeFocusNode.addListener(_handleScopeFocusChange);
     _attachFocusListeners();
     if (_keypadScopes.isEmpty) {
       FocusManager.instance.addEarlyKeyEventHandler(_releaseActionKey);
@@ -247,6 +252,7 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
     for (final target in widget.focusTargets) {
       void listener() {
         if (target.node.hasFocus && target.enabled) {
+          if (target.isTextField) _observeTextInput(target.node);
           if (_returnHelpPending) {
             final message = _navigationController._focusAnnouncements.remove(
               target.node,
@@ -268,6 +274,9 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
 
       _focusListeners[target.node] = listener;
       target.node.addListener(listener);
+      if (target.node.hasFocus && target.isTextField) {
+        _observeTextInput(target.node);
+      }
     }
   }
 
@@ -286,10 +295,70 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
   }
 
   void _detachFocusListeners() {
+    _stopObservingTextInput();
     for (final entry in _focusListeners.entries) {
       entry.key.removeListener(entry.value);
     }
     _focusListeners.clear();
+  }
+
+  void _observeTextInput(FocusNode node) {
+    _stopObservingTextInput();
+    final controller = _focusedEditableInput()?.controller;
+    if (controller == null) return;
+    var previousText = controller.text;
+    void listener() {
+      if (node.hasFocus && controller.text != previousText) {
+        _navigationOnlyTextNode = null;
+        _navigationController.enterTextEditing(node);
+      }
+      previousText = controller.text;
+    }
+
+    _observedInput = controller;
+    _inputListener = listener;
+    controller.addListener(listener);
+  }
+
+  void _stopObservingTextInput() {
+    final listener = _inputListener;
+    if (listener != null) _observedInput?.removeListener(listener);
+    _observedInput = null;
+    _inputListener = null;
+  }
+
+  void _handleScopeFocusChange() {
+    if (_scopeFocusNode.hasFocus) return;
+    _navigationController.exitTextEditing();
+    _navigationOnlyTextNode = null;
+    final primary = FocusManager.instance.primaryFocus;
+    // IME Done can unfocus the field without sending an Enter key event.
+    // Reclaim only focus dropped to our enclosing scope, never another control.
+    if (primary is FocusScopeNode &&
+        _scopeFocusNode.ancestors.contains(primary) &&
+        (ModalRoute.of(context)?.isCurrent ?? true)) {
+      _scopeFocusNode.requestFocus();
+      _releaseNativeTextInput();
+    }
+  }
+
+  void _releaseNativeTextInput() {
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) return;
+    // Let EditableText close its client before Android restarts the IME.
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted || !_scopeFocusNode.hasFocus || _isEditableInputFocused()) {
+        return;
+      }
+      try {
+        await const MethodChannel(
+          'seeds/keypad',
+        ).invokeMethod<void>('finishTextEditing');
+      } on PlatformException catch (error) {
+        debugPrint('[KEYPAD] Could not release native text input: $error');
+      } on MissingPluginException catch (error) {
+        debugPrint('[KEYPAD] Native text input release unavailable: $error');
+      }
+    });
   }
 
   /// [lead] is spoken before the screen's help, for example a message that
@@ -515,30 +584,34 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
     return null;
   }
 
-  bool _isEditableInputFocused() {
+  bool _isEditableInputFocused() => _focusedEditableInput() != null;
+
+  EditableText? _focusedEditableInput() {
     final primary = FocusManager.instance.primaryFocus;
     final focusContext = primary?.context;
     if (primary == null || focusContext == null || primary == _scopeFocusNode) {
-      return false;
+      return null;
     }
-    if (focusContext.widget is EditableText) return true;
+    final focusedWidget = focusContext.widget;
+    if (focusedWidget is EditableText) return focusedWidget;
 
-    var found = false;
+    EditableText? found;
     focusContext.visitAncestorElements((element) {
-      if (element.widget is EditableText) {
-        found = true;
+      final widget = element.widget;
+      if (widget is EditableText) {
+        found = widget;
         return false;
       }
       return true;
     });
-    if (!found) {
+    if (found == null) {
       void visit(Element element) {
         final widget = element.widget;
         if (widget is EditableText && widget.focusNode.hasFocus) {
-          found = true;
+          found = widget;
           return;
         }
-        if (!found) element.visitChildren(visit);
+        if (found == null) element.visitChildren(visit);
       }
 
       focusContext.visitChildElements(visit);
@@ -546,16 +619,22 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
     return found;
   }
 
-  void _moveFocus(int direction) {
+  void _moveFocus(int direction, {bool skipTextFields = false}) {
+    if (_isEditableInputFocused()) _releaseNativeTextInput();
     final targets = widget.focusTargets
         .where((target) => target.enabled)
         .toList();
-    if (targets.isEmpty) {
+    if (targets.isEmpty ||
+        (skipTextFields && targets.every((target) => target.isTextField))) {
       _navigationController.exitTextEditing();
       _navigationOnlyTextNode = null;
-      direction > 0
-          ? FocusScope.of(context).nextFocus()
-          : FocusScope.of(context).previousFocus();
+      if (skipTextFields) {
+        _scopeFocusNode.requestFocus();
+      } else {
+        direction > 0
+            ? FocusScope.of(context).nextFocus()
+            : FocusScope.of(context).previousFocus();
+      }
       return;
     }
 
@@ -564,7 +643,12 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
         ? (direction > 0 ? -1 : 0)
         : targets.indexOf(current);
     if (index < 0) index = direction > 0 ? -1 : 0;
-    final unwrapped = index + direction;
+    var unwrapped = index + direction;
+    if (skipTextFields) {
+      while (targets[unwrapped % targets.length].isTextField) {
+        unwrapped += direction;
+      }
+    }
     _wrapNotice = current == null || targets.length < 2
         ? null
         : unwrapped >= targets.length
@@ -640,7 +724,7 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
         return KeyEventResult.handled;
       }
       if (_isEnterKey(key)) {
-        _moveFocus(1);
+        _moveFocus(1, skipTextFields: true);
         return KeyEventResult.handled;
       }
       return KeyEventResult.ignored;
@@ -654,7 +738,7 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
           _navigationController.enterTextEditing(current.node);
           _speakSafely('${current.label}. Editing. Press OK when finished.');
         } else {
-          _moveFocus(1);
+          _moveFocus(1, skipTextFields: true);
         }
         return KeyEventResult.handled;
       }
@@ -796,6 +880,7 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
     _cancelInstructions();
     if (_subscribedRoute != null) routeObserver.unsubscribe(this);
     _detachFocusListeners();
+    _scopeFocusNode.removeListener(_handleScopeFocusChange);
     unawaited(_audioPlayer.stop());
     _audioPlayer.dispose();
     // No TtsService.stop() here: navigation already stopped this screen's
