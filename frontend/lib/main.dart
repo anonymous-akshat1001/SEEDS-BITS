@@ -26,6 +26,7 @@ import 'widgets/focus_highlight.dart';
 import 'utils/keypad_actions.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'firebase_options.dart';
+import 'l10n/speech.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 // Global navigation key for handling deep links
@@ -45,6 +46,7 @@ class SeedsStartup extends StatefulWidget {
 
 class _SeedsStartupState extends State<SeedsStartup> {
   bool _ready = false;
+  bool _speechReady = false;
   String? _startupError;
   String _initialRoute = '/welcome';
 
@@ -54,7 +56,24 @@ class _SeedsStartupState extends State<SeedsStartup> {
     _initializeEssentialServices();
   }
 
+  /// Restores speech settings and the speech language before anything is
+  /// spoken, so the first sentence uses the user's language and mode.
+  Future<void> _loadSpeechPreferences() async {
+    try {
+      await TtsService.loadFromPreferences();
+      // Speech.t follows the chosen language only once its voice is applied.
+      if (TtsService.selectedLanguage != SpeechLanguage.english) {
+        await TtsService.init();
+      }
+    } catch (error) {
+      debugPrint('[MAIN] Speech preference initialization failed: $error');
+      _startupError = Speech.t.startupPreferencesFailed;
+    }
+    if (mounted) setState(() => _speechReady = true);
+  }
+
   Future<void> _initializeEssentialServices() async {
+    await _loadSpeechPreferences();
     try {
       await dotenv.load(fileName: 'assets/.env');
       debugPrint('[MAIN] Loaded assets/.env');
@@ -80,7 +99,6 @@ WEB_VAPID_KEY=BOYVjb77moWEwSyBY-HxCkiAFBuNrCncK9oSobRL1TubgfGicL1JOiw_B0Nod74jEb
       final prefs = await SharedPreferences.getInstance();
       UIUtils.setHighContrastMode(prefs.getBool('high_contrast_mode') ?? true);
       UIUtils.setTextScale(prefs.getDouble('text_scale') ?? 1.0);
-      await TtsService.loadFromPreferences();
       await FeedbackCues.loadFromPreferences();
       final token = prefs.getString('token');
       final role = prefs.getString('role');
@@ -97,8 +115,7 @@ WEB_VAPID_KEY=BOYVjb77moWEwSyBY-HxCkiAFBuNrCncK9oSobRL1TubgfGicL1JOiw_B0Nod74jEb
       }
     } catch (error) {
       debugPrint('[MAIN] Essential preference initialization failed: $error');
-      _startupError =
-          'Some preferences could not be loaded. Defaults are being used.';
+      _startupError = Speech.t.startupPreferencesFailed;
     }
 
     if (!mounted) return;
@@ -135,11 +152,10 @@ WEB_VAPID_KEY=BOYVjb77moWEwSyBY-HxCkiAFBuNrCncK9oSobRL1TubgfGicL1JOiw_B0Nod74jEb
         final confirmed = await showDialog<bool>(
           context: context,
           barrierDismissible: false,
-          builder: (_) => const KeypadConfirmationDialog(
-            title: 'Session notifications',
-            message:
-                'SEEDS uses notifications to tell you about session invitations and updates. You can continue using the app if you choose Not now.',
-            confirmLabel: 'Enable notifications',
+          builder: (_) => KeypadConfirmationDialog(
+            title: Speech.t.startupNotificationsTitle,
+            message: Speech.t.startupNotificationsMessage,
+            confirmLabel: Speech.t.startupEnableNotifications,
           ),
         );
         if (confirmed != true) return;
@@ -193,15 +209,22 @@ WEB_VAPID_KEY=BOYVjb77moWEwSyBY-HxCkiAFBuNrCncK9oSobRL1TubgfGicL1JOiw_B0Nod74jEb
     }
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: SeedsLoadingScreen(message: _startupError),
+      home: SeedsLoadingScreen(
+        message: _startupError,
+        speechReady: _speechReady,
+      ),
     );
   }
 }
 
 class SeedsLoadingScreen extends StatefulWidget {
-  const SeedsLoadingScreen({super.key, this.message});
+  const SeedsLoadingScreen({super.key, this.message, this.speechReady = true});
 
   final String? message;
+
+  /// False until speech settings and language are restored; nothing is
+  /// spoken before then.
+  final bool speechReady;
 
   @override
   State<SeedsLoadingScreen> createState() => _SeedsLoadingScreenState();
@@ -211,22 +234,31 @@ class _SeedsLoadingScreenState extends State<SeedsLoadingScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final message = widget.message;
-      if (message != null) {
-        TtsService.speak(message, priority: SpeechPriority.critical);
-      } else {
-        TtsService.speak('SEEDS is loading');
-      }
-    });
+    if (widget.speechReady) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _speakStatus();
+      });
+    }
+  }
+
+  void _speakStatus() {
+    final message = widget.message;
+    if (message != null) {
+      TtsService.speak(message, priority: SpeechPriority.critical);
+    } else {
+      TtsService.speak(Speech.t.startupLoading);
+    }
   }
 
   @override
   void didUpdateWidget(covariant SeedsLoadingScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
     final message = widget.message;
-    // Startup problems are spoken as soon as speech settings are loaded.
-    if (message != null && message != oldWidget.message) {
+    if (!widget.speechReady) return;
+    if (!oldWidget.speechReady) {
+      _speakStatus();
+    } else if (message != null && message != oldWidget.message) {
+      // Startup problems are spoken as soon as speech settings are loaded.
       TtsService.speak(message, priority: SpeechPriority.critical);
     }
   }
@@ -239,7 +271,7 @@ class _SeedsLoadingScreenState extends State<SeedsLoadingScreen> {
       body: SafeArea(
         child: Semantics(
           liveRegion: true,
-          label: message ?? 'SEEDS is loading',
+          label: message ?? Speech.t.startupLoading,
           child: Center(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(16),
@@ -267,7 +299,7 @@ class _SeedsLoadingScreenState extends State<SeedsLoadingScreen> {
                   CircularProgressIndicator(color: UIUtils.accentColor),
                   const SizedBox(height: 12),
                   Text(
-                    message ?? 'Loading accessible learning tools…',
+                    message ?? Speech.t.startupLoadingTools,
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: message == null
@@ -629,7 +661,8 @@ class MyApp extends StatelessWidget {
                   final userId = args['userId'];
                   final userName = args['userName'];
                   final isTeacher = args['isTeacher'] ?? false;
-                  final sessionTitle = args['sessionTitle'] ?? 'Session';
+                  final sessionTitle =
+                      args['sessionTitle'] ?? Speech.t.sessionDefaultTitle;
                   final className = args['className']?.toString();
                   final subjectName = args['subjectName']?.toString();
 
@@ -747,9 +780,10 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     final bool tiny = UIUtils.isTiny(context);
     final bool isKeypad = UIUtils.isKeypad(context);
     final s = UIUtils.scale(context);
+    final t = Speech.t;
 
     return KeypadInstructionWrapper(
-      screenName: 'Welcome to SEEDS',
+      screenName: t.startupWelcomeScreenName,
       labels: welcomeKeyLabels,
       actions: {
         1: () => Navigator.pushNamed(context, '/login'),
@@ -759,22 +793,22 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
       focusTargets: [
         KeypadFocusTarget(
           node: _loginFocusNode,
-          label: 'Login, button',
+          label: t.startupLoginButton,
           onActivate: () => Navigator.pushNamed(context, '/login'),
         ),
         KeypadFocusTarget(
           node: _registerFocusNode,
-          label: 'Register, button',
+          label: t.startupRegisterButton,
           onActivate: () => Navigator.pushNamed(context, '/register'),
         ),
         KeypadFocusTarget(
           node: _settingsFocusNode,
-          label: 'Settings, button',
+          label: t.startupSettingsButton,
           onActivate: () => Navigator.pushNamed(context, '/settings'),
         ),
         KeypadFocusTarget(
           node: _repeatFocusNode,
-          label: 'Repeat instructions, button',
+          label: t.startupRepeatInstructionsButton,
           onActivate: _repeatWelcomeInstructions,
         ),
       ],
@@ -828,7 +862,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     SizedBox(height: UIUtils.spacing(context, 12)),
 
                     Text(
-                      'Connecting everyone, everywhere',
+                      Speech.t.startupTagline,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: UIUtils.fontSize(context, 16),
@@ -848,7 +882,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                           size: UIUtils.iconSize(context, 24),
                         ),
                         label: Text(
-                          isKeypad ? '1. Login' : 'Login',
+                          isKeypad
+                              ? Speech.t.startupLoginKey1
+                              : Speech.t.startupLogin,
                           style: TextStyle(
                             fontSize: UIUtils.fontSize(context, 18),
                             fontWeight: FontWeight.w600,
@@ -886,7 +922,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                           size: UIUtils.iconSize(context, 24),
                         ),
                         label: Text(
-                          isKeypad ? '2. Register' : 'Register',
+                          isKeypad
+                              ? Speech.t.startupRegisterKey2
+                              : Speech.t.startupRegister,
                           style: TextStyle(
                             fontSize: UIUtils.fontSize(context, 18),
                             fontWeight: FontWeight.w600,
@@ -922,7 +960,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                           size: UIUtils.iconSize(context, 22),
                         ),
                         label: Text(
-                          isKeypad ? '3. Settings' : 'Settings',
+                          isKeypad
+                              ? Speech.t.startupSettingsKey3
+                              : Speech.t.startupSettings,
                           style: TextStyle(
                             fontSize: UIUtils.fontSize(context, 16),
                             fontWeight: FontWeight.w600,
@@ -956,7 +996,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                         size: UIUtils.iconSize(context, 20),
                       ),
                       label: Text(
-                        'Repeat instructions',
+                        Speech.t.startupRepeatInstructions,
                         style: TextStyle(
                           color: UIUtils.textColor,
                           fontSize: UIUtils.fontSize(context, 16),
@@ -984,22 +1024,22 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                             _buildFeature(
                               context,
                               Icons.mic_none_rounded,
-                              'Real-time Audio',
-                              'Crystal clear voice communication',
+                              Speech.t.startupFeatureAudioTitle,
+                              Speech.t.startupFeatureAudioText,
                             ),
                             Divider(color: UIUtils.cardBorderColor, height: 24),
                             _buildFeature(
                               context,
                               Icons.accessibility_new_rounded,
-                              'Fully Accessible',
-                              'Speech, large buttons and keypad control',
+                              Speech.t.startupFeatureAccessibleTitle,
+                              Speech.t.startupFeatureAccessibleText,
                             ),
                             Divider(color: UIUtils.cardBorderColor, height: 24),
                             _buildFeature(
                               context,
                               Icons.groups_outlined,
-                              'Collaboration',
-                              'Raise hands and interact',
+                              Speech.t.startupFeatureCollaborationTitle,
+                              Speech.t.startupFeatureCollaborationText,
                             ),
                           ],
                         ),
@@ -1062,8 +1102,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
   void _repeatWelcomeInstructions() {
     TtsService.speak(
-      '${buildTtsInstructions(welcomeKeyLabels, screenName: 'Welcome to SEEDS')} '
-      'Use the direction keys to move and OK to select.',
+      '${buildTtsInstructions(welcomeKeyLabels, screenName: Speech.t.startupWelcomeScreenName)} '
+      '${Speech.t.keypadDirectionKeysAndOk}',
     );
   }
 }

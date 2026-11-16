@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/tts_service.dart';
 import '../announcers/settings_text.dart';
+import '../l10n/speech.dart';
+import '../utils/spoken_format.dart';
 import '../services/feedback_cues.dart';
 import '../services/message_center.dart';
 import '../services/activity_telemetry.dart';
@@ -42,6 +44,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final _stopFocus = FocusNode(debugLabel: 'settings-stop-speech');
   final _repeatFocus = FocusNode(debugLabel: 'settings-repeat-help');
   final _voiceCheckFocus = FocusNode(debugLabel: 'settings-english-voice');
+  final _languageFocus = FocusNode(debugLabel: 'settings-language');
+  SpeechLanguage _language = TtsService.selectedLanguage;
+  bool _changingLanguage = false;
   bool _checkingVoice = false;
   String? _voiceStatus;
   final FocusNode _backFocus = FocusNode(debugLabel: 'settings-back');
@@ -63,10 +68,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final FocusNode _cuesFocus = FocusNode(debugLabel: 'settings-sound-cues');
   final FocusNode _vibrationFocus = FocusNode(debugLabel: 'settings-vibration');
 
-  static const _voiceHelpText =
-      'In a session, activate Listen for command, then say mute, unmute, '
-      'raise hand, lower hand, leave, or repeat. Listening does not restart '
-      'automatically. Unmute asks for a key or touch confirmation.';
+  static String get _voiceHelpText => Speech.t.settingsVoiceHelp;
 
   SpeechMode get _speechMode =>
       _speechModeChoice ??
@@ -75,12 +77,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
           : SpeechMode.selfVoicing);
 
   String get _speechModeDescription => switch (_speechModeChoice) {
-    null =>
-      'Automatic: follows TalkBack unless you choose. Now '
-          '${_speechMode == SpeechMode.screenReader ? 'using the screen reader' : 'self-voicing'}.',
-    SpeechMode.screenReader =>
-      'Screen reader: announcements go to TalkBack. App narration is off.',
-    SpeechMode.selfVoicing => 'Self-voicing: the app speaks for itself.',
+    null => Speech.t.settingsModeAutomatic(
+      _speechMode == SpeechMode.screenReader
+          ? Speech.t.settingsModeUsingScreenReader
+          : Speech.t.settingsModeUsingSelfVoicing,
+    ),
+    SpeechMode.screenReader => Speech.t.settingsModeScreenReader,
+    SpeechMode.selfVoicing => Speech.t.settingsModeSelfVoicing,
   };
 
   // Called once when widget is created
@@ -125,6 +128,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         'detailed' => SpeechVerbosity.detailed,
         _ => SpeechVerbosity.standard,
       };
+      _language = SpeechLanguage.fromCode(prefs.getString('speech_language'));
     });
 
     UIUtils.setHighContrastMode(_highContrastMode);
@@ -132,11 +136,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     // Applies volume & speech rate to TTS engine
     await _configureTTS();
     // Speaks confirmation only if TTS is enabled
-    await _speakIfEnabled("Settings loaded");
+    await _speakIfEnabled(Speech.t.settingsLoaded);
   }
 
   // Saves current values permanently
-  Future<void> _saveSettings({String message = 'Settings saved'}) async {
+  Future<void> _saveSettings({String? message}) async {
+    message ??= Speech.t.settingsSaved;
     final prefs = await SharedPreferences.getInstance();
 
     // saves each setting under a key
@@ -203,20 +208,43 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _testTTS() async {
     await _configureTTS();
     await TtsService.speak(
-      "This is a test of the text to speech system. Volume is ${_percent(_ttsVolume)} percent. Speech speed is ${TtsService.describeSpeed(_ttsSpeechRate)}.",
+      Speech.t.settingsTestSpeech(
+        '${_percent(_ttsVolume)}',
+        TtsService.describeSpeed(_ttsSpeechRate),
+      ),
     );
   }
 
-  Future<void> _checkEnglishVoice() async {
+  Future<void> _checkVoice() async {
     if (_checkingVoice) return;
     setState(() => _checkingVoice = true);
-    final message = await TtsService.checkEnglishVoice();
+    final message = await TtsService.checkVoice();
     if (!mounted) return;
     setState(() {
       _checkingVoice = false;
       _voiceStatus = message;
     });
     await TtsService.speak(message);
+  }
+
+  /// Moves to the next speech language. Its voice is checked at once; when
+  /// the phone has no voice for it, SEEDS keeps speaking English and says so.
+  Future<void> _cycleLanguage() async {
+    if (_changingLanguage) return;
+    final next = SpeechLanguage
+        .values[(_language.index + 1) % SpeechLanguage.values.length];
+    setState(() {
+      _language = next;
+      _changingLanguage = true;
+    });
+    final available = await TtsService.setSpeechLanguage(next);
+    if (!mounted) return;
+    setState(() => _changingLanguage = false);
+    await _speakIfEnabled(
+      available
+          ? SettingsText.language(next)
+          : TtsService.issue.value ?? SettingsText.language(next),
+    );
   }
 
   static int _percent(double value) => (value * 100).round();
@@ -242,9 +270,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (announce) {
       _speakIfEnabled(
         atLimit
-            ? '${next >= TtsService.maxSpeechRate ? 'Fastest' : 'Slowest'} speech speed, '
-                  '${TtsService.describeSpeed(next)}'
-            : 'Speech speed ${TtsService.describeSpeed(next)}',
+            ? (next >= TtsService.maxSpeechRate
+                  ? Speech.t.settingsFastestSpeed(
+                      TtsService.describeSpeed(next),
+                    )
+                  : Speech.t.settingsSlowestSpeed(
+                      TtsService.describeSpeed(next),
+                    ))
+            : Speech.t.settingsSpeechSpeed(TtsService.describeSpeed(next)),
       );
     }
   }
@@ -279,9 +312,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
         _textScale = 1.0;
         _speechModeChoice = null;
         _verbosity = SpeechVerbosity.standard;
+        _language = SpeechLanguage.english;
       });
 
-      await _saveSettings(message: 'Settings reset to defaults and saved');
+      await TtsService.setSpeechLanguage(SpeechLanguage.english);
+      await _saveSettings(message: Speech.t.settingsResetSaved);
       ActivityTelemetry.record('settings_reset');
     }
   }
@@ -333,12 +368,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('speech_verbosity', _verbosity.name);
     await _configureTTS();
-    await TtsService.speak(SettingsText.narration(_verbosity.name));
+    await TtsService.speak(SettingsText.narration(_verbosity));
   }
 
   void _repeatHelp() {
     TtsService.speak(
-      buildTtsInstructions(settingsKeyLabels, screenName: 'Settings'),
+      buildTtsInstructions(
+        settingsKeyLabels,
+        screenName: Speech.t.settingsScreenName,
+      ),
     );
   }
 
@@ -365,8 +403,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _saveBoolSetting('voice_commands_enabled', _voiceCommandsEnabled);
     _speakIfEnabled(
       _voiceCommandsEnabled
-          ? "Voice commands enabled"
-          : "Voice commands disabled",
+          ? Speech.t.settingsVoiceCommandsEnabled
+          : Speech.t.settingsVoiceCommandsDisabled,
     );
   }
 
@@ -375,7 +413,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _saveBoolSetting('high_contrast_mode', _highContrastMode);
     UIUtils.setHighContrastMode(_highContrastMode);
     _speakIfEnabled(
-      _highContrastMode ? "High contrast on" : "High contrast off",
+      _highContrastMode
+          ? Speech.t.settingsHighContrastOn
+          : Speech.t.settingsHighContrastOff,
     );
   }
 
@@ -384,8 +424,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _saveBoolSetting('show_keyboard_shortcuts', _showKeyboardShortcuts);
     _speakIfEnabled(
       _showKeyboardShortcuts
-          ? "Keypad shortcuts shown"
-          : "Keypad shortcuts hidden",
+          ? Speech.t.settingsShortcutsShown
+          : Speech.t.settingsShortcutsHidden,
     );
   }
 
@@ -541,14 +581,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         children: [
                           ExcludeFocus(
                             child: IconButton(
-                              tooltip: 'Decrease $title',
+                              tooltip: Speech.t.settingsDecrease(title),
                               onPressed: () => onChanged(clamp(value - step)),
                               icon: const Icon(Icons.remove),
                             ),
                           ),
                           Expanded(
                             child: LinearProgressIndicator(
-                              value: ((value - min) / (max - min)).clamp(0.0, 1.0),
+                              value: ((value - min) / (max - min)).clamp(
+                                0.0,
+                                1.0,
+                              ),
                               minHeight: 8,
                               color: UIUtils.accentColor,
                               backgroundColor: UIUtils.cardBorderColor,
@@ -556,7 +599,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ),
                           ExcludeFocus(
                             child: IconButton(
-                              tooltip: 'Increase $title',
+                              tooltip: Speech.t.settingsIncrease(title),
                               onPressed: () => onChanged(clamp(value + step)),
                               icon: const Icon(Icons.add),
                             ),
@@ -582,6 +625,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _stopFocus.dispose();
     _repeatFocus.dispose();
     _voiceCheckFocus.dispose();
+    _languageFocus.dispose();
     _backFocus.dispose();
     _resetFocus.dispose();
     _ttsFocus.dispose();
@@ -659,17 +703,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
     ),
   );
 
-  String _onOff(bool value) => value ? 'on' : 'off';
+  String _onOff(bool value) => SpokenFormat.onOff(value);
 
   // Build UI Widgets
   @override
   Widget build(BuildContext context) {
     final bool tiny = UIUtils.isTiny(context);
+    final t = Speech.t;
 
     return KeypadInstructionWrapper(
-      screenName: 'Settings',
-      navigationSections:
-          'four sections: Speech, Display, Keys and help, then Save settings',
+      screenName: t.settingsScreenName,
+      navigationSections: t.settingsSections,
       stateSummary: () => SettingsText.state(
         speech: _ttsEnabled,
         speed: TtsService.describeSpeed(_ttsSpeechRate),
@@ -687,31 +731,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
       focusTargets: [
         KeypadFocusTarget(
           node: _backFocus,
-          label: 'Back',
+          label: t.settingsBack,
           onActivate: () => Navigator.maybePop(context),
         ),
         KeypadFocusTarget(
           node: _resetFocus,
-          label: 'Reset settings to defaults, asks to confirm',
+          label: t.settingsResetLabel,
           onActivate: _resetToDefaults,
         ),
         // ── Speech section ──
         KeypadFocusTarget(
           node: _ttsFocus,
-          label: 'Speech section. App speech, ${_onOff(_ttsEnabled)}',
+          label: t.settingsSpeechSectionLabel(_onOff(_ttsEnabled)),
           onActivate: _toggleTts,
         ),
         KeypadFocusTarget(
+          node: _languageFocus,
+          label: SettingsText.languageLabel(_language),
+          onActivate: () => unawaited(_cycleLanguage()),
+          isEnabled: () => !_changingLanguage,
+        ),
+        KeypadFocusTarget(
           node: _volumeFocus,
-          label:
-              'Volume ${_percent(_ttsVolume)} percent. Left or right to change',
+          label: t.settingsVolumeLabel('${_percent(_ttsVolume)}'),
           onDecrease: () => _setVolume(_ttsVolume - 0.1),
           onIncrease: () => _setVolume(_ttsVolume + 0.1),
         ),
         KeypadFocusTarget(
           node: _rateFocus,
-          label:
-              'Speech speed ${TtsService.describeSpeed(_ttsSpeechRate)}. Left or right to change',
+          label: t.settingsSpeedLabel(TtsService.describeSpeed(_ttsSpeechRate)),
           onDecrease: () =>
               _setSpeechRate(_ttsSpeechRate - TtsService.speechRateStep),
           onIncrease: () =>
@@ -719,54 +767,53 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
         KeypadFocusTarget(
           node: _testFocus,
-          label: 'Test speech',
+          label: t.settingsTestLabel,
           onActivate: _testTTS,
         ),
         KeypadFocusTarget(
           node: _modeFocus,
-          label: 'Speech mode. $_speechModeDescription Press OK to change.',
+          label: t.settingsModeLabel(_speechModeDescription),
           onActivate: _cycleSpeechMode,
         ),
         KeypadFocusTarget(
           node: _verbosityFocus,
-          label: 'Narration level ${_verbosity.name}. Press OK to change.',
+          label: t.settingsNarrationLabel(
+            SettingsText.narrationName(_verbosity),
+          ),
           onActivate: _cycleVerbosity,
         ),
         KeypadFocusTarget(
           node: _voiceCheckFocus,
-          label: 'Check English voice',
-          onActivate: _checkEnglishVoice,
+          label: t.settingsCheckVoiceLabel(TtsService.languageName(_language)),
+          onActivate: _checkVoice,
           isEnabled: () => !_checkingVoice,
         ),
         KeypadFocusTarget(
           node: _stopFocus,
-          label: 'Stop speech',
+          label: t.settingsStopLabel,
           onActivate: TtsService.stop,
         ),
         // ── Display section ──
         KeypadFocusTarget(
           node: _contrastFocus,
-          label:
-              'Display section. High contrast, ${_onOff(_highContrastMode)}. On by default',
+          label: t.settingsContrastLabel(_onOff(_highContrastMode)),
           onActivate: _toggleHighContrast,
         ),
         KeypadFocusTarget(
           node: _textScaleFocus,
-          label:
-              'Text size ${_percent(_textScale)} percent. Left or right to change',
+          label: t.settingsTextSizeLabel('${_percent(_textScale)}'),
           onDecrease: () => _setTextScale(_textScale - 0.1),
           onIncrease: () => _setTextScale(_textScale + 0.1),
         ),
         // ── Keys and help section ──
         KeypadFocusTarget(
           node: _shortcutsFocus,
-          label:
-              'Keys and help section. Show keypad shortcuts, ${_onOff(_showKeyboardShortcuts)}',
+          label: t.settingsShortcutsLabel(_onOff(_showKeyboardShortcuts)),
           onActivate: _toggleKeyboardShortcuts,
         ),
         KeypadFocusTarget(
           node: _voiceFocus,
-          label: 'Voice commands in sessions, ${_onOff(_voiceCommandsEnabled)}',
+          label: t.settingsVoiceCommandsLabel(_onOff(_voiceCommandsEnabled)),
           onActivate: _toggleVoiceCommands,
         ),
         KeypadFocusTarget(
@@ -782,17 +829,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
         if (!tiny)
           KeypadFocusTarget(
             node: _voiceHelpFocus,
-            label: 'Voice command help',
+            label: t.settingsVoiceHelpLabel,
             onActivate: () => _speakIfEnabled(_voiceHelpText),
           ),
         KeypadFocusTarget(
           node: _repeatFocus,
-          label: 'Repeat Settings help',
+          label: t.settingsRepeatHelpLabel,
           onActivate: _repeatHelp,
         ),
         KeypadFocusTarget(
           node: _saveFocus,
-          label: 'Save settings',
+          label: t.settingsSaveLabel,
           onActivate: _saveSettings,
         ),
       ],
@@ -804,7 +851,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         4: _toggleHighContrast,
         5: _testTTS,
         6: _saveSettings,
-        7: _checkEnglishVoice,
+        7: _checkVoice,
         8: () => unawaited(_toggleSoundCues()),
         9: () => unawaited(_toggleVibration()),
       },
@@ -812,7 +859,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         appBar: AppBar(
           leading: IconButton(
             focusNode: _backFocus,
-            tooltip: 'Back',
+            tooltip: Speech.t.settingsBack,
             onPressed: () => Navigator.maybePop(context),
             icon: const Icon(Icons.arrow_back),
           ),
@@ -821,7 +868,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               : Semantics(
                   header: true,
                   child: Text(
-                    'Settings',
+                    Speech.t.settingsScreenName,
                     style: TextStyle(
                       fontSize: UIUtils.fontSize(context, 18),
                       fontWeight: FontWeight.w600,
@@ -843,7 +890,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 size: UIUtils.iconSize(context, 22),
                 color: UIUtils.textColor,
               ),
-              tooltip: 'Reset to Defaults',
+              tooltip: Speech.t.settingsResetTooltip,
               onPressed: _resetToDefaults,
             ),
           ],
@@ -860,7 +907,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 Semantics(
                   header: true,
                   child: Text(
-                    'Settings',
+                    Speech.t.settingsScreenName,
                     style: TextStyle(
                       fontSize: UIUtils.fontSize(context, 22),
                       fontWeight: FontWeight.bold,
@@ -874,7 +921,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ? const SizedBox.shrink()
                     : Semantics(liveRegion: true, child: Text(message)),
               ),
-              _buildSettingSection(context, 'Speech', [
+              _buildSettingSection(context, Speech.t.settingsSectionSpeech, [
                 ValueListenableBuilder<String?>(
                   valueListenable: TtsService.issue,
                   builder: (_, message, child) => message == null
@@ -883,30 +930,39 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 _buildSwitchTile(
                   context,
-                  title: 'App speech',
-                  subtitle: 'The app reads out screens and messages',
+                  title: Speech.t.settingsAppSpeechTitle,
+                  subtitle: Speech.t.settingsAppSpeechSubtitle,
                   value: _ttsEnabled,
                   onChanged: (_) => _toggleTts(),
                   focusNode: _ttsFocus,
                 ),
+                _buildActionButton(
+                  context,
+                  focusNode: _languageFocus,
+                  onPressed: _changingLanguage
+                      ? null
+                      : () => unawaited(_cycleLanguage()),
+                  icon: Icons.translate,
+                  text: Speech.t.settingsLanguageButton(_language.displayName),
+                ),
                 _buildSliderTile(
                   context,
-                  title: 'Volume',
-                  subtitle: 'How loud app speech is',
+                  title: Speech.t.settingsVolumeTitle,
+                  subtitle: Speech.t.settingsVolumeSubtitle,
                   value: _ttsVolume,
                   min: 0.0,
                   max: 1.0,
                   divisions: 10,
                   onChanged: (value) =>
                       _setVolume(value, announce: _speakSliderChanges),
-                  valueText: (val) => '${_percent(val)} percent',
+                  valueText: (val) =>
+                      Speech.t.settingsPercentValue('${_percent(val)}'),
                   focusNode: _volumeFocus,
                 ),
                 _buildSliderTile(
                   context,
-                  title: 'Speech speed',
-                  subtitle:
-                      'How fast app speech is. Quizzes can use their own speed',
+                  title: Speech.t.settingsSpeedTitle,
+                  subtitle: Speech.t.settingsSpeedSubtitle,
                   value: _ttsSpeechRate,
                   min: TtsService.minSpeechRate,
                   max: TtsService.maxSpeechRate,
@@ -916,8 +972,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           .round(),
                   onChanged: (value) =>
                       _setSpeechRate(value, announce: _speakSliderChanges),
-                  valueText: (val) =>
-                      '${TtsService.formatSpeedMultiple(val)} times normal',
+                  valueText: (val) => Speech.t.settingsTimesNormal(
+                    TtsService.formatSpeedMultiple(val),
+                  ),
                   focusNode: _rateFocus,
                 ),
                 _buildActionButton(
@@ -925,69 +982,72 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   focusNode: _testFocus,
                   onPressed: _testTTS,
                   icon: Icons.volume_up,
-                  text: '5: Test speech',
+                  text: Speech.t.settingsTestButton,
                 ),
                 _buildActionButton(
                   context,
                   focusNode: _modeFocus,
                   onPressed: _cycleSpeechMode,
                   icon: Icons.record_voice_over_outlined,
-                  text: 'Speech mode. $_speechModeDescription',
+                  text: Speech.t.settingsSpeechMode(_speechModeDescription),
                 ),
                 _buildActionButton(
                   context,
                   focusNode: _verbosityFocus,
                   onPressed: _cycleVerbosity,
-                  text: 'Narration level: ${_verbosity.name}',
+                  text: Speech.t.settingsNarrationButton(
+                    SettingsText.narrationName(_verbosity),
+                  ),
                 ),
                 _buildActionButton(
                   context,
                   focusNode: _voiceCheckFocus,
-                  onPressed: _checkingVoice ? null : _checkEnglishVoice,
+                  onPressed: _checkingVoice ? null : _checkVoice,
                   text: _checkingVoice
-                      ? 'Checking English voice...'
-                      : '7: Check English voice',
+                      ? Speech.t.settingsCheckingVoice(_language.displayName)
+                      : Speech.t.settingsCheckVoiceButton(
+                          _language.displayName,
+                        ),
                 ),
                 if (_voiceStatus != null) _statusText(context, _voiceStatus!),
                 _buildActionButton(
                   context,
                   focusNode: _stopFocus,
                   onPressed: TtsService.stop,
-                  text: '#: Stop speech',
+                  text: Speech.t.settingsStopButton,
                 ),
               ]),
 
-              _buildSettingSection(context, 'Display', [
+              _buildSettingSection(context, Speech.t.settingsSectionDisplay, [
                 _buildSwitchTile(
                   context,
-                  title: 'High Contrast',
-                  subtitle:
-                      'On by default: white and yellow on black for low vision',
+                  title: Speech.t.settingsHighContrastTitle,
+                  subtitle: Speech.t.settingsHighContrastSubtitle,
                   value: _highContrastMode,
                   onChanged: (_) => _toggleHighContrast(),
                   focusNode: _contrastFocus,
                 ),
                 _buildSliderTile(
                   context,
-                  title: 'Text size',
-                  subtitle:
-                      'App text size; system font scaling is also respected',
+                  title: Speech.t.settingsTextSizeTitle,
+                  subtitle: Speech.t.settingsTextSizeSubtitle,
                   value: _textScale,
                   min: 0.9,
                   max: 1.5,
                   divisions: 6,
                   onChanged: (value) =>
                       _setTextScale(value, announce: _speakSliderChanges),
-                  valueText: (val) => '${_percent(val)} percent',
+                  valueText: (val) =>
+                      Speech.t.settingsPercentValue('${_percent(val)}'),
                   focusNode: _textScaleFocus,
                 ),
               ]),
 
-              _buildSettingSection(context, 'Keys and help', [
+              _buildSettingSection(context, Speech.t.settingsSectionKeys, [
                 _buildSwitchTile(
                   context,
-                  title: 'Show keypad shortcuts',
-                  subtitle: 'Show key numbers on buttons',
+                  title: Speech.t.settingsShortcutsTitle,
+                  subtitle: Speech.t.settingsShortcutsSubtitle,
                   value: _showKeyboardShortcuts,
                   onChanged: (_) => _toggleKeyboardShortcuts(),
                   focusNode: _shortcutsFocus,
@@ -998,22 +1058,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     vertical: 6,
                   ),
                   child: Text(
-                    'On every screen: 0 back, star help, hash stop speech.',
+                    Speech.t.settingsGlobalKeysHint,
                     style: _subtitleStyle(context),
                   ),
                 ),
                 _buildSwitchTile(
                   context,
-                  title: 'Voice commands',
-                  subtitle:
-                      'Enable Listen for command in sessions. No automatic listening.',
+                  title: Speech.t.settingsVoiceCommandsTitle,
+                  subtitle: Speech.t.settingsVoiceCommandsSubtitle,
                   value: _voiceCommandsEnabled,
                   onChanged: (_) => _toggleVoiceCommands(),
                   focusNode: _voiceFocus,
                 ),
                 _buildSwitchTile(
                   context,
-                  title: '8: Sound cues',
+                  title: Speech.t.settingsSoundCuesTitle,
                   subtitle: SettingsText.soundCuesHelp,
                   value: FeedbackCues.soundEnabled,
                   onChanged: (_) => unawaited(_toggleSoundCues()),
@@ -1021,7 +1080,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 _buildSwitchTile(
                   context,
-                  title: '9: Vibration',
+                  title: Speech.t.settingsVibrationTitle,
                   subtitle: SettingsText.vibrationHelp,
                   value: FeedbackCues.vibrationEnabled,
                   onChanged: (_) => unawaited(_toggleVibration()),
@@ -1032,14 +1091,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     context,
                     focusNode: _voiceHelpFocus,
                     onPressed: () => _speakIfEnabled(_voiceHelpText),
-                    text:
-                        'Voice command help: say mute, unmute, raise hand, lower hand, leave or repeat.',
+                    text: Speech.t.settingsVoiceHelpButton,
                   ),
                 _buildActionButton(
                   context,
                   focusNode: _repeatFocus,
                   onPressed: _repeatHelp,
-                  text: 'Repeat Settings help',
+                  text: Speech.t.settingsRepeatHelpLabel,
                 ),
               ]),
 
@@ -1054,7 +1112,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   size: UIUtils.iconSize(context, 22),
                 ),
                 label: Text(
-                  'Save Settings',
+                  Speech.t.keySaveSettings,
                   style: TextStyle(
                     fontSize: UIUtils.fontSize(context, 16),
                     fontWeight: FontWeight.w600,
@@ -1108,25 +1166,25 @@ class _ResetSettingsDialogState extends State<_ResetSettingsDialog> {
   @override
   Widget build(BuildContext context) {
     void close(bool confirmed) => Navigator.pop(context, confirmed);
-    const message =
-        'Reset all settings to defaults? Speech, display and key settings '
-        'return to their original values.';
+    final t = Speech.t;
+    final spokenMessage = t.settingsResetQuestion;
+    final message = spokenMessage;
 
     return KeypadInstructionWrapper(
-      screenName: 'Reset settings. $message',
-      labels: const {1: 'Cancel', 2: 'Reset'},
+      screenName: t.settingsResetScreen(spokenMessage),
+      labels: {1: t.settingsResetCancel, 2: t.settingsResetConfirm},
       actions: {1: () => close(false), 2: () => close(true)},
       // The safe choice is focused first.
       initialFocusNode: _cancelFocus,
       focusTargets: [
         KeypadFocusTarget(
           node: _cancelFocus,
-          label: 'Cancel, keep my settings',
+          label: t.settingsResetCancelLabel,
           onActivate: () => close(false),
         ),
         KeypadFocusTarget(
           node: _confirmFocus,
-          label: 'Reset all settings to defaults',
+          label: t.settingsResetConfirmLabel,
           onActivate: () => close(true),
         ),
       ],
@@ -1140,7 +1198,7 @@ class _ResetSettingsDialogState extends State<_ResetSettingsDialog> {
         title: Semantics(
           header: true,
           child: Text(
-            'Reset Settings',
+            t.settingsResetTitle,
             style: TextStyle(
               color: UIUtils.textColor,
               fontSize: 20,
@@ -1157,7 +1215,7 @@ class _ResetSettingsDialogState extends State<_ResetSettingsDialog> {
             focusNode: _cancelFocus,
             onPressed: () => close(false),
             child: Text(
-              '1: Cancel',
+              t.settingsResetCancelButton,
               style: TextStyle(color: UIUtils.accentColor, fontSize: 16),
             ),
           ),
@@ -1170,7 +1228,10 @@ class _ResetSettingsDialogState extends State<_ResetSettingsDialog> {
                   ? Colors.black
                   : Colors.white,
             ),
-            child: const Text('2: Reset', style: TextStyle(fontSize: 16)),
+            child: Text(
+              t.settingsResetConfirmButton,
+              style: const TextStyle(fontSize: 16),
+            ),
           ),
         ],
       ),

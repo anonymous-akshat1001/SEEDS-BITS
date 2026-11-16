@@ -5,6 +5,7 @@ import '../services/tts_service.dart';
 import '../utils/ui_utils.dart';
 import '../widgets/accessible_tile.dart';
 import '../widgets/key_instruction_wrapper.dart';
+import '../l10n/speech.dart';
 // Allows reading environment variables
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
@@ -51,7 +52,7 @@ class _InviteStudentsScreenState extends State<InviteStudentsScreen> {
   final Set<int> _invitedStudents = {};
   bool _isLoading = true;
   bool _invitingAll = false;
-  String _status = 'Loading students';
+  String _status = Speech.t.inviteLoadingStudents;
   bool _statusIsError = false;
 
   // Called once when screen appears
@@ -94,28 +95,22 @@ class _InviteStudentsScreenState extends State<InviteStudentsScreen> {
           _students = result.cast<Map<String, dynamic>>();
           _isLoading = false;
         });
+        final t = Speech.t;
         _setStatus(
           _students.isEmpty
-              ? 'No students are enrolled in this class. Press 1 to refresh.'
-              : '${_students.length} ${_students.length == 1 ? 'student' : 'students'}, '
-                    '${_invitedStudents.length} invited.'
-                    '${_students.length > searchThreshold ? ' Use the search field to find a name.' : ''}',
+              ? t.inviteNoStudentsEnrolled
+              : '${t.inviteLoadedSummary(_students.length, '${_invitedStudents.length}')}'
+                    '${_students.length > searchThreshold ? ' ${t.inviteUseSearch}' : ''}',
         );
       } else {
         setState(() => _isLoading = false);
-        _setStatus(
-          'Could not load students. Check your connection and press 1 to try again.',
-          error: true,
-        );
+        _setStatus(Speech.t.inviteLoadFailed, error: true);
       }
     } catch (e) {
       debugPrint('[INVITE] Error loading students: $e');
       if (!mounted) return;
       setState(() => _isLoading = false);
-      _setStatus(
-        'Could not load students. Check your connection and press 1 to try again.',
-        error: true,
-      );
+      _setStatus(Speech.t.inviteLoadFailed, error: true);
     }
   }
 
@@ -126,7 +121,7 @@ class _InviteStudentsScreenState extends State<InviteStudentsScreen> {
     bool announce = true,
   }) async {
     if (_invitedStudents.contains(studentId)) {
-      if (announce) _setStatus('$studentName is already invited.');
+      if (announce) _setStatus(Speech.t.inviteAlreadyInvited(studentName));
       return true;
     }
     try {
@@ -140,17 +135,14 @@ class _InviteStudentsScreenState extends State<InviteStudentsScreen> {
       if (result != null && result['ok'] == true) {
         // Marks student as invited and UI is updated
         setState(() => _invitedStudents.add(studentId));
-        if (announce) _setStatus('Invited $studentName.');
+        if (announce) _setStatus(Speech.t.inviteInvitedOne(studentName));
         return true;
       }
     } catch (e) {
       debugPrint('[INVITE] Error: $e');
     }
     if (announce) {
-      _setStatus(
-        'Could not invite $studentName. Check your connection and press OK to try again.',
-        error: true,
-      );
+      _setStatus(Speech.t.inviteOneFailed(studentName), error: true);
     }
     return false;
   }
@@ -164,13 +156,13 @@ class _InviteStudentsScreenState extends State<InviteStudentsScreen> {
     if (pending.isEmpty) {
       _setStatus(
         _students.isEmpty
-            ? 'There are no students to invite.'
-            : 'All students are already invited.',
+            ? Speech.t.inviteNoStudentsToInvite
+            : Speech.t.inviteAllAlreadyInvited,
       );
       return;
     }
     setState(() => _invitingAll = true);
-    _setStatus('Inviting ${pending.length} students. Please wait.');
+    _setStatus(Speech.t.inviteInvitingAll('${pending.length}'));
     final failed = <String>[];
     var done = 0;
     var lastQuarter = 0;
@@ -187,7 +179,7 @@ class _InviteStudentsScreenState extends State<InviteStudentsScreen> {
       final quarter = done * 4 ~/ pending.length;
       if (quarter > lastQuarter && done < pending.length) {
         lastQuarter = quarter;
-        _setStatus('Inviting students: $done of ${pending.length} done.');
+        _setStatus(Speech.t.inviteProgress('$done', '${pending.length}'));
       }
       // Small delay to prevent backend overload.
       await Future.delayed(const Duration(milliseconds: 300));
@@ -196,11 +188,14 @@ class _InviteStudentsScreenState extends State<InviteStudentsScreen> {
     setState(() => _invitingAll = false);
     final invited = pending.length - failed.length;
     if (failed.isEmpty) {
-      _setStatus('Invited all $invited students.');
+      _setStatus(Speech.t.inviteAllDone('$invited'));
     } else {
       _setStatus(
-        'Invited $invited of ${pending.length} students. '
-        'Could not invite ${failed.join(', ')}. Press 2 to try again.',
+        Speech.t.invitePartialFailed(
+          '$invited',
+          '${pending.length}',
+          failed.join(', '),
+        ),
         error: true,
       );
     }
@@ -226,10 +221,10 @@ class _InviteStudentsScreenState extends State<InviteStudentsScreen> {
     final count = _visibleStudents.length;
     _setStatus(
       query.isEmpty
-          ? 'Showing all ${_students.length} students.'
+          ? Speech.t.inviteShowingAll('${_students.length}')
           : count == 0
-          ? 'No students match $query. Clear the search to list everyone.'
-          : '$count ${count == 1 ? 'student matches' : 'students match'} $query. Use down to browse.',
+          ? Speech.t.inviteNoMatch(query)
+          : Speech.t.inviteMatches(count, query),
     );
   }
 
@@ -241,25 +236,25 @@ class _InviteStudentsScreenState extends State<InviteStudentsScreen> {
   String _studentLabel(Map<String, dynamic> student) {
     final invited = _invitedStudents.contains(student['user_id'] as int);
     return invited
-        ? '${student['name']}, invited'
-        : '${student['name']}, not invited. Press OK to invite';
+        ? Speech.t.inviteStudentInvited('${student['name']}')
+        : Speech.t.inviteStudentNotInvited('${student['name']}');
   }
 
   List<KeypadFocusTarget> get _focusTargets => [
     KeypadFocusTarget(
       node: _backFocusNode,
-      label: 'Back to session',
+      label: Speech.t.inviteBackToSession,
       onActivate: () => Navigator.pop(context),
     ),
     KeypadFocusTarget(
       node: _refreshFocusNode,
-      label: 'Refresh student list',
+      label: Speech.t.inviteRefreshList,
       onActivate: _loadStudents,
       isEnabled: () => !_isLoading,
     ),
     KeypadFocusTarget(
       node: _inviteAllFocusNode,
-      label: 'Invite all students',
+      label: Speech.t.inviteAllStudents,
       onActivate: _inviteAll,
       isEnabled: () =>
           !_invitingAll && _students.length != _invitedStudents.length,
@@ -267,7 +262,7 @@ class _InviteStudentsScreenState extends State<InviteStudentsScreen> {
     if (_showSearch)
       KeypadFocusTarget(
         node: _searchFocusNode,
-        label: 'Search students by name or phone number. Press OK to type',
+        label: Speech.t.inviteSearchLabel,
         isTextField: true,
       ),
     for (final student in _visibleStudents)
@@ -303,7 +298,9 @@ class _InviteStudentsScreenState extends State<InviteStudentsScreen> {
           ? Icons.check_circle_rounded
           : Icons.person_outline_rounded,
       title: name,
-      status: isInvited ? 'Invited' : 'Not invited. OK to invite',
+      status: isInvited
+          ? Speech.t.inviteStatusInvited
+          : Speech.t.inviteStatusNotInvited,
       statusColor: isInvited ? UIUtils.successColor : UIUtils.accentColor,
       subtitle: '${student['phone_number'] ?? ''}',
       semanticLabel: _studentLabel(student),
@@ -318,11 +315,11 @@ class _InviteStudentsScreenState extends State<InviteStudentsScreen> {
     final bool compact = tiny || UIUtils.isShort(context);
     final visible = _visibleStudents;
     return KeypadInstructionWrapper(
-      screenName: 'Invite students to ${widget.sessionTitle}',
-      labels: const {
-        0: 'Back to Session',
-        1: 'Refresh Students',
-        2: 'Invite All',
+      screenName: Speech.t.inviteScreenName(widget.sessionTitle),
+      labels: {
+        0: Speech.t.inviteKeyBack,
+        1: Speech.t.inviteKeyRefresh,
+        2: Speech.t.inviteKeyInviteAll,
       },
       actions: {
         0: () => Navigator.pop(context),
@@ -334,7 +331,7 @@ class _InviteStudentsScreenState extends State<InviteStudentsScreen> {
       child: Scaffold(
         appBar: AppBar(
           title: Text(
-            'Invite Students',
+            Speech.t.inviteTitle,
             style: TextStyle(
               fontSize: UIUtils.fontSize(context, 16),
               fontWeight: FontWeight.w600,
@@ -347,7 +344,7 @@ class _InviteStudentsScreenState extends State<InviteStudentsScreen> {
           leading: IconButton(
             focusNode: _backFocusNode,
             icon: const Icon(Icons.arrow_back),
-            tooltip: '0: Back to session',
+            tooltip: Speech.t.inviteTooltipBack,
             onPressed: () => Navigator.pop(context),
           ),
           actions: [
@@ -358,7 +355,7 @@ class _InviteStudentsScreenState extends State<InviteStudentsScreen> {
                 size: UIUtils.iconSize(context, 20),
                 color: UIUtils.accentColor,
               ),
-              tooltip: '1: Refresh student list',
+              tooltip: Speech.t.inviteTooltipRefresh,
               onPressed: _isLoading ? null : _loadStudents,
             ),
           ],
@@ -383,7 +380,7 @@ class _InviteStudentsScreenState extends State<InviteStudentsScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Inviting students to:',
+                        Speech.t.inviteInvitingTo,
                         style: TextStyle(
                           fontSize: UIUtils.fontSize(context, 14),
                           color: UIUtils.subtextColor,
@@ -400,7 +397,10 @@ class _InviteStudentsScreenState extends State<InviteStudentsScreen> {
                       ),
                       SizedBox(height: UIUtils.spacing(context, 4)),
                       Text(
-                        '${_invitedStudents.length} of ${_students.length} invited',
+                        Speech.t.inviteInvitedCount(
+                          '${_invitedStudents.length}',
+                          '${_students.length}',
+                        ),
                         style: TextStyle(
                           fontSize: UIUtils.fontSize(context, 14),
                           color: UIUtils.subtextColor,
@@ -439,7 +439,7 @@ class _InviteStudentsScreenState extends State<InviteStudentsScreen> {
                     size: UIUtils.iconSize(context, 18),
                   ),
                   label: Text(
-                    '2: Invite All Students',
+                    Speech.t.inviteAllButton,
                     style: TextStyle(
                       fontSize: UIUtils.fontSize(context, 16),
                       fontWeight: FontWeight.w600,
@@ -468,12 +468,12 @@ class _InviteStudentsScreenState extends State<InviteStudentsScreen> {
                         _keypadController.enterTextEditing(_searchFocusNode),
                     onChanged: (_) => setState(() {}),
                     onSubmitted: (_) => _announceSearchResults(),
-                    decoration: const InputDecoration(
-                      labelText: 'Search by name or phone number',
-                      helperText: 'Leave empty to list every student',
+                    decoration: InputDecoration(
+                      labelText: Speech.t.inviteSearchField,
+                      helperText: Speech.t.inviteSearchHelper,
                       helperMaxLines: 10,
-                      prefixIcon: ExcludeSemantics(child: Icon(Icons.search)),
-                      border: OutlineInputBorder(),
+                      prefixIcon: const ExcludeSemantics(child: Icon(Icons.search)),
+                      border: const OutlineInputBorder(),
                     ),
                   ),
                 ],
@@ -483,13 +483,13 @@ class _InviteStudentsScreenState extends State<InviteStudentsScreen> {
                 if (_isLoading)
                   Center(
                     child: Semantics(
-                      label: 'Loading students',
+                      label: Speech.t.inviteLoadingStudents,
                       child: const CircularProgressIndicator(),
                     ),
                   )
                 else if (_students.isNotEmpty && visible.isEmpty)
                   Text(
-                    'No students match. Clear the search to list everyone.',
+                    Speech.t.inviteNoMatchShort,
                     style: TextStyle(
                       color: UIUtils.textColor,
                       fontSize: UIUtils.fontSize(context, 16),

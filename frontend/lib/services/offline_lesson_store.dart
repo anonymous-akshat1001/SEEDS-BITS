@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../l10n/speech.dart';
 import 'api_service.dart';
 import 'activity_telemetry.dart';
 
@@ -78,9 +79,7 @@ class OfflineLesson {
         data['subject_id'] is! int ||
         (data.containsKey('complete') && data['complete'] is! bool) ||
         (data.containsKey('revoked') && data['revoked'] is! bool)) {
-      throw const OfflineLessonException(
-        'Download information is invalid or belongs to a different account. Existing files are kept.',
-      );
+      throw OfflineLessonException(Speech.t.downloadErrInvalidInfo);
     }
     return OfflineLesson(
       audioId: id,
@@ -170,15 +169,11 @@ class OfflineLessonStore {
       final preferences = await SharedPreferences.getInstance();
       final id = preferences.getInt('user_id');
       if (id == null || id <= 0) {
-        throw const OfflineLessonException(
-          'Sign in before opening downloaded lessons.',
-        );
+        throw OfflineLessonException(Speech.t.downloadErrSignInToOpen);
       }
       final root = await getApplicationSupportDirectory();
       if (preferences.getInt('user_id') != id) {
-        throw const OfflineLessonException(
-          'Your account changed. Open Downloads again.',
-        );
+        throw OfflineLessonException(Speech.t.downloadErrAccountChanged);
       }
       return OfflineLessonStore(
         root: root,
@@ -186,17 +181,13 @@ class OfflineLessonStore {
         apiBase: Uri.parse(ApiService.baseUrl),
         credentials: () async {
           if (preferences.getInt('user_id') != id) {
-            throw const OfflineLessonException(
-              'Your account changed. Open Downloads again.',
-            );
+            throw OfflineLessonException(Speech.t.downloadErrAccountChanged);
           }
           return preferences.getString('token');
         },
       );
     } on MissingPlatformDirectoryException {
-      throw const OfflineLessonException(
-        'Download storage is unavailable on this device.',
-      );
+      throw OfflineLessonException(Speech.t.downloadErrNoStorage);
     }
   }
 
@@ -212,13 +203,9 @@ class OfflineLessonStore {
         await credentials();
         return await action();
       } on FileSystemException {
-        throw const OfflineLessonException(
-          'Download storage is unavailable. Check free space and retry. Existing files have not been intentionally removed.',
-        );
+        throw OfflineLessonException(Speech.t.downloadErrStorageUnavailable);
       } on FormatException {
-        throw const OfflineLessonException(
-          'Download records could not be read. Existing files are kept.',
-        );
+        throw OfflineLessonException(Speech.t.downloadErrRecordsUnreadable);
       }
     });
     final tail = result.then<void>(
@@ -243,15 +230,11 @@ class OfflineLessonStore {
     if (!await source.exists()) return null;
     final data = jsonDecode(await source.readAsString());
     if (data is! Map<String, dynamic>) {
-      throw const OfflineLessonException(
-        'A download record could not be read. Existing files are kept.',
-      );
+      throw OfflineLessonException(Speech.t.downloadErrRecordUnreadable);
     }
     final lesson = OfflineLesson.parse(data, userId);
     if (lesson.audioId != id) {
-      throw const OfflineLessonException(
-        'Download identity does not match its record.',
-      );
+      throw OfflineLessonException(Speech.t.downloadErrIdentityMismatch);
     }
     if (source.path == temp.path) await temp.rename(file.path);
     return lesson;
@@ -335,9 +318,7 @@ class OfflineLessonStore {
   Future<OfflineLesson> _manifest(int id) async {
     final token = await credentials();
     if (token == null || token.isEmpty) {
-      throw const OfflineLessonException(
-        'Sign in online before renewing download access.',
-      );
+      throw OfflineLessonException(Speech.t.downloadErrSignInToRenew);
     }
     final client = _clientFactory();
     try {
@@ -348,55 +329,43 @@ class OfflineLessonStore {
           )
           .timeout(const Duration(seconds: 10));
       if (await credentials() != token) {
-        throw const OfflineLessonException(
-          'Your sign-in changed. Open Downloads again.',
-        );
+        throw OfflineLessonException(Speech.t.downloadErrSignInChanged);
       }
       if (response.statusCode == 401 ||
           response.statusCode == 403 ||
           response.statusCode == 404) {
         final existing = await _read(id);
         if (existing != null) await _write(existing, revoked: true);
-        throw const OfflineLessonException(
-          'Recording access is no longer confirmed for this account. Reconnect and sign in to renew. The saved file is kept.',
-        );
+        throw OfflineLessonException(Speech.t.downloadErrAccessNotConfirmed);
       }
       if (response.statusCode == 413) {
-        throw const OfflineLessonException(
-          'This recording is larger than the 50 MB download limit.',
-        );
+        throw OfflineLessonException(Speech.t.downloadErrTooLarge);
       }
       if (response.statusCode != 200) {
-        throw const OfflineLessonException(
-          'The server could not renew this recording. Try again later.',
-        );
+        throw OfflineLessonException(Speech.t.downloadErrRenewServer);
       }
       final decoded = jsonDecode(response.body);
       if (decoded is! Map<String, dynamic>) {
-        throw const OfflineLessonException(
-          'The server returned invalid download information.',
-        );
+        throw OfflineLessonException(Speech.t.downloadErrInvalidServerInfo);
       }
       final manifest = OfflineLesson.parse(decoded, userId);
       if (manifest.audioId != id) {
-        throw const OfflineLessonException(
-          'The server returned a different recording.',
-        );
+        throw OfflineLessonException(Speech.t.downloadErrDifferentRecording);
       }
       return manifest;
     } on TimeoutException {
-      throw const OfflineLessonException(
-        'The connection timed out. Reconnect and retry.',
+      throw OfflineLessonException(
+        Speech.t.downloadErrTimedOut,
         mayUseExistingAccess: true,
       );
     } on http.ClientException {
-      throw const OfflineLessonException(
-        'Could not connect to renew this recording. Check your internet connection.',
+      throw OfflineLessonException(
+        Speech.t.downloadErrRenewConnect,
         mayUseExistingAccess: true,
       );
     } on SocketException {
-      throw const OfflineLessonException(
-        'Could not connect to renew this recording. Check your internet connection.',
+      throw OfflineLessonException(
+        Speech.t.downloadErrRenewConnect,
         mayUseExistingAccess: true,
       );
     } finally {
@@ -435,9 +404,7 @@ class OfflineLessonStore {
           data['account_id'] != userId ||
           data['last_seen'] is! String ||
           DateTime.tryParse(data['last_seen'] as String) == null) {
-        throw const OfflineLessonException(
-          'The offline time record could not be read. Connect and renew access.',
-        );
+        throw OfflineLessonException(Speech.t.downloadErrClockUnreadable);
       }
       previous = DateTime.parse(data['last_seen'] as String);
     }
@@ -446,14 +413,10 @@ class OfflineLessonStore {
         ) ||
         (previous != null &&
             now.isBefore(previous.subtract(const Duration(minutes: 5))))) {
-      throw const OfflineLessonException(
-        'The phone clock moved backwards. Correct its date and reconnect to renew access.',
-      );
+      throw OfflineLessonException(Speech.t.downloadErrClockBackwards);
     }
     if (!now.isBefore(lesson.expiresAt)) {
-      throw const OfflineLessonException(
-        'Offline access expired after 30 days. Connect to the internet and renew this lesson. Your progress and downloaded file are kept.',
-      );
+      throw OfflineLessonException(Speech.t.downloadErrExpired);
     }
     await _writeClock(
       previous != null && previous.isAfter(now) ? previous : now,
@@ -463,21 +426,15 @@ class OfflineLessonStore {
   Future<String> localPath(int id) => _exclusive(() async {
     final lesson = await _read(id);
     if (lesson == null || !lesson.complete) {
-      throw const OfflineLessonException(
-        'Download this lesson completely before offline playback.',
-      );
+      throw OfflineLessonException(Speech.t.downloadErrIncompleteForPlayback);
     }
     if (lesson.revoked) {
-      throw const OfflineLessonException(
-        'Access renewal is required. Connect and renew before playing this download.',
-      );
+      throw OfflineLessonException(Speech.t.downloadErrRenewalRequired);
     }
     await _checkClock(lesson);
     final media = _file(id, 'media');
     if (!await _intact(media, lesson)) {
-      throw const OfflineLessonException(
-        'The downloaded recording is incomplete or damaged. Remove this download and download it again. Progress and bookmarks are separate.',
-      );
+      throw OfflineLessonException(Speech.t.downloadErrDamaged);
     }
     await credentials();
     return media.path;
@@ -486,14 +443,12 @@ class OfflineLessonStore {
   Future<void> renew(int id) => _exclusive(() async {
     final existing = await _read(id);
     if (existing == null) {
-      throw const OfflineLessonException('Download this lesson first.');
+      throw OfflineLessonException(Speech.t.downloadErrDownloadFirst);
     }
     final fresh = await _manifest(id);
     if (existing.digest != fresh.digest || existing.bytes != fresh.bytes) {
       await _write(existing, revoked: true);
-      throw const OfflineLessonException(
-        'This recording has changed. Remove its download and download the current recording. Progress and bookmarks are kept.',
-      );
+      throw OfflineLessonException(Speech.t.downloadErrRecordingChangedRenew);
     }
     await _write(fresh, complete: existing.complete);
     await _writeClock(fresh.authorizedAt);
@@ -505,9 +460,7 @@ class OfflineLessonStore {
     OfflineDownload operation,
   ) => _exclusive(() async {
     if (operation.cancelled) {
-      throw const OfflineLessonException(
-        'Download cancelled. Any partial file is kept for an explicit retry.',
-      );
+      throw OfflineLessonException(Speech.t.downloadErrCancelledAnyPartial);
     }
     final manifest = await _manifest(id);
     ActivityTelemetry.record('download_requested', audioId: id);
@@ -515,9 +468,7 @@ class OfflineLessonStore {
     if (existing != null &&
         (existing.digest != manifest.digest ||
             existing.bytes != manifest.bytes)) {
-      throw const OfflineLessonException(
-        'The recording changed. Remove its old download before downloading the current version. Progress is kept.',
-      );
+      throw OfflineLessonException(Speech.t.downloadErrRecordingChanged);
     }
     final media = _file(id, 'media');
     if (await _intact(media, manifest)) {
@@ -525,29 +476,21 @@ class OfflineLessonStore {
       return;
     }
     if (await media.exists()) {
-      throw const OfflineLessonException(
-        'The saved recording is damaged. Remove its download before retrying.',
-      );
+      throw OfflineLessonException(Speech.t.downloadErrSavedDamaged);
     }
     final used = await _reserved();
     if (used + (existing == null ? manifest.bytes : 0) > quota) {
-      throw const OfflineLessonException(
-        'Your account has reached its 50 MB download limit. Choose which of your downloads to remove, then retry. Nothing was deleted.',
-      );
+      throw OfflineLessonException(Speech.t.downloadErrQuota);
     }
     await _write(manifest);
     final part = _file(id, 'part');
     var offset = await part.exists() ? await part.length() : 0;
     if (offset > manifest.bytes) {
-      throw const OfflineLessonException(
-        'The partial download is invalid. Remove it before retrying.',
-      );
+      throw OfflineLessonException(Speech.t.downloadErrPartialInvalid);
     }
     if (offset == manifest.bytes) {
       if (!await _intact(part, manifest)) {
-        throw const OfflineLessonException(
-          'Download integrity check failed. Remove this partial download before retrying.',
-        );
+        throw OfflineLessonException(Speech.t.downloadErrIntegrityPartial);
       }
       await part.rename(media.path);
       await _write(manifest, complete: true);
@@ -555,7 +498,7 @@ class OfflineLessonStore {
     }
     final token = await credentials();
     if (token == null || token.isEmpty) {
-      throw const OfflineLessonException('Sign in before downloading.');
+      throw OfflineLessonException(Speech.t.downloadErrSignInToDownload);
     }
     final client = _clientFactory();
     operation._client = client;
@@ -569,37 +512,27 @@ class OfflineLessonStore {
           .send(request)
           .timeout(const Duration(seconds: 10));
       if (operation.cancelled) {
-        throw const OfflineLessonException(
-          'Download cancelled. Partial data is kept for an explicit retry.',
-        );
+        throw OfflineLessonException(Speech.t.downloadErrCancelledExplicit);
       }
       if (response.statusCode == 401 ||
           response.statusCode == 403 ||
           response.statusCode == 404) {
         await _write(manifest, revoked: true);
-        throw const OfflineLessonException(
-          'Download access was denied. Reconnect and renew access.',
-        );
+        throw OfflineLessonException(Speech.t.downloadErrAccessDenied);
       }
       if (response.statusCode == 200) {
         offset = 0;
       } else if (response.statusCode == 206 && offset > 0) {
         if (response.headers['content-range'] !=
             'bytes $offset-${manifest.bytes - 1}/${manifest.bytes}') {
-          throw const OfflineLessonException(
-            'The server returned an unexpected partial recording. Retry without deleting existing data.',
-          );
+          throw OfflineLessonException(Speech.t.downloadErrUnexpectedPartial);
         }
       } else {
-        throw const OfflineLessonException(
-          'The recording could not be downloaded. Check your connection and retry.',
-        );
+        throw OfflineLessonException(Speech.t.downloadErrCouldNotDownload);
       }
       if (response.contentLength != null &&
           response.contentLength != manifest.bytes - offset) {
-        throw const OfflineLessonException(
-          'The recording size changed. Retry downloading.',
-        );
+        throw OfflineLessonException(Speech.t.downloadErrSizeChanged);
       }
       sink = part.openWrite(
         mode: offset > 0 ? FileMode.append : FileMode.write,
@@ -610,20 +543,16 @@ class OfflineLessonStore {
         const Duration(seconds: 20),
       )) {
         if (operation.cancelled) {
-          throw const OfflineLessonException(
-            'Download cancelled. Partial data is kept for an explicit retry.',
-          );
+          throw OfflineLessonException(Speech.t.downloadErrCancelledExplicit);
         }
         if (await credentials() != token) {
-          throw const OfflineLessonException(
-            'Your account changed. The download was stopped.',
+          throw OfflineLessonException(
+            Speech.t.downloadErrAccountChangedStopped,
           );
         }
         offset += chunk.length;
         if (offset > manifest.bytes) {
-          throw const OfflineLessonException(
-            'The recording exceeded its declared size. Download stopped.',
-          );
+          throw OfflineLessonException(Speech.t.downloadErrExceededSize);
         }
         sink.add(chunk);
         await sink.flush();
@@ -636,19 +565,13 @@ class OfflineLessonStore {
       await sink.close();
       sink = null;
       if (operation.cancelled) {
-        throw const OfflineLessonException(
-          'Download cancelled. Partial data is kept for an explicit retry.',
-        );
+        throw OfflineLessonException(Speech.t.downloadErrCancelledExplicit);
       }
       if (!await _intact(part, manifest)) {
-        throw const OfflineLessonException(
-          'Download integrity check failed. Retry an incomplete download, or remove damaged partial data before retrying.',
-        );
+        throw OfflineLessonException(Speech.t.downloadErrIntegrity);
       }
       if (await credentials() != token) {
-        throw const OfflineLessonException(
-          'Your sign-in changed. Download stopped before installation.',
-        );
+        throw OfflineLessonException(Speech.t.downloadErrSignInChangedStopped);
       }
       await part.rename(media.path);
       await _write(manifest, complete: true);
@@ -660,9 +583,7 @@ class OfflineLessonStore {
         audioId: id,
         details: {'reason_code': 'network'},
       );
-      throw const OfflineLessonException(
-        'Download timed out. Partial data is kept; activate Download to retry.',
-      );
+      throw OfflineLessonException(Speech.t.downloadErrTimedOutPartial);
     } on http.ClientException {
       ActivityTelemetry.record(
         operation.cancelled ? 'download_cancelled' : 'download_failed',
@@ -671,8 +592,8 @@ class OfflineLessonStore {
       );
       throw OfflineLessonException(
         operation.cancelled
-            ? 'Download cancelled. Partial data is kept for retry.'
-            : 'Download interrupted. Partial data is kept; activate Download to retry.',
+            ? Speech.t.downloadErrCancelledRetry
+            : Speech.t.downloadErrInterrupted,
       );
     } on SocketException {
       ActivityTelemetry.record(
@@ -680,9 +601,7 @@ class OfflineLessonStore {
         audioId: id,
         details: {'reason_code': 'network'},
       );
-      throw const OfflineLessonException(
-        'Download interrupted. Partial data is kept; activate Download to retry.',
-      );
+      throw OfflineLessonException(Speech.t.downloadErrInterrupted);
     } finally {
       if (sink != null) {
         await sink.flush();

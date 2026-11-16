@@ -13,6 +13,7 @@ import '../widgets/key_instruction_wrapper.dart';
 import '../services/notification_services.dart';
 import '../utils/keypad_actions.dart';
 import '../announcers/auth_text.dart';
+import '../l10n/speech.dart';
 // import 'login_screen.dart';
 
 // In flutter everything is a widget, we extend our Register screen to Stateful Widget which is a widget whose UI can be dynamic
@@ -60,12 +61,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
     var spoken = message.trimRight();
     if (!spoken.endsWith('.')) spoken = '$spoken.';
     if (field != null) {
-      final name = identical(field, _nameFocus)
-          ? 'name field'
+      spoken = identical(field, _nameFocus)
+          ? Speech.t.authErrorMovedToName(spoken)
           : identical(field, _phoneFocus)
-          ? 'phone number field'
-          : 'password field';
-      spoken = '$spoken Moved to $name.';
+          ? Speech.t.authErrorMovedToPhone(spoken)
+          : Speech.t.authErrorMovedToPassword(spoken);
       // Silent focus move so the error below is not interrupted.
       _keypadController.focusAndAnnounce(field, ' ');
     }
@@ -82,27 +82,30 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final phoneNumber = phoneCtrl.text.trim();
     final password = passCtrl.text;
     if (userName.isEmpty) {
-      _showRegistrationError('Enter your name.', field: _nameFocus);
+      _showRegistrationError(Speech.t.authErrorEnterName, field: _nameFocus);
       return;
     }
     if (phoneNumber.isEmpty) {
-      _showRegistrationError('Enter your phone number.', field: _phoneFocus);
+      _showRegistrationError(Speech.t.authErrorEnterPhone, field: _phoneFocus);
       return;
     }
     if (!RegExp(r'^\d{10}$').hasMatch(phoneNumber)) {
       _showRegistrationError(
-        'Enter a valid 10-digit phone number.',
+        Speech.t.authErrorInvalidPhone,
         field: _phoneFocus,
       );
       return;
     }
     if (password.isEmpty) {
-      _showRegistrationError('Enter a password.', field: _passwordFocus);
+      _showRegistrationError(
+        Speech.t.authErrorEnterAPassword,
+        field: _passwordFocus,
+      );
       return;
     }
     if (password.length < 6) {
       _showRegistrationError(
-        'Password must be at least 6 characters.',
+        Speech.t.authErrorPasswordTooShort,
         field: _passwordFocus,
       );
       return;
@@ -205,7 +208,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
   void _toggleRole() {
     setState(() => isTeacher = !isTeacher);
     TtsService.speak(
-      isTeacher ? "Registering as teacher" : "Registering as student",
+      isTeacher
+          ? Speech.t.authRegisteringAsTeacher
+          : Speech.t.authRegisteringAsStudent,
     );
   }
 
@@ -268,49 +273,52 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
     final serverError = _errorField == null ? _errorMessage : null;
     return KeypadInstructionWrapper(
-      screenName: 'Registration Screen',
-      navigationSections:
-          'name, phone number, password, student or teacher account type, register, and login',
+      screenName: Speech.t.authRegistrationScreenName,
+      navigationSections: Speech.t.authRegisterNavigationSections,
       labels: registerKeyLabels,
       navigationController: _keypadController,
       focusTargets: [
         KeypadFocusTarget(
           node: _nameFocus,
-          label: 'Name field',
+          label: Speech.t.authNameField,
           isTextField: true,
         ),
         KeypadFocusTarget(
           node: _phoneFocus,
-          label: 'Phone number field',
+          label: Speech.t.authPhoneNumberField,
           isTextField: true,
         ),
         KeypadFocusTarget(
           node: _passwordFocus,
-          label: 'Password field',
+          label: Speech.t.authPasswordField,
           isTextField: true,
         ),
         KeypadFocusTarget(
           node: _passwordVisibilityFocus,
-          label: _passwordVisible ? 'Hide password' : 'Show password',
+          label: _passwordVisible
+              ? Speech.t.authHidePassword
+              : Speech.t.authShowPassword,
           onActivate: () =>
               setState(() => _passwordVisible = !_passwordVisible),
         ),
         KeypadFocusTarget(
           node: _roleFocus,
           label: isTeacher
-              ? 'Account type: Teacher. Press OK or 3 to switch to student'
-              : 'Account type: Student. Press OK or 3 to switch to teacher',
+              ? Speech.t.authRegisterRoleTeacherLabel
+              : Speech.t.authRegisterRoleStudentLabel,
           onActivate: _toggleRole,
         ),
         KeypadFocusTarget(
           node: _submitFocus,
-          label: 'Register as ${isTeacher ? 'teacher' : 'student'}, button',
+          label: isTeacher
+              ? Speech.t.authRegisterAsTeacherButton
+              : Speech.t.authRegisterAsStudentButton,
           onActivate: isLoading ? null : register,
           isEnabled: () => !isLoading,
         ),
         KeypadFocusTarget(
           node: _loginFocus,
-          label: 'Already have an account? Go to login',
+          label: Speech.t.authGoToLoginLabel,
           onActivate: () => Navigator.pushNamed(context, '/login'),
         ),
       ],
@@ -332,7 +340,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     Semantics(
                       header: true,
                       child: Text(
-                        'Register',
+                        Speech.t.authRegisterTitle,
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: UIUtils.fontSize(context, 24),
@@ -350,7 +358,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       onChanged: (_) => _clearError(),
                       decoration: _fieldDecoration(
                         context,
-                        label: 'Name',
+                        label: Speech.t.authName,
                         icon: Icons.person_outline_rounded,
                         node: _nameFocus,
                       ),
@@ -368,7 +376,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       onChanged: (_) => _clearError(),
                       decoration: _fieldDecoration(
                         context,
-                        label: 'Phone number',
+                        label: Speech.t.authPhoneNumber,
                         icon: Icons.phone_iphone_rounded,
                         node: _phoneFocus,
                       ),
@@ -388,7 +396,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       onChanged: (_) => _clearError(),
                       decoration: _fieldDecoration(
                         context,
-                        label: 'Password',
+                        label: Speech.t.authPassword,
                         icon: Icons.lock_outline_rounded,
                         node: _passwordFocus,
                         suffixIcon: IconButton(
@@ -401,8 +409,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             color: UIUtils.textColor,
                           ),
                           tooltip: _passwordVisible
-                              ? 'Hide password'
-                              : 'Show password',
+                              ? Speech.t.authHidePassword
+                              : Speech.t.authShowPassword,
                           onPressed: () => setState(
                             () => _passwordVisible = !_passwordVisible,
                           ),
@@ -432,7 +440,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         activeThumbColor: UIUtils.onAccentColor,
                         activeTrackColor: UIUtils.accentColor,
                         title: Text(
-                          "3: Register as ${isTeacher ? 'Teacher' : 'Student'}. Change account type",
+                          isTeacher
+                              ? Speech.t.authRegisterAsTeacherKey
+                              : Speech.t.authRegisterAsStudentKey,
                           style: TextStyle(
                             fontSize: UIUtils.fontSize(context, 16),
                             color: UIUtils.textColor,
@@ -489,7 +499,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       child: isLoading
                           ? Semantics(
                               liveRegion: true,
-                              label: 'Registering, please wait',
+                              label: Speech.t.authRegisteringPleaseWait,
                               child: SizedBox(
                                 height: UIUtils.iconSize(context, 20),
                                 width: UIUtils.iconSize(context, 20),
@@ -500,7 +510,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               ),
                             )
                           : Text(
-                              '1: Register',
+                              Speech.t.authRegisterKey,
                               style: TextStyle(
                                 fontSize: UIUtils.fontSize(context, 16),
                                 fontWeight: FontWeight.w600,
@@ -514,7 +524,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       focusNode: _loginFocus,
                       onPressed: () => Navigator.pushNamed(context, '/login'),
                       child: Text(
-                        '2: Already have an account? Login',
+                        Speech.t.authHaveAccountLoginKey,
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: UIUtils.fontSize(context, 16),

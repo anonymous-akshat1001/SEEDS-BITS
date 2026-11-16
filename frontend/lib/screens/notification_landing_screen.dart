@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../announcers/notification_text.dart';
+import '../l10n/speech.dart';
 import '../services/journey_api.dart';
 import '../services/message_center.dart';
 import '../services/offline_journey_store.dart';
@@ -54,7 +55,7 @@ class _NotificationLandingScreenState extends State<NotificationLandingScreen> {
             'userId': userId,
             'userName': userName,
             'isTeacher': false,
-            'sessionTitle': 'Class',
+            'sessionTitle': Speech.t.sessionScreenClass,
           },
         );
       case 'journey_published':
@@ -106,7 +107,7 @@ class _NotificationLandingScreenState extends State<NotificationLandingScreen> {
       introduction: message,
       details: message,
       busy: _busy,
-      backLabel: 'Not now',
+      backLabel: Speech.t.uiNotNow,
       choices: [
         JourneyChoice(NotificationText.openLabel(_type), () => unawaited(_open())),
       ],

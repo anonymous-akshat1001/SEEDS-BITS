@@ -1,9 +1,12 @@
+import '../l10n/speech.dart';
 import '../utils/spoken_format.dart';
 import 'announce.dart';
 
 /// Every sentence spoken or shown by the quiz screens, kept in one place so
-/// wording stays consistent and can be translated later.
+/// wording stays consistent. The wording lives in `lib/l10n/app_*.arb`.
 abstract final class QuizText {
+  static AppLocalizations get _t => Speech.t;
+
   // ─── Shared formatting ────────────────────────────────────────────────────
 
   /// Server timestamps without a zone are UTC.
@@ -18,56 +21,57 @@ abstract final class QuizText {
   }
 
   /// "today at 10:30 in the morning", or [fallback] when there is no time.
-  static String when(Object? raw, {String fallback = 'not set'}) {
+  static String when(Object? raw, {String? fallback}) {
     if (raw is DateTime) return SpokenFormat.dateTime(raw);
     final parsed = parseServerTime(raw);
-    return parsed == null ? fallback : SpokenFormat.dateTime(parsed);
+    return parsed == null
+        ? fallback ?? _t.quizNotSet
+        : SpokenFormat.dateTime(parsed);
   }
 
-  static String questions(int count) => SpokenFormat.count(count, 'question');
-  static String attempts(int count) => SpokenFormat.count(count, 'attempt');
-  static String students(int count) => SpokenFormat.count(count, 'student');
+  static String questions(int count) => _t.quizQuestionCount(count);
+  static String attempts(int count) => _t.quizAttemptCount(count);
+  static String students(int count) => _t.quizStudentCount(count);
   static String minutes(int count) =>
       SpokenFormat.duration(Duration(minutes: count));
 
-  static String percent(Object? value, {String fallback = 'not available'}) =>
-      value is num ? SpokenFormat.percent(value) : fallback;
+  static String percent(Object? value, {String? fallback}) => value is num
+      ? SpokenFormat.percent(value)
+      : fallback ?? _t.quizNotAvailable;
 
   static String _int(Object? value) => value is num ? '${value.round()}' : '0';
 
-  static const accountChanged =
-      'Your account changed. Return to quizzes and sign in again.';
+  static String get accountChanged => _t.quizAccountChanged;
 
   // ─── Quiz descriptions shared by teachers and students ────────────────────
 
   static String attemptsText(Map quiz) => quiz['mode'] == 'practice'
-      ? 'Unlimited practice attempts. Not graded.'
-      : '${attempts(quiz['attempts_remaining'] as int? ?? 0)} remaining.';
+      ? _t.quizUnlimitedPractice
+      : _t.quizAttemptsRemaining(quiz['attempts_remaining'] as int? ?? 0);
 
   static String timeLimit(Object? minutesValue) => minutesValue is int
-      ? 'Time limit ${minutes(minutesValue)}.'
-      : 'No time limit.';
+      ? _t.quizTimeLimit(minutes(minutesValue))
+      : _t.quizNoTimeLimit;
 
   static String feedbackPolicy(Map quiz) {
     switch (quiz['feedback_policy']) {
       case 'after_completion':
-        return 'Answer feedback and scores are released after you finish the quiz.';
+        return _t.quizFeedbackAfterCompletion;
       case 'scheduled':
-        return 'Feedback and scores are released after you finish and after '
-            '${when(quiz['feedback_release_at'])}.';
+        return _t.quizFeedbackScheduled(when(quiz['feedback_release_at']));
       case 'score_only':
-        return 'Only the score is released after you finish. Answers and explanations are not released.';
+        return _t.quizFeedbackScoreOnly;
       default:
-        return 'You hear whether each answer is right as soon as you submit it.';
+        return _t.quizFeedbackImmediate;
     }
   }
 
   static String policyName(String policy) => switch (policy) {
-    'after_completion' => 'after the quiz is finished',
-    'scheduled' => 'at a scheduled time',
-    'score_only' => 'score only',
-    'legacy_immediate' => 'immediately, older setting',
-    'immediate' => 'immediately after each answer',
+    'after_completion' => _t.quizPolicyAfterCompletion,
+    'scheduled' => _t.quizPolicyScheduled,
+    'score_only' => _t.quizPolicyScoreOnly,
+    'legacy_immediate' => _t.quizPolicyLegacyImmediate,
+    'immediate' => _t.quizPolicyImmediate,
     _ => policy,
   };
 
@@ -75,124 +79,128 @@ abstract final class QuizText {
     final correct = _int(attempt['correct_count']);
     final total = _int(attempt['total_questions']);
     if (attempt['is_graded'] == false) {
-      return 'Practice, not an academic grade. $correct of $total correct in this practice.';
+      return _t.quizPracticeResult(correct, total);
     }
     if (attempt['score_released'] == false) {
-      return 'Score not released. ${attempt['feedback_message'] ?? 'Check the release policy.'}';
+      return _t.quizScoreNotReleased(
+        '${attempt['feedback_message'] ?? _t.quizCheckReleasePolicy}',
+      );
     }
-    return 'Score $correct of $total, ${percent(attempt['percentage_score'])}.';
+    return _t.quizScoreResult(
+      correct,
+      total,
+      percent(attempt['percentage_score']),
+    );
   }
 
   static String status(Object? value) => switch (value) {
-    'in_progress' => 'in progress',
-    'timed_out' => 'finished when time ran out',
-    'completed' => 'finished',
-    'published' => 'published',
-    'draft' => 'draft',
-    'closed' => 'closed',
-    'scheduled' => 'scheduled',
-    'open' => 'open',
+    'in_progress' => _t.quizStatusInProgress,
+    'timed_out' => _t.quizStatusTimedOut,
+    'completed' => _t.quizStatusCompleted,
+    'published' => _t.quizStatusPublished,
+    'draft' => _t.quizStatusDraft,
+    'closed' => _t.quizStatusClosed,
+    'scheduled' => _t.quizStatusScheduled,
+    'open' => _t.quizStatusOpen,
     _ => '$value',
   };
 
   // ─── Attempt: answering ───────────────────────────────────────────────────
 
   static String questionHeading(int number, Object? total) =>
-      'Question $number of $total';
+      _t.quizQuestionHeading('$number', '$total');
 
   static String question(int number, Object? total, Object? text) =>
-      '${questionHeading(number, total)}. $text';
+      _t.quizQuestionWithText('$number', '$total', '$text');
 
   static String options(List<String> spoken) => [
-    for (var i = 0; i < spoken.length; i++) 'Option ${i + 1}. ${spoken[i]}.',
+    for (var i = 0; i < spoken.length; i++)
+      _t.quizOptionSpoken('${i + 1}', spoken[i]),
   ].join(' ');
 
   static String optionLabel(int index, int count, String spoken) =>
-      'Option ${index + 1} of $count, $spoken';
+      _t.quizOptionLabel('${index + 1}', '$count', spoken);
 
   static String optionTarget(int index, String spoken, bool selected) =>
-      'Option ${index + 1}, $spoken, ${selected ? 'selected' : 'not selected'}. '
-      'Press OK or ${index + 1} to choose';
+      selected
+      ? _t.quizOptionTargetSelected('${index + 1}', spoken)
+      : _t.quizOptionTargetNotSelected('${index + 1}', spoken);
 
   static String answerKeys(int count) => Announce.pick(
-    brief: 'Press 1 to $count, then 5.',
-    detailed:
-        'Press 1 to $count to choose an answer, then 5 to submit it. '
-        'Press 6 to repeat the question, 8 to hear where you are.',
+    brief: _t.quizAnswerKeysBrief('$count'),
+    detailed: _t.quizAnswerKeysDetailed('$count'),
   );
 
   static String chosen(int index, String spoken) => Announce.pick(
-    brief: 'Option ${index + 1}, $spoken, selected.',
-    detailed:
-        'Option ${index + 1}, $spoken, selected. Press 5 to submit, or choose another number.',
+    brief: _t.quizChosenBrief('${index + 1}', spoken),
+    detailed: _t.quizChosenDetailed('${index + 1}', spoken),
   );
 
-  static String chooseFirst(int count) =>
-      'Choose an answer first. Press 1 to $count, then 5 to submit.';
+  static String chooseFirst(int count) => _t.quizChooseFirst('$count');
 
   static String noSuchOption(int option, int count) =>
-      'There is no option $option. Press 1 to $count.';
+      _t.quizNoSuchOption('$option', '$count');
 
-  static const submitting = 'Submitting your answer.';
+  static String get submitting => _t.quizSubmitting;
 
   static String correct(String answer, String? explanation) =>
-      'Correct! $answer.${_explain(explanation)}';
+      '${_t.quizCorrectFeedback(answer)}${_explain(explanation)}';
 
   static String wrong(String answer, String? explanation) =>
-      'Not quite. The answer is $answer.${_explain(explanation)}';
+      '${_t.quizWrongFeedback(answer)}${_explain(explanation)}';
 
   static String _explain(String? text) =>
       text == null || text.trim().isEmpty ? '' : ' $text';
 
   static String saved(Object? message) => Announce.pick(
-    brief: 'Answer saved.',
-    detailed: 'Answer saved and locked.${message == null ? '' : ' $message'}',
+    brief: _t.quizAnswerSavedBrief,
+    detailed:
+        '${_t.quizAnswerSavedLocked}${message == null ? '' : ' $message'}',
   );
 
-  static const savedHeading = 'Answer saved and locked';
-  static const correctHeading = 'Correct';
-  static const wrongHeading = 'Incorrect';
+  static String get savedHeading => _t.quizSavedHeading;
+  static String get correctHeading => _t.quizCorrectHeading;
+  static String get wrongHeading => _t.quizWrongHeading;
 
   static String feedbackDetails(Map feedback) =>
-      'You selected: ${feedback['selected_option_text']}\n'
-      '${feedback['feedback_released'] == false ? feedback['feedback_message'] : 'Correct answer: ${feedback['correct_option_text']}\n${feedback['explanation'] ?? 'No explanation provided.'}'}';
+      '${_t.quizYouSelected('${feedback['selected_option_text']}')}\n'
+      '${feedback['feedback_released'] == false ? feedback['feedback_message'] : '${_t.quizCorrectAnswerIs('${feedback['correct_option_text']}')}\n${feedback['explanation'] ?? _t.quizNoExplanation}'}';
 
   static String answerFailed(String? reason) =>
-      '${reason ?? 'The answer confirmation could not be read.'} '
-      'Your selection is preserved. Press 5 to try again.';
+      _t.quizAnswerFailed(reason ?? _t.quizAnswerUnreadable);
 
   static String selection(int? index, String? spoken, {required bool saved}) =>
       index == null
-      ? 'No option selected.'
-      : 'Selected option ${index + 1}, $spoken. ${saved ? 'Answer saved.' : 'Not submitted yet.'}';
+      ? _t.quizNoOptionSelected
+      : saved
+      ? _t.quizSelectionSaved('${index + 1}', '$spoken')
+      : _t.quizSelectionNotSubmitted('${index + 1}', '$spoken');
 
-  static const repeatQuestion = 'Repeat question and options';
-  static String answerSaved({required bool hasFeedback}) =>
-      'Answer confirmed saved and locked.'
-      '${hasFeedback ? ' Feedback for it stays available privately on the next question.' : ''}';
-  static const previousFeedback = 'Hear feedback for the previous answer, privately';
+  static String get repeatQuestion => _t.quizRepeatQuestion;
+  static String answerSaved({required bool hasFeedback}) => hasFeedback
+      ? '${_t.quizAnswerConfirmed} ${_t.quizFeedbackStaysAvailable}'
+      : _t.quizAnswerConfirmed;
+  static String get previousFeedback => _t.quizPreviousFeedback;
 
-  static const answerLockNotice =
-      'Each answer is saved and locked when you press 5.';
+  static String get answerLockNotice => _t.quizAnswerLockNotice;
 
   // ─── Attempt: where am I and time ─────────────────────────────────────────
 
   static String timeLeft(Duration? remaining) => remaining == null
-      ? 'No time limit.'
-      : 'Time left: ${SpokenFormat.duration(remaining)}.';
+      ? _t.quizNoTimeLimit
+      : _t.quizTimeLeft(SpokenFormat.duration(remaining));
 
   /// Visual countdown, for example "4:05 left".
   static String clock(Duration? remaining) {
-    if (remaining == null) return 'No time limit';
+    if (remaining == null) return _t.quizNoTimeLimitShort;
     final seconds = remaining.inSeconds.remainder(60).toString().padLeft(2, '0');
-    return '${remaining.inMinutes}:$seconds left';
+    return _t.quizClockLeft('${remaining.inMinutes}:$seconds');
   }
 
   static String timeWarning(Duration remaining) =>
-      '${SpokenFormat.duration(remaining)} left in this quiz.';
+      _t.quizTimeWarning(SpokenFormat.duration(remaining));
 
-  static String timeUp(int saved) =>
-      'Time is up. ${SpokenFormat.count(saved, 'answer')} saved. Finishing the quiz.';
+  static String timeUp(int saved) => _t.quizTimeUp(saved);
 
   static String where({
     required int number,
@@ -202,581 +210,613 @@ abstract final class QuizText {
     Duration? remaining,
     bool timed = false,
   }) => [
-    '${questionHeading(number, total)}.',
-    '$answered answered.',
+    _t.quizWhereQuestion('$number', '$total'),
+    _t.quizAnsweredCount('$answered'),
     ?selection,
     if (timed) timeLeft(remaining),
   ].join(' ');
 
   static String allSaved(Duration? remaining, {bool timed = false}) =>
-      'All answers are saved. Press 5 to finish and hear your result.'
-      '${timed ? ' ${timeLeft(remaining)}' : ''}';
+      '${_t.quizAllSaved}${timed ? ' ${timeLeft(remaining)}' : ''}';
 
   // ─── Attempt: finishing ───────────────────────────────────────────────────
 
-  static const finishNow = 'Finish quiz now, with confirmation';
-  static const finishNowButton = 'Finish quiz now';
-  static const finishTitle = 'Finish quiz now?';
+  static String get finishNow => _t.quizFinishNow;
+  static String get finishNowButton => _t.quizFinishNowButton;
+  static String get finishTitle => _t.quizFinishTitle;
 
   static String finishMessage(int unanswered) =>
-      'The server shows ${questions(unanswered)} not answered. '
-      'Only saved answers count. A selected answer that you did not submit is not included. '
-      'You cannot change answers after finishing.';
+      _t.quizFinishMessage(unanswered);
 
-  static const finishConfirm = 'Finish quiz';
-  static const finishCancel = 'Keep working';
-  static const finishUnchecked =
-      'Your saved answers could not be checked, or this attempt has ended. '
-      'The quiz was not finished. Return to the quiz list to refresh it.';
-  static const finishTimedOut =
-      'Checking your saved answers took too long. The quiz was not finished. '
-      'Check your connection and try again.';
-  static const finishing = 'Finishing the quiz';
-  static const finishAndHear = 'Finish and hear result';
-  static const retryFinishing = 'Retry finishing';
+  static String get finishConfirm => _t.quizFinishConfirm;
+  static String get finishCancel => _t.quizFinishCancel;
+  static String get finishUnchecked => _t.quizFinishUnchecked;
+  static String get finishTimedOut => _t.quizFinishTimedOut;
+  static String get finishing => _t.quizFinishing;
+  static String get finishAndHear => _t.quizFinishAndHear;
+  static String get retryFinishing => _t.quizRetryFinishing;
 
   static String completionFailed(String? reason) =>
-      '${reason ?? 'Completion was not confirmed.'} '
-      'Your saved answers are preserved. Press 5 to retry finishing.';
+      _t.quizCompletionFailed(reason ?? _t.quizCompletionNotConfirmed);
 
   static String completed({bool timedOut = false}) =>
-      '${timedOut ? 'Time ran out. ' : ''}Quiz finished. Your result is private. '
-      'Press 8 to hear it, or 0 to return to quizzes.';
+      timedOut ? _t.quizCompletedTimedOut : _t.quizCompleted;
 
-  static const resultPrivate =
-      'Quiz finished. Result private. Use Read result privately.';
-  static const resultHeading = 'Attempt complete';
-  static const readResult = 'Read result privately';
-  static const returnToQuizzes = 'Return to quizzes';
+  static String get resultPrivate => _t.quizResultPrivate;
+  static String get resultHeading => _t.quizResultHeading;
+  static String get readResult => _t.quizReadResult;
+  static String get returnToQuizzes => _t.quizReturnToQuizzes;
 
   // ─── Attempt: leaving ─────────────────────────────────────────────────────
 
-  static const leave = 'Leave without submitting, with confirmation';
-  static const leaveTitle = 'Leave and resume later?';
-  static const leaveMessage =
-      'This does not submit your attempt. Only saved answers are kept; a selected answer that you did not submit may be lost. '
-      'Any time limit keeps running. You can resume while the quiz allows it.';
-  static const leaveConfirm = 'Leave without submitting';
-  static const leaveCancel = 'Stay in quiz';
-  static const waitBeforeLeaving =
-      'Please wait. Your answer is still being saved.';
+  static String get leave => _t.quizLeave;
+  static String get leaveTitle => _t.quizLeaveTitle;
+  static String get leaveMessage => _t.quizLeaveMessage;
+  static String get leaveConfirm => _t.quizLeaveConfirm;
+  static String get leaveCancel => _t.quizLeaveCancel;
+  static String get waitBeforeLeaving => _t.quizWaitBeforeLeaving;
 
-  static String attemptScreen(String title) => 'Quiz attempt, $title';
+  static String attemptScreen(String title) => _t.quizAttemptScreen(title);
 
   static String attemptNavigation({
     required bool completed,
     required bool timed,
   }) => completed
-      ? 'return to quizzes, read result privately and quiz speech speed'
-      : 'the question, each answer option, the selected answer, quiz speech speed, '
-            '${timed ? 'time left, ' : ''}submit, Finish quiz now and Leave. '
-            'Moving focus never selects or submits';
+      ? _t.quizAttemptNavigationCompleted
+      : timed
+      ? _t.quizAttemptNavigationTimed
+      : _t.quizAttemptNavigationUntimed;
 
   // ─── Speech speed ─────────────────────────────────────────────────────────
 
-  static const speedHelp =
-      'Press 7 or 9 to make quiz speech slower or faster.';
-  static const speedScreenReader =
-      'Quiz speech speed changes app speech only. '
-      'Change your screen reader speed in Android settings.';
-  static const speedHeading = 'Quiz speech speed';
+  static String get speedHelp => _t.quizSpeedHelp;
+  static String get speedScreenReader => _t.quizSpeedScreenReader;
+  static String get speedHeading => _t.quizSpeedHeading;
 
   static String speedTarget(String description) =>
-      'Quiz speech speed, $description. Left or right to change, or press 7 or 9';
+      _t.quizSpeedTarget(description);
 
-  static String speedRead(String description) =>
-      'Quiz speech speed, $description. Press 7 for slower or 9 for faster. '
-      'This speed is used only in quizzes.';
+  static String speedRead(String description) => _t.quizSpeedRead(description);
 
-  static String speedChanged(bool faster, String description) =>
-      '${faster ? 'Faster' : 'Slower'}. $description.';
+  static String speedChanged(bool faster, String description) => faster
+      ? _t.quizSpeedFaster(description)
+      : _t.quizSpeedSlower(description);
 
-  static String speedLimit(bool faster, String description) =>
-      '${faster ? 'Fastest' : 'Slowest'} quiz speech, $description.';
+  static String speedLimit(bool faster, String description) => faster
+      ? _t.quizSpeedFastest(description)
+      : _t.quizSpeedSlowest(description);
 
-  static bool isSpeedAnnouncement(String text) =>
-      text.startsWith('Faster. ') ||
-      text.startsWith('Slower. ') ||
-      text.startsWith('Fastest quiz speech') ||
-      text.startsWith('Slowest quiz speech') ||
-      text.startsWith('Quiz speech speed');
+  /// Whether [text] is one of the speed announcements above, in the current
+  /// speech language.
+  static bool isSpeedAnnouncement(String text) {
+    const marker = '\u0000';
+    String before(String message) {
+      final end = message.indexOf(marker);
+      return end < 0 ? message : message.substring(0, end);
+    }
+
+    final prefixes = [
+      before(_t.quizSpeedFaster(marker)),
+      before(_t.quizSpeedSlower(marker)),
+      before(_t.quizSpeedFastest(marker)),
+      before(_t.quizSpeedSlowest(marker)),
+      speedHeading,
+    ];
+    return prefixes.any(
+      (prefix) => prefix.trim().isNotEmpty && text.startsWith(prefix),
+    );
+  }
 
   // ─── Student quiz list ────────────────────────────────────────────────────
 
-  static const studentScreen = 'Student quizzes';
-  static const studentNavigation =
-      'refresh, quiz state and subject filters, available quizzes, and attempt history';
+  static String get studentScreen => _t.quizStudentScreen;
+  static String get studentNavigation => _t.quizStudentNavigation;
   static String get studentIntro => Announce.pick(
-    brief: 'Use left or right on a filter to change it.',
-    detailed:
-        'Use left or right on a filter to change it. Press OK on a quiz to hear its details '
-        'and confirm starting. Moving focus never starts a quiz.',
+    brief: _t.quizStudentIntroBrief,
+    detailed: _t.quizStudentIntroDetailed,
   );
 
-  static String available(int count) => count == 0
-      ? 'No quizzes available.'
-      : '${SpokenFormat.count(count, 'quiz', 'quizzes')} available.';
+  static String available(int count) => _t.quizAvailable(count);
 
   static String studentState(int open, int total) =>
-      '${SpokenFormat.count(total, 'quiz', 'quizzes')} shown, $open open.';
+      _t.quizStudentState(total, '$open');
 
   static String stateName(String? state) => switch (state) {
-    null => 'All states',
-    'scheduled' => 'Scheduled',
-    'open' => 'Open',
-    'closed' => 'Closed',
+    null => _t.quizStateAll,
+    'scheduled' => _t.quizStateScheduled,
+    'open' => _t.quizStateOpen,
+    'closed' => _t.quizStateClosed,
     _ => state,
   };
 
   static String stateFilter(String name, int position, int count) =>
-      'Quiz state: $name, $position of $count.';
+      _t.quizStateFilter(name, '$position', '$count');
 
   static String subjectFilter(String name, int position, int count) =>
-      'Subject: $name, $position of $count.';
+      _t.quizSubjectFilter(name, '$position', '$count');
 
-  static const changeWithArrows = 'Left or right to change';
-  static const allSubjects = 'All subjects';
+  static String get changeWithArrows => _t.quizChangeWithArrows;
+  static String get allSubjects => _t.quizAllSubjects;
 
-  static String quizRow(Map quiz) =>
-      '${quiz['subject_name']}, ${quiz['title']}, ${status(quiz['display_status'])}. '
-      '${attemptsText(quiz)} '
-      '${quiz['in_progress_attempt_id'] == null ? 'Start quiz' : 'Resume quiz'}';
+  static String quizRow(Map quiz) => [
+    _t.quizRowHead(
+      '${quiz['subject_name']}',
+      '${quiz['title']}',
+      status(quiz['display_status']),
+    ),
+    attemptsText(quiz),
+    quiz['in_progress_attempt_id'] == null ? _t.quizStartQuiz : _t.quizResumeQuiz,
+  ].join(' ');
 
   static String historyRow(Map quiz) =>
-      'Review ${quiz['title']} attempt history. Highest score ${percent(quiz['highest_score'])}';
+      _t.quizHistoryRow('${quiz['title']}', percent(quiz['highest_score']));
 
-  static String limitReached(Object? title) =>
-      'No attempts left for $title. Open attempt history to review your scores.';
+  static String limitReached(Object? title) => _t.quizLimitReached('$title');
 
   static String startTitle(bool resume) =>
-      resume ? 'Resume quiz?' : 'Start quiz?';
+      resume ? _t.quizResumeTitle : _t.quizStartTitle;
 
-  static String startMessage(Map quiz) =>
-      '${quiz['title']}. ${attemptsText(quiz)} ${timeLimit(quiz['time_limit_minutes'])} '
-      '${quiz['closes_at'] == null ? '' : 'Closes ${when(quiz['closes_at'])}. '}'
-      'Each answer is saved and locked when you press 5. ${feedbackPolicy(quiz)}';
+  static String startMessage(Map quiz) => [
+    _t.quizTitleSentence('${quiz['title']}'),
+    attemptsText(quiz),
+    timeLimit(quiz['time_limit_minutes']),
+    if (quiz['closes_at'] != null) _t.quizClosesSentence(when(quiz['closes_at'])),
+    answerLockNotice,
+    feedbackPolicy(quiz),
+  ].join(' ');
 
   static String startConfirm(bool resume) =>
-      resume ? 'Resume attempt' : 'Start attempt';
+      resume ? _t.quizResumeAttempt : _t.quizStartAttempt;
 
-  static const startFailed =
-      'The quiz could not be started. Check that it is open.';
-  static const historyFailed = 'Attempt history could not be loaded.';
+  static String get startFailed => _t.quizStartFailed;
+  static String get historyFailed => _t.quizHistoryFailed;
 
   // ─── Attempt history and review ───────────────────────────────────────────
 
-  static const historyScreen =
-      'Attempt history. Scores are private. Move to the summary or an attempt to review it.';
+  static String get historyScreen => _t.quizHistoryScreen;
 
   static String historySummary(Map history) {
     final attempts = history['attempts'] as List? ?? const [];
     if (attempts.any((attempt) => attempt['is_graded'] == false)) {
-      return 'Practice history. Not academic grades.';
+      return _t.quizPracticeHistory;
     }
     if (history['highest_score'] != null) {
-      return 'Highest score: ${percent(history['highest_score'])}';
+      return _t.quizHighestScoreValue(percent(history['highest_score']));
     }
     return attempts.any((attempt) => attempt['status'] != 'in_progress')
-        ? 'Completed attempts exist; no score is released yet.'
-        : 'No completed attempt';
+        ? _t.quizNoScoreReleasedYet
+        : _t.quizNoCompletedAttempt;
   }
 
-  static String historyAttempt(Map attempt) =>
-      'Attempt ${attempt['attempt_number']}. ${status(attempt['status'])}. '
-      '${attemptResult(attempt)} Press OK to review.';
+  static String historyAttempt(Map attempt) => _t.quizHistoryAttempt(
+    '${attempt['attempt_number']}',
+    status(attempt['status']),
+    attemptResult(attempt),
+  );
 
-  static const resumeFromList =
-      'This attempt is in progress. Return to the quiz list to resume it. Leaving does not submit.';
-  static const reviewFailed =
-      'Attempt review could not be loaded. Check your connection and try again.';
-  static const reviewTimedOut =
-      'Attempt review took too long. Check your connection and try again.';
+  static String get resumeFromList => _t.quizResumeFromList;
+  static String get reviewFailed => _t.quizReviewFailed;
+  static String get reviewTimedOut => _t.quizReviewTimedOut;
 
   static String reviewScreen(int count, String? message) =>
-      'Attempt review. ${count == 0 && message != null ? message : '${questions(count)}. Use up and down to review each answer.'}';
+      count == 0 && message != null
+      ? _t.quizReviewScreenMessage(message)
+      : _t.quizReviewScreen(count);
 
-  static String reviewQuestion(Map question, int index) =>
-      'Question ${index + 1}. ${question['is_correct'] == true ? 'Correct' : 'Incorrect'}. '
-      '${question['spoken_question_text'] ?? question['question_text']}. '
-      'You chose ${question['selected_option_spoken_text'] ?? question['selected_option_text'] ?? 'no answer'}. '
-      'Correct answer ${question['correct_option_spoken_text'] ?? question['correct_option_text']}. '
-      '${question['spoken_explanation'] ?? question['explanation'] ?? 'No explanation provided.'}';
+  static String reviewQuestion(Map question, int index) {
+    final number = '${index + 1}';
+    final text =
+        '${question['spoken_question_text'] ?? question['question_text']}';
+    final chosen =
+        '${question['selected_option_spoken_text'] ?? question['selected_option_text'] ?? _t.quizNoAnswer}';
+    final answer =
+        '${question['correct_option_spoken_text'] ?? question['correct_option_text']}';
+    final explanation =
+        '${question['spoken_explanation'] ?? question['explanation'] ?? _t.quizNoExplanation}';
+    return question['is_correct'] == true
+        ? _t.quizReviewQuestionCorrect(number, text, chosen, answer, explanation)
+        : _t.quizReviewQuestionIncorrect(
+            number,
+            text,
+            chosen,
+            answer,
+            explanation,
+          );
+  }
 
   // ─── Teacher quiz list ────────────────────────────────────────────────────
 
   static String teacherScreen(String className, String subjectName) =>
-      'Teacher quizzes for $className, $subjectName';
+      _t.quizTeacherScreen(className, subjectName);
 
-  static const teacherNavigation =
-      'bank search and saved questions, quiz drafts, published quizzes, and their results';
+  static String get teacherNavigation => _t.quizTeacherNavigation;
 
-  static String get teacherIntro => Announce.pick(
-    brief: '',
-    detailed:
-        'Use the D-pad to explore bank search and saved questions, quiz drafts, published quizzes and results.',
-  );
+  static String get teacherIntro =>
+      Announce.pick(brief: '', detailed: _t.quizTeacherIntroDetailed);
 
   static String teacherLoaded(int questionCount, int quizCount) =>
-      '${SpokenFormat.count(questionCount, 'bank question')} and '
-      '${SpokenFormat.count(quizCount, 'quiz', 'quizzes')} loaded.';
+      _t.quizTeacherLoaded(
+        _t.quizBankQuestionCount(questionCount),
+        _t.quizQuizCount(quizCount),
+      );
 
   static String teacherState(List quizzes, int bankCount) {
     int count(String status) =>
         quizzes.where((quiz) => quiz['status'] == status).length;
-    return '${SpokenFormat.count(count('draft'), 'draft')}, '
-        '${count('published')} published, ${count('closed')} closed. '
-        '${SpokenFormat.count(bankCount, 'bank question')}.';
+    return _t.quizTeacherState(
+      _t.quizDraftCount(count('draft')),
+      '${count('published')}',
+      '${count('closed')}',
+      _t.quizBankQuestionCount(bankCount),
+    );
   }
 
-  static const teacherLoadFailed =
-      'The question bank or quiz list could not be refreshed. Press 1 to try again before creating another quiz.';
-  static const refreshQuizzes = 'Refresh quiz content';
-  static const searchBank = 'Search private question bank';
-  static const createQuestion = 'Create four option question';
-  static const createQuiz = 'Create quiz draft';
-  static const createPractice =
-      'Create separate untimed ungraded practice. Unlimited retries';
+  static String get teacherLoadFailed => _t.quizTeacherLoadFailed;
+  static String get refreshQuizzes => _t.quizRefreshQuizzes;
+  static String get searchBank => _t.quizSearchBank;
+  static String get createQuestion => _t.quizCreateQuestion;
+  static String get createQuiz => _t.quizCreateQuiz;
+  static String get createPractice => _t.quizCreatePractice;
 
-  static String bankQuestion(Map question) =>
-      'Question bank item, ${question['spoken_question_text'] ?? question['question_text']}. '
-      'Revision ${question['revision'] ?? 'unknown, older question'}. '
-      'Press OK for edit, revision history, duplicate, archive, or add actions';
+  static String bankQuestion(Map question) => _t.quizBankQuestionItem(
+    '${question['spoken_question_text'] ?? question['question_text']}',
+    '${question['revision'] ?? _t.quizRevisionUnknownOlder}',
+  );
 
   static String quizPrimary(Map quiz) => quiz['status'] == 'draft'
-      ? 'Continue creating ${quiz['title']}. ${questions(quiz['question_count'] as int? ?? 0)}'
+      ? _t.quizContinueCreating(
+          '${quiz['title']}',
+          questions(quiz['question_count'] as int? ?? 0),
+        )
       : quiz['status'] == 'published'
-      ? 'Close ${quiz['title']}, with confirmation'
-      : '${quiz['title']} is closed';
+      ? _t.quizCloseWithConfirmation('${quiz['title']}')
+      : _t.quizIsClosed('${quiz['title']}');
 
   static String quizDuplicate(Map quiz) =>
-      'Duplicate ${quiz['title']} into a new editable draft';
-  static String quizResults(Map quiz) => 'View results for ${quiz['title']}';
+      _t.quizDuplicateTarget('${quiz['title']}');
+  static String quizResults(Map quiz) =>
+      _t.quizResultsTarget('${quiz['title']}');
 
-  static String quizCard(Map quiz) =>
-      '${quiz['title']}. Status ${status(quiz['display_status'])}. '
-      '${questions(quiz['question_count'] as int? ?? 0)}.';
+  static String quizCard(Map quiz) => _t.quizCard(
+    '${quiz['title']}',
+    status(quiz['display_status']),
+    questions(quiz['question_count'] as int? ?? 0),
+  );
 
-  static const accountChangedBank =
-      'Your account changed. Reopen the question bank before continuing.';
+  static String get accountChangedBank => _t.quizAccountChangedBank;
 
   static String questionSaveUnconfirmed(String reason) =>
-      '$reason Question save could not be confirmed. Check the bank and refresh before retrying; do not create a duplicate.';
+      _t.quizQuestionSaveUnconfirmed(reason);
 
-  static const missingRevision =
-      'The server returned a question without a revision. Ask the administrator to update the quiz backend.';
-  static const savedQuestionMismatch = 'The saved question did not match.';
-  static const questionSaved =
-      'Question saved. Editing this bank question later will not change existing quizzes.';
-  static const noRevisionForEdit =
-      'This server did not supply a question revision. Ask the administrator to update the quiz backend before editing.';
+  static String get missingRevision => _t.quizMissingRevision;
+  static String get savedQuestionMismatch => _t.quizSavedQuestionMismatch;
+  static String get questionSaved => _t.quizQuestionSaved;
+  static String get noRevisionForEdit => _t.quizNoRevisionForEdit;
 
   static String questionUpdateUnconfirmed(String? reason) =>
-      '${reason ?? 'The saved revision did not match.'} The bank question could not be confirmed updated. Refresh and review its current revision before retrying.';
+      _t.quizQuestionUpdateUnconfirmed(reason ?? _t.quizSavedRevisionMismatch);
 
-  static const questionUpdated =
-      'Bank question updated. Existing quiz snapshots were not changed.';
-  static const archiveTitle = 'Archive bank question?';
-  static const archiveMessage =
-      'Archive this private bank question? Existing quiz snapshots and attempts are not changed.';
-  static const archiveConfirm = 'Archive question';
-  static const archiveFailed = 'The bank question could not be archived.';
-  static const archived = 'Bank question archived.';
-  static const duplicateQuestionFailed =
-      'The bank question could not be duplicated.';
-  static const questionDuplicated = 'Bank question copy created.';
+  static String get questionUpdated => _t.quizQuestionUpdated;
+  static String get archiveTitle => _t.quizArchiveTitle;
+  static String get archiveMessage => _t.quizArchiveMessage;
+  static String get archiveConfirm => _t.quizArchiveConfirm;
+  static String get archiveFailed => _t.quizArchiveFailed;
+  static String get archived => _t.quizArchived;
+  static String get duplicateQuestionFailed => _t.quizDuplicateQuestionFailed;
+  static String get questionDuplicated => _t.quizQuestionDuplicated;
 
-  static String questionActions(Map question) =>
-      'Actions for ${question['spoken_question_text'] ?? question['question_text']}';
+  static String questionActions(Map question) => _t.quizQuestionActions(
+    '${question['spoken_question_text'] ?? question['question_text']}',
+  );
 
-  static const actionEdit = 'Edit bank question';
-  static const actionDuplicate = 'Duplicate bank question';
-  static const actionArchive = 'Archive bank question';
-  static const actionRevisions = 'Read question revision history';
-  static String actionAddTo(Object? title) => 'Add to $title';
+  static String get actionEdit => _t.quizActionEdit;
+  static String get actionDuplicate => _t.quizActionDuplicate;
+  static String get actionArchive => _t.quizActionArchive;
+  static String get actionRevisions => _t.quizActionRevisions;
+  static String actionAddTo(Object? title) => _t.quizActionAddTo('$title');
 
-  static const refreshBeforeDraft =
-      'Refresh and review the quiz list before creating another draft.';
+  static String get refreshBeforeDraft => _t.quizRefreshBeforeDraft;
 
   static String draftUnconfirmed(String? reason) =>
-      '${reason ?? 'The saved draft did not match.'} Draft save could not be confirmed. Refresh the quiz list before creating another draft.';
+      _t.quizDraftUnconfirmed(reason ?? _t.quizSavedDraftMismatch);
 
-  static const draftSaved = 'Quiz draft saved.';
-  static const addToQuizFailed = 'The question could not be added to this quiz.';
-  static const addedToQuiz = 'Question added to the quiz.';
-  static const publishTitle = 'Publish quiz?';
+  static String get draftSaved => _t.quizDraftSaved;
+  static String get addToQuizFailed => _t.quizAddToQuizFailed;
+  static String get addedToQuiz => _t.quizAddedToQuiz;
+  static String get publishTitle => _t.quizPublishTitle;
 
-  static String publishMessage(Object? title) =>
-      'Publish "$title" to eligible students? Questions become fixed for this quiz.';
+  static String publishMessage(Object? title) => _t.quizPublishMessage('$title');
 
-  static const publishConfirm = 'Publish quiz';
-  static const publishUnconfirmed =
-      'Publishing could not be confirmed. Refresh and review the quiz status before trying again.';
+  static String get publishConfirm => _t.quizPublishConfirm;
+  static String get publishUnconfirmed => _t.quizPublishUnconfirmed;
 
   static String published(int recipients, int sent, int failures) =>
       recipients == 0
-      ? 'Quiz published. There are no eligible students to notify.'
+      ? _t.quizPublishedNoRecipients
       : sent == 0
-      ? 'Quiz published, but no student device notifications were delivered. Check notification registration and server Firebase credentials.'
+      ? _t.quizPublishedNoneDelivered
       : failures > 0
-      ? 'Quiz published. $sent device notifications sent and $failures failed.'
-      : 'Quiz published. $sent device notifications sent.';
+      ? _t.quizPublishedWithFailures('$sent', '$failures')
+      : _t.quizPublishedSent('$sent');
 
-  static const closeTitle = 'Close quiz?';
+  static String get closeTitle => _t.quizCloseTitle;
 
-  static String closeMessage(Object? title) =>
-      'Close "$title"? No new attempts can start and active attempts will be finished.';
+  static String closeMessage(Object? title) => _t.quizCloseMessage('$title');
 
-  static const closeConfirm = 'Close quiz';
-  static const closeFailed = 'The quiz could not be closed.';
-  static const closed = 'Quiz closed.';
-  static const duplicateQuizFailed = 'The quiz could not be duplicated.';
-  static const quizDuplicated = 'Editable quiz draft created.';
+  static String get closeConfirm => _t.quizCloseConfirm;
+  static String get closeFailed => _t.quizCloseFailed;
+  static String get closed => _t.quizClosed;
+  static String get duplicateQuizFailed => _t.quizDuplicateQuizFailed;
+  static String get quizDuplicated => _t.quizQuizDuplicated;
 
   // ─── Guided draft ─────────────────────────────────────────────────────────
 
-  static const draftAccountChanged =
-      'Your account changed. This draft cannot be reviewed here.';
-  static const draftLoadFailed =
-      'The draft or question bank could not be loaded. Refresh before continuing.';
+  static String get draftAccountChanged => _t.quizDraftAccountChanged;
+  static String get draftLoadFailed => _t.quizDraftLoadFailed;
 
   static String bankRefreshFailed(String? reason) =>
-      '${reason ?? 'The saved question list could not be read.'} '
-      'The question bank could not be refreshed. No question was added. Try Choose a saved question again.';
+      _t.quizBankRefreshFailed(reason ?? _t.quizSavedListUnreadable);
 
-  static const noUnusedQuestions =
-      'No unused questions are available in this workspace. Choose Write a question.';
-  static const chooseSaved = 'Choose a saved question';
+  static String get noUnusedQuestions => _t.quizNoUnusedQuestions;
+  static String get chooseSaved => _t.quizChooseSaved;
 
   static String addUnconfirmed(String? reason) =>
-      '${reason ?? 'The saved draft did not match.'} Adding the question could not be confirmed. Refresh and review saved questions before adding again; it may already be saved.';
+      _t.quizAddUnconfirmed(reason ?? _t.quizSavedDraftMismatch);
 
-  static String questionAdded(int count) =>
-      'Question added. ${questions(count)} saved. Add another or choose Review.';
+  static String questionAdded(int count) => [
+    _t.quizQuestionAddedSentence,
+    _t.quizQuestionsSaved(count),
+    _t.quizAddAnotherOrReview,
+  ].join(' ');
 
-  static String draftSummary(Map quiz, int questionCount) =>
-      '${quiz['title']}. ${quiz['description'] ?? ''} ${questions(questionCount)}. '
-      '${quiz['mode'] == 'practice' ? 'Ungraded practice. Unlimited attempts. No timer.' : 'Graded quiz. ${attempts(quiz['attempt_limit'] as int? ?? 1)}. ${quiz['time_limit_minutes'] == null ? 'No timer.' : '${minutes(quiz['time_limit_minutes'] as int)} per attempt.'}'} '
-      '${feedbackPolicy(quiz)} '
-      'Opens ${when(quiz['opens_at'], fallback: 'when published')}. '
-      'Closes ${when(quiz['closes_at'], fallback: 'never, not scheduled')}. '
-      'Shuffle questions ${quiz['shuffle_questions'] == true ? 'on' : 'off'}. '
-      'Shuffle options ${quiz['shuffle_options'] == true ? 'on' : 'off'}.';
+  static String draftSummary(Map quiz, int questionCount) => [
+    _t.quizDraftSummaryHead(
+      '${quiz['title']}',
+      '${quiz['description'] ?? ''}',
+      questions(questionCount),
+    ),
+    quiz['mode'] == 'practice'
+        ? _t.quizUngradedPracticeSummary
+        : '${_t.quizGradedSummary(attempts(quiz['attempt_limit'] as int? ?? 1))} '
+              '${quiz['time_limit_minutes'] == null ? _t.quizNoTimer : _t.quizPerAttempt(minutes(quiz['time_limit_minutes'] as int))}',
+    feedbackPolicy(quiz),
+    _t.quizOpensSentence(when(quiz['opens_at'], fallback: _t.quizWhenPublished)),
+    _t.quizClosesSentence(
+      when(quiz['closes_at'], fallback: _t.quizNeverNotScheduled),
+    ),
+    _t.quizShuffleQuestionsState(
+      SpokenFormat.onOff(quiz['shuffle_questions'] == true),
+    ),
+    _t.quizShuffleOptionsState(
+      SpokenFormat.onOff(quiz['shuffle_options'] == true),
+    ),
+  ].join(' ');
 
-  static const removeChoose = 'Choose a question to remove from this draft';
+  static String get removeChoose => _t.quizRemoveChoose;
   static String removeOption(int index, Object? text) =>
-      'Question ${index + 1}: $text';
-  static const removeTitle = 'Remove selected question?';
-  static const removeMessage =
-      'Remove this question from the draft? The reusable question bank is not changed.';
-  static const removeConfirm = 'Remove question';
-  static const removeUnconfirmed =
-      'Removal could not be confirmed. Review the refreshed draft before trying again.';
+      _t.quizRemoveOption('${index + 1}', '$text');
+  static String get removeTitle => _t.quizRemoveTitle;
+  static String get removeMessage => _t.quizRemoveMessage;
+  static String get removeConfirm => _t.quizRemoveConfirm;
+  static String get removeUnconfirmed => _t.quizRemoveUnconfirmed;
 
   static String removed(int count) =>
-      'Question removed from the draft. ${questions(count)} saved.';
+      '${_t.quizQuestionRemovedSentence} ${_t.quizQuestionsSaved(count)}';
 
-  static const settingsUnconfirmed =
-      'Settings save could not be confirmed. Refresh and review the saved settings before publishing.';
-  static const settingsSaved =
-      'Quiz settings saved. Review them before publishing.';
+  static String get settingsUnconfirmed => _t.quizSettingsUnconfirmed;
+  static String get settingsSaved => _t.quizSettingsSaved;
 
   static String draftHeader(Object? title, int count) =>
-      '$title. ${questions(count)} saved.';
+      '${_t.quizTitleSentence('$title')} ${_t.quizQuestionsSaved(count)}';
 
   static String savedQuestion(int index, Object? text) =>
-      'Saved question ${index + 1}: $text. Already in this draft. Press OK to read its options';
+      _t.quizSavedQuestion('${index + 1}', '$text');
 
   static String reviewDraftQuestion(Map question, int index) {
     final options = question['options'] as List? ?? const [];
     final spoken = question['spoken_options'] as List?;
-    return 'Question ${index + 1}. ${question['spoken_question_text'] ?? question['question_text']}. '
-        '${[for (var i = 0; i < options.length; i++) 'Option ${i + 1}: ${spoken != null && i < spoken.length ? spoken[i] : options[i]['option_text']}${options[i]['is_correct'] == true ? ', correct answer' : ''}.'].join(' ')} '
+    final head = _t.quizQuestionNumbered(
+      '${index + 1}',
+      '${question['spoken_question_text'] ?? question['question_text']}',
+    );
+    final spokenOptions = [
+      for (var i = 0; i < options.length; i++)
+        options[i]['is_correct'] == true
+            ? _t.quizDraftOptionCorrect(
+                '${i + 1}',
+                '${spoken != null && i < spoken.length ? spoken[i] : options[i]['option_text']}',
+              )
+            : _t.quizDraftOption(
+                '${i + 1}',
+                '${spoken != null && i < spoken.length ? spoken[i] : options[i]['option_text']}',
+              ),
+    ].join(' ');
+    return '$head $spokenOptions '
         '${question['spoken_explanation'] ?? question['explanation'] ?? ''}';
   }
 
   static String draftState(int count, {required bool review}) =>
-      '${questions(count)} saved. ${review ? 'Reviewing before publishing.' : 'Adding questions.'}';
+      '${_t.quizQuestionsSaved(count)} '
+      '${review ? _t.quizReviewingBeforePublishing : _t.quizAddingQuestions}';
 
   // ─── Results ──────────────────────────────────────────────────────────────
 
-  static String resultsScreen(String title) => 'Results for $title';
-  static const resultsNavigation =
-      'quiz summary, student results, and available result actions';
-  static const resultsFailed = 'Quiz results could not be loaded.';
+  static String resultsScreen(String title) => _t.quizResultsScreen(title);
+  static String get resultsNavigation => _t.quizResultsNavigation;
+  static String get resultsFailed => _t.quizResultsFailed;
 
   static String resultsLoaded(Map summary) =>
-      '${students(_intValue(summary['completed']))} completed. '
-      '${students(_intValue(summary['not_attempted']))} not attempted yet.';
+      '${_t.quizStudentsCompleted(_intValue(summary['completed']))} '
+      '${_t.quizStudentsNotAttemptedYet(_intValue(summary['not_attempted']))}';
 
   static int _intValue(Object? value) => value is num ? value.round() : 0;
 
-  static String statistics(Map summary) =>
-      'Eligible: ${summary['eligible_students']}\n'
-      'Started: ${summary['started']}\n'
-      'Completed: ${summary['completed']}\n'
-      'Not attempted: ${summary['not_attempted']}\n'
-      'Completion: ${percent(summary['completion_percentage'])}\n'
-      '${summary['mode'] == 'practice' ? 'Practice participation, not academic grades.' : 'Average highest score: ${percent(summary['average_highest_score'])}\nHighest score: ${percent(summary['highest_score'])}\nLowest completed score: ${percent(summary['lowest_completed_score'])}'}';
+  static String statistics(Map summary) => [
+    _t.quizStatEligible('${summary['eligible_students']}'),
+    _t.quizStatStarted('${summary['started']}'),
+    _t.quizStatCompleted('${summary['completed']}'),
+    _t.quizStatNotAttempted('${summary['not_attempted']}'),
+    _t.quizStatCompletion(percent(summary['completion_percentage'])),
+    summary['mode'] == 'practice'
+        ? _t.quizPracticeParticipation
+        : [
+            _t.quizStatAverageHighest(percent(summary['average_highest_score'])),
+            _t.quizHighestScoreValue(percent(summary['highest_score'])),
+            _t.quizStatLowest(percent(summary['lowest_completed_score'])),
+          ].join('\n'),
+  ].join('\n');
 
   static String studentResult(Map student, {required bool practice}) {
     final attemptList = student['attempts'] as List? ?? const [];
+    final name = '${student['student_name']}';
     if (attemptList.isEmpty) {
-      return '${student['student_name']} has not attempted this quiz.';
+      return _t.quizStudentNotAttempted(name);
     }
     if (practice) {
-      return '${student['student_name']}. ${SpokenFormat.count(attemptList.length, 'practice attempt')}. Not academic grades.';
+      return _t.quizStudentPractice(attemptList.length, name);
     }
     final scores = attemptList
         .map(
-          (attempt) =>
-              'attempt ${attempt['attempt_number']}, ${percent(attempt['percentage_score'])}, ${status(attempt['status'])}',
+          (attempt) => _t.quizStudentAttemptScore(
+            '${attempt['attempt_number']}',
+            percent(attempt['percentage_score']),
+            status(attempt['status']),
+          ),
         )
         .join('. ');
-    return '${student['student_name']}. Highest score '
-        '${percent(student['highest_score'])}. $scores.';
+    return _t.quizStudentScores(name, percent(student['highest_score']), scores);
   }
 
-  static const extraMismatch =
-      'The extra-time confirmation did not match. Refresh before retrying.';
-  static const extraSaved =
-      'Extra time confirmed for future attempts only. Existing attempt deadlines are unchanged and quiz closing time still applies.';
-  static const everyoneAttempted =
-      'Every eligible student has attempted this quiz.';
-  static const remindTitle = 'Remind students?';
+  static String get extraMismatch => _t.quizExtraMismatch;
+  static String get extraSaved => _t.quizExtraSaved;
+  static String get everyoneAttempted => _t.quizEveryoneAttempted;
+  static String get remindTitle => _t.quizRemindTitle;
 
   static String remindMessage(int count, String title) =>
-      'Send one quiz reminder to all ${students(count)} who have not attempted $title?';
+      _t.quizRemindMessage(count, title);
 
-  static const remindConfirm = 'Send reminder';
-  static const remindFailed = 'Quiz reminders could not be sent.';
+  static String get remindConfirm => _t.quizRemindConfirm;
+  static String get remindFailed => _t.quizRemindFailed;
 
   static String reminded(Object? notified, Object? queued) =>
-      'Reminder sent to $notified students. $queued device notifications queued.';
+      _t.quizReminded('$notified', '$queued');
 
-  static const refreshResults = 'Refresh quiz results';
-  static const remindUnavailable =
-      'All students have attempted. Reminder unavailable';
+  static String get refreshResults => _t.quizRefreshResults;
+  static String get remindUnavailable => _t.quizRemindUnavailable;
 
-  static String remindTarget(int count) =>
-      'Send a reminder to all ${students(count)} who have not attempted';
+  static String remindTarget(int count) => _t.quizRemindTarget(count);
 
-  static String extraTarget(Map student) =>
-      'Set extra time for ${student['student_name']}. Future attempts only. '
-      'Current extra time ${minutes(student['extra_time_minutes'] as int? ?? 0)}';
+  static String extraTarget(Map student) => _t.quizExtraTarget(
+    '${student['student_name']}',
+    minutes(student['extra_time_minutes'] as int? ?? 0),
+  );
 
   static String extraButton(Map student) =>
-      'Future extra time: ${student['extra_time_minutes'] ?? 0} minutes. Set';
+      _t.quizExtraButton('${student['extra_time_minutes'] ?? 0}');
 
   static String resultsState(Map? summary, int notAttempted) => summary == null
-      ? 'Results not loaded.'
-      : '${resultsLoaded(summary)} Completion ${percent(summary['completion_percentage'])}.';
+      ? _t.quizResultsNotLoaded
+      : '${resultsLoaded(summary)} '
+            '${_t.quizCompletionSentence(percent(summary['completion_percentage']))}';
 
   // ─── Extra time dialog ────────────────────────────────────────────────────
 
-  static String extraScreen(String name) =>
-      'Extra time for $name. Future attempts only; active attempt deadlines stay fixed. '
-      'Quiz closing time still applies. Entering zero minutes removes extra time. '
-      'Press 0 outside the field to cancel.';
+  static String extraScreen(String name) => _t.quizExtraScreen(name);
 
   static String extraField(String text) =>
-      'Extra minutes, currently ${text.isEmpty ? 'empty' : text}. Press OK to edit';
+      _t.quizExtraField(text.isEmpty ? _t.quizEmpty : text);
 
-  static const extraSave = 'Save extra time for future attempts';
-  static const extraCancel = 'Cancel without changing extra time';
-  static const extraInvalid =
-      'Enter a whole number of minutes, zero or more, within the server integer range.';
-  static const extraCorrect = 'Move up to Extra minutes to correct it.';
+  static String get extraSave => _t.quizExtraSave;
+  static String get extraCancel => _t.quizExtraCancel;
+  static String get extraInvalid => _t.quizExtraInvalid;
+  static String get extraCorrect => _t.quizExtraCorrect;
 
   // ─── Question editor ──────────────────────────────────────────────────────
 
-  static const editorInvalid =
-      'Enter a question, four different non-empty options, and then choose the correct answer.';
-  static const editorSpokenInvalid =
-      'Use up to 20 different topics of 80 characters each. Described notation needs a spoken question, all four spoken options, and a spoken explanation if an explanation is provided. Review and confirm every spoken alternative before saving.';
+  static String get editorInvalid => _t.quizEditorInvalid;
+  static String get editorSpokenInvalid => _t.quizEditorSpokenInvalid;
 
   static String correctChosen(int index, String text, int count) =>
-      'Correct answer: option ${index + 1}${text.isEmpty ? '' : ', $text'}, ${index + 1} of $count.';
+      text.isEmpty
+      ? _t.quizCorrectChosen('${index + 1}', '$count')
+      : _t.quizCorrectChosenWithText('${index + 1}', text, '$count');
 
   static String correctTarget(int? index, String text) => index == null
-      ? 'Correct answer not selected. Use left or right to choose'
-      : 'Correct answer: option ${index + 1}, $text. Use left or right to change';
+      ? _t.quizCorrectNotSelected
+      : _t.quizCorrectTarget('${index + 1}', text);
 
-  static String toggled(String name, bool on) => '$name ${on ? 'on' : 'off'}.';
+  static String toggled(String name, bool on) =>
+      _t.quizToggled(name, SpokenFormat.onOff(on));
 
   static String notation(bool described) =>
-      'Content: ${described ? 'teacher-described notation or diagram' : 'English plain text'}';
+      described ? _t.quizContentDescribed : _t.quizContentPlain;
 
   static String reviewed(bool value) =>
-      'Spoken alternatives reviewed by teacher: ${value ? 'yes' : 'no'}';
+      value ? _t.quizReviewedYes : _t.quizReviewedNo;
 
   // ─── Quiz settings editor ─────────────────────────────────────────────────
 
-  static const settingsInvalid =
-      'Check the title, attempt limit from 1 to 20, time limit, and schedule. The closing time must be after the opening time.';
-  static const setOpening =
-      'Set opening time using the date and time number fields.';
-  static const setClosing =
-      'Set closing time using the date and time number fields.';
+  static String get settingsInvalid => _t.quizSettingsInvalid;
+  static String get setOpening => _t.quizSetOpening;
+  static String get setClosing => _t.quizSetClosing;
 
   static String openingSet(DateTime value) =>
-      'Opening time set to ${SpokenFormat.dateTime(value)}.';
+      _t.quizOpeningSet(SpokenFormat.dateTime(value));
   static String closingSet(DateTime value) =>
-      'Closing time set to ${SpokenFormat.dateTime(value)}.';
+      _t.quizClosingSet(SpokenFormat.dateTime(value));
   static String releaseSet(DateTime value) =>
-      'Feedback release set to ${SpokenFormat.dateTime(value)}.';
-  static const openingCleared = 'Opening time cleared.';
-  static const closingCleared = 'Closing time cleared.';
+      _t.quizReleaseSet(SpokenFormat.dateTime(value));
+  static String get openingCleared => _t.quizOpeningCleared;
+  static String get closingCleared => _t.quizClosingCleared;
 
   static String opening(DateTime? value) => value == null
-      ? 'No opening time set'
-      : 'Opens ${SpokenFormat.dateTime(value)}';
+      ? _t.quizNoOpeningTime
+      : _t.quizOpensAt(SpokenFormat.dateTime(value));
   static String closing(DateTime? value) => value == null
-      ? 'No closing time set'
-      : 'Closes ${SpokenFormat.dateTime(value)}';
+      ? _t.quizNoClosingTime
+      : _t.quizClosesAt(SpokenFormat.dateTime(value));
 
   static String policy(String policy, int position, int count) =>
-      'Feedback: ${policyName(policy)}, $position of $count.';
+      _t.quizPolicyChoice(policyName(policy), '$position', '$count');
 
-  static String release(DateTime? value) =>
-      'Scheduled feedback release ${value == null ? 'not set' : SpokenFormat.dateTime(value)}';
+  static String release(DateTime? value) => _t.quizScheduledRelease(
+    value == null ? _t.quizNotSet : SpokenFormat.dateTime(value),
+  );
 
-  static String attemptLimit(String text) =>
-      'Attempt limit, currently $text. Press OK to edit';
+  static String attemptLimit(String text) => _t.quizAttemptLimitField(text);
 
   static String timeLimitField(String text) =>
-      'Optional time limit in minutes, ${text.isEmpty ? 'not set' : text}. Press OK to edit';
+      _t.quizTimeLimitField(text.isEmpty ? _t.quizNotSet : text);
 
   // ─── Revision history ─────────────────────────────────────────────────────
 
-  static const revisionsScreen =
-      'Private read-only question revision history. Use older and newer revision controls, then read each section.';
-  static const revisionsAccount =
-      'Your account changed. Return and sign in again before viewing private question history.';
-  static const revisionsCleared =
-      'Your account changed. Private question history was cleared.';
-  static const revisionsUnverified =
-      'Question revision history could not be verified. Retry loading.';
-  static const revisionsContentUnverified =
-      'Question revision content could not be verified. Retry loading.';
-  static const revisionsTimedOut =
-      'Question history took too long. Check your connection and retry.';
-  static const noRevisions =
-      'No tracked revisions. Older question history is unknown, not reconstructed.';
+  static String get revisionsScreen => _t.quizRevisionsScreen;
+  static String get revisionsAccount => _t.quizRevisionsAccount;
+  static String get revisionsCleared => _t.quizRevisionsCleared;
+  static String get revisionsUnverified => _t.quizRevisionsUnverified;
+  static String get revisionsContentUnverified =>
+      _t.quizRevisionsContentUnverified;
+  static String get revisionsTimedOut => _t.quizRevisionsTimedOut;
+  static String get noRevisions => _t.quizNoRevisions;
 
   static String revisionsLoaded(int count, Object? revision, Object? at) =>
-      '${SpokenFormat.count(count, 'revision')} loaded. '
-      'Read-only question revision $revision, saved ${when(at, fallback: 'date unknown')}. '
-      'Existing quiz and attempt snapshots are not changed.';
+      _t.quizRevisionsLoaded(
+        count,
+        '$revision',
+        when(at, fallback: _t.quizDateUnknown),
+      );
 
   static String revisionSelected(Object? revision, int position, int? count) =>
-      'Revision $revision selected${count == null ? '' : ', $position of $count'}. Read-only.';
+      count == null
+      ? _t.quizRevisionSelected('$revision')
+      : _t.quizRevisionSelectedOf('$revision', '$position', '$count');
 
   static String revisionFailed(String message) =>
-      '$message Focus is on Refresh revisions.';
+      _t.quizRevisionFailed(message);
 
   static String revisionState(Object? revision) => revision == null
-      ? 'No revision loaded.'
-      : 'Showing revision $revision. Read-only.';
+      ? _t.quizNoRevisionLoaded
+      : _t.quizShowingRevision('$revision');
 
   /// Readable sections of one revision, keyed by section id.
   static Map<String, String> revisionSections(Map? revision) {
@@ -785,21 +825,26 @@ abstract final class QuizText {
     final spoken = content?['spoken_options'] as List? ?? const [];
     return {
       if (revision != null)
-        'version':
-            'Revision ${revision['revision']}. Saved ${when(revision['recorded_at'], fallback: 'date unknown')}. Read-only.',
+        'version': _t.quizRevisionVersion(
+          '${revision['revision']}',
+          when(revision['recorded_at'], fallback: _t.quizDateUnknown),
+        ),
       if (content != null) ...{
-        'question':
-            'Question: ${content['spoken_question_text'] ?? content['question_text']}',
-        'topics':
-            'Topics: ${(content['topics'] as List? ?? const []).join(', ')}',
+        'question': _t.quizRevisionQuestion(
+          '${content['spoken_question_text'] ?? content['question_text']}',
+        ),
+        'topics': _t.quizRevisionTopics(
+          (content['topics'] as List? ?? const []).join(', '),
+        ),
         for (var i = 0; i < options.length; i++)
           'option-$i':
-              'Option ${i + 1}: ${i < spoken.length ? spoken[i] : options[i]}. ${content['correct_option_index'] == i ? 'Correct answer.' : ''}',
-        'explanation':
-            'Explanation: ${content['spoken_explanation'] ?? content['explanation'] ?? 'Not provided'}',
+              '${_t.quizRevisionOption('${i + 1}', '${i < spoken.length ? spoken[i] : options[i]}')} '
+              '${content['correct_option_index'] == i ? _t.quizCorrectAnswerSentence : ''}',
+        'explanation': _t.quizRevisionExplanation(
+          '${content['spoken_explanation'] ?? content['explanation'] ?? _t.quizNotProvided}',
+        ),
       },
-      'notice':
-          'Only revisions saved after tracking was introduced are available. Older history is unknown. Existing quiz and attempt snapshots are never rewritten.',
+      'notice': _t.quizRevisionNotice,
     };
   }
 
@@ -808,40 +853,43 @@ abstract final class QuizText {
     final options = content?['options'] as List? ?? const [];
     return {
       if (revision != null)
-        'version':
-            'Revision ${revision['revision']}, ${when(revision['recorded_at'], fallback: 'date unknown')}',
+        'version': _t.quizRevisionVersionTitle(
+          '${revision['revision']}',
+          when(revision['recorded_at'], fallback: _t.quizDateUnknown),
+        ),
       if (content != null) ...{
-        'question': 'Question text',
-        'topics': 'Topics',
+        'question': _t.quizQuestionTextTitle,
+        'topics': _t.quizTopicsTitle,
         for (var i = 0; i < options.length; i++)
-          'option-$i':
-              'Option ${i + 1}${content['correct_option_index'] == i ? ', correct answer' : ''}',
-        'explanation': 'Explanation',
+          'option-$i': content['correct_option_index'] == i
+              ? _t.quizOptionNumberCorrect('${i + 1}')
+              : _t.quizOptionNumber('${i + 1}'),
+        'explanation': _t.quizExplanationTitle,
       },
-      'notice': 'About revision history',
+      'notice': _t.quizRevisionNoticeTitle,
     };
   }
 
   static String revisionSection(String title, {required bool sameAccount}) =>
       sameAccount
-      ? '$title. Press OK to hear it'
-      : 'Account changed. Return and sign in again.';
+      ? _t.quizRevisionSectionTarget(title)
+      : _t.quizAccountChangedSignIn;
 
-  static const goBack = 'Go back';
-  static const cancel = 'Cancel';
-  static const cancelAndReturn = 'Cancel and return';
-  static const actionNavigation = 'the available actions and cancel';
-  static const refreshRevisions = 'Refresh revisions';
-  static const newerRevision = 'Newer revision';
-  static const olderRevision = 'Older revision';
+  static String get goBack => _t.quizGoBack;
+  static String get cancel => _t.quizCancel;
+  static String get cancelAndReturn => _t.quizCancelAndReturn;
+  static String get actionNavigation => _t.quizActionNavigation;
+  static String get refreshRevisions => _t.quizRefreshRevisions;
+  static String get newerRevision => _t.quizNewerRevision;
+  static String get olderRevision => _t.quizOlderRevision;
 
   // Teacher authoring and attempt messages moved out of the screens.
-  static const bankArchived = 'Bank question archived';
-  static const bankCopied = 'Bank question copy created';
-  static const snapshotAdded = 'Question snapshot added to quiz';
-  static const quizClosed = 'Quiz closed';
-  static const draftCreated = 'Editable quiz draft created';
-  static const noAnswerSelected = 'No answer selected.';
-  static const selectBeforeSubmit = 'Select one option before submitting.';
-  static const submitBeforeContinuing = 'Submit your answer before continuing.';
+  static String get bankArchived => _t.quizBankArchived;
+  static String get bankCopied => _t.quizBankCopied;
+  static String get snapshotAdded => _t.quizSnapshotAdded;
+  static String get quizClosed => _t.quizQuizClosed;
+  static String get draftCreated => _t.quizDraftCreated;
+  static String get noAnswerSelected => _t.quizNoAnswerSelected;
+  static String get selectBeforeSubmit => _t.quizSelectBeforeSubmit;
+  static String get submitBeforeContinuing => _t.quizSubmitBeforeContinuing;
 }

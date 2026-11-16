@@ -1,3 +1,5 @@
+import '../l10n/speech.dart';
+
 class ClassroomCheckResponse {
   const ClassroomCheckResponse(this.userId, this.name, this.choice);
   final int userId;
@@ -16,10 +18,11 @@ class ClassroomCheckState {
   final int revision;
   final bool open;
   final List<ClassroomCheckResponse> responses;
-  static const labels = {
-    'understood': 'Understood',
-    'repeat': 'Please repeat',
-    'help': 'Need help',
+  /// Answer ids (sent to the server) and their spoken names.
+  static Map<String, String> get labels => {
+    'understood': Speech.t.classroomChoiceUnderstood,
+    'repeat': Speech.t.classroomChoiceRepeat,
+    'help': Speech.t.classroomChoiceHelp,
   };
 
   factory ClassroomCheckState.parse(
@@ -70,24 +73,41 @@ class ClassroomCheckState {
   }
 
   String describe(bool teacher) {
-    if (id == null) {
-      return 'No current check in the last received classroom state. Refresh to check.';
-    }
+    final t = Speech.t;
+    if (id == null) return t.classroomCheckNone;
     final status = open
-        ? 'Check open.'
-        : 'Check closed. Responses cannot be changed.';
+        ? t.classroomCheckStatusOpen
+        : t.classroomCheckStatusClosed;
+    final labels = ClassroomCheckState.labels;
     if (!teacher) {
-      return '$status ${responses.isEmpty ? 'No response confirmed yet.' : 'Your confirmed response: ${labels[responses.single.choice]}.'} Only you and the session teacher can read your response. This is not graded.';
+      return t.classroomCheckStudentSummary(
+        status,
+        responses.isEmpty
+            ? t.classroomCheckNoResponseYet
+            : t.classroomCheckYourResponse('${labels[responses.single.choice]}'),
+      );
     }
     final counts = labels.entries
         .map(
-          (entry) =>
-              '${entry.value}: ${responses.where((response) => response.choice == entry.key).length}',
+          (entry) => t.classroomCheckLabelValue(
+            entry.value,
+            '${responses.where((response) => response.choice == entry.key).length}',
+          ),
         )
         .join('. ');
     final named = responses
-        .map((response) => '${response.name}: ${labels[response.choice]}')
+        .map(
+          (response) => t.classroomCheckLabelValue(
+            response.name,
+            '${labels[response.choice]}',
+          ),
+        )
         .join('. ');
-    return '$status ${responses.length} students responded. $counts. ${named.isEmpty ? 'No responses yet.' : named} Responses are private to you and each responding student, and are not grades.';
+    return t.classroomCheckTeacherSummary(
+      responses.length,
+      status,
+      counts,
+      named.isEmpty ? t.classroomCheckNoResponses : named,
+    );
   }
 }

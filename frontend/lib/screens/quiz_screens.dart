@@ -5,12 +5,14 @@ import '../widgets/keypad_choice_field.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../announcers/quiz_text.dart';
+import '../l10n/speech.dart';
 import '../services/api_service.dart';
 import '../services/feedback_cues.dart';
 import '../services/message_center.dart';
 import '../services/quiz_speech_speed.dart';
 import '../services/tts_service.dart';
 import '../utils/keypad_actions.dart';
+import '../utils/spoken_format.dart';
 import '../utils/ui_utils.dart';
 import '../widgets/key_instruction_wrapper.dart';
 import '../widgets/keypad_confirmation_dialog.dart';
@@ -125,7 +127,7 @@ class _AccessibleActionDialogState extends State<AccessibleActionDialog> {
               TextButton(
                 focusNode: _cancelFocus,
                 onPressed: () => select(null),
-                child: const Text('0: Cancel'),
+                child: Text(Speech.t.uiCancelKey0),
               ),
             ],
           ),
@@ -291,9 +293,7 @@ class _TeacherQuizScreenState extends State<TeacherQuizScreen> {
   Future<void> _editQuestion(Map question) async {
     if (_savingQuestion) return;
     if (question['revision'] is! int) {
-      _showError(
-        'This server did not supply a question revision. Ask the administrator to update the quiz backend before editing.',
-      );
+      _showError(QuizText.noRevisionForEdit);
       return;
     }
     _savingQuestion = true;
@@ -329,9 +329,7 @@ class _TeacherQuizScreenState extends State<TeacherQuizScreen> {
       final result = response.data;
       if (!mounted) return;
       if (!sameAccount()) {
-        _showError(
-          'Your account changed. Reopen the question bank before continuing.',
-        );
+        _showError(QuizText.accountChangedBank);
         return;
       }
       if (!response.isSuccess ||
@@ -339,14 +337,12 @@ class _TeacherQuizScreenState extends State<TeacherQuizScreen> {
           result?['revision'] != (question['revision'] as int? ?? 0) + 1 ||
           result?['question_text'] != value['question_text']) {
         _showError(
-          '${response.failure?.message ?? 'The saved revision did not match.'} The bank question could not be confirmed updated. Refresh and review its current revision before retrying.',
+          QuizText.questionUpdateUnconfirmed(response.failure?.message),
         );
         if (response.isSuccess) await _load(preserveError: true);
         return;
       }
-      await TtsService.speak(
-        'Bank question updated. Existing quiz snapshots were not changed.',
-      );
+      await TtsService.speak(QuizText.questionUpdated);
       await _load();
     } finally {
       _savingQuestion = false;
@@ -357,11 +353,10 @@ class _TeacherQuizScreenState extends State<TeacherQuizScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
-      builder: (_) => const KeypadConfirmationDialog(
-        title: 'Archive bank question?',
-        message:
-            'Archive this private bank question? Existing quiz snapshots and attempts are not changed.',
-        confirmLabel: 'Archive question',
+      builder: (_) => KeypadConfirmationDialog(
+        title: QuizText.archiveTitle,
+        message: QuizText.archiveMessage,
+        confirmLabel: QuizText.archiveConfirm,
       ),
     );
     if (confirmed != true) return;
@@ -369,7 +364,7 @@ class _TeacherQuizScreenState extends State<TeacherQuizScreen> {
       question['question_id'] as int,
     );
     if (result == null) {
-      _showError('The bank question could not be archived.');
+      _showError(QuizText.archiveFailed);
       return;
     }
     await TtsService.speak(QuizText.bankArchived);
@@ -381,7 +376,7 @@ class _TeacherQuizScreenState extends State<TeacherQuizScreen> {
       question['question_id'] as int,
     );
     if (result == null) {
-      _showError('The bank question could not be duplicated.');
+      _showError(QuizText.duplicateQuestionFailed);
       return;
     }
     await TtsService.speak(QuizText.bankCopied);
@@ -417,33 +412,32 @@ class _TeacherQuizScreenState extends State<TeacherQuizScreen> {
       context: context,
       barrierDismissible: false,
       builder: (context) => AccessibleActionDialog(
-        title:
-            'Actions for ${question['spoken_question_text'] ?? question['question_text']}',
+        title: QuizText.questionActions(question),
         actions: [
-          const AccessibleAction(
+          AccessibleAction(
             value: 'edit',
-            label: 'Edit bank question',
+            label: QuizText.actionEdit,
             icon: Icons.edit,
           ),
-          const AccessibleAction(
+          AccessibleAction(
             value: 'duplicate',
-            label: 'Duplicate bank question',
+            label: QuizText.actionDuplicate,
             icon: Icons.copy,
           ),
-          const AccessibleAction(
+          AccessibleAction(
             value: 'archive',
-            label: 'Archive bank question',
+            label: QuizText.actionArchive,
             icon: Icons.archive_outlined,
           ),
-          const AccessibleAction(
+          AccessibleAction(
             value: 'revisions',
-            label: 'Read question revision history',
+            label: QuizText.actionRevisions,
             icon: Icons.history,
           ),
           for (final quiz in drafts)
             AccessibleAction(
               value: 'add:${quiz['quiz_id']}',
-              label: 'Add to ${quiz['title']}',
+              label: QuizText.actionAddTo(quiz['title']),
               icon: Icons.playlist_add,
             ),
         ],
@@ -455,9 +449,7 @@ class _TeacherQuizScreenState extends State<TeacherQuizScreen> {
   Future<void> _createQuiz({bool practice = false}) async {
     if (_creatingQuiz) return;
     if (_quizSaveUncertain) {
-      _showError(
-        'Refresh and review the quiz list before creating another draft.',
-      );
+      _showError(QuizText.refreshBeforeDraft);
       return;
     }
     _creatingQuiz = true;
@@ -490,9 +482,7 @@ class _TeacherQuizScreenState extends State<TeacherQuizScreen> {
           result?['quiz_id'] is! int ||
           result?['status'] != 'draft') {
         _quizSaveUncertain = true;
-        _showError(
-          '${response.failure?.message ?? 'The saved draft did not match.'} Draft save could not be confirmed. Refresh the quiz list before creating another draft.',
-        );
+        _showError(QuizText.draftUnconfirmed(response.failure?.message));
         return;
       }
       await TtsService.speak(QuizText.draftSaved);
@@ -522,7 +512,7 @@ class _TeacherQuizScreenState extends State<TeacherQuizScreen> {
   Future<void> _addQuestion(int quizId, int questionId) async {
     final result = await ApiService.addBankQuestionToQuiz(quizId, questionId);
     if (result == null) {
-      _showError('The question could not be added to this quiz.');
+      _showError(QuizText.addToQuizFailed);
       return;
     }
     await TtsService.speak(QuizText.snapshotAdded);
@@ -538,10 +528,9 @@ class _TeacherQuizScreenState extends State<TeacherQuizScreen> {
       context: context,
       barrierDismissible: false,
       builder: (_) => KeypadConfirmationDialog(
-        title: 'Publish quiz?',
-        message:
-            'Publish "${quiz['title']}" to eligible students? Questions become academic snapshots.',
-        confirmLabel: 'Publish quiz',
+        title: QuizText.publishTitle,
+        message: Speech.t.quizPublishMessageSnapshots('${quiz['title']}'),
+        confirmLabel: QuizText.publishConfirm,
       ),
     );
     if (confirmed != true) return;
@@ -560,9 +549,7 @@ class _TeacherQuizScreenState extends State<TeacherQuizScreen> {
         result == null ||
         result['quiz_id'] != quiz['quiz_id'] ||
         result['status'] != 'published') {
-      _showError(
-        'Publishing could not be confirmed. Refresh and review the quiz status before trying again.',
-      );
+      _showError(QuizText.publishUnconfirmed);
       return;
     }
     if (!mounted ||
@@ -574,15 +561,13 @@ class _TeacherQuizScreenState extends State<TeacherQuizScreen> {
     final sent = result['notifications_sent'] as int? ?? 0;
     final failures = result['notification_failures'] as int? ?? 0;
     final notificationMessage = recipients == 0
-        ? 'There are no eligible students to notify.'
-        : sent == 0
-        ? 'Quiz published, but no student device notifications were delivered. Check notification registration and server Firebase credentials.'
-        : failures > 0
-        ? 'Quiz published. $sent device notifications sent and $failures failed.'
-        : 'Quiz published. $sent device notifications sent.';
+        ? Speech.t.quizNoEligibleToNotify
+        : QuizText.published(recipients, sent, failures);
     MessageCenter.show(
       notificationMessage,
-      kind: sent == 0 && recipients > 0 ? MessageKind.error : MessageKind.success,
+      kind: sent == 0 && recipients > 0
+          ? MessageKind.error
+          : MessageKind.success,
     );
     await _load();
   }
@@ -592,16 +577,15 @@ class _TeacherQuizScreenState extends State<TeacherQuizScreen> {
       context: context,
       barrierDismissible: false,
       builder: (_) => KeypadConfirmationDialog(
-        title: 'Close quiz?',
-        message:
-            'Close "${quiz['title']}"? No new attempts can start and active attempts will be finalized.',
-        confirmLabel: 'Close quiz',
+        title: QuizText.closeTitle,
+        message: Speech.t.quizCloseMessageFinalized('${quiz['title']}'),
+        confirmLabel: QuizText.closeConfirm,
       ),
     );
     if (confirmed != true) return;
     final result = await ApiService.closeQuiz(quiz['quiz_id'] as int);
     if (result == null) {
-      _showError('The quiz could not be closed.');
+      _showError(QuizText.closeFailed);
       return;
     }
     await TtsService.speak(QuizText.quizClosed);
@@ -611,7 +595,7 @@ class _TeacherQuizScreenState extends State<TeacherQuizScreen> {
   Future<void> _duplicate(Map quiz) async {
     final result = await ApiService.duplicateQuiz(quiz['quiz_id'] as int);
     if (result == null) {
-      _showError('The quiz could not be duplicated.');
+      _showError(QuizText.duplicateQuizFailed);
       return;
     }
     await TtsService.speak(QuizText.draftCreated);
@@ -658,11 +642,10 @@ class _TeacherQuizScreenState extends State<TeacherQuizScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = Speech.t;
     return KeypadInstructionWrapper(
-      screenName:
-          'Teacher quizzes for ${widget.className}, ${widget.subjectName}',
-      navigationSections:
-          'private bank search and saved questions, quiz drafts, published quizzes, and their results',
+      screenName: QuizText.teacherScreen(widget.className, widget.subjectName),
+      navigationSections: t.quizTeacherNavigationPrivate,
       labels: teacherQuizKeyLabels,
       autoPlay: false,
       actions: {
@@ -675,27 +658,27 @@ class _TeacherQuizScreenState extends State<TeacherQuizScreen> {
       focusTargets: [
         KeypadFocusTarget(
           node: _refreshFocus,
-          label: 'Refresh quiz content',
+          label: QuizText.refreshQuizzes,
           onActivate: _load,
         ),
         KeypadFocusTarget(
           node: _searchFocus,
-          label: 'Search private question bank',
+          label: QuizText.searchBank,
           isTextField: true,
         ),
         KeypadFocusTarget(
           node: _createQuestionFocus,
-          label: 'Create four option question',
+          label: QuizText.createQuestion,
           onActivate: _createQuestion,
         ),
         KeypadFocusTarget(
           node: _createQuizFocus,
-          label: 'Create quiz draft',
+          label: QuizText.createQuiz,
           onActivate: _createQuiz,
         ),
         KeypadFocusTarget(
           node: _createPracticeFocus,
-          label: 'Create separate untimed ungraded practice. Unlimited retries',
+          label: QuizText.createPractice,
           onActivate: () => _createQuiz(practice: true),
         ),
         for (final question in _questions)
@@ -706,8 +689,10 @@ class _TeacherQuizScreenState extends State<TeacherQuizScreen> {
                 debugLabel: 'bank-question-actions-${question['question_id']}',
               ),
             ),
-            label:
-                'Question bank item, ${question['spoken_question_text'] ?? question['question_text']}. Revision ${question['revision'] ?? 'unknown legacy'}. Press OK for edit, revision history, duplicate, archive, or add actions',
+            label: t.quizBankQuestionItem(
+              '${question['spoken_question_text'] ?? question['question_text']}',
+              '${question['revision'] ?? t.quizRevisionUnknownLegacy}',
+            ),
             onActivate: () => _showQuestionActions(question),
           ),
         for (final quiz in _quizzes) ...[
@@ -719,10 +704,13 @@ class _TeacherQuizScreenState extends State<TeacherQuizScreen> {
               ),
             ),
             label: quiz['status'] == 'draft'
-                ? 'Continue creating ${quiz['title']}. ${quiz['question_count']} questions'
+                ? t.quizContinueCreatingRaw(
+                    '${quiz['title']}',
+                    '${quiz['question_count']}',
+                  )
                 : quiz['status'] == 'published'
-                ? 'Close ${quiz['title']}'
-                : '${quiz['title']} is closed',
+                ? t.quizCloseNamed('${quiz['title']}')
+                : t.quizIsClosed('${quiz['title']}'),
             onActivate: quiz['status'] == 'draft'
                 ? () => _buildDraft(quiz['quiz_id'] as int)
                 : quiz['status'] == 'published'
@@ -737,7 +725,7 @@ class _TeacherQuizScreenState extends State<TeacherQuizScreen> {
                 debugLabel: 'teacher-quiz-duplicate-${quiz['quiz_id']}',
               ),
             ),
-            label: 'Duplicate ${quiz['title']} into a new editable draft',
+            label: QuizText.quizDuplicate(quiz),
             onActivate: () => _duplicate(quiz),
           ),
           KeypadFocusTarget(
@@ -747,19 +735,19 @@ class _TeacherQuizScreenState extends State<TeacherQuizScreen> {
                 debugLabel: 'teacher-quiz-results-${quiz['quiz_id']}',
               ),
             ),
-            label: 'View results for ${quiz['title']}',
+            label: QuizText.quizResults(quiz),
             onActivate: () => _showSummary(quiz),
           ),
         ],
       ],
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Quizzes'),
+          title: Text(Speech.t.quizQuizzesTitle),
           actions: [
             IconButton(
               focusNode: _refreshFocus,
               onPressed: _load,
-              tooltip: 'Refresh quizzes',
+              tooltip: Speech.t.quizRefreshQuizzesTooltip,
               icon: const Icon(Icons.refresh),
             ),
           ],
@@ -768,7 +756,7 @@ class _TeacherQuizScreenState extends State<TeacherQuizScreen> {
             ? Center(
                 child: Semantics(
                   liveRegion: true,
-                  label: 'Loading quizzes',
+                  label: Speech.t.quizLoadingQuizzes,
                   child: const CircularProgressIndicator(),
                 ),
               )
@@ -778,7 +766,10 @@ class _TeacherQuizScreenState extends State<TeacherQuizScreen> {
                   padding: UIUtils.paddingAll(context, 12),
                   children: [
                     Text(
-                      '${widget.className} · ${widget.subjectName}',
+                      Speech.t.quizClassSubjectHeading(
+                        widget.className,
+                        widget.subjectName,
+                      ),
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                     if (_error != null)
@@ -798,8 +789,8 @@ class _TeacherQuizScreenState extends State<TeacherQuizScreen> {
                       focusNode: _searchFocus,
                       textInputAction: TextInputAction.search,
                       onSubmitted: (_) => _load(),
-                      decoration: const InputDecoration(
-                        labelText: 'Search private question bank',
+                      decoration: InputDecoration(
+                        labelText: Speech.t.quizSearchBank,
                         prefixIcon: Icon(Icons.search),
                       ),
                     ),
@@ -812,33 +803,31 @@ class _TeacherQuizScreenState extends State<TeacherQuizScreen> {
                           focusNode: _createQuestionFocus,
                           onPressed: _createQuestion,
                           icon: const Icon(Icons.add),
-                          label: const Text('2: New bank question'),
+                          label: Text(Speech.t.quizNewBankQuestionKey2),
                         ),
                         ElevatedButton.icon(
                           focusNode: _createQuizFocus,
                           onPressed: _createQuiz,
                           icon: const Icon(Icons.quiz_outlined),
-                          label: const Text('3: New quiz draft'),
+                          label: Text(Speech.t.quizNewDraftKey3),
                         ),
                         OutlinedButton(
                           focusNode: _createPracticeFocus,
                           onPressed: () => _createQuiz(practice: true),
-                          child: const Text('4: Create untimed practice'),
+                          child: Text(Speech.t.quizCreatePracticeKey4),
                         ),
                       ],
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'Private question bank',
+                      Speech.t.quizPrivateBankHeading,
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
-                    const Text(
-                      'Editing a bank question never changes an existing quiz snapshot.',
-                    ),
+                    Text(Speech.t.quizBankEditNote),
                     if (_questions.isEmpty)
-                      const ListTile(
-                        leading: Icon(Icons.inbox_outlined),
-                        title: Text('No bank questions yet'),
+                      ListTile(
+                        leading: const Icon(Icons.inbox_outlined),
+                        title: Text(Speech.t.quizNoBankQuestions),
                       )
                     else
                       ..._questions.map(
@@ -852,7 +841,9 @@ class _TeacherQuizScreenState extends State<TeacherQuizScreen> {
                               child: Text('${question['question_text']}'),
                             ),
                             subtitle: Text(
-                              '${(question['options'] as List).length} options',
+                              Speech.t.quizOptionsCount(
+                                '${(question['options'] as List).length}',
+                              ),
                             ),
                             trailing: OutlinedButton.icon(
                               focusNode: _questionActionFocuses.putIfAbsent(
@@ -864,20 +855,20 @@ class _TeacherQuizScreenState extends State<TeacherQuizScreen> {
                               ),
                               onPressed: () => _showQuestionActions(question),
                               icon: const Icon(Icons.tune),
-                              label: const Text('Options'),
+                              label: Text(Speech.t.quizOptionsButton),
                             ),
                           ),
                         ),
                       ),
                     const SizedBox(height: 16),
                     Text(
-                      'Quiz management',
+                      Speech.t.quizManagementHeading,
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     if (_quizzes.isEmpty)
-                      const ListTile(
-                        leading: Icon(Icons.inbox_outlined),
-                        title: Text('No quizzes yet'),
+                      ListTile(
+                        leading: const Icon(Icons.inbox_outlined),
+                        title: Text(Speech.t.quizNoQuizzesYet),
                       )
                     else
                       ..._quizzes.map(
@@ -1021,14 +1012,14 @@ class _GuidedQuizDraftScreenState extends State<GuidedQuizDraftScreen> {
 
   bool _requireAccount() {
     if (_sameAccount) return true;
-    _report('Your account changed. Return to quizzes and sign in again.');
+    _report(QuizText.accountChanged);
     return false;
   }
 
   Future<void> _load() async {
     if (!_sameAccount) {
       if (mounted) setState(() => _busy = false);
-      _report('Your account changed. Return to quizzes and sign in again.');
+      _report(QuizText.accountChanged);
       return;
     }
     setState(() {
@@ -1055,7 +1046,7 @@ class _GuidedQuizDraftScreenState extends State<GuidedQuizDraftScreen> {
     if (!mounted) return;
     setState(() => _busy = false);
     if (!_sameAccount) {
-      _report('Your account changed. This draft cannot be reviewed here.');
+      _report(QuizText.draftAccountChanged);
       return;
     }
     final draft = results[0].data;
@@ -1070,9 +1061,7 @@ class _GuidedQuizDraftScreenState extends State<GuidedQuizDraftScreen> {
               item['question_id'] is! int ||
               item['question_text'] is! String,
         )) {
-      _report(
-        'The draft or question bank could not be loaded. Refresh before continuing.',
-      );
+      _report(QuizText.draftLoadFailed);
       return;
     }
     setState(() {
@@ -1107,10 +1096,7 @@ class _GuidedQuizDraftScreenState extends State<GuidedQuizDraftScreen> {
                   item['question_id'] is! int ||
                   item['question_text'] is! String,
             )) {
-          _report(
-            '${response.failure?.message ?? 'The saved question list could not be read.'} '
-            'The question bank could not be refreshed. No question was added. Try Choose a saved question again.',
-          );
+          _report(QuizText.bankRefreshFailed(response.failure?.message));
           return;
         }
         setState(() => _bank = bank.cast<Map<String, dynamic>>());
@@ -1131,22 +1117,24 @@ class _GuidedQuizDraftScreenState extends State<GuidedQuizDraftScreen> {
               // This class and subject first; the rest keep their order.
               ..sort((a, b) => (here(a) ? 0 : 1).compareTo(here(b) ? 0 : 1));
         if (eligible.isEmpty) {
-          _report(
-            'Every saved question is already in this quiz. Choose Write a question.',
-          );
+          _report(Speech.t.quizAllSavedQuestionsUsed);
           return;
         }
         final selected = await showDialog<String>(
           context: context,
           builder: (_) => AccessibleActionDialog(
-            title: 'Choose a saved question',
+            title: QuizText.chooseSaved,
             actions: [
               for (final question in eligible)
                 AccessibleAction(
                   value: '${question['question_id']}',
-                  label:
-                      '${question['spoken_question_text'] ?? question['question_text']}'
-                      '${here(question) ? '' : '. From ${question['class_name'] ?? 'another class'}, ${question['subject_name'] ?? 'another subject'}'}',
+                  label: here(question)
+                      ? '${question['spoken_question_text'] ?? question['question_text']}'
+                      : Speech.t.quizSavedQuestionFrom(
+                          '${question['spoken_question_text'] ?? question['question_text']}',
+                          '${question['class_name'] ?? Speech.t.quizAnotherClass}',
+                          '${question['subject_name'] ?? Speech.t.quizAnotherSubject}',
+                        ),
                   icon: Icons.help_outline,
                 ),
             ],
@@ -1184,9 +1172,7 @@ class _GuidedQuizDraftScreenState extends State<GuidedQuizDraftScreen> {
           (saved['questions'] as List).length != previousCount + 1 ||
           saved['question_count'] != previousCount + 1) {
         setState(() => _needsRefresh = true);
-        _report(
-          '${response.failure?.message ?? 'The saved draft did not match.'} Adding the question could not be confirmed. Refresh and review saved questions before adding again; it may already be saved.',
-        );
+        _report(QuizText.addUnconfirmed(response.failure?.message));
         return;
       }
       setState(() {
@@ -1194,7 +1180,11 @@ class _GuidedQuizDraftScreenState extends State<GuidedQuizDraftScreen> {
         _error = null;
       });
       await TtsService.speak(
-        'Question added. ${_questions.length} questions saved. Add another or choose Review.',
+        [
+          Speech.t.quizQuestionAddedSentence,
+          Speech.t.quizQuestionsSavedRaw('${_questions.length}'),
+          Speech.t.quizAddAnotherOrReview,
+        ].join(' '),
       );
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -1202,13 +1192,28 @@ class _GuidedQuizDraftScreenState extends State<GuidedQuizDraftScreen> {
   }
 
   String get _summary {
+    final t = Speech.t;
     final quiz = _quiz!;
-    return '${quiz['title']}. ${quiz['description'] ?? ''} ${_questions.length} questions. '
-        '${quiz['mode'] == 'practice' ? 'Ungraded practice. Unlimited attempts. No timer.' : 'Graded quiz. ${quiz['attempt_limit']} attempts. ${quiz['time_limit_minutes'] == null ? 'No timer.' : '${quiz['time_limit_minutes']} minutes per attempt.'}'} '
-        '${QuizText.feedbackPolicy(quiz)} '
-        'Opens: ${quiz['opens_at'] ?? 'when published'}. Closes: ${quiz['closes_at'] ?? 'not scheduled'}. '
-        'Shuffle questions: ${quiz['shuffle_questions'] == true ? 'on' : 'off'}. '
-        'Shuffle options: ${quiz['shuffle_options'] == true ? 'on' : 'off'}.';
+    return [
+      t.quizDraftSummaryHeadRaw(
+        '${quiz['title']}',
+        '${quiz['description'] ?? ''}',
+        '${_questions.length}',
+      ),
+      quiz['mode'] == 'practice'
+          ? t.quizUngradedPracticeSummary
+          : '${t.quizGradedSummaryRaw('${quiz['attempt_limit']}')} '
+                '${quiz['time_limit_minutes'] == null ? t.quizNoTimer : t.quizMinutesPerAttemptRaw('${quiz['time_limit_minutes']}')}',
+      QuizText.feedbackPolicy(quiz),
+      t.quizOpensColon('${quiz['opens_at'] ?? t.quizWhenPublished}'),
+      t.quizClosesColon('${quiz['closes_at'] ?? t.quizNotScheduled}'),
+      t.quizShuffleQuestionsColon(
+        SpokenFormat.onOff(quiz['shuffle_questions'] == true),
+      ),
+      t.quizShuffleOptionsColon(
+        SpokenFormat.onOff(quiz['shuffle_options'] == true),
+      ),
+    ].join(' ');
   }
 
   Future<void> _publish() async {
@@ -1241,12 +1246,12 @@ class _GuidedQuizDraftScreenState extends State<GuidedQuizDraftScreen> {
       final selected = await showDialog<String>(
         context: context,
         builder: (_) => AccessibleActionDialog(
-          title: 'Choose a question to remove from this draft',
+          title: QuizText.removeChoose,
           actions: [
             for (var i = 0; i < _questions.length; i++)
               AccessibleAction(
                 value: '${_questions[i]['quiz_question_id']}',
-                label: 'Question ${i + 1}: ${_questions[i]['question_text']}',
+                label: QuizText.removeOption(i, _questions[i]['question_text']),
                 icon: Icons.remove_circle_outline,
               ),
           ],
@@ -1256,11 +1261,10 @@ class _GuidedQuizDraftScreenState extends State<GuidedQuizDraftScreen> {
       final confirmed = await showDialog<bool>(
         context: context,
         barrierDismissible: false,
-        builder: (_) => const KeypadConfirmationDialog(
-          title: 'Remove selected question?',
-          message:
-              'Remove this question from the draft? The reusable question bank is not changed.',
-          confirmLabel: 'Remove question',
+        builder: (_) => KeypadConfirmationDialog(
+          title: QuizText.removeTitle,
+          message: QuizText.removeMessage,
+          confirmLabel: QuizText.removeConfirm,
         ),
       );
       if (confirmed != true || !mounted || !_requireAccount()) return;
@@ -1279,13 +1283,12 @@ class _GuidedQuizDraftScreenState extends State<GuidedQuizDraftScreen> {
           _questions.any(
             (question) => '${question['quiz_question_id']}' == selected,
           )) {
-        _report(
-          'Removal could not be confirmed. Review the refreshed draft before trying again.',
-        );
+        _report(QuizText.removeUnconfirmed);
         return;
       }
       await TtsService.speak(
-        'Question removed from the draft. ${_questions.length} questions saved.',
+        '${Speech.t.quizQuestionRemovedSentence} '
+        '${Speech.t.quizQuestionsSavedRaw('${_questions.length}')}',
       );
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -1326,18 +1329,14 @@ class _GuidedQuizDraftScreenState extends State<GuidedQuizDraftScreen> {
           saved['questions'] is! List ||
           saved['question_count'] != _questions.length) {
         setState(() => _needsRefresh = true);
-        _report(
-          'Settings save could not be confirmed. Refresh and review the saved settings before publishing.',
-        );
+        _report(QuizText.settingsUnconfirmed);
         return;
       }
       setState(() {
         _quiz = saved;
         _error = null;
       });
-      await TtsService.speak(
-        'Quiz settings saved. Review them before publishing.',
-      );
+      await TtsService.speak(QuizText.settingsSaved);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -1353,46 +1352,48 @@ class _GuidedQuizDraftScreenState extends State<GuidedQuizDraftScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = Speech.t;
     final published = _quiz?['status'] == 'published';
     final targets = <KeypadFocusTarget>[
       KeypadFocusTarget(
         node: _node('refresh'),
-        label: 'Refresh saved draft',
+        label: t.quizRefreshSavedDraft,
         onActivate: _load,
         isEnabled: () => !_busy,
       ),
       if (_draft && !_review) ...[
         KeypadFocusTarget(
           node: _node('write'),
-          label:
-              'Write a question and save it to this quiz and your question bank',
+          label: t.quizWriteQuestionTarget,
           onActivate: () => _add(reuse: false),
           isEnabled: () => !_busy && !_needsRefresh,
         ),
         KeypadFocusTarget(
           node: _node('reuse'),
-          label: 'Choose a saved question',
+          label: QuizText.chooseSaved,
           onActivate: () => _add(reuse: true),
           isEnabled: () => !_busy && !_needsRefresh,
         ),
         KeypadFocusTarget(
           node: _node('review'),
-          label: 'Review questions and quiz settings before publishing',
+          label: t.quizReviewBeforePublishingTarget,
           onActivate: () => setState(() => _review = true),
           isEnabled: () => !_busy && !_needsRefresh && _questions.isNotEmpty,
         ),
         if (_questions.isNotEmpty)
           KeypadFocusTarget(
             node: _node('remove'),
-            label: 'Remove a question from this draft, with confirmation',
+            label: t.quizRemoveQuestionTarget,
             onActivate: _removeQuestion,
             isEnabled: () => !_busy && !_needsRefresh,
           ),
         for (var index = 0; index < _questions.length; index++)
           KeypadFocusTarget(
             node: _node('saved-question-$index'),
-            label:
-                'Saved question ${index + 1}: ${_questions[index]['question_text']}. Already in this draft. Press OK to read its options',
+            label: QuizText.savedQuestion(
+              index,
+              _questions[index]['question_text'],
+            ),
             onActivate: () => TtsService.speak(_reviewQuestion(index)),
             isEnabled: () => !_busy,
           ),
@@ -1412,30 +1413,28 @@ class _GuidedQuizDraftScreenState extends State<GuidedQuizDraftScreen> {
         if (_draft)
           KeypadFocusTarget(
             node: _node('settings'),
-            label: 'Change title or optional quiz settings',
+            label: t.quizChangeSettingsTarget,
             onActivate: _editSettings,
             isEnabled: () => !_busy && !_needsRefresh,
           ),
         if (_draft)
           KeypadFocusTarget(
             node: _node('back'),
-            label: 'Back to adding questions',
+            label: t.quizBackToAdding,
             onActivate: () => setState(() => _review = false),
             isEnabled: () => !_busy,
           ),
         if (_draft)
           KeypadFocusTarget(
             node: _node('publish'),
-            label: 'Publish quiz, with confirmation',
+            label: t.quizPublishWithConfirmation,
             onActivate: _publish,
             isEnabled: () => !_busy && !_needsRefresh && _questions.isNotEmpty,
           ),
       ],
       KeypadFocusTarget(
         node: _node('finish'),
-        label: published
-            ? 'Return to quizzes'
-            : 'Save for later and return. Confirmed changes are already saved as a draft',
+        label: published ? QuizText.returnToQuizzes : t.quizSaveForLaterTarget,
         onActivate: () => Navigator.pop(context),
         isEnabled: () => !_busy,
       ),
@@ -1444,23 +1443,23 @@ class _GuidedQuizDraftScreenState extends State<GuidedQuizDraftScreen> {
       canPop: !_busy,
       child: KeypadInstructionWrapper(
         navigationSections: _review
-            ? 'saved questions, quiz settings, and publishing with confirmation'
-            : 'write or choose saved questions, remove questions, and review the draft',
+            ? t.quizDraftNavigationReview
+            : t.quizDraftNavigationAdd,
         screenName: published
-            ? 'Quiz published'
+            ? t.quizPublishedScreen
             : _review
-            ? 'Step 3 of 3. Review before publishing. Nothing is published until you confirm.'
-            : 'Step 2 of 3. Add questions. Choose Write or Use saved question. Then Review.',
+            ? t.quizDraftStep3
+            : t.quizDraftStep2,
         labels: {
-          0: 'Save for later and return',
-          1: 'Refresh',
-          if (_draft && !_review) 2: 'Write a question',
-          if (_draft && !_review) 3: 'Use saved question',
+          0: t.quizSaveForLater,
+          1: t.keyRefresh,
+          if (_draft && !_review) 2: t.quizWriteQuestion,
+          if (_draft && !_review) 3: t.quizUseSavedQuestion,
           if (_draft && !_review && _questions.isNotEmpty)
-            4: 'Remove a question',
-          if (_draft && !_review) 6: 'Review',
-          if (_draft && _review) 8: 'Publish with confirmation',
-          if (_draft && _review) 5: 'Change title or optional settings',
+            4: t.quizRemoveQuestion,
+          if (_draft && !_review) 6: t.quizReview,
+          if (_draft && _review) 8: t.quizPublishConfirmLabel,
+          if (_draft && _review) 5: t.quizChangeSettingsLabel,
         },
         actions: {
           0: () {
@@ -1491,10 +1490,10 @@ class _GuidedQuizDraftScreenState extends State<GuidedQuizDraftScreen> {
                 children: [
                   Text(
                     published
-                        ? 'Quiz published'
+                        ? Speech.t.quizPublishedScreen
                         : _review
-                        ? 'Step 3: Review and publish'
-                        : 'Step 2: Add questions',
+                        ? Speech.t.quizStepReviewPublish
+                        : Speech.t.quizStepAddQuestions,
                     style: Theme.of(context).textTheme.headlineSmall,
                   ),
                   if (_quiz != null)
@@ -1529,14 +1528,8 @@ class _GuidedQuizDraftScreenState extends State<GuidedQuizDraftScreen> {
     );
   }
 
-  String _reviewQuestion(int index) {
-    final question = _questions[index] as Map;
-    final options = question['options'] as List? ?? const [];
-    final spokenOptions = question['spoken_options'] as List?;
-    return 'Question ${index + 1}. ${question['spoken_question_text'] ?? question['question_text']}. '
-        '${[for (var i = 0; i < options.length; i++) 'Option ${i + 1}: ${spokenOptions != null && i < spokenOptions.length ? spokenOptions[i] : options[i]['option_text']}${options[i]['is_correct'] == true ? ', correct answer' : ''}.'].join(' ')} '
-        '${question['spoken_explanation'] ?? question['explanation'] ?? ''}';
-  }
+  String _reviewQuestion(int index) =>
+      QuizText.reviewDraftQuestion(_questions[index] as Map, index);
 }
 
 class _TeacherQuizCard extends StatelessWidget {
@@ -1598,26 +1591,26 @@ class _TeacherQuizCard extends StatelessWidget {
                       focusNode: primaryFocus,
                       onPressed: onPublish,
                       icon: const Icon(Icons.publish),
-                      label: const Text('Continue creation'),
+                      label: Text(Speech.t.quizContinueCreation),
                     ),
                   if (quiz['status'] == 'published')
                     TextButton.icon(
                       focusNode: primaryFocus,
                       onPressed: onClose,
                       icon: const Icon(Icons.lock_clock),
-                      label: const Text('Close'),
+                      label: Text(Speech.t.quizCloseButton),
                     ),
                   TextButton.icon(
                     focusNode: duplicateFocus,
                     onPressed: onDuplicate,
                     icon: const Icon(Icons.copy),
-                    label: const Text('Duplicate'),
+                    label: Text(Speech.t.quizDuplicateButton),
                   ),
                   TextButton.icon(
                     focusNode: resultsFocus,
                     onPressed: onResults,
                     icon: const Icon(Icons.analytics_outlined),
-                    label: const Text('Results'),
+                    label: Text(Speech.t.quizResultsButton),
                   ),
                 ],
               ),
@@ -1651,13 +1644,23 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
   final _savingExtra = <int>{};
   final _statisticsFocus = FocusNode(debugLabel: 'quiz-results-statistics');
   String get _statisticsText {
+    final t = Speech.t;
     final summary = _summary!;
-    return 'Eligible: ${summary['eligible_students']}\n'
-        'Started: ${summary['started']}\n'
-        'Completed: ${summary['completed']}\n'
-        'Not attempted: ${summary['not_attempted']}\n'
-        'Completion: ${summary['completion_percentage']} percent\n'
-        '${summary['mode'] == 'practice' ? 'Practice participation, not academic grades.' : 'Average highest score: ${summary['average_highest_score'] ?? 'Not available'}\nHighest score: ${summary['highest_score'] ?? 'Not available'}\nLowest completed score: ${summary['lowest_completed_score'] ?? 'Not available'}'}';
+    String value(Object? score) => '${score ?? t.quizNotAvailableCapital}';
+    return [
+      t.quizStatEligible('${summary['eligible_students']}'),
+      t.quizStatStarted('${summary['started']}'),
+      t.quizStatCompleted('${summary['completed']}'),
+      t.quizStatNotAttempted('${summary['not_attempted']}'),
+      t.quizStatCompletionPercent('${summary['completion_percentage']}'),
+      summary['mode'] == 'practice'
+          ? t.quizPracticeParticipation
+          : [
+              t.quizStatAverageHighest(value(summary['average_highest_score'])),
+              t.quizHighestScoreValue(value(summary['highest_score'])),
+              t.quizStatLowest(value(summary['lowest_completed_score'])),
+            ].join('\n'),
+    ].join('\n');
   }
 
   FocusNode _extraNode(int id) => _extraFocuses.putIfAbsent(
@@ -1695,7 +1698,7 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
     if (summary is! Map) {
       setState(() {
         _loading = false;
-        _error = 'Quiz results could not be loaded.';
+        _error = QuizText.resultsFailed;
       });
       await TtsService.speak(_error!);
       return;
@@ -1706,27 +1709,37 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
       _loading = false;
     });
     await TtsService.speak(
-      '${_summary!['completed']} students completed. '
-      '${_summary!['not_attempted']} students have not attempted.',
+      Speech.t.quizResultsLoadedRaw(
+        '${_summary!['completed']}',
+        '${_summary!['not_attempted']}',
+      ),
     );
   }
 
   String _studentDetails(Map student) {
+    final t = Speech.t;
+    final name = '${student['student_name']}';
     final attempts = student['attempts'] as List? ?? const [];
     if (attempts.isEmpty) {
-      return '${student['student_name']} has not attempted this quiz.';
+      return t.quizStudentNotAttempted(name);
     }
     if (_summary?['mode'] == 'practice') {
-      return '${student['student_name']}. ${attempts.length} practice attempts. Not academic grades.';
+      return t.quizStudentPracticeRaw(name, '${attempts.length}');
     }
     final scores = attempts
         .map(
-          (attempt) =>
-              'attempt ${attempt['attempt_number']}, ${attempt['percentage_score']} percent, ${attempt['status']}',
+          (attempt) => t.quizStudentAttemptRaw(
+            '${attempt['attempt_number']}',
+            '${attempt['percentage_score']}',
+            '${attempt['status']}',
+          ),
         )
         .join('. ');
-    return '${student['student_name']}. Highest score '
-        '${student['highest_score'] ?? 'not available'} percent. $scores.';
+    return t.quizStudentScoresRaw(
+      name,
+      '${student['highest_score'] ?? t.quizNotAvailable}',
+      scores,
+    );
   }
 
   Future<void> _extraTime(Map student) async {
@@ -1751,17 +1764,13 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
       if (!result.isSuccess ||
           result.data?['student_id'] != id ||
           result.data?['extra_minutes'] != minutes) {
-        final message =
-            result.failure?.message ??
-            'The extra-time confirmation did not match. Refresh before retrying.';
+        final message = result.failure?.message ?? QuizText.extraMismatch;
         setState(() => _error = message);
         await TtsService.speak(message);
         return;
       }
       await _load();
-      await TtsService.speak(
-        'Extra time confirmed for future attempts only. Existing attempt deadlines are unchanged and quiz closing time still applies.',
-      );
+      await TtsService.speak(QuizText.extraSaved);
     } finally {
       if (mounted) setState(() => _savingExtra.remove(id));
     }
@@ -1776,23 +1785,26 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
       context: context,
       barrierDismissible: false,
       builder: (_) => KeypadConfirmationDialog(
-        title: 'Remind students?',
-        message:
-            'Send one quiz reminder to all ${_notAttempted.length} students who have not attempted ${widget.quizTitle}?',
-        confirmLabel: 'Send reminder',
+        title: QuizText.remindTitle,
+        message: Speech.t.quizRemindMessageRaw(
+          '${_notAttempted.length}',
+          widget.quizTitle,
+        ),
+        confirmLabel: QuizText.remindConfirm,
       ),
     );
     if (confirmed != true) return;
     final result = await ApiService.remindQuizStudents(widget.quizId);
     if (!mounted) return;
     if (result == null) {
-      setState(() => _error = 'Quiz reminders could not be sent.');
+      setState(() => _error = QuizText.remindFailed);
       await TtsService.speak(_error!);
       return;
     }
-    final message =
-        'Reminder processed for ${result['students_notified']} students. '
-        '${result['device_notifications_queued']} device notifications queued.';
+    final message = Speech.t.quizReminderProcessed(
+      '${result['students_notified']}',
+      '${result['device_notifications_queued']}',
+    );
     MessageCenter.success(message);
   }
 
@@ -1813,27 +1825,27 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
   @override
   Widget build(BuildContext context) {
     final summary = _summary;
+    final t = Speech.t;
     return KeypadInstructionWrapper(
-      screenName: 'Results for ${widget.quizTitle}',
-      navigationSections:
-          'quiz summary, student results, and available result actions',
-      labels: const {
-        0: 'Return to quizzes',
-        1: 'Refresh results',
-        2: 'Remind all students who have not attempted',
+      screenName: QuizText.resultsScreen(widget.quizTitle),
+      navigationSections: QuizText.resultsNavigation,
+      labels: {
+        0: QuizText.returnToQuizzes,
+        1: t.quizRefreshResultsLabel,
+        2: t.quizRemindAllLabel,
       },
       actions: {0: () => Navigator.pop(context), 1: _load, 2: _remind},
       focusTargets: [
         KeypadFocusTarget(
           node: _refreshFocus,
-          label: 'Refresh quiz results',
+          label: QuizText.refreshResults,
           onActivate: _load,
         ),
         KeypadFocusTarget(
           node: _remindFocus,
           label: _notAttempted.isEmpty
-              ? 'All students have attempted. Reminder unavailable'
-              : 'Send a reminder to all ${_notAttempted.length} students who have not attempted',
+              ? QuizText.remindUnavailable
+              : t.quizRemindTargetRaw('${_notAttempted.length}'),
           onActivate: _remind,
           isEnabled: () => _notAttempted.isNotEmpty,
         ),
@@ -1859,20 +1871,22 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
           for (final student in _students)
             KeypadFocusTarget(
               node: _extraNode(student['student_id'] as int),
-              label:
-                  'Set extra minutes for ${student['student_name']}. Future attempts only. Current extra ${student['extra_time_minutes'] ?? 0} minutes',
+              label: t.quizExtraTargetRaw(
+                '${student['student_name']}',
+                '${student['extra_time_minutes'] ?? 0}',
+              ),
               isEnabled: () => !_savingExtra.contains(student['student_id']),
               onActivate: () => _extraTime(student as Map),
             ),
       ],
       child: Scaffold(
         appBar: AppBar(
-          title: Text('${widget.quizTitle} results'),
+          title: Text(Speech.t.quizResultsTitle(widget.quizTitle)),
           actions: [
             IconButton(
               focusNode: _refreshFocus,
               onPressed: _load,
-              tooltip: 'Refresh results',
+              tooltip: Speech.t.quizRefreshResultsTooltip,
               icon: const Icon(Icons.refresh),
             ),
           ],
@@ -1897,7 +1911,7 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
                       ),
                     if (summary != null) ...[
                       Text(
-                        'Class statistics',
+                        Speech.t.quizClassStatistics,
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                       Card(
@@ -1916,18 +1930,18 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
                       icon: const Icon(Icons.notifications_active_outlined),
                       label: Text(
                         _notAttempted.isEmpty
-                            ? 'All students have attempted'
-                            : '2: Remind all not attempted',
+                            ? Speech.t.quizAllAttempted
+                            : Speech.t.quizRemindAllKey2,
                       ),
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      'Students yet to attempt',
+                      Speech.t.quizStudentsYetToAttempt,
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     Text(
                       _notAttempted.isEmpty
-                          ? 'None'
+                          ? Speech.t.uiNoneCapital
                           : _notAttempted
                                 .map((student) => student['student_name'])
                                 .join(', '),
@@ -1935,8 +1949,8 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
                     const SizedBox(height: 16),
                     Text(
                       summary?['mode'] == 'practice'
-                          ? 'Practice participation, not academic grades'
-                          : 'Individual student scores',
+                          ? Speech.t.quizPracticeParticipationHeading
+                          : Speech.t.quizIndividualScores,
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     for (final student in _students)
@@ -1959,9 +1973,9 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
                               title: Text('${student['student_name']}'),
                               subtitle: Text(
                                 student['started'] != true
-                                    ? 'Not attempted'
-                                    : '${summary?['mode'] == 'practice' ? 'Practice, not graded' : 'Highest score: ${student['highest_score'] ?? 'Attempt in progress'}'}\n'
-                                          '${(student['attempts'] as List).length} attempt(s)',
+                                    ? Speech.t.quizNotAttempted
+                                    : '${summary?['mode'] == 'practice' ? Speech.t.quizPracticeNotGraded : Speech.t.quizHighestScore('${student['highest_score'] ?? Speech.t.quizAttemptInProgress}')}\n'
+                                          '${Speech.t.quizAttemptCount((student['attempts'] as List).length)}',
                               ),
                               onTap: () => TtsService.speak(
                                 _studentDetails(student as Map),
@@ -2000,12 +2014,7 @@ class StudentQuizScreen extends StatefulWidget {
 }
 
 class _StudentQuizScreenState extends State<StudentQuizScreen> {
-  static const _navigationHelp =
-      'Use D-pad up and down to reach refresh, quiz state filter, subject filter, '
-      'each available quiz or practice activity, and its attempt history. '
-      'Use left or right on a filter to change it. '
-      'Press OK on a quiz to hear its details and confirm starting or resuming; '
-      'press OK on attempt history to review past attempts. Moving focus never starts an attempt.';
+  static String get _navigationHelp => Speech.t.quizStudentNavigationHelp;
   final _refreshFocus = FocusNode(debugLabel: 'student-quiz-refresh');
   final _stateFilterFocus = FocusNode(debugLabel: 'student-quiz-state-filter');
   final _subjectFilterFocus = FocusNode(
@@ -2037,12 +2046,12 @@ class _StudentQuizScreenState extends State<StudentQuizScreen> {
       _loading = false;
     });
     final summary = quizzes.isEmpty
-        ? 'No quizzes available.'
-        : '${quizzes.length} quizzes available.';
+        ? Speech.t.quizNoQuizzesAvailable
+        : Speech.t.quizQuizzesAvailableRaw('${quizzes.length}');
     if (_initialAnnouncementPending) {
       _initialAnnouncementPending = false;
       await TtsService.speak(
-        '${buildTtsInstructions(studentQuizKeyLabels, screenName: 'Student quizzes')} '
+        '${buildTtsInstructions(studentQuizKeyLabels, screenName: QuizText.studentScreen)} '
         '$_navigationHelp $summary',
       );
     } else {
@@ -2051,30 +2060,35 @@ class _StudentQuizScreenState extends State<StudentQuizScreen> {
   }
 
   Future<void> _openQuiz(Map quiz) async {
+    final t = Speech.t;
     final inProgress = quiz['in_progress_attempt_id'];
     if (!_canOpenQuiz(quiz)) {
-      _announceError(
-        'Attempt limit reached for ${quiz['title']}. Open attempt history to review your scores.',
-      );
+      _announceError(t.quizAttemptLimitReached('${quiz['title']}'));
       return;
     }
     final confirmed = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
       builder: (_) => KeypadConfirmationDialog(
-        title: inProgress == null ? 'Start quiz?' : 'Resume quiz?',
-        message:
-            '${quiz['title']}. ${QuizText.attemptsText(quiz)} '
-            '${quiz['time_limit_minutes'] == null ? 'No per-attempt time limit.' : 'Time limit ${quiz['time_limit_minutes']} minutes.'} '
-            '${QuizText.answerLockNotice} You cannot go back to change it. ${QuizText.feedbackPolicy(quiz)}',
-        confirmLabel: inProgress == null ? 'Start attempt' : 'Resume attempt',
+        title: QuizText.startTitle(inProgress != null),
+        message: [
+          t.quizTitleSentence('${quiz['title']}'),
+          QuizText.attemptsText(quiz),
+          quiz['time_limit_minutes'] == null
+              ? t.quizNoPerAttemptLimit
+              : t.quizTimeLimitRaw('${quiz['time_limit_minutes']}'),
+          QuizText.answerLockNotice,
+          t.quizCannotGoBack,
+          QuizText.feedbackPolicy(quiz),
+        ].join(' '),
+        confirmLabel: QuizText.startConfirm(inProgress != null),
       ),
     );
     if (confirmed != true) return;
     final attempt = await ApiService.startQuizAttempt(quiz['quiz_id'] as int);
     if (!mounted) return;
     if (attempt == null) {
-      _announceError('The quiz could not be started. Check its availability.');
+      _announceError(t.quizStartFailedAvailability);
       return;
     }
     await Navigator.push(
@@ -2103,7 +2117,7 @@ class _StudentQuizScreenState extends State<StudentQuizScreen> {
       quiz['quiz_id'] as int,
     );
     if (!mounted || history == null) {
-      _announceError('Attempt history could not be loaded.');
+      _announceError(QuizText.historyFailed);
       return;
     }
     await Navigator.push(
@@ -2127,7 +2141,12 @@ class _StudentQuizScreenState extends State<StudentQuizScreen> {
     if (index < 0) index += states.length;
     setState(() => _stateFilter = states[index]);
     TtsService.speak(
-      KeypadChoiceField.describe('Quiz state', states, _stateFilter, _stateName),
+      KeypadChoiceField.describe(
+        Speech.t.quizStateFieldName,
+        states,
+        _stateFilter,
+        _stateName,
+      ),
     );
     _load();
   }
@@ -2148,10 +2167,10 @@ class _StudentQuizScreenState extends State<StudentQuizScreen> {
     );
     TtsService.speak(
       KeypadChoiceField.describe(
-        'Subject',
+        Speech.t.quizSubjectFieldName,
         subjects,
         _subjectFilter,
-        (_) => selected == null ? 'All subjects' : '${selected['name']}',
+        (_) => selected == null ? QuizText.allSubjects : '${selected['name']}',
       ),
     );
     _load();
@@ -2159,10 +2178,8 @@ class _StudentQuizScreenState extends State<StudentQuizScreen> {
 
   static const _stateChoices = <String?>[null, 'scheduled', 'open', 'closed'];
   static String _stateName(String? state) => switch (state) {
-    'scheduled' => 'Scheduled',
-    'open' => 'Open',
-    'closed' => 'Closed',
-    _ => 'All states',
+    'scheduled' || 'open' || 'closed' => QuizText.stateName(state),
+    _ => QuizText.stateName(null),
   };
 
   List<Map<String, dynamic>> get _subjects {
@@ -2192,32 +2209,47 @@ class _StudentQuizScreenState extends State<StudentQuizScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = Speech.t;
+    String subjectName(int? id) => id == null
+        ? QuizText.allSubjects
+        : '${_subjects.firstWhere((item) => item['id'] == id)['name']}';
     return KeypadInstructionWrapper(
-      screenName: 'Student quizzes',
+      screenName: QuizText.studentScreen,
       introduction: _navigationHelp,
-      navigationSections:
-          'refresh, quiz state and subject filters, available quizzes and practice activities, and previous attempts',
+      navigationSections: t.quizStudentNavigationSections,
       labels: studentQuizKeyLabels,
       autoPlay: false,
       actions: {0: () => Navigator.pop(context), 1: _load},
       focusTargets: [
         KeypadFocusTarget(
           node: _refreshFocus,
-          label: 'Refresh quizzes',
+          label: t.keyRefreshQuizzes,
           onActivate: _load,
         ),
         KeypadFocusTarget(
           node: _stateFilterFocus,
-          label:
-              '${KeypadChoiceField.describe('Quiz state', _stateChoices, _stateFilter, _stateName)}. Use left or right to change',
+          label: t.quizUseLeftRightToChange(
+            KeypadChoiceField.describe(
+              t.quizStateFieldName,
+              _stateChoices,
+              _stateFilter,
+              _stateName,
+            ),
+          ),
           onActivate: () => _cycleState(1),
           onDecrease: () => _cycleState(-1),
           onIncrease: () => _cycleState(1),
         ),
         KeypadFocusTarget(
           node: _subjectFilterFocus,
-          label:
-              '${KeypadChoiceField.describe<int?>('Subject', [null, ..._subjects.map((item) => item['id'] as int)], _subjectFilter, (id) => id == null ? 'All subjects' : '${_subjects.firstWhere((item) => item['id'] == id)['name']}')}. Use left or right to change',
+          label: t.quizUseLeftRightToChange(
+            KeypadChoiceField.describe<int?>(
+              t.quizSubjectFieldName,
+              [null, ..._subjects.map((item) => item['id'] as int)],
+              _subjectFilter,
+              subjectName,
+            ),
+          ),
           onActivate: () => _cycleSubject(1),
           onDecrease: () => _cycleSubject(-1),
           onIncrease: () => _cycleSubject(1),
@@ -2231,10 +2263,17 @@ class _StudentQuizScreenState extends State<StudentQuizScreen> {
                   debugLabel: 'student-open-quiz-${quiz['quiz_id']}',
                 ),
               ),
-              label:
-                  '${quiz['subject_name']}, ${quiz['title']}, ${quiz['display_status']}. '
-                  '${QuizText.attemptsText(quiz)} '
-                  '${quiz['in_progress_attempt_id'] == null ? 'Start quiz' : 'Resume quiz'}',
+              label: [
+                t.quizRowHead(
+                  '${quiz['subject_name']}',
+                  '${quiz['title']}',
+                  '${quiz['display_status']}',
+                ),
+                QuizText.attemptsText(quiz),
+                quiz['in_progress_attempt_id'] == null
+                    ? t.quizStartQuiz
+                    : t.quizResumeQuiz,
+              ].join(' '),
               onActivate: () => _openQuiz(quiz),
             ),
           if ((quiz['attempts_used'] as int) > 0)
@@ -2245,20 +2284,22 @@ class _StudentQuizScreenState extends State<StudentQuizScreen> {
                   debugLabel: 'student-quiz-history-${quiz['quiz_id']}',
                 ),
               ),
-              label:
-                  'Review ${quiz['title']} attempt history. Highest score ${quiz['highest_score'] ?? 'not available'}',
+              label: t.quizHistoryRow(
+                '${quiz['title']}',
+                '${quiz['highest_score'] ?? t.quizNotAvailable}',
+              ),
               onActivate: () => _history(quiz),
             ),
         ],
       ],
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Quizzes'),
+          title: Text(Speech.t.quizQuizzesTitle),
           actions: [
             IconButton(
               focusNode: _refreshFocus,
               onPressed: _load,
-              tooltip: 'Refresh quizzes',
+              tooltip: Speech.t.quizRefreshQuizzesTooltip,
               icon: const Icon(Icons.refresh),
             ),
           ],
@@ -2275,7 +2316,7 @@ class _StudentQuizScreenState extends State<StudentQuizScreen> {
                       runSpacing: 8,
                       children: [
                         KeypadChoiceField<String?>(
-                          label: 'Quiz state',
+                          label: t.quizStateFieldName,
                           focusNode: _stateFilterFocus,
                           values: _stateChoices,
                           value: _stateFilter,
@@ -2286,16 +2327,14 @@ class _StudentQuizScreenState extends State<StudentQuizScreen> {
                           },
                         ),
                         KeypadChoiceField<int?>(
-                          label: 'Subject',
+                          label: t.quizSubjectFieldName,
                           focusNode: _subjectFilterFocus,
                           values: [
                             null,
                             ..._subjects.map((item) => item['id'] as int),
                           ],
                           value: _subjectFilter,
-                          nameOf: (id) => id == null
-                              ? 'All subjects'
-                              : '${_subjects.firstWhere((item) => item['id'] == id)['name']}',
+                          nameOf: subjectName,
                           onChanged: (value) {
                             setState(() => _subjectFilter = value);
                             _load();
@@ -2306,9 +2345,9 @@ class _StudentQuizScreenState extends State<StudentQuizScreen> {
                     if (_quizzes.isEmpty)
                       Semantics(
                         liveRegion: true,
-                        child: const ListTile(
-                          leading: Icon(Icons.inbox_outlined),
-                          title: Text('No quizzes available'),
+                        child: ListTile(
+                          leading: const Icon(Icons.inbox_outlined),
+                          title: Text(Speech.t.quizNoQuizzesAvailableLabel),
                         ),
                       )
                     else
@@ -2341,8 +2380,8 @@ class _StudentQuizScreenState extends State<StudentQuizScreen> {
                                       onPressed: () => _openQuiz(quiz),
                                       tooltip:
                                           quiz['in_progress_attempt_id'] == null
-                                          ? 'Start quiz'
-                                          : 'Resume quiz',
+                                          ? Speech.t.quizStartQuiz
+                                          : Speech.t.quizResumeQuiz,
                                       icon: const Icon(Icons.play_arrow),
                                     ),
                                   if (!_canOpenQuiz(quiz) &&
@@ -2351,8 +2390,9 @@ class _StudentQuizScreenState extends State<StudentQuizScreen> {
                                       (quiz['attempts_remaining'] as int? ??
                                               0) ==
                                           0)
-                                    const Tooltip(
-                                      message: 'Attempt limit reached',
+                                    Tooltip(
+                                      message:
+                                          Speech.t.quizAttemptLimitReachedLabel,
                                       child: Icon(Icons.block),
                                     ),
                                   if ((quiz['attempts_used'] as int) > 0)
@@ -2365,7 +2405,7 @@ class _StudentQuizScreenState extends State<StudentQuizScreen> {
                                         ),
                                       ),
                                       onPressed: () => _history(quiz),
-                                      tooltip: 'Attempt history and review',
+                                      tooltip: Speech.t.quizHistoryTooltip,
                                       icon: const Icon(Icons.history),
                                     ),
                                 ],
@@ -2461,7 +2501,7 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
         if (mounted) {
           _keypad.focusAndAnnounce(
             _returnFocus,
-            'Attempt complete. Your result remains private. $_navigationHelp',
+            '${Speech.t.quizAttemptCompletePrivate} $_navigationHelp',
           );
         }
       });
@@ -2541,41 +2581,44 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
       _completionError == null &&
       (_remaining == null || _remaining! > Duration.zero);
 
-  String get _questionAnnouncement {
+  int get _questionNumber {
     final answered = _attempt['answered_count'] as int? ?? 0;
-    final number = _feedback == null ? answered + 1 : answered;
-    return 'Question $number of ${_attempt['total_questions']}. '
-        '${_question?['spoken_question_text'] ?? _question?['question_text'] ?? ''}';
+    return _feedback == null ? answered + 1 : answered;
   }
+
+  String get _questionAnnouncement => QuizText.question(
+    _questionNumber,
+    _attempt['total_questions'],
+    _question?['spoken_question_text'] ?? _question?['question_text'] ?? '',
+  );
 
   String get _optionsAnnouncement {
     final options = _question?['options'] as List? ?? const [];
-    return [
-      for (var index = 0; index < options.length; index++)
-        'Option ${index + 1}. ${options[index]['spoken_option_text'] ?? options[index]['option_text']}.',
-    ].join(' ');
+    return QuizText.options([
+      for (final option in options)
+        '${option['spoken_option_text'] ?? option['option_text']}',
+    ]);
   }
 
   String get _questionAndOptions =>
       '$_questionAnnouncement $_optionsAnnouncement';
 
   String get _navigationHelp {
-    const speed = 'Press 7 or 9 to make quiz speech slower or faster. ';
+    final t = Speech.t;
+    final speed = '${QuizText.speedHelp} ';
     if (_attempt['status'] != 'in_progress') {
-      return 'Use D-pad up and down to move between return to quizzes and read result privately. '
-          'Press OK to activate a button. Press 8 to read your result privately or 0 to return. $speed';
+      return '${t.quizHelpCompleted} $speed';
     }
     if (_completionError != null) {
-      return 'Press 5 to retry finishing, 8 to hear where you are, or 0 to leave with confirmation. '
-          'Use D-pad up and down for the other controls. $speed';
+      return '${t.quizHelpRetry} $speed';
     }
     if (_feedback != null || _allAnswersSaved) {
-      return 'The next question follows automatically. Press 6 to repeat, 8 to hear where you are. $speed';
+      return '${t.quizHelpNext} $speed';
     }
-    return 'Press 1 to ${_question?['options'] is List ? (_question!['options'] as List).length : 4} to choose, then 5 to submit. '
-        'Press 6 to repeat the question and options, 8 to hear where you are and the time left. '
-        '$speed'
-        'Finish quiz now is in the D-pad list and asks to confirm. Press 0 to leave without submitting.';
+    final count = _question?['options'] is List
+        ? (_question!['options'] as List).length
+        : 4;
+    return '${t.quizHelpChoose('$count')} $speed${t.quizHelpFinishLeave}';
   }
 
   void _readOptions() => TtsService.speak(_optionsAnnouncement);
@@ -2589,9 +2632,13 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
     final options = _question?['options'] as List? ?? const [];
     for (var index = 0; index < options.length; index++) {
       if (options[index]['quiz_option_id'] == _selectedOptionId) {
+        final number = '${index + 1}';
+        final text =
+            '${options[index]['spoken_option_text'] ?? options[index]['option_text']}';
         TtsService.speak(
-          'Selected option ${index + 1}. ${options[index]['spoken_option_text'] ?? options[index]['option_text']}. '
-          '${_feedback == null ? 'Not submitted yet.' : 'Answer confirmed.'}',
+          _feedback == null
+              ? Speech.t.quizSelectedOptionNotSubmitted(number, text)
+              : Speech.t.quizSelectedOptionConfirmed(number, text),
         );
         return;
       }
@@ -2601,12 +2648,18 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
 
   String get _feedbackAnnouncement => _feedbackText(_feedback!);
 
-  String _feedbackText(Map<String, dynamic> feedback) =>
-      feedback['feedback_released'] == false
-      ? 'Answer confirmed saved and locked. ${feedback['feedback_message']}'
-      : '${feedback['is_correct'] == true ? 'Correct' : 'Incorrect'}. '
-            'Correct answer: ${feedback['correct_option_spoken_text'] ?? feedback['correct_option_text']}. '
-            '${feedback['spoken_explanation'] ?? feedback['explanation'] ?? ''}';
+  String _feedbackText(Map<String, dynamic> feedback) {
+    if (feedback['feedback_released'] == false) {
+      return '${QuizText.answerSaved(hasFeedback: false)} ${feedback['feedback_message']}';
+    }
+    final answer =
+        '${feedback['correct_option_spoken_text'] ?? feedback['correct_option_text']}';
+    final explanation =
+        '${feedback['spoken_explanation'] ?? feedback['explanation'] ?? ''}';
+    return feedback['is_correct'] == true
+        ? Speech.t.quizFeedbackCorrect(answer, explanation)
+        : Speech.t.quizFeedbackIncorrect(answer, explanation);
+  }
 
   /// Released feedback for the question just answered. The attempt moves on
   /// by itself, so feedback stays available here, read only on request.
@@ -2619,8 +2672,10 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
     final option = options[index] as Map;
     setState(() => _selectedOptionId = option['quiz_option_id'] as int);
     TtsService.speak(
-      'Option ${index + 1}. ${option['spoken_option_text'] ?? option['option_text']}. '
-      'Selected, not submitted. Press 5 to save your answer.',
+      Speech.t.quizOptionSelectedNotSubmitted(
+        '${index + 1}',
+        '${option['spoken_option_text'] ?? option['option_text']}',
+      ),
     );
   }
 
@@ -2689,7 +2744,9 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
     });
     // Say only that it is saved (feedback stays private), then move on by
     // itself once that has been spoken.
-    await TtsService.speak(QuizText.answerSaved(hasFeedback: result['feedback_released'] != false));
+    await TtsService.speak(
+      QuizText.answerSaved(hasFeedback: result['feedback_released'] != false),
+    );
     _afterSpeech(() {
       if (mounted && identical(_feedback, result)) unawaited(_next());
     });
@@ -2717,15 +2774,15 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
     );
     final answered = _attempt['answered_count'] as int? ?? 0;
     if (_attempt['status'] != 'in_progress') {
-      return 'Attempt finished. Press 8 to hear your result privately.';
+      return Speech.t.quizAttemptFinishedWhere;
     }
     return QuizText.where(
       number: _feedback == null ? answered + 1 : answered,
       total: _attempt['total_questions'],
       answered: answered,
       selection: selected < 0
-          ? (_feedback == null ? 'No option chosen yet.' : null)
-          : 'Option ${selected + 1} chosen.',
+          ? (_feedback == null ? Speech.t.quizNoOptionChosenYet : null)
+          : Speech.t.quizOptionChosen('${selected + 1}'),
       remaining: _remaining,
       timed: _remaining != null,
     );
@@ -2794,10 +2851,9 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
       if (response.isSuccess) {
         debugPrint('[QUIZ] Completion has an invalid response shape.');
       }
-      final message =
-          '${response.failure?.message ?? 'Completion was not confirmed.'} '
-          'Your saved answers are preserved. '
-          'Select Retry completion to check the result.';
+      final message = Speech.t.quizCompletionFailedRetry(
+        response.failure?.message ?? Speech.t.quizCompletionNotConfirmed,
+      );
       setState(() {
         _completing = false;
         _completionError = message;
@@ -2814,7 +2870,7 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
       if (mounted) {
         _keypad.focusAndAnnounce(
           _returnFocus,
-          'Attempt ${result['status']}. Your result is private. $_navigationHelp',
+          '${Speech.t.quizAttemptStatusPrivate('${result['status']}')} $_navigationHelp',
         );
       }
     });
@@ -2822,10 +2878,10 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
 
   String get _remainingText {
     final value = _remaining;
-    if (value == null) return 'No time limit';
+    if (value == null) return Speech.t.quizNoTimeLimitShort;
     final minutes = value.inMinutes;
     final seconds = value.inSeconds.remainder(60).toString().padLeft(2, '0');
-    return '$minutes:$seconds remaining';
+    return Speech.t.quizClockRemaining('$minutes:$seconds');
   }
 
   Future<void> _earlyFinish() async {
@@ -2857,8 +2913,7 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
           answered > total ||
           _attempt['status'] != 'in_progress' ||
           _completing) {
-        const message =
-            'The current saved-answer count could not be confirmed, or this attempt has ended. No early submission was sent. Return to the quiz list to refresh its status.';
+        final message = Speech.t.quizEarlyCountUnconfirmed;
         setState(() => _earlyFinishError = message);
         await TtsService.speak(message);
         return;
@@ -2867,19 +2922,17 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
       final confirmed = await showDialog<bool>(
         context: context,
         builder: (_) => KeypadConfirmationDialog(
-          title: 'Submit this attempt early?',
-          message:
-              'The server check confirms $unanswered unanswered questions. Only answers saved on the server when finalized are included. A selected but unsaved answer is not included. Final submission cannot be undone or edited. Back never submits.',
-          confirmLabel: 'Finalize saved answers',
-          cancelLabel: 'Keep working',
+          title: Speech.t.quizEarlyTitle,
+          message: Speech.t.quizEarlyMessage('$unanswered'),
+          confirmLabel: Speech.t.quizEarlyConfirm,
+          cancelLabel: QuizText.finishCancel,
         ),
       );
       if (confirmed == true && mounted && _attempt['status'] == 'in_progress') {
         await _complete();
       }
     } on TimeoutException {
-      const message =
-          'Checking saved answers timed out. No early submission was sent. Check your connection and retry.';
+      final message = Speech.t.quizEarlyTimedOut;
       debugPrint('[QUIZ] $message');
       if (mounted) {
         setState(() => _earlyFinishError = message);
@@ -2897,21 +2950,18 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
     }
     if (_exitDialog) return;
     if (_submitting || _completing) {
-      await TtsService.speak(
-        'Wait for the pending answer or completion confirmation before leaving.',
-      );
+      await TtsService.speak(Speech.t.quizWaitPending);
       return;
     }
     _exitDialog = true;
     try {
       final leave = await showDialog<bool>(
         context: context,
-        builder: (_) => const KeypadConfirmationDialog(
-          title: 'Leave and resume later?',
-          message:
-              'This does not submit your attempt. Only server-confirmed answers are saved; an unsaved selection may be lost. Any timer keeps running. Resume is allowed only while the server permits this attempt.',
-          confirmLabel: 'Leave without submitting',
-          cancelLabel: 'Stay in attempt',
+        builder: (_) => KeypadConfirmationDialog(
+          title: QuizText.leaveTitle,
+          message: Speech.t.quizLeaveMessageServer,
+          confirmLabel: QuizText.leaveConfirm,
+          cancelLabel: Speech.t.quizStayInAttempt,
         ),
       );
       if (leave == true && mounted) {
@@ -2965,37 +3015,34 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
       },
       child: KeypadInstructionWrapper(
         navigationController: _keypad,
-        screenName: 'Quiz attempt, ${widget.quizTitle}',
+        screenName: QuizText.attemptScreen(widget.quizTitle),
         introduction: completed
-            ? 'Attempt complete. Your result remains private. $_navigationHelp'
+            ? '${Speech.t.quizAttemptCompletePrivate} $_navigationHelp'
             : choosing
             ? '$_questionAndOptions $_navigationHelp'
             : _completionError != null
             ? '$_completionError $_navigationHelp'
-            : 'Answer confirmed saved and locked. $_navigationHelp',
+            : '${QuizText.answerSaved(hasFeedback: false)} $_navigationHelp',
         labels: {
-          0: completed
-              ? 'Return to quizzes'
-              : 'Leave without submitting, with confirmation',
+          0: completed ? QuizText.returnToQuizzes : QuizText.leave,
           7: quizAttemptKeyLabels[7]!,
-          8: completed
-              ? 'Read result privately'
-              : quizAttemptKeyLabels[8]!,
+          8: completed ? QuizText.readResult : quizAttemptKeyLabels[8]!,
           9: quizAttemptKeyLabels[9]!,
           if (choosing) ...{
             for (var index = 1; index <= options.length && index <= 4; index++)
               index: quizAttemptKeyLabels[index]!,
             5: quizAttemptKeyLabels[5]!,
           },
-          6: completed ? 'Return to quizzes' : quizAttemptKeyLabels[6]!,
-          if (!completed && _completionError != null) 5: 'Retry finishing',
+          6: completed ? QuizText.returnToQuizzes : quizAttemptKeyLabels[6]!,
+          if (!completed && _completionError != null)
+            5: QuizText.retryFinishing,
           if (!completed && _completionError == null && _allAnswersSaved)
-            5: 'Finish and hear result',
+            5: QuizText.finishAndHear,
           if (!completed &&
               _completionError == null &&
               !_allAnswersSaved &&
               _feedback != null)
-            5: 'Next question now',
+            5: Speech.t.quizNextQuestionNow,
         },
         actions: {
           0: _exit,
@@ -3026,13 +3073,13 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
           if (completed)
             KeypadFocusTarget(
               node: _returnFocus,
-              label: 'Return to quizzes',
+              label: QuizText.returnToQuizzes,
               onActivate: () => Navigator.pop(context),
             ),
           if (completed)
             KeypadFocusTarget(
               node: _resultFocus,
-              label: 'Read result privately',
+              label: QuizText.readResult,
               onActivate: _readPrivateResult,
             ),
           if (!completed)
@@ -3046,16 +3093,21 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
           if (choosing)
             KeypadFocusTarget(
               node: _optionsRepeatFocus,
-              label: 'Read all answer options',
+              label: Speech.t.quizReadAllOptions,
               onActivate: _readOptions,
             ),
           for (var index = 0; choosing && index < options.length; index++)
             KeypadFocusTarget(
               node: _optionFocuses[index],
-              label:
-                  'Option ${index + 1}, ${options[index]['spoken_option_text'] ?? options[index]['option_text']}, '
-                  '${_selectedOptionId == options[index]['quiz_option_id'] ? 'selected' : 'not selected'}. '
-                  'Press OK or ${index + 1} to select. Press 5 to submit only when ready',
+              label: _selectedOptionId == options[index]['quiz_option_id']
+                  ? Speech.t.quizOptionTargetSelectedSubmit(
+                      '${index + 1}',
+                      '${options[index]['spoken_option_text'] ?? options[index]['option_text']}',
+                    )
+                  : Speech.t.quizOptionTargetNotSelectedSubmit(
+                      '${index + 1}',
+                      '${options[index]['spoken_option_text'] ?? options[index]['option_text']}',
+                    ),
               onActivate: () => _selectOption(index),
               isEnabled: () => _canAnswer,
             ),
@@ -3068,19 +3120,17 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
           if (choosing)
             KeypadFocusTarget(
               node: _selectionRepeatFocus,
-              label: 'Read selected answer and saved status',
+              label: Speech.t.quizReadSelectionTarget,
               onActivate: _readSelection,
             ),
           KeypadFocusTarget(
             node: _stopSpeechFocus,
-            label: 'Stop speech',
+            label: Speech.t.quizStopSpeech,
             onActivate: TtsService.stop,
           ),
           KeypadFocusTarget(
             node: _speedFocus,
-            label:
-                'Quiz speech speed, ${_speechSpeed.description}. '
-                'Left or right to change, or press 7 or 9',
+            label: QuizText.speedTarget(_speechSpeed.description),
             onActivate: _speechSpeed.read,
             onDecrease: () => _changeSpeechSpeed(-1),
             onIncrease: () => _changeSpeechSpeed(1),
@@ -3094,7 +3144,7 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
           if (choosing)
             KeypadFocusTarget(
               node: _submitFocus,
-              label: 'Submit selected answer',
+              label: Speech.t.keySubmitSelectedAnswer,
               onActivate: _submit,
               isEnabled: () => _canAnswer,
             ),
@@ -3102,18 +3152,18 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
             KeypadFocusTarget(
               node: _feedbackFocus,
               label: _feedback == null
-                  ? 'Answer feedback'
-                  : 'Answer confirmed saved and locked. Press OK to read feedback privately.',
+                  ? Speech.t.quizAnswerFeedback
+                  : Speech.t.quizAnswerConfirmedReadFeedback,
               onActivate: _feedback == null ? null : _readPrivateFeedback,
             ),
           if (!completed && !choosing)
             KeypadFocusTarget(
               node: _nextFocus,
               label: _completionError != null
-                  ? 'Retry completion'
+                  ? Speech.t.quizRetryCompletion
                   : _feedback?['next_question'] == null
-                  ? 'View result'
-                  : 'Next question',
+                  ? Speech.t.quizViewResult
+                  : Speech.t.quizNextQuestion,
               onActivate: _completionError == null ? _next : _complete,
               isEnabled: () =>
                   !completed &&
@@ -3135,7 +3185,7 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
             ),
             KeypadFocusTarget(
               node: _exitFocus,
-              label: 'Leave without submitting, with confirmation',
+              label: QuizText.leave,
               onActivate: _exit,
             ),
           ],
@@ -3150,7 +3200,7 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
                 ? null
                 : IconButton(
                     focusNode: _exitFocus,
-                    tooltip: 'Leave without submitting',
+                    tooltip: Speech.t.quizLeaveWithoutSubmitting,
                     onPressed: _exit,
                     icon: const Icon(Icons.arrow_back),
                   ),
@@ -3187,11 +3237,11 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
                       excludeSemantics: true,
                       label: _resultReadRequested
                           ? QuizText.attemptResult(_attempt)
-                          : 'Attempt complete. Result private. Use Read result privately.',
+                          : Speech.t.quizAttemptCompletePrivateLabel,
                       child: Card(
                         child: ListTile(
                           leading: const Icon(Icons.emoji_events_outlined),
-                          title: const Text('Attempt complete'),
+                          title: Text(Speech.t.quizResultHeading),
                           subtitle: Text(QuizText.attemptResult(_attempt)),
                         ),
                       ),
@@ -3199,16 +3249,19 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
                     TextButton(
                       focusNode: _resultFocus,
                       onPressed: _readPrivateResult,
-                      child: const Text('8: Read result privately'),
+                      child: Text(Speech.t.quizReadResultKey8),
                     ),
                     ElevatedButton(
                       focusNode: _returnFocus,
                       onPressed: () => Navigator.pop(context),
-                      child: const Text('0: Return to quizzes'),
+                      child: Text(Speech.t.quizReturnKey0),
                     ),
                   ] else if (question != null) ...[
                     Text(
-                      _questionAnnouncement.split('. ').first,
+                      QuizText.questionHeading(
+                        _questionNumber,
+                        _attempt['total_questions'],
+                      ),
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const SizedBox(height: 8),
@@ -3227,7 +3280,7 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
                       TextButton(
                         focusNode: _optionsRepeatFocus,
                         onPressed: _readOptions,
-                        child: const Text('Read all options'),
+                        child: Text(Speech.t.quizReadAllOptionsLabel),
                       ),
                     const SizedBox(height: 12),
                     if (choosing)
@@ -3270,8 +3323,11 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
                                       value: option['quiz_option_id'] as int,
                                       enabled: _canAnswer,
                                       title: Semantics(
-                                        label:
-                                            'Option ${index + 1} of ${options.length}, $spoken',
+                                        label: Speech.t.quizOptionLabel(
+                                          '${index + 1}',
+                                          '${options.length}',
+                                          '$spoken',
+                                        ),
                                         excludeSemantics: true,
                                         child: Text(
                                           '${index + 1}. ${option['option_text']}',
@@ -3316,7 +3372,7 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
                                 ),
                               )
                             : const Icon(Icons.check),
-                        label: const Text('5: Submit answer'),
+                        label: Text(Speech.t.quizSubmitAnswerKey5),
                       ),
                     if (_feedback != null)
                       Focus(
@@ -3326,7 +3382,7 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
                           excludeSemantics: true,
                           label: _feedbackReadRequested
                               ? _feedbackAnnouncement
-                              : 'Answer saved and locked. Activate to read feedback privately.',
+                              : Speech.t.quizAnswerLockedActivate,
                           button: true,
                           onTap: _readPrivateFeedback,
                           child: Card(
@@ -3357,10 +3413,10 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
                               ),
                               title: Text(
                                 _feedback!['feedback_released'] == false
-                                    ? 'Answer saved and locked'
+                                    ? Speech.t.quizAnswerSavedLockedTitle
                                     : _feedback!['is_correct'] == true
-                                    ? 'Correct'
-                                    : 'Incorrect',
+                                    ? Speech.t.quizCorrectHeading
+                                    : Speech.t.quizWrongHeading,
                                 style: TextStyle(
                                   color: UIUtils.textColor,
                                   fontSize: 18,
@@ -3381,9 +3437,7 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
                         ),
                       ),
                   ] else if (_allAnswersSaved)
-                    const Text(
-                      'All answers are saved. Select View result to confirm completion.',
-                    ),
+                    Text(Speech.t.quizAllSavedViewResult),
                   if (!completed) ...[
                     OutlinedButton(
                       focusNode: _earlyFinishFocus,
@@ -3394,7 +3448,9 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
                               _completionError != null
                           ? null
                           : _earlyFinish,
-                      child: Text('${QuizText.finishNowButton}, asks to confirm'),
+                      child: Text(
+                        Speech.t.quizAsksToConfirm(QuizText.finishNowButton),
+                      ),
                     ),
                     if (_earlyFinishError != null)
                       Semantics(
@@ -3416,12 +3472,12 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
                             : (_completionError == null ? _next : _complete),
                         child: Text(
                           _completing
-                              ? 'Confirming completion'
+                              ? Speech.t.quizConfirmingCompletion
                               : _completionError != null
-                              ? '5: Retry completion'
+                              ? Speech.t.quizRetryCompletionKey5
                               : _feedback?['next_question'] == null
-                              ? '5: View result'
-                              : 'Next question',
+                              ? Speech.t.quizViewResultKey5
+                              : Speech.t.quizNextQuestion,
                         ),
                       ),
                   ],
@@ -3429,12 +3485,12 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
                     TextButton(
                       focusNode: _selectionRepeatFocus,
                       onPressed: completed ? null : _readSelection,
-                      child: const Text('Read selected answer'),
+                      child: Text(Speech.t.quizReadSelectedAnswer),
                     ),
                   TextButton(
                     focusNode: _stopSpeechFocus,
                     onPressed: TtsService.stop,
-                    child: const Text('Stop speech'),
+                    child: Text(Speech.t.quizStopSpeech),
                   ),
                   QuizSpeechSpeedControl(
                     focusNode: _speedFocus,
@@ -3445,7 +3501,7 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
                     TextButton(
                       focusNode: _timeFocus,
                       onPressed: () => TtsService.speak(_remainingText),
-                      child: const Text('Read remaining time'),
+                      child: Text(Speech.t.quizReadRemainingTime),
                     ),
                 ],
               ),
@@ -3486,9 +3542,7 @@ class _QuizHistoryScreenState extends State<QuizHistoryScreen> {
   Future<void> _open(Map attempt) async {
     if (_opening) return;
     if (attempt['status'] == 'in_progress') {
-      await TtsService.speak(
-        'Attempt in progress. Return to the quiz list to resume it. Leaving does not submit.',
-      );
+      await TtsService.speak(Speech.t.quizAttemptInProgressResume);
       return;
     }
     setState(() {
@@ -3501,8 +3555,7 @@ class _QuizHistoryScreenState extends State<QuizHistoryScreen> {
       ).timeout(const Duration(seconds: 10));
       if (!mounted) return;
       if (review == null) {
-        const message =
-            'Attempt review could not be loaded. Check your connection and try again.';
+        final message = QuizText.reviewFailed;
         setState(() => _error = message);
         await TtsService.speak(message);
         return;
@@ -3512,8 +3565,7 @@ class _QuizHistoryScreenState extends State<QuizHistoryScreen> {
         MaterialPageRoute(builder: (_) => QuizReviewScreen(review: review)),
       );
     } on TimeoutException {
-      const message =
-          'Attempt review timed out. Check your connection and try again.';
+      final message = Speech.t.quizReviewTimedOutShort;
       debugPrint('[QUIZ] $message');
       if (mounted) setState(() => _error = message);
       await TtsService.speak(message);
@@ -3536,18 +3588,18 @@ class _QuizHistoryScreenState extends State<QuizHistoryScreen> {
     final history = widget.history;
     final quizTitle = widget.quizTitle;
     final attempts = history['attempts'] as List? ?? const [];
+    final t = Speech.t;
     final scoreSummary =
         attempts.any((attempt) => attempt['is_graded'] == false)
-        ? 'Practice history. Not academic grades.'
+        ? t.quizPracticeHistory
         : history['highest_score'] != null
-        ? 'Highest score: ${history['highest_score']}'
+        ? t.quizHighestScoreValue('${history['highest_score']}')
         : attempts.any((attempt) => attempt['status'] != 'in_progress')
-        ? 'Completed attempts exist; no score is currently released.'
-        : 'No completed attempt';
+        ? t.quizNoScoreCurrentlyReleased
+        : t.quizNoCompletedAttempt;
     return KeypadInstructionWrapper(
-      screenName:
-          'Attempt history. Scores are private. Navigate to the summary or an attempt to review.',
-      labels: const {0: 'Go back'},
+      screenName: t.quizHistoryScreenNavigate,
+      labels: {0: QuizText.goBack},
       actions: {0: () => Navigator.pop(context)},
       focusTargets: [
         KeypadFocusTarget(
@@ -3558,8 +3610,11 @@ class _QuizHistoryScreenState extends State<QuizHistoryScreen> {
         for (final attempt in attempts)
           KeypadFocusTarget(
             node: _node(attempt as Map),
-            label:
-                'Attempt ${attempt['attempt_number']}. ${attempt['status']}. ${QuizText.attemptResult(attempt)}. Press OK to review.',
+            label: t.quizHistoryAttemptRaw(
+              '${attempt['attempt_number']}',
+              '${attempt['status']}',
+              QuizText.attemptResult(attempt),
+            ),
             onActivate: () => _open(attempt),
             isEnabled: () => !_opening,
           ),
@@ -3568,7 +3623,7 @@ class _QuizHistoryScreenState extends State<QuizHistoryScreen> {
         appBar: AppBar(
           title: UIUtils.useStackedLayout(context)
               ? null
-              : Text('$quizTitle history'),
+              : Text(Speech.t.quizHistoryTitle(quizTitle)),
         ),
         body: SingleChildScrollView(
           padding: UIUtils.paddingAll(context, 12),
@@ -3579,7 +3634,7 @@ class _QuizHistoryScreenState extends State<QuizHistoryScreen> {
                 Semantics(
                   header: true,
                   child: Text(
-                    '$quizTitle history',
+                    Speech.t.quizHistoryTitle(quizTitle),
                     style: Theme.of(context).textTheme.headlineSmall,
                   ),
                 ),
@@ -3597,7 +3652,7 @@ class _QuizHistoryScreenState extends State<QuizHistoryScreen> {
                 ),
               ),
               if (attempts.isEmpty)
-                const ListTile(title: Text('No attempts yet'))
+                ListTile(title: Text(Speech.t.quizNoAttemptsYet))
               else
                 ...attempts.map(
                   (attempt) => Card(
@@ -3657,12 +3712,27 @@ class _QuizReviewScreenState extends State<QuizReviewScreen> {
     if (mounted) setState(() {});
   }
 
-  String _announcement(Map question, int index) =>
-      'Question ${index + 1}. ${question['is_correct'] == true ? 'Correct' : 'Incorrect'}. '
-      '${question['spoken_question_text'] ?? question['question_text']}. '
-      'Selected ${question['selected_option_spoken_text'] ?? question['selected_option_text'] ?? 'No answer'}. '
-      'Correct answer ${question['correct_option_spoken_text'] ?? question['correct_option_text']}. '
-      '${question['spoken_explanation'] ?? question['explanation'] ?? 'No explanation provided.'}';
+  String _announcement(Map question, int index) {
+    final t = Speech.t;
+    final number = '${index + 1}';
+    final text =
+        '${question['spoken_question_text'] ?? question['question_text']}';
+    final selected =
+        '${question['selected_option_spoken_text'] ?? question['selected_option_text'] ?? t.quizNoAnswerCapital}';
+    final answer =
+        '${question['correct_option_spoken_text'] ?? question['correct_option_text']}';
+    final explanation =
+        '${question['spoken_explanation'] ?? question['explanation'] ?? t.quizNoExplanation}';
+    return question['is_correct'] == true
+        ? t.quizReviewAnswerCorrect(number, text, selected, answer, explanation)
+        : t.quizReviewAnswerIncorrect(
+            number,
+            text,
+            selected,
+            answer,
+            explanation,
+          );
+  }
 
   @override
   void dispose() {
@@ -3686,13 +3756,14 @@ class _QuizReviewScreenState extends State<QuizReviewScreen> {
       onChange: _changeSpeechSpeed,
     );
     return KeypadInstructionWrapper(
-      screenName:
-          'Attempt review. ${questions.isEmpty && message != null ? message : '${questions.length} questions. Use up and down to review each answer.'}',
-      introduction: 'Press 7 or 9 to make quiz speech slower or faster.',
-      labels: const {
-        0: 'Go back',
-        playerSlowerKey: 'Slower quiz speech',
-        playerFasterKey: 'Faster quiz speech',
+      screenName: questions.isEmpty && message != null
+          ? Speech.t.quizReviewScreenMessage(message)
+          : Speech.t.quizReviewScreenRaw('${questions.length}'),
+      introduction: QuizText.speedHelp,
+      labels: {
+        0: QuizText.goBack,
+        playerSlowerKey: Speech.t.keySlowerQuizSpeech,
+        playerFasterKey: Speech.t.keyFasterQuizSpeech,
       },
       actions: {
         0: () => Navigator.pop(context),
@@ -3702,9 +3773,7 @@ class _QuizReviewScreenState extends State<QuizReviewScreen> {
       focusTargets: [
         KeypadFocusTarget(
           node: _speedFocus,
-          label:
-              'Quiz speech speed, ${_speechSpeed.description}. '
-              'Left or right to change, or press 7 or 9',
+          label: QuizText.speedTarget(_speechSpeed.description),
           onActivate: _speechSpeed.read,
           onDecrease: () => _changeSpeechSpeed(-1),
           onIncrease: () => _changeSpeechSpeed(1),
@@ -3724,7 +3793,7 @@ class _QuizReviewScreenState extends State<QuizReviewScreen> {
           ),
       ],
       child: Scaffold(
-        appBar: AppBar(title: const Text('Attempt review')),
+        appBar: AppBar(title: Text(Speech.t.quizAttemptReviewTitle)),
         body: questions.isEmpty && review['feedback_message'] is String
             ? SingleChildScrollView(
                 padding: UIUtils.paddingAll(context, 12),
@@ -3804,15 +3873,19 @@ class _AccessibleQuestionEditorDialogState
   final _cancelFocus = FocusNode(debugLabel: 'bank-question-cancel');
   final _saveFocus = FocusNode(debugLabel: 'bank-question-save');
   late final List<FocusNode> _optionFocuses;
-  static const _metadataLabels = {
-    'topics': 'Topics or concepts, one per line (optional)',
-    'spoken_question_text': 'Teacher-written spoken question',
-    'spoken_option_1': 'Spoken option 1',
-    'spoken_option_2': 'Spoken option 2',
-    'spoken_option_3': 'Spoken option 3',
-    'spoken_option_4': 'Spoken option 4',
-    'spoken_explanation': 'Teacher-written spoken explanation',
-  };
+  static Map<String, String> get _metadataLabels {
+    final t = Speech.t;
+    return {
+      'topics': t.quizMetaTopics,
+      'spoken_question_text': t.quizMetaSpokenQuestion,
+      'spoken_option_1': t.quizMetaSpokenOption('1'),
+      'spoken_option_2': t.quizMetaSpokenOption('2'),
+      'spoken_option_3': t.quizMetaSpokenOption('3'),
+      'spoken_option_4': t.quizMetaSpokenOption('4'),
+      'spoken_explanation': t.quizMetaSpokenExplanation,
+    };
+  }
+
   final _metadata = <String, TextEditingController>{};
   final _metadataFocuses = <String, FocusNode>{};
   final _notationFocus = FocusNode(debugLabel: 'bank-question-notation');
@@ -3886,8 +3959,7 @@ class _AccessibleQuestionEditorDialogState
         options.map((option) => option.toLowerCase()).toSet().length != 4 ||
         _correct == null) {
       setState(() {
-        _error =
-            'Enter a question, four different non-empty options, and then choose the correct answer.';
+        _error = QuizText.editorInvalid;
       });
       _revealQuizError(_validationKey);
       TtsService.speak(_error!);
@@ -3922,8 +3994,7 @@ class _AccessibleQuestionEditorDialogState
                     spokenExplanation.isEmpty)))) {
       setState(() {
         _showOptional = true;
-        _error =
-            'Use up to 20 different topics of 80 characters each. Described notation needs a spoken question, all four spoken options, and a spoken explanation if an explanation is provided. Review and confirm every spoken alternative before saving.';
+        _error = QuizText.editorSpokenInvalid;
       });
       _revealQuizError(_validationKey);
       TtsService.speak(_error!);
@@ -3981,85 +4052,90 @@ class _AccessibleQuestionEditorDialogState
     setState(() => _correct = next);
     final text = _options[next].text.trim();
     TtsService.speak(
-      'Option ${next + 1} selected as correct answer${text.isEmpty ? '' : ', $text'}',
+      text.isEmpty
+          ? Speech.t.quizCorrectSelected('${next + 1}')
+          : Speech.t.quizCorrectSelectedWithText('${next + 1}', text),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final t = Speech.t;
     final title = widget.initialQuestion == null
-        ? 'Create bank question'
-        : 'Edit bank question';
+        ? t.quizCreateBankQuestion
+        : t.quizEditBankQuestion;
+    final metadataLabels = _metadataLabels;
     return KeypadInstructionWrapper(
       screenName: title,
-      navigationSections:
-          'question text, four answer fields, correct-answer selection, optional spoken descriptions, and save or cancel',
-      labels: const {0: 'Cancel', 9: 'Save question'},
+      navigationSections: t.quizEditorNavigation,
+      labels: {0: QuizText.cancel, 9: t.quizSaveQuestion},
       actions: {0: () => Navigator.pop(context), 9: _save},
       navigationController: _navigationController,
       focusTargets: [
         KeypadFocusTarget(
           node: _questionFocus,
-          label: 'Question text. Press OK to edit',
+          label: t.quizPressOkToEdit(t.quizQuestionTextTitle),
           isTextField: true,
         ),
         for (var index = 0; index < 4; index++)
           KeypadFocusTarget(
             node: _optionFocuses[index],
-            label: 'Option ${index + 1}. Press OK to edit',
+            label: t.quizPressOkToEdit(t.quizOptionNumber('${index + 1}')),
             isTextField: true,
           ),
         KeypadFocusTarget(
           node: _correctFocus,
           label: _correct == null
-              ? 'Correct answer not selected. Use left or right to choose'
-              : 'Option ${_correct! + 1}, ${_options[_correct!].text}, is the correct answer. Use left or right to change',
+              ? t.quizCorrectNotSelected
+              : t.quizCorrectIsOption(
+                  '${_correct! + 1}',
+                  _options[_correct!].text,
+                ),
           onActivate: () => _cycleCorrect(1),
           onDecrease: () => _cycleCorrect(-1),
           onIncrease: () => _cycleCorrect(1),
         ),
         KeypadFocusTarget(
           node: _optionalFocus,
-          label:
-              '${_showOptional ? 'Hide' : 'Show'} optional explanation, topics and spoken notation',
+          label: _showOptional
+              ? t.quizHideOptionalExplanation
+              : t.quizShowOptionalExplanation,
           onActivate: () => setState(() => _showOptional = !_showOptional),
         ),
         if (_showOptional) ...[
           KeypadFocusTarget(
             node: _explanationFocus,
-            label: 'Optional answer explanation. Press OK to edit',
+            label: t.quizPressOkToEdit(t.quizOptionalExplanation),
             isTextField: true,
           ),
           KeypadFocusTarget(
             node: _notationFocus,
-            label:
-                'Content: ${_described ? 'teacher-described notation or diagram' : 'English plain text'}. Press OK to change',
+            label: t.quizPressOkToChange(QuizText.notation(_described)),
             onActivate: () => setState(() {
               _described = !_described;
               _reviewed = false;
             }),
           ),
-          for (final key in _metadataLabels.keys)
+          for (final key in metadataLabels.keys)
             KeypadFocusTarget(
               node: _metadataFocuses[key]!,
-              label: '${_metadataLabels[key]}. Press OK to edit',
+              label: t.quizPressOkToEdit(metadataLabels[key]!),
               isTextField: true,
             ),
           KeypadFocusTarget(
             node: _reviewFocus,
-            label:
-                'Spoken alternatives reviewed by teacher: ${_reviewed ? 'yes' : 'no'}. Press OK to change',
+            label: t.quizPressOkToChange(QuizText.reviewed(_reviewed)),
             onActivate: () => setState(() => _reviewed = !_reviewed),
           ),
         ],
         KeypadFocusTarget(
           node: _cancelFocus,
-          label: 'Cancel question',
+          label: t.quizCancelQuestion,
           onActivate: () => Navigator.pop(context),
         ),
         KeypadFocusTarget(
           node: _saveFocus,
-          label: 'Save question',
+          label: t.quizSaveQuestion,
           onActivate: _save,
         ),
       ],
@@ -4074,9 +4150,7 @@ class _AccessibleQuestionEditorDialogState
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(title, style: Theme.of(context).textTheme.headlineSmall),
-                const Text(
-                  'Complete the question and all four options, then choose the correct answer. For equations or diagrams, expand optional spoken notation and review the alternatives.',
-                ),
+                Text(Speech.t.quizEditorIntro),
                 const SizedBox(height: 12),
                 if (widget.initialQuestion != null)
                   Text(
@@ -4093,8 +4167,8 @@ class _AccessibleQuestionEditorDialogState
                   focusNode: _questionFocus,
                   onTap: () =>
                       _navigationController.enterTextEditing(_questionFocus),
-                  decoration: const InputDecoration(
-                    label: Text('Question text'),
+                  decoration: InputDecoration(
+                    label: Text(Speech.t.quizQuestionTextTitle),
                     counterText: '',
                   ),
                   minLines: 2,
@@ -4112,7 +4186,7 @@ class _AccessibleQuestionEditorDialogState
                     ),
                     onChanged: (_) => setState(() => _reviewed = false),
                     decoration: InputDecoration(
-                      label: Text('Option ${index + 1}'),
+                      label: Text(Speech.t.quizOptionNumber('${index + 1}')),
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -4122,15 +4196,16 @@ class _AccessibleQuestionEditorDialogState
                   onPressed: () => _cycleCorrect(1),
                   child: Column(
                     children: [
-                      const Text('Which answer is correct?'),
+                      Text(Speech.t.quizWhichCorrect),
                       Text(
                         _correct == null
-                            ? 'Choose the correct option'
-                            : 'Option ${_correct! + 1}: ${_options[_correct!].text}',
+                            ? Speech.t.quizChooseCorrectOption
+                            : Speech.t.quizOptionWithText(
+                                '${_correct! + 1}',
+                                _options[_correct!].text,
+                              ),
                       ),
-                      const Text(
-                        'Use Left or Right to change. OK or tap selects the next option.',
-                      ),
+                      Text(Speech.t.quizCorrectChoiceHint),
                     ],
                   ),
                 ),
@@ -4139,7 +4214,9 @@ class _AccessibleQuestionEditorDialogState
                   onPressed: () =>
                       setState(() => _showOptional = !_showOptional),
                   child: Text(
-                    '${_showOptional ? 'Hide' : 'Show'} optional explanation, topics and spoken notation',
+                    _showOptional
+                        ? Speech.t.quizHideOptionalExplanation
+                        : Speech.t.quizShowOptionalExplanation,
                   ),
                 ),
                 if (_showOptional) ...[
@@ -4150,8 +4227,8 @@ class _AccessibleQuestionEditorDialogState
                     onTap: () => _navigationController.enterTextEditing(
                       _explanationFocus,
                     ),
-                    decoration: const InputDecoration(
-                      label: Text('Explanation (optional)'),
+                    decoration: InputDecoration(
+                      label: Text(Speech.t.quizExplanationOptional),
                       counterText: '',
                     ),
                     minLines: 2,
@@ -4166,12 +4243,12 @@ class _AccessibleQuestionEditorDialogState
                       _reviewed = false;
                     }),
                     child: Text(
-                      'Content: ${_described ? 'Teacher-described notation or diagram' : 'English plain text'}',
+                      _described
+                          ? Speech.t.quizContentDescribedText
+                          : Speech.t.quizContentPlain,
                     ),
                   ),
-                  const Text(
-                    'No automatic equation or diagram interpretation is provided. Teachers must write and review English spoken alternatives. For described notation, include the question, all options, and any explanation.',
-                  ),
+                  Text(Speech.t.quizNotationNote),
                   for (final key in _metadataLabels.keys)
                     TextField(
                       controller: _metadata[key],
@@ -4193,20 +4270,18 @@ class _AccessibleQuestionEditorDialogState
                     value: _reviewed,
                     onChanged: (value) =>
                         setState(() => _reviewed = value == true),
-                    title: const Text(
-                      'I have reviewed the spoken alternatives for accuracy',
-                    ),
+                    title: Text(Speech.t.quizReviewedAlternatives),
                   ),
                 ],
                 TextButton(
                   focusNode: _cancelFocus,
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('0: Cancel'),
+                  child: Text(Speech.t.uiCancelKey0),
                 ),
                 ElevatedButton(
                   focusNode: _saveFocus,
                   onPressed: _save,
-                  child: const Text('9: Save question'),
+                  child: Text(Speech.t.quizSaveQuestionKey9),
                 ),
               ],
             ),
@@ -4308,13 +4383,17 @@ class _AccessibleQuizEditorDialogState
     if (value == null) return emptyLabel;
     final local = value.toLocal();
     final minute = local.minute.toString().padLeft(2, '0');
-    return '${local.day}/${local.month}/${local.year} at ${local.hour}:$minute';
+    return Speech.t.quizNumericDateTime(
+      '${local.day}',
+      '${local.month}',
+      '${local.year}',
+      '${local.hour}',
+      minute,
+    );
   }
 
   Future<void> _pickOpeningTime() async {
-    await TtsService.speak(
-      'Set opening time using the date and time number fields.',
-    );
+    await TtsService.speak(QuizText.setOpening);
     final value = await _pickDateTime(_opensAt);
     if (value == null || !mounted) return;
     setState(() => _opensAt = value);
@@ -4323,9 +4402,7 @@ class _AccessibleQuizEditorDialogState
   }
 
   Future<void> _pickClosingTime() async {
-    await TtsService.speak(
-      'Set closing time using the date and time number fields.',
-    );
+    await TtsService.speak(QuizText.setClosing);
     final value = await _pickDateTime(_closesAt);
     if (value == null || !mounted) return;
     setState(() => _closesAt = value);
@@ -4362,7 +4439,7 @@ class _AccessibleQuizEditorDialogState
         (!widget.practice && _policy == 'scheduled' && _releaseAt == null)) {
       setState(() {
         _showOptional = true;
-        _error = 'Check the title, limits, and schedule.';
+        _error = Speech.t.quizCheckTitleLimits;
       });
       TtsService.speak(_error!);
       return;
@@ -4410,58 +4487,58 @@ class _AccessibleQuizEditorDialogState
 
   @override
   Widget build(BuildContext context) {
+    final t = Speech.t;
     return KeypadInstructionWrapper(
-      navigationSections:
-          'title, optional description, timing and attempt settings, feedback and shuffle choices, and continue or cancel',
+      navigationSections: t.quizSettingsNavigation,
       screenName: widget.initialQuiz != null
-          ? 'Change quiz title and optional settings. Saving does not publish.'
+          ? t.quizChangeSettingsScreen
           : widget.practice
-          ? 'Create untimed ungraded practice. Unlimited retries and immediate feedback.'
-          : 'Create quiz draft',
+          ? t.quizCreatePracticeScreen
+          : QuizText.createQuiz,
       labels: {
-        0: 'Cancel',
+        0: QuizText.cancel,
         8: widget.initialQuiz == null
-            ? 'Continue to questions'
-            : 'Save settings and return to review',
+            ? t.quizContinueToQuestions
+            : t.quizSaveSettingsReturn,
       },
       actions: {0: () => Navigator.pop(context), 8: _save},
       navigationController: _navigationController,
       focusTargets: [
         KeypadFocusTarget(
           node: _titleFocus,
-          label: 'Quiz title. Press OK to edit',
+          label: t.quizPressOkToEdit(t.quizQuizTitle),
           isTextField: true,
         ),
         KeypadFocusTarget(
           node: _optionalFocus,
-          label:
-              '${_showOptional ? 'Hide' : 'Show'} optional settings: description, attempts, timing, feedback and shuffle',
+          label: _showOptional
+              ? t.quizHideOptionalSettings
+              : t.quizShowOptionalSettings,
           onActivate: () => setState(() => _showOptional = !_showOptional),
         ),
         if (_showOptional) ...[
           KeypadFocusTarget(
             node: _descriptionFocus,
-            label: 'Optional quiz description. Press OK to edit',
+            label: t.quizPressOkToEdit(t.quizOptionalDescription),
             isTextField: true,
           ),
           KeypadFocusTarget(
             node: _attemptsFocus,
-            label:
-                'Attempt limit, currently ${_attempts.text}. Press OK to edit',
+            label: QuizText.attemptLimit(_attempts.text),
             isTextField: true,
             isEnabled: () => !widget.practice,
           ),
           KeypadFocusTarget(
             node: _timeLimitFocus,
-            label:
-                'Optional time limit in minutes, ${_timeLimit.text.isEmpty ? 'not set' : _timeLimit.text}. Press OK to edit',
+            label: QuizText.timeLimitField(_timeLimit.text),
             isTextField: true,
             isEnabled: () => !widget.practice,
           ),
           KeypadFocusTarget(
             node: _opensFocus,
-            label:
-                '${_dateTimeLabel(_opensAt, 'No opening time set')}. Press OK to set it. Use left to clear it',
+            label: t.quizSetOrClear(
+              _dateTimeLabel(_opensAt, t.quizNoOpeningTime),
+            ),
             onActivate: _pickOpeningTime,
             onDecrease: () {
               setState(() => _opensAt = null);
@@ -4471,8 +4548,9 @@ class _AccessibleQuizEditorDialogState
           ),
           KeypadFocusTarget(
             node: _closesFocus,
-            label:
-                '${_dateTimeLabel(_closesAt, 'No closing time set')}. Press OK to set it. Use left to clear it',
+            label: t.quizSetOrClear(
+              _dateTimeLabel(_closesAt, t.quizNoClosingTime),
+            ),
             onActivate: _pickClosingTime,
             onDecrease: () {
               setState(() => _closesAt = null);
@@ -4482,8 +4560,9 @@ class _AccessibleQuizEditorDialogState
           ),
           KeypadFocusTarget(
             node: _shuffleQuestionsFocus,
-            label:
-                'Shuffle questions ${_shuffleQuestions ? 'on' : 'off'}. Press OK or left or right to toggle',
+            label: t.quizShuffleQuestionsToggle(
+              SpokenFormat.onOff(_shuffleQuestions),
+            ),
             onActivate: () =>
                 setState(() => _shuffleQuestions = !_shuffleQuestions),
             onDecrease: () =>
@@ -4493,8 +4572,9 @@ class _AccessibleQuizEditorDialogState
           ),
           KeypadFocusTarget(
             node: _shuffleOptionsFocus,
-            label:
-                'Shuffle answer options ${_shuffleOptions ? 'on' : 'off'}. Press OK or left or right to toggle',
+            label: t.quizShuffleOptionsToggle(
+              SpokenFormat.onOff(_shuffleOptions),
+            ),
             onActivate: () =>
                 setState(() => _shuffleOptions = !_shuffleOptions),
             onDecrease: () =>
@@ -4504,21 +4584,22 @@ class _AccessibleQuizEditorDialogState
           ),
           KeypadFocusTarget(
             node: _cancelFocus,
-            label: 'Cancel quiz creation',
+            label: t.quizCancelQuizCreation,
             onActivate: () => Navigator.pop(context),
           ),
           if (!widget.practice) ...[
             KeypadFocusTarget(
               node: _policyFocus,
-              label: 'Feedback policy $_policy. Left or right changes it',
+              label: t.quizFeedbackPolicyTarget(_policy),
               onActivate: () => _cyclePolicy(1),
               onDecrease: () => _cyclePolicy(-1),
               onIncrease: () => _cyclePolicy(1),
             ),
             KeypadFocusTarget(
               node: _releaseFocus,
-              label:
-                  'Scheduled feedback release ${_dateTimeLabel(_releaseAt, 'not set')}',
+              label: t.quizScheduledRelease(
+                _dateTimeLabel(_releaseAt, t.quizNotSet),
+              ),
               isEnabled: () => _policy == 'scheduled',
               onActivate: _pickRelease,
             ),
@@ -4527,8 +4608,8 @@ class _AccessibleQuizEditorDialogState
         KeypadFocusTarget(
           node: _saveFocus,
           label: widget.initialQuiz == null
-              ? 'Save draft and continue to questions'
-              : 'Save settings and return to review',
+              ? t.quizSaveDraftContinue
+              : t.quizSaveSettingsReturn,
           onActivate: _save,
         ),
       ],
@@ -4544,22 +4625,16 @@ class _AccessibleQuizEditorDialogState
               children: [
                 Text(
                   widget.initialQuiz != null
-                      ? 'Change quiz settings'
+                      ? Speech.t.quizChangeSettings
                       : widget.practice
-                      ? 'Create untimed practice'
-                      : 'Step 1: Name your quiz',
+                      ? Speech.t.quizCreatePracticeText
+                      : Speech.t.quizStepName,
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
-                if (widget.practice)
-                  const Text(
-                    'Practice has no per-attempt timer or retry cap. An optional closing time still ends availability.',
-                  ),
+                if (widget.practice) Text(Speech.t.quizPracticeInfo),
                 Semantics(
-                  label:
-                      'Use up and down to move through quiz settings. Press OK to edit text fields. Opening and closing times are optional.',
-                  child: const Text(
-                    'Use Up and Down to move through settings, and OK to edit. Saving a draft or its settings does not publish the quiz.',
-                  ),
+                  label: Speech.t.quizSettingsNavLabel,
+                  child: Text(Speech.t.quizSettingsNavText),
                 ),
                 const SizedBox(height: 10),
                 if (_error != null)
@@ -4569,21 +4644,25 @@ class _AccessibleQuizEditorDialogState
                   focusNode: _titleFocus,
                   onTap: () =>
                       _navigationController.enterTextEditing(_titleFocus),
-                  decoration: const InputDecoration(label: Text('Quiz title')),
+                  decoration: InputDecoration(
+                    label: Text(Speech.t.quizQuizTitle),
+                  ),
                 ),
                 Text(
                   widget.initialQuiz != null
-                      ? 'Review and change the saved settings below. Saving does not publish the quiz.'
+                      ? Speech.t.quizSettingsReviewInfo
                       : widget.practice
-                      ? 'Ungraded practice. Unlimited attempts, no timer, immediate feedback.'
-                      : 'Default graded settings: one attempt, no timer, feedback after final submission.',
+                      ? Speech.t.quizPracticeDefaults
+                      : Speech.t.quizGradedDefaults,
                 ),
                 OutlinedButton(
                   focusNode: _optionalFocus,
                   onPressed: () =>
                       setState(() => _showOptional = !_showOptional),
                   child: Text(
-                    '${_showOptional ? 'Hide' : 'Show'} optional settings',
+                    _showOptional
+                        ? Speech.t.quizHideOptionalSettingsText
+                        : Speech.t.quizShowOptionalSettingsText,
                   ),
                 ),
                 if (_showOptional) ...[
@@ -4594,8 +4673,8 @@ class _AccessibleQuizEditorDialogState
                     onTap: () => _navigationController.enterTextEditing(
                       _descriptionFocus,
                     ),
-                    decoration: const InputDecoration(
-                      label: Text('Description (optional)'),
+                    decoration: InputDecoration(
+                      label: Text(Speech.t.libraryDescriptionOptional),
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -4606,8 +4685,8 @@ class _AccessibleQuizEditorDialogState
                     onTap: () =>
                         _navigationController.enterTextEditing(_attemptsFocus),
                     keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      label: Text('Attempt limit, 1 to 20'),
+                    decoration: InputDecoration(
+                      label: Text(Speech.t.quizAttemptLimitFieldText),
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -4618,55 +4697,66 @@ class _AccessibleQuizEditorDialogState
                     onTap: () =>
                         _navigationController.enterTextEditing(_timeLimitFocus),
                     keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      label: Text('Time limit in minutes (optional)'),
+                    decoration: InputDecoration(
+                      label: Text(Speech.t.quizTimeLimitFieldText),
                     ),
                   ),
                   const SizedBox(height: 10),
-                  if (widget.practice)
-                    const Text(
-                      'Untimed and ungraded, unlimited retries. Availability times still apply if set.',
-                    ),
+                  if (widget.practice) Text(Speech.t.quizUntimedInfo),
                   if (!widget.practice) ...[
                     TextButton(
                       focusNode: _policyFocus,
                       onPressed: () => _cyclePolicy(1),
-                      child: Text('Feedback: $_policy'),
+                      child: Text(
+                        Speech.t.quizFeedbackValue(
+                          QuizText.policyName(_policy),
+                        ),
+                      ),
                     ),
                     TextButton(
                       focusNode: _releaseFocus,
                       onPressed: _policy == 'scheduled' ? _pickRelease : null,
                       child: Text(
-                        'Release: ${_dateTimeLabel(_releaseAt, 'not set')}',
+                        Speech.t.quizReleaseValue(
+                          _dateTimeLabel(_releaseAt, Speech.t.quizNotSet),
+                        ),
                       ),
                     ),
                   ],
                   Semantics(
                     button: true,
-                    label:
-                        '${_dateTimeLabel(_opensAt, 'No opening time set')}. Press OK to set opening time. Left clears it.',
+                    label: Speech.t.quizOpeningTimeLabel(
+                      _dateTimeLabel(_opensAt, Speech.t.quizNoOpeningTimeSet),
+                    ),
                     child: ListTile(
                       focusNode: _opensFocus,
                       leading: const Icon(Icons.event_available),
-                      title: Text(_dateTimeLabel(_opensAt, 'No opening time')),
-                      subtitle: const Text(
-                        'Optional · enter year, month, day, hour and minute',
+                      title: Text(
+                        _dateTimeLabel(
+                          _opensAt,
+                          Speech.t.quizNoOpeningTimeShort,
+                        ),
                       ),
+                      subtitle: Text(Speech.t.quizOpeningTimeHint),
                       trailing: const Icon(Icons.edit_calendar),
                       onTap: _pickOpeningTime,
                     ),
                   ),
                   Semantics(
                     button: true,
-                    label:
-                        '${_dateTimeLabel(_closesAt, 'No closing time set')}. Press OK to set closing time. Left clears it.',
+                    label: Speech.t.quizClosingTimeLabel(
+                      _dateTimeLabel(_closesAt, Speech.t.quizNoClosingTimeSet),
+                    ),
                     child: ListTile(
                       focusNode: _closesFocus,
                       leading: const Icon(Icons.event_busy),
-                      title: Text(_dateTimeLabel(_closesAt, 'No closing time')),
-                      subtitle: const Text(
-                        'Optional · must be after opening time',
+                      title: Text(
+                        _dateTimeLabel(
+                          _closesAt,
+                          Speech.t.quizNoClosingTimeShort,
+                        ),
                       ),
+                      subtitle: Text(Speech.t.quizClosingTimeHint),
                       trailing: const Icon(Icons.edit_calendar),
                       onTap: _pickClosingTime,
                     ),
@@ -4676,28 +4766,28 @@ class _AccessibleQuizEditorDialogState
                     value: _shuffleQuestions,
                     onChanged: (value) =>
                         setState(() => _shuffleQuestions = value),
-                    title: const Text('Shuffle questions once per attempt'),
+                    title: Text(Speech.t.quizShuffleQuestions),
                   ),
                   SwitchListTile(
                     focusNode: _shuffleOptionsFocus,
                     value: _shuffleOptions,
                     onChanged: (value) =>
                         setState(() => _shuffleOptions = value),
-                    title: const Text('Shuffle options once per attempt'),
+                    title: Text(Speech.t.quizShuffleOptions),
                   ),
                 ],
                 TextButton(
                   focusNode: _cancelFocus,
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('0: Cancel'),
+                  child: Text(Speech.t.uiCancelKey0),
                 ),
                 ElevatedButton(
                   focusNode: _saveFocus,
                   onPressed: _save,
                   child: Text(
                     widget.initialQuiz == null
-                        ? '8: Continue to questions'
-                        : '8: Save settings',
+                        ? Speech.t.quizContinueToQuestionsKey8
+                        : Speech.t.quizSaveSettingsKey8,
                   ),
                 ),
               ],

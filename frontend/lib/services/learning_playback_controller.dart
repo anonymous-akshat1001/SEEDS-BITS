@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart'
     show MissingPlatformDirectoryException;
 
+import '../l10n/speech.dart';
 import 'learning_progress_store.dart';
 import 'activity_telemetry.dart';
 
@@ -64,21 +65,13 @@ class LearningPlaybackController extends ChangeNotifier {
     } on LearningStorageException {
       rethrow;
     } on MissingPluginException {
-      throw const LearningStorageException(
-        'Learning storage is unavailable on this device. Your existing data has not been changed.',
-      );
+      throw LearningStorageException(Speech.t.libraryErrStorageUnavailable);
     } on PlatformException {
-      throw const LearningStorageException(
-        'Learning storage could not be opened. Check free space and retry.',
-      );
+      throw LearningStorageException(Speech.t.libraryErrStorageNotOpened);
     } on FileSystemException {
-      throw const LearningStorageException(
-        'Learning storage could not be opened. Check free space and retry.',
-      );
+      throw LearningStorageException(Speech.t.libraryErrStorageNotOpened);
     } on MissingPlatformDirectoryException {
-      throw const LearningStorageException(
-        'This device did not provide a learning storage location. Your existing data has not been changed.',
-      );
+      throw LearningStorageException(Speech.t.libraryErrNoStorageLocation);
     }
   }
 
@@ -238,9 +231,7 @@ class LearningPlaybackController extends ChangeNotifier {
     final generation = _generation;
     final current = _lesson;
     if (!_ready || current == null) {
-      throw const LearningStorageException(
-        'Start a lesson before retrying progress saving.',
-      );
+      throw LearningStorageException(Speech.t.libraryErrStartLessonFirst);
     }
     if (_readOnly) {
       final restored = await (await _store()).lesson(current.audioId);
@@ -250,8 +241,7 @@ class LearningPlaybackController extends ChangeNotifier {
     }
     if (!await flush()) {
       throw LearningStorageException(
-        _issue ??
-            'Learning progress was not saved. Retry when storage is available.',
+        _issue ?? Speech.t.libraryErrProgressNotSaved,
       );
     }
   }
@@ -260,7 +250,7 @@ class LearningPlaybackController extends ChangeNotifier {
     if (!_ready ||
         position.isNegative ||
         (_duration != null && position > _duration!)) {
-      throw ArgumentError('Choose a position within the lesson');
+      throw ArgumentError(Speech.t.libraryErrChoosePosition);
     }
     final generation = _generation;
     await seek(position);
@@ -283,7 +273,7 @@ class LearningPlaybackController extends ChangeNotifier {
 
   Future<void> changeSpeed(double speed) async {
     if (!_ready || !speed.isFinite || speed < 0.25 || speed > 3) {
-      throw ArgumentError('Choose a playback speed from 0.25 to 3');
+      throw ArgumentError(Speech.t.libraryErrChooseSpeed);
     }
     final generation = _generation;
     await setSpeed(speed);
@@ -305,11 +295,11 @@ class LearningPlaybackController extends ChangeNotifier {
     final audioId = _lesson?.audioId;
     final position = at ?? _position;
     if (position.isNegative || (_duration != null && position > _duration!)) {
-      throw ArgumentError('Choose a bookmark position within the lesson');
+      throw ArgumentError(Speech.t.libraryErrChooseBookmarkPosition);
     }
     if (!await flush()) {
       throw LearningStorageException(
-        _issue ?? 'Progress saving is unavailable. The bookmark was not saved.',
+        _issue ?? Speech.t.libraryErrBookmarkNotSaved,
       );
     }
     if (_closed || generation != _generation || audioId == null) return;
@@ -324,8 +314,8 @@ class LearningPlaybackController extends ChangeNotifier {
 
   Future<void> removeBookmark(int id) async {
     if (!canSave || _lesson == null) {
-      throw const LearningStorageException(
-        'Bookmark changes are unavailable until progress saving is restored.',
+      throw LearningStorageException(
+        Speech.t.libraryErrBookmarkChangesUnavailable,
       );
     }
     final generation = _generation;
@@ -348,8 +338,7 @@ class LearningPlaybackController extends ChangeNotifier {
     final audioId = _lesson?.audioId;
     if (!await flush()) {
       throw LearningStorageException(
-        _issue ??
-            'Progress saving is unavailable. Repeat points were not saved.',
+        _issue ?? Speech.t.libraryErrRepeatNotSaved,
       );
     }
     if (_closed || generation != _generation || audioId == null) return;
@@ -365,9 +354,7 @@ class LearningPlaybackController extends ChangeNotifier {
 
   void toggleRepeat() {
     if (!_ready || !hasRepeatRegion) {
-      throw ArgumentError(
-        'Set a start point and a later end point within this lesson first',
-      );
+      throw ArgumentError(Speech.t.libraryErrSetRepeatFirst);
     }
     _repeatEnabled = !_repeatEnabled;
     notifyListeners();
@@ -390,7 +377,7 @@ class LearningPlaybackController extends ChangeNotifier {
       debugPrint('[LEARNING] Repeat playback failed (${error.runtimeType})');
       if (!_closed && generation == _generation) {
         _repeatEnabled = false;
-        onIssue('Repeat playback failed. Pause and try again.');
+        onIssue(Speech.t.libraryErrRepeatFailed);
       }
     } finally {
       if (!_closed && generation == _generation) {

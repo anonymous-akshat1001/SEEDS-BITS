@@ -22,6 +22,7 @@ import '../services/auth_session_service.dart';
 import '../utils/session_search.dart';
 import '../widgets/keypad_paged_list.dart';
 import '../widgets/accessible_tile.dart';
+import '../l10n/speech.dart';
 
 // Create Teacher Dashboard Widget
 class TeacherDashboard extends StatefulWidget {
@@ -89,7 +90,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     final name =
         prefs.getString('user_name') ??
         prefs.getString('name') ??
-        'Teacher $id';
+        Speech.t.teacherHomeFallbackName('$id');
 
     // saves value into state and forces UI rebuild
     setState(() {
@@ -254,8 +255,8 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
           builder: (_) => KeypadConfirmationDialog(
             title: DashboardText.createdTitle,
             message: DashboardText.startNow(title),
-            cancelLabel: 'Later',
-            confirmLabel: 'Start now',
+            cancelLabel: Speech.t.teacherHomeLater,
+            confirmLabel: Speech.t.teacherHomeStartNow,
             cancelKey: 0,
             confirmKey: 1,
           ),
@@ -266,7 +267,9 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
         }
       }
     } else {
-      MessageCenter.error(result.failure?.message ?? DashboardText.requestFailed);
+      MessageCenter.error(
+        result.failure?.message ?? DashboardText.requestFailed,
+      );
     }
   }
 
@@ -277,12 +280,12 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     }
 
     // Find the session title from the sessions list
-    String sessionTitle = 'Session';
+    String sessionTitle = Speech.t.sessionDefaultTitle;
     String? className;
     String? subjectName;
     for (final s in sessions) {
       if (s['session_id'] == sessionId) {
-        sessionTitle = s['title'] ?? 'Session';
+        sessionTitle = s['title'] ?? Speech.t.sessionDefaultTitle;
         className = s['class_name']?.toString();
         subjectName = s['subject_name']?.toString();
         break;
@@ -348,7 +351,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
       context,
       MaterialPageRoute(
         builder: (listContext) => KeypadPagedList<Map<String, dynamic>>(
-          title: 'Choose class and subject',
+          title: Speech.t.teacherHomeChooseWorkspaceTitle,
           scope: (currentUserId, 'teacher-workspaces'),
           loadPage: (query) async {
             final matches = workspaces
@@ -368,8 +371,10 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
               nextCursor: end < matches.length ? '$end' : null,
             );
           },
-          labelOf: (entry) =>
-              '${entry['class_name']}, ${entry['subject_name']}',
+          labelOf: (entry) => Speech.t.teacherHomeWorkspaceItem(
+            '${entry['class_name']}',
+            '${entry['subject_name']}',
+          ),
           onSelected: (entry) => Navigator.pop(listContext, entry),
         ),
       ),
@@ -383,8 +388,11 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
       if (!mounted) return;
       _keypadController.focusAndAnnounce(
         _workspaceFocusNode,
-        '${selected['class_name']}, ${selected['subject_name']} selected. '
-        '$_status. Press 7 to choose another workspace.',
+        Speech.t.teacherHomeWorkspaceChosen(
+          '${selected['class_name']}',
+          '${selected['subject_name']}',
+          _status,
+        ),
       );
     });
   }
@@ -436,8 +444,10 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
         builder: (_) => TeacherJourneysScreen(
           classId: workspace['class_id'] as int,
           subjectId: workspace['subject_id'] as int,
-          workspaceName:
-              '${workspace['class_name']}, ${workspace['subject_name']}',
+          workspaceName: Speech.t.teacherHomeWorkspaceItem(
+            '${workspace['class_name']}',
+            '${workspace['subject_name']}',
+          ),
         ),
       ),
     );
@@ -520,7 +530,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
 
   String _sessionLabel(dynamic session) {
     final id = session['session_id'];
-    final title = '${session['title'] ?? 'Untitled session'}';
+    final title = '${session['title'] ?? Speech.t.teacherHomeUntitledSession}';
     final place = [
       session['class_name'],
       session['subject_name'],
@@ -626,8 +636,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
       ),
       KeypadFocusTarget(
         node: _searchFocusNode,
-        label:
-            'Search sessions. Press OK, then type a name or the session number',
+        label: Speech.t.teacherHomeSearchLabel,
         isTextField: true,
       ),
       KeypadFocusTarget(
@@ -638,7 +647,8 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     ];
     for (final session in _filteredSessions) {
       final id = int.tryParse((session['session_id'] ?? '').toString()) ?? 0;
-      final title = '${session['title'] ?? 'session'}';
+      final title =
+          '${session['title'] ?? Speech.t.teacherHomeSessionFallback}';
       final isActive = session['is_active'] == true;
       targets.add(
         KeypadFocusTarget(
@@ -679,8 +689,8 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
       builder: (_) => KeypadConfirmationDialog(
         title: DashboardText.endTitle,
         message: DashboardText.endMessage(title),
-        cancelLabel: 'Keep session open',
-        confirmLabel: 'End for everyone',
+        cancelLabel: Speech.t.teacherHomeKeepSessionOpen,
+        confirmLabel: Speech.t.teacherHomeEndForEveryone,
         cancelKey: 0,
         confirmKey: 1,
       ),
@@ -705,8 +715,8 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
       builder: (_) => KeypadConfirmationDialog(
         title: DashboardText.reactivateTitle,
         message: DashboardText.reactivateMessage(title),
-        cancelLabel: 'Keep ended',
-        confirmLabel: 'Reactivate',
+        cancelLabel: Speech.t.teacherHomeKeepEnded,
+        confirmLabel: Speech.t.teacherHomeReactivate,
         cancelKey: 0,
         confirmKey: 1,
       ),
@@ -727,8 +737,8 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
       builder: (_) => KeypadConfirmationDialog(
         title: DashboardText.openNowTitle,
         message: DashboardText.openNowMessage(title),
-        cancelLabel: 'Open later',
-        confirmLabel: 'Open now',
+        cancelLabel: Speech.t.teacherHomeOpenLater,
+        confirmLabel: Speech.t.teacherHomeOpenNow,
         cancelKey: 0,
         confirmKey: 1,
       ),
@@ -743,8 +753,8 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
       builder: (_) => KeypadConfirmationDialog(
         title: DashboardText.deleteTitle,
         message: DashboardText.deleteMessage(title),
-        cancelLabel: 'Keep session',
-        confirmLabel: 'Delete permanently',
+        cancelLabel: Speech.t.teacherHomeKeepSession,
+        confirmLabel: Speech.t.teacherHomeDeletePermanently,
         cancelKey: 0,
         confirmKey: 1,
       ),
@@ -846,7 +856,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
         title: UIUtils.useStackedLayout(context)
             ? null
             : Text(
-                "Teacher Dashboard",
+                Speech.t.dashboardTeacherScreen,
                 style: TextStyle(
                   fontSize: UIUtils.fontSize(context, 18),
                   fontWeight: FontWeight.w600,
@@ -865,7 +875,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
               ),
               child: Center(
                 child: Semantics(
-                  label: 'Signed in as ${currentUserName!}',
+                  label: Speech.t.dashboardSignedInAs(currentUserName!),
                   excludeSemantics: true,
                   child: Row(
                     children: [
@@ -891,12 +901,12 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
               size: UIUtils.iconSize(context, 22),
               color: UIUtils.accentColor,
             ),
-            tooltip: '1: Refresh sessions',
+            tooltip: Speech.t.dashboardRefreshSessionsKey1,
             onPressed: _loadSessions,
           ),
           IconButton(
             focusNode: _logoutFocusNode,
-            tooltip: '0: Log out',
+            tooltip: Speech.t.dashboardLogOutKey0,
             onPressed: _logout,
             icon: Icon(Icons.logout, color: UIUtils.accentColor),
           ),
@@ -914,14 +924,14 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                   Semantics(
                     header: true,
                     child: Text(
-                      'Teacher Dashboard',
+                      Speech.t.dashboardTeacherScreen,
                       style: Theme.of(context).textTheme.headlineSmall,
                     ),
                   ),
                 if (_isRefreshing) ...[
                   Semantics(
                     liveRegion: true,
-                    label: 'Refreshing sessions',
+                    label: Speech.t.dashboardRefreshingSessions,
                     child: LinearProgressIndicator(),
                   ),
                   SizedBox(height: UIUtils.spacing(context, 8)),
@@ -940,7 +950,9 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "Welcome, ${currentUserName ?? 'Teacher'}!",
+                          Speech.t.teacherHomeWelcome(
+                            currentUserName ?? Speech.t.authRoleTeacher,
+                          ),
                           style: TextStyle(
                             fontSize: UIUtils.fontSize(context, 20),
                             fontWeight: FontWeight.w700,
@@ -950,7 +962,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                         if (!tiny) ...[
                           SizedBox(height: UIUtils.spacing(context, 4)),
                           Text(
-                            "Manage your sessions and connect with students",
+                            Speech.t.teacherHomeTagline,
                             style: TextStyle(
                               fontSize: UIUtils.fontSize(context, 14),
                               color: UIUtils.subtextColor,
@@ -969,8 +981,11 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                   icon: const Icon(Icons.workspaces_outline),
                   label: Text(
                     _selectedWorkspace == null
-                        ? '7: Choose class and subject workspace'
-                        : '7: ${_selectedWorkspace!['class_name']}, ${_selectedWorkspace!['subject_name']}. Change workspace',
+                        ? Speech.t.teacherHomeChooseWorkspaceKey7
+                        : Speech.t.teacherHomeChangeWorkspaceKey7(
+                            '${_selectedWorkspace!['class_name']}',
+                            '${_selectedWorkspace!['subject_name']}',
+                          ),
                   ),
                   onPressed: _chooseWorkspace,
                 ),
@@ -981,13 +996,13 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                   focusNode: _playlistsFocusNode,
                   onPressed: _openPlaylists,
                   icon: const Icon(Icons.playlist_play),
-                  label: const Text('5: Class Playlists'),
+                  label: Text(Speech.t.teacherHomePlaylistsKey5),
                 ),
                 OutlinedButton.icon(
                   focusNode: _journeysFocus,
                   onPressed: _openJourneys,
                   icon: const Icon(Icons.format_list_numbered),
-                  label: const Text('8: Learning Journeys'),
+                  label: Text(Speech.t.teacherHomeJourneysKey8),
                 ),
 
                 SizedBox(height: UIUtils.spacing(context, 8)),
@@ -996,7 +1011,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                   focusNode: _quizzesFocusNode,
                   onPressed: _openQuizzes,
                   icon: const Icon(Icons.quiz_outlined),
-                  label: const Text('6: Quizzes & Question Bank'),
+                  label: Text(Speech.t.teacherHomeQuizzesKey6),
                 ),
 
                 SizedBox(height: UIUtils.spacing(context, 12)),
@@ -1010,7 +1025,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                     size: UIUtils.iconSize(context, 22),
                   ),
                   label: Text(
-                    "2: Create New Session",
+                    Speech.t.teacherHomeCreateSessionKey2,
                     style: TextStyle(fontSize: UIUtils.fontSize(context, 15)),
                   ),
                   style: ElevatedButton.styleFrom(
@@ -1035,7 +1050,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                     size: UIUtils.iconSize(context, 22),
                   ),
                   label: Text(
-                    '3: Recorded Audio Library',
+                    Speech.t.dashboardAudioLibraryKey3,
                     style: TextStyle(fontSize: UIUtils.fontSize(context, 15)),
                   ),
                   style: OutlinedButton.styleFrom(
@@ -1072,8 +1087,8 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                           ),
                           onChanged: (_) => setState(() {}),
                           onSubmitted: (_) => _showSearchResults(),
-                          decoration: const InputDecoration(
-                            label: Text('4: Search by name or number'),
+                          decoration: InputDecoration(
+                            label: Text(Speech.t.teacherHomeSearchKey4),
                             prefixIcon: ExcludeSemantics(
                               child: Icon(Icons.search),
                             ),
@@ -1082,8 +1097,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                         ),
                         SizedBox(height: UIUtils.spacing(context, 4)),
                         Text(
-                          'Type a session name, or the session number with '
-                          'the number keys. Leave empty to list all.',
+                          Speech.t.teacherHomeSearchHint,
                           style: TextStyle(
                             fontSize: UIUtils.fontSize(context, 14),
                             color: UIUtils.subtextColor,
@@ -1094,7 +1108,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                           focusNode: _searchResultsFocusNode,
                           onPressed: _showSearchResults,
                           icon: const Icon(Icons.manage_search),
-                          label: const Text('Show matching sessions'),
+                          label: Text(Speech.t.dashboardShowMatching),
                         ),
                       ],
                     ),
@@ -1107,14 +1121,16 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                 Semantics(
                   header: true,
                   label: _filteredSessions.isEmpty
-                      ? 'Your sessions'
-                      : 'Your sessions, ${_filteredSessions.length}',
+                      ? Speech.t.teacherHomeYourSessions
+                      : Speech.t.teacherHomeYourSessionsCount(
+                          '${_filteredSessions.length}',
+                        ),
                   excludeSemantics: true,
                   child: Row(
                     children: [
                       Expanded(
                         child: Text(
-                          "Your Sessions",
+                          Speech.t.teacherHomeYourSessionsHeading,
                           style: TextStyle(
                             fontSize: UIUtils.fontSize(context, 18),
                             fontWeight: FontWeight.bold,
@@ -1182,9 +1198,8 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                         SizedBox(height: UIUtils.spacing(context, 10)),
                         Text(
                           _searchController.text.trim().isEmpty
-                              ? 'No sessions yet. Press 2 to create one.'
-                              : 'No matching sessions. Clear the search to '
-                                    'list all sessions.',
+                              ? Speech.t.teacherHomeNoSessions
+                              : Speech.t.teacherHomeNoMatches,
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: UIUtils.fontSize(context, 16),
@@ -1198,7 +1213,8 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                   ..._filteredSessions.map((s) {
                     final sessionId =
                         int.tryParse('${s['session_id'] ?? ''}') ?? 0;
-                    final title = '${s['title'] ?? 'Untitled Session'}';
+                    final title =
+                        '${s['title'] ?? Speech.t.teacherHomeUntitledSessionTitle}';
                     final isActive = s['is_active'] == true;
                     final joined = s['participant_count'];
                     final place = [
@@ -1206,8 +1222,8 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                       s['subject_name'],
                     ].where((part) => part != null).join(', ');
                     final endLabel = isActive
-                        ? 'End $title for everyone'
-                        : 'Delete $title permanently';
+                        ? Speech.t.teacherHomeEndTitleForEveryone(title)
+                        : Speech.t.teacherHomeDeleteTitlePermanently(title);
 
                     return AccessibleTile(
                       focusNode: _sessionOpenFocusNodes.putIfAbsent(
@@ -1216,13 +1232,19 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                       ),
                       title: title,
                       status: isActive
-                          ? 'Live now${joined is int ? ', $joined joined' : ''}'
-                          : 'Ended',
+                          ? (joined is int
+                                ? Speech.t.teacherHomeLiveJoined('$joined')
+                                : Speech.t.dashboardLiveNow)
+                          : Speech.t.dashboardEnded,
                       statusColor: isActive
                           ? UIUtils.successColor
                           : UIUtils.subtextColor,
-                      subtitle:
-                          '${place.isEmpty ? '' : '$place. '}Session number $sessionId',
+                      subtitle: place.isEmpty
+                          ? Speech.t.teacherHomeSessionNumber('$sessionId')
+                          : Speech.t.teacherHomePlaceSessionNumber(
+                              place,
+                              '$sessionId',
+                            ),
                       semanticLabel: _sessionLabel(s),
                       onActivate: isActive
                           ? () => _openSession(sessionId)
@@ -1254,7 +1276,9 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                                   : Icons.delete_forever,
                             ),
                             label: Text(
-                              isActive ? 'End for everyone' : 'Delete',
+                              isActive
+                                  ? Speech.t.sessionEndConfirm
+                                  : Speech.t.teacherHomeDelete,
                             ),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: UIUtils.errorColor,
@@ -1299,7 +1323,10 @@ class _CreateSessionDialogState extends State<_CreateSessionDialog> {
 
   void _create() {
     final title = _titleController.text.trim();
-    Navigator.pop(context, title.isEmpty ? 'New Session' : title);
+    Navigator.pop(
+      context,
+      title.isEmpty ? Speech.t.teacherHomeNewSessionTitle : title,
+    );
   }
 
   @override
@@ -1314,35 +1341,35 @@ class _CreateSessionDialogState extends State<_CreateSessionDialog> {
   @override
   Widget build(BuildContext context) {
     return KeypadInstructionWrapper(
-      screenName: 'Create new session',
-      labels: const {0: 'Cancel', 1: 'Create session'},
+      screenName: Speech.t.teacherHomeCreateScreen,
+      labels: {0: Speech.t.uiCancel, 1: Speech.t.teacherHomeCreateSessionKey},
       actions: {0: () => Navigator.pop(context), 1: _create},
       navigationController: _keypadController,
       focusTargets: [
         KeypadFocusTarget(
           node: _titleFocus,
-          label: 'Session title field',
+          label: Speech.t.teacherHomeTitleField,
           isTextField: true,
         ),
         KeypadFocusTarget(
           node: _cancelFocus,
-          label: 'Cancel session creation',
+          label: Speech.t.teacherHomeCancelCreate,
           onActivate: () => Navigator.pop(context),
         ),
         KeypadFocusTarget(
           node: _createFocus,
-          label: 'Create session',
+          label: Speech.t.teacherHomeCreateSessionKey,
           onActivate: _create,
         ),
       ],
       child: AlertDialog(
-        title: const Text('Create New Session'),
+        title: Text(Speech.t.dashboardCreate),
         content: TextField(
           controller: _titleController,
           focusNode: _titleFocus,
-          decoration: const InputDecoration(
-            labelText: 'Session Title',
-            hintText: 'e.g., English Class - Unit 5',
+          decoration: InputDecoration(
+            labelText: Speech.t.teacherHomeSessionTitleField,
+            hintText: Speech.t.teacherHomeSessionTitleHint,
             border: OutlineInputBorder(),
           ),
           onTap: () => _keypadController.enterTextEditing(_titleFocus),
@@ -1352,12 +1379,12 @@ class _CreateSessionDialogState extends State<_CreateSessionDialog> {
           TextButton(
             focusNode: _cancelFocus,
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel (0)'),
+            child: Text(Speech.t.libraryCancelKey0Button),
           ),
           ElevatedButton(
             focusNode: _createFocus,
             onPressed: _create,
-            child: const Text('Create (1)'),
+            child: Text(Speech.t.teacherHomeCreateKey1),
           ),
         ],
       ),

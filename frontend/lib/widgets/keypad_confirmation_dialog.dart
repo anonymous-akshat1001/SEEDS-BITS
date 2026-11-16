@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/speech.dart';
 import '../utils/ui_utils.dart';
 import 'key_instruction_wrapper.dart';
 
@@ -11,15 +12,18 @@ class KeypadConfirmationDialog extends StatefulWidget {
     required this.title,
     required this.message,
     required this.confirmLabel,
-    this.cancelLabel = 'Not now',
+    String? cancelLabel,
     this.cancelKey = 1,
     this.confirmKey = 2,
-  });
+  }) : _cancelLabel = cancelLabel;
 
   final String title;
   final String message;
   final String confirmLabel;
-  final String cancelLabel;
+  final String? _cancelLabel;
+
+  /// "Not now" unless the caller names the cancel choice.
+  String get cancelLabel => _cancelLabel ?? Speech.t.uiNotNow;
   final int cancelKey;
   final int confirmKey;
 

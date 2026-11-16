@@ -10,6 +10,7 @@ import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 
 import '../../announcers/session_text.dart';
+import '../../l10n/speech.dart';
 import '../../services/api_service.dart';
 import '../../services/message_center.dart';
 import '../../services/tts_service.dart';
@@ -168,11 +169,11 @@ class SessionAudioUpload {
         context: context,
         builder: (dialogContext) => KeypadInstructionWrapper(
           screenName: SessionText.uploadDetailsTitle,
-          labels: const {
-            1: 'Edit Title',
-            2: 'Edit Description',
-            3: 'Upload',
-            0: 'Cancel',
+          labels: {
+            1: SessionText.editTitleKey,
+            2: SessionText.editDescriptionKey,
+            3: SessionText.uploadKey,
+            0: SessionText.cancelKey,
           },
           actions: {
             1: () => controller.enterTextEditing(titleNode),
@@ -204,7 +205,7 @@ class SessionAudioUpload {
             ),
           ],
           child: AlertDialog(
-            title: const Text(SessionText.uploadTitle),
+            title: Text(SessionText.uploadTitle),
             content: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -218,8 +219,8 @@ class SessionAudioUpload {
                     controller: _title,
                     focusNode: titleNode,
                     onTap: () => controller.enterTextEditing(titleNode),
-                    decoration: const InputDecoration(
-                      labelText: 'Title *',
+                    decoration: InputDecoration(
+                      labelText: Speech.t.libraryUploadTitleField,
                       border: OutlineInputBorder(),
                     ),
                   ),
@@ -228,8 +229,8 @@ class SessionAudioUpload {
                     controller: _description,
                     focusNode: descriptionNode,
                     onTap: () => controller.enterTextEditing(descriptionNode),
-                    decoration: const InputDecoration(
-                      labelText: 'Description',
+                    decoration: InputDecoration(
+                      labelText: Speech.t.libraryUploadDescriptionField,
                       border: OutlineInputBorder(),
                     ),
                     maxLines: 2,
@@ -246,7 +247,7 @@ class SessionAudioUpload {
               TextButton(
                 focusNode: cancelNode,
                 onPressed: () => Navigator.pop(dialogContext, false),
-                child: const Text('Cancel (0)'),
+                child: Text(Speech.t.libraryCancelKey0Button),
               ),
               ElevatedButton(
                 focusNode: uploadNode,
@@ -255,7 +256,7 @@ class SessionAudioUpload {
                   foregroundColor: UIUtils.onPrimaryColor,
                 ),
                 onPressed: () => submit(dialogContext),
-                child: const Text('Upload (3)'),
+                child: Text(Speech.t.libraryUploadKey3Button),
               ),
             ],
           ),
@@ -306,7 +307,10 @@ class SessionAudioUpload {
             updateDialog = setLocalState;
             return KeypadInstructionWrapper(
               screenName: SessionText.chooseSessionsTitle,
-              labels: const {0: 'Cancel', 1: SessionText.confirmSessions},
+              labels: {
+                0: SessionText.cancelKey,
+                1: SessionText.confirmSessions,
+              },
               actions: {
                 0: () => Navigator.pop(dialogContext, false),
                 1: () => confirm(dialogContext),
@@ -333,7 +337,7 @@ class SessionAudioUpload {
                 ),
               ],
               child: AlertDialog(
-                title: const Text(SessionText.addToSessions),
+                title: Text(SessionText.addToSessions),
                 content: SizedBox(
                   width: 360,
                   child: ListView(
@@ -346,7 +350,7 @@ class SessionAudioUpload {
                           child: CheckboxListTile(
                             value: selected.contains(id),
                             title: Text(SessionText.sessionTitle(session)),
-                            subtitle: Text('Session #$id'),
+                            subtitle: Text(Speech.t.librarySessionNumber('$id')),
                             onChanged: (_) => toggle(id),
                           ),
                         ),
@@ -358,12 +362,12 @@ class SessionAudioUpload {
                   TextButton(
                     focusNode: cancelNode,
                     onPressed: () => Navigator.pop(dialogContext, false),
-                    child: const Text('Cancel (0)'),
+                    child: Text(Speech.t.libraryCancelKey0Button),
                   ),
                   ElevatedButton(
                     focusNode: confirmNode,
                     onPressed: () => confirm(dialogContext),
-                    child: const Text('Confirm (1)'),
+                    child: Text(Speech.t.libraryConfirmKey1Button),
                   ),
                 ],
               ),

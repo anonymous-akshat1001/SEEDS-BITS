@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../l10n/speech.dart';
 import '../services/api_service.dart';
 import '../services/tts_service.dart';
 import '../utils/ui_utils.dart';
@@ -64,9 +65,7 @@ class _AdminPasswordResetDialogState extends State<AdminPasswordResetDialog> {
     if (_busy || _attempted) return;
     setState(() => _verified = !_verified);
     TtsService.speak(
-      _verified
-          ? 'Identity verification attested.'
-          : 'Identity verification not attested.',
+      _verified ? Speech.t.adminResetAttested : Speech.t.adminResetNotAttested,
     );
   }
 
@@ -79,24 +78,26 @@ class _AdminPasswordResetDialogState extends State<AdminPasswordResetDialog> {
         context: context,
         barrierDismissible: false,
         builder: (_) => KeypadConfirmationDialog(
-          title: 'Reset this password?',
-          message:
-              'Reset ${widget.accountName}, phone ${widget.phoneNumber.split('').join(' ')}? This replaces the old password and ends online sessions. Disconnected downloaded lessons cannot be instantly revoked. Existing lessons, notes and learning records are retained. A 12-digit temporary credential lasts 24 hours and requires password change. After 10 wrong attempts, temporary-credential sign-in pauses for 15 minutes.',
-          cancelLabel: 'Keep password',
-          confirmLabel: 'Reset password',
+          title: Speech.t.adminResetConfirmTitle,
+          message: Speech.t.adminResetConfirmMessage(
+            widget.accountName,
+            widget.phoneNumber.split('').join(' '),
+          ),
+          cancelLabel: Speech.t.adminResetKeepPassword,
+          confirmLabel: Speech.t.adminResetResetPassword,
         ),
       );
       if (!mounted || confirmed != true) return;
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
       if (prefs.getString('role') != 'admin' || token == null) {
-        _fail('Administrator sign-in changed. No reset was sent.');
+        _fail(Speech.t.adminResetSignInChanged);
         return;
       }
       setState(() => _attempted = true);
       next = _close;
       TtsService.speak(
-        'Sending reset. Waiting for server confirmation.',
+        Speech.t.adminResetSending,
         priority: SpeechPriority.navigation,
       );
       final result = await ApiService.postAcknowledged(
@@ -113,9 +114,7 @@ class _AdminPasswordResetDialogState extends State<AdminPasswordResetDialog> {
       );
       if (!mounted) return;
       if (!result.isSuccess) {
-        _fail(
-          'Reset not confirmed. ${result.failure!.message} It may already have taken effect. Close and refresh this account before considering another reset.',
-        );
+        _fail(Speech.t.adminResetNotConfirmed(result.failure!.message));
         return;
       }
       final data = result.data!;
@@ -126,9 +125,7 @@ class _AdminPasswordResetDialogState extends State<AdminPasswordResetDialog> {
           expires is! String ||
           DateTime.tryParse(expires)?.isUtc != true ||
           data['auth_version'] != widget.authVersion + 1) {
-        _fail(
-          'The reset response could not be verified. The password may already have changed. Close and refresh before considering another reset.',
-        );
+        _fail(Speech.t.adminResetResponseNotVerified);
         return;
       }
       setState(() {
@@ -136,17 +133,11 @@ class _AdminPasswordResetDialogState extends State<AdminPasswordResetDialog> {
         _expires = expires;
       });
       next = _read;
-      TtsService.speak(
-        'Password reset confirmed. The credential is hidden. Use Read credential only when it is private. Closing discards this copy.',
-      );
+      TtsService.speak(Speech.t.adminResetConfirmedSpoken);
     } on PlatformException {
-      _fail(
-        'Reset could not be confirmed on this phone. Close and refresh the account before considering another reset.',
-      );
+      _fail(Speech.t.adminResetPhoneNotConfirmed);
     } on MissingPluginException {
-      _fail(
-        'Account storage is unavailable. Close recovery and restart SEEDS before considering a reset.',
-      );
+      _fail(Speech.t.adminResetStorageUnavailable);
     } finally {
       if (mounted) {
         setState(() => _busy = false);
@@ -160,7 +151,10 @@ class _AdminPasswordResetDialogState extends State<AdminPasswordResetDialog> {
     if (credential == null) return;
     setState(() => _revealed = true);
     TtsService.speak(
-      'Temporary credential: ${credential.split('').join(' ')}. Expires at $_expires, UTC. Deliver privately to the verified person. It must be replaced at sign-in.',
+      Speech.t.adminResetCredentialSpoken(
+        credential.split('').join(' '),
+        '$_expires',
+      ),
     );
   }
 
@@ -172,12 +166,11 @@ class _AdminPasswordResetDialogState extends State<AdminPasswordResetDialog> {
         final close = await showDialog<bool>(
           context: context,
           barrierDismissible: false,
-          builder: (_) => const KeypadConfirmationDialog(
-            title: 'Discard this credential copy?',
-            message:
-                'Confirm that you delivered the temporary credential privately, or accept that another verified administrator reset will be needed. SEEDS will not show this copy again. This does not cancel the completed reset.',
-            cancelLabel: 'Keep reviewing',
-            confirmLabel: 'Close and discard',
+          builder: (_) => KeypadConfirmationDialog(
+            title: Speech.t.adminResetDiscardTitle,
+            message: Speech.t.adminResetDiscardMessage,
+            cancelLabel: Speech.t.adminResetKeepReviewing,
+            confirmLabel: Speech.t.adminResetCloseDiscard,
           ),
         );
         if (!mounted) return;
@@ -207,29 +200,32 @@ class _AdminPasswordResetDialogState extends State<AdminPasswordResetDialog> {
       if (!didPop) _closeDialog();
     },
     child: KeypadInstructionWrapper(
-      screenName:
-          'Administrator password recovery. Verify identity outside SEEDS before resetting. Credentials are hidden until explicitly requested.',
-      labels: const {0: 'Close recovery'},
+      screenName: Speech.t.adminResetScreenName,
+      labels: {0: Speech.t.adminResetCloseRecovery},
       actions: {0: _closeDialog},
       focusTargets: [
         KeypadFocusTarget(
           node: _identity,
-          label: 'Read selected account details',
+          label: Speech.t.adminResetReadAccount,
           onActivate: () => TtsService.speak(
-            '${widget.accountName}. Phone ${widget.phoneNumber.split('').join(' ')}.',
+            Speech.t.adminResetAccountDetails(
+              widget.accountName,
+              widget.phoneNumber.split('').join(' '),
+            ),
           ),
         ),
         if (!_attempted) ...[
           KeypadFocusTarget(
             node: _attestation,
-            label:
-                'Identity verified outside SEEDS. ${_verified ? 'Checked' : 'Not checked'}. Press OK to change.',
+            label: _verified
+                ? Speech.t.adminResetIdentityChecked
+                : Speech.t.adminResetIdentityNotChecked,
             onActivate: _verify,
             isEnabled: () => !_busy,
           ),
           KeypadFocusTarget(
             node: _reset,
-            label: 'Reset password and end online sessions',
+            label: Speech.t.adminResetResetAndEnd,
             onActivate: _issue,
             isEnabled: () => _verified && !_busy,
           ),
@@ -237,12 +233,12 @@ class _AdminPasswordResetDialogState extends State<AdminPasswordResetDialog> {
         if (_credential != null)
           KeypadFocusTarget(
             node: _read,
-            label: 'Read and reveal temporary credential. Only use privately.',
+            label: Speech.t.adminResetReadCredentialLabel,
             onActivate: _readCredential,
           ),
         KeypadFocusTarget(
           node: _close,
-          label: 'Close and refresh account',
+          label: Speech.t.adminResetCloseRefresh,
           onActivate: _closeDialog,
           isEnabled: () => !_busy,
         ),
@@ -255,7 +251,7 @@ class _AdminPasswordResetDialogState extends State<AdminPasswordResetDialog> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                'Password recovery',
+                Speech.t.adminResetTitle,
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
               Text(
@@ -265,30 +261,31 @@ class _AdminPasswordResetDialogState extends State<AdminPasswordResetDialog> {
               TextButton(
                 focusNode: _identity,
                 onPressed: () => TtsService.speak(
-                  '${widget.accountName}. Phone ${widget.phoneNumber.split('').join(' ')}.',
+                  Speech.t.adminResetAccountDetails(
+                    widget.accountName,
+                    widget.phoneNumber.split('').join(' '),
+                  ),
                 ),
-                child: const Text('Read selected account details'),
+                child: Text(Speech.t.adminResetReadAccount),
               ),
               if (!_attempted) ...[
-                const Text(
-                  'Verify the person outside SEEDS. A phone number or SIM suggestion is not identity verification. Never reset based only on a message or a claimed name.',
-                ),
+                Text(Speech.t.adminResetVerifyInfo),
                 CheckboxListTile(
                   focusNode: _attestation,
                   value: _verified,
-                  title: const Text('I verified this person outside SEEDS'),
+                  title: Text(Speech.t.adminResetVerifiedCheckbox),
                   onChanged: _busy ? null : (_) => _verify(),
                 ),
                 ElevatedButton(
                   focusNode: _reset,
                   onPressed: _verified && !_busy ? _issue : null,
-                  child: const Text('Reset password and end online sessions'),
+                  child: Text(Speech.t.adminResetResetAndEnd),
                 ),
               ],
               if (_busy)
                 Semantics(
                   liveRegion: true,
-                  child: const Text('Waiting for reset confirmation.'),
+                  child: Text(Speech.t.adminResetWaiting),
                 ),
               if (_error != null)
                 Semantics(
@@ -305,7 +302,7 @@ class _AdminPasswordResetDialogState extends State<AdminPasswordResetDialog> {
                 Semantics(
                   liveRegion: true,
                   child: Text(
-                    'Reset confirmed. Credential hidden until requested. It is valid for 24 hours. Closing discards this copy. Deliver privately; never post it in a class.',
+                    Speech.t.adminResetConfirmedInfo,
                     style: TextStyle(
                       color: UIUtils.successColor,
                       fontWeight: FontWeight.w700,
@@ -315,17 +312,20 @@ class _AdminPasswordResetDialogState extends State<AdminPasswordResetDialog> {
                 TextButton(
                   focusNode: _read,
                   onPressed: _readCredential,
-                  child: const Text('Read and reveal credential privately'),
+                  child: Text(Speech.t.adminResetRevealButton),
                 ),
                 if (_revealed)
                   Text(
-                    'Temporary credential: ${_credential!.split('').join(' ')}\nExpires: $_expires UTC',
+                    Speech.t.adminResetCredentialShown(
+                      _credential!.split('').join(' '),
+                      '$_expires',
+                    ),
                   ),
               ],
               TextButton(
                 focusNode: _close,
                 onPressed: _busy ? null : _closeDialog,
-                child: const Text('0: Close and refresh account'),
+                child: Text(Speech.t.adminResetCloseRefreshKey0),
               ),
             ],
           ),

@@ -1,0 +1,438 @@
+﻿screens\quiz:123: ${index < 5 ? 
+screens\quiz:123:  : 
+screens\quiz:123: }${widget.actions[index].label}
+screens\quiz:130: 0: Cancel
+screens\quiz:196: /question-bank?$query
+screens\quiz:201: /teacher/quizzes?class_id=${widget.classId}&subject_id=${widget.subjectId}
+screens\quiz:223: ${buildTtsInstructions(teacherQuizKeyLabels, screenName: QuizText.teacherScreen(widget.className, widget.subje
+screens\quiz:224: ${QuizText.teacherIntro} $summary
+screens\quiz:229: $announce $summary
+screens\quiz:319: /question-bank/${question[
+screens\quiz:319: ]}
+screens\quiz:439: add:${quiz[
+screens\quiz:439: ]}
+screens\quiz:532: ${quiz[
+screens\quiz:532: ]}
+screens\quiz:538: /teacher/quizzes/${quiz[
+screens\quiz:538: ]}/publish
+screens\quiz:579: ${quiz[
+screens\quiz:579: ]}
+screens\quiz:609: ${quiz[
+screens\quiz:609: ]}
+screens\quiz:691: ${question[
+screens\quiz:691: ] ?? question[
+screens\quiz:691: ]}
+screens\quiz:692: ${question[
+screens\quiz:692: ] ?? t.quizRevisionUnknownLegacy}
+screens\quiz:706: ${quiz[
+screens\quiz:706: ]}
+screens\quiz:707: ${quiz[
+screens\quiz:707: ]}
+screens\quiz:710: ${quiz[
+screens\quiz:710: ]}
+screens\quiz:711: ${quiz[
+screens\quiz:711: ]}
+screens\quiz:743: Quizzes
+screens\quiz:748: Refresh quizzes
+screens\quiz:757: Loading quizzes
+screens\quiz:767: ${widget.className} � ${widget.subjectName}
+screens\quiz:788: Search private question bank
+screens\quiz:801: 2: New bank question
+screens\quiz:807: 3: New quiz draft
+screens\quiz:812: 4: Create untimed practice
+screens\quiz:818: Private question bank
+screens\quiz:822: Editing a bank question never changes an existing quiz snapshot.
+screens\quiz:827: No bank questions yet
+screens\quiz:836: ${question[
+screens\quiz:836: ] ?? question[
+screens\quiz:836: ]}
+screens\quiz:838: ${question[
+screens\quiz:838: ]}
+screens\quiz:841: ${(question[
+screens\quiz:841: ] as List).length} options
+screens\quiz:848: bank-question-actions-${question[
+screens\quiz:848: ]}
+screens\quiz:853: Options
+screens\quiz:860: Quiz management
+screens\quiz:866: No quizzes yet
+screens\quiz:876: teacher-quiz-primary-${quiz[
+screens\quiz:876: ]}
+screens\quiz:883: teacher-quiz-duplicate-${quiz[
+screens\quiz:883: ]}
+screens\quiz:890: teacher-quiz-results-${quiz[
+screens\quiz:890: ]}
+screens\quiz:1029: quiz draft
+screens\quiz:1034: /question-bank?class_id=${widget.classId}&subject_id=${widget.subjectId}
+screens\quiz:1036: question bank
+screens\quiz:1079: /question-bank?limit=200
+screens\quiz:1125: ${question[
+screens\quiz:1125: ]}
+screens\quiz:1127: ${question[
+screens\quiz:1127: ] ?? question[
+screens\quiz:1127: ]}
+screens\quiz:1129: ${question[
+screens\quiz:1129: ] ?? question[
+screens\quiz:1129: ]}
+screens\quiz:1130: ${question[
+screens\quiz:1130: ] ?? Speech.t.quizAnotherClass}
+screens\quiz:1131: ${question[
+screens\quiz:1131: ] ?? Speech.t.quizAnotherSubject}
+screens\quiz:1182:  
+screens\quiz:1194: ${quiz[
+screens\quiz:1194: ]}
+screens\quiz:1195: ${quiz[
+screens\quiz:1195: ] ?? 
+screens\quiz:1195: }
+screens\quiz:1200: ${t.quizGradedSummaryRaw(
+screens\quiz:1200: )} 
+screens\quiz:1201: ${quiz[
+screens\quiz:1201: ] == null ? t.quizNoTimer : t.quizMinutesPerAttemptRaw(
+screens\quiz:1201: )}
+screens\quiz:1203: ${quiz[
+screens\quiz:1203: ] ?? t.quizWhenPublished}
+screens\quiz:1204: ${quiz[
+screens\quiz:1204: ] ?? t.quizNotScheduled}
+screens\quiz:1211:  
+screens\quiz:1248: ${_questions[i][
+screens\quiz:1248: ]}
+screens\quiz:1279: ${question[
+screens\quiz:1279: ]}
+screens\quiz:1285: ${Speech.t.quizQuestionRemovedSentence} 
+screens\quiz:1286: ${Speech.t.quizQuestionsSavedRaw(
+screens\quiz:1286: )}
+screens\quiz:1488: Quiz published
+screens\quiz:1490: Step 3: Review and publish
+screens\quiz:1491: Step 2: Add questions
+screens\quiz:1496: ${_quiz![
+screens\quiz:1496: ]}. ${_questions.length} questions saved.
+screens\quiz:1553: ${quiz[
+screens\quiz:1553: ]}
+screens\quiz:1556: ${quiz[
+screens\quiz:1556: ]}. Status $status. ${quiz[
+screens\quiz:1556: ]} questions.
+screens\quiz:1569: ${quiz[
+screens\quiz:1569: ]}
+screens\quiz:1576: ${quiz[
+screens\quiz:1576: ]}
+screens\quiz:1578: ${quiz[
+screens\quiz:1578: ]} questions � ${quiz[
+screens\quiz:1578: ] == 
+screens\quiz:1578:  ? 
+screens\quiz:1578:  : 
+screens\quiz:1578: }
+screens\quiz:1579: ${quiz[
+screens\quiz:1579: ] == null ? 
+screens\quiz:1579:  : 
+screens\quiz:1579: }
+screens\quiz:1589: Continue creation
+screens\quiz:1596: Close
+screens\quiz:1602: Duplicate
+screens\quiz:1608: Results
+screens\quiz:1646: ${summary[
+screens\quiz:1646: ]}
+screens\quiz:1647: ${summary[
+screens\quiz:1647: ]}
+screens\quiz:1648: ${summary[
+screens\quiz:1648: ]}
+screens\quiz:1649: ${summary[
+screens\quiz:1649: ]}
+screens\quiz:1650: ${summary[
+screens\quiz:1650: ]}
+screens\quiz:1657: \n
+screens\quiz:1658: \n
+screens\quiz:1708: ${_summary![
+screens\quiz:1708: ]}
+screens\quiz:1709: ${_summary![
+screens\quiz:1709: ]}
+screens\quiz:1716: ${student[
+screens\quiz:1716: ]}
+screens\quiz:1727: ${attempt[
+screens\quiz:1727: ]}
+screens\quiz:1728: ${attempt[
+screens\quiz:1728: ]}
+screens\quiz:1729: ${attempt[
+screens\quiz:1729: ]}
+screens\quiz:1732: . 
+screens\quiz:1735: ${student[
+screens\quiz:1735: ] ?? t.quizNotAvailable}
+screens\quiz:1748: ${student[
+screens\quiz:1748: ]}
+screens\quiz:1800: ${result[
+screens\quiz:1800: ]}
+screens\quiz:1801: ${result[
+screens\quiz:1801: ]}
+screens\quiz:1870: ${student[
+screens\quiz:1870: ]}
+screens\quiz:1871: ${student[
+screens\quiz:1871: ] ?? 0}
+screens\quiz:1879: ${widget.quizTitle} results
+screens\quiz:1884: Refresh results
+screens\quiz:1909: Class statistics
+screens\quiz:1928: All students have attempted
+screens\quiz:1929: 2: Remind all not attempted
+screens\quiz:1934: Students yet to attempt
+screens\quiz:1939: None
+screens\quiz:1942: , 
+screens\quiz:1947: Practice participation, not academic grades
+screens\quiz:1948: Individual student scores
+screens\quiz:1960: quiz-result-student-${student[
+screens\quiz:1960: ]}
+screens\quiz:1968: ${student[
+screens\quiz:1968: ]}
+screens\quiz:1971: Not attempted
+screens\quiz:1972: ${summary?[
+screens\quiz:1972: ] == 
+screens\quiz:1972:  ? 
+screens\quiz:1972:  : 
+screens\quiz:1972: Attempt in progress
+screens\quiz:1972: }\n
+screens\quiz:1973: ${(student[
+screens\quiz:1973: ] as List).length} attempt(s)
+screens\quiz:1990: Future extra time: ${student[
+screens\quiz:1990: ] ?? 0} minutes. Set
+screens\quiz:2049: ${buildTtsInstructions(studentQuizKeyLabels, screenName: QuizText.studentScreen)} 
+screens\quiz:2050: $_navigationHelp $summary
+screens\quiz:2061: ${quiz[
+screens\quiz:2061: ]}
+screens\quiz:2070: ${quiz[
+screens\quiz:2070: ]}
+screens\quiz:2074: ${quiz[
+screens\quiz:2074: ]}
+screens\quiz:2078:  
+screens\quiz:2093: ${quiz[
+screens\quiz:2093: ]}
+screens\quiz:2122: ${quiz[
+screens\quiz:2122: ]}
+screens\quiz:2168: ${selected[
+screens\quiz:2168: ]}
+screens\quiz:2210: ${_subjects.firstWhere((item) => item[
+screens\quiz:2210: ] == id)[
+screens\quiz:2210: ]}
+screens\quiz:2263: ${quiz[
+screens\quiz:2263: ]}
+screens\quiz:2264: ${quiz[
+screens\quiz:2264: ]}
+screens\quiz:2265: ${quiz[
+screens\quiz:2265: ]}
+screens\quiz:2271:  
+screens\quiz:2283: ${quiz[
+screens\quiz:2283: ]}
+screens\quiz:2284: ${quiz[
+screens\quiz:2284: ] ?? t.quizNotAvailable}
+screens\quiz:2292: Quizzes
+screens\quiz:2297: Refresh quizzes
+screens\quiz:2345: No quizzes available
+screens\quiz:2352: ${quiz[
+screens\quiz:2352: ]}, ${quiz[
+screens\quiz:2352: ]}. Status ${quiz[
+screens\quiz:2352: ]}. ${QuizText.attemptsText(quiz)}
+screens\quiz:2356: ${quiz[
+screens\quiz:2356: ]}
+screens\quiz:2358: ${quiz[
+screens\quiz:2358: ]} � ${quiz[
+screens\quiz:2358: ]}\n
+screens\quiz:2359: ${quiz[
+screens\quiz:2359: ] ?? 
+screens\quiz:2359: }\n
+screens\quiz:2361: ${quiz[
+screens\quiz:2361: ] == null ? 
+screens\quiz:2361:  : 
+screens\quiz:2361: }
+screens\quiz:2372: student-open-quiz-${quiz[
+screens\quiz:2372: ]}
+screens\quiz:2378: Start quiz
+screens\quiz:2379: Resume quiz
+screens\quiz:2389: Attempt limit reached
+screens\quiz:2398: student-quiz-history-${quiz[
+screens\quiz:2398: ]}
+screens\quiz:2402: Attempt history and review
+screens\quiz:2498: ${Speech.t.quizAttemptCompletePrivate} $_navigationHelp
+screens\quiz:2506: ${_attempt[
+screens\quiz:2506: ]}
+screens\quiz:2507: ${_attempt[
+screens\quiz:2507: ] ?? 
+screens\quiz:2507: }
+screens\quiz:2593: ${option[
+screens\quiz:2593: ] ?? option[
+screens\quiz:2593: ]}
+screens\quiz:2598: $_questionAnnouncement $_optionsAnnouncement
+screens\quiz:2602: ${QuizText.speedHelp} 
+screens\quiz:2604: ${t.quizHelpCompleted} $speed
+screens\quiz:2607: ${t.quizHelpRetry} $speed
+screens\quiz:2610: ${t.quizHelpNext} $speed
+screens\quiz:2615: ${t.quizHelpChoose(
+screens\quiz:2615: )} $speed${t.quizHelpFinishLeave}
+screens\quiz:2631: ${options[index][
+screens\quiz:2631: ] ?? options[index][
+screens\quiz:2631: ]}
+screens\quiz:2647: ${QuizText.answerSaved(hasFeedback: false)} ${feedback[
+screens\quiz:2647: ]}
+screens\quiz:2650: ${feedback[
+screens\quiz:2650: ] ?? feedback[
+screens\quiz:2650: ]}
+screens\quiz:2652: ${feedback[
+screens\quiz:2652: ] ?? feedback[
+screens\quiz:2652: ] ?? 
+screens\quiz:2652: }
+screens\quiz:2671: ${option[
+screens\quiz:2671: ] ?? option[
+screens\quiz:2671: ]}
+screens\quiz:2812: $_questionAndOptions $_navigationHelp
+screens\quiz:2865: ${Speech.t.quizAttemptStatusPrivate(
+screens\quiz:2865: )} $_navigationHelp
+screens\quiz:3012: ${Speech.t.quizAttemptCompletePrivate} $_navigationHelp
+screens\quiz:3014: $_questionAndOptions $_navigationHelp
+screens\quiz:3016: $_completionError $_navigationHelp
+screens\quiz:3017: ${QuizText.answerSaved(hasFeedback: false)} $_navigationHelp
+screens\quiz:3098: ${options[index][
+screens\quiz:3098: ] ?? options[index][
+screens\quiz:3098: ]}
+screens\quiz:3102: ${options[index][
+screens\quiz:3102: ] ?? options[index][
+screens\quiz:3102: ]}
+screens\quiz:3196: Leave without submitting
+screens\quiz:3233: Attempt complete. Result private. Use Read result privately.
+screens\quiz:3237: Attempt complete
+screens\quiz:3245: 8: Read result privately
+screens\quiz:3250: 0: Return to quizzes
+screens\quiz:3267: ${question[
+screens\quiz:3267: ]}
+screens\quiz:3276: Read all options
+screens\quiz:3320: Option ${index + 1} of ${options.length}, $spoken
+screens\quiz:3323: ${index + 1}. ${option[
+screens\quiz:3323: ]}
+screens\quiz:3330: Selected
+screens\quiz:3365: 5: Submit answer
+screens\quiz:3375: Answer saved and locked. Activate to read feedback privately.
+screens\quiz:3406: Answer saved and locked
+screens\quiz:3408: Correct
+screens\quiz:3409: Incorrect
+screens\quiz:3417: You selected: ${_feedback![
+screens\quiz:3417: ]}\n
+screens\quiz:3418: ${_feedback![
+screens\quiz:3418: ] == false ? _feedback![
+screens\quiz:3418: ] : 
+screens\quiz:3418: No explanation provided.
+screens\quiz:3418: }
+screens\quiz:3431: All answers are saved. Select View result to confirm completion.
+screens\quiz:3443: ${QuizText.finishNowButton}, asks to confirm
+screens\quiz:3465: Confirming completion
+screens\quiz:3467: 5: Retry completion
+screens\quiz:3469: 5: View result
+screens\quiz:3470: Next question
+screens\quiz:3478: Read selected answer
+screens\quiz:3483: Stop speech
+screens\quiz:3494: Read remaining time
+screens\quiz:3586: ${history[
+screens\quiz:3586: ]}
+screens\quiz:3604: ${attempt[
+screens\quiz:3604: ]}
+screens\quiz:3605: ${attempt[
+screens\quiz:3605: ]}
+screens\quiz:3616: $quizTitle history
+screens\quiz:3627: $quizTitle history
+screens\quiz:3645: No attempts yet
+screens\quiz:3652: Attempt ${attempt[
+screens\quiz:3652: ]}
+screens\quiz:3654: ${attempt[
+screens\quiz:3654: ]}. ${QuizText.attemptResult(attempt)}
+screens\quiz:3709: ${question[
+screens\quiz:3709: ] ?? question[
+screens\quiz:3709: ]}
+screens\quiz:3711: ${question[
+screens\quiz:3711: ] ?? question[
+screens\quiz:3711: ] ?? t.quizNoAnswerCapital}
+screens\quiz:3713: ${question[
+screens\quiz:3713: ] ?? question[
+screens\quiz:3713: ]}
+screens\quiz:3715: ${question[
+screens\quiz:3715: ] ?? question[
+screens\quiz:3715: ] ?? t.quizNoExplanation}
+screens\quiz:3786: Attempt review
+screens\quiz:3824: ${index + 1}. ${question[
+screens\quiz:3824: ]}
+screens\quiz:3827: Your answer: ${question[
+screens\quiz:3827: ] ?? 
+screens\quiz:3827: }\n
+screens\quiz:3828: Correct answer: ${question[
+screens\quiz:3828: ]}\n
+screens\quiz:3829: ${question[
+screens\quiz:3829: ] ?? 
+screens\quiz:3829: }
+screens\quiz:3903: \n
+screens\quiz:3958: \n
+screens\quiz:4143: Complete the question and all four options, then choose the correct answer. For equations or diagrams, expand 
+screens\quiz:4148: Revision ${widget.initialQuestion![
+screens\quiz:4148: ] ?? 
+screens\quiz:4148: }. Saving a new bank revision never rewrites an existing quiz or attempt snapshot.
+screens\quiz:4162: Question text
+screens\quiz:4180: Option ${index + 1}
+screens\quiz:4190: Which answer is correct?
+screens\quiz:4193: Choose the correct option
+screens\quiz:4194: Option ${_correct! + 1}: ${_options[_correct!].text}
+screens\quiz:4197: Use Left or Right to change. OK or tap selects the next option.
+screens\quiz:4207: ${_showOptional ? 
+screens\quiz:4207:  : 
+screens\quiz:4207: } optional explanation, topics and spoken notation
+screens\quiz:4219: Explanation (optional)
+screens\quiz:4234: Content: ${_described ? 
+screens\quiz:4234:  : 
+screens\quiz:4234: }
+screens\quiz:4238: No automatic equation or diagram interpretation is provided. Teachers must write and review English spoken alt
+screens\quiz:4262: I have reviewed the spoken alternatives for accuracy
+screens\quiz:4269: 0: Cancel
+screens\quiz:4274: 9: Save question
+screens\quiz:4355: ${initial[
+screens\quiz:4355: ] ?? 1}
+screens\quiz:4618: Change quiz settings
+screens\quiz:4620: Create untimed practice
+screens\quiz:4621: Step 1: Name your quiz
+screens\quiz:4626: Practice has no per-attempt timer or retry cap. An optional closing time still ends availability.
+screens\quiz:4630: Use up and down to move through quiz settings. Press OK to edit text fields. Opening and closing times are opt
+screens\quiz:4632: Use Up and Down to move through settings, and OK to edit. Saving a draft or its settings does not publish the 
+screens\quiz:4643: Quiz title
+screens\quiz:4647: Review and change the saved settings below. Saving does not publish the quiz.
+screens\quiz:4649: Ungraded practice. Unlimited attempts, no timer, immediate feedback.
+screens\quiz:4650: Default graded settings: one attempt, no timer, feedback after final submission.
+screens\quiz:4657: ${_showOptional ? 
+screens\quiz:4657:  : 
+screens\quiz:4657: } optional settings
+screens\quiz:4669: Description (optional)
+screens\quiz:4681: Attempt limit, 1 to 20
+screens\quiz:4693: Time limit in minutes (optional)
+screens\quiz:4699: Untimed and ungraded, unlimited retries. Availability times still apply if set.
+screens\quiz:4705: Feedback: $_policy
+screens\quiz:4711: Release: ${_dateTimeLabel(_releaseAt, 
+screens\quiz:4711: )}
+screens\quiz:4718: ${_dateTimeLabel(_opensAt, 
+screens\quiz:4718: )}. Press OK to set opening time. Left clears it.
+screens\quiz:4722: No opening time
+screens\quiz:4724: Optional � enter year, month, day, hour and minute
+screens\quiz:4733: ${_dateTimeLabel(_closesAt, 
+screens\quiz:4733: )}. Press OK to set closing time. Left clears it.
+screens\quiz:4737: No closing time
+screens\quiz:4739: Optional � must be after opening time
+screens\quiz:4750: Shuffle questions once per attempt
+screens\quiz:4757: Shuffle options once per attempt
+screens\quiz:4763: 0: Cancel
+screens\quiz:4770: 8: Continue to questions
+screens\quiz:4771: 8: Save settings
+screens\ques:123: /question-bank/${widget.questionId}/revisions?offset=$offset
+screens\ques:202:  
+screens\ques:248: Question revisions
+screens\ques:251: Go back from question revisions
+screens\ques:277: Refresh revisions
+screens\ques:282: Newer revision
+screens\ques:287: Older revision
+screens\ques:296: ${titles[section.key]}. Double tap to hear it
+screens\ques:297: Account changed. Return and sign in again.
+widgets\quiz:30: ${_error!} ${QuizText.extraCorrect}
+widgets\quiz:71: Extra time: ${widget.studentName}
+widgets\quiz:77: Future attempts only. Existing deadlines do not change. Quiz closing time still applies; extend availability s
+widgets\quiz:85: Extra minutes
+widgets\quiz:103: Save future extra time
+widgets\quiz:108: 0: Cancel
+widgets\quiz:68: Quiz speech speed: 
+widgets\quiz:69: ${TtsService.formatSpeedMultiple(rate)}�
+widgets\quiz:81: 7: Slower
+widgets\quiz:82: 9: Faster

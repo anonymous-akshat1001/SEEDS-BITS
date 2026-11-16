@@ -1,5 +1,7 @@
 // lib/widgets/participant_tile.dart
 import 'package:flutter/material.dart';
+import '../announcers/session_text.dart';
+import '../l10n/speech.dart';
 import '../utils/ui_utils.dart';
 import 'keypad_confirmation_dialog.dart';
 
@@ -38,15 +40,14 @@ class _ParticipantTileState extends State<ParticipantTile> {
   bool _confirmingRemoval = false;
 
   bool get _speaking =>
-      widget.isSpeaking ??
-      (!widget.isMuted && (widget.micLevel ?? 0) > 0.1);
+      widget.isSpeaking ?? (!widget.isMuted && (widget.micLevel ?? 0) > 0.1);
 
   /// "Asha, hand raised, muted, speaking" — most important word first.
   String get _summary => [
     widget.name,
-    if (widget.raisedHand) 'hand raised',
-    widget.isMuted ? 'muted' : 'unmuted',
-    if (_speaking) 'speaking',
+    if (widget.raisedHand) Speech.t.sessionStateHandRaised,
+    widget.isMuted ? Speech.t.sessionStateMuted : Speech.t.sessionStateUnmuted,
+    if (_speaking) Speech.t.sessionStateSpeaking,
   ].join(', ');
 
   @override
@@ -61,12 +62,10 @@ class _ParticipantTileState extends State<ParticipantTile> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => KeypadConfirmationDialog(
-        title: 'Remove ${widget.name}?',
-        message:
-            '${widget.name} will be removed from this session and returned '
-            'to their dashboard.',
-        cancelLabel: 'Keep ${widget.name}',
-        confirmLabel: 'Remove ${widget.name}',
+        title: SessionText.removeTitle(widget.name),
+        message: Speech.t.sessionTileRemoveFromSessionMessage(widget.name),
+        cancelLabel: SessionText.keep(widget.name),
+        confirmLabel: SessionText.remove(widget.name),
       ),
     );
     _confirmingRemoval = false;
@@ -126,20 +125,23 @@ class _ParticipantTileState extends State<ParticipantTile> {
 
   @override
   Widget build(BuildContext context) {
-    final stacked = UIUtils.isTiny(context) || UIUtils.useStackedLayout(context);
+    final stacked =
+        UIUtils.isTiny(context) || UIUtils.useStackedLayout(context);
     final statusWords = [
-      widget.isMuted ? 'Muted' : 'Unmuted',
-      if (widget.raisedHand) 'Hand raised',
-      if (_speaking) 'Speaking',
+      widget.isMuted ? Speech.t.sessionMuted : Speech.t.sessionUnmuted,
+      if (widget.raisedHand) Speech.t.sessionTileHandRaised,
+      if (_speaking) Speech.t.sessionTileSpeaking,
     ].join(' · ');
     final buttons = <Widget>[
       if (widget.onMute != null)
         _button(
           icon: widget.isMuted ? Icons.mic : Icons.mic_off,
-          text: widget.isMuted ? 'Unmute ${widget.name}' : 'Mute ${widget.name}',
+          text: widget.isMuted
+              ? Speech.t.sessionUnmuteParticipant(widget.name)
+              : Speech.t.sessionMuteParticipant(widget.name),
           semanticLabel: widget.isMuted
-              ? 'Unmute ${widget.name}'
-              : 'Mute ${widget.name}',
+              ? Speech.t.sessionUnmuteParticipant(widget.name)
+              : Speech.t.sessionMuteParticipant(widget.name),
           onPressed: widget.onMute!,
           fullWidth: stacked,
         ),
@@ -147,8 +149,8 @@ class _ParticipantTileState extends State<ParticipantTile> {
         _button(
           focusNode: _removeFocus,
           icon: Icons.person_remove,
-          text: 'Remove ${widget.name}',
-          semanticLabel: 'Remove ${widget.name} from session',
+          text: Speech.t.sessionRemove(widget.name),
+          semanticLabel: Speech.t.sessionRemoveFromSession(widget.name),
           onPressed: _confirmRemoval,
           fullWidth: stacked,
           iconColor: UIUtils.errorColor,

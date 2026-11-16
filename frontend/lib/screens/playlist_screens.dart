@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../services/message_center.dart';
 import '../services/undo_service.dart';
 import '../announcers/library_text.dart';
+import '../l10n/speech.dart';
 
 import '../services/api_service.dart';
 import '../services/tts_service.dart';
@@ -78,13 +79,17 @@ class _TeacherPlaylistsScreenState extends State<TeacherPlaylistsScreen> {
     });
     TtsService.speak(
       _playlists.isEmpty
-          ? 'No playlists yet for ${widget.className}, ${widget.subjectName}. Press 2 to create one.'
-          : '${_playlists.length} playlists loaded for ${widget.className}, ${widget.subjectName}',
+          ? Speech.t.playlistTeacherNone(widget.className, widget.subjectName)
+          : Speech.t.playlistTeacherLoaded(
+              _playlists.length,
+              widget.className,
+              widget.subjectName,
+            ),
     );
   }
 
   Future<void> _create() async {
-    final title = await _titleDialog('Create class playlist');
+    final title = await _titleDialog(Speech.t.playlistCreateClassTitle);
     if (title == null || title.isEmpty) return;
     final playlist = await ApiService.createTeacherPlaylist(
       title: title,
@@ -119,7 +124,7 @@ class _TeacherPlaylistsScreenState extends State<TeacherPlaylistsScreen> {
       barrierDismissible: false,
       builder: (dialogContext) => KeypadInstructionWrapper(
         screenName: title,
-        labels: const {0: 'Cancel', 1: 'Create'},
+        labels: {0: Speech.t.playlistCancel, 1: Speech.t.playlistCreate},
         actions: {
           0: () => Navigator.pop(dialogContext),
           1: () => Navigator.pop(dialogContext, controller.text.trim()),
@@ -128,17 +133,17 @@ class _TeacherPlaylistsScreenState extends State<TeacherPlaylistsScreen> {
         focusTargets: [
           KeypadFocusTarget(
             node: fieldNode,
-            label: 'Playlist title',
+            label: Speech.t.playlistTitleField,
             isTextField: true,
           ),
           KeypadFocusTarget(
             node: cancelNode,
-            label: 'Cancel playlist creation',
+            label: Speech.t.playlistCancelCreation,
             onActivate: () => Navigator.pop(dialogContext),
           ),
           KeypadFocusTarget(
             node: createNode,
-            label: 'Create playlist',
+            label: Speech.t.playlistCreatePlaylist,
             onActivate: () =>
                 Navigator.pop(dialogContext, controller.text.trim()),
           ),
@@ -149,19 +154,19 @@ class _TeacherPlaylistsScreenState extends State<TeacherPlaylistsScreen> {
             controller: controller,
             focusNode: fieldNode,
             onTap: () => dialogKeypad.enterTextEditing(fieldNode),
-            decoration: const InputDecoration(labelText: 'Playlist title'),
+            decoration: InputDecoration(labelText: Speech.t.playlistTitleField),
           ),
           actions: [
             TextButton(
               focusNode: cancelNode,
               onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('Cancel (0)'),
+              child: Text(Speech.t.libraryCancelKey0Button),
             ),
             FilledButton(
               focusNode: createNode,
               onPressed: () =>
                   Navigator.pop(dialogContext, controller.text.trim()),
-              child: const Text('Create (1)'),
+              child: Text(Speech.t.teacherHomeCreateKey1),
             ),
           ],
         ),
@@ -178,17 +183,17 @@ class _TeacherPlaylistsScreenState extends State<TeacherPlaylistsScreen> {
     final targets = <KeypadFocusTarget>[
       KeypadFocusTarget(
         node: _backNode,
-        label: 'Back',
+        label: Speech.t.playlistBack,
         onActivate: () => Navigator.pop(context),
       ),
       KeypadFocusTarget(
         node: _refreshNode,
-        label: 'Refresh playlists',
+        label: Speech.t.playlistRefreshPlaylists,
         onActivate: _load,
       ),
       KeypadFocusTarget(
         node: _createNode,
-        label: 'Create playlist',
+        label: Speech.t.playlistCreatePlaylist,
         onActivate: _create,
       ),
     ];
@@ -201,8 +206,11 @@ class _TeacherPlaylistsScreenState extends State<TeacherPlaylistsScreen> {
             id,
             () => FocusNode(debugLabel: 'teacher-playlist-$id'),
           ),
-          label:
-              '${playlist['title']}. ${_teacherStatus(playlist)}. ${playlist['item_count']} items',
+          label: Speech.t.playlistTeacherItemLabel(
+            '${playlist['title']}',
+            _teacherStatus(playlist),
+            '${playlist['item_count']}',
+          ),
           onActivate: () => _open(id),
         ),
       );
@@ -223,8 +231,15 @@ class _TeacherPlaylistsScreenState extends State<TeacherPlaylistsScreen> {
   @override
   Widget build(BuildContext context) {
     return KeypadInstructionWrapper(
-      screenName: 'Class Playlists, ${widget.className}, ${widget.subjectName}',
-      labels: const {0: 'Back', 1: 'Refresh', 2: 'Create Playlist'},
+      screenName: Speech.t.playlistTeacherScreen(
+        widget.className,
+        widget.subjectName,
+      ),
+      labels: {
+        0: Speech.t.playlistBack,
+        1: Speech.t.playlistRefresh,
+        2: Speech.t.playlistCreatePlaylistKey,
+      },
       actions: {0: () => Navigator.pop(context), 1: _load, 2: _create},
       navigationController: _keypad,
       focusTargets: _targets(),
@@ -232,15 +247,20 @@ class _TeacherPlaylistsScreenState extends State<TeacherPlaylistsScreen> {
         appBar: AppBar(
           leading: IconButton(
             focusNode: _backNode,
-            tooltip: 'Back',
+            tooltip: Speech.t.settingsBack,
             onPressed: () => Navigator.pop(context),
             icon: const Icon(Icons.arrow_back),
           ),
-          title: Text('${widget.className} · ${widget.subjectName} Playlists'),
+          title: Text(
+            Speech.t.playlistClassSubjectTitle(
+              widget.className,
+              widget.subjectName,
+            ),
+          ),
           actions: [
             IconButton(
               focusNode: _refreshNode,
-              tooltip: 'Refresh playlists',
+              tooltip: Speech.t.playlistRefreshPlaylists,
               onPressed: _load,
               icon: const Icon(Icons.refresh),
             ),
@@ -260,7 +280,7 @@ class _TeacherPlaylistsScreenState extends State<TeacherPlaylistsScreen> {
                     ),
                     onPressed: _create,
                     icon: const Icon(Icons.playlist_add),
-                    label: const Text('2: Create playlist'),
+                    label: Text(Speech.t.playlistCreateKey2),
                   ),
                   if (_playlists.isEmpty)
                     Padding(
@@ -268,7 +288,7 @@ class _TeacherPlaylistsScreenState extends State<TeacherPlaylistsScreen> {
                       child: Semantics(
                         liveRegion: true,
                         child: Text(
-                          'No playlists in this class and subject. Press 2 to create one.',
+                          Speech.t.playlistNoneInClass,
                           style: TextStyle(
                             color: UIUtils.textColor,
                             fontSize: 16,
@@ -301,10 +321,10 @@ class _TeacherPlaylistsScreenState extends State<TeacherPlaylistsScreen> {
 
   String _teacherStatus(Map<String, dynamic> playlist) =>
       playlist['is_archived'] == true
-      ? 'Archived'
+      ? Speech.t.playlistStatusArchived
       : playlist['is_published'] == true
-      ? 'Published'
-      : 'Draft';
+      ? Speech.t.playlistStatusPublished
+      : Speech.t.playlistStatusDraft;
 }
 
 class StudentPlaylistsScreen extends StatefulWidget {
@@ -355,8 +375,11 @@ class _StudentPlaylistsScreenState extends State<StudentPlaylistsScreen> {
     });
     TtsService.speak(
       _private.isEmpty && _classPlaylists.isEmpty
-          ? 'No playlists yet. Press 2 to create a private playlist.'
-          : '${_private.length} private playlists and ${_classPlaylists.length} class playlists loaded',
+          ? Speech.t.playlistStudentNone
+          : Speech.t.playlistStudentLoaded(
+              _private.length,
+              _classPlaylists.length,
+            ),
     );
   }
 
@@ -370,8 +393,8 @@ class _StudentPlaylistsScreenState extends State<StudentPlaylistsScreen> {
       context: context,
       barrierDismissible: false,
       builder: (dialogContext) => KeypadInstructionWrapper(
-        screenName: 'Create private playlist',
-        labels: const {0: 'Cancel', 1: 'Create'},
+        screenName: Speech.t.playlistCreatePrivate,
+        labels: {0: Speech.t.playlistCancel, 1: Speech.t.playlistCreate},
         actions: {
           0: () => Navigator.pop(dialogContext),
           1: () => Navigator.pop(dialogContext, controller.text.trim()),
@@ -380,41 +403,41 @@ class _StudentPlaylistsScreenState extends State<StudentPlaylistsScreen> {
         focusTargets: [
           KeypadFocusTarget(
             node: fieldNode,
-            label: 'Playlist title',
+            label: Speech.t.playlistTitleField,
             isTextField: true,
           ),
           KeypadFocusTarget(
             node: cancelNode,
-            label: 'Cancel',
+            label: Speech.t.playlistCancel,
             onActivate: () => Navigator.pop(dialogContext),
           ),
           KeypadFocusTarget(
             node: createNode,
-            label: 'Create private playlist',
+            label: Speech.t.playlistCreatePrivate,
             onActivate: () =>
                 Navigator.pop(dialogContext, controller.text.trim()),
           ),
         ],
         child: AlertDialog(
-          title: const Text('Create private playlist'),
+          title: Text(Speech.t.playlistCreatePrivate),
           content: TextField(
             controller: controller,
             focusNode: fieldNode,
             autofocus: true,
             onTap: () => dialogKeypad.enterTextEditing(fieldNode),
-            decoration: const InputDecoration(labelText: 'Playlist title'),
+            decoration: InputDecoration(labelText: Speech.t.playlistTitleField),
           ),
           actions: [
             TextButton(
               focusNode: cancelNode,
               onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('Cancel (0)'),
+              child: Text(Speech.t.libraryCancelKey0Button),
             ),
             FilledButton(
               focusNode: createNode,
               onPressed: () =>
                   Navigator.pop(dialogContext, controller.text.trim()),
-              child: const Text('Create (1)'),
+              child: Text(Speech.t.teacherHomeCreateKey1),
             ),
           ],
         ),
@@ -456,17 +479,17 @@ class _StudentPlaylistsScreenState extends State<StudentPlaylistsScreen> {
     final targets = <KeypadFocusTarget>[
       KeypadFocusTarget(
         node: _backNode,
-        label: 'Back',
+        label: Speech.t.playlistBack,
         onActivate: () => Navigator.pop(context),
       ),
       KeypadFocusTarget(
         node: _refreshNode,
-        label: 'Refresh playlists',
+        label: Speech.t.playlistRefreshPlaylists,
         onActivate: _load,
       ),
       KeypadFocusTarget(
         node: _createNode,
-        label: 'Create private playlist',
+        label: Speech.t.playlistCreatePrivate,
         onActivate: _create,
       ),
     ];
@@ -479,8 +502,10 @@ class _StudentPlaylistsScreenState extends State<StudentPlaylistsScreen> {
             'private-$id',
             () => FocusNode(debugLabel: 'private-playlist-$id'),
           ),
-          label:
-              '${playlist['title']}, private, ${playlist['item_count']} items',
+          label: Speech.t.playlistPrivateItemLabel(
+            '${playlist['title']}',
+            '${playlist['item_count']}',
+          ),
           onActivate: () => _openPrivate(id),
         ),
       );
@@ -494,8 +519,11 @@ class _StudentPlaylistsScreenState extends State<StudentPlaylistsScreen> {
             'class-$id',
             () => FocusNode(debugLabel: 'class-playlist-$id'),
           ),
-          label:
-              '${playlist['title']}, class playlist, ${playlist['subject_name']}, ${playlist['item_count']} items',
+          label: Speech.t.playlistClassItemLabel(
+            '${playlist['title']}',
+            '${playlist['subject_name']}',
+            '${playlist['item_count']}',
+          ),
           onActivate: () => _openClass(id),
         ),
       );
@@ -506,8 +534,12 @@ class _StudentPlaylistsScreenState extends State<StudentPlaylistsScreen> {
   @override
   Widget build(BuildContext context) {
     return KeypadInstructionWrapper(
-      screenName: 'My Playlists. Private playlists are visible only to you.',
-      labels: const {0: 'Back', 1: 'Refresh', 2: 'Create Private Playlist'},
+      screenName: Speech.t.playlistStudentScreen,
+      labels: {
+        0: Speech.t.playlistBack,
+        1: Speech.t.playlistRefresh,
+        2: Speech.t.playlistCreatePrivateKey,
+      },
       actions: {0: () => Navigator.pop(context), 1: _load, 2: _create},
       navigationController: _keypad,
       focusTargets: _targets(),
@@ -515,15 +547,15 @@ class _StudentPlaylistsScreenState extends State<StudentPlaylistsScreen> {
         appBar: AppBar(
           leading: IconButton(
             focusNode: _backNode,
-            tooltip: 'Back',
+            tooltip: Speech.t.settingsBack,
             onPressed: () => Navigator.pop(context),
             icon: const Icon(Icons.arrow_back),
           ),
-          title: const Text('My Playlists'),
+          title: Text(Speech.t.playlistMyPlaylists),
           actions: [
             IconButton(
               focusNode: _refreshNode,
-              tooltip: 'Refresh playlists',
+              tooltip: Speech.t.playlistRefreshPlaylists,
               onPressed: _load,
               icon: const Icon(Icons.refresh),
             ),
@@ -534,11 +566,10 @@ class _StudentPlaylistsScreenState extends State<StudentPlaylistsScreen> {
             : ListView(
                 padding: UIUtils.paddingAll(context, 12),
                 children: [
-                  const AccessibleTile(
+                  AccessibleTile(
                     leadingIcon: Icons.lock,
-                    title: 'Your playlists are private',
-                    subtitle:
-                        'Teachers, administrators, and other students cannot view them.',
+                    title: Speech.t.playlistPrivateNoticeTitle,
+                    subtitle: Speech.t.playlistPrivateNoticeText,
                   ),
                   FilledButton.icon(
                     focusNode: _createNode,
@@ -549,13 +580,13 @@ class _StudentPlaylistsScreenState extends State<StudentPlaylistsScreen> {
                     ),
                     onPressed: _create,
                     icon: const Icon(Icons.playlist_add),
-                    label: const Text('2: Create private playlist'),
+                    label: Text(Speech.t.playlistCreatePrivateKey2),
                   ),
                   const SizedBox(height: 16),
                   Semantics(
                     header: true,
                     child: Text(
-                      'My private playlists',
+                      Speech.t.playlistMyPrivateHeading,
                       style: TextStyle(
                         color: UIUtils.textColor,
                         fontSize: 20,
@@ -565,7 +596,7 @@ class _StudentPlaylistsScreenState extends State<StudentPlaylistsScreen> {
                   ),
                   if (_private.isEmpty)
                     Text(
-                      'No private playlists yet.',
+                      Speech.t.playlistNoPrivate,
                       style: TextStyle(color: UIUtils.textColor, fontSize: 16),
                     ),
                   ..._private.map((entry) => _playlistTile(entry, true)),
@@ -573,7 +604,7 @@ class _StudentPlaylistsScreenState extends State<StudentPlaylistsScreen> {
                   Semantics(
                     header: true,
                     child: Text(
-                      'Class playlists',
+                      Speech.t.playlistClassHeading,
                       style: TextStyle(
                         color: UIUtils.textColor,
                         fontSize: 20,
@@ -583,7 +614,7 @@ class _StudentPlaylistsScreenState extends State<StudentPlaylistsScreen> {
                   ),
                   if (_classPlaylists.isEmpty)
                     Text(
-                      'No class playlists published yet.',
+                      Speech.t.playlistNoClassPublished,
                       style: TextStyle(color: UIUtils.textColor, fontSize: 16),
                     ),
                   ..._classPlaylists.map(
@@ -603,10 +634,16 @@ class _StudentPlaylistsScreenState extends State<StudentPlaylistsScreen> {
       focusNode: _nodes.putIfAbsent(key, () => FocusNode(debugLabel: key)),
       leadingIcon: private ? Icons.lock_outline : Icons.school_outlined,
       title: '${playlist['title']}',
-      status: private ? 'Private' : 'Class playlist',
+      status: private
+          ? Speech.t.playlistStatusPrivate
+          : Speech.t.playlistClassPlaylist,
       subtitle: private
-          ? '${playlist['item_count']} items'
-          : '${playlist['class_name']}, ${playlist['subject_name']}, ${playlist['item_count']} items',
+          ? Speech.t.playlistItemCount('${playlist['item_count']}')
+          : Speech.t.playlistClassItemCount(
+              '${playlist['class_name']}',
+              '${playlist['subject_name']}',
+              '${playlist['item_count']}',
+            ),
       onActivate: () => private ? _openPrivate(id) : _openClass(id),
     );
   }
@@ -665,9 +702,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
     nodeFor: _learningNode,
     pauseForNotes: () async {
       if (_playPending) {
-        throw const LearningStorageException(
-          'Wait for the playlist player before opening study notes.',
-        );
+        throw LearningStorageException(Speech.t.playlistWaitBeforeNotes);
       }
       await _player.pause();
       if (mounted) setState(() => _playing = false);
@@ -827,9 +862,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
         playlist['items'] is! List ||
         playlist['title'] is! String) {
       setState(() => _loading = false);
-      _learningIssue(
-        'Could not refresh this playlist. Check your connection and try again. Existing playback and saved progress have not been changed.',
-      );
+      _learningIssue(Speech.t.playlistRefreshFailed);
       return;
     }
     final activeAudioId = _learning.ready ? _learning.lesson?.audioId : null;
@@ -867,22 +900,27 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
         _playPending = false;
         _playbackStatus = 'Stopped';
       });
-      _learningIssue(
-        'The current lesson is no longer available in this playlist. Playback stopped. Your saved progress and bookmarks are kept.',
-      );
+      _learningIssue(Speech.t.playlistLessonGone);
       return;
     }
+    final t = Speech.t;
     final state = _teacher
         ? (playlist['is_archived'] == true
-              ? 'archived'
+              ? t.playlistStateArchived
               : playlist['is_published'] == true
-              ? 'published'
-              : 'draft')
+              ? t.playlistStatePublished
+              : t.playlistStateDraft)
         : widget.mode == PlaylistMode.studentPrivate
-        ? 'private'
-        : 'published class playlist';
+        ? t.playlistStatePrivate
+        : t.playlistStatePublishedClass;
     TtsService.speak(
-      '${playlist['title']}. ${playlist['class_name'] ?? ''} ${playlist['subject_name'] ?? ''}. ${_items.length} items. $state.',
+      t.playlistLoaded(
+        '${playlist['title']}',
+        '${playlist['class_name'] ?? ''}',
+        '${playlist['subject_name'] ?? ''}',
+        _items.length,
+        state,
+      ),
     );
   }
 
@@ -911,8 +949,8 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
     final selected = await showDialog<int>(
       context: context,
       builder: (dialogContext) => KeypadInstructionWrapper(
-        screenName: 'Add audio to playlist',
-        labels: const {0: 'Cancel'},
+        screenName: Speech.t.playlistAddAudioScreen,
+        labels: {0: Speech.t.playlistCancel},
         actions: {0: () => Navigator.pop(dialogContext)},
         navigationController: dialogKeypad,
         focusTargets: candidates
@@ -926,7 +964,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
             )
             .toList(),
         child: SimpleDialog(
-          title: const Text('Add audio'),
+          title: Text(Speech.t.playlistAddAudioTitle),
           children: candidates
               .map<Widget>(
                 (audio) => SimpleDialogOption(
@@ -969,7 +1007,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
     final item = _items[index];
     if (item['available'] == false) {
       TtsService.speak(
-        '${item['title']} is no longer available in your current class. You can remove it from this playlist.',
+        Speech.t.playlistItemNoLongerAvailable('${item['title']}'),
       );
       return;
     }
@@ -1006,23 +1044,21 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
       _learning.activate();
       setState(() {
         _playing = true;
-        _playbackStatus = 'Playing ${item['title']}';
+        _playbackStatus = Speech.t.libraryStatusPlaying('${item['title']}');
       });
       final duration = await _player.getDuration();
       if (!mounted || revision != _playRevision) return;
       if (duration != null) _learning.updateDuration(duration);
       TtsService.speak(
         '${learningPlayingAnnouncement('${item['title']}', _learning.position, _learning.duration, _learning.speed)} '
-        'Item ${index + 1} of ${_items.length}.',
+        '${Speech.t.playlistItemPosition('${index + 1}', '${_items.length}')}',
       );
     } on Exception catch (error) {
       debugPrint('[LEARNING] Playlist playback failed (${error.runtimeType})');
       if (!mounted || revision != _playRevision) return;
       _learning.abort();
       setState(() => _playing = false);
-      _learningIssue(
-        'Could not play this lesson. Check your connection and try again.',
-      );
+      _learningIssue(Speech.t.playlistPlayFailed);
     } finally {
       settled.complete();
       if (mounted && revision == _playRevision) {
@@ -1045,21 +1081,25 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
       if (mounted) {
         setState(() {
           _playing = false;
-          _playbackStatus = 'Paused ${_learning.lesson?.title ?? ''}'.trim();
+          _playbackStatus = Speech.t
+              .libraryStatusPaused(_learning.lesson?.title ?? '')
+              .trim();
         });
       }
       await _learning.flush();
       TtsService.speak(
-        'Paused at ${learningSpokenPosition(_learning.position, _learning.duration)}.',
+        Speech.t.playlistPausedAt(
+          learningSpokenPosition(_learning.position, _learning.duration),
+        ),
       );
     } else {
       if (_player.state == PlayerState.paused && _learning.ready) {
         await _player.resume();
-        final title = _learning.lesson?.title ?? 'Lesson';
+        final title = _learning.lesson?.title ?? Speech.t.playlistLessonDefault;
         if (mounted) {
           setState(() {
             _playing = true;
-            _playbackStatus = 'Playing $title';
+            _playbackStatus = Speech.t.libraryStatusPlaying(title);
           });
         }
         TtsService.speak(
@@ -1097,7 +1137,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
       if (mounted) {
         setState(() {
           _playing = false;
-          _playbackStatus = 'Finished. End of playlist';
+          _playbackStatus = Speech.t.playlistFinished;
         });
       }
       TtsService.speak(LibraryText.playlistEnded);
@@ -1117,8 +1157,8 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
       context: context,
       barrierDismissible: false,
       builder: (dialogContext) => KeypadInstructionWrapper(
-        screenName: 'Rename playlist',
-        labels: const {0: 'Cancel', 1: 'Save'},
+        screenName: Speech.t.playlistRenameScreen,
+        labels: {0: Speech.t.playlistCancel, 1: Speech.t.playlistSave},
         actions: {
           0: () => Navigator.pop(dialogContext),
           1: () => Navigator.pop(dialogContext, controller.text.trim()),
@@ -1127,41 +1167,41 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
         focusTargets: [
           KeypadFocusTarget(
             node: fieldNode,
-            label: 'Playlist title',
+            label: Speech.t.playlistTitleField,
             isTextField: true,
           ),
           KeypadFocusTarget(
             node: cancelNode,
-            label: 'Cancel rename',
+            label: Speech.t.playlistCancelRename,
             onActivate: () => Navigator.pop(dialogContext),
           ),
           KeypadFocusTarget(
             node: saveNode,
-            label: 'Save playlist title',
+            label: Speech.t.playlistSaveTitle,
             onActivate: () =>
                 Navigator.pop(dialogContext, controller.text.trim()),
           ),
         ],
         child: AlertDialog(
-          title: const Text('Rename playlist'),
+          title: Text(Speech.t.playlistRenameScreen),
           content: TextField(
             controller: controller,
             focusNode: fieldNode,
             autofocus: true,
             onTap: () => dialogKeypad.enterTextEditing(fieldNode),
-            decoration: const InputDecoration(labelText: 'Playlist title'),
+            decoration: InputDecoration(labelText: Speech.t.playlistTitleField),
           ),
           actions: [
             TextButton(
               focusNode: cancelNode,
               onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('Cancel (0)'),
+              child: Text(Speech.t.libraryCancelKey0Button),
             ),
             FilledButton(
               focusNode: saveNode,
               onPressed: () =>
                   Navigator.pop(dialogContext, controller.text.trim()),
-              child: const Text('Save (1)'),
+              child: Text(Speech.t.adminSaveKey1),
             ),
           ],
         ),
@@ -1193,8 +1233,8 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
     if (destination < 0 || destination >= _items.length) {
       TtsService.speak(
         delta < 0
-            ? 'The selected item is already first.'
-            : 'The selected item is already last.',
+            ? Speech.t.playlistAlreadyFirst
+            : Speech.t.playlistAlreadyLast,
       );
       return;
     }
@@ -1212,22 +1252,22 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
       TtsService.speak(LibraryText.movedTo(title, destination + 1));
     } else {
       TtsService.speak(
-        'Could not move $title. Check your connection and try again.',
+        Speech.t.playlistMoveFailed(title),
         priority: SpeechPriority.critical,
       );
     }
   }
 
   Future<void> _remove(int itemId, String title) async {
-    final playlistTitle = '${_playlist?['title'] ?? 'this playlist'}';
+    final t = Speech.t;
+    final playlistTitle = '${_playlist?['title'] ?? t.playlistThisPlaylist}';
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => KeypadConfirmationDialog(
-        title: 'Remove $title?',
-        message:
-            'Remove $title from $playlistTitle? The recording itself is kept in the library.',
-        cancelLabel: 'Keep $title',
-        confirmLabel: 'Remove $title',
+        title: t.playlistRemoveItemTitle(title),
+        message: t.playlistRemoveItemMessage(title, playlistTitle),
+        cancelLabel: t.playlistKeepItem(title),
+        confirmLabel: t.playlistRemoveItem(title),
         cancelKey: 0,
         confirmKey: 1,
       ),
@@ -1256,7 +1296,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
       }
     } else {
       TtsService.speak(
-        'Could not remove $title. Check your connection and try again.',
+        t.playlistRemoveFailed(title),
         priority: SpeechPriority.critical,
       );
     }
@@ -1296,12 +1336,12 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
       await _load();
       TtsService.speak(
         publishing
-            ? '$title published to the class'
-            : '$title returned to draft',
+            ? Speech.t.playlistPublishedToClass(title)
+            : Speech.t.playlistReturnedToDraft(title),
       );
     } else {
       TtsService.speak(
-        'Could not change $title. Check your connection and try again.',
+        Speech.t.playlistChangeFailed(title),
         priority: SpeechPriority.critical,
       );
     }
@@ -1312,25 +1352,26 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
     final deleting = widget.mode == PlaylistMode.studentPrivate;
     final restoring = _teacher && _playlist!['is_archived'] == true;
     final title = '${_playlist!['title']}';
+    final t = Speech.t;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => KeypadConfirmationDialog(
         title: deleting
-            ? 'Delete $title?'
+            ? t.playlistDeleteTitle(title)
             : restoring
-            ? 'Restore $title?'
-            : 'Archive $title?',
+            ? t.playlistRestoreTitle(title)
+            : t.playlistArchiveTitle(title),
         message: deleting
-            ? 'This removes the private playlist $title and its ordered items. Recordings stay in the library.'
+            ? t.playlistDeleteMessage(title)
             : restoring
-            ? 'This returns $title to draft so it can be edited and published again.'
-            : 'Students will no longer see $title. Teacher history is retained.',
-        cancelLabel: 'Cancel',
+            ? t.playlistRestoreMessage(title)
+            : t.playlistArchiveMessage(title),
+        cancelLabel: t.playlistCancel,
         confirmLabel: deleting
-            ? 'Delete $title'
+            ? t.playlistDeleteConfirm(title)
             : restoring
-            ? 'Restore $title'
-            : 'Archive $title',
+            ? t.playlistRestoreConfirm(title)
+            : t.playlistArchiveConfirm(title),
         cancelKey: 0,
         confirmKey: 1,
       ),
@@ -1349,10 +1390,10 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
     if (success && mounted) {
       TtsService.speak(
         deleting
-            ? '$title deleted'
+            ? t.playlistDeleted(title)
             : restoring
-            ? '$title restored as a draft'
-            : '$title archived',
+            ? t.playlistRestoredDraft(title)
+            : t.playlistArchived(title),
       );
       if (deleting) {
         Navigator.pop(context);
@@ -1363,7 +1404,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
   }
 
   String get _selectedTitle => _items.isEmpty
-      ? 'selected item'
+      ? Speech.t.playlistSelectedItem
       : '${_items[_selectedIndex.clamp(0, _items.length - 1)]['title']}';
 
   Future<void> _seekTo(Duration position) async {
@@ -1371,59 +1412,62 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
       await _learning.moveTo(position);
     } on Exception catch (error) {
       debugPrint('[LEARNING] Seek failed (${error.runtimeType})');
-      _learningIssue('Could not move to that lesson position. Try again.');
+      _learningIssue(Speech.t.playlistSeekFailed);
     } on ArgumentError catch (error) {
       _learningIssue(error.message.toString());
     }
   }
 
   List<KeypadFocusTarget> _targets() {
+    final t = Speech.t;
     final targets = <KeypadFocusTarget>[
       KeypadFocusTarget(
         node: _backNode,
-        label: 'Back',
+        label: t.playlistBack,
         onActivate: () => Navigator.pop(context),
       ),
       KeypadFocusTarget(
         node: _refreshNode,
-        label: 'Refresh playlist',
+        label: t.playlistRefreshPlaylist,
         onActivate: _load,
       ),
       if (_editable)
         KeypadFocusTarget(
           node: _editNode,
-          label: 'Rename ${_playlist?['title'] ?? 'playlist'}',
+          label: t.playlistRenameLabel(
+            '${_playlist?['title'] ?? t.playlistWordPlaylist}',
+          ),
           onActivate: _rename,
         ),
       if (_editable)
         KeypadFocusTarget(
           node: _addNode,
-          label: 'Add audio, key 2',
+          label: t.playlistAddAudioLabel,
           onActivate: _add,
         ),
       KeypadFocusTarget(
         node: _playNode,
         label: _playing
-            ? 'Pause $_selectedTitle, key $playerPlayPauseKey'
-            : 'Play $_selectedTitle, key $playerPlayPauseKey',
+            ? t.playlistPauseLabel(_selectedTitle, '$playerPlayPauseKey')
+            : t.playlistPlayLabel(_selectedTitle, '$playerPlayPauseKey'),
         onActivate: _playPause,
       ),
       KeypadFocusTarget(
         node: _previousNode,
-        label: 'Previous item, key 3',
+        label: t.playlistPreviousLabel,
         onActivate: _previous,
       ),
       KeypadFocusTarget(
         node: _nextNode,
-        label: 'Next item, key 8',
+        label: t.playlistNextLabel,
         onActivate: _next,
       ),
       if (_teacher && _playlist?['is_archived'] != true)
         KeypadFocusTarget(
           node: _publishNode,
           label: _playlist?['is_published'] == true
-              ? 'Return ${_playlist?['title']} to draft'
-              : 'Publish ${_playlist?['title']} to the class',
+              ? t.playlistReturnToDraftLabel('${_playlist?['title']}')
+              : t.playlistPublishLabel('${_playlist?['title']}'),
           onActivate: _publish,
         ),
       if (_editable)
@@ -1431,17 +1475,17 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
           node: _archiveNode,
           label: _teacher
               ? (_playlist?['is_archived'] == true
-                    ? 'Restore ${_playlist?['title']}'
-                    : 'Archive ${_playlist?['title']}, asks to confirm')
-              : 'Delete ${_playlist?['title']}, asks to confirm',
+                    ? t.playlistRestoreLabel('${_playlist?['title']}')
+                    : t.playlistArchiveLabel('${_playlist?['title']}'))
+              : t.playlistDeleteLabel('${_playlist?['title']}'),
           onActivate: _archiveOrDelete,
         ),
       if (_learning.lesson != null) ...[
         KeypadFocusTarget(
           node: _seekNode,
-          label:
-              'Lesson position ${learningSpokenPosition(_learning.position, _learning.duration)}. '
-              'Use left or right to move 10 seconds',
+          label: t.playlistSeekLabel(
+            learningSpokenPosition(_learning.position, _learning.duration),
+          ),
           isEnabled: () => _learning.ready && _learning.duration != null,
           onDecrease: () => _learningControls.seekBy(context, -10),
           onIncrease: () => _learningControls.seekBy(context, 10),
@@ -1450,19 +1494,18 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
       ],
       KeypadFocusTarget(
         node: _downloadsNode,
-        label:
-            'Download playlist recordings. Select individually or confirm all listed recordings',
+        label: t.playlistDownloadsLabel,
         onActivate: _openDownloads,
       ),
       if (_editable && _items.length > 1) ...[
         KeypadFocusTarget(
           node: _moveUpNode,
-          label: 'Move $_selectedTitle up',
+          label: t.playlistMoveUpLabel(_selectedTitle),
           onActivate: () => _move(-1),
         ),
         KeypadFocusTarget(
           node: _moveDownNode,
-          label: 'Move $_selectedTitle down',
+          label: t.playlistMoveDownLabel(_selectedTitle),
           onActivate: () => _move(1),
         ),
       ],
@@ -1487,7 +1530,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
               itemId,
               () => FocusNode(debugLabel: 'playlist-remove-$itemId'),
             ),
-            label: 'Remove ${item['title']} from playlist, asks to confirm',
+            label: t.playlistRemoveItemLabel('${item['title']}'),
             onActivate: () => _remove(itemId, '${item['title']}'),
           ),
         );
@@ -1498,11 +1541,12 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
 
   String? _itemStatus(int index) {
     final item = _items[index];
-    if (item['available'] == false) return 'Unavailable in your current class';
+    final t = Speech.t;
+    if (item['available'] == false) return t.playlistItemUnavailableInClass;
     if (index != _selectedIndex || _learning.lesson == null) {
-      return index == _selectedIndex ? 'Selected' : null;
+      return index == _selectedIndex ? t.playlistItemSelected : null;
     }
-    return _playing ? 'Playing' : 'Selected, paused';
+    return _playing ? t.playlistItemPlaying : t.playlistItemSelectedPaused;
   }
 
   String _itemLabel(int index) {
@@ -1519,16 +1563,18 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
   @override
   Widget build(BuildContext context) {
     final controls = _learningControls;
+    final t = Speech.t;
     final labels = <int, String>{
-      0: 'Back',
-      1: 'Refresh',
-      if (_editable) 2: 'Add Audio',
-      3: 'Previous item',
+      0: t.playlistBack,
+      1: t.playlistRefresh,
+      if (_editable) 2: t.playlistAddAudioKey,
+      3: t.playlistPreviousItem,
       ...playerTransportKeyLabels,
       ...playerSpeedKeyLabels,
-      8: 'Next item',
+      8: t.playlistNextItem,
     };
-    final stacked = UIUtils.isTiny(context) || UIUtils.useStackedLayout(context);
+    final stacked =
+        UIUtils.isTiny(context) || UIUtils.useStackedLayout(context);
     final textStyle = TextStyle(color: UIUtils.textColor, fontSize: 16);
     final borderStyle = OutlinedButton.styleFrom(
       foregroundColor: UIUtils.textColor,
@@ -1543,7 +1589,10 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
           style: borderStyle,
           onPressed: _add,
           icon: const Icon(Icons.add),
-          label: const Text('2 Add', semanticsLabel: 'Add audio, key 2'),
+          label: Text(
+            Speech.t.playlistAddKey2,
+            semanticsLabel: Speech.t.playlistAddAudioKey2Label,
+          ),
         ),
       FilledButton.icon(
         focusNode: _playNode,
@@ -1556,23 +1605,29 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
         onPressed: _playPause,
         icon: Icon(_playing ? Icons.pause : Icons.play_arrow),
         label: Text(
-          _playing ? '5 Pause' : '5 Play',
+          _playing ? Speech.t.playlistPauseKey5 : Speech.t.playlistPlayKey5,
           semanticsLabel: _playing
-              ? 'Pause $_selectedTitle, key 5'
-              : 'Play $_selectedTitle, key 5',
+              ? Speech.t.playlistPauseTitleKey5(_selectedTitle)
+              : Speech.t.playlistPlayTitleKey5(_selectedTitle),
         ),
       ),
       OutlinedButton(
         focusNode: _previousNode,
         style: borderStyle,
         onPressed: _previous,
-        child: const Text('3 Previous', semanticsLabel: 'Previous item, key 3'),
+        child: Text(
+          Speech.t.playlistPreviousKey3,
+          semanticsLabel: Speech.t.playlistPreviousItemKey3,
+        ),
       ),
       OutlinedButton(
         focusNode: _nextNode,
         style: borderStyle,
         onPressed: _next,
-        child: const Text('8 Next', semanticsLabel: 'Next item, key 8'),
+        child: Text(
+          Speech.t.playlistNextKey8,
+          semanticsLabel: Speech.t.playlistNextItemKey8,
+        ),
       ),
       if (_teacher && _playlist?['is_archived'] != true)
         OutlinedButton(
@@ -1593,20 +1648,26 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
           onPressed: _archiveOrDelete,
           child: Text(
             _teacher
-                ? (_playlist?['is_archived'] == true ? 'Restore' : 'Archive')
-                : 'Delete playlist',
+                ? (_playlist?['is_archived'] == true
+                      ? Speech.t.playlistRestore
+                      : Speech.t.playlistArchive)
+                : Speech.t.playlistDeletePlaylist,
             semanticsLabel: _teacher
                 ? (_playlist?['is_archived'] == true
-                      ? 'Restore ${_playlist?['title']}'
-                      : 'Archive ${_playlist?['title']}')
-                : 'Delete ${_playlist?['title']}',
+                      ? Speech.t.playlistRestoreNamedButton(
+                          '${_playlist?['title']}',
+                        )
+                      : Speech.t.playlistArchiveNamedButton(
+                          '${_playlist?['title']}',
+                        ))
+                : Speech.t.playlistDeleteNamedButton('${_playlist?['title']}'),
           ),
         ),
     ];
     return KeypadInstructionWrapper(
       screenName: _playlist == null
-          ? 'Playlist'
-          : '${_playlist!['title']} playlist',
+          ? t.playlistScreenDefault
+          : t.playlistScreen('${_playlist!['title']}'),
       labels: labels,
       actions: {
         0: () => Navigator.pop(context),
@@ -1623,7 +1684,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
         appBar: AppBar(
           leading: IconButton(
             focusNode: _backNode,
-            tooltip: 'Back',
+            tooltip: Speech.t.settingsBack,
             onPressed: () => Navigator.pop(context),
             icon: const Icon(Icons.arrow_back),
           ),
@@ -1632,7 +1693,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
             IconButton(
               focusNode: _refreshNode,
               onPressed: _load,
-              tooltip: 'Refresh playlist',
+              tooltip: Speech.t.playlistRefreshPlaylist,
               icon: const Icon(Icons.refresh),
             ),
             if (_editable)
@@ -1651,7 +1712,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
                 child: Semantics(
                   liveRegion: true,
                   child: Text(
-                    'Playlist is unavailable. Press 1 to try again.',
+                    Speech.t.playlistUnavailableRetry,
                     style: textStyle,
                   ),
                 ),
@@ -1665,15 +1726,15 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
                         ? Icons.lock
                         : Icons.playlist_play,
                     status: [
-                      '${_items.length} items',
+                      Speech.t.playlistItemCount('${_items.length}'),
                       if (_teacher)
                         _playlist!['is_archived'] == true
-                            ? 'Archived'
+                            ? Speech.t.playlistStatusArchived
                             : _playlist!['is_published'] == true
-                            ? 'Published'
-                            : 'Draft',
+                            ? Speech.t.playlistStatusPublished
+                            : Speech.t.playlistStatusDraft,
                       if (widget.mode == PlaylistMode.studentPrivate)
-                        'Private',
+                        Speech.t.playlistStatusPrivate,
                     ].join(', '),
                     subtitle: [
                       if (_playlist!['class_name'] != null)
@@ -1706,9 +1767,13 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
                   if (_learning.lesson != null) ...[
                     ExcludeSemantics(
                       child: Text(
-                        '${learningTime(_learning.position)} of '
-                        '${_learning.duration == null ? '--:--' : learningTime(_learning.duration!)}. '
-                        'Speed ${learningSpeedNumber(_learning.speed)}x',
+                        Speech.t.libraryPositionSpeed(
+                          learningTime(_learning.position),
+                          _learning.duration == null
+                              ? '--:--'
+                              : learningTime(_learning.duration!),
+                          learningSpeedNumber(_learning.speed),
+                        ),
                         style: textStyle,
                       ),
                     ),
@@ -1724,36 +1789,30 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
                     focusNode: _downloadsNode,
                     style: borderStyle,
                     onPressed: _openDownloads,
-                    child: const Text('Download playlist recordings'),
+                    child: Text(Speech.t.playlistDownloadRecordings),
                   ),
                   if (_editable && _items.length > 1) ...[
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: Text(
-                        'Play or select an item, then move it up or down.',
-                        style: textStyle,
-                      ),
+                      child: Text(Speech.t.playlistMoveHint, style: textStyle),
                     ),
                     OutlinedButton(
                       focusNode: _moveUpNode,
                       style: borderStyle,
                       onPressed: () => _move(-1),
-                      child: Text('Move $_selectedTitle up'),
+                      child: Text(Speech.t.playlistMoveUp(_selectedTitle)),
                     ),
                     OutlinedButton(
                       focusNode: _moveDownNode,
                       style: borderStyle,
                       onPressed: () => _move(1),
-                      child: Text('Move $_selectedTitle down'),
+                      child: Text(Speech.t.playlistMoveDown(_selectedTitle)),
                     ),
                   ],
                   if (_items.isEmpty)
                     Padding(
                       padding: const EdgeInsets.all(24),
-                      child: Text(
-                        'This playlist has no audio yet.',
-                        style: textStyle,
-                      ),
+                      child: Text(Speech.t.playlistNoAudio, style: textStyle),
                     ),
                   ...List.generate(_items.length, (index) {
                     final item = _items[index];
@@ -1773,7 +1832,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen>
                       onActivate: available
                           ? () => _selectAndPlay(index)
                           : () => TtsService.speak(
-                              '${item['title']} is unavailable in your current class',
+                              t.playlistItemUnavailable('${item['title']}'),
                             ),
                       trailing: _editable
                           ? OutlinedButton.icon(

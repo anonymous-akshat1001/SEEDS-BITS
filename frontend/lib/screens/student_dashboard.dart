@@ -22,6 +22,7 @@ import '../utils/keypad_actions.dart';
 import '../services/auth_session_service.dart';
 import '../utils/session_search.dart';
 import '../utils/class_access_utils.dart';
+import '../l10n/speech.dart';
 
 // Define the Student Dashboard as a Stateful Widget
 class StudentDashboard extends StatefulWidget {
@@ -71,7 +72,9 @@ class _StudentDashboardState extends State<StudentDashboard> {
     debugLabel: 'student-playlists',
   );
   final FocusNode _quizzesFocusNode = FocusNode(debugLabel: 'student-quizzes');
-  final FocusNode _journeysFocusNode = FocusNode(debugLabel: 'student-journeys');
+  final FocusNode _journeysFocusNode = FocusNode(
+    debugLabel: 'student-journeys',
+  );
   final Map<int, FocusNode> _sessionFocusNodes = {};
 
   // Called once when widget is created
@@ -91,7 +94,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
     final name =
         prefs.getString('user_name') ??
         prefs.getString('name') ??
-        'Student $id';
+        Speech.t.studentHomeFallbackName('$id');
 
     if (!mounted) return;
     // saves data into state and rebuild UI
@@ -221,12 +224,12 @@ class _StudentDashboardState extends State<StudentDashboard> {
         // Navigate to Session Screen once the session has been joined
         if (mounted) {
           // Find session title from sessions list
-          String sessionTitle = 'Session';
+          String sessionTitle = Speech.t.sessionDefaultTitle;
           String? className;
           String? subjectName;
           for (final s in sessions) {
             if (s['session_id'] == sessionId) {
-              sessionTitle = s['title'] ?? 'Session';
+              sessionTitle = s['title'] ?? Speech.t.sessionDefaultTitle;
               className = s['class_name']?.toString();
               subjectName = s['subject_name']?.toString();
               break;
@@ -322,10 +325,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
   void _focusSessionInput() {
     _keypadController.exitTextEditing();
     _sessionIdFocusNode.requestFocus();
-    TtsService.speak(
-      'Session search. Type a session number with the keypad, or move down '
-      'to search by name. Press OK to edit. Use down to browse results.',
-    );
+    TtsService.speak(Speech.t.studentHomeSearchHelp);
   }
 
   List get _filteredSessions {
@@ -345,7 +345,9 @@ class _StudentDashboardState extends State<StudentDashboard> {
       if (id is int) {
         byId[id] = {
           'subject_id': id,
-          'subject_name': session['subject_name'] ?? 'Subject $id',
+          'subject_name':
+              session['subject_name'] ??
+              Speech.t.studentHomeSubjectFallback('$id'),
         };
       }
     }
@@ -422,7 +424,8 @@ class _StudentDashboardState extends State<StudentDashboard> {
   /// Concise spoken label, most important first:
   /// "Science, Class 6, Teacher Mrs Rao, live now, session 12".
   String _sessionLabel(Map session) {
-    final title = '${session['title'] ?? 'Untitled session'}'.trim();
+    final title = '${session['title'] ?? Speech.t.studentHomeUntitledSession}'
+        .trim();
     final subject = session['subject_name']?.toString().trim();
     final className = (session['class_name'] ?? _className)?.toString().trim();
     final teacher = session['teacher_name']?.toString().trim();
@@ -481,7 +484,9 @@ class _StudentDashboardState extends State<StudentDashboard> {
         node: _subjectFocusNode,
         label: DashboardText.subjectFilterLabel(
           selectedSubject == null ? null : '${selectedSubject['subject_name']}',
-          _subjectChoices.indexOf(_selectedSubjectId).clamp(0, _subjectChoices.length),
+          _subjectChoices
+              .indexOf(_selectedSubjectId)
+              .clamp(0, _subjectChoices.length),
           _subjectChoices.length,
         ),
         onActivate: () => _cycleSubjectFilter(1),
@@ -498,7 +503,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
       targets.add(
         KeypadFocusTarget(
           node: node,
-          label: '${_sessionLabel(session)}. Press OK to join',
+          label: Speech.t.studentHomeSessionJoinLabel(_sessionLabel(session)),
           onActivate: () => joinSession(id),
         ),
       );
@@ -547,7 +552,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
           body: Center(
             child: Semantics(
               liveRegion: true,
-              label: 'Student dashboard is loading',
+              label: Speech.t.studentHomeLoading,
               child: CircularProgressIndicator(color: UIUtils.accentColor),
             ),
           ),
@@ -682,7 +687,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
             : Semantics(
                 header: true,
                 child: Text(
-                  'Student Dashboard',
+                  Speech.t.dashboardStudentScreen,
                   style: TextStyle(
                     fontSize: UIUtils.fontSize(context, 18),
                     fontWeight: FontWeight.w600,
@@ -704,7 +709,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
               size: UIUtils.iconSize(context, 22),
               color: UIUtils.accentColor,
             ),
-            tooltip: '1: Refresh sessions',
+            tooltip: Speech.t.dashboardRefreshSessionsKey1,
             onPressed: _isRefreshing ? null : _loadSessions,
           ),
         ],
@@ -722,7 +727,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
                   Semantics(
                     header: true,
                     child: Text(
-                      'Student Dashboard',
+                      Speech.t.dashboardStudentScreen,
                       style: TextStyle(
                         fontSize: UIUtils.fontSize(context, 20),
                         fontWeight: FontWeight.bold,
@@ -740,7 +745,9 @@ class _StudentDashboardState extends State<StudentDashboard> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Welcome, ${currentUserName ?? 'Student'}',
+                          Speech.t.studentHomeWelcome(
+                            currentUserName ?? Speech.t.authRoleStudent,
+                          ),
                           style: TextStyle(
                             fontSize: UIUtils.fontSize(context, 18),
                             fontWeight: FontWeight.bold,
@@ -749,7 +756,9 @@ class _StudentDashboardState extends State<StudentDashboard> {
                         ),
                         SizedBox(height: UIUtils.spacing(context, 4)),
                         Text(
-                          'Class: ${_className ?? 'assignment pending'}',
+                          Speech.t.studentHomeClass(
+                            _className ?? Speech.t.studentHomeAssignmentPending,
+                          ),
                           style: TextStyle(
                             fontSize: UIUtils.fontSize(context, 16),
                             color: UIUtils.subtextColor,
@@ -764,7 +773,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
                 if (_isRefreshing) ...[
                   Semantics(
                     liveRegion: true,
-                    label: 'Refreshing sessions',
+                    label: Speech.t.dashboardRefreshingSessions,
                     child: LinearProgressIndicator(
                       color: UIUtils.accentColor,
                       backgroundColor: UIUtils.cardColor,
@@ -778,8 +787,10 @@ class _StudentDashboardState extends State<StudentDashboard> {
                   header: true,
                   child: Text(
                     filtered.isEmpty
-                        ? 'Live sessions: none'
-                        : 'Live sessions: ${filtered.length}',
+                        ? Speech.t.studentHomeLiveSessionsNone
+                        : Speech.t.studentHomeLiveSessionsCount(
+                            '${filtered.length}',
+                          ),
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: UIUtils.fontSize(context, 18),
@@ -828,7 +839,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
                   ),
                   decoration: _fieldDecoration(
                     context,
-                    label: '2: Session number',
+                    label: Speech.t.studentHomeSessionNumberKey2,
                     icon: Icons.pin_outlined,
                   ),
                 ),
@@ -850,7 +861,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
                         ),
                         decoration: _fieldDecoration(
                           context,
-                          label: 'Session name',
+                          label: Speech.t.studentHomeSessionName,
                           icon: Icons.search,
                         ),
                       ),
@@ -860,7 +871,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
                         ? IconButton.filled(
                             focusNode: _joinFocusNode,
                             onPressed: _showSearchResults,
-                            tooltip: 'Show matching sessions',
+                            tooltip: Speech.t.dashboardShowMatching,
                             style: IconButton.styleFrom(
                               backgroundColor: UIUtils.primaryColor,
                               foregroundColor: UIUtils.onPrimaryColor,
@@ -900,7 +911,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
                 // Left/right control, not a drop-down; the focus target
                 // above handles the keypad and announces each change.
                 KeypadChoiceField<int?>(
-                  label: 'Subject filter',
+                  label: Speech.t.studentHomeSubjectFilter,
                   focusNode: _subjectFocusNode,
                   values: _subjectChoices,
                   value: _selectedSubjectId,
@@ -947,35 +958,35 @@ class _StudentDashboardState extends State<StudentDashboard> {
                   focusNode: _libraryFocusNode,
                   onPressed: _openOfflineAudioLibrary,
                   icon: Icons.library_music_rounded,
-                  text: '3: Recorded Audio Library',
+                  text: Speech.t.dashboardAudioLibraryKey3,
                 ),
                 _navButton(
                   context,
                   focusNode: _playlistsFocusNode,
                   onPressed: _openMyPlaylists,
                   icon: Icons.queue_music,
-                  text: '4: My Playlists · Private',
+                  text: Speech.t.studentHomePlaylistsKey4,
                 ),
                 _navButton(
                   context,
                   focusNode: _quizzesFocusNode,
                   onPressed: _openQuizzes,
                   icon: Icons.quiz_outlined,
-                  text: '5: Quizzes',
+                  text: Speech.t.studentHomeQuizzesKey5,
                 ),
                 _navButton(
                   context,
                   focusNode: _journeysFocusNode,
                   onPressed: _openJourneys,
                   icon: Icons.route,
-                  text: '6: Learning Journeys',
+                  text: Speech.t.studentHomeJourneysKey6,
                 ),
                 _navButton(
                   context,
                   focusNode: _logoutFocusNode,
                   onPressed: _logout,
                   icon: Icons.logout,
-                  text: '0: Log out',
+                  text: Speech.t.dashboardLogOutKey0,
                 ),
               ],
             ),
@@ -987,27 +998,28 @@ class _StudentDashboardState extends State<StudentDashboard> {
 
   Widget _buildSessionTile(BuildContext context, Map s) {
     final sessionId = _sessionIdOf(s);
-    final title = '${s['title'] ?? 'Untitled session'}';
+    final title = '${s['title'] ?? Speech.t.teacherHomeUntitledSession}';
     final subject = s['subject_name']?.toString();
     final className = (s['class_name'] ?? _className)?.toString();
-    final teacherName = s['teacher_name']?.toString() ?? 'Unknown';
+    final teacherName =
+        s['teacher_name']?.toString() ?? Speech.t.chatSenderUnknown;
     return AccessibleTile(
       focusNode: _sessionFocusNodes.putIfAbsent(
         sessionId,
         () => FocusNode(debugLabel: 'student-session-$sessionId'),
       ),
       title: title,
-      status: 'Live now',
+      status: Speech.t.dashboardLiveNow,
       statusColor: UIUtils.successColor,
       subtitle: [
         [
           if (subject != null && subject.isNotEmpty) subject,
           if (className != null && className.isNotEmpty) className,
         ].join(' · '),
-        'Teacher: $teacherName',
-        'Session $sessionId. OK to join',
+        Speech.t.studentHomeTeacher(teacherName),
+        Speech.t.studentHomeSessionOkToJoin('$sessionId'),
       ].where((line) => line.isNotEmpty).join('\n'),
-      semanticLabel: '${_sessionLabel(s)}. Join session',
+      semanticLabel: Speech.t.studentHomeJoinSessionLabel(_sessionLabel(s)),
       onActivate: () => joinSession(sessionId),
     );
   }

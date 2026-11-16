@@ -6,6 +6,8 @@ import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../l10n/speech.dart';
+
 class LearningStorageException implements Exception {
   const LearningStorageException(this.message);
   final String message;
@@ -31,10 +33,10 @@ class LessonBookmark {
   };
 
   factory LessonBookmark.fromJson(Map<String, dynamic> data) => LessonBookmark(
-    id: _integer(data['id'], 'bookmark id', minimum: 1),
-    label: _text(data['label'], 'bookmark label'),
+    id: _integer(data['id'], Speech.t.learningFieldBookmarkId, minimum: 1),
+    label: _text(data['label'], Speech.t.learningFieldBookmarkLabel),
     position: Duration(
-      milliseconds: _integer(data['position_ms'], 'bookmark position'),
+      milliseconds: _integer(data['position_ms'], Speech.t.learningFieldBookmarkPosition),
     ),
   );
 }
@@ -109,7 +111,7 @@ class LessonProgress {
   factory LessonProgress.fromJson(Map<String, dynamic> data) {
     final speed = data['speed'];
     final completed = data['completed'];
-    final date = DateTime.tryParse(_text(data['updated_at'], 'update time'));
+    final date = DateTime.tryParse(_text(data['updated_at'], Speech.t.learningFieldUpdateTime));
     final rawBookmarks = data['bookmarks'];
     if (speed is! num ||
         !speed.isFinite ||
@@ -118,8 +120,8 @@ class LessonProgress {
         completed is! bool ||
         date == null ||
         rawBookmarks is! List) {
-      throw const LearningStorageException(
-        'Saved lesson information is invalid. Your saved data has not been changed.',
+      throw LearningStorageException(
+        Speech.t.learningSavedLessonInvalid,
       );
     }
     Duration? optionalDuration(String key) => data[key] == null
@@ -127,28 +129,28 @@ class LessonProgress {
         : Duration(milliseconds: _integer(data[key], key));
     final bookmarks = rawBookmarks.map((raw) {
       if (raw is! Map<String, dynamic>) {
-        throw const LearningStorageException(
-          'A saved bookmark could not be read. Your saved data has not been changed.',
+        throw LearningStorageException(
+          Speech.t.learningSavedBookmarkUnreadable,
         );
       }
       return LessonBookmark.fromJson(raw);
     }).toList();
     final nextId = _integer(
       data['next_bookmark_id'],
-      'next bookmark id',
+      Speech.t.learningFieldNextBookmarkId,
       minimum: 1,
     );
     final ids = bookmarks.map((bookmark) => bookmark.id).toSet();
     if (ids.length != bookmarks.length || ids.any((id) => id >= nextId)) {
-      throw const LearningStorageException(
-        'Saved bookmark identifiers are invalid. Your saved data has not been changed.',
+      throw LearningStorageException(
+        Speech.t.learningSavedBookmarkIdsInvalid,
       );
     }
     final result = LessonProgress(
-      audioId: _integer(data['audio_id'], 'lesson id', minimum: 1),
-      title: _text(data['title'], 'lesson title'),
+      audioId: _integer(data['audio_id'], Speech.t.learningFieldLessonId, minimum: 1),
+      title: _text(data['title'], Speech.t.learningFieldLessonTitle),
       position: Duration(
-        milliseconds: _integer(data['position_ms'], 'position'),
+        milliseconds: _integer(data['position_ms'], Speech.t.learningFieldPosition),
       ),
       duration: optionalDuration('duration_ms'),
       speed: speed.toDouble(),
@@ -162,8 +164,8 @@ class LessonProgress {
     if (result.repeatEnd != null &&
         (result.repeatStart == null ||
             result.repeatEnd! <= result.repeatStart!)) {
-      throw const LearningStorageException(
-        'Saved repeat bounds are invalid. Your saved data has not been changed.',
+      throw LearningStorageException(
+        Speech.t.learningSavedRepeatInvalid,
       );
     }
     return result;
@@ -173,7 +175,7 @@ class LessonProgress {
 int _integer(Object? value, String field, {int minimum = 0}) {
   if (value is! int || value < minimum) {
     throw LearningStorageException(
-      'The saved $field could not be read. Your saved data has not been changed.',
+      Speech.t.learningSavedFieldUnreadable(field),
     );
   }
   return value;
@@ -182,7 +184,7 @@ int _integer(Object? value, String field, {int minimum = 0}) {
 String _text(Object? value, String field) {
   if (value is! String || value.trim().isEmpty) {
     throw LearningStorageException(
-      'The saved $field could not be read. Your saved data has not been changed.',
+      Speech.t.learningSavedFieldUnreadable(field),
     );
   }
   return value;
@@ -213,14 +215,14 @@ class LearningProgressStore {
     final preferences = await SharedPreferences.getInstance();
     final userId = preferences.getInt('user_id');
     if (userId == null || userId <= 0) {
-      throw const LearningStorageException(
-        'Sign in before using saved learning progress.',
+      throw LearningStorageException(
+        Speech.t.learningSignInFirst,
       );
     }
     final root = await getApplicationSupportDirectory();
     if (preferences.getInt('user_id') != userId) {
-      throw const LearningStorageException(
-        'Your account changed. Open the learning library again.',
+      throw LearningStorageException(
+        Speech.t.learningAccountChanged,
       );
     }
     return LearningProgressStore(root: root, userId: userId);
@@ -263,27 +265,27 @@ class LearningProgressStore {
           decoded['version'] != 1 ||
           decoded['account_id'] != userId ||
           decoded['lesson'] is! Map<String, dynamic>) {
-        throw const LearningStorageException(
-          'Saved learning data has an unsupported format or account. Your saved data has not been changed.',
+        throw LearningStorageException(
+          Speech.t.learningUnsupportedFormat,
         );
       }
       final lesson = LessonProgress.fromJson(
         decoded['lesson'] as Map<String, dynamic>,
       );
       if (lesson.audioId != audioId) {
-        throw const LearningStorageException(
-          'Saved lesson identity does not match. Your saved data has not been changed.',
+        throw LearningStorageException(
+          Speech.t.learningIdentityMismatch,
         );
       }
       if (recovering) await temporary.rename(file.path);
       return lesson;
     } on FormatException {
-      throw const LearningStorageException(
-        'Saved learning data could not be read. Your saved data has not been changed.',
+      throw LearningStorageException(
+        Speech.t.learningDataUnreadable,
       );
     } on FileSystemException {
-      throw const LearningStorageException(
-        'Learning storage is unavailable. Check free space and retry. Your saved data has not been intentionally removed.',
+      throw LearningStorageException(
+        Speech.t.learningStorageUnavailableFreeSpace,
       );
     }
   }
@@ -295,8 +297,8 @@ class LearningProgressStore {
     );
     if (type != FileSystemEntityType.notFound &&
         type != FileSystemEntityType.directory) {
-      throw const LearningStorageException(
-        'Learning storage is unavailable. Check storage and retry.',
+      throw LearningStorageException(
+        Speech.t.learningStorageUnavailable,
       );
     }
   }
@@ -315,8 +317,8 @@ class LearningProgressStore {
       );
       await temporary.rename(_file(lesson.audioId).path);
     } on FileSystemException {
-      throw const LearningStorageException(
-        'Learning progress could not be saved. Check free space and retry.',
+      throw LearningStorageException(
+        Speech.t.learningSaveFailed,
       );
     }
   }
@@ -343,8 +345,8 @@ class LearningProgressStore {
       lessons.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
       return List.unmodifiable(lessons);
     } on FileSystemException {
-      throw const LearningStorageException(
-        'Saved learning progress is unavailable. Check storage and retry.',
+      throw LearningStorageException(
+        Speech.t.learningProgressUnavailable,
       );
     }
   });
@@ -364,7 +366,7 @@ class LearningProgressStore {
         speed < 0.25 ||
         speed > 3 ||
         duration?.isNegative == true) {
-      throw ArgumentError('Invalid lesson progress');
+      throw ArgumentError(Speech.t.learningInvalidProgress);
     }
     return _serialize(() async {
       final previous = await _read(audioId);
@@ -403,8 +405,8 @@ class LearningProgressStore {
   ) => _serialize(() async {
     final existing = await _read(audioId);
     if (existing == null) {
-      throw const LearningStorageException(
-        'Start this lesson before adding bookmarks or repeat points.',
+      throw LearningStorageException(
+        Speech.t.learningStartLessonFirst,
       );
     }
     final updated = transform(existing).copyWith(updatedAt: _clock().toUtc());
@@ -418,18 +420,18 @@ class LearningProgressStore {
     String? label,
   }) {
     if (position.isNegative || label?.trim().isEmpty == true) {
-      throw ArgumentError('A bookmark needs a valid position and label');
+      throw ArgumentError(Speech.t.learningBookmarkNeedsPositionLabel);
     }
     return _change(audioId, (lesson) {
       if (lesson.duration != null && position > lesson.duration!) {
-        throw ArgumentError('Bookmark position exceeds lesson duration');
+        throw ArgumentError(Speech.t.learningBookmarkExceedsDuration);
       }
       return lesson.copyWith(
         bookmarks: [
           ...lesson.bookmarks,
           LessonBookmark(
             id: lesson.nextBookmarkId,
-            label: label?.trim() ?? 'Bookmark ${lesson.nextBookmarkId}',
+            label: label?.trim() ?? Speech.t.learningDefaultBookmarkLabel('${lesson.nextBookmarkId}'),
             position: position,
           ),
         ],
@@ -444,7 +446,7 @@ class LearningProgressStore {
           throw ArgumentError.value(
             bookmarkId,
             'bookmarkId',
-            'Bookmark not found',
+            Speech.t.learningBookmarkNotFound,
           );
         }
         return lesson.copyWith(
@@ -462,13 +464,13 @@ class LearningProgressStore {
     if (start?.isNegative == true ||
         end?.isNegative == true ||
         (end != null && (start == null || end <= start))) {
-      throw ArgumentError('Set the end point after the start point');
+      throw ArgumentError(Speech.t.learningRepeatEndAfterStart);
     }
     return _change(audioId, (lesson) {
       if (lesson.duration != null &&
           ((start != null && start > lesson.duration!) ||
               (end != null && end > lesson.duration!))) {
-        throw ArgumentError('Repeat points exceed lesson duration');
+        throw ArgumentError(Speech.t.learningRepeatExceedsDuration);
       }
       return lesson.copyWith(
         repeatStart: start,

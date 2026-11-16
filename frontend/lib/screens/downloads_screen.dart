@@ -7,6 +7,8 @@ import '../services/tts_service.dart';
 import '../services/undo_service.dart';
 import '../services/message_center.dart';
 import '../announcers/library_text.dart';
+import '../l10n/speech.dart';
+import '../utils/spoken_format.dart';
 import '../utils/ui_utils.dart';
 import '../widgets/accessible_tile.dart';
 import '../widgets/key_instruction_wrapper.dart';
@@ -66,9 +68,7 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
       debugPrint(
         '[OFFLINE] Download screen operation failed (${error.runtimeType})',
       );
-      _report(
-        'Could not complete this download action. Check storage, your connection and sign-in, then retry.',
-      );
+      _report(LibraryText.downloadsActionFailed);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -97,10 +97,15 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
       await _readLocal();
       if (!mounted) return;
       final complete = _lessons.where((lesson) => lesson.complete).length;
+      final t = Speech.t;
       final message = _lessons.isEmpty
-          ? 'No downloads yet. Press 2 to find recordings online.'
-          : '$complete downloaded lessons ready to play'
-                '${_lessons.length > complete ? ', ${_lessons.length - complete} partial downloads' : ''}.';
+          ? t.downloadNoneYet
+          : _lessons.length > complete
+          ? t.downloadScreenLoadedWithPartial(
+              '$complete',
+              '${_lessons.length - complete}',
+            )
+          : t.downloadScreenLoaded('$complete');
       unawaited(TtsService.speak(message, priority: SpeechPriority.incidental));
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -113,15 +118,13 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
     await store.credentials();
     if (!mounted) return;
     if (list == null) {
-      throw const OfflineLessonException(
-        'Could not load available recordings. Existing downloads still work until their access expires.',
-      );
+      throw OfflineLessonException(LibraryText.onlineListFailed);
     }
     setState(
       () => _candidates = list.whereType<Map<String, dynamic>>().toList(),
     );
     await TtsService.speak(
-      '${_candidates.length} recordings are available to download. Select the recordings you want.',
+      Speech.t.downloadAvailableCount('${_candidates.length}'),
     );
   });
 
@@ -147,7 +150,7 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
     for (final lesson in _lessons) {
       if (lesson.audioId == id) return lesson.title;
     }
-    return 'Recording $id';
+    return Speech.t.downloadRecordingFallback('$id');
   }
 
   Future<void> _transfer(int id) async {
@@ -173,13 +176,9 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
     try {
       await _transfer(id);
       if (mounted) {
-        setState(
-          () => _status = 'Download verified and saved for offline playback.',
-        );
+        setState(() => _status = LibraryText.downloadVerified);
       }
-      await TtsService.speak(
-        '${_titleFor(id)} downloaded, verified and saved for offline playback.',
-      );
+      await TtsService.speak(LibraryText.downloaded(_titleFor(id)));
     } finally {
       await _readLocal();
     }
@@ -195,11 +194,10 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => KeypadConfirmationDialog(
-        title: 'Download listed recordings?',
-        message:
-            'Download ${ids.length} listed recordings one at a time? This uses internet data and your account’s 50 MB allowance. On failure or cancellation, verified downloads and partial data are kept. No existing lesson is deleted.',
-        confirmLabel: 'Download listed',
-        cancelLabel: 'Choose individually',
+        title: Speech.t.downloadPackDialogTitle,
+        message: Speech.t.downloadPackDialogMessage('${ids.length}'),
+        confirmLabel: Speech.t.downloadPackConfirm,
+        cancelLabel: Speech.t.downloadPackCancel,
       ),
     );
     if (confirmed != true || !mounted) return;
@@ -212,19 +210,16 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
           completed++;
           if (mounted) {
             setState(
-              () =>
-                  _status = '$completed of ${ids.length} recordings verified.',
+              () => _status = LibraryText.packProgress(completed, ids.length),
             );
           }
         }
         if (mounted) {
-          await TtsService.speak(
-            '$completed of ${ids.length} recordings verified and saved.',
-          );
+          await TtsService.speak(LibraryText.packDone(completed, ids.length));
         }
       } on OfflineLessonException catch (error) {
         throw OfflineLessonException(
-          '$completed of ${ids.length} recordings verified. ${error.message}',
+          '${LibraryText.packProgress(completed, ids.length)} ${error.message}',
         );
       } finally {
         await _readLocal();
@@ -235,9 +230,7 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
   Future<void> _renew(OfflineLesson lesson) => _run(() async {
     await _store!.renew(lesson.audioId);
     await _readLocal();
-    await TtsService.speak(
-      'Access renewed for ${lesson.title}. Up to 30 days of offline playback.',
-    );
+    await TtsService.speak(LibraryText.renewed(lesson.title));
   });
 
   Future<void> _remove(OfflineLesson lesson) =>
@@ -248,11 +241,10 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => KeypadConfirmationDialog(
-        title: 'Remove download of $title?',
-        message:
-            'Remove the downloaded or partial audio for $title? Learning progress and bookmarks are kept. Other recordings and accounts are not affected.',
-        confirmLabel: 'Remove download',
-        cancelLabel: 'Keep download',
+        title: LibraryText.removeDownloadTitle(title),
+        message: LibraryText.removeDownloadQuestion(title),
+        confirmLabel: Speech.t.downloadRemoveConfirm,
+        cancelLabel: Speech.t.downloadKeep,
       ),
     );
     if (confirmed != true || !mounted) {
@@ -299,7 +291,7 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
       MaterialPageRoute(
         builder: (_) => ClassAudioScreen(
           sessionId: 0,
-          sessionTitle: 'Downloaded Lessons',
+          sessionTitle: Speech.t.downloadScreenName,
           initialAudioId: lesson.audioId,
           downloadedOnly: true,
         ),
@@ -312,12 +304,11 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
     if (_operation != null) {
       final confirmed = await showDialog<bool>(
         context: context,
-        builder: (_) => const KeypadConfirmationDialog(
-          title: 'Cancel download and go back?',
-          message:
-              'Stop this download? Verified recordings and partial data are kept for an explicit retry.',
-          confirmLabel: 'Cancel and go back',
-          cancelLabel: 'Keep downloading',
+        builder: (_) => KeypadConfirmationDialog(
+          title: Speech.t.downloadCancelBackTitle,
+          message: Speech.t.downloadCancelBackMessage,
+          confirmLabel: Speech.t.downloadCancelBackConfirm,
+          cancelLabel: Speech.t.downloadKeepDownloading,
         ),
       );
       if (confirmed != true || !mounted) return;
@@ -336,52 +327,39 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
     super.dispose();
   }
 
-  static const _months = [
-    'January',
-    'February',
-    'March',
-    'April',
-    'May',
-    'June',
-    'July',
-    'August',
-    'September',
-    'October',
-    'November',
-    'December',
-  ];
-
-  String _date(DateTime value) {
-    final local = value.toLocal();
-    return '${local.day} ${_months[local.month - 1]} ${local.year}';
-  }
+  String _date(DateTime value) => SpokenFormat.date(value);
 
   @override
   Widget build(BuildContext context) {
+    final t = Speech.t;
     final storageStatus = _reservedBytes == null
-        ? 'Storage reservation unavailable. Refresh downloads or remove the selected unreadable records before downloading.'
-        : '${(_reservedBytes! / 1000000).toStringAsFixed(2)} of 50 MB reserved for this account.';
+        ? LibraryText.storageUnknown
+        : t.downloadReserved((_reservedBytes! / 1000000).toStringAsFixed(2));
     final progress = _operation;
     final percent = progress == null || progress.total <= 0
         ? null
         : (progress.received * 100 ~/ progress.total).clamp(0, 100);
     final targets = <KeypadFocusTarget>[
-      KeypadFocusTarget(node: _node('back'), label: 'Back', onActivate: _back),
+      KeypadFocusTarget(
+        node: _node('back'),
+        label: t.downloadBack,
+        onActivate: _back,
+      ),
       KeypadFocusTarget(
         node: _node('refresh'),
-        label: 'Refresh saved downloads, key 1',
+        label: t.downloadRefreshLabel,
         isEnabled: () => !_busy,
         onActivate: _load,
       ),
       KeypadFocusTarget(
         node: _node('online'),
-        label: 'Find recordings to download, key 2. Requires internet',
+        label: t.downloadFindOnlineLabel,
         isEnabled: () => !_busy,
         onActivate: _onlineList,
       ),
       KeypadFocusTarget(
         node: _node('status'),
-        label: 'Read download status, key 3',
+        label: t.downloadReadStatusLabel,
         onActivate: () => TtsService.speak(
           '$storageStatus $_status ${_issue ?? ''} '
           '${progress == null ? '' : LibraryText.downloadProgress(_titleFor(_downloadingId), percent ?? 0)}',
@@ -390,35 +368,34 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
       if (progress != null)
         KeypadFocusTarget(
           node: _node('cancel'),
-          label:
-              'Cancel download of ${_titleFor(_downloadingId)}, key 4. Keep partial data for retry',
+          label: LibraryText.cancelDownloadLabel(_titleFor(_downloadingId)),
           onActivate: progress.cancel,
         ),
       for (final id in _unreadableIds)
         KeypadFocusTarget(
           node: _node('remove-$id'),
-          label:
-              'Unreadable download record $id. Remove only this download, asks to confirm',
+          label: LibraryText.unreadableLabel(id),
           isEnabled: () => !_busy,
-          onActivate: () => _removeId(id, 'unreadable recording $id'),
+          onActivate: () => _removeId(id, LibraryText.unreadableTitle(id)),
         ),
       for (final lesson in _lessons) ...[
         KeypadFocusTarget(
           node: _node('play-${lesson.audioId}'),
-          label:
-              'Play ${lesson.title}. ${lesson.complete ? 'Downloaded' : 'Partial download, cannot play yet'}',
+          label: lesson.complete
+              ? t.downloadPlayDownloadedLabel(lesson.title)
+              : t.downloadPlayPartialLabel(lesson.title),
           isEnabled: () => !_busy && lesson.complete,
           onActivate: () => _play(lesson),
         ),
         KeypadFocusTarget(
           node: _node('renew-${lesson.audioId}'),
-          label: 'Renew access for ${lesson.title}. Requires internet',
+          label: LibraryText.renewLabel(lesson.title),
           isEnabled: () => !_busy,
           onActivate: () => _renew(lesson),
         ),
         KeypadFocusTarget(
           node: _node('remove-${lesson.audioId}'),
-          label: 'Remove download of ${lesson.title}, asks to confirm',
+          label: LibraryText.removeDownloadLabel(lesson.title),
           isEnabled: () => !_busy,
           onActivate: () => _remove(lesson),
         ),
@@ -426,7 +403,7 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
       if (_candidates.isNotEmpty)
         KeypadFocusTarget(
           node: _node('pack'),
-          label: 'Download all listed recordings, key 5, asks to confirm',
+          label: t.downloadPackLabel,
           isEnabled: () => !_busy,
           onActivate: _pack,
         ),
@@ -434,7 +411,7 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
         if (audio['audio_id'] is int)
           KeypadFocusTarget(
             node: _node('download-${audio['audio_id']}'),
-            label: 'Download or resume ${audio['title']}',
+            label: LibraryText.downloadLabel('${audio['title']}'),
             isEnabled: () => !_busy,
             onActivate: () => _download(audio['audio_id'] as int),
           ),
@@ -464,11 +441,9 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
     }
 
     return KeypadInstructionWrapper(
-      screenName: 'Downloaded Lessons',
-      introduction:
-          '50 MB per account. Up to 30 days offline before online access renewal. Files and progress stay separate.',
-      navigationSections:
-          'saved files to play, renew or remove, and online recordings to download or resume',
+      screenName: t.downloadScreenName,
+      introduction: t.downloadIntroduction,
+      navigationSections: t.downloadNavigationSections,
       actions: {
         0: _back,
         for (final (key, id) in [
@@ -485,19 +460,17 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
             if (target.enabled) {
               target.onActivate?.call();
             } else {
-              TtsService.speak(
-                '${target.label} is unavailable while downloads are busy.',
-              );
+              TtsService.speak(LibraryText.unavailableWhileBusy(target.label));
             }
           },
       },
       labels: {
-        0: 'Back',
-        1: 'Refresh downloads',
-        2: 'Find recordings online',
-        3: 'Read status',
-        if (progress != null) 4: 'Cancel download',
-        if (_candidates.isNotEmpty) 5: 'Download listed recordings',
+        0: t.downloadBack,
+        1: t.downloadKeyRefresh,
+        2: t.downloadKeyFindOnline,
+        3: t.downloadKeyReadStatus,
+        if (progress != null) 4: t.downloadKeyCancel,
+        if (_candidates.isNotEmpty) 5: t.downloadKeyPack,
       },
       focusTargets: targets,
       child: PopScope(
@@ -509,11 +482,11 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
           appBar: AppBar(
             leading: IconButton(
               focusNode: _node('back'),
-              tooltip: 'Back',
+              tooltip: Speech.t.settingsBack,
               onPressed: _back,
               icon: const Icon(Icons.arrow_back),
             ),
-            title: const Text('Downloads'),
+            title: Text(Speech.t.downloadTitle),
           ),
           body: SingleChildScrollView(
             padding: const EdgeInsets.all(12),
@@ -521,11 +494,11 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
-                  '$storageStatus Partial files reserve their complete size.',
+                  '$storageStatus ${Speech.t.downloadPartialReserve}',
                   style: textStyle,
                 ),
                 Text(
-                  '30-day offline access. Other accounts have separate allowances. No automatic deletion.',
+                  Speech.t.downloadAccessInfo,
                   style: textStyle.copyWith(color: UIUtils.subtextColor),
                 ),
                 if (_loading) const LinearProgressIndicator(),
@@ -548,15 +521,21 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
                       style: textStyle.copyWith(fontWeight: FontWeight.w700),
                     ),
                   ),
-                button('refresh', '1: Refresh downloads'),
-                button('online', '2: Find recordings online'),
-                button('status', '3: Read status'),
+                button('refresh', Speech.t.downloadRefreshKey1),
+                button('online', Speech.t.downloadFindOnlineKey2),
+                button('status', Speech.t.downloadReadStatusKey3),
                 if (progress != null) ...[
                   Semantics(
                     liveRegion: true,
                     child: Text(
-                      '${_titleFor(_downloadingId)}: '
-                      '${percent == null ? 'starting' : '${percent ~/ 25 * 25} percent'} downloaded',
+                      percent == null
+                          ? Speech.t.downloadProgressStarting(
+                              _titleFor(_downloadingId),
+                            )
+                          : Speech.t.downloadPercentDone(
+                              _titleFor(_downloadingId),
+                              '${percent ~/ 25 * 25}',
+                            ),
                       style: textStyle,
                     ),
                   ),
@@ -570,20 +549,23 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
                           : null,
                     ),
                   ),
-                  button('cancel', '4: Cancel download'),
+                  button('cancel', Speech.t.downloadCancelKey4),
                 ],
                 for (final id in _unreadableIds) ...[
                   Text(
-                    'Download record $id could not be read. Files are kept. Remove only this download to recover; progress and bookmarks are kept.',
+                    Speech.t.downloadRecordUnreadable('$id'),
                     style: textStyle.copyWith(color: UIUtils.errorColor),
                   ),
-                  button('remove-$id', 'Remove unreadable download $id'),
+                  button(
+                    'remove-$id',
+                    Speech.t.downloadRemoveUnreadable('$id'),
+                  ),
                 ],
                 if (_lessons.isEmpty && !_loading)
                   Semantics(
                     liveRegion: true,
                     child: Text(
-                      'No downloads yet. Find recordings online or open Downloads from a class or playlist.',
+                      Speech.t.downloadNoneYetFindOnline,
                       style: textStyle,
                     ),
                   ),
@@ -593,34 +575,41 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
                         ? Icons.download_done
                         : Icons.downloading,
                     title: lesson.title,
-                    status: lesson.complete ? 'Downloaded' : 'Partial download',
+                    status: lesson.complete
+                        ? Speech.t.downloadStatusDownloaded
+                        : Speech.t.downloadStatusPartial,
                     statusColor: lesson.complete
                         ? UIUtils.successColor
                         : UIUtils.errorColor,
-                    subtitle:
-                        '${(lesson.bytes / 1000000).toStringAsFixed(2)} MB. '
-                        '${lesson.revoked ? 'Access renewal required.' : 'Access expires on ${_date(lesson.expiresAt)}.'}',
+                    subtitle: lesson.revoked
+                        ? Speech.t.downloadSizeRenewal(
+                            (lesson.bytes / 1000000).toStringAsFixed(2),
+                          )
+                        : Speech.t.downloadSizeExpires(
+                            (lesson.bytes / 1000000).toStringAsFixed(2),
+                            _date(lesson.expiresAt),
+                          ),
                     trailing: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         button(
                           'play-${lesson.audioId}',
-                          'Play downloaded lesson',
+                          Speech.t.downloadPlayLesson,
                         ),
                         button(
                           'renew-${lesson.audioId}',
-                          'Renew access online',
+                          Speech.t.downloadRenewOnline,
                         ),
-                        button('remove-${lesson.audioId}', 'Remove download'),
+                        button(
+                          'remove-${lesson.audioId}',
+                          Speech.t.downloadRemove,
+                        ),
                       ],
                     ),
                   ),
                 if (_candidates.isNotEmpty) ...[
-                  button('pack', '5: Download listed recordings'),
-                  Text(
-                    'Available recordings. Downloads use internet data.',
-                    style: textStyle,
-                  ),
+                  button('pack', Speech.t.downloadListedKey5),
+                  Text(Speech.t.downloadAvailableInfo, style: textStyle),
                   for (final audio in _candidates)
                     if (audio['audio_id'] is int)
                       button(

@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../l10n/speech.dart';
 import 'api_service.dart';
 
 /// Only semantic actions and numeric metadata belong in this queue.
@@ -22,8 +23,7 @@ class ActivityTelemetry {
     syncIssue.value = null;
     if (enabled) {
       _tail = _tail.then((_) => _purgeExpired()).catchError((Object error) {
-        syncIssue.value =
-            'Expired activity could not be cleaned. Check device storage.';
+        syncIssue.value = Speech.t.activityCleanupFailed;
         debugPrint('[ACTIVITY] Cleanup failed (${error.runtimeType}).');
       });
     }
@@ -68,8 +68,7 @@ class ActivityTelemetry {
     );
     _tail = operation.catchError((Object error) {
       _nextAttempt = DateTime.now().add(const Duration(seconds: 30));
-      syncIssue.value =
-          'Activity sync is unavailable. Learning is still available.';
+      syncIssue.value = Speech.t.activitySyncUnavailable;
       debugPrint('[ACTIVITY] Sync failed (${error.runtimeType}).');
     });
   }
@@ -123,7 +122,7 @@ class ActivityTelemetry {
     final account = prefs.getInt('user_id');
     final token = prefs.getString('token');
     if (account == null || token == null) {
-      syncIssue.value = 'Sign in to sync activity.';
+      syncIssue.value = Speech.t.activitySignInToSync;
       return;
     }
     final key = 'seeds_activity_$account';
@@ -142,8 +141,7 @@ class ActivityTelemetry {
       }
     }
     if (queue.length >= 300) {
-      syncIssue.value =
-          'Activity queue is full. Some older actions cannot be reported.';
+      syncIssue.value = Speech.t.activityQueueFull;
       queue.removeAt(0);
     }
     queue.add({
@@ -196,7 +194,7 @@ class ActivityTelemetry {
       throw StateError('Acknowledgment save failed');
     }
     syncIssue.value = (body['rejected'] as List).isEmpty
-        ? (queue.isEmpty ? null : 'Some activity is waiting to sync.')
-        : 'Some activity was expired or no longer permitted and was not synced.';
+        ? (queue.isEmpty ? null : Speech.t.activityWaitingToSync)
+        : Speech.t.activityRejected;
   }
 }

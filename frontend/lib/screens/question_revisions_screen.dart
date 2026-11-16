@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../announcers/quiz_text.dart';
+import '../l10n/speech.dart';
 import '../services/api_service.dart';
 import '../services/tts_service.dart';
 import '../utils/ui_utils.dart';
@@ -207,7 +208,7 @@ class _QuestionRevisionsScreenState extends State<QuestionRevisionsScreen> {
     return KeypadInstructionWrapper(
       screenName: QuizText.revisionsScreen,
       stateSummary: () => QuizText.revisionState(revision?['revision']),
-      labels: const {0: QuizText.goBack},
+      labels: {0: QuizText.goBack},
       actions: {0: () => Navigator.pop(context)},
       focusTargets: [
         KeypadFocusTarget(
@@ -245,10 +246,10 @@ class _QuestionRevisionsScreenState extends State<QuestionRevisionsScreen> {
       ],
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Question revisions'),
+          title: Text(Speech.t.quizRevisionsTitle),
           leading: IconButton(
             focusNode: _node('back'),
-            tooltip: 'Go back from question revisions',
+            tooltip: Speech.t.quizRevisionsBackTooltip,
             onPressed: () => Navigator.pop(context),
             icon: const Icon(Icons.arrow_back),
           ),
@@ -274,17 +275,17 @@ class _QuestionRevisionsScreenState extends State<QuestionRevisionsScreen> {
               TextButton(
                 focusNode: _node('refresh'),
                 onPressed: _loading ? null : () => _load(_offset),
-                child: const Text('Refresh revisions'),
+                child: Text(Speech.t.quizRefreshRevisions),
               ),
               TextButton(
                 focusNode: _node('newer'),
                 onPressed: canNewer ? () => _move(false) : null,
-                child: const Text('Newer revision'),
+                child: Text(Speech.t.quizNewerRevision),
               ),
               TextButton(
                 focusNode: _node('older'),
                 onPressed: canOlder ? () => _move(true) : null,
-                child: const Text('Older revision'),
+                child: Text(Speech.t.quizOlderRevision),
               ),
               for (final section in sections.entries)
                 Padding(
@@ -293,8 +294,10 @@ class _QuestionRevisionsScreenState extends State<QuestionRevisionsScreen> {
                     button: true,
                     excludeSemantics: true,
                     label: _sameAccount
-                        ? '${titles[section.key]}. Double tap to hear it'
-                        : 'Account changed. Return and sign in again.',
+                        ? Speech.t.quizRevisionSectionHear(
+                            '${titles[section.key]}',
+                          )
+                        : Speech.t.quizAccountChangedSignIn,
                     onTap: () => _read(readText(section.key)),
                     child: OutlinedButton(
                       focusNode: _node(section.key),

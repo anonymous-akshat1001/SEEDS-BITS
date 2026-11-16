@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../announcers/session_text.dart';
+import '../../l10n/speech.dart';
 import '../../services/tts_service.dart';
 import '../../utils/keypad_actions.dart';
 import '../../utils/ui_utils.dart';
@@ -109,7 +110,7 @@ class _SessionRecordingsScreenState extends State<SessionRecordingsScreen> {
     );
     if (audio == null || !mounted) return;
     final id = (audio['audio_id'] ?? audio['id']) as int;
-    final title = audio['title'] as String? ?? 'Untitled';
+    final title = audio['title'] as String? ?? SessionText.untitled;
     final previewing = _session.previewingAudioId == id;
     final choice = await JourneyPrompts.pick(
       context,
@@ -181,7 +182,7 @@ class _SessionRecordingsScreenState extends State<SessionRecordingsScreen> {
         interactionPolicy: KeypadInteractionPolicy.numbered,
         screenName: SessionText.recordingsTitle,
         stateSummary: _statusText,
-        labels: const {
+        labels: {
           1: SessionText.chooseRecording,
           2: SessionText.uploadRecording,
           3: SessionText.hearRecording,
@@ -293,10 +294,12 @@ class _SessionRecordingsScreenState extends State<SessionRecordingsScreen> {
                   if (hasRecording) ...[
                     _button(
                       _play,
-                      '5: ${playing ? 'Pause' : 'Play'} for class',
+                      playing
+                          ? Speech.t.libraryKey5PauseForClass
+                          : Speech.t.libraryKey5PlayForClass,
                       _session.toggleRecording,
                     ),
-                    const Text('4: Back 10 s. 6: Forward 10 s.'),
+                    Text(Speech.t.libraryRecordingsSeekKeysHint),
                     _button(
                       _slower,
                       '7: ${SessionText.slower}',
@@ -310,12 +313,14 @@ class _SessionRecordingsScreenState extends State<SessionRecordingsScreen> {
                   ],
                   _button(
                     _choose,
-                    '1: Choose recording',
+                    Speech.t.libraryKey1ChooseRecording,
                     () => unawaited(_chooseRecording()),
                   ),
                   _button(
                     _upload,
-                    _session.uploadingAudio ? 'Uploading' : '2: Upload',
+                    _session.uploadingAudio
+                        ? Speech.t.libraryUploadingButton
+                        : Speech.t.libraryKey2Upload,
                     _session.uploadingAudio ? null : _uploadRecording,
                   ),
                   _button(
@@ -323,7 +328,7 @@ class _SessionRecordingsScreenState extends State<SessionRecordingsScreen> {
                     '0: ${SessionText.backToClass}',
                     () => Navigator.of(context).maybePop(),
                   ),
-                  const Text('3: Status. *: Help. #: Stop speech.'),
+                  Text(Speech.t.libraryRecordingsFooterKeysHint),
                 ],
               ),
             ),

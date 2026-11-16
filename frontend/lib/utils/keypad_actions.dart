@@ -1,7 +1,7 @@
 /// Centralized key-mapping labels for every screen.
 ///
-/// Edit this file to change which digit does what on any screen.
-/// The labels are used for:
+/// Edit this file to change which digit does what on any screen. The wording
+/// of each label lives in `lib/l10n/app_<language>.arb`. The labels are used for:
 ///   1. Auto-generated TTS announcements ("Press 1 for Login. Press 2 for Register.")
 ///   2. Button text on keypad-optimized screens ("1: Login", "2: Register")
 ///
@@ -19,6 +19,8 @@
 ///   Turning app speech off is only offered in Settings, never as a shortcut.
 library;
 
+import '../l10n/speech.dart';
+
 // ─── Player keys shared by every audio screen ───────────────────────────────
 const int playerRewindKey = 4;
 const int playerPlayPauseKey = 5;
@@ -26,201 +28,200 @@ const int playerForwardKey = 6;
 const int playerSlowerKey = 7;
 const int playerFasterKey = 9;
 
-const Map<int, String> playerTransportKeyLabels = {
-  playerRewindKey: 'Back 10 seconds',
-  playerPlayPauseKey: 'Play or pause',
-  playerForwardKey: 'Forward 10 seconds',
+Map<int, String> get playerTransportKeyLabels => {
+  playerRewindKey: Speech.t.keyBack10Seconds,
+  playerPlayPauseKey: Speech.t.keyPlayOrPause,
+  playerForwardKey: Speech.t.keyForward10Seconds,
 };
 
-const Map<int, String> playerSpeedKeyLabels = {
-  playerSlowerKey: 'Slower',
-  playerFasterKey: 'Faster',
+Map<int, String> get playerSpeedKeyLabels => {
+  playerSlowerKey: Speech.t.keySlower,
+  playerFasterKey: Speech.t.keyFaster,
 };
 
 /// Spoken names for player keys a screen maps without labelling, so help
 /// never leaves out a key that does something.
-const Map<int, String> playerFallbackKeyLabels = {
-  playerRewindKey: 'Back 10 seconds',
-  playerPlayPauseKey: 'Play or pause',
-  playerForwardKey: 'Forward 10 seconds',
-  playerSlowerKey: 'Slower playback speed',
-  playerFasterKey: 'Faster playback speed',
+Map<int, String> get playerFallbackKeyLabels => {
+  playerRewindKey: Speech.t.keyBack10Seconds,
+  playerPlayPauseKey: Speech.t.keyPlayOrPause,
+  playerForwardKey: Speech.t.keyForward10Seconds,
+  playerSlowerKey: Speech.t.keySlowerPlaybackSpeed,
+  playerFasterKey: Speech.t.keyFasterPlaybackSpeed,
 };
 
-// ─── Welcome Screen ─────────────────────────────────────────────────────────
-const Map<int, String> welcomeKeyLabels = {
-  1: 'Login',
-  2: 'Register',
-  3: 'Settings',
+// ─── Welcome Screen ──────────────────────────────────────────────────────────
+Map<int, String> get welcomeKeyLabels => {
+  1: Speech.t.keyLogin,
+  2: Speech.t.keyRegister,
+  3: Speech.t.keySettings,
 };
 
-// ─── Login Screen ───────────────────────────────────────────────────────────
-const Map<int, String> loginKeyLabels = {
-  1: 'Select Student Account',
-  2: 'Select Teacher Account',
-  3: 'Select Administrator Account',
-  4: 'Login',
-  5: 'Register',
+// ─── Login Screen ────────────────────────────────────────────────────────────
+Map<int, String> get loginKeyLabels => {
+  1: Speech.t.keySelectStudentAccount,
+  2: Speech.t.keySelectTeacherAccount,
+  3: Speech.t.keySelectAdministratorAccount,
+  4: Speech.t.keyLogin,
+  5: Speech.t.keyRegister,
 };
 
-// ─── Register Screen ────────────────────────────────────────────────────────
-const Map<int, String> registerKeyLabels = {
-  1: 'Register',
-  2: 'Go to Login',
-  3: 'Toggle Teacher Registration',
+// ─── Register Screen ─────────────────────────────────────────────────────────
+Map<int, String> get registerKeyLabels => {
+  1: Speech.t.keyRegister,
+  2: Speech.t.keyGoToLogin,
+  3: Speech.t.keyToggleTeacherRegistration,
 };
 
-// ─── Settings Screen ────────────────────────────────────────────────────────
-const Map<int, String> settingsKeyLabels = {
-  0: 'Go Back',
-  1: 'Toggle T T S',
-  2: 'Toggle Voice Commands',
-  3: 'Show or Hide Shortcuts',
-  4: 'Toggle High Contrast',
-  5: 'Test T T S',
-  6: 'Save Settings',
-  7: 'Check English voice',
-  8: 'Sound cues on or off',
-  9: 'Vibration on or off',
+// ─── Settings Screen ─────────────────────────────────────────────────────────
+Map<int, String> get settingsKeyLabels => {
+  0: Speech.t.keyGoBack,
+  1: Speech.t.keyToggleTTS,
+  2: Speech.t.keyToggleVoiceCommands,
+  3: Speech.t.keyShowOrHideShortcuts,
+  4: Speech.t.keyToggleHighContrast,
+  5: Speech.t.keyTestTTS,
+  6: Speech.t.keySaveSettings,
+  7: Speech.t.keyCheckVoice,
+  8: Speech.t.keySoundCuesOnOrOff,
+  9: Speech.t.keyVibrationOnOrOff,
 };
 
-// ─── Student Dashboard ──────────────────────────────────────────────────────
-const Map<int, String> studentDashboardKeyLabels = {
-  0: 'Log out, asks to confirm',
-  1: 'Refresh Sessions',
-  2: 'Search Sessions by Name or ID',
-  3: 'Recorded Audio Library',
-  4: 'My Private Playlists',
-  5: 'Quizzes',
-  6: 'Learning journeys',
+// ─── Student Dashboard ───────────────────────────────────────────────────────
+Map<int, String> get studentDashboardKeyLabels => {
+  0: Speech.t.keyLogOutAsksToConfirm,
+  1: Speech.t.keyRefreshSessions,
+  2: Speech.t.keySearchSessionsByNameOrID,
+  3: Speech.t.keyRecordedAudioLibrary,
+  4: Speech.t.keyMyPrivatePlaylists,
+  5: Speech.t.keyQuizzes,
+  6: Speech.t.keyLearningJourneys,
 };
 
-// ─── Teacher Dashboard ──────────────────────────────────────────────────────
-const Map<int, String> teacherDashboardKeyLabels = {
-  0: 'Log out, asks to confirm',
-  1: 'Refresh Sessions',
-  2: 'Create Session',
-  3: 'Recorded Audio Library',
-  4: 'Search Sessions by Name or ID',
-  5: 'Class Playlists',
-  6: 'Quizzes',
-  7: 'Choose class and subject workspace',
-  8: 'Learning journeys',
+// ─── Teacher Dashboard ───────────────────────────────────────────────────────
+Map<int, String> get teacherDashboardKeyLabels => {
+  0: Speech.t.keyLogOutAsksToConfirm,
+  1: Speech.t.keyRefreshSessions,
+  2: Speech.t.keyCreateSession,
+  3: Speech.t.keyRecordedAudioLibrary,
+  4: Speech.t.keySearchSessionsByNameOrID,
+  5: Speech.t.keyClassPlaylists,
+  6: Speech.t.keyQuizzes,
+  7: Speech.t.keyChooseClassAndSubjectWorkspace,
+  8: Speech.t.keyLearningJourneys,
 };
 
-const Map<int, String> adminDashboardKeyLabels = {
-  0: 'Log out, asks to confirm',
-  1: 'Refresh',
-  2: 'Search Users',
-  3: 'Change Account Type Filter',
-  4: 'Change Assignment Filter',
-  5: 'Create Subject',
-  6: 'Create Class',
-  7: 'Choose Accounts, Classes, or Subjects section',
+Map<int, String> get adminDashboardKeyLabels => {
+  0: Speech.t.keyLogOutAsksToConfirm,
+  1: Speech.t.keyRefresh,
+  2: Speech.t.keySearchUsers,
+  3: Speech.t.keyChangeAccountTypeFilter,
+  4: Speech.t.keyChangeAssignmentFilter,
+  5: Speech.t.keyCreateSubject,
+  6: Speech.t.keyCreateClass,
+  7: Speech.t.keyChooseAccountsClassesOrSubjectsSection,
 };
 
-const Map<int, String> teacherQuizKeyLabels = {
-  0: 'Go back',
-  1: 'Refresh',
-  2: 'Create bank question',
-  3: 'Create quiz draft',
-  4: 'Create untimed ungraded practice',
+Map<int, String> get teacherQuizKeyLabels => {
+  0: Speech.t.keyGoBackAlt,
+  1: Speech.t.keyRefresh,
+  2: Speech.t.keyCreateBankQuestion,
+  3: Speech.t.keyCreateQuizDraft,
+  4: Speech.t.keyCreateUntimedUngradedPractice,
 };
 
-const Map<int, String> studentQuizKeyLabels = {
-  0: 'Go back',
-  1: 'Refresh quizzes',
+Map<int, String> get studentQuizKeyLabels => {
+  0: Speech.t.keyGoBackAlt,
+  1: Speech.t.keyRefreshQuizzes,
 };
 
 /// Same answer keys as learning-journey questions. "Next" is automatic after
 /// the answer is announced; finishing early is a confirmed D-pad option.
-const Map<int, String> quizAttemptKeyLabels = {
-  1: 'Choose option 1',
-  2: 'Choose option 2',
-  3: 'Choose option 3',
-  4: 'Choose option 4',
-  5: 'Submit selected answer',
-  6: 'Repeat question and options',
-  // Same slower/faster keys as the audio players; quiz speech only.
-  playerSlowerKey: 'Slower quiz speech',
-  8: 'Where am I, including time left',
-  playerFasterKey: 'Faster quiz speech',
+Map<int, String> get quizAttemptKeyLabels => {
+  1: Speech.t.keyChooseOption1,
+  2: Speech.t.keyChooseOption2,
+  3: Speech.t.keyChooseOption3,
+  4: Speech.t.keyChooseOption4,
+  5: Speech.t.keySubmitSelectedAnswer,
+  6: Speech.t.keyRepeatQuestionAndOptions,
+  playerSlowerKey: Speech.t.keySlowerQuizSpeech,
+  8: Speech.t.keyWhereAmIIncludingTimeLeft,
+  playerFasterKey: Speech.t.keyFasterQuizSpeech,
 };
 
-// ─── Live session (both roles) ──────────────────────────────────────────────
+// ─── Live session (both roles) ───────────────────────────────────────────────
 // One small main screen. Everything else opens from it on demand.
-const Map<int, String> sessionStudentKeyLabels = {
-  1: 'Mute or unmute',
-  2: 'Raise or lower hand',
-  3: 'Hear class status',
-  4: 'Chat',
-  5: 'Hear what the teacher is playing',
-  6: 'Answer classroom check',
-  7: 'Who is in the class',
-  0: 'Leave session, asks to confirm',
+Map<int, String> get sessionStudentKeyLabels => {
+  1: Speech.t.keyMuteOrUnmute,
+  2: Speech.t.keyRaiseOrLowerHand,
+  3: Speech.t.keyHearClassStatus,
+  4: Speech.t.keyChat,
+  5: Speech.t.keyHearWhatTheTeacherIsPlaying,
+  6: Speech.t.keyAnswerClassroomCheck,
+  7: Speech.t.keyWhoIsInTheClass,
+  0: Speech.t.keyLeaveSessionAsksToConfirm,
 };
 
-const Map<int, String> sessionTeacherKeyLabels = {
-  1: 'Mute or unmute',
-  2: 'Raised hands: acknowledge and lower them in order',
-  3: 'Hear class status',
-  4: 'Chat',
-  5: 'Class recording player: play and control the recording',
-  6: 'Classroom check: start, close and hear responses',
-  7: 'Participants: mute or remove someone',
-  9: 'Teacher tools: invite students, end class for everyone',
-  0: 'Leave session, asks to confirm',
+Map<int, String> get sessionTeacherKeyLabels => {
+  1: Speech.t.keyMuteOrUnmute,
+  2: Speech.t.keyRaisedHandsAcknowledgeAndLowerThemInOrder,
+  3: Speech.t.keyHearClassStatus,
+  4: Speech.t.keyChat,
+  5: Speech.t.keyClassRecordingPlayerPlayAndControlTheRecording,
+  6: Speech.t.keyClassroomCheckStartCloseAndHearResponses,
+  7: Speech.t.keyParticipantsMuteOrRemoveSomeone,
+  9: Speech.t.keyTeacherToolsInviteStudentsEndClassForEveryone,
+  0: Speech.t.keyLeaveSessionAsksToConfirm,
 };
 
-// ─── Simple Session Screen ──────────────────────────────────────────────────
-const Map<int, String> simpleSessionKeyLabels = {
-  1: 'Mute or unmute',
-  2: 'Raise or lower hand',
+// ─── Simple Session Screen ───────────────────────────────────────────────────
+Map<int, String> get simpleSessionKeyLabels => {
+  1: Speech.t.keyMuteOrUnmute,
+  2: Speech.t.keyRaiseOrLowerHand,
   ...playerSpeedKeyLabels,
-  0: 'Leave session, asks to confirm',
+  0: Speech.t.keyLeaveSessionAsksToConfirm,
 };
 
-// ─── Offline Audio Library (both roles) ─────────────────────────────────────
-const Map<int, String> offlineAudioLibraryKeyLabels = {
-  1: 'Refresh Classes',
-  2: 'Search Class by Name',
-  3: 'All Audio Files',
-  5: 'Focus first active class; use D-pad to browse classes',
-  0: 'Go Back',
+// ─── Offline Audio Library (both roles) ──────────────────────────────────────
+Map<int, String> get offlineAudioLibraryKeyLabels => {
+  1: Speech.t.keyRefreshClasses,
+  2: Speech.t.keySearchClassByName,
+  3: Speech.t.keyAllAudioFiles,
+  5: Speech.t.keyFocusFirstActiveClassUseDPadToBrowseClasses,
+  0: Speech.t.keyGoBack,
 };
 
-// ─── Class Audio Screen (Student) ───────────────────────────────────────────
-const Map<int, String> classAudioStudentKeyLabels = {
-  1: 'Refresh files',
-  2: 'Next subject filter',
+// ─── Class Audio Screen (Student) ────────────────────────────────────────────
+Map<int, String> get classAudioStudentKeyLabels => {
+  1: Speech.t.keyRefreshFiles,
+  2: Speech.t.keyNextSubjectFilter,
   ...playerTransportKeyLabels,
   ...playerSpeedKeyLabels,
-  8: 'Stop playback',
-  0: 'Go back',
+  8: Speech.t.keyStopPlayback,
+  0: Speech.t.keyGoBackAlt,
 };
 
-// ─── Class Audio Screen (Teacher) ───────────────────────────────────────────
-const Map<int, String> classAudioTeacherKeyLabels = {
-  1: 'Refresh files',
-  2: 'Next subject filter',
-  3: 'Add audio file',
+// ─── Class Audio Screen (Teacher) ────────────────────────────────────────────
+Map<int, String> get classAudioTeacherKeyLabels => {
+  1: Speech.t.keyRefreshFiles,
+  2: Speech.t.keyNextSubjectFilter,
+  3: Speech.t.keyAddAudioFile,
   ...playerTransportKeyLabels,
   ...playerSpeedKeyLabels,
-  8: 'Stop playback',
-  0: 'Go back',
+  8: Speech.t.keyStopPlayback,
+  0: Speech.t.keyGoBackAlt,
 };
 
-// ─── Add Audio Options Screen (Teacher) ──────────────────────────────────
-const Map<int, String> addAudioOptionsKeyLabels = {
-  1: 'Upload New File',
-  2: 'Select from Existing Library',
-  0: 'Go Back',
+// ─── Add Audio Options Screen (Teacher) ──────────────────────────────────────
+Map<int, String> get addAudioOptionsKeyLabels => {
+  1: Speech.t.keyUploadNewFile,
+  2: Speech.t.keySelectFromExistingLibrary,
+  0: Speech.t.keyGoBack,
 };
 
-// ─── Select Existing Audio Screen (Teacher) ──────────────────────────────
-const Map<int, String> selectExistingAudioKeyLabels = {
-  1: 'Refresh List',
-  0: 'Go Back',
+// ─── Select Existing Audio Screen (Teacher) ──────────────────────────────────
+Map<int, String> get selectExistingAudioKeyLabels => {
+  1: Speech.t.keyRefreshList,
+  0: Speech.t.keyGoBack,
 };
 
 /// Builds a TTS-friendly instruction string from a labels map.
@@ -231,14 +232,15 @@ String buildTtsInstructions(
   String? screenName,
   bool includeRepeatHint = true,
 }) {
+  final t = Speech.t;
   final sorted = labels.entries.toList()
     ..sort((a, b) => a.key.compareTo(b.key));
 
-  final parts = sorted.map((e) => 'Press ${e.key} for ${e.value}').join('. ');
+  final parts = sorted
+      .map((e) => t.keypadPressFor('${e.key}', e.value))
+      .join(t.keypadListSeparator);
 
-  final repeatHint = includeRepeatHint
-      ? ' Press star to repeat these instructions.'
-      : '';
+  final repeatHint = includeRepeatHint ? ' ${t.keypadRepeatInstructions}' : '';
 
   if (screenName != null && screenName.isNotEmpty) {
     return '$screenName. $parts.$repeatHint';

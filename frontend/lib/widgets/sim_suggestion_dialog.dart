@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/speech.dart';
 import '../services/tts_service.dart';
 import 'key_instruction_wrapper.dart';
 
@@ -19,16 +20,18 @@ class _SimSuggestionDialogState extends State<SimSuggestionDialog> {
   final _cancel = FocusNode(debugLabel: 'sim-suggestion-cancel');
 
   bool _valid(int i) => RegExp(r'^\d{10}$').hasMatch(widget.options[i].number);
-  String _label(int i) =>
-      '${widget.options[i].label}. ${_valid(i) ? 'Phone number ${widget.options[i].number.split('').join(' ')}. Press OK to fill the phone field.' : 'Number unavailable. Enter the phone number manually.'}';
+  String _label(int i) => _valid(i)
+      ? Speech.t.authSimOptionValid(
+          widget.options[i].label,
+          widget.options[i].number.split('').join(' '),
+        )
+      : Speech.t.authSimOptionInvalid(widget.options[i].label);
 
   void _select(int i) {
     if (_valid(i)) {
       Navigator.pop(context, widget.options[i].number);
     } else {
-      TtsService.speak(
-        'This SIM does not provide a valid phone-number suggestion. Manual entry still works.',
-      );
+      TtsService.speak(Speech.t.authSimInvalidSuggestion);
     }
   }
 
@@ -43,9 +46,8 @@ class _SimSuggestionDialogState extends State<SimSuggestionDialog> {
 
   @override
   Widget build(BuildContext context) => KeypadInstructionWrapper(
-    screenName:
-        'Choose an optional SIM suggestion. Use up and down to review each SIM, then OK to select. This is not account verification.',
-    labels: const {0: 'Cancel without changing the phone number'},
+    screenName: Speech.t.authSimChooseScreenName,
+    labels: {0: Speech.t.authSimCancelLabel},
     actions: {0: () => Navigator.pop(context)},
     focusTargets: [
       for (var i = 0; i < widget.options.length; i++)
@@ -56,7 +58,7 @@ class _SimSuggestionDialogState extends State<SimSuggestionDialog> {
         ),
       KeypadFocusTarget(
         node: _cancel,
-        label: 'Cancel without changing the phone number',
+        label: Speech.t.authSimCancelLabel,
         onActivate: () => Navigator.pop(context),
       ),
     ],
@@ -68,12 +70,10 @@ class _SimSuggestionDialogState extends State<SimSuggestionDialog> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              'Choose SIM suggestion',
+              Speech.t.authSimChooseTitle,
               style: Theme.of(context).textTheme.headlineSmall,
             ),
-            const Text(
-              'Selecting fills the phone field only. Your password is still required. Cancel keeps manual entry unchanged.',
-            ),
+            Text(Speech.t.authSimChooseInfo),
             for (var i = 0; i < widget.options.length; i++)
               TextButton(
                 focusNode: _nodes[i],
@@ -83,7 +83,7 @@ class _SimSuggestionDialogState extends State<SimSuggestionDialog> {
             TextButton(
               focusNode: _cancel,
               onPressed: () => Navigator.pop(context),
-              child: const Text('0: Cancel'),
+              child: Text(Speech.t.authSimCancelKey),
             ),
           ],
         ),

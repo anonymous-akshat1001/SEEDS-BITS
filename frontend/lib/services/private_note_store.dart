@@ -7,6 +7,8 @@ import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../l10n/speech.dart';
+
 class PrivateNoteException implements Exception {
   const PrivateNoteException(this.message);
   final String message;
@@ -53,12 +55,12 @@ class PrivateNoteStore {
     final prefs = await SharedPreferences.getInstance();
     final userId = prefs.getInt('user_id');
     if (userId == null || userId <= 0) {
-      throw const PrivateNoteException('Sign in before opening private notes.');
+      throw PrivateNoteException(Speech.t.notesSignInFirst);
     }
     Future<void> check() async {
       if (prefs.getInt('user_id') != userId) {
-        throw const PrivateNoteException(
-          'Your account changed. Open private notes again.',
+        throw PrivateNoteException(
+          Speech.t.notesAccountChanged,
         );
       }
     }
@@ -70,7 +72,7 @@ class PrivateNoteStore {
 
   File _file(String id, String extension) {
     if (!RegExp(r'^[a-f0-9]{32}$').hasMatch(id)) {
-      throw const PrivateNoteException('Invalid note identity.');
+      throw PrivateNoteException(Speech.t.notesInvalidIdentity);
     }
     return File('${directory.path}${Platform.pathSeparator}$id.$extension');
   }
@@ -83,8 +85,8 @@ class PrivateNoteStore {
         return await action();
       } on FileSystemException catch (error) {
         debugPrint('[NOTES] Storage failed (${error.osError?.errorCode}).');
-        throw const PrivateNoteException(
-          'Private note storage is unavailable. Check free space and retry. Existing files are kept.',
+        throw PrivateNoteException(
+          Speech.t.notesStorageUnavailable,
         );
       }
     });
@@ -170,11 +172,11 @@ class PrivateNoteStore {
       debugPrint('[NOTES] Unreadable metadata for $id retained.');
       return PrivateNote(
         id: id,
-        title: 'Unreadable note $id',
+        title: Speech.t.notesUnreadableTitle(id),
         complete: false,
         duration: Duration.zero,
         issue:
-            'This note record cannot be read. Its files are kept; only explicit selected removal changes them.',
+            Speech.t.notesRecordUnreadable,
       );
     }
   }
@@ -196,11 +198,11 @@ class PrivateNoteStore {
         notes.add(
           PrivateNote(
             id: id,
-            title: 'Interrupted recording $id',
+            title: Speech.t.notesInterruptedTitle(id),
             complete: false,
             duration: Duration.zero,
             issue:
-                'Recording metadata is missing. The file is retained for selected removal.',
+                Speech.t.notesMetadataMissing,
           ),
         );
       } else {
@@ -219,14 +221,14 @@ class PrivateNoteStore {
         title.length > 160 ||
         (audioId != null && audioId <= 0) ||
         (position != null && position.isNegative)) {
-      throw const PrivateNoteException(
-        'Enter a note name of up to 160 characters and a valid lesson position.',
+      throw PrivateNoteException(
+        Speech.t.notesInvalidNameOrPosition,
       );
     }
     final allowance = quota - await _used();
     if (allowance < 1024) {
-      throw const PrivateNoteException(
-        'Your private note allowance is full. Remove a chosen note before recording. No note was deleted.',
+      throw PrivateNoteException(
+        Speech.t.notesAllowanceFull,
       );
     }
     await directory.create(recursive: true);
@@ -256,16 +258,16 @@ class PrivateNoteStore {
     if (note.issue != null ||
         duration <= Duration.zero ||
         duration > const Duration(minutes: 5)) {
-      throw const PrivateNoteException(
-        'The note was interrupted or its duration is invalid. Its files are retained for selected removal.',
+      throw PrivateNoteException(
+        Speech.t.notesInterruptedOrInvalid,
       );
     }
     final media = _file(id, 'm4a');
     if (!await media.exists() ||
         await media.length() == 0 ||
         await _used() > quota) {
-      throw const PrivateNoteException(
-        'This recording is empty or exceeds the private-note allowance. Its partial file is kept; review storage and remove the selected recording.',
+      throw PrivateNoteException(
+        Speech.t.notesEmptyOrTooLarge,
       );
     }
     final saved = PrivateNote(
@@ -285,8 +287,8 @@ class PrivateNoteStore {
     final note = await _read(id);
     final media = _file(id, 'm4a');
     if (!note.complete || !await media.exists() || await media.length() == 0) {
-      throw const PrivateNoteException(
-        'This note is incomplete or unavailable. It has not been deleted.',
+      throw PrivateNoteException(
+        Speech.t.notesIncompleteUnavailable,
       );
     }
     await checkAccount();
@@ -295,8 +297,8 @@ class PrivateNoteStore {
 
   Future<void> rename(String id, String title) => _exclusive(() async {
     if (title.trim().isEmpty || title.length > 160) {
-      throw const PrivateNoteException(
-        'Enter a note name of up to 160 characters.',
+      throw PrivateNoteException(
+        Speech.t.notesInvalidName,
       );
     }
     final note = await _read(id);

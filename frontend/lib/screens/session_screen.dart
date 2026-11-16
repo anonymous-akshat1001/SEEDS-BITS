@@ -12,6 +12,7 @@ import 'package:speech_to_text/speech_to_text.dart' as stt;
 
 import '../announcers/announce.dart';
 import '../announcers/session_text.dart';
+import '../l10n/speech.dart';
 import '../main.dart' show routeObserver;
 import '../services/api_service.dart';
 import '../services/auth_session_service.dart';
@@ -80,9 +81,11 @@ class SessionScreen extends StatefulWidget {
   final int userId;
   final bool isTeacher;
   final String userName;
-  final String sessionTitle;
+  final String? _sessionTitle;
   final String? className;
   final String? subjectName;
+
+  String get sessionTitle => _sessionTitle ?? SessionText.defaultTitle;
 
   const SessionScreen({
     super.key,
@@ -90,10 +93,10 @@ class SessionScreen extends StatefulWidget {
     required this.userId,
     this.isTeacher = false,
     required this.userName,
-    this.sessionTitle = 'Session',
+    String? sessionTitle,
     this.className,
     this.subjectName,
-  });
+  }) : _sessionTitle = sessionTitle;
 
   @override
   State<SessionScreen> createState() => _SessionScreenState();
@@ -363,7 +366,7 @@ class _SessionScreenState extends State<SessionScreen>
       final confirmed = await showDialog<bool>(
         context: context,
         barrierDismissible: false,
-        builder: (_) => const KeypadConfirmationDialog(
+        builder: (_) => KeypadConfirmationDialog(
           title: SessionText.micDialogTitle,
           message: SessionText.micDialogMessage,
           confirmLabel: SessionText.micDialogConfirm,
@@ -550,7 +553,7 @@ class _SessionScreenState extends State<SessionScreen>
         _participants[pid] = {
           'id': pid,
           'user_id': meta['user_id'],
-          'name': meta['name'] ?? 'User ${meta['user_id']}',
+          'name': meta['name'] ?? SessionText.userFallback(meta['user_id']),
           'is_muted': meta['is_muted'] ?? false,
           'raised_hand': meta['raised_hand'] ?? false,
           'hand_queue_order': meta['hand_queue_order'],
@@ -603,7 +606,7 @@ class _SessionScreenState extends State<SessionScreen>
     final pid = data['participant_id'] as int?;
     final uid = data['user_id'] as int?;
     if (pid == null || pid == _participantId) return;
-    final name = data['name'] as String? ?? 'User $uid';
+    final name = data['name'] as String? ?? SessionText.userFallback(uid);
     final previous = _participants[pid];
     final revision = data['hand_revision'] as int? ?? 0;
     final keepHand =
@@ -700,7 +703,8 @@ class _SessionScreenState extends State<SessionScreen>
   }
 
   void _onChatMessage(Map<String, dynamic> data) {
-    final senderName = data['sender_name'] as String? ?? 'Unknown';
+    final senderName =
+        data['sender_name'] as String? ?? SessionText.unknownSender;
     final text = data['text'] as String? ?? '';
     // Own messages were added when sent; skip the echo.
     if (text.isEmpty || data['is_own'] == true) return;
@@ -732,10 +736,14 @@ class _SessionScreenState extends State<SessionScreen>
         _previewPlayer.stop(),
       ]).timeout(const Duration(seconds: 2));
     } on PlatformException {
-      debugPrint('[SESSION] Native media cleanup failed after sign-in revocation');
+      debugPrint(
+        '[SESSION] Native media cleanup failed after sign-in revocation',
+      );
       _error(SessionText.cleanupFailed);
     } on TimeoutException {
-      debugPrint('[SESSION] Native media cleanup timed out after sign-in revocation');
+      debugPrint(
+        '[SESSION] Native media cleanup timed out after sign-in revocation',
+      );
       _error(SessionText.cleanupTimedOut);
     } finally {
       await AuthSessionService.clearLoginState();
@@ -1040,7 +1048,7 @@ class _SessionScreenState extends State<SessionScreen>
     try {
       final confirmed = await showDialog<bool>(
         context: context,
-        builder: (_) => const KeypadConfirmationDialog(
+        builder: (_) => KeypadConfirmationDialog(
           title: SessionText.voiceUnmuteTitle,
           message: SessionText.voiceUnmuteMessage,
           confirmLabel: SessionText.voiceUnmuteConfirm,
@@ -1080,9 +1088,7 @@ class _SessionScreenState extends State<SessionScreen>
       'mute microphone',
       'mute my microphone',
     })) {
-      !_muted
-          ? _toggleMute()
-          : _speakIfEnabled(SessionText.alreadyMutedSelf);
+      !_muted ? _toggleMute() : _speakIfEnabled(SessionText.alreadyMutedSelf);
     } else if (!widget.isTeacher &&
         matches(const {'lower hand', 'lower my hand'})) {
       _handRaised
@@ -1098,22 +1104,33 @@ class _SessionScreenState extends State<SessionScreen>
       openHandQueue();
     } else if (matches(const {'check', 'classroom check'})) {
       openClassroomCheck();
-    } else if (matches(const {'repeat', 'instructions', 'repeat instructions'})) {
+    } else if (matches(const {
+      'repeat',
+      'instructions',
+      'repeat instructions',
+    })) {
       _repeatSessionInstructions();
     } else if (matches(const {'status', 'class status'})) {
       _speakClassStatus();
     } else if (matches(const {'chat', 'open chat'})) {
       _openChat();
-    } else if (widget.isTeacher && matches(const {'invite', 'invite students'})) {
+    } else if (widget.isTeacher &&
+        matches(const {'invite', 'invite students'})) {
       openInvite();
     } else if (widget.isTeacher && matches(const {'audio', 'audio library'})) {
       _push(SessionRecordingsScreen(session: this));
     } else if (widget.isTeacher &&
         matches(const {'tools', 'teacher tools', 'console', 'class console'})) {
       _openTools();
-    } else if (widget.isTeacher && matches(const {'end class', 'end session'})) {
+    } else if (widget.isTeacher &&
+        matches(const {'end class', 'end session'})) {
       confirmEndSession();
-    } else if (matches(const {'who is here', 'who is in class', 'people', 'participants'})) {
+    } else if (matches(const {
+      'who is here',
+      'who is in class',
+      'people',
+      'participants',
+    })) {
       widget.isTeacher ? _openParticipants() : _openMembers();
     } else if (matches(const {
       'leave',
@@ -1150,7 +1167,7 @@ class _SessionScreenState extends State<SessionScreen>
     SessionText.recordingState(
       title: _currentAudioId == null
           ? null
-          : _currentAudioTitle ?? 'class recording',
+          : _currentAudioTitle ?? SessionText.recordingFallbackLower,
       playing: _isPlayingSessionAudio,
     ),
     if (_checkState.value.open) SessionText.checkOpen,
@@ -1168,8 +1185,9 @@ class _SessionScreenState extends State<SessionScreen>
     ].where((part) => part.isNotEmpty).join(' '),
   );
 
-  void _speakClassStatus() =>
-      unawaited(TtsService.speak(classStatus(), priority: SpeechPriority.requested));
+  void _speakClassStatus() => unawaited(
+    TtsService.speak(classStatus(), priority: SpeechPriority.requested),
+  );
 
   @override
   String classroomSummary() {
@@ -1248,7 +1266,8 @@ class _SessionScreenState extends State<SessionScreen>
         participant['hand_queue_order'] != order) {
       return SessionText.handChanged;
     }
-    final name = participant['name'] as String? ?? 'Participant';
+    final name =
+        participant['name'] as String? ?? SessionText.participantFallback;
     final result = await _sse.send({
       'type': 'acknowledge_hand',
       'target_participant_id': id,
@@ -1278,7 +1297,7 @@ class _SessionScreenState extends State<SessionScreen>
   @override
   Future<void> muteParticipant(int participantId) async {
     final participant = _participants[participantId];
-    final name = participant?['name'] as String? ?? 'This participant';
+    final name = participant?['name'] as String? ?? SessionText.thisParticipant;
     if (participant?['is_muted'] == true) {
       _speakIfEnabled(SessionText.alreadyMuted(name));
       return;
@@ -1300,7 +1319,7 @@ class _SessionScreenState extends State<SessionScreen>
   Future<void> removeParticipant(int participantId) async {
     final participant = _participants[participantId];
     if (participant == null) return;
-    final name = participant['name'] as String? ?? 'This participant';
+    final name = participant['name'] as String? ?? SessionText.thisParticipant;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => KeypadConfirmationDialog(
@@ -1377,7 +1396,7 @@ class _SessionScreenState extends State<SessionScreen>
   @override
   String? get recordingTitle => _currentAudioId == null
       ? null
-      : _currentAudioTitle ?? 'Class recording';
+      : _currentAudioTitle ?? SessionText.recordingFallback;
 
   @override
   bool get recordingPlaying => _isPlayingSessionAudio;
@@ -1484,8 +1503,7 @@ class _SessionScreenState extends State<SessionScreen>
     sessionId: widget.sessionId,
     teacherSessions: _teacherSessions,
     isActive: () => mounted,
-    setUploading: (uploading) =>
-        setState(() => _isUploadingAudio = uploading),
+    setUploading: (uploading) => setState(() => _isUploadingAudio = uploading),
     reload: _loadAudioLibrary,
     title: _uploadTitle,
     description: _uploadDescription,
@@ -1514,7 +1532,11 @@ class _SessionScreenState extends State<SessionScreen>
   }
 
   @override
-  Future<void> selectAudio(int audioId, String title, {required bool play}) async {
+  Future<void> selectAudio(
+    int audioId,
+    String title, {
+    required bool play,
+  }) async {
     // Tells the server which audio is selected; it broadcasts audio_selected.
     final selected = await ApiService.selectAudio(
       widget.sessionId,
@@ -1649,7 +1671,7 @@ class _SessionScreenState extends State<SessionScreen>
     try {
       final confirmed = await showDialog<bool>(
         context: context,
-        builder: (_) => const KeypadConfirmationDialog(
+        builder: (_) => KeypadConfirmationDialog(
           title: SessionText.endTitle,
           message: SessionText.endMessage,
           cancelLabel: SessionText.endCancel,
@@ -1718,7 +1740,7 @@ class _SessionScreenState extends State<SessionScreen>
         final leaveLocally = await showDialog<bool>(
           context: context,
           barrierDismissible: false,
-          builder: (_) => const KeypadConfirmationDialog(
+          builder: (_) => KeypadConfirmationDialog(
             title: SessionText.leaveLocallyTitle,
             message: SessionText.leaveLocallyMessage,
             cancelLabel: SessionText.stayAndRetry,
@@ -2100,7 +2122,7 @@ class _SessionScreenState extends State<SessionScreen>
                 header: true,
                 child: Text(
                   widget.isTeacher
-                      ? '${widget.sessionTitle} (Teacher)'
+                      ? Speech.t.sessionTitleTeacher(widget.sessionTitle)
                       : widget.sessionTitle,
                   style: _textStyle(size: 18, weight: FontWeight.bold),
                 ),
@@ -2151,7 +2173,11 @@ class _SessionScreenState extends State<SessionScreen>
       child: ExcludeSemantics(
         child: Container(
           margin: EdgeInsets.symmetric(vertical: UIUtils.spacing(context, 4)),
-          padding: UIUtils.paddingSymmetric(context, horizontal: 8, vertical: 6),
+          padding: UIUtils.paddingSymmetric(
+            context,
+            horizontal: 8,
+            vertical: 6,
+          ),
           decoration: BoxDecoration(
             color: UIUtils.cardColor,
             border: Border.all(
@@ -2219,7 +2245,11 @@ class _SessionScreenState extends State<SessionScreen>
           ),
           minimumSize: const Size(48, 44),
           alignment: Alignment.centerLeft,
-          padding: UIUtils.paddingSymmetric(context, horizontal: 8, vertical: 6),
+          padding: UIUtils.paddingSymmetric(
+            context,
+            horizontal: 8,
+            vertical: 6,
+          ),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
       ),

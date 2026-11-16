@@ -1,9 +1,13 @@
+import '../l10n/speech.dart';
 import '../utils/spoken_format.dart';
 import 'announce.dart';
 
 /// Every sentence spoken or shown by the live class (session) screens, kept
-/// in one place so wording stays consistent and can be translated later.
+/// in one place so wording stays consistent. Text comes from the ARB files
+/// in the current speech language.
 abstract final class SessionText {
+  static AppLocalizations get _t => Speech.t;
+
   // ─── Main screen ──────────────────────────────────────────────────────────
   static String screenName({
     required bool teacher,
@@ -11,58 +15,59 @@ abstract final class SessionText {
     String? className,
     String? subjectName,
   }) => [
-    teacher ? 'Teacher class' : 'Class',
+    teacher ? _t.sessionScreenTeacherClass : _t.sessionScreenClass,
     title,
     ?className,
     ?subjectName,
   ].join(', ');
 
-  static const joining = 'Joining the class. Please wait.';
-  static const connecting = 'Connecting to the class.';
-  static const joinFailed =
-      'The class could not be joined. Press 0 to leave, then try again.';
-  static const leaveKeyHint = 'Press 0 to leave the class. It asks to confirm.';
-  static const keyLine = '*: Help. #: Stop app speech. 8: Last message.';
+  static String get defaultTitle => _t.sessionDefaultTitle;
+  static String get joining => _t.sessionJoining;
+  static String get connecting => _t.sessionConnecting;
+  static String get joinFailed => _t.sessionJoinFailed;
+  static String get leaveKeyHint => _t.sessionLeaveKeyHint;
+  static String get keyLine => _t.sessionKeyLine;
 
   static String joined({
     required bool teacher,
     required String status,
     required String keys,
   }) => Announce.pick(
-    brief: 'In class. $status Press star for help.',
-    detailed:
-        'You are in the class. $status $keys '
-        'Use up and down to move between controls and OK to select. '
-        'Press star for where you are and help. Press hash to stop speech.',
+    brief: _t.sessionJoinedBrief(status),
+    detailed: _t.sessionJoinedDetailed(status, keys),
   );
 
   static String keyHelp(Map<int, String> labels) {
     final keys = labels.entries.toList()
       ..sort((a, b) => (a.key == 0 ? 10 : a.key).compareTo(b.key == 0 ? 10 : b.key));
-    return keys.map((e) => 'Press ${e.key} for ${e.value}.').join(' ');
+    return keys.map((e) => _t.sessionPressKeyFor('${e.key}', e.value)).join(' ');
   }
 
   // Focus labels and visible button text on the main screen.
   static String muteLabel(bool muted, bool pending) => pending
-      ? 'Microphone waiting for confirmation'
+      ? _t.sessionMicWaitingLabel
       : muted
-      ? 'Unmute microphone'
-      : 'Mute microphone';
-  static String muteButton(bool muted, bool pending) =>
-      pending ? '1: Waiting' : '1: ${muted ? 'Unmute' : 'Mute'}';
+      ? _t.sessionUnmuteMicrophone
+      : _t.sessionMuteMicrophone;
+  static String muteButton(bool muted, bool pending) => pending
+      ? _t.sessionMuteButtonWaiting
+      : muted
+      ? _t.sessionMuteButtonUnmute
+      : _t.sessionMuteButtonMute;
   static String handLabel(bool raised, bool pending) => pending
-      ? 'Hand waiting for confirmation'
+      ? _t.sessionHandWaitingLabel
       : raised
-      ? 'Lower hand'
-      : 'Raise hand';
-  static String handButton(bool raised, bool pending) =>
-      pending ? '2: Waiting' : '2: ${raised ? 'Lower hand' : 'Raise hand'}';
-  static const statusLabel = 'Hear class status';
-  static const statusButton = '3: Class status';
-  static String chatLabel(int count) => count == 0
-      ? 'Chat. No messages yet'
-      : 'Chat. ${SpokenFormat.count(count, 'message')}';
-  static const chatButton = '4: Chat';
+      ? _t.sessionLowerHand
+      : _t.sessionRaiseHand;
+  static String handButton(bool raised, bool pending) => pending
+      ? _t.sessionHandButtonWaiting
+      : raised
+      ? _t.sessionHandButtonLower
+      : _t.sessionHandButtonRaise;
+  static String get statusLabel => _t.sessionStatusLabel;
+  static String get statusButton => _t.sessionStatusButton;
+  static String chatLabel(int count) => _t.sessionChatLabel(count);
+  static String get chatButton => _t.sessionChatButton;
   static String recordingLabel({
     required bool teacher,
     required String? title,
@@ -70,462 +75,422 @@ abstract final class SessionText {
   }) {
     if (teacher) {
       return title == null
-          ? 'Class recording player. No recording selected yet'
-          : 'Class recording player. $title, ${playing ? 'playing' : 'paused'}';
+          ? _t.sessionRecordingPlayerNone
+          : playing
+          ? _t.sessionRecordingPlayerPlaying(title)
+          : _t.sessionRecordingPlayerPaused(title);
     }
-    if (title == null) {
-      return 'Class recording. Nothing playing. Only the teacher controls it';
-    }
-    return 'Class recording, $title, ${playing ? 'playing' : 'paused'} by the '
-        'teacher. Hear where it is';
+    if (title == null) return _t.sessionRecordingStudentNone;
+    return playing
+        ? _t.sessionRecordingStudentPlaying(title)
+        : _t.sessionRecordingStudentPaused(title);
   }
 
   /// Student key 5: read only, the teacher controls the recording.
-  static const recordingStatusButton = '5: Recording status';
+  static String get recordingStatusButton => _t.sessionRecordingStatusButton;
   static String studentRecordingStatus({
     required String? title,
     required bool playing,
     required String position,
   }) => title == null
-      ? 'No class recording is playing. Only the teacher can play one.'
-      : '$title, ${playing ? 'playing' : 'paused'}, at $position. '
-            'Only the teacher can play, pause or move the class recording.';
-  static const recordingPlayerButton = '5: Recording player';
-  static const openingPlayerToChoose =
-      'No recording is selected yet. Press 1 to choose one.';
-  static const checkLabel = 'Answer classroom check. Private and ungraded';
-  static const checkButton = '6: Classroom check';
+      ? _t.sessionStudentRecordingNone
+      : playing
+      ? _t.sessionStudentRecordingPlaying(title, position)
+      : _t.sessionStudentRecordingPaused(title, position);
+  static String get recordingPlayerButton => _t.sessionRecordingPlayerButton;
+  static String get openingPlayerToChoose => _t.sessionOpeningPlayerToChoose;
+  static String get checkLabel => _t.sessionCheckLabel;
+  static String get checkButton => _t.sessionCheckButton;
   // Teacher-only main screen controls.
   static String handsLabel(int count) =>
-      'Raised hands. ${handsWaiting(count)} Acknowledge and lower hands in order';
-  static String handsButton(int count) =>
-      count == 0 ? '2: Raised hands' : '2: Raised hands ($count)';
-  static const teacherCheckLabel =
-      'Classroom check. Start a private check, close it and hear responses';
+      _t.sessionHandsLabel(handsWaiting(count));
+  static String handsButton(int count) => count == 0
+      ? _t.sessionHandsButton
+      : _t.sessionHandsButtonCount(count);
+  static String get teacherCheckLabel => _t.sessionTeacherCheckLabel;
   static String participantsLabel(int count) =>
-      'Participants. ${people(count)} Mute or remove someone, or hear a summary';
-  static const participantsButton = '7: Participants';
-  static const toolsLabel =
-      'Teacher tools. Invite students or end the class for everyone';
-  static const toolsButton = '9: Teacher tools';
-  static const voiceStartLabel =
-      'Listen for one voice command, up to 12 seconds. Starts only when you press OK';
-  static const voiceStopLabel = 'Stop listening for a voice command';
-  static const voiceStartButton = 'Listen for command';
-  static const voiceStopButton = 'Stop listening';
-  static const updatesLabel = 'Read class updates';
-  static const updatesButton = 'Class updates';
-  static const retryLabel = 'Retry class connection';
-  static const retryButton = 'Retry connection';
-  static const leaveLabel = 'Leave class and return to your dashboard';
-  static const leaveButton = '0: Leave class';
+      _t.sessionParticipantsLabel(people(count));
+  static String get participantsButton => _t.sessionParticipantsButton;
+  static String get toolsLabel => _t.sessionToolsLabel;
+  static String get toolsButton => _t.sessionToolsButton;
+  static String get voiceStartLabel => _t.sessionVoiceStartLabel;
+  static String get voiceStopLabel => _t.sessionVoiceStopLabel;
+  static String get voiceStartButton => _t.sessionVoiceStartButton;
+  static String get voiceStopButton => _t.sessionVoiceStopButton;
+  static String get updatesLabel => _t.sessionUpdatesLabel;
+  static String get updatesButton => _t.sessionUpdatesButton;
+  static String get retryLabel => _t.sessionRetryLabel;
+  static String get retryButton => _t.sessionRetryButton;
+  static String get leaveLabel => _t.sessionLeaveLabel;
+  static String get leaveButton => _t.sessionLeaveButton;
 
   // ─── Status ("where am I" and key 3) ─────────────────────────────────────
   static String micState(bool muted, bool pending) => pending
-      ? 'Microphone waiting for confirmation.'
+      ? _t.sessionMicWaiting
       : muted
-      ? 'Muted.'
-      : 'Unmuted. Others can hear you.';
+      ? _t.sessionMicMuted
+      : _t.sessionMicUnmutedHeard;
   static String handState(bool raised, bool pending) => pending
-      ? 'Hand waiting for confirmation.'
+      ? _t.sessionHandWaiting
       : raised
-      ? 'Hand raised.'
-      : 'Hand down.';
-  static String handsWaiting(int count) => count == 0
-      ? 'No hands waiting.'
-      : '${SpokenFormat.count(count, 'hand')} waiting.';
-  static String people(int count) =>
-      '${SpokenFormat.count(count, 'person', 'people')} in the class.';
+      ? _t.sessionHandRaisedState
+      : _t.sessionHandDown;
+  static String handsWaiting(int count) => _t.sessionHandsWaiting(count);
+  static String people(int count) => _t.sessionPeople(count);
   static String recordingState({
     required String? title,
     required bool playing,
   }) {
     if (title == null) {
-      return Announce.pick(brief: '', detailed: 'No recording selected.');
+      return Announce.pick(brief: '', detailed: _t.sessionNoRecordingSelected);
     }
-    return 'Recording ${playing ? 'playing' : 'paused'}: $title.';
+    return playing
+        ? _t.sessionRecordingStatePlaying(title)
+        : _t.sessionRecordingStatePaused(title);
   }
 
-  static const checkOpen = 'Classroom check open.';
-  static String connection(String label) => '$label.';
+  static String get checkOpen => _t.sessionCheckOpen;
+  static String connection(String label) => _t.sessionConnectionLabel(label);
   static String messages(int count) =>
-      count == 0 ? '' : '${SpokenFormat.count(count, 'chat message')}.';
+      count == 0 ? '' : _t.sessionChatMessages(count);
+
+  /// Title used for a selected recording without a title.
+  static String get recordingFallback => _t.sessionRecordingFallback;
+  static String get recordingFallbackLower => _t.sessionRecordingFallbackLower;
+  static String userFallback(Object? userId) =>
+      _t.sessionUserFallback('$userId');
 
   // ─── Connection ──────────────────────────────────────────────────────────
   static String connectionRestored(String message) =>
-      'Connection restored. $message';
+      _t.sessionConnectionRestored(message);
   static String connectionLost(bool everConnected, String message) =>
-      '${everConnected ? 'Connection lost.' : 'Could not connect.'} $message';
+      everConnected
+      ? _t.sessionConnectionLost(message)
+      : _t.sessionCouldNotConnect(message);
 
   // ─── Microphone ──────────────────────────────────────────────────────────
-  static const micDialogTitle = 'Microphone access';
-  static const micDialogMessage =
-      'In this class SEEDS uses the microphone for live audio and explicitly '
-      'activated voice commands. You can stay without microphone access, but '
-      'others will not hear you. Separate private-note recording requires its '
-      'own explicit start outside live classes.';
-  static const micDialogConfirm = 'Continue to class';
-  static const micSkipped =
-      'Microphone access was skipped. You joined the class muted.';
-  static const micUnavailable =
-      'Microphone access is unavailable. You joined the class muted.';
-  static const waitingMic = 'Waiting for microphone confirmation.';
-  static const muted = 'Muted';
-  static String get unmuted =>
-      Announce.pick(brief: 'Unmuted', detailed: 'Unmuted. Others can hear you.');
-  static const mutedLocallyOnly =
-      'Microphone muted on this phone. The class confirmation was not received.';
-  static const mutedByTeacher = 'The teacher muted your microphone.';
+  static String get micDialogTitle => _t.sessionMicDialogTitle;
+  static String get micDialogMessage => _t.sessionMicDialogMessage;
+  static String get micDialogConfirm => _t.sessionMicDialogConfirm;
+  static String get micSkipped => _t.sessionMicSkipped;
+  static String get micUnavailable => _t.sessionMicUnavailable;
+  static String get waitingMic => _t.sessionWaitingMic;
+  static String get muted => _t.sessionMuted;
+  static String get unmuted => Announce.pick(
+    brief: _t.sessionUnmuted,
+    detailed: _t.sessionMicUnmutedHeard,
+  );
+  static String get mutedLocallyOnly => _t.sessionMutedLocallyOnly;
+  static String get mutedByTeacher => _t.sessionMutedByTeacher;
 
   // ─── Hand ────────────────────────────────────────────────────────────────
-  static const waitingHand = 'Waiting for hand status confirmation.';
-  static const handRaised = 'Hand raised';
-  static const handLowered = 'Hand lowered';
-  static const handNotConfirmed =
-      'Your hand change was not confirmed. Press 2 to try again.';
-  static String raisedHandBy(String? name) =>
-      '${name ?? 'A participant'} raised hand. Press 2 for raised hands.';
+  static String get waitingHand => _t.sessionWaitingHand;
+  static String get handRaised => _t.sessionHandRaised;
+  static String get handLowered => _t.sessionHandLowered;
+  static String get handNotConfirmed => _t.sessionHandNotConfirmed;
+  static String raisedHandBy(String? name) => name == null
+      ? _t.sessionRaisedHandUnknown
+      : _t.sessionRaisedHandBy(name);
 
   // ─── Participants ────────────────────────────────────────────────────────
-  static const participantJoined = 'A participant joined.';
-  static const participantsJoinedGroup = 'Participants joined';
-  static const participantLeft = 'A participant left.';
-  static const participantsLeftGroup = 'Participants left';
+  static String get participantJoined => _t.sessionParticipantJoined;
+  static String get participantsJoinedGroup => _t.sessionParticipantsJoinedGroup;
+  static String get participantLeft => _t.sessionParticipantLeft;
+  static String get participantsLeftGroup => _t.sessionParticipantsLeftGroup;
+  static String get participantFallback => _t.sessionParticipantFallback;
+  static String get thisParticipant => _t.sessionThisParticipant;
   static String participant(Map<String, dynamic> p, {
     required bool self,
     required bool muted,
     required bool speaking,
   }) {
-    final name = p['name'] as String? ?? 'Participant';
+    final name = p['name'] as String? ?? participantFallback;
     return [
-      self ? '$name, you' : name,
-      p['is_teacher'] == true ? 'teacher' : 'student',
-      if (p['raised_hand'] == true) 'hand raised',
-      muted ? 'muted' : 'unmuted',
-      if (speaking) 'speaking',
+      self ? _t.sessionParticipantSelf(name) : name,
+      p['is_teacher'] == true ? _t.sessionRoleTeacher : _t.sessionRoleStudent,
+      if (p['raised_hand'] == true) _t.sessionStateHandRaised,
+      muted ? _t.sessionStateMuted : _t.sessionStateUnmuted,
+      if (speaking) _t.sessionStateSpeaking,
     ].join(', ');
   }
 
-  static String alreadyMuted(String name) =>
-      '$name is muted. Only $name can unmute.';
-  static String participantMuted(String name) => '$name muted.';
-  static String removeTitle(String name) => 'Remove $name?';
-  static String removeMessage(String name) =>
-      '$name will be removed from this class and returned to their '
-      'dashboard. They can be invited again later.';
-  static String keep(String name) => 'Keep $name';
-  static String remove(String name) => 'Remove $name';
-  static String removed(String name) => '$name removed from the class.';
+  static String alreadyMuted(String name) => _t.sessionAlreadyMuted(name);
+  static String participantMuted(String name) => _t.sessionParticipantMuted(name);
+  static String removeTitle(String name) => _t.sessionRemoveTitle(name);
+  static String removeMessage(String name) => _t.sessionRemoveMessage(name);
+  static String keep(String name) => _t.sessionKeep(name);
+  static String remove(String name) => _t.sessionRemove(name);
+  static String removed(String name) => _t.sessionRemoved(name);
 
   // ─── Chat ────────────────────────────────────────────────────────────────
   static String messageFrom(String sender, String text) =>
-      'Message from $sender: $text';
-  static const waitingMessage = 'Waiting for message confirmation.';
-  static const emptyMessage = 'Enter a message before selecting Send.';
-  static const messageSent = 'Message sent.';
-  static const sending = 'Sending';
-  static const sent = 'Sent';
-  static const notConfirmed = 'Not confirmed';
-  static const noMessages = 'No messages yet.';
-  static const chatTitle = 'Chat';
-  static const readMessages = 'Read messages, newest first';
-  static const writeMessage = 'Write a message';
-  static const messageField = 'Your message to the class';
-  static const messagesTitle = 'Chat messages';
-  static const quickPhrases = [
-    'I understood',
-    'Please repeat',
-    'I have a question',
+      _t.chatMessageFrom(sender, text);
+  static String get unknownSender => _t.chatSenderUnknown;
+  static String get waitingMessage => _t.chatWaitingConfirmation;
+  static String get emptyMessage => _t.chatEmptyMessage;
+  static String get messageSent => _t.chatMessageSent;
+  static String get sending => _t.chatSending;
+  static String get sent => _t.chatSent;
+  static String get notConfirmed => _t.chatNotConfirmed;
+  static String get noMessages => _t.chatNoMessages;
+  static String get chatTitle => _t.chatTitle;
+  static String get readMessages => _t.chatReadMessages;
+  static String get writeMessage => _t.chatWriteMessage;
+  static String get messageField => _t.chatMessageField;
+  static String get messagesTitle => _t.chatMessagesTitle;
+  static List<String> get quickPhrases => [
+    _t.chatPhraseUnderstood,
+    _t.chatPhraseRepeat,
+    _t.chatPhraseQuestion,
   ];
-  static String sendPhrase(String phrase) => 'Send: $phrase';
+  static String sendPhrase(String phrase) => _t.chatSendPhrase(phrase);
   static String chatCount(int count) =>
-      count == 0 ? noMessages : '${SpokenFormat.count(count, 'message')}.';
+      count == 0 ? noMessages : _t.chatCount(count);
   static String get chatHelp => Announce.pick(
-    brief: 'Read, write or send a quick phrase.',
-    detailed:
-        'Press 1 to read messages, 2 to write one, or 3 to 5 to send a quick '
-        'phrase. Press 8 to hear the newest message.',
+    brief: _t.chatHelpBrief,
+    detailed: _t.chatHelpDetailed,
   );
   static String messageLine(Map<String, dynamic> message) {
-    final sender = message['isMe'] == true ? 'You' : '${message['sender']}';
+    final sender = message['isMe'] == true ? _t.chatYou : '${message['sender']}';
     final delivery = message['delivery'];
-    return '$sender: ${message['text']}${delivery == null ? '' : '. $delivery'}';
+    final text = '${message['text']}';
+    return delivery == null
+        ? _t.chatMessageLine(sender, text)
+        : _t.chatMessageLineDelivery(sender, text, '$delivery');
   }
 
   static String messageDetail(Map<String, dynamic> message) {
     final at = message['timestamp'];
-    return '${messageLine(message)}.'
-        '${at is DateTime ? ' Sent ${SpokenFormat.timeOfDay(at)}.' : ''}';
+    final line = messageLine(message);
+    return at is DateTime
+        ? _t.chatMessageDetailSent(line, SpokenFormat.timeOfDay(at))
+        : _t.chatMessageDetail(line);
   }
 
-  static String latestMessage(Map<String, dynamic>? message) =>
-      message == null ? noMessages : 'Newest message. ${messageDetail(message)}';
+  static String latestMessage(Map<String, dynamic>? message) => message == null
+      ? noMessages
+      : _t.chatNewestMessage(messageDetail(message));
 
   // ─── Leaving and ending ─────────────────────────────────────────────────
-  static const leaveTitle = 'Leave class?';
-  static const leaveMessage =
-      'You will leave this class and return to your dashboard. '
-      'You will remain logged in.';
-  static const teacherLeaveMessage =
-      'You will leave and return to your dashboard. The class keeps running '
-      'for students. To end it for everyone, use 9, Teacher tools.';
-  static const stay = 'Stay in class';
-  static const leave = 'Leave class';
-  static const leaveLocallyTitle = 'Leave without server confirmation?';
-  static const leaveLocallyMessage =
-      'This phone is muted. The server did not confirm clearing your raised '
-      'hand. Leave locally now, or stay and retry? A fresh join resets your hand.';
-  static const stayAndRetry = 'Stay and retry';
-  static const leaveLocally = 'Leave locally';
-  static const endTitle = 'End class for everyone?';
-  static const endMessage =
-      'This stops the class for every participant and returns everyone to '
-      'their dashboard. Nobody will be logged out.';
-  static const endCancel = 'Keep the class going';
-  static const endConfirm = 'End for everyone';
-  static const waitingEnd = 'Waiting for end-class confirmation.';
-  static const endNotConfirmed =
-      'Ending the class was not confirmed. The class is still running.';
-  static const endingForEveryone = 'Ending the class for everyone.';
-  static const youLeft = 'You left the class.';
-  static const classEnded = 'The class has ended.';
-  static const youWereRemoved = 'You were removed from the class.';
-  static const signInChanged =
-      'Your sign-in changed. Sign in again or contact your school administrator.';
-  static const cleanupFailed =
-      'Sign-in ended. Native audio cleanup could not be confirmed. Close SEEDS if audio continues.';
-  static const cleanupTimedOut =
-      'Sign-in ended. Audio cleanup timed out. Close SEEDS if audio continues.';
-  static const requestFailed =
-      'We could not complete that request. Please try again.';
+  static String get leaveTitle => _t.sessionLeaveTitle;
+  static String get leaveMessage => _t.sessionLeaveMessage;
+  static String get teacherLeaveMessage => _t.sessionTeacherLeaveMessage;
+  static String get stay => _t.sessionStay;
+  static String get leave => _t.sessionLeave;
+  static String get leaveLocallyTitle => _t.sessionLeaveLocallyTitle;
+  static String get leaveLocallyMessage => _t.sessionLeaveLocallyMessage;
+  static String get stayAndRetry => _t.sessionStayAndRetry;
+  static String get leaveLocally => _t.sessionLeaveLocally;
+  static String get endTitle => _t.sessionEndTitle;
+  static String get endMessage => _t.sessionEndMessage;
+  static String get endCancel => _t.sessionEndCancel;
+  static String get endConfirm => _t.sessionEndConfirm;
+  static String get waitingEnd => _t.sessionWaitingEnd;
+  static String get endNotConfirmed => _t.sessionEndNotConfirmed;
+  static String get endingForEveryone => _t.sessionEndingForEveryone;
+  static String get youLeft => _t.sessionYouLeft;
+  static String get classEnded => _t.sessionClassEnded;
+  static String get youWereRemoved => _t.sessionYouWereRemoved;
+  static String get signInChanged => _t.sessionSignInChanged;
+  static String get cleanupFailed => _t.sessionCleanupFailed;
+  static String get cleanupTimedOut => _t.sessionCleanupTimedOut;
+  static String get requestFailed => _t.sessionRequestFailed;
 
   // ─── Voice commands ──────────────────────────────────────────────────────
-  static const voiceStopped = 'Voice listening stopped.';
-  static const voiceUnmuteTitle = 'Unmute your microphone?';
-  static const voiceUnmuteMessage =
-      'A voice command requested unmute. Confirm with a key or touch. Other '
-      'class members will be able to hear you.';
-  static const voiceUnmuteConfirm = 'Unmute';
-  static const voiceUnmuteCancel = 'Stay muted';
-  static const alreadyUnmuted = 'Already unmuted';
-  static const alreadyMutedSelf = 'Already muted';
-  static const handAlreadyLowered = 'Hand is already lowered';
-  static const handAlreadyRaised = 'Hand is already raised';
-  static const commandNotRecognized = 'Command not recognized';
+  static String get voiceStopped => _t.sessionVoiceStopped;
+  static String get voiceUnmuteTitle => _t.sessionVoiceUnmuteTitle;
+  static String get voiceUnmuteMessage => _t.sessionVoiceUnmuteMessage;
+  static String get voiceUnmuteConfirm => _t.sessionVoiceUnmuteConfirm;
+  static String get voiceUnmuteCancel => _t.sessionVoiceUnmuteCancel;
+  static String get alreadyUnmuted => _t.sessionAlreadyUnmuted;
+  static String get alreadyMutedSelf => _t.sessionAlreadyMutedSelf;
+  static String get handAlreadyLowered => _t.sessionHandAlreadyLowered;
+  static String get handAlreadyRaised => _t.sessionHandAlreadyRaised;
+  static String get commandNotRecognized => _t.sessionCommandNotRecognized;
   // Voice controller status and issues.
-  static const voiceStopUnconfirmed =
-      'Voice listening stop not confirmed. Retry stopping.';
-  static const voiceStopping = 'Stopping voice listening.';
-  static const voiceStarting = 'Starting voice commands.';
-  static const voiceFinishing = 'Finishing voice recognition.';
-  static const voiceListening = 'Listening for one command, up to 12 seconds.';
-  static const voiceIdle = 'Not listening. Activate Listen for command to start.';
-  static const voiceSpeechNotStopped =
-      'App speech could not be stopped. Try Stop speech before listening.';
-  static const voiceUnavailable =
-      'Voice commands are unavailable. Check microphone permission and Android English speech services.';
-  static const voiceCouldNotStart =
-      'Voice commands could not start. Check microphone permission and English speech services, then try again.';
-  static const voiceCouldNotFinish =
-      'Voice recognition could not finish. Check permission and English speech services, then activate Listen to retry.';
-  static const voiceNoCommand =
-      'No command heard. Activate Listen for command to try again.';
-  static const voiceCommandFailed =
-      'The voice command could not be completed. Use its keypad control or try again.';
-  static const voiceCannotStop =
-      'Voice listening could not be stopped. Retry Stop listening or leave the class and check the Android microphone indicator.';
+  static String get voiceStopUnconfirmed => _t.sessionVoiceStopUnconfirmed;
+  static String get voiceStopping => _t.sessionVoiceStopping;
+  static String get voiceStarting => _t.sessionVoiceStarting;
+  static String get voiceFinishing => _t.sessionVoiceFinishing;
+  static String get voiceListening => _t.sessionVoiceListening;
+  static String get voiceIdle => _t.sessionVoiceIdle;
+  static String get voiceSpeechNotStopped => _t.sessionVoiceSpeechNotStopped;
+  static String get voiceUnavailable => _t.sessionVoiceUnavailable;
+  static String get voiceCouldNotStart => _t.sessionVoiceCouldNotStart;
+  static String get voiceCouldNotFinish => _t.sessionVoiceCouldNotFinish;
+  static String get voiceNoCommand => _t.sessionVoiceNoCommand;
+  static String get voiceCommandFailed => _t.sessionVoiceCommandFailed;
+  static String get voiceCannotStop => _t.sessionVoiceCannotStop;
 
   // ─── Class recording ─────────────────────────────────────────────────────
-  static const recordingSelectionChanged =
-      'The class recording selection changed. Use Read class updates for details.';
-  static const recordingSelectionGroup = 'Class recording selection';
-  static const playbackFinished = 'Recording finished.';
-  static const noRecording = 'No class recording is selected.';
-  static const noRecordingTeacher =
-      'No class recording is selected. In the recording player, press 1 to choose one.';
-  static const previewFailed =
-      'The private preview could not start. Check the connection and try again.';
+  static String get recordingSelectionChanged =>
+      _t.sessionRecordingSelectionChanged;
+  static String get recordingSelectionGroup => _t.sessionRecordingSelectionGroup;
+  static String get playbackFinished => _t.sessionPlaybackFinished;
+  static String get noRecording => _t.sessionNoRecording;
+  static String get noRecordingTeacher => _t.sessionNoRecordingTeacher;
+  static String get previewFailed => _t.sessionPreviewFailed;
   static String classPauseUnconfirmed(String reason) =>
-      'Your local audio is paused. The class pause was not confirmed. $reason';
+      _t.sessionClassPauseUnconfirmed(reason);
   static String position(double seconds, double? total) => SpokenFormat.position(
     Duration(seconds: seconds.round()),
     total == null ? null : Duration(seconds: total.round()),
   );
-  static String speed(double value) =>
-      '${value.toStringAsFixed(2).replaceAll(RegExp(r'\.?0+$'), '')} times speed';
+  static String speed(double value) => _t.sessionSpeed(
+    value.toStringAsFixed(2).replaceAll(RegExp(r'\.?0+$'), ''),
+  );
   static String playbackAccepted(String title) =>
-      'Class playback request accepted for $title.';
-  static String selected(String title) =>
-      '$title selected for the class. Press 5 to play it.';
-  static String previewing(String title) => 'Previewing $title on this phone only.';
-  static const previewStopped = 'Preview stopped.';
+      _t.sessionPlaybackAccepted(title);
+  static String selected(String title) => _t.sessionSelected(title);
+  static String previewing(String title) => _t.sessionPreviewing(title);
+  static String get previewStopped => _t.sessionPreviewStopped;
 
   // Recordings screen (teacher).
-  static const recordingsTitle = 'Class recording player';
-  static const chooseRecording = 'Choose a recording from the library';
-  static const uploadRecording = 'Upload a new recording';
-  static const hearRecording = 'Hear recording status';
-  static const back10 = 'Back 10 seconds';
-  static const playPauseClass = 'Play or pause for the class';
-  static const forward10 = 'Forward 10 seconds';
-  static const slower = 'Slower';
-  static const faster = 'Faster';
-  static const libraryLoading = 'The recording library is still loading. Try again shortly.';
-  static const libraryEmpty =
-      'No recordings for this class yet. Press 2 to upload one.';
-  static const positionHint = 'Use left and right to move 10 seconds';
+  static String get recordingsTitle => _t.sessionRecordingsTitle;
+  static String get chooseRecording => _t.sessionChooseRecording;
+  static String get uploadRecording => _t.sessionUploadRecording;
+  static String get hearRecording => _t.sessionHearRecording;
+  static String get back10 => _t.keyBack10Seconds;
+  static String get playPauseClass => _t.sessionPlayPauseClass;
+  static String get forward10 => _t.keyForward10Seconds;
+  static String get slower => _t.keySlower;
+  static String get faster => _t.keyFaster;
+  static String get libraryLoading => _t.sessionLibraryLoading;
+  static String get libraryEmpty => _t.sessionLibraryEmpty;
+  static String get positionHint => _t.sessionPositionHint;
   static String recordingStatus({
     required String? title,
     required bool playing,
     required double position,
     required double? duration,
     required double speedValue,
-  }) => title == null
-      ? noRecording
-      : '$title. ${playing ? 'Playing for the class' : 'Paused'}. '
-            '${SessionText.position(position, duration)}. ${speed(speedValue)}.';
+  }) {
+    if (title == null) return noRecording;
+    final at = SessionText.position(position, duration);
+    return playing
+        ? _t.sessionRecordingStatusPlaying(title, at, speed(speedValue))
+        : _t.sessionRecordingStatusPaused(title, at, speed(speedValue));
+  }
+
   static String positionLabel(double position, double? duration) =>
-      'Position ${SessionText.position(position, duration)}. $positionHint';
+      _t.sessionPositionLabel(SessionText.position(position, duration));
+  static String get untitled => _t.sessionUntitled;
   static String fileLabel(
     Map<String, dynamic> audio, {
     required bool active,
     required bool previewing,
   }) => [
-    audio['title'] as String? ?? 'Untitled',
-    if (active) 'selected for the class',
-    if (previewing) 'previewing',
+    audio['title'] as String? ?? untitled,
+    if (active) _t.sessionFileSelectedForClass,
+    if (previewing) _t.sessionFilePreviewing,
   ].join(', ');
-  static const playForClass = 'Select and play for the class now';
-  static const selectOnly = 'Select only, play later with 5';
-  static const previewPrivately = 'Preview privately on this phone';
-  static const stopPreview = 'Stop the private preview';
+  static String get playForClass => _t.sessionPlayForClass;
+  static String get selectOnly => _t.sessionSelectOnly;
+  static String get previewPrivately => _t.sessionPreviewPrivately;
+  static String get stopPreview => _t.sessionStopPreview;
 
   // Upload.
-  static const uploadDetailsTitle = 'Upload audio details';
-  static const uploadTitle = 'Upload Audio';
-  static String uploadFile(String name) => 'File: $name';
-  static const titleField = 'Audio title, required';
-  static const descriptionField = 'Audio description, optional';
-  static const cancelUpload = 'Cancel upload';
-  static const confirmUpload = 'Upload audio';
-  static const titleRequired = 'Title is required';
-  static const chooseSessionsTitle = 'Choose classes for this audio';
-  static const addToSessions = 'Add audio to classes';
-  static const confirmSessions = 'Confirm selected classes';
-  static const selectAtLeastOne = 'Select at least one class';
-  static const sessionSelected = 'Class selected';
-  static const sessionUnselected = 'Class unselected';
-  static String sessionChoice(String title, bool selected) =>
-      '${selected ? 'Selected' : 'Not selected'}, $title';
+  static String get uploadDetailsTitle => _t.sessionUploadDetailsTitle;
+  static String get uploadTitle => _t.sessionUploadTitle;
+  static String uploadFile(String name) => _t.sessionUploadFile(name);
+  static String get titleField => _t.sessionTitleField;
+  static String get descriptionField => _t.sessionDescriptionField;
+  static String get cancelUpload => _t.sessionCancelUpload;
+  static String get confirmUpload => _t.sessionConfirmUpload;
+  static String get titleRequired => _t.sessionTitleRequired;
+  static String get chooseSessionsTitle => _t.sessionChooseSessionsTitle;
+  static String get addToSessions => _t.sessionAddToSessions;
+  static String get confirmSessions => _t.sessionConfirmSessions;
+  static String get selectAtLeastOne => _t.sessionSelectAtLeastOne;
+  static String get sessionSelected => _t.sessionSessionSelected;
+  static String get sessionUnselected => _t.sessionSessionUnselected;
+  static String sessionChoice(String title, bool selected) => selected
+      ? _t.sessionChoiceSelected(title)
+      : _t.sessionChoiceNotSelected(title);
   static String sessionTitle(Map<String, dynamic> session) =>
       session['title']?.toString() ??
-      'Class ${SpokenFormat.identifier(session['session_id'] as int)}';
-  static const uploadContextMissing =
-      'The class and subject of this class could not be determined.';
-  static const uploadSuccess = 'Upload successful.';
-  static const uploadInProgress = 'Audio upload in progress';
-  static const playNowTitle = 'Play for everyone now?';
-  static String playNowMessage(String title) =>
-      '$title is selected. Play it for all participants now?';
-  static const playNow = 'Play now';
-  static const notYet = 'Not yet';
+      _t.sessionClassNumbered(
+        SpokenFormat.identifier(session['session_id'] as int),
+      );
+  static String get uploadContextMissing => _t.sessionUploadContextMissing;
+  static String get uploadSuccess => _t.sessionUploadSuccess;
+  static String get uploadInProgress => _t.sessionUploadInProgress;
+  static String get playNowTitle => _t.sessionPlayNowTitle;
+  static String playNowMessage(String title) => _t.sessionPlayNowMessage(title);
+  static String get playNow => _t.sessionPlayNow;
+  static String get notYet => _t.sessionNotYet;
+  static String get editTitleKey => _t.sessionUploadEditTitle;
+  static String get editDescriptionKey => _t.sessionUploadEditDescription;
+  static String get uploadKey => _t.sessionUploadKey;
+  static String get cancelKey => _t.sessionCancel;
 
   // ─── Classroom checks ───────────────────────────────────────────────────
-  static const checkUnreadable =
-      'Classroom check state could not be read. Refresh before responding.';
-  static const checkUnconfirmed =
-      'The classroom check action was not confirmed. Refresh before trying again.';
-  static const checkConfirmationUnreadable =
-      'The classroom check confirmation was unreadable. Refresh before trying again.';
-  static const checkOpenedForYou =
-      'Your teacher opened a classroom check. Use the D-pad to reach Answer classroom check.';
-  static const checkHelp =
-      'Private classroom check. Understood, Please repeat or Need help. '
-      'Only the responding student and session teacher can read a response. '
-      'It is not graded. Responses clear on the next check, session end or server restart. '
-      'Use Read or Refresh for confirmed state. Stop speech and Back are available.';
-  static const checkTitle = 'Classroom check';
-  static const checkNewTitle = 'Open a new classroom check?';
-  static const checkNewMessage =
-      'This clears all responses from the previous check. Students choose '
-      'Understood, Please repeat or Need help. Only you and each responding '
-      'student can read their response. It is not graded or retained as an '
-      'academic record.';
-  static const checkNewConfirm = 'Clear previous and open';
-  static const checkNewCancel = 'Keep current check';
-  static const checkSending = 'Sending. Waiting for confirmation.';
-  static const checkWaiting = 'Waiting for confirmation. Do not resend.';
-  static const backToClass = 'Back to class';
-  static const checkRead = 'Read check status and confirmed responses';
-  static const checkReadButton = 'Read status and responses';
-  static const checkRefresh =
-      'Refresh private check state. Requires class connection';
-  static const checkRefreshButton = 'Refresh from server';
-  static const checkOpenLabel =
-      'Open a new check. Confirm clearing previous responses';
-  static const checkOpenButton = 'Open new check';
-  static const checkCloseLabel =
-      'Close this check. Keep current results until next check or session end';
-  static const checkCloseButton = 'Close check';
-  static String checkAnswer(String choice) =>
-      '$choice. Send or change your private, ungraded response';
-  static const stopSpeech = 'Stop speech';
+  static String get checkUnreadable => _t.classroomCheckUnreadable;
+  static String get checkUnconfirmed => _t.classroomCheckUnconfirmed;
+  static String get checkConfirmationUnreadable =>
+      _t.classroomCheckConfirmationUnreadable;
+  static String get checkOpenedForYou => _t.classroomCheckOpenedForYou;
+  static String get checkHelp => _t.classroomCheckHelp;
+  static String get checkTitle => _t.classroomCheckTitle;
+  static String get checkNewTitle => _t.classroomCheckNewTitle;
+  static String get checkNewMessage => _t.classroomCheckNewMessage;
+  static String get checkNewConfirm => _t.classroomCheckNewConfirm;
+  static String get checkNewCancel => _t.classroomCheckNewCancel;
+  static String get checkSending => _t.classroomCheckSending;
+  static String get checkWaiting => _t.classroomCheckWaiting;
+  static String get backToClass => _t.sessionBackToClass;
+  static String get backToSession => _t.classroomBackToSession;
+  static String get back => _t.classroomBack;
+  static String get checkRead => _t.classroomCheckRead;
+  static String get checkReadButton => _t.classroomCheckReadButton;
+  static String get checkRefresh => _t.classroomCheckRefresh;
+  static String get checkRefreshButton => _t.classroomCheckRefreshButton;
+  static String get checkOpenLabel => _t.classroomCheckOpenLabel;
+  static String get checkOpenButton => _t.classroomCheckOpenButton;
+  static String get checkCloseLabel => _t.classroomCheckCloseLabel;
+  static String get checkCloseButton => _t.classroomCheckCloseButton;
+  static String checkAnswer(String choice) => _t.classroomCheckAnswer(choice);
+  static String get stopSpeech => _t.sessionStopSpeech;
 
   // ─── Hands queue (classroom console dialog) ─────────────────────────────
-  static const onlyTeacherAcknowledges =
-      'Only the session teacher may acknowledge a hand.';
-  static const handChanged = 'The selected hand changed. Read the queue again.';
-  static const ackUnconfirmed =
-      'The hand acknowledgment was not confirmed. Read the queue before retrying.';
-  static const ackUnreadable =
-      'Hand acknowledgment was not readable. Check the queue before trying again.';
+  static String get onlyTeacherAcknowledges =>
+      _t.classroomOnlyTeacherAcknowledges;
+  static String get handChanged => _t.classroomHandChanged;
+  static String get ackUnconfirmed => _t.classroomAckUnconfirmed;
+  static String get ackUnreadable => _t.classroomAckUnreadable;
   static String acknowledged(String name, {required bool changedSince}) =>
       changedSince
-      ? '$name acknowledged earlier. Their hand has since changed; read the queue again. Their microphone was not changed.'
-      : '$name acknowledged. The selected hand was lowered. Their microphone was not changed.';
-  static const consoleHelp =
-      'Raised hands. Read summary for the last received classroom state. '
-      'Previous and Next select a raised hand without changing it. '
-      'Acknowledge lowers only the selected hand after server confirmation. '
-      'It never unmutes anyone. Older hands with unknown order are labelled separately.';
-  static const handsTitle = 'Raised hands';
-  static const noHands = 'No raised hands in the last received classroom state.';
-  static String selectedGone(int count) =>
-      'The selected hand is no longer in the queue. '
-      '${SpokenFormat.count(count, 'raised hand')} remain. Use Next or Previous to select a hand.';
+      ? _t.classroomAcknowledgedChanged(name)
+      : _t.classroomAcknowledged(name);
+  static String get consoleHelp => _t.classroomHandsHelp;
+  static String get handsTitle => _t.classroomHandsTitle;
+  static String get noHands => _t.classroomNoHands;
+  static String selectedGone(int count) => _t.classroomSelectedGone(count);
   static String handTitle(int index, int total, String name) =>
-      'Hand ${index + 1} of $total, $name, waiting';
-  static const knownOrder = 'Server-recorded queue order.';
-  static const unknownOrder =
-      'Original raise order unknown; shown before known-order hands.';
-  static const reportedMuted = 'Microphone reported muted.';
-  static const reportedUnmuted =
-      'Microphone reported unmuted; this is not proof of speech.';
-  static const noHandsShort = 'No raised hands';
-  static const noHandSelected = 'No hand selected';
-  static String lowering(String name) =>
-      'Lowering hand for $name. Waiting for the server.';
-  static String loweredLast(String name) =>
-      'Hand lowered for $name. The hand queue is now empty.';
+      _t.classroomHandTitle('${index + 1}', '$total', name);
+  static String get knownOrder => _t.classroomKnownOrder;
+  static String get unknownOrder => _t.classroomUnknownOrder;
+  static String get reportedMuted => _t.classroomReportedMuted;
+  static String get reportedUnmuted => _t.classroomReportedUnmuted;
+  static String get noHandsShort => _t.classroomNoHandsShort;
+  static String get noHandSelected => _t.classroomNoHandSelected;
+  static String lowering(String name) => _t.classroomLowering(name);
+  static String loweredLast(String name) => _t.classroomLoweredLast(name);
   static String loweredNext(String name, String next) =>
-      'Hand lowered for $name. Next: $next.';
-  static const noSummary = 'No classroom summary is available yet.';
-  static const readSummary = 'Read classroom summary';
-  static const previousHand = 'Previous raised hand';
-  static const readHand = 'Read selected hand';
-  static const nextHand = 'Next raised hand';
-  static const waitingAck = 'Waiting for hand acknowledgment';
-  static const ackNoneSelected =
-      'Acknowledge and lower selected hand. No hand selected';
-  static String ackLabel(String name) => 'Lower $name. Never unmutes';
-  static const ackButton = 'Acknowledge and lower hand';
-  static const repeatConsoleHelp = 'Repeat console help';
-  static const consoleSections =
-      'read classroom summary, previous hand, read selected hand, next hand, acknowledge hand, stop speech, help and back. If no hands or summary are available, selecting their controls reads that status';
-  static const snapshotNote =
-      'Counts reflect the last received snapshot, not guaranteed audio delivery. Active speaker identification is unavailable.';
-  static const waitingAckNote =
-      'Waiting for server acknowledgment. No microphone is changed.';
+      _t.classroomLoweredNext(name, next);
+  static String get noSummary => _t.classroomNoSummary;
+  static String get readSummary => _t.classroomReadSummary;
+  static String get previousHand => _t.classroomPreviousHand;
+  static String get readHand => _t.classroomReadHand;
+  static String get nextHand => _t.classroomNextHand;
+  static String get waitingAck => _t.classroomWaitingAck;
+  static String get ackNoneSelected => _t.classroomAckNoneSelected;
+  static String ackLabel(String name) => _t.classroomAckLabel(name);
+  static String get ackButton => _t.classroomAckButton;
+  static String get repeatConsoleHelp => _t.classroomRepeatConsoleHelp;
+  static String get consoleSections => _t.classroomConsoleSections;
+  static String get snapshotNote => _t.classroomSnapshotNote;
+  static String get waitingAckNote => _t.classroomWaitingAckNote;
   static String classroomSummary({
     required String connection,
     required int people,
@@ -535,50 +500,59 @@ abstract final class SessionText {
     required String? recording,
     required bool recordingPlaying,
     required bool previewing,
-  }) =>
-      'Local connection: $connection. '
-      'Last received classroom state: ${SpokenFormat.count(people, 'participant')}, '
-      '${SpokenFormat.count(hands, 'raised hand')}, '
-      '${SpokenFormat.count(muted, 'microphone')} reported muted. '
-      'Remote reconnecting counts are unavailable. '
-      '${speaking.isEmpty ? 'Nobody detected speaking.' : 'Detected speaking: ${speaking.join(', ')}.'} '
-      '${recording == null ? 'No class recording selected.' : 'Class recording $recording. ${recordingPlaying ? 'Playing requested.' : 'Paused.'}'} '
-      '${previewing ? 'Private preview active on this phone only.' : 'Private preview stopped.'} '
-      'Microphone flags and accepted playback requests do not prove that anyone spoke or heard audio.';
+  }) => _t.classroomSummary(
+    connection,
+    _t.classroomSummaryParticipants(people),
+    _t.classroomSummaryHands(hands),
+    _t.classroomSummaryMicrophones(muted),
+    speaking.isEmpty
+        ? _t.classroomSummaryNobodySpeaking
+        : _t.classroomSummarySpeaking(speaking.join(', ')),
+    recording == null
+        ? _t.classroomSummaryNoRecording
+        : recordingPlaying
+        ? _t.classroomSummaryRecordingPlaying(recording)
+        : _t.classroomSummaryRecordingPaused(recording),
+    previewing
+        ? _t.classroomSummaryPreviewActive
+        : _t.classroomSummaryPreviewStopped,
+  );
 
   // ─── Teacher tools menu (teacher, key 9) ────────────────────────────────
-  static const toolsTitle = 'Teacher tools';
+  static String get toolsTitle => _t.sessionToolsTitle;
   static String consoleStatus(int hands, int people) =>
       '${handsWaiting(hands)} ${SessionText.people(people)}';
-  static const invite = 'Invite students';
-  static const endClass = 'End class for everyone, asks to confirm';
-  static const peopleTitle = 'Participants and raised hands';
-  static String handQueue(int hands) => 'Raised hands queue, ${handsWaiting(hands).replaceAll('.', '')}';
-  static String participantList(int count) =>
-      'Participants list, ${SpokenFormat.count(count, 'person', 'people')}';
-  static const summaryChoice = 'Hear classroom summary';
-  static const participantsTitle = 'Participants';
+  static String get invite => _t.sessionInvite;
+  static String get endClass => _t.sessionEndClass;
+  static String get peopleTitle => _t.sessionPeopleTitle;
+  static String handQueue(int hands) => _t.sessionHandQueue(hands);
+  static String participantList(int count) => _t.sessionParticipantList(count);
+  static String get summaryChoice => _t.sessionSummaryChoice;
+  static String get participantsTitle => _t.sessionParticipantsTitle;
 
   // ─── Who is in the class (students, key 7) ──────────────────────────────
-  static const membersTitle = 'People in the class';
-  static const membersButton = '7: Who is in class';
-  static String membersLabel(int count) =>
-      'Who is in the class. ${people(count)} Select a person to hear details';
-  static const hearDetails = 'Hear details';
-  static String muteParticipant(String name) => 'Mute $name';
+  static String get membersTitle => _t.sessionMembersTitle;
+  static String get membersButton => _t.sessionMembersButton;
+  static String membersLabel(int count) => _t.sessionMembersLabel(people(count));
+  static String get hearDetails => _t.sessionHearDetails;
+  static String muteParticipant(String name) => _t.sessionMuteParticipant(name);
   static String removeParticipant(String name) =>
-      'Remove $name from the class, asks to confirm';
-  static const participantGone = 'That participant has left the class.';
-  static const noOtherParticipants = 'Nobody else is in the class yet.';
+      _t.sessionRemoveParticipant(name);
+  static String get participantGone => _t.sessionParticipantGone;
+  static String get noOtherParticipants => _t.sessionNoOtherParticipants;
 
   // ─── Legacy chat panel and participant tile ──────────────────────────────
-  static const readLatest = 'Read latest message';
-  static const chatMessage = 'Chat message';
-  static const sendMessage = 'Send message';
+  static String get readLatest => _t.chatReadLatest;
+  static String get chatMessage => _t.chatMessageLabel;
+  static String get sendMessage => _t.chatSendMessage;
   static String said(String sender, String text, String? delivery) =>
-      '$sender said: $text${delivery == null ? '' : '. $delivery'}';
+      delivery == null
+      ? _t.chatSaid(sender, text)
+      : _t.chatSaidDelivery(sender, text, delivery);
   static String latestLine(String sender, String text, String? delivery) =>
-      '$sender: $text${delivery == null ? '' : '\nDelivery status: $delivery.'}';
+      delivery == null
+      ? _t.chatMessageLine(sender, text)
+      : _t.chatLatestLineDelivery(sender, text, delivery);
   static String tileSummary({
     required String name,
     required bool raisedHand,
@@ -586,12 +560,13 @@ abstract final class SessionText {
     required bool speaking,
   }) => [
     name,
-    if (raisedHand) 'hand raised',
-    muted ? 'muted' : 'unmuted',
-    if (speaking) 'speaking',
+    if (raisedHand) _t.sessionStateHandRaised,
+    muted ? _t.sessionStateMuted : _t.sessionStateUnmuted,
+    if (speaking) _t.sessionStateSpeaking,
   ].join(', ');
   static String tileRemoveMessage(String name) =>
-      '$name will be removed from this class and returned to their dashboard.';
-  static String unmuteParticipant(String name) => 'Unmute $name';
-  static String removeFromClass(String name) => 'Remove $name from class';
+      _t.sessionTileRemoveMessage(name);
+  static String unmuteParticipant(String name) =>
+      _t.sessionUnmuteParticipant(name);
+  static String removeFromClass(String name) => _t.sessionRemoveFromClass(name);
 }

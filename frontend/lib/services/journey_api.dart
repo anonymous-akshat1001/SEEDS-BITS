@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import '../l10n/speech.dart';
 import 'api_service.dart';
 import 'journey_models.dart';
 
@@ -45,10 +46,7 @@ class JourneyApi {
         _ => http.post(uri, headers: headers, body: encoded),
       }.timeout(_timeout);
     } on Exception {
-      throw const JourneyApiException(
-        'No connection to the school server. Check your internet and try again.',
-        network: true,
-      );
+      throw JourneyApiException(Speech.t.commonNoConnection, network: true);
     }
     Object? decoded;
     try {
@@ -61,31 +59,28 @@ class JourneyApi {
     final detail = decoded is Map && decoded['detail'] is String
         ? decoded['detail'] as String
         : null;
+    final t = Speech.t;
     throw JourneyApiException(switch (code) {
-      409 => detail ?? 'This journey changed. Refresh and try again.',
-      401 => 'Your sign-in expired. Sign in again.',
-      403 => detail ?? 'You do not have permission to do that.',
-      404 => 'This journey is no longer available.',
-      422 => 'Some of the information could not be accepted. Check it and try again.',
-      >= 500 => 'The school server had a problem. Try again later.',
-      _ => 'The request did not succeed. Try again.',
+      409 => detail ?? t.journeyErrorChanged,
+      401 => t.journeyErrorSignInExpired,
+      403 => detail ?? t.journeyErrorPermission,
+      404 => t.journeyErrorNotAvailable,
+      422 => t.journeyErrorInvalid,
+      >= 500 => t.journeyErrorServer,
+      _ => t.journeyErrorRequestFailed,
     }, statusCode: code);
   }
 
   Map<String, dynamic> _object(Object? value) {
     if (value is Map<String, dynamic>) return value;
-    throw const JourneyApiException(
-      'The server response could not be read. Refresh before trying again.',
-    );
+    throw JourneyApiException(Speech.t.journeyErrorResponseUnreadable);
   }
 
   JourneyDraft _journey(Object? value) {
     try {
       return JourneyDraft.parse(_object(value)['journey']);
     } on FormatException {
-      throw const JourneyApiException(
-        'The saved journey could not be read. Refresh before trying again.',
-      );
+      throw JourneyApiException(Speech.t.journeyErrorSavedUnreadable);
     }
   }
 
@@ -100,7 +95,7 @@ class JourneyApi {
     );
     final list = data['journeys'];
     if (list is! List) {
-      throw const JourneyApiException('The journey list could not be read.');
+      throw JourneyApiException(Speech.t.journeyErrorListUnreadable);
     }
     return list.map(JourneyDraft.parse).toList();
   }
@@ -138,9 +133,7 @@ class JourneyApi {
     );
     if (saved.journeyId != journey.journeyId ||
         saved.revision != journey.revision + 1) {
-      throw const JourneyApiException(
-        'The saved journey did not match. Refresh before trying again.',
-      );
+      throw JourneyApiException(Speech.t.journeyErrorMismatch);
     }
     return saved;
   }
@@ -156,7 +149,7 @@ class JourneyApi {
             .toList(),
       );
     } on FormatException {
-      throw const JourneyApiException('The journey preview could not be read.');
+      throw JourneyApiException(Speech.t.journeyErrorPreviewUnreadable);
     }
   }
 
@@ -202,7 +195,7 @@ class JourneyApi {
   ) async {
     final data = await _send('GET', '/audio/list?subject_id=$subjectId');
     if (data is! List) {
-      throw const JourneyApiException('The recording list could not be read.');
+      throw JourneyApiException(Speech.t.journeyErrorRecordingsUnreadable);
     }
     return [
       for (final item in data)
@@ -222,7 +215,7 @@ class JourneyApi {
       '/question-bank?class_id=$classId&subject_id=$subjectId',
     );
     if (data is! List) {
-      throw const JourneyApiException('The question bank could not be read.');
+      throw JourneyApiException(Speech.t.journeyErrorBankUnreadable);
     }
     final questions = <JourneyStep>[];
     for (final item in data) {
@@ -262,12 +255,12 @@ class JourneyApi {
     final data = _object(await _send('GET', '/student/journeys'));
     final list = data['journeys'];
     if (list is! List) {
-      throw const JourneyApiException('The journey list could not be read.');
+      throw JourneyApiException(Speech.t.journeyErrorListUnreadable);
     }
     try {
       return list.map(StudentJourneySummary.parse).toList();
     } on FormatException {
-      throw const JourneyApiException('The journey list could not be read.');
+      throw JourneyApiException(Speech.t.journeyErrorListUnreadable);
     }
   }
 
@@ -276,7 +269,7 @@ class JourneyApi {
     try {
       return JourneySnapshot.parse(data['snapshot']);
     } on FormatException {
-      throw const JourneyApiException('This journey could not be read.');
+      throw JourneyApiException(Speech.t.journeyErrorJourneyUnreadable);
     }
   }
 

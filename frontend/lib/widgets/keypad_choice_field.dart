@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../l10n/speech.dart';
 import '../services/tts_service.dart';
 import '../utils/ui_utils.dart';
 import 'key_instruction_wrapper.dart';
@@ -43,8 +44,14 @@ class KeypadChoiceField<T> extends StatelessWidget {
     String Function(T) nameOf,
   ) {
     final index = values.indexOf(value);
-    return '$label: ${nameOf(value)}'
-        '${values.length > 1 && index >= 0 ? ', ${index + 1} of ${values.length}' : ''}';
+    return values.length > 1 && index >= 0
+        ? Speech.t.uiChoiceValuePosition(
+            label,
+            nameOf(value),
+            '${index + 1}',
+            '${values.length}',
+          )
+        : Speech.t.uiChoiceValue(label, nameOf(value));
   }
 
   /// Moves [delta] steps with wrap-around, then announces the new value.
@@ -70,8 +77,7 @@ class KeypadChoiceField<T> extends StatelessWidget {
 
   KeypadFocusTarget get target => KeypadFocusTarget(
     node: focusNode,
-    label:
-        '${describe(label, values, value, nameOf)}. Use left or right to change',
+    label: Speech.t.uiChoiceChange(describe(label, values, value, nameOf)),
     onActivate: () => _move(1),
     onDecrease: () => _move(-1),
     onIncrease: () => _move(1),
@@ -89,10 +95,13 @@ class KeypadChoiceField<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final text = values.isEmpty ? '$label: none' : '$label: ${nameOf(values[_index])}';
+    final text = Speech.t.uiChoiceValue(
+      label,
+      values.isEmpty ? Speech.t.uiNone : nameOf(values[_index]),
+    );
     return Semantics(
       label: label,
-      value: values.isEmpty ? 'none' : nameOf(values[_index]),
+      value: values.isEmpty ? Speech.t.uiNone : nameOf(values[_index]),
       increasedValue: values.length > 1
           ? nameOf(values[(_index + 1) % values.length])
           : null,
@@ -113,7 +122,9 @@ class KeypadChoiceField<T> extends StatelessWidget {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: focused ? UIUtils.focusRingColor : UIUtils.cardBorderColor,
+                  color: focused
+                      ? UIUtils.focusRingColor
+                      : UIUtils.cardBorderColor,
                   width: focused ? 3 : 2,
                 ),
               ),
@@ -121,7 +132,7 @@ class KeypadChoiceField<T> extends StatelessWidget {
                 children: [
                   ExcludeFocus(
                     child: IconButton(
-                      tooltip: 'Previous $label',
+                      tooltip: Speech.t.uiPreviousOf(label),
                       onPressed: enabled ? () => _move(-1) : null,
                       icon: const Icon(Icons.chevron_left),
                     ),
@@ -130,12 +141,15 @@ class KeypadChoiceField<T> extends StatelessWidget {
                     child: Text(
                       text,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                   ExcludeFocus(
                     child: IconButton(
-                      tooltip: 'Next $label',
+                      tooltip: Speech.t.uiNextOf(label),
                       onPressed: enabled ? () => _move(1) : null,
                       icon: const Icon(Icons.chevron_right),
                     ),

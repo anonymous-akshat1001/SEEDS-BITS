@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../l10n/speech.dart';
 import '../services/feedback_cues.dart';
 import '../services/tts_service.dart';
 import 'key_instruction_wrapper.dart';
@@ -109,7 +110,7 @@ class _KeypadPagedListState<T> extends State<KeypadPagedList<T>> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted && generation == _generation && _loading) {
         unawaited(FeedbackCues.play(Cue.loading));
-        _announce('Loading ${widget.title}. Press 0 to go back.');
+        _announce(Speech.t.uiListLoading(widget.title));
       }
     });
     try {
@@ -131,20 +132,25 @@ class _KeypadPagedListState<T> extends State<KeypadPagedList<T>> {
         _failedQuery = null;
         _loading = false;
       });
+      final t = Speech.t;
       _announce(
-        '${widget.title}. Page ${index + 1}. '
-        '${page.items.isEmpty ? 'No matching items.' : [for (var i = 0; i < page.items.length; i++) 'Press ${i + 1} for ${widget.labelOf(page.items[i])}.'].join(' ')} '
-        'Press 6 for list options, including refresh. Press 7 for the previous page. '
-        'Press 8 to search all items. Press 9 for the next page. Press 0 to go back. '
-        'Use D-pad up and down to move between items and page controls, and OK to select. '
-        'Press star to repeat help. Press hash to stop speech.',
+        [
+          t.uiListPage(widget.title, '${index + 1}'),
+          page.items.isEmpty
+              ? t.uiListNoMatches
+              : [
+                  for (var i = 0; i < page.items.length; i++)
+                    t.uiPressFor('${i + 1}', widget.labelOf(page.items[i])),
+                ].join(' '),
+          t.uiListHelp,
+        ].join(' '),
       );
     } on Exception catch (error) {
       if (!mounted || generation != _generation) return;
       debugPrint('[PAGED LIST] Load failed (${error.runtimeType}).');
       final message = error is KeypadListException
           ? error.message
-          : 'This page could not be loaded. Press 6 for retry options. Your previous page is kept.';
+          : Speech.t.uiListLoadFailed;
       setState(() {
         _failedQuery = query;
         _error = message;
@@ -156,14 +162,14 @@ class _KeypadPagedListState<T> extends State<KeypadPagedList<T>> {
 
   void _select(int index) {
     if (_loading) {
-      _announce('Loading. Please wait, or press 0 to go back.');
+      _announce(Speech.t.uiListLoadingWait);
       return;
     }
     final page = _page;
     if (page != null && index < page.items.length) {
       widget.onSelected(page.items[index]);
     } else {
-      _announce('No item is assigned to ${index + 1} on this page.');
+      _announce(Speech.t.uiListNoItem('${index + 1}'));
     }
   }
 
@@ -171,13 +177,13 @@ class _KeypadPagedListState<T> extends State<KeypadPagedList<T>> {
     if (_loading) return;
     if (!next && _index == 0) {
       unawaited(FeedbackCues.play(Cue.endOfList));
-      _announce('This is the first page.');
+      _announce(Speech.t.uiListFirstPage);
       return;
     }
     final cursor = next ? _page?.nextCursor : _cursors[_index - 1];
     if (next && cursor == null) {
       unawaited(FeedbackCues.play(Cue.endOfList));
-      _announce('This is the last page.');
+      _announce(Speech.t.uiListLastPage);
       return;
     }
     final index = _index + (next ? 1 : -1);
@@ -204,11 +210,11 @@ class _KeypadPagedListState<T> extends State<KeypadPagedList<T>> {
     final input = TextEditingController(text: _search);
     final route = MaterialPageRoute<String>(
       builder: (context) => KeypadTextStep(
-        title: 'Search ${widget.title}',
-        label: 'Search all available items',
+        title: Speech.t.uiListSearchTitle(widget.title),
+        label: Speech.t.uiListSearchLabel,
         controller: input,
         validate: (value) => value.trim().length > 200
-            ? 'Use at most 200 characters for search.'
+            ? Speech.t.uiListSearchTooLong
             : null,
         onContinue: (value) async => Navigator.pop(context, value.trim()),
       ),
@@ -239,25 +245,28 @@ class _KeypadPagedListState<T> extends State<KeypadPagedList<T>> {
               action();
             }
 
+            final t = Speech.t;
             return NumberedMenu(
-              title: 'List options',
+              title: t.uiListOptions,
               choices: [
                 NumberedChoice(
-                  label: 'Search',
+                  label: t.uiListSearch,
                   onSelected: () => run(() => unawaited(_openSearch())),
                 ),
                 NumberedChoice(
-                  label: 'Clear search',
+                  label: t.uiListClearSearch,
                   onSelected: () =>
                       run(() => unawaited(_load(const KeypadListQuery(), 0))),
                 ),
                 NumberedChoice(
-                  label: _failedQuery == null ? 'Refresh this page' : 'Retry',
+                  label: _failedQuery == null
+                      ? t.uiListRefreshPage
+                      : t.uiListRetry,
                   onSelected: () => run(_retry),
                 ),
                 if (widget.onFilters != null)
                   NumberedChoice(
-                    label: 'Filters',
+                    label: t.uiListFilters,
                     onSelected: () => run(widget.onFilters!),
                   ),
               ],
@@ -279,20 +288,20 @@ class _KeypadPagedListState<T> extends State<KeypadPagedList<T>> {
 
   @override
   Widget build(BuildContext context) {
+    final t = Speech.t;
     final items = _page?.items ?? <T>[];
     final controls = <int, (String, VoidCallback)>{
-      0: ('Back', _back),
-      6: ('List options', _options),
-      7: ('Previous page', () => _move(false)),
-      8: ('Search all items', () => unawaited(_openSearch())),
-      9: ('Next page', () => _move(true)),
+      0: (t.uiBack, _back),
+      6: (t.uiListOptions, _options),
+      7: (t.uiListPreviousPage, () => _move(false)),
+      8: (t.uiListSearchAll, () => unawaited(_openSearch())),
+      9: (t.uiListNextPage, () => _move(true)),
     };
     return KeypadInstructionWrapper(
       interactionPolicy: KeypadInteractionPolicy.numbered,
-      screenName: '${widget.title}. Page ${_index + 1}',
+      screenName: t.uiListScreenName(widget.title, '${_index + 1}'),
       introduction: _error,
-      navigationSections:
-          'items, list options, previous page, search, next page and back',
+      navigationSections: t.uiListSections,
       autoPlay: false,
       labels: {
         for (var index = 0; index < items.length; index++)
@@ -329,22 +338,22 @@ class _KeypadPagedListState<T> extends State<KeypadPagedList<T>> {
                 Semantics(
                   header: true,
                   child: Text(
-                    '${widget.title}. Page ${_index + 1}',
+                    t.uiListScreenName(widget.title, '${_index + 1}'),
                     style: Theme.of(context).textTheme.headlineSmall,
                   ),
                 ),
-                if (_search.isNotEmpty) Text('Search: $_search'),
-                if (_loading) const Text('Loading. Press 0 to go back.'),
+                if (_search.isNotEmpty) Text(t.uiListSearchValue(_search)),
+                if (_loading) Text(t.uiListLoadingShort),
                 if (_error != null)
                   Semantics(liveRegion: true, child: Text(_error!)),
                 if (!_loading && _page != null && items.isEmpty)
-                  const Text('No matching items.'),
+                  Text(t.uiListNoMatches),
                 for (var index = 0; index < items.length; index++)
                   ElevatedButton(
                     focusNode: _nodes[index + 1],
                     onPressed: _loading ? null : () => _select(index),
                     child: Text(
-                      '${index + 1}: ${widget.labelOf(items[index])}',
+                      t.uiKeyedLabel('${index + 1}', widget.labelOf(items[index])),
                     ),
                   ),
                 for (final entry in controls.entries)
@@ -353,9 +362,9 @@ class _KeypadPagedListState<T> extends State<KeypadPagedList<T>> {
                     onPressed: !_loading || entry.key == 0
                         ? entry.value.$2
                         : null,
-                    child: Text('${entry.key}: ${entry.value.$1}'),
+                    child: Text(t.uiKeyedLabel('${entry.key}', entry.value.$1)),
                   ),
-                const Text('*: Help. #: Stop app speech.'),
+                Text(t.uiKeypadFooter),
               ],
             ),
           ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../announcers/quiz_text.dart';
+import '../l10n/speech.dart';
 import '../services/quiz_speech_speed.dart';
 import '../services/tts_service.dart';
 import '../utils/ui_utils.dart';
@@ -65,8 +66,7 @@ class QuizSpeechSpeedControl extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
-                  'Quiz speech speed: '
-                  '${TtsService.formatSpeedMultiple(rate)}×',
+                  Speech.t.quizSpeedValue(TtsService.formatSpeedMultiple(rate)),
                   style: TextStyle(
                     color: UIUtils.textColor,
                     fontSize: UIUtils.fontSize(context, 16),

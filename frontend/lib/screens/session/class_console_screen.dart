@@ -69,7 +69,7 @@ class ClassPeopleScreen extends StatelessWidget {
     );
     if (chosen == null || !context.mounted) return;
     final id = chosen['id'] as int;
-    final name = chosen['name'] as String? ?? 'Participant';
+    final name = chosen['name'] as String? ?? SessionText.participantFallback;
     final action = await JourneyPrompts.pick(
       context,
       title: name,

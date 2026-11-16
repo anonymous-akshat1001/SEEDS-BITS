@@ -18,6 +18,12 @@ controls when more text needs to be entered.
 On Android, leaving text input also restarts the native input connection so
 T9 keyboards cannot keep consuming shortcut keys after the field loses focus.
 
+## Speech languages
+
+All text spoken by app speech lives in `lib/l10n/app_<language>.arb`
+(English, Hindi, Kannada, Telugu, Bengali). Users choose the language in
+Settings. To add or edit translations, see [lib/l10n/README.md](lib/l10n/README.md).
+
 A new Flutter project.
 
 ## Getting Started

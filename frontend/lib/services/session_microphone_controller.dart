@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import '../l10n/speech.dart';
 import 'api_service.dart';
 
 class SessionMicrophoneController extends ChangeNotifier {
@@ -30,15 +31,12 @@ class SessionMicrophoneController extends ChangeNotifier {
 
   Future<ApiResult<Map<String, dynamic>>> toggle() async {
     if (_closed) {
-      return _failure('The class has closed. No microphone action was sent.');
+      return _failure(Speech.t.sessionMicClassClosed);
     }
-    if (_pending) return _failure('Waiting for microphone confirmation.');
+    if (_pending) return _failure(Speech.t.sessionWaitingMic);
     final nextMuted = !_muted;
     if (!nextMuted && !isAvailable()) {
-      return _failure(
-        'Microphone access is unavailable. Check microphone '
-        'permission and rejoin the class before trying to speak.',
-      );
+      return _failure(Speech.t.sessionMicUnavailableRejoin);
     }
     final revision = _remoteMuteRevision;
     _pending = true;
@@ -50,20 +48,14 @@ class SessionMicrophoneController extends ChangeNotifier {
       notifyListeners();
       final result = await sendMute(nextMuted);
       if (_closed) {
-        return _failure('The class closed before microphone confirmation.');
+        return _failure(Speech.t.sessionMicClosedBeforeConfirm);
       }
       if (result.isSuccess && !nextMuted) {
         if (!isAvailable()) {
-          return _failure(
-            'Microphone access is no longer available. Rejoin '
-            'the class before trying to speak.',
-          );
+          return _failure(Speech.t.sessionMicNoLongerAvailable);
         }
         if (revision != _remoteMuteRevision) {
-          return _failure(
-            'Your microphone stayed muted because the class '
-            'mute state changed. Select Unmute when you are ready to speak.',
-          );
+          return _failure(Speech.t.sessionMicStayedMuted);
         }
         setCaptureEnabled(true);
         _muted = false;

@@ -1,12 +1,16 @@
+import '../l10n/speech.dart';
+
 /// Spoken text for sign-in, registration and password screens.
 abstract final class AuthText {
-  static const loginSuccessful = 'Login successful';
-  static String roleAlreadySelected(String role) => '$role account already selected';
-  static String roleSelected(String role) => '$role account selected';
-  static String recoveryStep(int number, String step) => 'Step $number. $step';
-  static const enterPhone = 'Enter phone number';
-  static const enterPassword = 'Enter password';
-  static const enterName = 'Enter name';
-  static const registering = 'Registering, please wait.';
-  static const passwordChanged = 'Password changed. Signed in.';
+  static String get loginSuccessful => Speech.t.authLoginSuccessful;
+  static String roleAlreadySelected(String role) =>
+      Speech.t.authRoleAlreadySelected(role);
+  static String roleSelected(String role) => Speech.t.authRoleSelected(role);
+  static String recoveryStep(int number, String step) =>
+      Speech.t.authRecoveryStep('$number', step);
+  static String get enterPhone => Speech.t.authEnterPhone;
+  static String get enterPassword => Speech.t.authEnterPassword;
+  static String get enterName => Speech.t.authEnterName;
+  static String get registering => Speech.t.authRegistering;
+  static String get passwordChanged => Speech.t.authPasswordChanged;
 }

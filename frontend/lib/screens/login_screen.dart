@@ -18,6 +18,7 @@ import '../utils/keypad_actions.dart';
 import '../widgets/keypad_confirmation_dialog.dart';
 import '../widgets/sim_suggestion_dialog.dart';
 import '../announcers/auth_text.dart';
+import '../l10n/speech.dart';
 
 // Defining the Login screen widget as a statefu widget - loading state/input/switch toggle reloads UI
 class LoginScreen extends StatefulWidget {
@@ -63,7 +64,7 @@ class _LoginScreenState extends State<LoginScreen> {
   // SIM detection state
   List<SimCard> _simCards = [];
   bool _simDetecting = false; // true while detection is in progress
-  String _simStatusMessage = "SIM phone-number autofill is optional";
+  String _simStatusMessage = Speech.t.authSimAutofillOptional;
 
   /// Strips the leading '91' country code from Indian phone numbers
   String _stripCountryCode(String number) {
@@ -88,7 +89,7 @@ class _LoginScreenState extends State<LoginScreen> {
         if (!mounted) return;
         _keypadController.focusAndAnnounce(
           _phoneFocus,
-          'Registered. Now log in. Phone number field. Press star for help.',
+          Speech.t.authRegisteredNowLogIn,
         );
       });
     }
@@ -116,8 +117,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (mounted) {
         setState(() {
           _simDetecting = false;
-          _simStatusMessage =
-              "SIM suggestions are unavailable on this device. Enter the phone number manually.";
+          _simStatusMessage = Speech.t.authSimUnavailableOnDevice;
         });
         await TtsService.speak(_simStatusMessage);
       }
@@ -129,19 +129,17 @@ class _LoginScreenState extends State<LoginScreen> {
       final continueWithSim = await showDialog<bool>(
         context: context,
         barrierDismissible: false,
-        builder: (_) => const KeypadConfirmationDialog(
-          title: 'Optional SIM autofill',
-          message:
-              'Read optional phone-number suggestions from this device? You will choose a suggestion before it replaces the phone field. This does not verify who owns an account. SIM access is never required for login, registration, Wi-Fi, or joining a session.',
-          confirmLabel: 'Read SIM suggestions',
+        builder: (_) => KeypadConfirmationDialog(
+          title: Speech.t.authSimDialogTitle,
+          message: Speech.t.authSimDialogMessage,
+          confirmLabel: Speech.t.authSimDialogConfirm,
         ),
       );
       if (continueWithSim != true) {
         if (!mounted) return;
         setState(() {
           _simDetecting = false;
-          _simStatusMessage =
-              'SIM autofill skipped. Enter the phone number manually.';
+          _simStatusMessage = Speech.t.authSimAutofillSkipped;
         });
         return;
       }
@@ -154,7 +152,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (mounted) {
         setState(() {
           _simDetecting = true;
-          _simStatusMessage = 'Detecting SIM card...';
+          _simStatusMessage = Speech.t.authSimDetecting;
         });
       }
 
@@ -168,13 +166,10 @@ class _LoginScreenState extends State<LoginScreen> {
         if (mounted) {
           setState(() {
             _simDetecting = false;
-            _simStatusMessage =
-                "SIM autofill unavailable. Enter the phone number manually.";
+            _simStatusMessage = Speech.t.authSimAutofillUnavailable;
           });
         }
-        TtsService.speak(
-          "SIM autofill unavailable. Enter the phone number manually.",
-        );
+        TtsService.speak(Speech.t.authSimAutofillUnavailable);
         return;
       }
 
@@ -211,8 +206,7 @@ class _LoginScreenState extends State<LoginScreen> {
         setState(() {
           _simCards = [];
           _simDetecting = false;
-          _simStatusMessage =
-              "No SIM card found. Enter the phone number manually.";
+          _simStatusMessage = Speech.t.authSimNoneFound;
         });
         TtsService.speak(_simStatusMessage);
       } else {
@@ -220,12 +214,11 @@ class _LoginScreenState extends State<LoginScreen> {
         setState(() {
           _simCards = simCards;
           _simDetecting = false;
-          _simStatusMessage =
-              "${simCards.length} SIM cards detected. Please choose one.";
+          _simStatusMessage = Speech.t.authSimCardsDetected(
+            '${simCards.length}',
+          );
         });
-        TtsService.speak(
-          "${simCards.length} SIM cards detected. Please choose one.",
-        );
+        TtsService.speak(Speech.t.authSimCardsDetected('${simCards.length}'));
         await _showSimSelectionDialog(simCards);
       }
     } on PlatformException catch (error) {
@@ -253,8 +246,7 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!mounted) return;
     setState(() {
       _simDetecting = false;
-      _simStatusMessage =
-          'SIM suggestion unavailable. Enter the phone number manually.';
+      _simStatusMessage = Speech.t.authSimSuggestionUnavailable;
     });
     await TtsService.speak(_simStatusMessage);
   }
@@ -268,8 +260,10 @@ class _LoginScreenState extends State<LoginScreen> {
         options: [
           for (var i = 0; i < cards.length; i++)
             (
-              label:
-                  'SIM ${i + 1}, ${cards[i].carrierName ?? 'Unknown carrier'}',
+              label: Speech.t.authSimOptionLabel(
+                '${i + 1}',
+                cards[i].carrierName ?? Speech.t.authSimUnknownCarrier,
+              ),
               number: _stripCountryCode(cards[i].number ?? ''),
             ),
         ],
@@ -278,12 +272,9 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!mounted || selection == null) return;
     setState(() {
       phoneCtrl.text = selection;
-      _simStatusMessage =
-          'Selected suggestion filled. This is not proof of account ownership.';
+      _simStatusMessage = Speech.t.authSimSelectedFilled;
     });
-    await TtsService.speak(
-      'Phone-number suggestion filled. Enter your password to sign in. No sign-in was sent.',
-    );
+    await TtsService.speak(Speech.t.authSimSuggestionFilledSpoken);
   }
 
   // defining the login function
@@ -293,22 +284,22 @@ class _LoginScreenState extends State<LoginScreen> {
     final password = passCtrl.text;
 
     if (phone.isEmpty) {
-      _setLoginError('Enter your phone number.', fix: _phoneFocus);
+      _setLoginError(Speech.t.authErrorEnterPhone, fix: _phoneFocus);
       return;
     }
 
     if (!RegExp(r'^\d{10}$').hasMatch(phone)) {
-      _setLoginError('Enter a valid 10-digit phone number.', fix: _phoneFocus);
+      _setLoginError(Speech.t.authErrorInvalidPhone, fix: _phoneFocus);
       return;
     }
 
     if (password.isEmpty) {
-      _setLoginError('Enter your password.');
+      _setLoginError(Speech.t.authErrorEnterPassword);
       return;
     }
 
     if (password.length < 6) {
-      _setLoginError('Password must be at least 6 characters.');
+      _setLoginError(Speech.t.authErrorPasswordTooShort);
       return;
     }
 
@@ -336,7 +327,7 @@ class _LoginScreenState extends State<LoginScreen> {
       final role = data['role'];
 
       if (accessToken == null || userId == null || role == null) {
-        _setLoginError("Invalid response from server");
+        _setLoginError(Speech.t.authErrorInvalidServerResponse);
         debugPrint("Login response missing required fields");
         return;
       }
@@ -345,8 +336,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (roleText != _selectedRole) {
         _setLoginError(
-          'This phone number is not registered as a $_selectedRole account. '
-          'Press 1, 2 or 3 to choose the account type.',
+          _selectedRole == 'admin'
+              ? Speech.t.authErrorNotRegisteredAdmin
+              : _selectedRole == 'teacher'
+              ? Speech.t.authErrorNotRegisteredTeacher
+              : Speech.t.authErrorNotRegisteredStudent,
           fix: _roleFocus,
         );
         return;
@@ -385,9 +379,7 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       }
     } on FormatException {
-      _setLoginError(
-        'The sign-in response could not be verified. Please try again.',
-      );
+      _setLoginError(Speech.t.authErrorResponseNotVerified);
     } catch (e) {
       _setLoginError(ApiService.mapFailure(error: e, context: 'login').message);
     } finally {
@@ -407,17 +399,17 @@ class _LoginScreenState extends State<LoginScreen> {
       _errorOnPhone = identical(target, _phoneFocus);
       isLoading = false;
     });
-    final fieldName = identical(target, _phoneFocus)
-        ? 'phone number field'
-        : identical(target, _roleFocus)
-        ? 'account type'
-        : 'password field';
     // An empty override keeps the focus move silent so it cannot cut off
     // the critical error below.
     _keypadController.focusAndAnnounce(target, ' ');
-    final sentence = message.trimRight();
+    final trimmed = message.trimRight();
+    final sentence = '$trimmed${trimmed.endsWith('.') ? '' : '.'}';
     TtsService.speak(
-      '$sentence${sentence.endsWith('.') ? '' : '.'} Moved to $fieldName.',
+      identical(target, _phoneFocus)
+          ? Speech.t.authErrorMovedToPhone(sentence)
+          : identical(target, _roleFocus)
+          ? Speech.t.authErrorMovedToAccountType(sentence)
+          : Speech.t.authErrorMovedToPassword(sentence),
       priority: SpeechPriority.critical,
     );
   }
@@ -434,20 +426,17 @@ class _LoginScreenState extends State<LoginScreen> {
   void _moveRole(int direction) => _selectRole(_neighbourRole(direction));
 
   String _roleName(String role) {
-    if (role == 'admin') return 'Administrator';
+    if (role == 'admin') return Speech.t.authRoleAdministrator;
+    if (role == 'teacher') return Speech.t.authRoleTeacher;
+    if (role == 'student') return Speech.t.authRoleStudent;
     return '${role[0].toUpperCase()}${role.substring(1)}';
   }
 
-  static const _recoverySteps = [
-    'Ask your school administrator to reset your password. They must check '
-        'who you are in person. A phone number or SIM alone does not prove it. '
-        'Never send anyone your permanent password.',
-    'The administrator gives you a private 12-digit temporary password. '
-        'It works for 24 hours. Ask for a new one if it expires.',
-    'Sign in with your phone number and the temporary password, then choose '
-        'a new password.',
-    'After 10 wrong tries, sign-in pauses for 15 minutes. Recovery needs '
-        'internet. Files already on other phones are not removed instantly.',
+  static List<String> get _recoverySteps => [
+    Speech.t.authRecoveryStep1,
+    Speech.t.authRecoveryStep2,
+    Speech.t.authRecoveryStep3,
+    Speech.t.authRecoveryStep4,
   ];
 
   Future<void> _showRecoveryHelp() async {
@@ -459,22 +448,24 @@ class _LoginScreenState extends State<LoginScreen> {
     await showDialog<void>(
       context: context,
       builder: (dialogContext) => KeypadInstructionWrapper(
-        screenName: 'Password recovery help',
-        introduction:
-            '${_recoverySteps.length} short steps. Press down to hear each step.',
-        labels: const {0: 'Back to login'},
+        screenName: Speech.t.authRecoveryHelpTitle,
+        introduction: Speech.t.authRecoveryHelpIntro(
+          '${_recoverySteps.length}',
+        ),
+        labels: {0: Speech.t.authBackToLogin},
         actions: {0: () => Navigator.pop(dialogContext)},
         focusTargets: [
           for (var i = 0; i < _recoverySteps.length; i++)
             KeypadFocusTarget(
               node: stepNodes[i],
-              label: 'Step ${i + 1}. ${_recoverySteps[i]}',
-              onActivate: () =>
-                  TtsService.speak(AuthText.recoveryStep(i + 1, _recoverySteps[i])),
+              label: AuthText.recoveryStep(i + 1, _recoverySteps[i]),
+              onActivate: () => TtsService.speak(
+                AuthText.recoveryStep(i + 1, _recoverySteps[i]),
+              ),
             ),
           KeypadFocusTarget(
             node: close,
-            label: 'Back to login, button',
+            label: Speech.t.authBackToLoginButton,
             onActivate: () => Navigator.pop(dialogContext),
           ),
         ],
@@ -493,7 +484,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 Semantics(
                   header: true,
                   child: Text(
-                    'Password recovery help',
+                    Speech.t.authRecoveryHelpTitle,
                     style: TextStyle(
                       color: UIUtils.textColor,
                       fontSize: 20,
@@ -507,7 +498,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: Padding(
                       padding: const EdgeInsets.only(top: 10),
                       child: Text(
-                        '${i + 1}. ${_recoverySteps[i]}',
+                        Speech.t.authRecoveryStepListItem(
+                          '${i + 1}',
+                          _recoverySteps[i],
+                        ),
                         style: TextStyle(
                           color: UIUtils.textColor,
                           fontSize: 16,
@@ -520,7 +514,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   focusNode: close,
                   onPressed: () => Navigator.pop(dialogContext),
                   child: Text(
-                    '0: Back to login',
+                    Speech.t.authBackToLoginKey,
                     style: TextStyle(
                       color: UIUtils.accentColor,
                       fontSize: 16,
@@ -589,7 +583,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     if (selected)
                       Text(
-                        'Selected',
+                        Speech.t.authRoleRowSelected,
                         style: TextStyle(
                           color: UIUtils.onAccentColor,
                           fontSize: UIUtils.fontSize(context, 14),
@@ -609,8 +603,6 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final roleName = _roleName(_selectedRole);
-    final roleLabel =
-        'Account type: $roleName, selected. Press 1, 2 or 3 to change';
     OutlineInputBorder fieldBorder(Color color, double width) =>
         OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -627,62 +619,62 @@ class _LoginScreenState extends State<LoginScreen> {
     final simBusy = _simRequestPending || _simDetecting || isLoading;
 
     return KeypadInstructionWrapper(
-      screenName: 'Login Screen',
+      screenName: Speech.t.authLoginScreenName,
       initialFocusNode: widget.justRegistered ? _phoneFocus : null,
-      navigationSections:
-          'phone number, password, account type, login, registration, SIM suggestions and recovery help',
+      navigationSections: Speech.t.authLoginNavigationSections,
       labels: {
         ...loginKeyLabels,
-        6: 'Read optional SIM phone-number suggestions',
-        7: 'School-admin password recovery help',
+        6: Speech.t.authLoginKeySimLabel,
+        7: Speech.t.authLoginKeyRecoveryLabel,
       },
       navigationController: _keypadController,
       // Same order as the controls appear on screen, top to bottom.
       focusTargets: [
         KeypadFocusTarget(
           node: _phoneFocus,
-          label: 'Phone number field',
+          label: Speech.t.authPhoneNumberField,
           isTextField: true,
         ),
         KeypadFocusTarget(
           node: _passwordFocus,
-          label: 'Password field',
+          label: Speech.t.authPasswordField,
           isTextField: true,
         ),
         KeypadFocusTarget(
           node: _passwordVisibilityFocus,
-          label: _passwordVisible ? 'Hide password' : 'Show password',
+          label: _passwordVisible
+              ? Speech.t.authHidePassword
+              : Speech.t.authShowPassword,
           onActivate: () =>
               setState(() => _passwordVisible = !_passwordVisible),
         ),
         KeypadFocusTarget(
           node: _roleFocus,
-          label: '$roleLabel, or use left and right',
+          label: Speech.t.authRoleFieldNavLabel(roleName),
           onActivate: () => _moveRole(1),
           onDecrease: () => _moveRole(-1),
           onIncrease: () => _moveRole(1),
         ),
         KeypadFocusTarget(
           node: _submitFocus,
-          label: 'Login as $roleName, button',
+          label: Speech.t.authLoginAsButton(roleName),
           onActivate: isLoading ? null : _login,
           isEnabled: () => !isLoading,
         ),
         KeypadFocusTarget(
           node: _registerFocus,
-          label: 'Register a new account, button',
+          label: Speech.t.authRegisterNewAccountButton,
           onActivate: () => Navigator.pushNamed(context, '/register'),
         ),
         KeypadFocusTarget(
           node: _simFocus,
-          label:
-              'Read optional SIM phone-number suggestions. Manual entry always works.',
+          label: Speech.t.authSimSuggestionsTargetLabel,
           isEnabled: () => !_simRequestPending && !_simDetecting && !isLoading,
           onActivate: _initMobileNumber,
         ),
         KeypadFocusTarget(
           node: _recoveryFocus,
-          label: 'Forgot password? School-admin recovery help',
+          label: Speech.t.authForgotPasswordTargetLabel,
           onActivate: _showRecoveryHelp,
         ),
       ],
@@ -709,7 +701,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     Semantics(
                       header: true,
                       child: Text(
-                        'Welcome Back',
+                        Speech.t.authWelcomeBack,
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: UIUtils.fontSize(context, 22),
@@ -733,7 +725,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                           child: Text(
-                            'Registered. Now log in.',
+                            Speech.t.authRegisteredBanner,
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               color: UIUtils.successColor,
@@ -756,7 +748,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       },
                       style: fieldStyle,
                       decoration: InputDecoration(
-                        label: const Text('Phone number'),
+                        label: Text(Speech.t.authPhoneNumber),
                         labelStyle: labelStyle,
                         filled: true,
                         fillColor: UIUtils.cardColor,
@@ -805,7 +797,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       },
                       style: fieldStyle,
                       decoration: InputDecoration(
-                        label: const Text('Password'),
+                        label: Text(Speech.t.authPassword),
                         labelStyle: labelStyle,
                         filled: true,
                         fillColor: UIUtils.cardColor,
@@ -832,8 +824,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             color: UIUtils.textColor,
                           ),
                           tooltip: _passwordVisible
-                              ? 'Hide password'
-                              : 'Show password',
+                              ? Speech.t.authHidePassword
+                              : Speech.t.authShowPassword,
                           onPressed: () => setState(
                             () => _passwordVisible = !_passwordVisible,
                           ),
@@ -864,8 +856,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       focusNode: _roleFocus,
                       child: Semantics(
                         container: true,
-                        label: 'Account type',
-                        value: '$roleName, selected. Press 1, 2 or 3 to change',
+                        label: Speech.t.authAccountType,
+                        value: Speech.t.authRoleFieldValue(roleName),
                         increasedValue: _roleName(_neighbourRole(1)),
                         decreasedValue: _roleName(_neighbourRole(-1)),
                         onIncrease: () => _moveRole(1),
@@ -874,12 +866,20 @@ class _LoginScreenState extends State<LoginScreen> {
                         excludeSemantics: true,
                         child: LayoutBuilder(
                           builder: (context, constraints) {
-                            const roles = [
-                              ('student', '1 Student', Icons.school_outlined),
-                              ('teacher', '2 Teacher', Icons.person_outline),
+                            final roles = [
+                              (
+                                'student',
+                                Speech.t.authRoleOptionStudent,
+                                Icons.school_outlined,
+                              ),
+                              (
+                                'teacher',
+                                Speech.t.authRoleOptionTeacher,
+                                Icons.person_outline,
+                              ),
                               (
                                 'admin',
-                                '3 Admin',
+                                Speech.t.authRoleOptionAdmin,
                                 Icons.admin_panel_settings_outlined,
                               ),
                             ];
@@ -960,7 +960,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: isLoading
                           ? Semantics(
                               liveRegion: true,
-                              label: 'Signing in, please wait',
+                              label: Speech.t.authSigningIn,
                               child: SizedBox(
                                 height: UIUtils.iconSize(context, 20),
                                 width: UIUtils.iconSize(context, 20),
@@ -971,7 +971,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             )
                           : Text(
-                              '4: Login as $roleName',
+                              Speech.t.authLoginAsKey(roleName),
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: UIUtils.fontSize(context, 16),
@@ -987,7 +987,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       onPressed: () =>
                           Navigator.pushNamed(context, '/register'),
                       child: Text(
-                        "5: Don't have an account? Register",
+                        Speech.t.authNoAccountRegisterKey,
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: UIUtils.fontSize(context, 16),
@@ -1055,7 +1055,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       focusNode: _simFocus,
                       onPressed: simBusy ? null : _initMobileNumber,
                       child: Text(
-                        '6: Read optional SIM suggestions',
+                        Speech.t.authReadSimSuggestionsKey,
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: UIUtils.fontSize(context, 16),
@@ -1069,7 +1069,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       focusNode: _recoveryFocus,
                       onPressed: _showRecoveryHelp,
                       child: Text(
-                        '7: Forgot password? Recovery help',
+                        Speech.t.authForgotPasswordKey,
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: UIUtils.fontSize(context, 16),

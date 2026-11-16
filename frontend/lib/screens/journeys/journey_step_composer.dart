@@ -4,6 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import '../../l10n/speech.dart';
 import '../../services/message_center.dart';
 import '../../services/feedback_cues.dart';
 import '../../services/api_service.dart';
@@ -42,9 +43,8 @@ class JourneyStepComposer {
   }) async {
     final text = await JourneyPrompts.askText(
       context,
-      title: 'Narration',
-      label:
-          'Words the phone reads aloud, for example: Let us hear about some food today',
+      title: Speech.t.journeyKindNarration,
+      label: Speech.t.journeyNarrationLabel,
       initial: initial?.text ?? '',
       max: 2000,
     );
@@ -75,9 +75,10 @@ class JourneyStepComposer {
   /// goes back from option 1.
   static Future<List<String>?> _options(
     BuildContext context, {
-    required String noun,
+    required bool poll,
     List<String> initial = const [],
   }) async {
+    final t = Speech.t;
     final texts = [...initial.take(4)];
     var number = 1;
     var askMore = false;
@@ -86,9 +87,11 @@ class JourneyStepComposer {
       if (askMore) {
         final more = await JourneyPrompts.pick(
           context,
-          title: 'Add option $number?',
-          introduction: 'The $noun has ${number - 1} options so far.',
-          choices: ['Add option $number', 'No more options, continue'],
+          title: t.journeyAddOptionTitle('$number'),
+          introduction: poll
+              ? t.journeyPollOptionsSoFar('${number - 1}')
+              : t.journeyQuestionOptionsSoFar('${number - 1}'),
+          choices: [t.journeyAddOption('$number'), t.journeyNoMoreOptions],
         );
         if (!context.mounted) return null;
         askMore = false;
@@ -100,8 +103,8 @@ class JourneyStepComposer {
       }
       final text = await JourneyPrompts.askText(
         context,
-        title: 'Option $number',
-        label: 'Type option $number',
+        title: t.journeyOptionTitle('$number'),
+        label: t.journeyTypeOption('$number'),
         initial: number <= texts.length ? texts[number - 1] : '',
         max: 300,
       );
@@ -147,27 +150,28 @@ class JourneyStepComposer {
       MessageCenter.show(JourneyAnnouncer.nothingToReplay, speak: false);
       return (null, null);
     }
+    final t = Speech.t;
     final auto = JourneySteps.autoReplay(steps, position);
     final autoText = auto == null
-        ? 'Automatic: ask again without replaying'
-        : 'Automatic: replay from step ${auto + 1}, ${steps[auto].spokenName}';
+        ? t.journeyReplayAutoNone
+        : t.journeyReplayAutoFrom('${auto + 1}', steps[auto].spokenName);
     while (true) {
       if (!context.mounted) return (false, null);
       final choice = await JourneyPrompts.pick(
         context,
-        title: 'After a wrong answer',
-        introduction:
-            'When a student answers wrongly, which part should play again before they try once more?',
-        choices: [autoText, 'Choose a different step to replay'],
+        title: t.journeyAfterWrongTitle,
+        introduction: t.journeyAfterWrongIntro,
+        choices: [autoText, t.journeyReplayChooseStep],
       );
       if (choice == null) return (false, null);
       if (choice == 0) return (true, null);
       if (!context.mounted) return (false, null);
       final picked = await JourneyPrompts.choose<int>(
         context,
-        title: 'Replay from which step?',
+        title: t.journeyReplayWhichStep,
         items: content,
-        labelOf: (index) => 'Step ${index + 1}. ${steps[index].spokenName}',
+        labelOf: (index) =>
+            t.journeyStepLabel('${index + 1}', steps[index].spokenName),
       );
       // Back from the list returns to the automatic or choose question.
       if (picked != null) return (true, picked);
@@ -183,16 +187,20 @@ class JourneyStepComposer {
     required List<JourneyStep> steps,
     required int position,
   }) async {
+    final t = Speech.t;
     final replay = step.kind != JourneyStepKind.question
-        ? ''
+        ? null
         : step.replayFrom != null
-        ? ' After a wrong answer, step ${step.replayFrom! + 1} plays again.'
-        : ' After a wrong answer, it replays automatically.';
+        ? t.journeyReviewReplayFrom('${step.replayFrom! + 1}')
+        : t.journeyReviewReplayAuto;
     final choice = await JourneyPrompts.pick(
       context,
-      title: 'Check before saving',
-      introduction: '${JourneyAnnouncer.stepDetails(step)}$replay',
-      choices: ['Save this step', 'Start this step again'],
+      title: t.journeyCheckBeforeSaving,
+      introduction: [
+        JourneyAnnouncer.stepDetails(step),
+        ?replay,
+      ].join(' '),
+      choices: [t.journeySaveStep, t.journeyRestartStep],
     );
     if (choice == null) return (back: true, step: null);
     if (choice == 0) return (back: false, step: step);
@@ -236,8 +244,8 @@ class JourneyStepComposer {
       () async {
         final value = await JourneyPrompts.askText(
           context,
-          title: 'Question',
-          label: 'Type the question students will hear',
+          title: Speech.t.journeyKindQuestion,
+          label: Speech.t.journeyQuestionLabel,
           initial: text,
         );
         if (value == null) return false;
@@ -247,7 +255,7 @@ class JourneyStepComposer {
       () async {
         final value = await _options(
           context,
-          noun: 'question',
+          poll: false,
           initial: options,
         );
         if (value == null) return false;
@@ -258,13 +266,13 @@ class JourneyStepComposer {
       () async {
         final value = await JourneyPrompts.pick(
           context,
-          title: 'Which option is correct?',
+          title: Speech.t.journeyWhichCorrect,
           introduction: correct == null
               ? null
-              : 'Currently option ${correct! + 1} is correct.',
+              : Speech.t.journeyCurrentlyCorrect('${correct! + 1}'),
           choices: [
             for (var i = 0; i < options.length; i++)
-              'Option ${i + 1}: ${options[i]}',
+              Speech.t.journeyOptionChoice('${i + 1}', options[i]),
           ],
         );
         if (value == null) return false;
@@ -274,8 +282,8 @@ class JourneyStepComposer {
       () async {
         final value = await JourneyPrompts.askText(
           context,
-          title: 'Explanation',
-          label: 'What students hear after the right answer is revealed',
+          title: Speech.t.journeyExplanationTitle,
+          label: Speech.t.journeyExplanationLabel,
           initial: explanation,
           optional: true,
         );
@@ -318,9 +326,8 @@ class JourneyStepComposer {
       () async {
         final value = await JourneyPrompts.askText(
           context,
-          title: 'Poll question',
-          label:
-              'A question with no wrong answer, for example: Have you eaten rice this week?',
+          title: Speech.t.journeyPollQuestionTitle,
+          label: Speech.t.journeyPollQuestionLabel,
           initial: text,
         );
         if (value == null) return false;
@@ -328,7 +335,7 @@ class JourneyStepComposer {
         return true;
       },
       () async {
-        final value = await _options(context, noun: 'poll', initial: options);
+        final value = await _options(context, poll: true, initial: options);
         if (value == null) return false;
         options = value;
         return true;
@@ -375,9 +382,12 @@ class JourneyStepComposer {
       () async {
         final value = await JourneyPrompts.choose<JourneyStep>(
           context,
-          title: 'Question bank',
+          title: Speech.t.journeyQuestionBank,
           items: bank,
-          labelOf: (step) => '${step.text}. ${step.options.length} options.',
+          labelOf: (step) => Speech.t.journeyBankQuestionLabel(
+            step.text,
+            '${step.options.length}',
+          ),
         );
         if (value == null) return false;
         chosen = value;
@@ -418,11 +428,11 @@ class JourneyStepComposer {
       if (!context.mounted) return null;
       final choice = await JourneyPrompts.pick(
         context,
-        title: 'Add a recording',
+        title: Speech.t.journeyAddRecording,
         choices: [
-          'Choose from my recordings',
-          'Upload a recording file',
-          'Record a new recording',
+          Speech.t.journeyChooseMyRecordings,
+          Speech.t.journeyUploadRecordingFile,
+          Speech.t.journeyRecordNew,
         ],
       );
       if (choice == null || !context.mounted) return null;
@@ -456,7 +466,7 @@ class JourneyStepComposer {
       if (!context.mounted) return null;
       final picked = await JourneyPrompts.choose<({int id, String title})>(
         context,
-        title: 'My recordings',
+        title: Speech.t.journeyMyRecordings,
         items: recordings,
         labelOf: (recording) => recording.title,
       );
@@ -489,8 +499,8 @@ class JourneyStepComposer {
     final file = picked.files.first;
     final title = await JourneyPrompts.askText(
       context,
-      title: 'Recording name',
-      label: 'Name for this recording',
+      title: Speech.t.journeyRecordingName,
+      label: Speech.t.journeyRecordingNameLabel,
       initial: file.name.replaceAll(RegExp(r'\.[^.]+$'), ''),
       max: 160,
     );

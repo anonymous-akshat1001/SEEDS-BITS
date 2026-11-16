@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/message_center.dart';
 
 import '../announcers/library_text.dart';
+import '../l10n/speech.dart';
 import '../services/learning_playback_controller.dart';
 import '../services/learning_progress_store.dart';
 import '../services/tts_service.dart';
@@ -83,7 +84,7 @@ class PlayerSeekBar extends StatelessWidget {
         : 0.0;
     return Semantics(
       slider: true,
-      label: 'Lesson position',
+      label: Speech.t.learningLessonPositionLabel,
       value: LibraryText.position(position, total),
       increasedValue: enabled
           ? LibraryText.position(offset(position, total, step), total)
@@ -181,12 +182,11 @@ class LearningControls extends StatelessWidget {
       final confirmed = await showDialog<bool>(
         context: context,
         builder: (_) => KeypadConfirmationDialog(
-          title: 'Saved progress unavailable',
+          title: Speech.t.learningSavedProgressUnavailableTitle,
           message:
-              '${error.message} Listen from the beginning without changing '
-              'saved data? Saving stays off until you retry successfully.',
-          cancelLabel: 'Cancel',
-          confirmLabel: 'Listen from beginning',
+              '${error.message} ${Speech.t.learningListenWithoutSavedPrompt}',
+          cancelLabel: Speech.t.uiCancel,
+          confirmLabel: Speech.t.learningListenFromBeginning,
           cancelKey: 0,
           confirmKey: 1,
         ),
@@ -202,13 +202,14 @@ class LearningControls extends StatelessWidget {
   }
 
   String get _status {
+    final t = Speech.t;
     final lesson = controller.lesson;
-    return '${lesson?.title ?? 'Recorded lesson'}. '
-        'Position ${learningSpokenPosition(controller.position, controller.duration)}. '
-        'Speed ${learningSpeedNumber(controller.speed)} times. '
-        '${lesson?.bookmarks.length ?? 0} bookmarks. '
-        'A-B repeat ${controller.repeatEnabled ? 'on' : 'off'}. '
-        'Progress saving ${controller.canSave ? 'on' : 'off'}. '
+    return '${lesson?.title ?? t.learningRecordedLesson}. '
+        '${t.learningStatusPosition(learningSpokenPosition(controller.position, controller.duration))} '
+        '${t.learningSpeedTimes(learningSpeedNumber(controller.speed))} '
+        '${t.learningStatusBookmarks(lesson?.bookmarks.length ?? 0)} '
+        '${t.learningStatusRepeat(SpokenFormat.onOff(controller.repeatEnabled))} '
+        '${t.learningStatusSaving(SpokenFormat.onOff(controller.canSave))} '
         '${controller.issue ?? ''} $learningPlayerKeyHelp';
   }
 
@@ -216,7 +217,7 @@ class LearningControls extends StatelessWidget {
   /// position. Used by the 4 and 6 player keys and the matching buttons.
   Future<void> seekBy(BuildContext context, int seconds) async {
     if (!controller.ready) {
-      TtsService.speak('No lesson is loaded. Choose a lesson to play first.');
+      TtsService.speak(Speech.t.learningNoLessonLoaded);
       return;
     }
     await _run(
@@ -232,20 +233,23 @@ class LearningControls extends StatelessWidget {
   /// Changes speed by [delta] (7 slower, 9 faster) and speaks the result.
   Future<void> changeSpeedBy(BuildContext context, double delta) async {
     if (!controller.ready) {
-      TtsService.speak('No lesson is loaded. Choose a lesson to play first.');
+      TtsService.speak(Speech.t.learningNoLessonLoaded);
       return;
     }
     final next = (controller.speed + delta).clamp(0.25, 3.0).toDouble();
     if (next == controller.speed) {
       TtsService.speak(
-        delta < 0 ? 'Already at the slowest speed.' : 'Already at the fastest speed.',
+        delta < 0
+            ? Speech.t.learningSlowestSpeed
+            : Speech.t.learningFastestSpeed,
       );
       return;
     }
     await _run(
       context,
       () => controller.changeSpeed(next),
-      announcement: () => 'Speed ${learningSpeedNumber(controller.speed)} times.',
+      announcement: () =>
+          Speech.t.learningSpeedTimes(learningSpeedNumber(controller.speed)),
     );
   }
 
@@ -281,13 +285,13 @@ class LearningControls extends StatelessWidget {
     } on ArgumentError catch (error) {
       _error(
         context,
-        error.message?.toString() ?? 'Check the lesson position and try again.',
+        error.message?.toString() ?? Speech.t.learningCheckPosition,
       );
     } on Exception catch (error) {
       debugPrint('[LEARNING] Player action failed (${error.runtimeType})');
       _error(
         context,
-        'The player could not complete this action. Check playback and try again.',
+        Speech.t.learningPlayerActionFailed,
       );
     }
     return false;
@@ -296,7 +300,9 @@ class LearningControls extends StatelessWidget {
   Future<void> _addBookmark(BuildContext context) async {
     final revision = controller.revision;
     final position = controller.position;
-    final defaultLabel = 'Bookmark ${controller.lesson?.nextBookmarkId ?? 1}';
+    final defaultLabel = Speech.t.learningDefaultBookmarkLabel(
+      '${controller.lesson?.nextBookmarkId ?? 1}',
+    );
     final label = await showDialog<String>(
       context: context,
       builder: (_) => _BookmarkNameDialog(initialLabel: defaultLabel),
@@ -311,7 +317,9 @@ class LearningControls extends StatelessWidget {
         at: position,
       ),
       announcement: () =>
-          'Bookmark saved at ${learningTime(controller.lesson!.bookmarks.last.position)}.',
+          Speech.t.learningBookmarkSavedAt(
+            learningTime(controller.lesson!.bookmarks.last.position),
+          ),
     );
   }
 
@@ -343,88 +351,96 @@ class LearningControls extends StatelessWidget {
   List<KeypadFocusTarget> focusTargets(BuildContext context) => [
     KeypadFocusTarget(
       node: nodeFor('learning-status'),
-      label: 'Read learning status. $_status',
+      label: Speech.t.learningReadStatusLabel(_status),
       onActivate: () => TtsService.speak(_status),
     ),
     KeypadFocusTarget(
       node: nodeFor('bookmark-add'),
-      label: 'Add bookmark at ${learningTime(controller.position)}',
+      label: Speech.t.learningAddBookmarkAt(learningTime(controller.position)),
       isEnabled: () => controller.canSave,
       onActivate: () => _addBookmark(context),
     ),
     KeypadFocusTarget(
       node: nodeFor('bookmarks'),
-      label:
-          'Bookmarks. ${controller.lesson?.bookmarks.length ?? 0} saved points',
+      label: Speech.t.learningBookmarksSavedPoints(
+        controller.lesson?.bookmarks.length ?? 0,
+      ),
       isEnabled: () => controller.ready,
       onActivate: () => _bookmarks(context),
     ),
     if (pauseForNotes != null)
       KeypadFocusTarget(
         node: nodeFor('private-notes'),
-        label:
-            'Private study notes at ${learningTime(controller.position)}. Pause lesson before opening',
+        label: Speech.t.learningPrivateNotesAt(
+          learningTime(controller.position),
+        ),
         isEnabled: () => controller.ready,
         onActivate: () => _notes(context),
       ),
     KeypadFocusTarget(
       node: nodeFor('repeat-a'),
-      label: 'Set repeat start A at the current position',
+      label: Speech.t.learningSetRepeatStartLabel,
       isEnabled: () => controller.canSave,
       onActivate: () => _run(
         context,
         controller.markRepeatStart,
         announcement: () =>
-            'Repeat start set at ${learningTime(controller.lesson!.repeatStart!)}.',
+            Speech.t.learningRepeatStartSet(
+              learningTime(controller.lesson!.repeatStart!),
+            ),
       ),
     ),
     KeypadFocusTarget(
       node: nodeFor('repeat-b'),
-      label: 'Set repeat end B after start A',
+      label: Speech.t.learningSetRepeatEndLabel,
       isEnabled: () =>
           controller.canSave && controller.lesson?.repeatStart != null,
       onActivate: () => _run(
         context,
         controller.markRepeatEnd,
         announcement: () =>
-            'Repeat end set at ${learningTime(controller.lesson!.repeatEnd!)}. Select Repeat on to start looping.',
+            Speech.t.learningRepeatEndSet(
+              learningTime(controller.lesson!.repeatEnd!),
+            ),
       ),
     ),
     KeypadFocusTarget(
       node: nodeFor('repeat-toggle'),
       label: controller.repeatEnabled
-          ? 'Turn A-B repeat off'
-          : 'Turn A-B repeat on',
+          ? Speech.t.learningTurnRepeatOff
+          : Speech.t.learningTurnRepeatOn,
       isEnabled: () => controller.ready && controller.hasRepeatRegion,
       onActivate: () => _run(
         context,
         () async => controller.toggleRepeat(),
         announcement: () =>
-            'A-B repeat ${controller.repeatEnabled ? 'on' : 'off'}.',
+            Speech.t.learningStatusRepeat(
+              SpokenFormat.onOff(controller.repeatEnabled),
+            ),
       ),
     ),
     KeypadFocusTarget(
       node: nodeFor('repeat-clear'),
-      label: 'Clear saved A-B repeat points',
+      label: Speech.t.learningClearRepeatLabel,
       isEnabled: () =>
           controller.canSave && controller.lesson?.repeatStart != null,
       onActivate: () => _run(
         context,
         controller.clearRepeat,
-        announcement: () => 'A-B repeat points cleared.',
+        announcement: () => Speech.t.learningRepeatCleared,
       ),
     ),
     if (showSeekControls) ...[
       KeypadFocusTarget(
         node: nodeFor('learning-back-ten'),
-        label: 'Back 10 seconds, key $playerRewindKey',
+        label: Speech.t.learningBackTenLabel('$playerRewindKey'),
         isEnabled: () =>
             controller.ready && controller.position > Duration.zero,
         onActivate: () => seekBy(context, -10),
       ),
       KeypadFocusTarget(
         node: nodeFor('learning-forward-ten'),
-        label: 'Forward 10 seconds, key $playerForwardKey',
+        label: Speech.t.learningForwardTenLabel('$playerForwardKey'),
         isEnabled: () =>
             controller.ready &&
             controller.duration != null &&
@@ -435,15 +451,19 @@ class LearningControls extends StatelessWidget {
     if (showSpeedControls) ...[
       KeypadFocusTarget(
         node: nodeFor('learning-slower'),
-        label:
-            'Slower, key $playerSlowerKey. Now ${learningSpeedNumber(controller.speed)} times',
+        label: Speech.t.learningSlowerLabel(
+          '$playerSlowerKey',
+          learningSpeedNumber(controller.speed),
+        ),
         isEnabled: () => controller.ready && controller.speed > 0.25,
         onActivate: () => changeSpeedBy(context, -0.25),
       ),
       KeypadFocusTarget(
         node: nodeFor('learning-faster'),
-        label:
-            'Faster, key $playerFasterKey. Now ${learningSpeedNumber(controller.speed)} times',
+        label: Speech.t.learningFasterLabel(
+          '$playerFasterKey',
+          learningSpeedNumber(controller.speed),
+        ),
         isEnabled: () => controller.ready && controller.speed < 3,
         onActivate: () => changeSpeedBy(context, 0.25),
       ),
@@ -451,12 +471,12 @@ class LearningControls extends StatelessWidget {
     if (controller.issue != null)
       KeypadFocusTarget(
         node: nodeFor('learning-retry'),
-        label: 'Retry saving learning progress. ${controller.issue}',
+        label: Speech.t.learningRetrySavingLabel('${controller.issue}'),
         isEnabled: () => controller.ready,
         onActivate: () => _run(
           context,
           controller.retrySaving,
-          announcement: () => 'Learning progress saved.',
+          announcement: () => Speech.t.learningProgressSaved,
         ),
       ),
   ];
@@ -487,33 +507,48 @@ class LearningControls extends StatelessWidget {
     }
 
     final lesson = controller.lesson;
+    final t = Speech.t;
     final buttons = <Widget>[
-      button('learning-status', 'Read learning status'),
-      button('bookmark-add', 'Add bookmark'),
-      button('bookmarks', 'Bookmarks (${lesson?.bookmarks.length ?? 0})'),
-      if (pauseForNotes != null) button('private-notes', 'Private study notes'),
+      button('learning-status', t.learningReadStatusButton),
+      button('bookmark-add', t.learningAddBookmarkButton),
+      button(
+        'bookmarks',
+        t.learningBookmarksButton('${lesson?.bookmarks.length ?? 0}'),
+      ),
+      if (pauseForNotes != null)
+        button('private-notes', t.learningPrivateNotesButton),
       button(
         'repeat-a',
-        'Set A${lesson?.repeatStart == null ? '' : ' ${learningTime(lesson!.repeatStart!)}'}',
+        lesson?.repeatStart == null
+            ? t.learningSetAButton
+            : t.learningSetAAtButton(learningTime(lesson!.repeatStart!)),
       ),
       button(
         'repeat-b',
-        'Set B${lesson?.repeatEnd == null ? '' : ' ${learningTime(lesson!.repeatEnd!)}'}',
+        lesson?.repeatEnd == null
+            ? t.learningSetBButton
+            : t.learningSetBAtButton(learningTime(lesson!.repeatEnd!)),
       ),
       button(
         'repeat-toggle',
-        controller.repeatEnabled ? 'Repeat off' : 'Repeat on',
+        controller.repeatEnabled
+            ? t.learningRepeatOffButton
+            : t.learningRepeatOnButton,
       ),
-      button('repeat-clear', 'Clear A-B'),
+      button('repeat-clear', t.learningClearABButton),
       if (showSeekControls) ...[
-        button('learning-back-ten', '$playerRewindKey: Back 10 seconds'),
-        button('learning-forward-ten', '$playerForwardKey: Forward 10 seconds'),
+        button('learning-back-ten', t.learningBackTenButton('$playerRewindKey')),
+        button(
+          'learning-forward-ten',
+          t.learningForwardTenButton('$playerForwardKey'),
+        ),
       ],
       if (showSpeedControls) ...[
-        button('learning-slower', '$playerSlowerKey: Slower'),
-        button('learning-faster', '$playerFasterKey: Faster'),
+        button('learning-slower', t.learningSlowerButton('$playerSlowerKey')),
+        button('learning-faster', t.learningFasterButton('$playerFasterKey')),
       ],
-      if (controller.issue != null) button('learning-retry', 'Retry saving'),
+      if (controller.issue != null)
+        button('learning-retry', t.learningRetrySavingButton),
     ];
     final stacked = UIUtils.isTiny(context) || UIUtils.useStackedLayout(context);
     return Column(
@@ -555,7 +590,7 @@ class _BookmarkNameDialogState extends State<_BookmarkNameDialog> {
   void _submit() {
     final label = _text.text.trim();
     if (label.isEmpty) {
-      setState(() => _error = 'Enter a bookmark name.');
+      setState(() => _error = Speech.t.learningEnterBookmarkName);
       TtsService.speak(_error!, priority: SpeechPriority.critical);
     } else {
       Navigator.pop(context, label);
@@ -573,9 +608,13 @@ class _BookmarkNameDialogState extends State<_BookmarkNameDialog> {
 
   @override
   Widget build(BuildContext context) => KeypadInstructionWrapper(
-    screenName: 'Name bookmark. Press OK to edit. Up or down leaves editing.',
+    screenName: Speech.t.learningNameBookmarkScreen,
     navigationController: _navigation,
-    labels: const {0: 'Cancel', 1: 'Edit name', 2: 'Save bookmark'},
+    labels: {
+      0: Speech.t.uiCancel,
+      1: Speech.t.learningEditName,
+      2: Speech.t.learningSaveBookmark,
+    },
     actions: {
       0: () => Navigator.pop(context),
       1: () => _navigation.enterTextEditing(_field),
@@ -584,40 +623,43 @@ class _BookmarkNameDialogState extends State<_BookmarkNameDialog> {
     focusTargets: [
       KeypadFocusTarget(
         node: _field,
-        label: 'Bookmark name',
+        label: Speech.t.learningBookmarkNameField,
         isTextField: true,
       ),
       KeypadFocusTarget(
         node: _cancel,
-        label: 'Cancel',
+        label: Speech.t.uiCancel,
         onActivate: () => Navigator.pop(context),
       ),
       KeypadFocusTarget(
         node: _save,
-        label: 'Save bookmark',
+        label: Speech.t.learningSaveBookmark,
         onActivate: _submit,
       ),
     ],
     child: AlertDialog(
       scrollable: true,
-      title: const Text('Name bookmark'),
+      title: Text(Speech.t.learningNameBookmarkTitle),
       content: TextField(
         controller: _text,
         focusNode: _field,
         onTap: () => _navigation.enterTextEditing(_field),
-        decoration: InputDecoration(labelText: 'Name', errorText: _error),
+        decoration: InputDecoration(
+          labelText: Speech.t.learningBookmarkNameFieldLabel,
+          errorText: _error,
+        ),
         onSubmitted: (_) => _submit(),
       ),
       actions: [
         TextButton(
           focusNode: _cancel,
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
+          child: Text(Speech.t.uiCancel),
         ),
         FilledButton(
           focusNode: _save,
           onPressed: _submit,
-          child: const Text('Save'),
+          child: Text(Speech.t.uiSave),
         ),
       ],
     ),
@@ -670,7 +712,10 @@ class _BookmarksDialogState extends State<_BookmarksDialog> {
     if (ok && mounted) {
       Navigator.pop(context);
       TtsService.speak(
-        '${bookmark.label}. Position ${learningSpokenTime(bookmark.position)}.',
+        Speech.t.learningBookmarkJumped(
+          bookmark.label,
+          learningSpokenTime(bookmark.position),
+        ),
       );
     }
   }
@@ -679,11 +724,10 @@ class _BookmarksDialogState extends State<_BookmarksDialog> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => KeypadConfirmationDialog(
-        title: 'Remove bookmark?',
-        message:
-            'Remove ${bookmark.label}? This does not remove the lesson or any other bookmarks.',
-        cancelLabel: 'Keep bookmark',
-        confirmLabel: 'Remove bookmark',
+        title: Speech.t.learningRemoveBookmarkTitle,
+        message: Speech.t.learningRemoveBookmarkMessage(bookmark.label),
+        cancelLabel: Speech.t.learningKeepBookmark,
+        confirmLabel: Speech.t.learningRemoveBookmark,
         cancelKey: 0,
         confirmKey: 1,
       ),
@@ -696,7 +740,7 @@ class _BookmarksDialogState extends State<_BookmarksDialog> {
     await controls._run(
       context,
       () => widget.controller.removeBookmark(bookmark.id),
-      announcement: () => '${bookmark.label} removed.',
+      announcement: () => Speech.t.learningBookmarkRemoved(bookmark.label),
     );
     if (mounted) _node('close').requestFocus();
   }
@@ -707,21 +751,22 @@ class _BookmarksDialogState extends State<_BookmarksDialog> {
         ? widget.controller.lesson?.bookmarks ?? const <LessonBookmark>[]
         : const <LessonBookmark>[];
     return KeypadInstructionWrapper(
-      screenName:
-          'Bookmarks. Select a point to jump. This does not start paused playback. Remove asks for confirmation.',
-      labels: const {0: 'Close bookmarks'},
+      screenName: Speech.t.learningBookmarksScreen,
+      labels: {0: Speech.t.learningCloseBookmarks},
       actions: {0: () => Navigator.pop(context)},
       focusTargets: [
         KeypadFocusTarget(
           node: _node('close'),
-          label: 'Close bookmarks',
+          label: Speech.t.learningCloseBookmarks,
           onActivate: () => Navigator.pop(context),
         ),
         for (final bookmark in bookmarks) ...[
           KeypadFocusTarget(
             node: _node('jump-${bookmark.id}'),
-            label:
-                '${bookmark.label}. ${learningTime(bookmark.position)}. Jump to bookmark',
+            label: Speech.t.learningJumpToBookmarkLabel(
+              bookmark.label,
+              learningTime(bookmark.position),
+            ),
             isEnabled: () =>
                 widget.controller.ready &&
                 (widget.controller.duration == null ||
@@ -730,7 +775,7 @@ class _BookmarksDialogState extends State<_BookmarksDialog> {
           ),
           KeypadFocusTarget(
             node: _node('remove-${bookmark.id}'),
-            label: 'Remove ${bookmark.label}',
+            label: Speech.t.learningRemoveBookmarkLabel(bookmark.label),
             isEnabled: () => widget.controller.canSave,
             onActivate: () => _remove(bookmark),
           ),
@@ -738,19 +783,16 @@ class _BookmarksDialogState extends State<_BookmarksDialog> {
       ],
       child: AlertDialog(
         scrollable: true,
-        title: const Text('Bookmarks'),
+        title: Text(Speech.t.learningBookmarksTitle),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (!_sameLesson)
-              const Text(
-                'The lesson changed. Close this list and open bookmarks for the current lesson.',
-              ),
+            if (!_sameLesson) Text(Speech.t.learningBookmarksLessonChanged),
             if (_sameLesson && bookmarks.isEmpty)
               Text(
                 widget.controller.issue == null
-                    ? 'No bookmarks yet. Use Add bookmark at a position you want to remember.'
-                    : 'Saved bookmarks are unavailable. Retry saving to restore access to saved progress.',
+                    ? Speech.t.learningBookmarksEmpty
+                    : Speech.t.learningBookmarksUnavailable,
               ),
             for (final bookmark in bookmarks)
               Column(
@@ -764,7 +806,10 @@ class _BookmarksDialogState extends State<_BookmarksDialog> {
                         ? null
                         : () => _jump(bookmark),
                     child: Text(
-                      '${bookmark.label} at ${learningTime(bookmark.position)}',
+                      Speech.t.learningBookmarkAtButton(
+                        bookmark.label,
+                        learningTime(bookmark.position),
+                      ),
                     ),
                   ),
                   TextButton(
@@ -773,8 +818,10 @@ class _BookmarksDialogState extends State<_BookmarksDialog> {
                         ? () => _remove(bookmark)
                         : null,
                     child: Text(
-                      'Remove ${bookmark.label}',
-                      semanticsLabel: 'Remove bookmark ${bookmark.label}',
+                      Speech.t.learningRemoveBookmarkLabel(bookmark.label),
+                      semanticsLabel: Speech.t.learningRemoveBookmarkSemantics(
+                        bookmark.label,
+                      ),
                     ),
                   ),
                 ],
@@ -785,7 +832,7 @@ class _BookmarksDialogState extends State<_BookmarksDialog> {
           TextButton(
             focusNode: _node('close'),
             onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
+            child: Text(Speech.t.uiClose),
           ),
         ],
       ),

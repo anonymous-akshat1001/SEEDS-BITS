@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../announcers/announce.dart';
+import '../l10n/speech.dart';
 import '../main.dart' show routeObserver;
 import '../services/feedback_cues.dart';
 import '../services/message_center.dart';
@@ -280,19 +281,36 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
     }
   }
 
-  static final _hasPosition = RegExp(r'\b\d+ of \d+\b');
+  static final _hasEnglishPosition = RegExp(r'\b\d+ of \d+\b');
+
+  /// Matches the current language's "3 of 7" so labels that already say
+  /// where they are do not get a second position.
+  static bool _hasPosition(String label) {
+    if (_hasEnglishPosition.hasMatch(label)) return true;
+    final pattern = Speech.t
+        .keypadPosition('\u0000', '\u0001')
+        .replaceFirst(RegExp(r'^[\s,]+'), '');
+    final regex = RegExp(
+      RegExp.escape(
+        pattern,
+      ).replaceAll('\u0000', r'\d+').replaceAll('\u0001', r'\d+'),
+    );
+    return regex.hasMatch(label);
+  }
 
   /// Spoken ", 3 of 7" suffix so blind users always know where they are.
   String _positionOf(KeypadFocusTarget target) {
     if (TtsService.verbosity == SpeechVerbosity.essential ||
-        _hasPosition.hasMatch(target.label)) {
+        _hasPosition(target.label)) {
       return '';
     }
     final targets = widget.focusTargets.where((item) => item.enabled).toList();
     final index = targets.indexOf(target);
     if (targets.length < 2 || index < 0) return '';
-    return ', ${index + 1} of ${targets.length}';
+    return Speech.t.keypadPosition('${index + 1}', '${targets.length}');
   }
+
+  String get _screenName => widget.screenName ?? Speech.t.appName;
 
   void _detachFocusListeners() {
     _stopObservingTextInput();
@@ -378,7 +396,7 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
         ?opening,
         detailed
             ? _whereAmIText()
-            : '${widget.screenName ?? 'SEEDS'}. Press star for keypad help.',
+            : Speech.t.keypadScreenReaderIntro(_screenName),
       ].join(' ');
       await TtsService.speak(text, priority: SpeechPriority.navigation);
       return;
@@ -458,13 +476,20 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
     // Player screens map 7 and 9 to speed; elsewhere those keys mean other things.
     // Lists also use 7 and 9 (pages), so a screen counts as a player only
     // when it has seek keys and 7 is unlabelled or means slower.
-    final slower = widget.labels[playerSlowerKey]?.toLowerCase();
+    final slower = widget.labels[playerSlowerKey];
+    final slowerLabels = {
+      playerSpeedKeyLabels[playerSlowerKey],
+      playerFallbackKeyLabels[playerSlowerKey],
+      quizAttemptKeyLabels[playerSlowerKey],
+    };
     final player =
         widget.actions.containsKey(playerRewindKey) &&
         widget.actions.containsKey(playerForwardKey) &&
         widget.actions.containsKey(playerSlowerKey) &&
         widget.actions.containsKey(playerFasterKey) &&
-        (slower == null || slower.contains('slow'));
+        (slower == null ||
+            slowerLabels.contains(slower) ||
+            slower.toLowerCase().contains('slow'));
     final labels = Map<int, String>.of(widget.labels);
     final unnamed = <int>[];
     for (final key in missing) {
@@ -486,41 +511,41 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
   }
 
   String _instructionText({bool detailed = false, bool withName = true}) {
-    final name = withName ? '${widget.screenName ?? 'SEEDS'}. ' : '';
+    final t = Speech.t;
+    final name = withName ? '$_screenName. ' : '';
     final introduction = widget.introduction == null
         ? ''
         : '${widget.introduction} ';
     final sections = widget.navigationSections == null
         ? ''
-        : 'Use D-pad up and down to move through ${widget.navigationSections}. '
-              'Press OK to activate the focused control. ';
+        : '${t.keypadMoveThroughSections(widget.navigationSections!)} ';
     if (widget.interactionPolicy == KeypadInteractionPolicy.numbered) {
       final choices = _labels.entries
           .where((entry) => entry.key >= 1 && entry.key <= 5)
-          .map((entry) => 'Press ${entry.key} for ${entry.value}.')
+          .map((entry) => '${t.keypadPressFor('${entry.key}', entry.value)}.')
           .join(' ');
       final extra =
-          '${_labels.entries.where((entry) => entry.key > 5).map((entry) => 'Press ${entry.key} for ${entry.value}.').join(' ')} '
-          'Press 0 to go back or cancel. Press hash to stop app speech. '
-          '${detailed ? 'While editing, keys enter text. Press OK to finish, or use up or down to leave the field.' : ''}';
+          '${_labels.entries.where((entry) => entry.key > 5).map((entry) => '${t.keypadPressFor('${entry.key}', entry.value)}.').join(' ')} '
+          '${t.keypadNumberedBackAndStop} '
+          '${detailed ? t.keypadNumberedEditing : ''}';
       return '$name$introduction$choices '
-          '${sections.isEmpty ? 'Use D-pad up and down to move between choices and OK to select. ' : sections}$extra '
-          'Press star to repeat full help.';
+          '${sections.isEmpty ? '${t.keypadNumberedMove} ' : sections}$extra '
+          '${t.keypadRepeatFullHelp}';
     }
     if (!detailed && TtsService.verbosity == SpeechVerbosity.essential) {
       return '$name'
-          '$introduction${sections.isEmpty ? 'Use up and down to move, and OK to select. ' : sections}Press star for all shortcuts.';
+          '$introduction${sections.isEmpty ? '${t.keypadEssentialMove} ' : sections}${t.keypadStarForShortcuts}';
     }
     if (_labels.isNotEmpty) {
-      final back = _labels.containsKey(0) ? '' : 'Press 0 to go back. ';
+      final back = _labels.containsKey(0) ? '' : '${t.keypadPressZeroBack} ';
       return '$introduction${buildTtsInstructions(_labels, screenName: withName ? widget.screenName : null, includeRepeatHint: false)} '
-          '${back}Press hash to stop speech. Press star to repeat these instructions. '
-          '${sections.isEmpty ? 'Use the direction keys to move. ' : sections}Press OK to activate a control or edit a field. '
-          'While editing, press OK or use up or down to leave the field.';
+          '$back${t.keypadHashAndStar} '
+          '${sections.isEmpty ? '${t.keypadDirectionKeys} ' : sections}${t.keypadActivateOrEdit} '
+          '${t.keypadLeaveField}';
     }
     if ((widget.screenName ?? '').isNotEmpty) {
-      return '$name$introduction${sections.isEmpty ? 'Use the direction keys to move and OK to select. ' : sections}'
-          'Press star to repeat these instructions.';
+      return '$name$introduction${sections.isEmpty ? '${t.keypadDirectionKeysAndOk} ' : sections}'
+          '${t.keypadRepeatInstructions}';
     }
     return '';
   }
@@ -529,7 +554,7 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
   String _whereAmIText() {
     final current = _currentTarget;
     final where = CommonText.whereAmI(
-      screen: widget.screenName ?? 'SEEDS',
+      screen: _screenName,
       focused: current == null || !current.enabled
           ? null
           : '${current.label}${_positionOf(current)}',
@@ -736,7 +761,7 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
             !_navigationController.isEditingNode(current.node)) {
           _navigationOnlyTextNode = null;
           _navigationController.enterTextEditing(current.node);
-          _speakSafely('${current.label}. Editing. Press OK when finished.');
+          _speakSafely(Speech.t.keypadEditingPressOk(current.label));
         } else {
           _moveFocus(1, skipTextFields: true);
         }
@@ -792,13 +817,11 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
           _moveFocus(1);
         }
       } else if (!current.enabled) {
-        _speakSafely('This control is not available right now.');
+        _speakSafely(Speech.t.keypadControlUnavailable);
       } else if (current.isTextField) {
         _navigationOnlyTextNode = null;
         _navigationController.enterTextEditing(current.node);
-        _speakSafely(
-          '${current.label}. Editing. Use up or down to leave this field.',
-        );
+        _speakSafely(Speech.t.keypadEditingUseUpDown(current.label));
       } else {
         current.onActivate?.call();
       }
@@ -840,9 +863,7 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
       if (navigator.canPop()) {
         unawaited(navigator.maybePop());
       } else {
-        _speakSafely(
-          'This is the main screen. There is nothing to go back to.',
-        );
+        _speakSafely(Speech.t.keypadMainScreen);
       }
       _updateDebug(key.keyLabel, character, digit, true);
       return KeyEventResult.handled;

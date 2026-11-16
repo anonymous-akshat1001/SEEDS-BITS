@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../l10n/speech.dart';
 import '../services/tts_service.dart';
 import 'journey_menu.dart';
 import 'keypad_confirmation_dialog.dart';
@@ -26,20 +27,24 @@ class JourneyPrompts {
     final route = MaterialPageRoute<String>(
       builder: (routeContext) => KeypadTextStep(
         title: title,
-        label: optional ? '$label. Optional, leave empty to skip' : label,
+        label: optional ? Speech.t.journeyOptionalLabel(label) : label,
         controller: controller,
         validate: (value) {
           final text = value.trim();
           if (!optional && text.isEmpty) {
-            return 'Nothing entered. Press OK on the field and type, or press 0 to go back.';
+            return Speech.t.journeyNothingEntered;
           }
-          if (text.length > max) return 'Too long. Use at most $max characters.';
+          if (text.length > max) return Speech.t.journeyTooLong('$max');
           return null;
         },
         onContinue: (value) async {
           final text = value.trim();
           unawaited(
-            TtsService.speak(text.isEmpty ? 'Skipped.' : 'You entered: $text'),
+            TtsService.speak(
+              text.isEmpty
+                  ? Speech.t.journeySkipped
+                  : Speech.t.journeyYouEntered(text),
+            ),
           );
           Navigator.pop(routeContext, text);
         },

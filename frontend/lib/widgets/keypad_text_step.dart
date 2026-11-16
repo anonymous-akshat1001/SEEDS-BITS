@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../l10n/speech.dart';
 import '../services/tts_service.dart';
 import 'key_instruction_wrapper.dart';
 
@@ -42,7 +43,7 @@ class _KeypadTextStepState extends State<KeypadTextStep> {
 
   void _back() {
     if (_busy) {
-      unawaited(TtsService.speak('Waiting for confirmation. Please wait.'));
+      unawaited(TtsService.speak(Speech.t.uiWaitingConfirmation));
       return;
     }
     if (widget.onBack != null) {
@@ -55,7 +56,7 @@ class _KeypadTextStepState extends State<KeypadTextStep> {
   Future<void> _submit() async {
     if (_busy) return;
     if (!widget.controller.value.composing.isCollapsed) {
-      _report('Finish entering the current word, then press OK.');
+      _report(Speech.t.uiFinishWord);
       return;
     }
     final error = widget.validate?.call(widget.controller.text);
@@ -71,9 +72,7 @@ class _KeypadTextStepState extends State<KeypadTextStep> {
       await widget.onContinue(widget.controller.text);
     } on Exception catch (error) {
       debugPrint('[INPUT STEP] Continue failed (${error.runtimeType}).');
-      _report(
-        'This step could not be completed. Your entry is kept. Try again.',
-      );
+      _report(Speech.t.uiStepFailed);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -89,7 +88,7 @@ class _KeypadTextStepState extends State<KeypadTextStep> {
     setState(() => _visible = !_visible);
     unawaited(
       TtsService.speak(
-        _visible ? 'Password is visible.' : 'Password is hidden.',
+        _visible ? Speech.t.uiPasswordVisible : Speech.t.uiPasswordHidden,
       ),
     );
   }
@@ -103,93 +102,97 @@ class _KeypadTextStepState extends State<KeypadTextStep> {
   }
 
   @override
-  Widget build(BuildContext context) => KeypadInstructionWrapper(
-    interactionPolicy: KeypadInteractionPolicy.numbered,
-    initialFocusNode: _input,
-    screenName:
-        '${widget.title}. ${widget.label}. Editing. Press OK to finish, or use up or down to leave the field.',
-    labels: {1: 'Continue', if (widget.obscureText) 2: 'Show or hide password'},
-    actions: {
-      0: _back,
-      1: () => unawaited(_submit()),
-      if (widget.obscureText) 2: _toggleVisibility,
-    },
-    focusTargets: [
-      KeypadFocusTarget(
-        node: _input,
-        label: widget.label,
-        isTextField: true,
-        isEnabled: () => !_busy,
-      ),
-      KeypadFocusTarget(
-        node: _continue,
-        label: 'Continue',
-        onActivate: () => unawaited(_submit()),
-        isEnabled: () => !_busy,
-      ),
-      if (widget.obscureText)
+  Widget build(BuildContext context) {
+    final t = Speech.t;
+    return KeypadInstructionWrapper(
+      interactionPolicy: KeypadInteractionPolicy.numbered,
+      initialFocusNode: _input,
+      screenName: t.uiTextStepScreen(widget.title, widget.label),
+      labels: {
+        1: t.uiContinue,
+        if (widget.obscureText) 2: t.uiShowOrHidePassword,
+      },
+      actions: {
+        0: _back,
+        1: () => unawaited(_submit()),
+        if (widget.obscureText) 2: _toggleVisibility,
+      },
+      focusTargets: [
         KeypadFocusTarget(
-          node: _visibility,
-          label: 'Show or hide password',
-          onActivate: _toggleVisibility,
+          node: _input,
+          label: widget.label,
+          isTextField: true,
+          isEnabled: () => !_busy,
         ),
-      KeypadFocusTarget(node: _backNode, label: 'Back', onActivate: _back),
-    ],
-    child: Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Semantics(
-                header: true,
-                child: Text(
-                  widget.title,
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
-              ),
-              TextField(
-                controller: widget.controller,
-                focusNode: _input,
-                enabled: !_busy,
-                keyboardType: widget.keyboardType,
-                obscureText: widget.obscureText && !_visible,
-                autocorrect: !widget.obscureText,
-                enableSuggestions: !widget.obscureText,
-                textInputAction: TextInputAction.done,
-                onSubmitted: (_) => unawaited(_submit()),
-                decoration: InputDecoration(labelText: widget.label),
-              ),
-              const Text(
-                'While editing, keys enter text. Press OK to finish. '
-                'Use up or down if OK does not finish editing.',
-              ),
-              if (_error != null)
-                Semantics(liveRegion: true, child: Text(_error!)),
-              if (_busy) const Text('Waiting for confirmation.'),
-              ElevatedButton(
-                focusNode: _continue,
-                onPressed: _busy ? null : () => unawaited(_submit()),
-                child: const Text('1: Continue'),
-              ),
-              if (widget.obscureText)
-                TextButton(
-                  focusNode: _visibility,
-                  onPressed: _toggleVisibility,
+        KeypadFocusTarget(
+          node: _continue,
+          label: t.uiContinue,
+          onActivate: () => unawaited(_submit()),
+          isEnabled: () => !_busy,
+        ),
+        if (widget.obscureText)
+          KeypadFocusTarget(
+            node: _visibility,
+            label: t.uiShowOrHidePassword,
+            onActivate: _toggleVisibility,
+          ),
+        KeypadFocusTarget(node: _backNode, label: t.uiBack, onActivate: _back),
+      ],
+      child: Scaffold(
+        body: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Semantics(
+                  header: true,
                   child: Text(
-                    _visible ? '2: Hide password' : '2: Show password',
+                    widget.title,
+                    style: Theme.of(context).textTheme.headlineSmall,
                   ),
                 ),
-              TextButton(
-                focusNode: _backNode,
-                onPressed: _busy ? null : _back,
-                child: const Text('0: Back'),
-              ),
-            ],
+                TextField(
+                  controller: widget.controller,
+                  focusNode: _input,
+                  enabled: !_busy,
+                  keyboardType: widget.keyboardType,
+                  obscureText: widget.obscureText && !_visible,
+                  autocorrect: !widget.obscureText,
+                  enableSuggestions: !widget.obscureText,
+                  textInputAction: TextInputAction.done,
+                  onSubmitted: (_) => unawaited(_submit()),
+                  decoration: InputDecoration(labelText: widget.label),
+                ),
+                Text(Speech.t.keypadTextEditingHint),
+                if (_error != null)
+                  Semantics(liveRegion: true, child: Text(_error!)),
+                if (_busy) Text(Speech.t.keypadWaitingConfirmation),
+                ElevatedButton(
+                  focusNode: _continue,
+                  onPressed: _busy ? null : () => unawaited(_submit()),
+                  child: Text(Speech.t.keypadContinueKey1),
+                ),
+                if (widget.obscureText)
+                  TextButton(
+                    focusNode: _visibility,
+                    onPressed: _toggleVisibility,
+                    child: Text(
+                      _visible
+                          ? Speech.t.keypadHidePasswordKey2
+                          : Speech.t.keypadShowPasswordKey2,
+                    ),
+                  ),
+                TextButton(
+                  focusNode: _backNode,
+                  onPressed: _busy ? null : _back,
+                  child: Text(Speech.t.keypadBackKey0),
+                ),
+              ],
+            ),
           ),
         ),
       ),
-    ),
-  );
+    );
+  }
 }

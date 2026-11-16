@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../l10n/speech.dart';
 import 'notification_services.dart';
 import 'api_service.dart';
 import 'activity_telemetry.dart';
@@ -77,11 +78,11 @@ class AuthSessionService {
   static Future<bool> confirmLogout(BuildContext context) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (_) => const KeypadConfirmationDialog(
-        title: 'Log out of SEEDS?',
-        message: 'You will need to enter your phone number and password again.',
-        cancelLabel: 'Cancel',
-        confirmLabel: 'Log out',
+      builder: (_) => KeypadConfirmationDialog(
+        title: Speech.t.authLogoutTitle,
+        message: Speech.t.authLogoutMessage,
+        cancelLabel: Speech.t.authLogoutCancel,
+        confirmLabel: Speech.t.authLogoutConfirm,
       ),
     );
     return confirmed ?? false;
@@ -100,7 +101,7 @@ class AuthSessionService {
       debugPrint('[LOGOUT] Notification token cleanup deferred: $error');
     }
     await clearLoginState();
-    MessageCenter.carryToNextScreen('Logged out.');
+    MessageCenter.carryToNextScreen(Speech.t.authLoggedOut);
     if (!context.mounted) return true;
     Navigator.of(context).pushNamedAndRemoveUntil('/welcome', (_) => false);
     return true;

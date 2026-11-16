@@ -7,22 +7,35 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../l10n/speech.dart';
 import 'api_service.dart';
 
 typedef MsgHandler = void Function(Map<String, dynamic>);
 
 enum SessionConnectionState {
-  connecting('Connecting'),
-  connected('Connected'),
-  interrupted('Connection interrupted'),
-  reconnecting('Reconnecting'),
-  authenticationExpired('Sign-in required'),
-  unavailable('Class unavailable'),
-  ended('Class ended'),
-  closed('Disconnected');
+  connecting,
+  connected,
+  interrupted,
+  reconnecting,
+  authenticationExpired,
+  unavailable,
+  ended,
+  closed;
 
-  const SessionConnectionState(this.label);
-  final String label;
+  /// Spoken name of this state in the current speech language.
+  String get label {
+    final t = Speech.t;
+    return switch (this) {
+      connecting => t.sessionConnStateConnecting,
+      connected => t.sessionConnStateConnected,
+      interrupted => t.sessionConnStateInterrupted,
+      reconnecting => t.sessionConnStateReconnecting,
+      authenticationExpired => t.sessionConnStateSignInRequired,
+      unavailable => t.sessionConnStateUnavailable,
+      ended => t.sessionConnStateEnded,
+      closed => t.sessionConnStateDisconnected,
+    };
+  }
 }
 
 class SseService {
@@ -74,7 +87,9 @@ class SseService {
       _retries == 0
           ? SessionConnectionState.connecting
           : SessionConnectionState.reconnecting,
-      _retries == 0 ? 'Connecting to the class.' : 'Reconnecting to the class.',
+      _retries == 0
+          ? Speech.t.sessionConnecting
+          : Speech.t.sessionReconnectingToClass,
     );
     final preferences = await SharedPreferences.getInstance();
     if (!_current(generation)) return;
@@ -86,7 +101,7 @@ class SseService {
             preferences.getInt('user_id') != userId)) {
       _stopPermanently(
         SessionConnectionState.authenticationExpired,
-        'Sign-in is required. Leave the session and sign in again.',
+        Speech.t.sessionSignInRequiredLeave,
       );
       return;
     }
@@ -112,15 +127,15 @@ class SseService {
         if (response.statusCode == 401) {
           _stopPermanently(
             SessionConnectionState.authenticationExpired,
-            'Sign-in expired. Leave the session and sign in again.',
+            Speech.t.sessionSignInExpiredLeave,
           );
         } else if ([403, 404, 410].contains(response.statusCode)) {
           _stopPermanently(
             SessionConnectionState.unavailable,
-            'This class is no longer available to your account. You can go back.',
+            Speech.t.sessionClassNoLongerAvailable,
           );
         } else {
-          _connectionLost(generation, 'The class service is unavailable.');
+          _connectionLost(generation, Speech.t.sessionServiceUnavailable);
         }
         return;
       }
@@ -129,7 +144,7 @@ class SseService {
       )) {
         _connectionLost(
           generation,
-          'The class connection response could not be read.',
+          Speech.t.sessionConnectionUnreadable,
         );
         return;
       }
@@ -137,7 +152,7 @@ class SseService {
       _bootstrapTimer = Timer(const Duration(seconds: 10), () {
         _connectionLost(
           generation,
-          'The class did not confirm the connection.',
+          Speech.t.sessionConnectionNotConfirmed,
         );
       });
       _watchHeartbeat(generation);
@@ -169,18 +184,18 @@ class SseService {
               debugPrint('[SSE] Stream interrupted: ${error.runtimeType}');
               _connectionLost(
                 generation,
-                'The class connection was interrupted.',
+                Speech.t.sessionConnectionInterrupted,
               );
             },
             onDone: () =>
-                _connectionLost(generation, 'The class connection closed.'),
+                _connectionLost(generation, Speech.t.sessionConnectionClosed),
             cancelOnError: true,
           );
     } catch (error) {
       debugPrint('[SSE] Connection failed: ${error.runtimeType}');
       _connectionLost(
         generation,
-        'The class connection could not be confirmed.',
+        Speech.t.sessionConnectionCouldNotConfirm,
       );
     }
   }
@@ -189,7 +204,7 @@ class SseService {
     _heartbeatTimer?.cancel();
     // The server emits a keep-alive every 25 seconds.
     _heartbeatTimer = Timer(const Duration(seconds: 60), () {
-      _connectionLost(generation, 'No updates were received from the class.');
+      _connectionLost(generation, Speech.t.sessionNoUpdates);
     });
   }
 
@@ -198,18 +213,18 @@ class SseService {
     try {
       decoded = jsonDecode(raw);
     } on FormatException {
-      _connectionLost(generation, 'A class update could not be read.');
+      _connectionLost(generation, Speech.t.sessionUpdateUnreadable);
       return;
     }
     if (decoded is! Map<String, dynamic>) {
-      _connectionLost(generation, 'A class update had an unexpected format.');
+      _connectionLost(generation, Speech.t.sessionUpdateUnexpectedFormat);
       return;
     }
     final data = decoded;
     data.putIfAbsent('type', () => eventType);
     final type = data['type'];
     if (type is! String) {
-      _connectionLost(generation, 'A class update type could not be read.');
+      _connectionLost(generation, Speech.t.sessionUpdateTypeUnreadable);
       return;
     }
     if (type == 'connected') {
@@ -217,7 +232,7 @@ class SseService {
       if (participant is! int || participant <= 0) {
         _connectionLost(
           generation,
-          'Your class participation was not confirmed.',
+          Speech.t.sessionParticipationNotConfirmed,
         );
         return;
       }
@@ -225,7 +240,7 @@ class SseService {
       _bootstrapTimer?.cancel();
       _bootstrapTimer = null;
       _retries = 0;
-      _publish(SessionConnectionState.connected, 'Connected to the class.');
+      _publish(SessionConnectionState.connected, Speech.t.sessionConnectedToClass);
     }
     if (type == 'chat') {
       data['is_own'] = data['from'] != null && data['from'] == _myParticipantId;
@@ -236,14 +251,14 @@ class SseService {
     if (type == 'authentication_revoked') {
       _stopPermanently(
         SessionConnectionState.authenticationExpired,
-        'Your sign-in changed. Sign in again.',
+        Speech.t.sessionSignInChangedShort,
       );
     } else if (type == 'session_ended' || type == 'session_ending') {
-      _stopPermanently(SessionConnectionState.ended, 'The class has ended.');
+      _stopPermanently(SessionConnectionState.ended, Speech.t.sessionClassEnded);
     } else if (type == 'kicked') {
       _stopPermanently(
         SessionConnectionState.unavailable,
-        'You have been removed from the class. You can go back.',
+        Speech.t.sessionRemovedGoBack,
       );
     }
     onMessage?.call(data);
@@ -278,7 +293,7 @@ class SseService {
     final delay = Duration(milliseconds: seconds * 1000 + _random.nextInt(251));
     _publish(
       SessionConnectionState.reconnecting,
-      '$message Reconnecting. Previous actions will not be sent again automatically.',
+      Speech.t.sessionConnectionLostReconnecting(message),
     );
     _reconnectTimer = Timer(delay, () {
       _reconnectTimer = null;
@@ -312,9 +327,9 @@ class SseService {
     final contextGeneration = _contextGeneration;
     if (_disposed || _terminal || id == null || userId == null) {
       return _actionFailure(
-        const ApiFailure(
+        ApiFailure(
           kind: ApiFailureKind.unknown,
-          message: 'The class is not available. This action was not sent.',
+          message: Speech.t.sessionActionClassUnavailable,
         ),
       );
     }
@@ -323,10 +338,10 @@ class SseService {
         _terminal ||
         id != sessionId ||
         contextGeneration != _contextGeneration) {
-      return const ApiResult.failure(
+      return ApiResult.failure(
         ApiFailure(
           kind: ApiFailureKind.unknown,
-          message: 'The session changed. This action was not sent.',
+          message: Speech.t.sessionActionSessionChanged,
         ),
       );
     }
@@ -338,12 +353,12 @@ class SseService {
             preferences.getInt('user_id') != userId)) {
       _stopPermanently(
         SessionConnectionState.authenticationExpired,
-        'Sign-in is required. Leave the session and sign in again.',
+        Speech.t.sessionSignInRequiredLeave,
       );
       return _actionFailure(
-        const ApiFailure(
+        ApiFailure(
           kind: ApiFailureKind.unauthorized,
-          message: 'Sign-in is required. This action was not sent.',
+          message: Speech.t.sessionActionSignInRequired,
         ),
       );
     }
@@ -365,12 +380,10 @@ class SseService {
         _terminal ||
         id != sessionId ||
         contextGeneration != _contextGeneration) {
-      return const ApiResult.failure(
+      return ApiResult.failure(
         ApiFailure(
           kind: ApiFailureKind.unknown,
-          message:
-              'The connection changed before confirmation. '
-              'The action may have been received; check its status before retrying.',
+          message: Speech.t.sessionActionConnectionChanged,
         ),
       );
     }
@@ -379,12 +392,12 @@ class SseService {
             preferences.getInt('user_id') != userId)) {
       _stopPermanently(
         SessionConnectionState.authenticationExpired,
-        'Your account changed. Leave the session and sign in again.',
+        Speech.t.sessionAccountChangedLeave,
       );
       return _actionFailure(
-        const ApiFailure(
+        ApiFailure(
           kind: ApiFailureKind.unauthorized,
-          message: 'Your account changed before the action could be confirmed.',
+          message: Speech.t.sessionActionAccountChanged,
         ),
       );
     }
@@ -393,16 +406,14 @@ class SseService {
     if (failure?.statusCode == 401) {
       _stopPermanently(
         SessionConnectionState.authenticationExpired,
-        'Sign-in expired. Leave the session and sign in again.',
+        Speech.t.sessionSignInExpiredLeave,
       );
     }
     if (failure == null) {
       return _actionFailure(
-        const ApiFailure(
+        ApiFailure(
           kind: ApiFailureKind.unknown,
-          message:
-              'The class did not confirm the action. '
-              'Check its status before trying again.',
+          message: Speech.t.sessionActionNotConfirmedByClass,
         ),
       );
     }
@@ -413,8 +424,7 @@ class SseService {
         message:
             failure.kind == ApiFailureKind.network ||
                 failure.kind == ApiFailureKind.server
-            ? 'The action was not confirmed. It may have reached the class. '
-                  'Check its status before trying again.'
+            ? Speech.t.sessionActionMayHaveReached
             : failure.message,
       ),
     );

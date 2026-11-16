@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../l10n/speech.dart';
 import '../../services/journey_api.dart';
 import '../../services/journey_models.dart';
 import '../../services/tts_service.dart';
@@ -55,39 +56,57 @@ class _JourneyResultsScreenState extends State<JourneyResultsScreen> {
       ((_results?[key] as List?) ?? const []).whereType<Map>().toList();
 
   String _summary() {
+    final t = Speech.t;
     final summary = _results?['summary'];
-    if (summary is! Map) return _issue ?? 'Results are loading.';
+    if (summary is! Map) return _issue ?? t.journeyResultsLoading;
     final average = summary['average_percentage'];
-    return '${summary['completed']} of ${summary['eligible']} students finished. '
-        '${summary['in_progress']} in progress, ${summary['not_started']} not started.'
-        '${average is num ? ' Average first-try score ${average.round()} percent.' : ''}';
+    return [
+      t.journeyResultsSummary(
+        '${summary['completed']}',
+        '${summary['eligible']}',
+        '${summary['in_progress']}',
+        '${summary['not_started']}',
+      ),
+      if (average is num) t.journeyResultsAverage('${average.round()}'),
+    ].join(' ');
   }
 
   String _student(Map row) {
+    final t = Speech.t;
     final status = switch (row['status']) {
-      'completed' => 'Finished',
-      'in_progress' => 'In progress',
-      _ => 'Not started',
+      'completed' => t.journeyResultFinished,
+      'in_progress' => t.journeyStatusInProgress,
+      _ => t.journeyResultNotStarted,
     };
-    final questions = row['question_count'] is int && row['question_count'] > 0
-        ? ' ${row['first_try_correct']} of ${row['question_count']} right first time.'
-        : '';
-    final score = row['percentage'] is num
-        ? ' Score ${(row['percentage'] as num).round()} percent.'
-        : '';
-    final replays = row['replays'] is int && row['replays'] > 0
-        ? ' ${row['replays']} wrong answers.'
-        : '';
-    return '${row['name']}. $status.$questions$score$replays';
+    return [
+      t.journeyResultStudent('${row['name']}', status),
+      if (row['question_count'] is int && row['question_count'] > 0)
+        t.journeyResultFirstTime(
+          '${row['first_try_correct']}',
+          '${row['question_count']}',
+        ),
+      if (row['percentage'] is num)
+        t.journeyRowScore('${(row['percentage'] as num).round()}'),
+      if (row['replays'] is int && row['replays'] > 0)
+        t.journeyResultWrongAnswers('${row['replays']}'),
+    ].join(' ');
   }
 
   String _question(Map row) {
+    final t = Speech.t;
     final rate = row['first_try_rate'];
     final attempts = row['average_attempts'];
-    return 'Step ${(row['step_index'] as int) + 1}. ${row['text']}. '
-        '${row['answered']} answered. '
-        '${rate is num ? '${rate.round()} percent right first time.' : 'No answers yet.'}'
-        '${attempts is num ? ' Average $attempts tries.' : ''}';
+    return [
+      t.journeyResultQuestion(
+        '${(row['step_index'] as int) + 1}',
+        '${row['text']}',
+        '${row['answered']}',
+      ),
+      rate is num
+          ? t.journeyResultRate('${rate.round()}')
+          : t.journeyResultNoAnswers,
+      if (attempts is num) t.journeyResultAverageTries('$attempts'),
+    ].join(' ');
   }
 
   String _poll(Map row) {
@@ -95,8 +114,12 @@ class _JourneyResultsScreenState extends State<JourneyResultsScreen> {
         .whereType<Map>()
         .map((option) => '${option['text']}: ${option['count']}')
         .join(', ');
-    return 'Step ${(row['step_index'] as int) + 1}. ${row['text']}. '
-        '${row['answered']} answered. $options.';
+    return Speech.t.journeyResultPoll(
+      '${(row['step_index'] as int) + 1}',
+      '${row['text']}',
+      '${row['answered']}',
+      options,
+    );
   }
 
   Future<void> _browse(
@@ -115,39 +138,47 @@ class _JourneyResultsScreenState extends State<JourneyResultsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = Speech.t;
     final students = _list('students');
     final questions = _list('questions');
     final polls = _list('polls');
     return JourneyMenu(
-      title: 'Results: ${widget.journey.title}',
+      title: t.journeyResultsTitle(widget.journey.title),
       introduction: _summary(),
       details: _summary(),
       issue: _issue,
       busy: _busy,
       choices: [
         JourneyChoice(
-          'Hear class summary',
+          t.journeyResultsHearSummary,
           () => unawaited(TtsService.speak(_summary())),
         ),
         JourneyChoice(
-          'Students, ${students.length}',
-          () => unawaited(_browse('Students', students, _student)),
+          t.journeyResultsStudents('${students.length}'),
+          () => unawaited(
+            _browse(t.journeyResultsStudentsTitle, students, _student),
+          ),
           enabled: students.isNotEmpty,
-          unavailableReason: 'No students are in this class.',
+          unavailableReason: t.journeyResultsNoStudents,
         ),
         JourneyChoice(
-          'Questions, ${questions.length}. Shows which parts need teaching again',
-          () => unawaited(_browse('Questions', questions, _question)),
+          t.journeyResultsQuestions('${questions.length}'),
+          () => unawaited(
+            _browse(t.journeyResultsQuestionsTitle, questions, _question),
+          ),
           enabled: questions.isNotEmpty,
-          unavailableReason: 'This journey has no questions.',
+          unavailableReason: t.journeyResultsNoQuestions,
         ),
         JourneyChoice(
-          'Poll answers, ${polls.length}',
-          () => unawaited(_browse('Poll answers', polls, _poll)),
+          t.journeyResultsPolls('${polls.length}'),
+          () => unawaited(_browse(t.journeyResultsPollsTitle, polls, _poll)),
           enabled: polls.isNotEmpty,
-          unavailableReason: 'This journey has no polls.',
+          unavailableReason: t.journeyResultsNoPolls,
         ),
-        JourneyChoice('Refresh results', () => unawaited(_load(announce: true))),
+        JourneyChoice(
+          t.journeyResultsRefresh,
+          () => unawaited(_load(announce: true)),
+        ),
       ],
     );
   }

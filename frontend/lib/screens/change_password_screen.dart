@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../l10n/speech.dart';
 import '../services/api_service.dart';
 import '../services/auth_session_service.dart';
 import '../services/message_center.dart';
@@ -32,7 +33,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   final _keypadController = KeypadNavigationController();
   String? _error;
   bool _busy = false;
-  static const _busyMessage = 'Saving. Waiting for password-change confirmation.';
+  static String get _busyMessage => Speech.t.authChangePasswordBusy;
 
   /// Shows and speaks [message] once at critical priority; when a field
   /// needs fixing, focus moves there without a competing announcement.
@@ -51,29 +52,20 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   Future<void> _save() async {
     if (_busy) return;
     if (_current.text.isEmpty) {
-      _fail(
-        'Enter your temporary credential. Moved to that field.',
-        fix: _currentFocus,
-      );
+      _fail(Speech.t.authChangePasswordErrorEnterTemporary, fix: _currentFocus);
       return;
     }
     if (_password.text.length < 6) {
-      _fail(
-        'Enter a new password of at least 6 characters. Moved to new password.',
-        fix: _passwordFocus,
-      );
+      _fail(Speech.t.authChangePasswordErrorTooShort, fix: _passwordFocus);
       return;
     }
     if (_password.text != _repeat.text) {
-      _fail(
-        'The new passwords do not match. Moved to repeat new password.',
-        fix: _repeatFocus,
-      );
+      _fail(Speech.t.authChangePasswordErrorMismatch, fix: _repeatFocus);
       return;
     }
     if (_password.text == _current.text) {
       _fail(
-        'Choose a password different from the temporary credential. Moved to new password.',
+        Speech.t.authChangePasswordErrorSameAsTemporary,
         fix: _passwordFocus,
       );
       return;
@@ -96,7 +88,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
           prefs.getInt('user_id') == userId &&
           prefs.getBool('must_change_password') == true;
       if (token == null || userId == null || !sameAccount()) {
-        _fail('This recovery session is no longer active. Sign in again.');
+        _fail(Speech.t.authChangePasswordSessionInactive);
         return;
       }
       final result = await ApiService.postAcknowledged(
@@ -107,20 +99,16 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       );
       if (!mounted) return;
       if (!sameAccount()) {
-        _fail('Your account changed. No replacement sign-in was saved.');
+        _fail(Speech.t.authChangePasswordAccountChanged);
         return;
       }
       if (!result.isSuccess) {
-        _fail(
-          '${result.failure!.message} Password change is not confirmed. If the connection failed, try signing in with your new password before requesting another reset.',
-        );
+        _fail(Speech.t.authChangePasswordNotConfirmed(result.failure!.message));
         return;
       }
       final data = result.data!;
       if (data['user_id'] != userId || data['must_change_password'] != false) {
-        _fail(
-          'The password-change response could not be verified. Try signing in again with your new password.',
-        );
+        _fail(Speech.t.authChangePasswordResponseNotVerified);
         return;
       }
       await AuthSessionService.saveLoginState(data, expectedToken: token);
@@ -134,17 +122,11 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         context,
       ).pushNamedAndRemoveUntil('/${data['role']}_dashboard', (_) => false);
     } on FormatException {
-      _fail(
-        'The replacement sign-in could not be verified. Sign in again with your new password.',
-      );
+      _fail(Speech.t.authChangePasswordReplacementNotVerified);
     } on StateError {
-      _fail(
-        'Your sign-in could not be saved. Sign in again with your new password.',
-      );
+      _fail(Speech.t.authChangePasswordSignInNotSaved);
     } on PlatformException {
-      _fail(
-        'Your sign-in could not be saved on this phone. Sign in again with your new password.',
-      );
+      _fail(Speech.t.authChangePasswordSignInNotSavedOnPhone);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -180,10 +162,18 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       (
         controller: _current,
         node: _currentFocus,
-        label: 'Temporary credential',
+        label: Speech.t.authTemporaryCredential,
       ),
-      (controller: _password, node: _passwordFocus, label: 'New password'),
-      (controller: _repeat, node: _repeatFocus, label: 'Repeat new password'),
+      (
+        controller: _password,
+        node: _passwordFocus,
+        label: Speech.t.authNewPassword,
+      ),
+      (
+        controller: _repeat,
+        node: _repeatFocus,
+        label: Speech.t.authRepeatNewPassword,
+      ),
     ];
     OutlineInputBorder border(Color color, double width) => OutlineInputBorder(
       borderRadius: BorderRadius.circular(12),
@@ -199,39 +189,36 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         if (!didPop) _signOut();
       },
       child: KeypadInstructionWrapper(
-        screenName: 'Change temporary password',
-        introduction:
-            'Enter the temporary credential from your administrator, then a '
-            'new password of at least 6 characters, twice. Internet is '
-            'required. The dashboard opens after the new password is confirmed.',
-        labels: const {4: 'Save new password', 0: 'Sign out'},
+        screenName: Speech.t.authChangePasswordScreenName,
+        introduction: Speech.t.authChangePasswordIntro,
+        labels: {4: Speech.t.authSaveNewPassword, 0: Speech.t.authSignOut},
         navigationController: _keypadController,
         actions: {4: _save, 0: _signOut},
         focusTargets: [
           KeypadFocusTarget(
             node: _currentFocus,
-            label: 'Temporary credential. Hidden input.',
+            label: Speech.t.authTemporaryCredentialField,
             isTextField: true,
           ),
           KeypadFocusTarget(
             node: _passwordFocus,
-            label: 'New password. At least 6 characters. Hidden input.',
+            label: Speech.t.authNewPasswordField,
             isTextField: true,
           ),
           KeypadFocusTarget(
             node: _repeatFocus,
-            label: 'Repeat new password. Hidden input.',
+            label: Speech.t.authRepeatNewPasswordField,
             isTextField: true,
           ),
           KeypadFocusTarget(
             node: _saveFocus,
-            label: 'Save new password, button',
+            label: Speech.t.authSaveNewPasswordButton,
             onActivate: _save,
             isEnabled: () => !_busy,
           ),
           KeypadFocusTarget(
             node: _signOutFocus,
-            label: 'Sign out, asks to confirm',
+            label: Speech.t.authSignOutConfirmButton,
             onActivate: _signOut,
             isEnabled: () => !_busy,
           ),
@@ -247,7 +234,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   Semantics(
                     header: true,
                     child: Text(
-                      'Change password',
+                      Speech.t.authChangePasswordTitle,
                       style: TextStyle(
                         color: UIUtils.textColor,
                         fontSize: UIUtils.fontSize(context, 22),
@@ -256,13 +243,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Text(
-                    'Your school administrator issued a temporary credential. '
-                    'It lasts 24 hours. After 10 wrong attempts, sign-in '
-                    'pauses for 15 minutes. Choose a different password of at '
-                    'least 6 characters. This requires internet.',
-                    style: bodyStyle,
-                  ),
+                  Text(Speech.t.authChangePasswordInfo, style: bodyStyle),
                   for (final field in fields) ...[
                     const SizedBox(height: 12),
                     TextField(
@@ -330,7 +311,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                       ),
                     ),
                     child: Text(
-                      '4: Save new password',
+                      Speech.t.authSaveNewPasswordKey,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: UIUtils.fontSize(context, 16),
@@ -343,7 +324,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                     focusNode: _signOutFocus,
                     onPressed: _busy ? null : _signOut,
                     child: Text(
-                      '0: Sign out',
+                      Speech.t.authSignOutKey,
                       style: TextStyle(
                         fontSize: UIUtils.fontSize(context, 16),
                         color: _busy

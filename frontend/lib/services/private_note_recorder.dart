@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import '../l10n/speech.dart';
 import 'private_note_store.dart';
 import 'tts_service.dart';
 
@@ -30,7 +31,7 @@ class PrivateNoteRecorder extends ChangeNotifier {
   bool _finishing = false;
   bool get active => busy || recording || _id != null || _finishing;
   bool recording = false;
-  String status = 'No recording active.';
+  String status = Speech.t.notesNoRecordingActive;
   String? issue;
   bool _disposed = false;
   void _changed() {
@@ -42,8 +43,8 @@ class PrivateNoteRecorder extends ChangeNotifier {
     issue = error is PrivateNoteException
         ? error.message
         : error is PlatformException
-        ? (error.message ?? 'The microphone could not record this note.')
-        : 'Recording could not be confirmed. Its partial files are kept. Check microphone permission and storage.';
+        ? (error.message ?? Speech.t.notesMicCouldNotRecord)
+        : Speech.t.notesRecordingNotConfirmed;
     _changed();
   }
 
@@ -65,23 +66,23 @@ class PrivateNoteRecorder extends ChangeNotifier {
     _changed();
     try {
       if (liveSessions > 0 || !canRecord()) {
-        throw const PrivateNoteException(
-          'Leave the live session and open private notes before recording.',
+        throw PrivateNoteException(
+          Speech.t.notesLeaveLiveSession,
         );
       }
       if (!await _permission()) {
-        throw const PrivateNoteException(
-          'Microphone permission was not granted. No recording started. Enable it in Android settings and retry.',
+        throw PrivateNoteException(
+          Speech.t.notesMicPermissionDenied,
         );
       }
       if (!canRecord() || liveSessions > 0 || _disposed || _stopRequested) {
-        throw const PrivateNoteException(
-          'Recording was cancelled because the screen or app changed. Start again when ready.',
+        throw PrivateNoteException(
+          Speech.t.notesRecordingCancelledChanged,
         );
       }
       if (!await TtsService.stopForVoiceCommands()) {
-        throw const PrivateNoteException(
-          'App speech did not stop. Check the TTS engine before recording.',
+        throw PrivateNoteException(
+          Speech.t.notesSpeechDidNotStop,
         );
       }
       final draft = await store.prepare(
@@ -92,14 +93,14 @@ class PrivateNoteRecorder extends ChangeNotifier {
       _store = store;
       _id = draft.note.id;
       if (!canRecord() || liveSessions > 0 || _disposed || _stopRequested) {
-        throw const PrivateNoteException(
-          'Recording did not start because the app changed. Its empty draft is kept for selected removal.',
+        throw PrivateNoteException(
+          Speech.t.notesRecordingDidNotStart,
         );
       }
       final owner = _nativeOwner;
       if (owner != null && !identical(owner, this) && owner.active) {
-        throw const PrivateNoteException(
-          'Another private recorder is still stopping. Return to it or background the app before recording.',
+        throw PrivateNoteException(
+          Speech.t.notesAnotherRecorderStopping,
         );
       }
       _nativeOwner = this;
@@ -114,14 +115,14 @@ class PrivateNoteRecorder extends ChangeNotifier {
           })
           .timeout(const Duration(seconds: 10));
       if (started != true) {
-        throw const PrivateNoteException(
-          'The native recorder did not confirm starting. The draft is kept.',
+        throw PrivateNoteException(
+          Speech.t.notesNativeStartNotConfirmed,
         );
       }
       if (_id != draft.note.id) return;
       recording = true;
       status =
-          'Recording. Stop before speaking to app controls. Maximum five minutes; stops on app narration or interruption.';
+          Speech.t.notesRecordingInProgress;
       _timer = Timer.periodic(const Duration(seconds: 1), (_) async {
         try {
           await store.checkAccount();
@@ -172,20 +173,20 @@ class PrivateNoteRecorder extends ChangeNotifier {
         _id = null;
         recording = false;
         status =
-            'Native capture is stopped. Any unfinished draft is kept for selected removal.';
+            Speech.t.notesNativeCaptureStopped;
         return;
       }
       if (result is! Map || result['id'] != _id) {
         if (_id == null) return;
-        throw const PrivateNoteException(
-          'Native recording stop was not confirmed. Background the app to stop capture before retrying.',
+        throw PrivateNoteException(
+          Speech.t.notesNativeStopNotConfirmed,
         );
       }
       await _finish(result);
     } on Exception catch (error) {
       _report(error);
       status =
-          'Recorder stop was not confirmed. Leave this screen or background the app to stop native capture before retrying.';
+          Speech.t.notesRecorderStopNotConfirmed;
     } finally {
       _changed();
     }
@@ -203,12 +204,12 @@ class PrivateNoteRecorder extends ChangeNotifier {
       if (result['error'] != null || result['reason'] == 'recorder_error') {
         throw PrivateNoteException(
           result['error']?.toString() ??
-              'The recorder failed. Its incomplete file is retained for selected removal.',
+              Speech.t.notesRecorderFailed,
         );
       }
       if (result['duration_ms'] is! int) {
-        throw const PrivateNoteException(
-          'The recorder duration was unreadable. Its incomplete file is kept.',
+        throw PrivateNoteException(
+          Speech.t.notesDurationUnreadable,
         );
       }
       await _store!.finish(
@@ -217,14 +218,14 @@ class PrivateNoteRecorder extends ChangeNotifier {
       );
       status =
           '${result['reason'] == 'limit'
-              ? 'Recording limit reached.'
+              ? Speech.t.notesRecordingLimitReached
               : result['reason'] == 'interrupted'
-              ? 'Recording interrupted.'
-              : 'Recording stopped.'} Private note saved on this phone. Review before publishing or sharing.';
+              ? Speech.t.notesRecordingInterrupted
+              : Speech.t.notesRecordingStopped} ${Speech.t.notesSavedOnPhone}';
     } on Exception catch (error) {
       _report(error);
       status =
-          'Recording stopped, but the note could not be finalized. Files are kept for selected removal.';
+          Speech.t.notesNotFinalized;
     }
     _finishing = false;
     if (_disposed) _releaseNative();

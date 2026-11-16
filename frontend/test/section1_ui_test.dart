@@ -141,6 +141,8 @@ void main() {
     );
 
     await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
+    expect(FocusManager.instance.primaryFocus?.debugLabel, 'settings-language');
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
     expect(FocusManager.instance.primaryFocus?.debugLabel, 'settings-volume');
     await tester.sendKeyEvent(LogicalKeyboardKey.arrowLeft);
     await tester.pump();
@@ -268,7 +270,10 @@ void main() {
   });
 }
 
-KeypadFocusTarget settingsTarget(WidgetTester tester, String debugLabel) => tester
-    .widget<KeypadInstructionWrapper>(find.byType(KeypadInstructionWrapper).first)
-    .focusTargets
-    .singleWhere((target) => target.node.debugLabel == debugLabel);
+KeypadFocusTarget settingsTarget(WidgetTester tester, String debugLabel) =>
+    tester
+        .widget<KeypadInstructionWrapper>(
+          find.byType(KeypadInstructionWrapper).first,
+        )
+        .focusTargets
+        .singleWhere((target) => target.node.debugLabel == debugLabel);

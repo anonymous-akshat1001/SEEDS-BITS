@@ -7,6 +7,8 @@ import 'package:flutter/services.dart' show PlatformException;
 import 'package:flutter/widgets.dart' show TextDirection;
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../l10n/speech.dart';
 import 'speech_engine.dart'
     if (dart.library.js_interop) 'speech_engine_web.dart';
 
@@ -51,7 +53,7 @@ class TtsService {
 
   /// Spoken and visible form, e.g. "1.75 times normal speed".
   static String describeSpeed(double rate) =>
-      '${formatSpeedMultiple(rate)} times normal speed';
+      Speech.t.ttsSpeedDescription(formatSpeedMultiple(rate));
 
   /// "1.75", "2", "0.5": no trailing zeros.
   static String formatSpeedMultiple(double rate) {
@@ -69,6 +71,11 @@ class TtsService {
   static Future<void>? _initializing;
   static Future<String>? _checkingVoice;
   static String _englishLanguage = 'en-IN';
+
+  /// The language chosen in Settings. [Speech.language] is the language
+  /// actually spoken: English when the chosen voice is not available.
+  static SpeechLanguage _selectedLanguage = SpeechLanguage.english;
+  static SpeechLanguage get selectedLanguage => _selectedLanguage;
   static bool _enabled = true;
   static double _speechRate = defaultSpeechRate;
   // Temporary speeds for particular screens (only the quiz uses this). The
@@ -140,7 +147,7 @@ class TtsService {
     try {
       await _tts.setSpeechRate(effectiveSpeechRate).timeout(_engineTimeout);
     } catch (error) {
-      _report('Speech speed could not be changed. Try again.', error);
+      _report(Speech.t.ttsSpeedChangeFailed, error);
     }
   }
 
@@ -151,29 +158,84 @@ class TtsService {
 
   static Future<void> _initialize() async {
     try {
-      final language = await _tts
-          .setLanguage(_englishLanguage)
-          .timeout(_engineTimeout);
-      if (language != 1) {
-        final fallback = await _tts
-            .setLanguage('en-US')
-            .timeout(_engineTimeout);
-        if (fallback != 1) throw StateError('No English TTS voice available');
-      }
+      await _applyLanguage();
       await _tts.awaitSpeakCompletion(true).timeout(_engineTimeout);
       await _applyVoiceSettings().timeout(_engineTimeout);
       _isInitialized = true;
-      issue.value = null;
+      if (Speech.language == _selectedLanguage) issue.value = null;
     } catch (error) {
-      _report(
-        'Speech is unavailable. Enable an English Android text-to-speech voice, '
-        'then use Test TTS in Settings.',
-        error,
-      );
+      _report(Speech.t.ttsUnavailable, error);
     } finally {
       _initializing = null;
     }
   }
+
+  /// Selects the voice for [_selectedLanguage], falling back to English
+  /// text and voice when that language has no voice on this device.
+  static Future<void> _applyLanguage() async {
+    if (_selectedLanguage != SpeechLanguage.english) {
+      Object? failure;
+      try {
+        final selected = await _tts
+            .setLanguage(_selectedLanguage.voiceLocale)
+            .timeout(_engineTimeout);
+        if (selected == 1) {
+          Speech.language = _selectedLanguage;
+          return;
+        }
+      } catch (error) {
+        failure = error;
+      }
+      Speech.language = SpeechLanguage.english;
+      _report(
+        Speech.t.ttsLanguageFallback(languageName(_selectedLanguage)),
+        failure ?? StateError('No ${_selectedLanguage.name} voice'),
+      );
+    }
+    Speech.language = SpeechLanguage.english;
+    final language = await _tts
+        .setLanguage(_englishLanguage)
+        .timeout(_engineTimeout);
+    if (language != 1) {
+      final fallback = await _tts.setLanguage('en-US').timeout(_engineTimeout);
+      if (fallback != 1) throw StateError('No English TTS voice available');
+    }
+  }
+
+  /// The name of [language], spoken in the current speech language.
+  static String languageName(SpeechLanguage language) {
+    final t = Speech.t;
+    return switch (language) {
+      SpeechLanguage.english => t.languageEnglish,
+      SpeechLanguage.hindi => t.languageHindi,
+      SpeechLanguage.kannada => t.languageKannada,
+      SpeechLanguage.telugu => t.languageTelugu,
+      SpeechLanguage.bengali => t.languageBengali,
+    };
+  }
+
+  /// Saves and applies the speech language. Returns false when the device
+  /// has no voice for it and SEEDS fell back to English.
+  static Future<bool> setSpeechLanguage(SpeechLanguage language) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_languageKey, language.code);
+    _selectedLanguage = language;
+    await stop();
+    if (_initializing != null) await _initializing;
+    if (!_isInitialized) {
+      await init();
+    } else {
+      try {
+        await _applyLanguage();
+        if (Speech.language == language) issue.value = null;
+      } catch (error) {
+        _report(Speech.t.ttsUnavailable, error);
+      }
+    }
+    return Speech.language == language;
+  }
+
+  static const _languageKey = 'speech_language';
 
   /// Follows Android TalkBack unless the user explicitly chose a speech mode
   /// in Settings, so app speech and the screen reader never talk together.
@@ -184,9 +246,7 @@ class TtsService {
     if (mode == _mode) return;
     await configure(mode: mode);
     await speak(
-      active
-          ? 'Screen reader detected. SEEDS will send its announcements to your screen reader.'
-          : 'Screen reader turned off. SEEDS will speak for itself.',
+      active ? Speech.t.ttsScreenReaderDetected : Speech.t.ttsScreenReaderOff,
       priority: SpeechPriority.critical,
     );
   }
@@ -194,6 +254,17 @@ class TtsService {
   static Future<void> loadFromPreferences() async {
     final prefs = await SharedPreferences.getInstance();
     await _migrateSpeechRate(prefs);
+    final language = SpeechLanguage.fromCode(prefs.getString(_languageKey));
+    if (language != _selectedLanguage) {
+      _selectedLanguage = language;
+      if (_isInitialized) {
+        try {
+          await _applyLanguage();
+        } catch (error) {
+          _report(Speech.t.ttsUnavailable, error);
+        }
+      }
+    }
     await configure(
       enabled: prefs.getBool('tts_enabled') ?? true,
       volume: prefs.getDouble('tts_volume') ?? 1.0,
@@ -222,23 +293,23 @@ class TtsService {
     await prefs.setInt(_speechRateVersionKey, _speechRateVersion);
   }
 
-  static Future<String> checkEnglishVoice() async {
+  /// Checks that the device has a voice for the chosen speech language.
+  static Future<String> checkVoice() async {
     try {
-      return await (_checkingVoice ??= _checkEnglishVoice());
+      return await (_checkingVoice ??= _checkVoice());
     } finally {
       _checkingVoice = null;
     }
   }
 
-  static Future<String> _checkEnglishVoice() async {
-    const recovery =
-        'Open Android Settings, find Text-to-speech output, select an English '
-        'voice and install its voice data. Return here and check again. '
-        'You can use your Android screen reader instead of app speech.';
+  static Future<String> _checkVoice() async {
+    final language = _selectedLanguage;
+    final english = language == SpeechLanguage.english;
     try {
       await init();
       await stop();
-      for (final locale in ['en-IN', 'en-US']) {
+      final locales = english ? ['en-IN', 'en-US'] : [language.voiceLocale];
+      for (final locale in locales) {
         final available = await _tts
             .isLanguageAvailable(locale)
             .timeout(_engineTimeout);
@@ -248,9 +319,10 @@ class TtsService {
         }
         final selected = await _tts.setLanguage(locale).timeout(_engineTimeout);
         if (selected != 1) {
-          throw StateError('English selection not acknowledged');
+          throw StateError('Language selection not acknowledged');
         }
-        _englishLanguage = locale;
+        if (english) _englishLanguage = locale;
+        Speech.language = language;
         final installed = await _tts
             .isLanguageInstalled(locale)
             .timeout(_engineTimeout);
@@ -258,26 +330,46 @@ class TtsService {
           throw StateError('Unexpected installed-language response');
         }
         issue.value = null;
+        final name = languageName(language);
         return installed
-            ? 'Android reports installed English voice data. Use Test TTS in '
-                  'Settings, then test it again in airplane mode before relying on '
-                  'offline speech. This check cannot prove that you can hear it.'
-            : 'English is available, but installed offline voice data was not '
-                  'confirmed. Speech may need internet. $recovery';
+            ? Speech.t.ttsVoiceInstalled(name)
+            : '${Speech.t.ttsVoiceNotOffline(name)} '
+                  '${Speech.t.ttsVoiceRecovery(name)}';
       }
-      _isInitialized = false;
-      _report(
-        'No English voice was detected. $recovery',
-        StateError('No English voice'),
+      final message = await _voiceProblem(
+        language,
+        (t, name) => t.ttsVoiceMissing(name),
       );
-      return 'No English voice was detected. $recovery';
+      if (english) _isInitialized = false;
+      _report(message, StateError('No ${language.name} voice'));
+      return message;
     } catch (error) {
-      _report(
-        'English voice availability could not be verified. $recovery',
-        error,
+      final message = await _voiceProblem(
+        language,
+        (t, name) => t.ttsVoiceUnverified(name),
       );
-      return 'English voice availability could not be verified. $recovery';
+      _report(message, error);
+      return message;
     }
+  }
+
+  /// A voice problem with recovery steps. For a language other than English
+  /// SEEDS returns to English speech, so the problem is said in English.
+  static Future<String> _voiceProblem(
+    SpeechLanguage language,
+    String Function(AppLocalizations t, String name) problem,
+  ) async {
+    if (language != SpeechLanguage.english) {
+      Speech.language = SpeechLanguage.english;
+      try {
+        await _tts.setLanguage(_englishLanguage).timeout(_engineTimeout);
+      } catch (_) {
+        // Reported by the caller; English speech is retried on next init.
+      }
+    }
+    final t = Speech.t;
+    final name = languageName(language);
+    return '${problem(t, name)} ${t.ttsVoiceRecovery(name)}';
   }
 
   static Future<void> configure({
@@ -301,10 +393,7 @@ class TtsService {
       await _applyVoiceSettings().timeout(_engineTimeout);
       issue.value = null;
     } catch (error) {
-      _report(
-        'Speech settings could not be applied. Try Test TTS again.',
-        error,
-      );
+      _report(Speech.t.ttsSettingsFailed, error);
     }
   }
 
@@ -354,7 +443,7 @@ class TtsService {
         _updates.update(key, (count) => count + 1, ifAbsent: () => 1);
       } else {
         _updates.update(
-          'Other updates',
+          _otherUpdatesKey,
           (count) => count + 1,
           ifAbsent: () => 1,
         );
@@ -402,7 +491,7 @@ class TtsService {
       unawaited(_utter(text, generation));
     } catch (error) {
       if (generation == _speechGeneration) {
-        _report('Speech could not start. Try Test TTS in Settings.', error);
+        _report(Speech.t.ttsCouldNotStart, error);
         await _finish(generation);
       }
     }
@@ -412,7 +501,7 @@ class TtsService {
     try {
       final result = await _tts.speak(text);
       if (result == 0 && generation == _speechGeneration) {
-        _report('Speech was not available. Try Test TTS in Settings.', result);
+        _report(Speech.t.ttsNotAvailable, result);
       } else if (generation == _speechGeneration) {
         _blocked = null;
         issue.value = null;
@@ -425,11 +514,11 @@ class TtsService {
         _blocked = text;
         debugPrint('[TTS] Waiting for a click or key press before speaking.');
       } else {
-        _report('Speech failed. Try Test TTS in Settings.', error);
+        _report(Speech.t.ttsFailed, error);
       }
     } catch (error) {
       if (generation == _speechGeneration) {
-        _report('Speech failed. Try Test TTS in Settings.', error);
+        _report(Speech.t.ttsFailed, error);
       }
     } finally {
       await _finish(generation);
@@ -477,10 +566,7 @@ class TtsService {
       try {
         await playback.resume().timeout(_engineTimeout);
       } catch (error) {
-        _report(
-          'The recorded lesson could not resume. Select Play to retry.',
-          error,
-        );
+        _report(Speech.t.ttsLessonResumeFailed, error);
       }
     }
   }
@@ -504,18 +590,29 @@ class TtsService {
     });
   }
 
+  static const _otherUpdatesKey = '\u0000other';
+
+  static String _updateGroupName(String key) =>
+      key == _otherUpdatesKey ? Speech.t.ttsOtherUpdates : key;
+
   static Future<void> readPendingUpdates() async {
     final entries = _updates.entries.toList();
     _updates.clear();
     final limit = _verbosity == SpeechVerbosity.detailed ? entries.length : 3;
+    final t = Speech.t;
     await speak(
       entries.isEmpty
-          ? 'No pending updates.'
+          ? t.ttsNoPendingUpdates
           : [
               for (final entry in entries.take(limit))
-                '${entry.key}${entry.value > 1 ? ', ${entry.value} updates' : ''}.',
+                entry.value > 1
+                    ? t.ttsUpdateGroupCount(
+                        _updateGroupName(entry.key),
+                        entry.value,
+                      )
+                    : t.ttsUpdateGroup(_updateGroupName(entry.key)),
               if (entries.length > limit)
-                '${entries.length - limit} other update groups.',
+                t.ttsOtherUpdateGroups(entries.length - limit),
             ].join(' '),
     );
   }
@@ -537,10 +634,7 @@ class TtsService {
       await _tts.stop().timeout(_engineTimeout);
     } catch (error) {
       stopped = false;
-      _report(
-        'Speech could not be stopped. Check the Android TTS engine.',
-        error,
-      );
+      _report(Speech.t.ttsStopFailed, error);
     }
     await _resumePaused(generation);
     return stopped;

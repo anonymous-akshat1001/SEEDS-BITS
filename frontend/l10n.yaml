@@ -1,0 +1,8 @@
+# Spoken (TTS) text. English is the template; add translations to the other
+# app_<language>.arb files using the same keys. See lib/l10n/README.md.
+arb-dir: lib/l10n
+template-arb-file: app_en.arb
+output-localization-file: app_localizations.dart
+output-class: AppLocalizations
+nullable-getter: false
+untranslated-messages-file: lib/l10n/untranslated.json

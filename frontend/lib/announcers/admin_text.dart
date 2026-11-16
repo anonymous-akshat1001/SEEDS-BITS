@@ -1,23 +1,28 @@
-import '../utils/spoken_format.dart';
+﻿import '../l10n/speech.dart';
 import 'announce.dart';
 
 /// Spoken text for the administrator dashboard.
 abstract final class AdminText {
-  static const saveFailed =
-      'The change could not be saved. Press 1 to refresh, then try again.';
+  static String get saveFailed => Speech.t.adminSaveFailed;
+
+  static String _position(int index, int total) =>
+      Speech.t.dashboardPosition('${index + 1}', '$total');
 
   /// "Class: Class 5, 2 of 6. Use left or right to change".
   static String choiceLabel(String what, String name, int index, int total) =>
-      '$what: $name${total > 1 ? ', ${index + 1} of $total' : ''}. Use left or right to change';
+      total > 1
+      ? Speech.t.adminChoiceLabel(what, name, _position(index, total))
+      : Speech.t.adminChoiceLabelSingle(what, name);
 
   /// Spoken after left or right: "Class 5, 2 of 6."
-  static String choiceChanged(String name, int index, int total) =>
-      '$name${total > 1 ? ', ${index + 1} of $total' : ''}.';
+  static String choiceChanged(String name, int index, int total) => total > 1
+      ? Speech.t.adminChoiceChanged(name, _position(index, total))
+      : Speech.t.adminChoiceChangedSingle(name);
 
   static String classAndSubject(String className, String subject) =>
-      '$className selected. $subject subject selected.';
+      Speech.t.adminClassAndSubject(className, subject);
 
-  static const noSubjects = 'The selected class has no active subjects.';
+  static String get noSubjects => Speech.t.adminNoSubjects;
 
   /// Star summary: "Section: accounts. Showing 12 students. Filter: all."
   static String state({
@@ -25,17 +30,20 @@ abstract final class AdminText {
     required int shown,
     String? filter,
     String search = '',
-  }) => Announce.pick(
-    brief: 'Section: $section. ${SpokenFormat.count(shown, 'item')} shown.',
-    detailed: [
-      'Section: $section.',
-      '${SpokenFormat.count(shown, 'item')} shown.',
-      if (filter != null) 'Filter: $filter.',
-      if (search.isNotEmpty) 'Search: $search.',
-    ].join(' '),
-  );
+  }) {
+    final t = Speech.t;
+    return Announce.pick(
+      brief: '${t.adminStateSection(section)} ${t.adminStateShown(shown)}',
+      detailed: [
+        t.adminStateSection(section),
+        t.adminStateShown(shown),
+        if (filter != null) t.adminStateFilter(filter),
+        if (search.isNotEmpty) t.adminStateSearch(search),
+      ].join(' '),
+    );
+  }
 
-  static const noSubjectName = 'No subject name entered. Nothing was created.';
-  static const noClassName = 'No class name entered. Nothing was created.';
-  static const noActiveSubjects = 'This class has no active subjects.';
+  static String get noSubjectName => Speech.t.adminNoSubjectName;
+  static String get noClassName => Speech.t.adminNoClassName;
+  static String get noActiveSubjects => Speech.t.adminNoActiveSubjects;
 }

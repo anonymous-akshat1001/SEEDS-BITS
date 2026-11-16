@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frontend/widgets/key_instruction_wrapper.dart';
 import 'package:frontend/main.dart';
+import 'package:frontend/l10n/speech.dart';
 import 'package:frontend/screens/settings_screen.dart';
 import 'package:frontend/services/tts_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -34,6 +35,11 @@ void main() {
             if (scenario == 'missing') return false;
             if (scenario == 'fallback') return call.arguments == 'en-US';
             return true;
+          }
+          if (call.method == 'setLanguage' &&
+              scenario == 'noHindi' &&
+              call.arguments == 'hi-IN') {
+            return 0;
           }
           if (call.method == 'isLanguageInstalled') {
             return scenario != 'network';
@@ -216,5 +222,50 @@ void main() {
     expect(app.initialRoute, '/login');
     expect(app.routes!.keys, isNot(contains('/keypad_practice')));
     await tester.pumpWidget(const SizedBox.shrink());
+  });
+
+  group('speech language', () {
+    tearDown(() => TtsService.setSpeechLanguage(SpeechLanguage.english));
+
+    testWidgets('selects the matching voice and translated text', (
+      tester,
+    ) async {
+      final available = await TtsService.setSpeechLanguage(
+        SpeechLanguage.hindi,
+      );
+      expect(available, isTrue);
+      expect(
+        calls.lastWhere((call) => call.method == 'setLanguage').arguments,
+        'hi-IN',
+      );
+      expect(Speech.language, SpeechLanguage.hindi);
+      expect(Speech.t.localeName, 'hi');
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getString('speech_language'), 'hi');
+    });
+
+    testWidgets('falls back to English text and voice without a voice', (
+      tester,
+    ) async {
+      scenario = 'noHindi';
+      final available = await TtsService.setSpeechLanguage(
+        SpeechLanguage.hindi,
+      );
+      expect(available, isFalse);
+      expect(Speech.language, SpeechLanguage.english);
+      expect(
+        calls.lastWhere((call) => call.method == 'setLanguage').arguments,
+        startsWith('en-'),
+      );
+      expect(TtsService.issue.value, contains('No Hindi voice'));
+      expect(TtsService.selectedLanguage, SpeechLanguage.hindi);
+    });
+
+    testWidgets('restores the saved language on startup', (tester) async {
+      SharedPreferences.setMockInitialValues({'speech_language': 'kn'});
+      await TtsService.loadFromPreferences();
+      expect(TtsService.selectedLanguage, SpeechLanguage.kannada);
+      expect(Speech.language, SpeechLanguage.kannada);
+    });
   });
 }

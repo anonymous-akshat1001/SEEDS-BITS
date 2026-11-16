@@ -1,5 +1,7 @@
 // lib/widgets/chat_panel.dart
 import 'package:flutter/material.dart';
+import '../announcers/session_text.dart';
+import '../l10n/speech.dart';
 import '../services/message_center.dart';
 import '../services/tts_service.dart';
 import '../services/sse_service.dart';
@@ -29,28 +31,35 @@ class _ChatPanelState extends State<ChatPanel> {
 
   void _readLatest() {
     if (messages.isEmpty) {
-      TtsService.speak('No messages yet.');
+      TtsService.speak(SessionText.noMessages);
     } else {
       final message = messages.last;
       final delivery = message['delivery'];
       TtsService.speak(
-        '${message['from']}: ${message['text']}'
-        '${delivery == null ? '' : '\nDelivery status: $delivery.'}',
+        SessionText.latestLine(
+          '${message['from']}',
+          '${message['text']}',
+          delivery,
+        ),
       );
     }
   }
 
   Future<void> _sendText() async {
     if (_sending) {
-      TtsService.speak('Waiting for message confirmation.');
+      TtsService.speak(SessionText.waitingMessage);
       return;
     }
     final txt = _ctrl.text.trim();
     if (txt.isEmpty) {
-      TtsService.speak('Enter a message before selecting Send.');
+      TtsService.speak(SessionText.emptyMessage);
       return;
     }
-    final message = {'from': 'me', 'text': txt, 'delivery': 'Sending'};
+    final message = {
+      'from': 'me',
+      'text': txt,
+      'delivery': SessionText.sending,
+    };
     setState(() {
       _sending = true;
       messages.add(message);
@@ -59,11 +68,13 @@ class _ChatPanelState extends State<ChatPanel> {
     if (!mounted) return;
     setState(() {
       _sending = false;
-      message['delivery'] = result.isSuccess ? 'Sent' : 'Not confirmed';
+      message['delivery'] = result.isSuccess
+          ? SessionText.sent
+          : SessionText.notConfirmed;
     });
     if (result.isSuccess) {
       if (_ctrl.text.trim() == txt) _ctrl.clear();
-      TtsService.speak('Message sent.');
+      TtsService.speak(SessionText.messageSent);
     } else {
       MessageCenter.error(result.failure!.message);
     }
@@ -74,12 +85,14 @@ class _ChatPanelState extends State<ChatPanel> {
     if (msg['type'] == 'chat') {
       final text = msg['text'] ?? msg['message'] ?? '';
       final from =
-          msg['sender_name'] ?? msg['participant_id']?.toString() ?? 'unknown';
+          msg['sender_name'] ??
+          msg['participant_id']?.toString() ??
+          Speech.t.chatSenderUnknownLower;
       if (text.toString().isEmpty) return;
       setState(() => messages.add({'from': from, 'text': text.toString()}));
       // Incidental: batched and deferred while live audio is active.
       TtsService.speak(
-        'Message from $from: $text',
+        SessionText.messageFrom('$from', '$text'),
         priority: SpeechPriority.incidental,
       );
     }
@@ -123,7 +136,7 @@ class _ChatPanelState extends State<ChatPanel> {
               onFocusChange: (focused) {
                 if (focused) {
                   TtsService.speak(
-                    'Read latest message',
+                    SessionText.readLatest,
                     priority: SpeechPriority.navigation,
                   );
                 }
@@ -132,7 +145,7 @@ class _ChatPanelState extends State<ChatPanel> {
                 focusNode: _readFocus,
                 onPressed: _readLatest,
                 icon: const Icon(Icons.mark_chat_read_outlined),
-                label: const Text('Read latest message'),
+                label: Text(Speech.t.chatReadLatest),
               ),
             ),
             Expanded(
@@ -143,9 +156,16 @@ class _ChatPanelState extends State<ChatPanel> {
                   final me = m['from'] == 'me';
                   final delivery = m['delivery'];
                   return Semantics(
-                    label:
-                        '${me ? 'You said' : '${m['from']} said'}: ${m['text'] ?? ''}'
-                        '${delivery == null ? '' : '. $delivery'}',
+                    label: delivery == null
+                        ? Speech.t.chatSaid(
+                            me ? Speech.t.chatYou : '${m['from']}',
+                            m['text'] ?? '',
+                          )
+                        : Speech.t.chatSaidDelivery(
+                            me ? Speech.t.chatYou : '${m['from']}',
+                            m['text'] ?? '',
+                            delivery,
+                          ),
                     excludeSemantics: true,
                     child: Align(
                       alignment: me
@@ -200,7 +220,7 @@ class _ChatPanelState extends State<ChatPanel> {
                     controller: _ctrl,
                     style: TextStyle(fontSize: textSize),
                     decoration: InputDecoration(
-                      labelText: 'Chat message',
+                      labelText: Speech.t.chatMessageLabel,
                       contentPadding: UIUtils.paddingSymmetric(
                         context,
                         horizontal: 8,
@@ -211,7 +231,7 @@ class _ChatPanelState extends State<ChatPanel> {
                   ),
                 ),
                 IconButton(
-                  tooltip: 'Send message',
+                  tooltip: Speech.t.chatSendMessage,
                   onPressed: _sending ? null : _sendText,
                   icon: Icon(Icons.send, size: UIUtils.iconSize(context, 24)),
                 ),

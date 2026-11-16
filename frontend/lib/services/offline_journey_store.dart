@@ -7,6 +7,7 @@ import 'package:flutter/services.dart' show MissingPluginException;
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../l10n/speech.dart';
 import 'journey_api.dart';
 import 'journey_engine.dart';
 import 'journey_models.dart';
@@ -60,20 +61,18 @@ class LessonStoreMedia implements JourneyMediaStore {
 class StreamOnlyMedia implements JourneyMediaStore {
   const StreamOnlyMedia();
 
-  static const unavailable =
-      'Downloading for offline use needs the SEEDS Android app. '
-      'In the browser, journeys play while you are online.';
+  static String get unavailable => Speech.t.journeyDownloadNeedsApp;
 
   @override
   Future<Set<int>> completeIds() async => <int>{};
 
   @override
   Future<void> download(int audioId, OfflineDownload operation) async =>
-      throw const OfflineJourneyException(unavailable);
+      throw OfflineJourneyException(unavailable);
 
   @override
   Future<String> localPath(int audioId) async =>
-      throw const OfflineJourneyException(unavailable);
+      throw OfflineJourneyException(unavailable);
 
   @override
   Future<void> remove(int audioId) async {}
@@ -205,9 +204,7 @@ class OfflineJourneyStore {
     final preferences = await SharedPreferences.getInstance();
     final id = preferences.getInt('user_id');
     if (id == null || id <= 0) {
-      throw const OfflineJourneyException(
-        'Sign in before opening learning journeys.',
-      );
+      throw OfflineJourneyException(Speech.t.journeySignInFirst);
     }
     if (kIsWeb) {
       return OfflineJourneyStore.browser(preferences: preferences, userId: id);
@@ -221,15 +218,11 @@ class OfflineJourneyStore {
         media: LessonStoreMedia(lessons),
       );
     } on MissingPlatformDirectoryException {
-      throw const OfflineJourneyException(
-        'Journey storage is unavailable on this device.',
-      );
+      throw OfflineJourneyException(Speech.t.journeyStorageUnavailableDevice);
     } on OfflineLessonException catch (error) {
       throw OfflineJourneyException(error.message);
     } on MissingPluginException {
-      throw const OfflineJourneyException(
-        'Journey storage is unavailable on this device.',
-      );
+      throw OfflineJourneyException(Speech.t.journeyStorageUnavailableDevice);
     }
   }
 
@@ -243,9 +236,7 @@ class OfflineJourneyStore {
       try {
         return await action();
       } on FileSystemException {
-        throw const OfflineJourneyException(
-          'Journey storage is unavailable. Check free space and try again. Nothing was deleted.',
-        );
+        throw OfflineJourneyException(Speech.t.journeyStorageFull);
       }
     });
     final tail = result.then<void>((_) {}, onError: (_) {});
@@ -330,15 +321,13 @@ class OfflineJourneyStore {
       if (complete.contains(id)) continue;
       final current = operation ?? OfflineDownload();
       if (current.cancelled) {
-        throw const OfflineJourneyException(
-          'Download cancelled. Recordings already saved are kept.',
-        );
+        throw OfflineJourneyException(Speech.t.journeyDownloadCancelled);
       }
       try {
         await media.download(id, current);
       } on OfflineLessonException catch (error) {
         throw OfflineJourneyException(
-          '${error.message} $done of ${ids.length} recordings are saved.',
+          '${error.message} ${Speech.t.journeyRecordingsSaved('$done', '${ids.length}')}',
         );
       }
       done++;

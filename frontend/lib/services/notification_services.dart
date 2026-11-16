@@ -8,6 +8,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 // Shows local notifications on device
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../l10n/speech.dart';
 import './api_service.dart';
 import './tts_service.dart';
 import '../firebase_options.dart';
@@ -38,8 +39,8 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 
 // Singletion class of notification services
 class NotificationService {
-  static const privateTitle = 'SEEDS update';
-  static const privateBody = 'Open SEEDS to review your updates.';
+  static String get privateTitle => Speech.t.notificationPrivateTitle;
+  static String get privateBody => Speech.t.notificationPrivateBody;
   static Map<String, dynamic> privatePayload(Map<String, dynamic> data) => {
     for (final key in [
       'type',
@@ -268,10 +269,9 @@ class NotificationService {
   Future<void> _registrationUnavailable() async {
     debugPrint('[FCM] Account notification registration unavailable');
     await TtsService.speak(
-      'Notifications could not be registered. Refresh SEEDS to check class invitations.',
+      Speech.t.notificationRegistrationFailed,
       priority: SpeechPriority.incidental,
-      group:
-          'Notifications could not be registered. Refresh SEEDS to check class invitations',
+      group: Speech.t.notificationRegistrationFailed,
     );
   }
 
@@ -320,10 +320,10 @@ class NotificationService {
   // Show local notification (mobile only)
   Future<bool> showPrivateUpdate(Map<String, dynamic> payload) async {
     // notification channel configuration
-    const androidDetails = AndroidNotificationDetails(
+    final androidDetails = AndroidNotificationDetails(
       'session_channel',
-      'Session Notifications',
-      channelDescription: 'Notifications for session invitations and updates',
+      Speech.t.notificationChannelName,
+      channelDescription: Speech.t.notificationChannelDescription,
       importance: Importance.high,
       priority: Priority.high,
       showWhen: true,
@@ -339,7 +339,7 @@ class NotificationService {
       presentSound: true,
     );
 
-    const details = NotificationDetails(
+    final details = NotificationDetails(
       android: androidDetails,
       iOS: iosDetails,
     );
@@ -366,9 +366,9 @@ class NotificationService {
       '[NOTIFICATIONS] Private update display failed (${error.runtimeType})',
     );
     await TtsService.speak(
-      'An update arrived, but the phone notification could not be displayed. Open SEEDS to check updates.',
+      Speech.t.notificationDisplayFailed,
       priority: SpeechPriority.incidental,
-      group: 'notification-display-failure',
+      group: Speech.t.notificationDisplayFailed,
     );
     return false;
   }

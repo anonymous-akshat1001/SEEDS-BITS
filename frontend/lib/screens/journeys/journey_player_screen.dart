@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../l10n/speech.dart';
 import '../../services/api_service.dart';
 import '../../services/feedback_cues.dart';
 import '../../services/message_center.dart';
@@ -226,9 +227,7 @@ class _JourneyPlayerScreenState extends State<JourneyPlayerScreen>
       }
     }
     if (widget.offline) {
-      throw const OfflineJourneyException(
-        JourneyAnnouncer.notDownloaded,
-      );
+      throw OfflineJourneyException(JourneyAnnouncer.notDownloaded);
     }
     final resolve =
         widget.streamUrl ?? (id) => ApiService.mediaUrl('/audio/$id/stream');
@@ -311,7 +310,9 @@ class _JourneyPlayerScreenState extends State<JourneyPlayerScreen>
     await _quizSpeed.stop();
     if (!mounted) return;
     setState(() => _status = JourneyAnnouncer.finishedStatus);
-    _say('${prefix.isEmpty ? '' : '$prefix '}${JourneyAnnouncer.finished(_engine)}');
+    _say(
+      '${prefix.isEmpty ? '' : '$prefix '}${JourneyAnnouncer.finished(_engine)}',
+    );
     final store = widget.store;
     if (widget.preview || store == null) return;
     await _save();
@@ -322,9 +323,7 @@ class _JourneyPlayerScreenState extends State<JourneyPlayerScreen>
     }
     final report = await store.syncPending(widget.api);
     if (mounted && report.remaining > 0 && report.offline) {
-      setState(
-        () => _status = JourneyAnnouncer.sendLater,
-      );
+      setState(() => _status = JourneyAnnouncer.sendLater);
     }
   }
 
@@ -390,7 +389,7 @@ class _JourneyPlayerScreenState extends State<JourneyPlayerScreen>
         context,
         title: JourneyAnnouncer.leaveTitle,
         message: JourneyAnnouncer.leaveMessage(_engine.index + 1),
-        confirmLabel: 'Leave journey',
+        confirmLabel: Speech.t.journeyLeaveJourney,
       );
       if (!leave) {
         if (paused) await _audio.resume();
@@ -409,47 +408,48 @@ class _JourneyPlayerScreenState extends State<JourneyPlayerScreen>
   }
 
   Map<int, (String, VoidCallback)> _keys() {
+    final t = Speech.t;
     switch (_mode) {
       case _Mode.finished:
-        return {1: ('Play again', () => unawaited(_playAgain()))};
+        return {1: (t.journeyKeyPlayAgain, () => unawaited(_playAgain()))};
       case _Mode.answer:
         final step = _engine.current!;
         return {
           for (var i = 0; i < step.options.length; i++)
             i + 1: (step.options[i], () => _choose(i)),
-          5: ('Submit answer', () => unawaited(_submit())),
+          5: (t.journeyKeySubmitAnswer, () => unawaited(_submit())),
           6: (
-            'Repeat question',
+            t.journeyKeyRepeatQuestion,
             () => _say(JourneyAnnouncer.question(_engine)),
           ),
-          7: ('Slower speech', () => unawaited(_speed(-1))),
-          8: ('Where am I', _where),
-          9: ('Faster speech', () => unawaited(_speed(1))),
+          7: (t.journeyKeySlowerSpeech, () => unawaited(_speed(-1))),
+          8: (t.journeyKeyWhereAmI, _where),
+          9: (t.journeyKeyFasterSpeech, () => unawaited(_speed(1))),
         };
       case _Mode.content:
         final audio = _engine.current!.kind == JourneyStepKind.audio;
         return {
-          1: ('Where am I', _where),
-          2: ('Next step', () => unawaited(_next())),
-          3: ('Repeat this step', () => unawaited(_present())),
-          if (audio) 4: ('Back 10 seconds', () => unawaited(_seek(-10))),
+          1: (t.journeyKeyWhereAmI, _where),
+          2: (t.journeyKeyNextStep, () => unawaited(_next())),
+          3: (t.journeyKeyRepeatStep, () => unawaited(_present())),
+          if (audio) 4: (t.keyBack10Seconds, () => unawaited(_seek(-10))),
           5: (
-            audio ? 'Play or pause' : 'Read again',
+            audio ? t.keyPlayOrPause : t.journeyKeyReadAgain,
             () => unawaited(_togglePlay()),
           ),
-          if (audio) 6: ('Forward 10 seconds', () => unawaited(_seek(10))),
-          if (audio) 7: ('Slower', () => unawaited(_speed(-1))),
-          8: ('Previous recording or narration', () => unawaited(_previous())),
-          if (audio) 9: ('Faster', () => unawaited(_speed(1))),
+          if (audio) 6: (t.keyForward10Seconds, () => unawaited(_seek(10))),
+          if (audio) 7: (t.keySlower, () => unawaited(_speed(-1))),
+          8: (t.journeyKeyPreviousContent, () => unawaited(_previous())),
+          if (audio) 9: (t.keyFaster, () => unawaited(_speed(1))),
         };
     }
   }
 
   String _kindWord(JourneyStepKind kind) => switch (kind) {
-    JourneyStepKind.audio => 'Recording',
-    JourneyStepKind.narration => 'Narration',
-    JourneyStepKind.question => 'Question',
-    JourneyStepKind.poll => 'Poll',
+    JourneyStepKind.audio => Speech.t.journeyKindRecording,
+    JourneyStepKind.narration => Speech.t.journeyKindNarration,
+    JourneyStepKind.question => Speech.t.journeyKindQuestion,
+    JourneyStepKind.poll => Speech.t.journeyKindPoll,
   };
 
   @override
@@ -457,16 +457,18 @@ class _JourneyPlayerScreenState extends State<JourneyPlayerScreen>
     final keys = _keys();
     final step = _engine.current;
     final mode = _mode;
-    final title =
-        '${widget.preview ? 'Preview: ' : ''}${widget.snapshot.title}';
+    final t = Speech.t;
+    final title = widget.preview
+        ? t.journeyPreviewTitle(widget.snapshot.title)
+        : widget.snapshot.title;
     final position = step == null
-        ? 'Finished'
-        : 'Step ${_engine.index + 1} of ${_engine.stepCount}';
+        ? t.journeyPositionFinished
+        : t.journeyStepPosition('${_engine.index + 1}', '${_engine.stepCount}');
     final ordered = keys.entries.toList()
       ..sort((a, b) => a.key.compareTo(b.key));
     String label(MapEntry<int, (String, VoidCallback)> entry) {
       final selected = mode == _Mode.answer && _selected == entry.key - 1;
-      return '${entry.value.$1}${selected ? ', selected' : ''}';
+      return selected ? t.journeySelectedLabel(entry.value.$1) : entry.value.$1;
     }
 
     return PopScope(
@@ -490,7 +492,7 @@ class _JourneyPlayerScreenState extends State<JourneyPlayerScreen>
         },
         labels: {
           for (final entry in ordered) entry.key: entry.value.$1,
-          0: 'Leave journey',
+          0: t.journeyLeaveJourney,
         },
         actions: {
           for (final entry in ordered) entry.key: entry.value.$2,
@@ -505,7 +507,7 @@ class _JourneyPlayerScreenState extends State<JourneyPlayerScreen>
             ),
           KeypadFocusTarget(
             node: _node('leave'),
-            label: '0. Leave journey. Your place is saved',
+            label: '0. ${t.journeyLeaveSaved}',
             onActivate: () => unawaited(_leave()),
           ),
         ],
@@ -514,7 +516,7 @@ class _JourneyPlayerScreenState extends State<JourneyPlayerScreen>
             child: !_ready
                 ? Center(
                     child: Semantics(
-                      label: 'Opening journey',
+                      label: Speech.t.journeyOpening,
                       child: const CircularProgressIndicator(),
                     ),
                   )
@@ -533,8 +535,15 @@ class _JourneyPlayerScreenState extends State<JourneyPlayerScreen>
                         Text(
                           step == null
                               ? position
-                              : '$position. ${_kindWord(step.kind)}'
-                                    '${_engine.replaying ? '. Listening again' : ''}',
+                              : _engine.replaying
+                              ? Speech.t.journeyStepHeadingReplay(
+                                  position,
+                                  _kindWord(step.kind),
+                                )
+                              : Speech.t.journeyStepHeading(
+                                  position,
+                                  _kindWord(step.kind),
+                                ),
                         ),
                         if (_issue != null)
                           Semantics(
@@ -559,10 +568,12 @@ class _JourneyPlayerScreenState extends State<JourneyPlayerScreen>
                               ),
                             ),
                           ),
-                        if (mode == _Mode.finished &&
-                            _engine.questionCount > 0)
+                        if (mode == _Mode.finished && _engine.questionCount > 0)
                           Text(
-                            '${_engine.firstTryCorrect} of ${_engine.questionCount} correct on the first try.',
+                            Speech.t.journeyFirstTryShort(
+                              '${_engine.firstTryCorrect}',
+                              '${_engine.questionCount}',
+                            ),
                           ),
                         for (final entry in ordered)
                           Padding(
@@ -576,9 +587,9 @@ class _JourneyPlayerScreenState extends State<JourneyPlayerScreen>
                         TextButton(
                           focusNode: _node('leave'),
                           onPressed: () => unawaited(_leave()),
-                          child: const Text('0: Leave journey'),
+                          child: Text(Speech.t.journeyLeaveKey0),
                         ),
-                        const Text('*: Help. #: Stop app speech.'),
+                        Text(Speech.t.uiKeypadFooter),
                       ],
                     ),
                   ),

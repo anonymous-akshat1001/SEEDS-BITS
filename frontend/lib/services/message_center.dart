@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../l10n/speech.dart';
 import '../utils/ui_utils.dart';
 import 'feedback_cues.dart';
 import 'tts_service.dart';
@@ -123,13 +124,13 @@ class MessageCenter {
   static String? spoken() {
     final message = last.value;
     if (message == null) return null;
-    final prefix = message.kind == MessageKind.error ? 'Last problem' : 'Last message';
-    return '$prefix: ${message.text}';
+    return message.kind == MessageKind.error
+        ? Speech.t.messageLastProblem(message.text)
+        : Speech.t.messageLast(message.text);
   }
 
-  static void repeat() => unawaited(
-    TtsService.speak(spoken() ?? 'There are no messages on this screen.'),
-  );
+  static void repeat() =>
+      unawaited(TtsService.speak(spoken() ?? Speech.t.commonNoMessages));
 
   static void clear() => last.value = null;
 }
@@ -166,7 +167,9 @@ class LastMessageBar extends StatelessWidget {
                 label: MessageCenter.spoken(),
                 excludeSemantics: true,
                 child: Text(
-                  '${error ? 'Problem' : 'Message'}: ${message.text}',
+                  error
+                      ? Speech.t.messageProblem(message.text)
+                      : Speech.t.messageMessage(message.text),
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(

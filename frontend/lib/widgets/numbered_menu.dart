@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../l10n/speech.dart';
 import '../services/tts_service.dart';
 import 'key_instruction_wrapper.dart';
 
@@ -54,7 +55,7 @@ class _NumberedMenuState extends State<NumberedMenu> {
     if (widget.onBack != null) {
       widget.onBack!();
     } else if (widget.isHome) {
-      unawaited(TtsService.speak('You are already home.'));
+      unawaited(TtsService.speak(Speech.t.uiAlreadyHome));
     } else {
       unawaited(Navigator.of(context).maybePop());
     }
@@ -65,9 +66,7 @@ class _NumberedMenuState extends State<NumberedMenu> {
     if (choice.enabled) {
       choice.onSelected();
     } else {
-      unawaited(
-        TtsService.speak('${choice.label} is not available right now.'),
-      );
+      unawaited(TtsService.speak(Speech.t.uiNotAvailableNow(choice.label)));
     }
   }
 
@@ -86,8 +85,9 @@ class _NumberedMenuState extends State<NumberedMenu> {
     autoPlay: widget.autoPlay,
     labels: {
       for (var index = 0; index < widget.choices.length; index++)
-        index + 1:
-            '${widget.choices[index].label}${widget.choices[index].enabled ? '' : ', unavailable'}',
+        index + 1: widget.choices[index].enabled
+            ? widget.choices[index].label
+            : Speech.t.uiLabelUnavailable(widget.choices[index].label),
     },
     actions: {
       0: _back,
@@ -102,7 +102,11 @@ class _NumberedMenuState extends State<NumberedMenu> {
           onActivate: () => _select(index),
           isEnabled: () => widget.choices[index].enabled,
         ),
-      KeypadFocusTarget(node: _backNode, label: 'Back', onActivate: _back),
+      KeypadFocusTarget(
+        node: _backNode,
+        label: Speech.t.uiBack,
+        onActivate: _back,
+      ),
     ],
     child: Scaffold(
       body: SafeArea(
@@ -133,9 +137,9 @@ class _NumberedMenuState extends State<NumberedMenu> {
               TextButton(
                 focusNode: _backNode,
                 onPressed: _back,
-                child: const Text('0: Back'),
+                child: Text(Speech.t.keypadBackKey0),
               ),
-              const Text('*: Help. #: Stop app speech.'),
+              Text(Speech.t.uiKeypadFooter),
             ],
           ),
         ),

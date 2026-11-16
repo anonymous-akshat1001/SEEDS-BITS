@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import '../announcers/session_text.dart';
+import '../l10n/speech.dart';
 import '../services/tts_service.dart';
 import '../utils/ui_utils.dart';
 import 'key_instruction_wrapper.dart';
@@ -31,11 +33,7 @@ class _ClassroomConsoleDialogState extends State<ClassroomConsoleDialog> {
   bool _pending = false;
   String? _issue;
   String? _result;
-  static const _help =
-      'Classroom console. Read summary for the last received classroom state. '
-      'Previous and Next select a raised hand without changing it. '
-      'Acknowledge lowers only the selected hand after server confirmation. '
-      'It never unmutes anyone. Older hands with unknown order are labelled separately.';
+  static String get _help => Speech.t.classroomConsoleHelp;
 
   FocusNode _node(String id) =>
       _nodes.putIfAbsent(id, () => FocusNode(debugLabel: 'console-$id'));
@@ -70,31 +68,33 @@ class _ClassroomConsoleDialogState extends State<ClassroomConsoleDialog> {
 
   String _description(List<Map<String, dynamic>> queue) {
     if (queue.isEmpty) {
-      return 'No raised hands in the last received classroom state.';
+      return SessionText.noHands;
     }
     final index = _index(queue);
     if (index < 0) {
-      return 'The selected hand is no longer in the queue. ${queue.length} raised hands remain. Use Next or Previous to select a hand.';
+      return Speech.t.classroomConsoleSelectedGone(queue.length);
     }
     final hand = queue[index];
     return '${_handTitle(queue, index)}. '
-        '${hand['hand_queue_order'] is int ? 'Server-recorded queue order.' : 'Original raise order unknown; shown before known-order hands.'} '
-        '${hand['is_muted'] == true ? 'Microphone reported muted.' : 'Microphone reported unmuted; this is not proof of speech.'}';
+        '${hand['hand_queue_order'] is int ? SessionText.knownOrder : SessionText.unknownOrder} '
+        '${hand['is_muted'] == true ? SessionText.reportedMuted : SessionText.reportedUnmuted}';
   }
 
   /// Short identity of a raised hand, position first:
   /// "Hand 2 of 5, Ravi, waiting".
   String _handTitle(List<Map<String, dynamic>> queue, int index) {
     final hand = queue[index];
-    return 'Hand ${index + 1} of ${queue.length}, '
-        '${hand['name'] ?? 'Participant ${hand['id']}'}, waiting';
+    return SessionText.handTitle(index, queue.length, _name(hand));
   }
 
   String _selectedTitle(List<Map<String, dynamic>> queue) {
-    if (queue.isEmpty) return 'No raised hands';
+    if (queue.isEmpty) return SessionText.noHandsShort;
     final index = _index(queue);
-    return index < 0 ? 'No hand selected' : _handTitle(queue, index);
+    return index < 0 ? SessionText.noHandSelected : _handTitle(queue, index);
   }
+
+  String _name(Map<String, dynamic> hand) =>
+      '${hand['name'] ?? Speech.t.classroomParticipantNumbered('${hand['id']}')}';
 
   /// Moves keypad focus once the frame that re-enables controls is built.
   void _focusAfter(String id) {
@@ -130,7 +130,7 @@ class _ClassroomConsoleDialogState extends State<ClassroomConsoleDialog> {
     }
     final index = _index(queue);
     final hand = queue[index];
-    final name = hand['name'] ?? 'Participant ${hand['id']}';
+    final name = _name(hand);
     var next = 'acknowledge';
     setState(() {
       _pending = true;
@@ -139,7 +139,7 @@ class _ClassroomConsoleDialogState extends State<ClassroomConsoleDialog> {
     });
     unawaited(
       TtsService.speak(
-        'Lowering hand for $name. Waiting for the server.',
+        SessionText.lowering(name),
         priority: SpeechPriority.navigation,
       ),
     );
@@ -161,9 +161,11 @@ class _ClassroomConsoleDialogState extends State<ClassroomConsoleDialog> {
           if (p['id'] != hand['id']) p,
       ];
       final result = remaining.isEmpty
-          ? 'Hand lowered for $name. The hand queue is now empty.'
-          : 'Hand lowered for $name. Next: '
-                '${_handTitle(remaining, index % remaining.length)}.';
+          ? SessionText.loweredLast(name)
+          : SessionText.loweredNext(
+              name,
+              _handTitle(remaining, index % remaining.length),
+            );
       setState(() {
         if (remaining.isNotEmpty) {
           _selectedId = remaining[index % remaining.length]['id'] as int;
@@ -182,9 +184,7 @@ class _ClassroomConsoleDialogState extends State<ClassroomConsoleDialog> {
 
   Future<void> _readSummary() async {
     final summary = widget.summary().trim();
-    await TtsService.speak(
-      summary.isEmpty ? 'No classroom summary is available yet.' : summary,
-    );
+    await TtsService.speak(summary.isEmpty ? SessionText.noSummary : summary);
   }
 
   @override
@@ -203,51 +203,53 @@ class _ClassroomConsoleDialogState extends State<ClassroomConsoleDialog> {
       final targets = [
         KeypadFocusTarget(
           node: _node('summary'),
-          label: 'Read classroom summary',
+          label: SessionText.readSummary,
           onActivate: _readSummary,
         ),
         KeypadFocusTarget(
           node: _node('previous'),
-          label: 'Previous raised hand',
+          label: SessionText.previousHand,
           isEnabled: () => !_pending,
           onActivate: () => _move(-1),
         ),
         KeypadFocusTarget(
           node: _node('read'),
-          label: 'Read selected hand. ${_selectedTitle(queue)}',
+          label: Speech.t.classroomReadHandLabel(_selectedTitle(queue)),
           onActivate: () => TtsService.speak(
             '${_description(_queue)} ${_issue ?? _result ?? ''}',
           ),
         ),
         KeypadFocusTarget(
           node: _node('next'),
-          label: 'Next raised hand',
+          label: SessionText.nextHand,
           isEnabled: () => !_pending,
           onActivate: () => _move(1),
         ),
         KeypadFocusTarget(
           node: _node('acknowledge'),
           label: _pending
-              ? 'Waiting for hand acknowledgment'
+              ? SessionText.waitingAck
               : queue.isEmpty || _index(queue) < 0
-              ? 'Acknowledge and lower selected hand. No hand selected'
-              : 'Lower ${queue[_index(queue)]['name'] ?? 'selected hand'}. Never unmutes',
+              ? SessionText.ackNoneSelected
+              : queue[_index(queue)]['name'] == null
+              ? Speech.t.classroomAckSelectedLabel
+              : SessionText.ackLabel('${queue[_index(queue)]['name']}'),
           isEnabled: () => !_pending,
           onActivate: _acknowledge,
         ),
         KeypadFocusTarget(
           node: _node('stop'),
-          label: 'Stop speech',
+          label: SessionText.stopSpeech,
           onActivate: TtsService.stop,
         ),
         KeypadFocusTarget(
           node: _node('help'),
-          label: 'Repeat console help',
+          label: SessionText.repeatConsoleHelp,
           onActivate: () => TtsService.speak(_help),
         ),
         KeypadFocusTarget(
           node: _node('back'),
-          label: 'Back to session',
+          label: SessionText.backToSession,
           onActivate: () => Navigator.pop(context),
         ),
       ];
@@ -264,22 +266,19 @@ class _ClassroomConsoleDialogState extends State<ClassroomConsoleDialog> {
 
       return KeypadInstructionWrapper(
         screenName: _help,
-        navigationSections:
-            'read classroom summary, previous hand, read selected hand, next hand, acknowledge hand, stop speech, help and back. If no hands or summary are available, selecting their controls reads that status',
+        navigationSections: SessionText.consoleSections,
         actions: {0: () => Navigator.pop(context)},
-        labels: const {0: 'Back to session'},
+        labels: {0: SessionText.backToSession},
         focusTargets: targets,
         child: AlertDialog(
-          title: const Text('Classroom console'),
+          title: Text(Speech.t.classroomConsoleTitle),
           scrollable: true,
           content: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             mainAxisSize: MainAxisSize.min,
             children: [
-              button('summary', 'Read classroom summary'),
-              const Text(
-                'Counts reflect the last received snapshot, not guaranteed audio delivery. Active speaker identification is unavailable.',
-              ),
+              button('summary', SessionText.readSummary),
+              Text(SessionText.snapshotNote),
               Text(_description(queue)),
               if (_issue != null)
                 Semantics(
@@ -303,17 +302,15 @@ class _ClassroomConsoleDialogState extends State<ClassroomConsoleDialog> {
               if (_pending)
                 Semantics(
                   liveRegion: true,
-                  child: const Text(
-                    'Waiting for server acknowledgment. No microphone is changed.',
-                  ),
+                  child: Text(SessionText.waitingAckNote),
                 ),
-              button('previous', 'Previous raised hand'),
-              button('read', 'Read selected hand'),
-              button('next', 'Next raised hand'),
-              button('acknowledge', 'Acknowledge and lower hand'),
-              button('stop', 'Stop speech'),
-              button('help', 'Repeat console help'),
-              button('back', 'Back to session'),
+              button('previous', SessionText.previousHand),
+              button('read', SessionText.readHand),
+              button('next', SessionText.nextHand),
+              button('acknowledge', SessionText.ackButton),
+              button('stop', SessionText.stopSpeech),
+              button('help', SessionText.repeatConsoleHelp),
+              button('back', SessionText.backToSession),
             ],
           ),
         ),

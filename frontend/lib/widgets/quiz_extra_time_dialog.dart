@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../announcers/quiz_text.dart';
+import '../l10n/speech.dart';
 import '../services/tts_service.dart';
 import '../utils/ui_utils.dart';
 import 'key_instruction_wrapper.dart';
@@ -68,13 +69,13 @@ class _QuizExtraTimeDialogState extends State<QuizExtraTimeDialog> {
     ],
     child: AlertDialog(
       scrollable: true,
-      title: Text('Extra time: ${widget.studentName}'),
+      title: Text(Speech.t.quizExtraTitle(widget.studentName)),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            'Future attempts only. Existing deadlines do not change. Quiz closing time still applies; extend availability separately if needed. Zero removes extra minutes.',
+            Speech.t.quizExtraInfo,
             style: TextStyle(color: UIUtils.textColor, fontSize: 16),
           ),
           TextField(
@@ -82,7 +83,9 @@ class _QuizExtraTimeDialogState extends State<QuizExtraTimeDialog> {
             controller: _text,
             keyboardType: TextInputType.number,
             style: TextStyle(color: UIUtils.textColor, fontSize: 18),
-            decoration: const InputDecoration(labelText: 'Extra minutes'),
+            decoration: InputDecoration(
+              labelText: Speech.t.quizExtraMinutesField,
+            ),
             onChanged: (_) => setState(() {}),
           ),
           if (_error != null)
@@ -100,12 +103,12 @@ class _QuizExtraTimeDialogState extends State<QuizExtraTimeDialog> {
           TextButton(
             focusNode: _save,
             onPressed: save,
-            child: const Text('Save future extra time'),
+            child: Text(Speech.t.quizExtraSaveButton),
           ),
           TextButton(
             focusNode: _cancel,
             onPressed: () => Navigator.pop(context),
-            child: const Text('0: Cancel'),
+            child: Text(Speech.t.uiCancelKey0),
           ),
         ],
       ),

@@ -6,6 +6,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 // Allows reading environment variables
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
+import '../l10n/speech.dart';
+
 // Backend and websocket URL
 final baseUrl = dotenv.env['API_BASE_URL'];
 final wsBaseUrl = dotenv.env['WS_BASE_URL'];
@@ -68,8 +70,7 @@ class ApiService {
         return ApiFailure(
           kind: ApiFailureKind.unauthorized,
           statusCode: statusCode,
-          message:
-              'Temporary-credential sign-in is paused for 15 minutes. Try later or contact your school administrator.',
+          message: Speech.t.apiTemporarySignInPaused,
         );
       }
       if (statusCode == 401 &&
@@ -77,8 +78,7 @@ class ApiService {
         return ApiFailure(
           kind: ApiFailureKind.unauthorized,
           statusCode: statusCode,
-          message:
-              'Your temporary credential expired. Contact your school administrator for a replacement.',
+          message: Speech.t.apiTemporaryCredentialExpired,
         );
       }
       if (statusCode == 400 &&
@@ -86,7 +86,7 @@ class ApiService {
         return ApiFailure(
           kind: ApiFailureKind.validation,
           statusCode: statusCode,
-          message: 'Choose a password different from the temporary credential.',
+          message: Speech.t.apiPasswordMustDiffer,
         );
       }
       if (statusCode == 401 && normalizedContext.contains('password change')) {
@@ -94,8 +94,8 @@ class ApiService {
           kind: ApiFailureKind.unauthorized,
           statusCode: statusCode,
           message: normalized.contains('invalid credentials')
-              ? 'The temporary credential was not accepted. Check it and try again.'
-              : 'Your recovery sign-in expired or changed. Sign in again.',
+              ? Speech.t.apiTemporaryCredentialRejected
+              : Speech.t.apiRecoverySignInExpired,
         );
       }
     }
@@ -106,14 +106,14 @@ class ApiService {
         return ApiFailure(
           kind: ApiFailureKind.validation,
           statusCode: statusCode,
-          message: 'Password must be at least 6 characters.',
+          message: Speech.t.authErrorPasswordTooShort,
           debugDetails: raw,
         );
       }
       return ApiFailure(
         kind: ApiFailureKind.validation,
         statusCode: statusCode,
-        message: 'Please check the information and try again.',
+        message: Speech.t.apiCheckInformation,
         debugDetails: raw,
       );
     }
@@ -122,8 +122,8 @@ class ApiService {
         kind: ApiFailureKind.unauthorized,
         statusCode: statusCode,
         message: normalizedContext.contains('login')
-            ? 'Invalid phone number or password.'
-            : 'You do not have permission to do that.',
+            ? Speech.t.apiInvalidLogin
+            : Speech.t.apiNoPermission,
         debugDetails: raw,
       );
     }
@@ -132,8 +132,8 @@ class ApiService {
         kind: ApiFailureKind.notFound,
         statusCode: statusCode,
         message: normalizedContext.contains('session')
-            ? 'Session not found. Check the session ID and try again.'
-            : 'The requested item was not found.',
+            ? Speech.t.apiSessionNotFound
+            : Speech.t.apiItemNotFound,
         debugDetails: raw,
       );
     }
@@ -141,7 +141,7 @@ class ApiService {
       return ApiFailure(
         kind: ApiFailureKind.server,
         statusCode: statusCode,
-        message: 'The service is temporarily unavailable. Please try again.',
+        message: Speech.t.apiServiceUnavailable,
         debugDetails: raw,
       );
     }
@@ -149,15 +149,14 @@ class ApiService {
       return ApiFailure(
         kind: ApiFailureKind.network,
         statusCode: statusCode,
-        message:
-            'We could not complete that request. Check your connection and try again.',
+        message: Speech.t.apiNetworkFailure,
         debugDetails: raw,
       );
     }
     return ApiFailure(
       kind: ApiFailureKind.unknown,
       statusCode: statusCode,
-      message: 'We could not complete that request. Please try again.',
+      message: Speech.t.apiUnknownFailure,
       debugDetails: raw,
     );
   }
@@ -189,10 +188,10 @@ class ApiService {
     final uri = await _buildUri(path);
     final headers = await _buildHeaders(useAuth: useAuth);
     if (canSend != null && !canSend()) {
-      return const ApiResult.failure(
+      return ApiResult.failure(
         ApiFailure(
           kind: ApiFailureKind.unauthorized,
-          message: 'Your account changed. This request was not sent.',
+          message: Speech.t.apiAccountChangedRequestNotSent,
         ),
       );
     }
@@ -269,12 +268,12 @@ class ApiService {
     final uri = await _buildUri(path);
     final headers = await _buildHeaders(useAuth: useAuth);
     if (canSend != null && !canSend()) {
-      const failure = ApiFailure(
+      final failure = ApiFailure(
         kind: ApiFailureKind.unauthorized,
-        message: 'Your account or session changed. This action was not sent.',
+        message: Speech.t.apiAccountOrSessionChanged,
       );
       _debugFailure('$method $path', failure);
-      return const ApiResult.failure(failure);
+      return ApiResult.failure(failure);
     }
     try {
       final request = method == 'PUT'
@@ -287,9 +286,7 @@ class ApiService {
           final failure = ApiFailure(
             kind: ApiFailureKind.unknown,
             statusCode: response.statusCode,
-            message:
-                'The service response could not be read. The action may have '
-                'been received; check its status before trying again.',
+            message: Speech.t.apiResponseUnreadable,
             debugDetails: 'Expected a JSON object response.',
           );
           _debugFailure('$method $path', failure);
@@ -323,12 +320,12 @@ class ApiService {
     final token = preferences.getString('token');
     final account = preferences.getInt('user_id');
     if (token == null || token.isEmpty) {
-      const failure = ApiFailure(
+      final failure = ApiFailure(
         kind: ApiFailureKind.unauthorized,
-        message: 'Sign in again before sending this action.',
+        message: Speech.t.apiSignInBeforeAction,
       );
       _debugFailure('POST $path', failure);
-      return const ApiResult.failure(failure);
+      return ApiResult.failure(failure);
     }
     bool currentAccount() =>
         preferences.getString('token') == token &&
@@ -343,12 +340,12 @@ class ApiService {
       canSend: () => currentAccount() && (canSend?.call() ?? true),
     );
     if (!currentAccount()) {
-      const failure = ApiFailure(
+      final failure = ApiFailure(
         kind: ApiFailureKind.unauthorized,
-        message: 'Your account changed. This action could not be confirmed.',
+        message: Speech.t.apiAccountChangedNotConfirmed,
       );
       _debugFailure('POST $path', failure);
-      return const ApiResult.failure(failure);
+      return ApiResult.failure(failure);
     }
     if (result.isSuccess && result.data?['ok'] == true) return result;
     final original = result.failure;
@@ -361,10 +358,7 @@ class ApiService {
       kind: original?.kind ?? ApiFailureKind.unknown,
       statusCode: original?.statusCode,
       debugDetails: original?.debugDetails,
-      message: ambiguous
-          ? 'The action was not confirmed. It may have reached the class. '
-                'Check its status before trying again.'
-          : original.message,
+      message: ambiguous ? Speech.t.apiActionNotConfirmed : original.message,
     );
     _debugFailure('POST $path', failure);
     return ApiResult.failure(failure);
@@ -381,10 +375,10 @@ class ApiService {
     final uri = await _buildUri(path);
     final headers = await _buildHeaders(useAuth: useAuth);
     if (canSend != null && !canSend()) {
-      return const ApiResult.failure(
+      return ApiResult.failure(
         ApiFailure(
           kind: ApiFailureKind.unauthorized,
-          message: 'Your account changed. This action was not sent.',
+          message: Speech.t.apiAccountChangedActionNotSent,
         ),
       );
     }
@@ -581,7 +575,7 @@ class ApiService {
           // Fall through to a plain error message below.
         }
         return {
-          'detail': res.body.isNotEmpty ? res.body : 'Request failed',
+          'detail': res.body.isNotEmpty ? res.body : Speech.t.apiRequestFailed,
           'status_code': res.statusCode,
         };
       }

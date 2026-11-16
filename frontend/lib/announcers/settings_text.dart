@@ -1,19 +1,24 @@
+import '../l10n/speech.dart';
+import '../services/tts_service.dart';
+import '../utils/spoken_format.dart';
+
 /// Spoken text for Settings.
 abstract final class SettingsText {
-  static String _onOff(bool value) => value ? 'on' : 'off';
+  static AppLocalizations get _t => Speech.t;
+  static String _onOff(bool value) => SpokenFormat.onOff(value);
 
-  static String soundCues(bool enabled) =>
-      'Sound cues ${_onOff(enabled)}.${enabled ? ' This is the saved sound.' : ''}';
-  static String vibration(bool enabled) =>
-      'Vibration ${_onOff(enabled)}.${enabled ? ' One short buzz means OK.' : ''}';
+  static String soundCues(bool enabled) => enabled
+      ? _t.settingsSoundCuesOnSaved(_onOff(true))
+      : _t.settingsSoundCues(_onOff(false));
+  static String vibration(bool enabled) => enabled
+      ? _t.settingsVibrationOnBuzz(_onOff(true))
+      : _t.settingsVibration(_onOff(false));
   static String soundCuesLabel(bool enabled) =>
-      'Sound cues, ${_onOff(enabled)}. Short sounds for correct, wrong, saved, errors and your turn to speak';
+      _t.settingsSoundCuesLabel(_onOff(enabled));
   static String vibrationLabel(bool enabled) =>
-      'Vibration, ${_onOff(enabled)}. One buzz for OK, two for an error, a long buzz for leaving';
-  static const soundCuesHelp =
-      'Short sounds for correct, wrong, saved, errors, end of list and your turn to speak. Saved immediately.';
-  static const vibrationHelp =
-      'One short buzz for OK, two for an error, one long buzz for leaving or ending. Saved immediately.';
+      _t.settingsVibrationLabel(_onOff(enabled));
+  static String get soundCuesHelp => _t.settingsSoundCuesHelp;
+  static String get vibrationHelp => _t.settingsVibrationHelp;
 
   /// Star summary of the current values.
   static String state({
@@ -24,15 +29,34 @@ abstract final class SettingsText {
     required bool highContrast,
     required bool soundCues,
     required bool vibration,
-  }) =>
-      'App speech ${_onOff(speech)}, speed $speed, volume $volume percent. '
-      'Text size $textSize percent. High contrast ${_onOff(highContrast)}. '
-      'Sound cues ${_onOff(soundCues)}. Vibration ${_onOff(vibration)}.';
+  }) => _t.settingsState(
+    _onOff(speech),
+    speed,
+    '$volume',
+    '$textSize',
+    _onOff(highContrast),
+    _onOff(soundCues),
+    _onOff(vibration),
+    TtsService.languageName(TtsService.selectedLanguage),
+  );
 
-  static String volume(int percent) => 'Volume $percent percent';
-  static String textSize(int percent) => 'Text size $percent percent';
-  static const speechOff = 'App speech off';
-  static const speechOn = 'App speech on';
-  static String speechMode(String description) => 'Speech mode. $description';
-  static String narration(String level) => 'Narration level $level.';
+  static String volume(int percent) => _t.settingsVolume('$percent');
+  static String textSize(int percent) => _t.settingsTextSize('$percent');
+  static String get speechOff => _t.settingsSpeechOff;
+  static String get speechOn => _t.settingsSpeechOn;
+  static String speechMode(String description) =>
+      _t.settingsSpeechMode(description);
+  static String narration(SpeechVerbosity level) =>
+      _t.settingsNarration(narrationName(level));
+
+  static String narrationName(SpeechVerbosity level) => switch (level) {
+    SpeechVerbosity.essential => _t.settingsNarrationEssential,
+    SpeechVerbosity.standard => _t.settingsNarrationStandard,
+    SpeechVerbosity.detailed => _t.settingsNarrationDetailed,
+  };
+
+  static String language(SpeechLanguage language) =>
+      _t.settingsLanguage(TtsService.languageName(language));
+  static String languageLabel(SpeechLanguage language) =>
+      _t.settingsLanguageLabel(TtsService.languageName(language));
 }

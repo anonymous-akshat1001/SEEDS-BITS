@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../l10n/speech.dart';
 import '../services/feedback_cues.dart';
 import '../services/tts_service.dart';
 import '../utils/ui_utils.dart';
@@ -38,8 +39,8 @@ class JourneyMenu extends StatefulWidget {
     this.onBack,
     this.details,
     this.autoPlay = true,
-    this.backLabel = 'Back',
-  }) {
+    String? backLabel,
+  }) : _backLabel = backLabel {
     if (choices.length > 5) {
       throw ArgumentError('A journey menu supports at most five choices.');
     }
@@ -60,7 +61,10 @@ class JourneyMenu extends StatefulWidget {
   /// Text read by key 8.
   final String? details;
   final bool autoPlay;
-  final String backLabel;
+  final String? _backLabel;
+
+  /// Label of key 0; "Back" unless the screen names it.
+  String get backLabel => _backLabel ?? Speech.t.uiBack;
 
   @override
   State<JourneyMenu> createState() => _JourneyMenuState();
@@ -94,16 +98,19 @@ class _JourneyMenuState extends State<JourneyMenu> {
   }
 
   /// "Ready. 2 new, 1 in progress. Press 1 for ..., press 0 for Back."
-  String _readyText() => [
-    'Ready.',
-    ?widget.issue,
-    ?widget.status,
-    for (var index = 0; index < widget.choices.length; index++)
-      'Press ${index + 1} for ${_label(index)}.',
-    if (widget.details != null || widget.introduction != null)
-      'Press 8 to read details again.',
-    'Press 0 for ${widget.backLabel}. Press star for help.',
-  ].join(' ');
+  String _readyText() {
+    final t = Speech.t;
+    return [
+      t.journeyMenuReady,
+      ?widget.issue,
+      ?widget.status,
+      for (var index = 0; index < widget.choices.length; index++)
+        t.uiPressFor('${index + 1}', _label(index)),
+      if (widget.details != null || widget.introduction != null)
+        t.journeyMenuReadDetailsHelp,
+      t.journeyMenuBackHelp(widget.backLabel),
+    ].join(' ');
+  }
 
   @override
   void dispose() {
@@ -124,20 +131,23 @@ class _JourneyMenuState extends State<JourneyMenu> {
 
   void _select(int index) {
     if (index >= widget.choices.length) {
-      unawaited(TtsService.speak('Nothing is assigned to ${index + 1}.'));
+      unawaited(
+        TtsService.speak(Speech.t.journeyMenuNothingAssigned('${index + 1}')),
+      );
       return;
     }
     final choice = widget.choices[index];
     if (widget.busy) {
-      unawaited(
-        TtsService.speak('Please wait. Still working. Press 0 to go back.'),
-      );
+      unawaited(TtsService.speak(Speech.t.journeyMenuPleaseWait));
     } else if (choice.enabled) {
       choice.onSelected();
     } else {
       unawaited(
         TtsService.speak(
-          '${choice.label} is not available. ${choice.unavailableReason ?? ''}',
+          Speech.t.commonUnavailableBecause(
+            choice.label,
+            choice.unavailableReason ?? '',
+          ),
         ),
       );
     }
@@ -155,11 +165,14 @@ class _JourneyMenuState extends State<JourneyMenu> {
 
   String _label(int index) {
     final choice = widget.choices[index];
-    return '${choice.label}${choice.enabled ? '' : ', unavailable'}';
+    return choice.enabled
+        ? choice.label
+        : Speech.t.uiLabelUnavailable(choice.label);
   }
 
   @override
   Widget build(BuildContext context) {
+    final t = Speech.t;
     final hasDetails = widget.details != null || widget.introduction != null;
     return PopScope(
       canPop: widget.onBack == null,
@@ -171,7 +184,7 @@ class _JourneyMenuState extends State<JourneyMenu> {
         screenName: widget.title,
         introduction: widget.introduction,
         stateSummary: () => [
-          if (widget.busy) 'Working, please wait.',
+          if (widget.busy) t.journeyMenuWorking,
           widget.issue,
           widget.status,
         ].whereType<String>().join(' '),
@@ -179,7 +192,7 @@ class _JourneyMenuState extends State<JourneyMenu> {
         labels: {
           for (var index = 0; index < widget.choices.length; index++)
             index + 1: _label(index),
-          if (hasDetails) 8: 'Read details again',
+          if (hasDetails) 8: t.journeyMenuReadDetails,
         },
         actions: {
           0: _back,
@@ -197,7 +210,7 @@ class _JourneyMenuState extends State<JourneyMenu> {
           if (hasDetails)
             KeypadFocusTarget(
               node: _readNode,
-              label: '8. Read details again',
+              label: '8. ${t.journeyMenuReadDetails}',
               onActivate: _read,
             ),
           KeypadFocusTarget(
@@ -227,7 +240,7 @@ class _JourneyMenuState extends State<JourneyMenu> {
                     ),
                   if (widget.busy)
                     Semantics(
-                      label: 'Working. Please wait',
+                      label: Speech.t.journeyMenuWorking,
                       child: const Padding(
                         padding: EdgeInsets.symmetric(vertical: 8),
                         child: LinearProgressIndicator(),
@@ -254,8 +267,12 @@ class _JourneyMenuState extends State<JourneyMenu> {
                         focusNode: _nodes[index],
                         onPressed: () => _select(index),
                         child: Text(
-                          '${index + 1}: ${widget.choices[index].label}'
-                          '${widget.choices[index].enabled ? '' : ' (unavailable)'}',
+                          widget.choices[index].enabled
+                              ? '${index + 1}: ${widget.choices[index].label}'
+                              : Speech.t.uiKeyedLabelUnavailable(
+                                  '${index + 1}',
+                                  widget.choices[index].label,
+                                ),
                         ),
                       ),
                     ),
@@ -263,14 +280,14 @@ class _JourneyMenuState extends State<JourneyMenu> {
                     TextButton(
                       focusNode: _readNode,
                       onPressed: _read,
-                      child: const Text('8: Read details again'),
+                      child: Text(Speech.t.journeyMenuReadDetailsKey8),
                     ),
                   TextButton(
                     focusNode: _backNode,
                     onPressed: _back,
                     child: Text('0: ${widget.backLabel}'),
                   ),
-                  const Text('*: Help. #: Stop app speech.'),
+                  Text(Speech.t.uiKeypadFooter),
                 ],
               ),
             ),

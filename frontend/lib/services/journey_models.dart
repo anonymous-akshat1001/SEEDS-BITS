@@ -1,6 +1,8 @@
 /// Data contracts for learning journeys, shared by teacher and student screens.
 library;
 
+import '../l10n/speech.dart';
+
 enum JourneyStepKind { audio, narration, question, poll }
 
 class JourneyStep {
@@ -121,10 +123,12 @@ class JourneyStep {
 
   /// Short spoken name, for example "Question. What is dal made from?".
   String get spokenName => switch (kind) {
-    JourneyStepKind.audio => 'Recording. ${title ?? 'Untitled recording'}',
-    JourneyStepKind.narration => 'Narration. $text',
-    JourneyStepKind.question => 'Question. $text',
-    JourneyStepKind.poll => 'Poll. $text',
+    JourneyStepKind.audio => Speech.t.journeyStepNameRecording(
+      title ?? Speech.t.journeyUntitledRecording,
+    ),
+    JourneyStepKind.narration => Speech.t.journeyStepNameNarration(text),
+    JourneyStepKind.question => Speech.t.journeyStepNameQuestion(text),
+    JourneyStepKind.poll => Speech.t.journeyStepNamePoll(text),
   };
 }
 
@@ -252,11 +256,13 @@ class JourneyDraft {
 
   String get statusWords {
     final base = switch (status) {
-      'published' => 'Published',
-      'archived' => 'Archived',
-      _ => 'Draft, not yet published',
+      'published' => Speech.t.journeyStatusPublished,
+      'archived' => Speech.t.journeyStatusArchived,
+      _ => Speech.t.journeyStatusDraft,
     };
-    return hasUnpublishedChanges ? '$base, with unpublished changes' : base;
+    return hasUnpublishedChanges
+        ? Speech.t.journeyStatusWithChanges(base)
+        : base;
   }
 
   factory JourneyDraft.parse(Object? value) {

@@ -10,6 +10,7 @@ import 'package:flutter_tts/flutter_tts.dart';
 // Allows reading environment variables
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 // Helps build the websocket link
+import '../l10n/speech.dart';
 import 'url_helper.dart';
 
 // Backend and websocket URL
@@ -73,12 +74,12 @@ class RtcService {
         _onWsMessage(data);
       },
       // Triggered when WebSocket closes
-      onDone: () => _tts.speak("Connection closed."),
+      onDone: () => _tts.speak(Speech.t.sessionRtcConnectionClosed),
       // Triggered on connection failure
-      onError: (e) => _tts.speak("Network error"),
+      onError: (e) => _tts.speak(Speech.t.sessionRtcNetworkError),
     );
 
-    _tts.speak("Connected to session $sessionId");
+    _tts.speak(Speech.t.sessionRtcConnected('$sessionId'));
   }
 
   // Exposes local audio stream
@@ -94,14 +95,14 @@ class RtcService {
       case 'joined':
         // remote participant idea
         final pid = data['participant_id'];
-        _tts.speak("Participant $pid joined.");
+        _tts.speak(Speech.t.sessionRtcParticipantJoined('$pid'));
         // start WebRTC connection with that participant
         await _createPeer(pid);
         break;
 
       case 'left':
         final pid = data['participant_id'];
-        _tts.speak("Participant $pid left.");
+        _tts.speak(Speech.t.sessionRtcParticipantLeft('$pid'));
         // close peer connection and free resources
         _closePeer(pid);
         break;
@@ -110,19 +111,19 @@ class RtcService {
       case 'mute_changed':
         final pid = data['participant_id'];
         final muted = data['muted'];
-        _tts.speak("Participant $pid is now ${muted ? 'muted' : 'unmuted'}");
+        _tts.speak(muted ? Speech.t.sessionRtcParticipantMuted('$pid') : Speech.t.sessionRtcParticipantUnmuted('$pid'));
         break;
 
       case 'chat':
         final msg = data['message'];
         // reads message aloud
-        _tts.speak("Message: $msg");
+        _tts.speak(Speech.t.sessionRtcMessage('$msg'));
         break;
 
       // audio playback sync
       case 'audio_play':
         final audioId = data['audio_id'];
-        _tts.speak("Teacher started playing audio $audioId");
+        _tts.speak(Speech.t.sessionRtcTeacherPlaying('$audioId'));
         // Optional: trigger synced playback here
         break;
 
@@ -156,7 +157,7 @@ class RtcService {
       if (event.streams.isNotEmpty) {
         // Saves incoming audio stream
         _remoteStreams[remoteId] = event.streams[0];
-        _tts.speak("Audio stream started for participant $remoteId");
+        _tts.speak(Speech.t.sessionRtcAudioStarted('$remoteId'));
       }
     };
 
@@ -212,7 +213,7 @@ class RtcService {
     _remoteStreams.clear();
     // stops microphone
     await _localStream?.dispose();
-    await _tts.speak("Disconnected");
+    await _tts.speak(Speech.t.sessionConnStateDisconnected);
     // close signalling channel
     _ws.sink.close();
   }

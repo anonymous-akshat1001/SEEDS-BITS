@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../l10n/speech.dart';
 import '../../services/undo_service.dart';
 import '../../services/message_center.dart';
 import '../../announcers/announce.dart';
@@ -47,7 +48,7 @@ class JourneyEditor extends ChangeNotifier {
       if (error.statusCode == 409) {
         try {
           journey = await api.teacherJourney(journey.journeyId);
-          issue = '${error.message} The latest version is now loaded.';
+          issue = Speech.t.journeyLatestLoaded(error.message);
         } on JourneyApiException {
           // Keep the older copy; the message already says to refresh.
         }
@@ -121,16 +122,17 @@ class _TeacherJourneysScreenState extends State<TeacherJourneysScreen> {
   List<JourneyDraft> _with(bool Function(JourneyDraft) test) =>
       _journeys.where(test).toList();
 
-  String _summary() =>
-      '${_with((j) => j.isDraft).length} drafts, '
-      '${_with((j) => j.isPublished).length} published, '
-      '${_with((j) => j.isArchived).length} archived.';
+  String _summary() => Speech.t.journeyTeacherSummary(
+    '${_with((j) => j.isDraft).length}',
+    '${_with((j) => j.isPublished).length}',
+    '${_with((j) => j.isArchived).length}',
+  );
 
   Future<void> _create() async {
     final title = await JourneyPrompts.askText(
       context,
-      title: 'New learning journey',
-      label: 'Journey name, for example: Food around us',
+      title: Speech.t.journeyNewJourneyTitle,
+      label: Speech.t.journeyNameExample,
       max: 160,
     );
     if (title == null || !mounted) return;
@@ -178,45 +180,45 @@ class _TeacherJourneysScreenState extends State<TeacherJourneysScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = Speech.t;
     final drafts = _with((j) => j.isDraft);
     final published = _with((j) => j.isPublished);
     final archived = _with((j) => j.isArchived);
-    const loadFirst = 'Press 5 to refresh the list first.';
+    final loadFirst = t.journeyRefreshFirst;
     return JourneyMenu(
-      title: 'Learning journeys',
-      introduction:
-          '${widget.workspaceName}. Build one flow of recordings, narration, questions and polls for students.',
+      title: t.journeyLearningJourneys,
+      introduction: t.journeyTeacherIntro(widget.workspaceName),
       status: _status,
       issue: _issue,
       busy: _busy,
       details: [_issue, _status].whereType<String>().join(' '),
       choices: [
         JourneyChoice(
-          'Create a new journey',
+          t.journeyCreateNew,
           () => unawaited(_create()),
           enabled: _loaded,
           unavailableReason: loadFirst,
         ),
         JourneyChoice(
-          'Drafts, ${drafts.length}',
-          () => unawaited(_list('Draft journeys', drafts)),
+          t.journeyDraftsCount('${drafts.length}'),
+          () => unawaited(_list(t.journeyDraftJourneys, drafts)),
           enabled: drafts.isNotEmpty,
-          unavailableReason: 'There are no drafts.',
+          unavailableReason: t.journeyNoDrafts,
         ),
         JourneyChoice(
-          'Published, ${published.length}',
-          () => unawaited(_list('Published journeys', published)),
+          t.journeyPublishedCount('${published.length}'),
+          () => unawaited(_list(t.journeyPublishedJourneys, published)),
           enabled: published.isNotEmpty,
-          unavailableReason: 'Nothing is published yet.',
+          unavailableReason: t.journeyNothingPublished,
         ),
         JourneyChoice(
-          'Archived, ${archived.length}',
-          () => unawaited(_list('Archived journeys', archived)),
+          t.journeyArchivedCount('${archived.length}'),
+          () => unawaited(_list(t.journeyArchivedJourneys, archived)),
           enabled: archived.isNotEmpty,
-          unavailableReason: 'Nothing is archived.',
+          unavailableReason: t.journeyNothingArchived,
         ),
         JourneyChoice(
-          'Refresh list',
+          t.journeyRefreshList,
           () => unawaited(_load(announce: true)),
         ),
       ],
@@ -229,17 +231,22 @@ class JourneyOverviewScreen extends StatelessWidget {
   const JourneyOverviewScreen({super.key, required this.editor});
   final JourneyEditor editor;
 
-  String _summary(JourneyDraft journey) =>
-      '${journey.statusWords}. ${journey.steps.length} steps, '
-      '${journey.steps.where((s) => s.kind == JourneyStepKind.question).length} questions. '
-      '${journey.graded ? 'Graded' : 'Not graded'}. '
-      '${journey.maxRetries} ${journey.maxRetries == 1 ? 'retry' : 'retries'} per question.';
+  String _summary(JourneyDraft journey) {
+    final t = Speech.t;
+    return t.journeyOverviewSummary(
+      journey.statusWords,
+      '${journey.steps.length}',
+      '${journey.steps.where((s) => s.kind == JourneyStepKind.question).length}',
+      journey.graded ? t.journeyGraded : t.journeyNotGraded,
+      t.journeyRetriesPerQuestion(journey.maxRetries),
+    );
+  }
 
   Future<void> _steps(BuildContext context) async {
     final steps = editor.journey.steps;
     final index = await JourneyPrompts.choose<int>(
       context,
-      title: 'Steps',
+      title: Speech.t.journeySteps,
       items: List.generate(steps.length, (i) => i),
       labelOf: (i) => JourneyAnnouncer.stepRow(steps, i),
     );
@@ -257,11 +264,17 @@ class JourneyOverviewScreen extends StatelessWidget {
     // Back from a step's first screen returns here, not to the journey.
     while (true) {
       if (!context.mounted) return;
+      final t = Speech.t;
       final kind = await JourneyPrompts.pick(
         context,
-        title: 'Add step ${position + 1}',
-        introduction: 'The new step goes at the end. You can move it later.',
-        choices: ['Recording', 'Narration read by the phone', 'Question', 'Poll, no wrong answer'],
+        title: t.journeyAddStepTitle('${position + 1}'),
+        introduction: t.journeyAddStepIntro,
+        choices: [
+          t.journeyChoiceRecording,
+          t.journeyChoiceNarration,
+          t.journeyChoiceQuestion,
+          t.journeyChoicePoll,
+        ],
       );
       if (kind == null) return;
       if (!context.mounted) return;
@@ -270,7 +283,7 @@ class JourneyOverviewScreen extends StatelessWidget {
       if (step == null || !context.mounted) return;
       await editor.saveSteps(
         [...editor.journey.steps, step],
-        'Saved as step ${position + 1}. ${step.spokenName}',
+        Speech.t.journeySavedAsStep('${position + 1}', step.spokenName),
       );
       return;
     }
@@ -304,8 +317,11 @@ class JourneyOverviewScreen extends StatelessWidget {
           if (!context.mounted) return (step: null, back: false);
           final source = await JourneyPrompts.pick(
             context,
-            title: 'Add a question',
-            choices: ['Write a new question', 'Choose from my question bank'],
+            title: Speech.t.journeyAddQuestion,
+            choices: [
+              Speech.t.journeyWriteNewQuestion,
+              Speech.t.journeyChooseFromBank,
+            ],
           );
           if (source == null) return (step: null, back: true);
           if (!context.mounted) return (step: null, back: false);
@@ -363,6 +379,7 @@ class JourneyOverviewScreen extends StatelessWidget {
   Widget build(BuildContext context) => ListenableBuilder(
     listenable: editor,
     builder: (context, _) {
+      final t = Speech.t;
       final journey = editor.journey;
       final empty = journey.steps.isEmpty;
       final canPublish = journey.isDraft || journey.hasUnpublishedChanges;
@@ -375,34 +392,36 @@ class JourneyOverviewScreen extends StatelessWidget {
         details: _summary(journey),
         choices: [
           JourneyChoice(
-            'Hear and edit steps',
+            t.journeyHearAndEdit,
             () => unawaited(_steps(context)),
             enabled: !empty,
-            unavailableReason: 'There are no steps yet. Press 2 to add one.',
+            unavailableReason: t.journeyNoStepsYet,
           ),
-          JourneyChoice('Add a step', () => unawaited(_add(context))),
+          JourneyChoice(t.journeyAddStep, () => unawaited(_add(context))),
           JourneyChoice(
-            'Preview as a student',
+            t.journeyPreviewAsStudent,
             () => unawaited(_preview(context)),
             enabled: !empty,
-            unavailableReason: 'Add a step first.',
+            unavailableReason: t.journeyAddStepFirst,
           ),
           canPublish
               ? JourneyChoice(
-                  journey.isDraft ? 'Publish to students' : 'Publish changes',
+                  journey.isDraft
+                      ? t.journeyPublishToStudents
+                      : t.journeyPublishChanges,
                   () => _open(context, JourneyPublishScreen(editor: editor)),
                   enabled: !empty,
-                  unavailableReason: 'Add a step first.',
+                  unavailableReason: t.journeyAddStepFirst,
                 )
               : JourneyChoice(
-                  'Student results',
+                  t.journeyStudentResults,
                   () => _open(
                     context,
                     JourneyResultsScreen(journey: journey, api: editor.api),
                   ),
                 ),
           JourneyChoice(
-            'More options',
+            t.journeyMoreOptions,
             () => _open(context, JourneyMoreOptionsScreen(editor: editor)),
           ),
         ],
@@ -459,7 +478,7 @@ class _JourneyStepMenuState extends State<JourneyStepMenu> {
     }
     await _editor.saveSteps(
       JourneySteps.replace(_steps, _index, edited),
-      'Step ${_index + 1} saved.',
+      Speech.t.journeyStepSaved('${_index + 1}'),
     );
   }
 
@@ -468,7 +487,7 @@ class _JourneyStepMenuState extends State<JourneyStepMenu> {
     if (target < 0 || target >= _steps.length) return;
     final saved = await _editor.saveSteps(
       JourneySteps.move(_steps, _index, target),
-      'Moved. This is now step ${target + 1} of ${_steps.length}.',
+      Speech.t.journeyMoved('${target + 1}', '${_steps.length}'),
     );
     if (saved && mounted) setState(() => _index = target);
   }
@@ -477,10 +496,9 @@ class _JourneyStepMenuState extends State<JourneyStepMenu> {
     final step = _steps[_index];
     final confirmed = await JourneyPrompts.confirm(
       context,
-      title: 'Remove step ${_index + 1}?',
-      message:
-          'Remove ${step.spokenName}? Recordings stay in your library. Questions that replayed this step will replay automatically instead.',
-      confirmLabel: 'Remove step',
+      title: Speech.t.journeyRemoveStepTitle('${_index + 1}'),
+      message: Speech.t.journeyRemoveStepMessage(step.spokenName),
+      confirmLabel: Speech.t.journeyRemoveStep,
     );
     if (!confirmed) return;
     final before = _steps;
@@ -504,16 +522,17 @@ class _JourneyStepMenuState extends State<JourneyStepMenu> {
   Widget build(BuildContext context) => ListenableBuilder(
     listenable: _editor,
     builder: (context, _) {
+      final t = Speech.t;
       if (_index >= _steps.length) {
         return JourneyMenu(
-          title: 'Step not found',
-          introduction: 'This step was removed. Press 0 to go back.',
+          title: t.journeyStepNotFound,
+          introduction: t.journeyStepWasRemoved,
           choices: const [],
         );
       }
       final details = JourneyAnnouncer.stepDetails(_steps[_index]);
       return JourneyMenu(
-        title: 'Step ${_index + 1} of ${_steps.length}',
+        title: t.journeyStepPosition('${_index + 1}', '${_steps.length}'),
         introduction: _steps[_index].spokenName,
         status: _editor.status,
         issue: _editor.issue,
@@ -521,23 +540,23 @@ class _JourneyStepMenuState extends State<JourneyStepMenu> {
         details: details,
         choices: [
           JourneyChoice(
-            'Hear this step in full',
+            t.journeyHearStepInFull,
             () => unawaited(TtsService.speak(details)),
           ),
-          JourneyChoice('Edit this step', () => unawaited(_edit())),
+          JourneyChoice(t.journeyEditStep, () => unawaited(_edit())),
           JourneyChoice(
-            'Move earlier',
+            t.journeyMoveEarlier,
             () => unawaited(_move(-1)),
             enabled: _index > 0,
-            unavailableReason: 'This is already the first step.',
+            unavailableReason: t.journeyAlreadyFirst,
           ),
           JourneyChoice(
-            'Move later',
+            t.journeyMoveLater,
             () => unawaited(_move(1)),
             enabled: _index < _steps.length - 1,
-            unavailableReason: 'This is already the last step.',
+            unavailableReason: t.journeyAlreadyLast,
           ),
-          JourneyChoice('Remove this step', () => unawaited(_remove())),
+          JourneyChoice(t.journeyRemoveThisStep, () => unawaited(_remove())),
         ],
       );
     },
@@ -552,13 +571,16 @@ class JourneyMoreOptionsScreen extends StatelessWidget {
   Future<void> _rename(BuildContext context) async {
     final title = await JourneyPrompts.askText(
       context,
-      title: 'Rename journey',
-      label: 'Journey name',
+      title: Speech.t.journeyRenameTitle,
+      label: Speech.t.journeyNameLabel,
       initial: editor.journey.title,
       max: 160,
     );
     if (title == null) return;
-    await editor.run('Renamed to $title.', () => editor.api.update(editor.journey, title: title));
+    await editor.run(
+      Speech.t.journeyRenamed(title),
+      () => editor.api.update(editor.journey, title: title),
+    );
   }
 
   Future<void> _duplicate(BuildContext context) async {
@@ -576,9 +598,11 @@ class JourneyMoreOptionsScreen extends StatelessWidget {
       final archive = journey.isPublished;
       final confirmed = await JourneyPrompts.confirm(
         context,
-        title: archive ? 'Archive this journey?' : 'Restore this journey?',
+        title: archive
+            ? Speech.t.journeyArchiveTitle
+            : Speech.t.journeyRestoreTitle,
         message: JourneyAnnouncer.archiveMessage(journey.title, archive: archive),
-        confirmLabel: archive ? 'Archive' : 'Restore',
+        confirmLabel: archive ? Speech.t.journeyArchive : Speech.t.journeyRestore,
       );
       if (!confirmed) return;
       await editor.run(
@@ -589,9 +613,9 @@ class JourneyMoreOptionsScreen extends StatelessWidget {
     }
     final confirmed = await JourneyPrompts.confirm(
       context,
-      title: 'Delete this draft?',
+      title: Speech.t.journeyDeleteDraftTitle,
       message: JourneyAnnouncer.deleteDraftMessage(journey.title),
-      confirmLabel: 'Delete draft',
+      confirmLabel: Speech.t.journeyDeleteDraft,
     );
     if (!confirmed || !context.mounted) return;
     try {
@@ -611,16 +635,17 @@ class JourneyMoreOptionsScreen extends StatelessWidget {
   Widget build(BuildContext context) => ListenableBuilder(
     listenable: editor,
     builder: (context, _) {
+      final t = Speech.t;
       final journey = editor.journey;
       return JourneyMenu(
-        title: 'More options',
+        title: t.journeyMoreOptions,
         introduction: journey.title,
         status: editor.status,
         issue: editor.issue,
         busy: editor.busy,
         choices: [
           JourneyChoice(
-            'Student results',
+            t.journeyStudentResults,
             () => unawaited(
               Navigator.of(context).push<void>(
                 MaterialPageRoute(
@@ -630,11 +655,13 @@ class JourneyMoreOptionsScreen extends StatelessWidget {
               ),
             ),
             enabled: journey.publishedRevision != null,
-            unavailableReason: 'Publish the journey first.',
+            unavailableReason: t.journeyPublishFirst,
           ),
-          JourneyChoice('Rename', () => unawaited(_rename(context))),
+          JourneyChoice(t.journeyRename, () => unawaited(_rename(context))),
           JourneyChoice(
-            'Grading and tries, now ${journey.graded ? 'graded' : 'not graded'}',
+            journey.graded
+                ? t.journeyGradingNowGraded
+                : t.journeyGradingNowNotGraded,
             () => unawaited(
               Navigator.of(context).push<void>(
                 MaterialPageRoute(
@@ -643,13 +670,16 @@ class JourneyMoreOptionsScreen extends StatelessWidget {
               ),
             ),
           ),
-          JourneyChoice('Duplicate as a new draft', () => unawaited(_duplicate(context))),
+          JourneyChoice(
+            t.journeyDuplicate,
+            () => unawaited(_duplicate(context)),
+          ),
           JourneyChoice(
             journey.isPublished
-                ? 'Archive, hide from students'
+                ? t.journeyArchiveHide
                 : journey.isArchived
-                ? 'Restore for students'
-                : 'Delete this draft',
+                ? t.journeyRestoreForStudents
+                : t.journeyDeleteThisDraft,
             () => unawaited(_archiveOrDelete(context)),
           ),
         ],
@@ -669,7 +699,7 @@ class JourneyGradingScreen extends StatelessWidget {
       return;
     }
     await editor.run(
-      '$next ${next == 1 ? 'retry' : 'retries'} per question.',
+      Speech.t.journeyRetriesPerQuestion(next),
       () => editor.api.update(editor.journey, maxRetries: next),
     );
   }
@@ -678,13 +708,14 @@ class JourneyGradingScreen extends StatelessWidget {
   Widget build(BuildContext context) => ListenableBuilder(
     listenable: editor,
     builder: (context, _) {
+      final t = Speech.t;
       final journey = editor.journey;
-      final summary =
-          '${journey.graded ? 'Graded: the first try at each question counts towards a score.' : 'Not graded: questions are for practice only.'} '
-          'After a wrong answer, a student gets ${journey.maxRetries} more '
-          '${journey.maxRetries == 1 ? 'try' : 'tries'}, with the content replayed first.';
+      final summary = [
+        journey.graded ? t.journeyGradedSummary : t.journeyNotGradedSummary,
+        t.journeyMoreTriesSummary(journey.maxRetries),
+      ].join(' ');
       return JourneyMenu(
-        title: 'Grading and tries',
+        title: t.journeyGradingTitle,
         introduction: summary,
         details: summary,
         status: editor.status,
@@ -692,16 +723,16 @@ class JourneyGradingScreen extends StatelessWidget {
         busy: editor.busy,
         choices: [
           JourneyChoice(
-            journey.graded ? 'Turn grading off' : 'Turn grading on',
+            journey.graded ? t.journeyTurnGradingOff : t.journeyTurnGradingOn,
             () => unawaited(
               editor.run(
-                journey.graded ? 'Grading is off.' : 'Grading is on.',
+                journey.graded ? t.journeyGradingIsOff : t.journeyGradingIsOn,
                 () => editor.api.update(journey, graded: !journey.graded),
               ),
             ),
           ),
-          JourneyChoice('Fewer tries', () => unawaited(_retries(-1))),
-          JourneyChoice('More tries', () => unawaited(_retries(1))),
+          JourneyChoice(t.journeyFewerTries, () => unawaited(_retries(-1))),
+          JourneyChoice(t.journeyMoreTries, () => unawaited(_retries(1))),
         ],
       );
     },
@@ -740,35 +771,43 @@ class _JourneyPublishScreenState extends State<JourneyPublishScreen> {
   }
 
   String _summary() {
+    final t = Speech.t;
     final preview = _preview;
-    if (preview == null) return _issue ?? 'Loading the summary.';
+    if (preview == null) return _issue ?? t.journeyLoadingSummary;
     final journey = widget.editor.journey;
     final steps = preview.snapshot.steps;
-    int count(JourneyStepKind kind) => steps.where((s) => s.kind == kind).length;
-    final problems = preview.issues.isEmpty
-        ? 'No problems.'
-        : 'Problems to fix before publishing: ${preview.issues.join(' ')}';
-    final warnings = preview.warnings.isEmpty
-        ? ''
-        : ' Things to check: ${preview.warnings.join(' ')}';
-    return '${journey.title}. ${steps.length} steps: ${count(JourneyStepKind.audio)} recordings, '
-        '${count(JourneyStepKind.narration)} narrations, ${count(JourneyStepKind.question)} questions, '
-        '${count(JourneyStepKind.poll)} polls. ${journey.graded ? 'Graded' : 'Not graded'}. '
-        '$problems$warnings';
+    String count(JourneyStepKind kind) =>
+        '${steps.where((s) => s.kind == kind).length}';
+    return [
+      t.journeyPublishSummary(
+        journey.title,
+        '${steps.length}',
+        count(JourneyStepKind.audio),
+        count(JourneyStepKind.narration),
+        count(JourneyStepKind.question),
+        count(JourneyStepKind.poll),
+        journey.graded ? t.journeyGraded : t.journeyNotGraded,
+      ),
+      preview.issues.isEmpty
+          ? t.journeyNoProblems
+          : t.journeyProblems(preview.issues.join(' ')),
+      if (preview.warnings.isNotEmpty)
+        t.journeyThingsToCheck(preview.warnings.join(' ')),
+    ].join(' ');
   }
 
   Future<void> _publish() async {
+    final t = Speech.t;
     final journey = widget.editor.journey;
     final confirmed = await JourneyPrompts.confirm(
       context,
-      title: 'Publish ${journey.title}?',
-      message:
-          'All students in this class will be able to play and download it, and they will get a notification.',
-      confirmLabel: 'Publish now',
+      title: t.journeyPublishTitle(journey.title),
+      message: t.journeyPublishMessage,
+      confirmLabel: t.journeyPublishNow,
     );
     if (!confirmed) return;
     var delivered = 0;
-    final saved = await widget.editor.run('Published.', () async {
+    final saved = await widget.editor.run(t.journeyPublishedShort, () async {
       final (published, sent) = await widget.editor.api.publish(journey);
       delivered = sent;
       return published;
@@ -783,9 +822,10 @@ class _JourneyPublishScreenState extends State<JourneyPublishScreen> {
   Widget build(BuildContext context) => ListenableBuilder(
     listenable: widget.editor,
     builder: (context, _) {
+      final t = Speech.t;
       final ready = _preview != null && _preview!.issues.isEmpty;
       return JourneyMenu(
-        title: 'Review before publishing',
+        title: t.journeyReviewBeforePublishing,
         introduction: _summary(),
         details: _summary(),
         autoPlay: false,
@@ -793,13 +833,13 @@ class _JourneyPublishScreenState extends State<JourneyPublishScreen> {
         busy: _loading || widget.editor.busy,
         choices: [
           JourneyChoice(
-            'Publish now',
+            t.journeyPublishNow,
             () => unawaited(_publish()),
             enabled: ready,
-            unavailableReason: 'Fix the problems first. Press 8 to hear them.',
+            unavailableReason: t.journeyFixProblemsFirst,
           ),
           JourneyChoice(
-            'Preview as a student first',
+            t.journeyPreviewFirst,
             () => unawaited(
               Navigator.of(context).push<void>(
                 MaterialPageRoute(

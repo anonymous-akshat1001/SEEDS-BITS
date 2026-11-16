@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../announcers/library_text.dart';
+import '../l10n/speech.dart';
 import '../services/message_center.dart';
 import '../widgets/keypad_choice_field.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -69,23 +70,23 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
   List<KeypadFocusTarget> get _focusTargets => [
     KeypadFocusTarget(
       node: _focusNode('back'),
-      label: 'Back',
+      label: Speech.t.libraryScreenBack,
       onActivate: () => Navigator.of(context).maybePop(),
     ),
     KeypadFocusTarget(
       node: _focusNode('refresh'),
-      label: 'Refresh audio files, key 1',
+      label: Speech.t.libraryScreenRefreshTarget,
       onActivate: _loadAudioFiles,
     ),
     if (widget.sessionId != null)
       KeypadFocusTarget(
         node: _focusNode('pause-session'),
-        label: 'Pause audio for the whole session, key 4',
+        label: Speech.t.libraryScreenPauseSessionTarget,
         onActivate: _pauseSessionAudio,
       ),
     KeypadFocusTarget(
       node: _focusNode('upload'),
-      label: 'Upload audio, key 2',
+      label: Speech.t.libraryScreenUploadTarget,
       onActivate: _uploadAudioFile,
       isEnabled: () => !_isUploading,
     ),
@@ -95,8 +96,7 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
           'preview-${_audioFiles[index]['audio_id'] ?? _audioFiles[index]['id']}',
         ),
         label:
-            '${_playingAudioId == (_audioFiles[index]['audio_id'] ?? _audioFiles[index]['id']) ? 'Stop preview of' : 'Preview'} '
-            '${_audioFiles[index]['title']} privately. Only you can hear this. '
+            '${_playingAudioId == (_audioFiles[index]['audio_id'] ?? _audioFiles[index]['id']) ? Speech.t.libraryScreenStopPreviewTarget('${_audioFiles[index]['title']}') : Speech.t.libraryScreenPreviewTarget('${_audioFiles[index]['title']}')} '
             '${_audioFiles[index]['description'] ?? ''}',
         onActivate: () => _playAudioLocally(
           (_audioFiles[index]['audio_id'] ?? _audioFiles[index]['id']) as int,
@@ -108,8 +108,9 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
           node: _focusNode(
             'broadcast-${_audioFiles[index]['audio_id'] ?? _audioFiles[index]['id']}',
           ),
-          label:
-              'Play ${_audioFiles[index]['title']} for everyone in the session',
+          label: Speech.t.libraryScreenBroadcastTarget(
+            '${_audioFiles[index]['title']}',
+          ),
           onActivate: () => _selectForSession(
             (_audioFiles[index]['audio_id'] ?? _audioFiles[index]['id']) as int,
             '${_audioFiles[index]['title']}',
@@ -138,7 +139,11 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
 
-  void _announce(String message, {bool error = false, SpeechPriority? priority}) {
+  void _announce(
+    String message, {
+    bool error = false,
+    SpeechPriority? priority,
+  }) {
     if (!mounted) return;
     setState(() {
       _statusMessage = message;
@@ -184,7 +189,7 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
       // Clear playing state
       setState(() => _playingAudioId = null);
 
-      _speakIfEnabled("Preview finished");
+      _speakIfEnabled(Speech.t.libraryScreenPreviewFinished);
     });
 
     // Triggered when player state changes
@@ -234,22 +239,17 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
 
         _announce(
           _audioFiles.isEmpty
-              ? 'No recordings yet. Press 2 to upload audio.'
-              : '${_audioFiles.length} recordings loaded.',
+              ? Speech.t.libraryScreenNoRecordings
+              : Speech.t.libraryScreenRecordingsLoaded(_audioFiles.length),
           priority: _loadedOnce ? null : SpeechPriority.incidental,
         );
         _loadedOnce = true;
       } else {
-        _announce(
-          'Could not load recordings. Check your internet connection, then press 1 to retry.',
-          error: true,
-        );
+        _announce(Speech.t.libraryScreenLoadFailed, error: true);
       }
     } catch (e) {
       print('[AUDIO LIBRARY] Error loading files: $e');
-      _showError(
-        'Could not load recordings. Check your internet connection, then press 1 to retry.',
-      );
+      _showError(Speech.t.libraryScreenLoadFailed);
     } finally {
       if (!mounted) {
         return;
@@ -287,7 +287,7 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
 
       void submit(BuildContext dialogContext) {
         if (_titleController.text.trim().isEmpty) {
-          _showError('Title is required');
+          _showError(Speech.t.libraryScreenTitleRequired);
           keypadController.enterTextEditing(titleNode);
           return;
         }
@@ -301,12 +301,12 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
       await showDialog(
         context: context,
         builder: (dialogContext) => KeypadInstructionWrapper(
-          screenName: 'Upload audio',
-          labels: const {
-            1: 'Edit Title',
-            2: 'Edit Description',
-            3: 'Upload',
-            0: 'Cancel',
+          screenName: Speech.t.libraryScreenUploadDialogName,
+          labels: {
+            1: Speech.t.libraryScreenEditTitleKey,
+            2: Speech.t.libraryScreenEditDescriptionKey,
+            3: Speech.t.libraryScreenUploadKey,
+            0: Speech.t.libraryScreenCancelKey,
           },
           actions: {
             1: () => keypadController.enterTextEditing(titleNode),
@@ -318,33 +318,33 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
           focusTargets: [
             KeypadFocusTarget(
               node: titleNode,
-              label: 'Audio title, required',
+              label: Speech.t.libraryScreenTitleField,
               isTextField: true,
             ),
             KeypadFocusTarget(
               node: descriptionNode,
-              label: 'Audio description, optional',
+              label: Speech.t.libraryScreenDescriptionField,
               isTextField: true,
             ),
             KeypadFocusTarget(
               node: cancelNode,
-              label: 'Cancel upload',
+              label: Speech.t.libraryScreenCancelUpload,
               onActivate: () => Navigator.pop(dialogContext),
             ),
             KeypadFocusTarget(
               node: uploadNode,
-              label: 'Upload audio',
+              label: Speech.t.libraryScreenUploadDialogName,
               onActivate: () => submit(dialogContext),
             ),
           ],
           child: AlertDialog(
             // Asks user for title and description
-            title: const Text('Upload Audio'),
+            title: Text(Speech.t.sessionUploadTitle),
             content: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text('File: ${file.name}'),
+                  Text(Speech.t.libraryUploadFileName(file.name)),
                   const SizedBox(height: 16),
 
                   TextField(
@@ -356,7 +356,7 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
                       color: UIUtils.textColor,
                     ),
                     decoration: InputDecoration(
-                      labelText: 'Title *',
+                      labelText: Speech.t.libraryTitleRequiredField,
                       labelStyle: TextStyle(color: UIUtils.subtextColor),
                       filled: true,
                       fillColor: UIUtils.backgroundColor,
@@ -383,7 +383,7 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
                       color: UIUtils.textColor,
                     ),
                     decoration: InputDecoration(
-                      labelText: 'Description',
+                      labelText: Speech.t.libraryUploadDescriptionField,
                       labelStyle: TextStyle(color: UIUtils.subtextColor),
                       filled: true,
                       fillColor: UIUtils.backgroundColor,
@@ -412,7 +412,7 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
                 focusNode: cancelNode,
                 onPressed: () => Navigator.pop(dialogContext),
                 child: Text(
-                  'Cancel (0)',
+                  Speech.t.libraryCancelKey0Button,
                   style: TextStyle(color: UIUtils.subtextColor),
                 ),
               ),
@@ -427,7 +427,7 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
                   ),
                   elevation: 0,
                 ),
-                child: const Text('Upload (3)'),
+                child: Text(Speech.t.libraryUploadKey3Button),
               ),
             ],
           ),
@@ -439,7 +439,7 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
       uploadNode.dispose();
     } catch (e) {
       print('[UPLOAD] Error: $e');
-      _showError("Failed to pick file");
+      _showError(Speech.t.libraryScreenPickFailed);
     }
   }
 
@@ -450,7 +450,7 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
     String description,
   ) async {
     if (title.trim().isEmpty) {
-      _showError("Title is required");
+      _showError(Speech.t.libraryScreenTitleRequired);
       return;
     }
 
@@ -475,14 +475,12 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
       }
     }
     if (classId == null || subjectId == null) {
-      _showError(
-        'Choose a class and subject workspace on the Teacher Dashboard before uploading audio.',
-      );
+      _showError(Speech.t.libraryScreenChooseWorkspace);
       return;
     }
 
     setState(() => _isUploading = true);
-    _announce('Uploading $title. You will hear progress every 25 percent.');
+    _announce(Speech.t.libraryScreenUploading(title));
 
     try {
       final headers = await ApiService.getHeaders();
@@ -562,7 +560,7 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
       final responseBody = await response.stream.bytesToString();
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
-        _announce('$title uploaded.');
+        _announce(Speech.t.libraryScreenUploaded(title));
         _titleController.clear();
         _descriptionController.clear();
         // Refresh list after upload
@@ -608,7 +606,7 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
         final reached = (sent * 100 ~/ total) ~/ 25 * 25;
         if (reached > milestone && reached < 100) {
           milestone = reached;
-          _announce('$title: $reached percent uploaded.');
+          _announce(Speech.t.libraryScreenUploadProgress(title, '$reached'));
         }
       },
       onDone: streamed.sink.close,
@@ -624,7 +622,7 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
       if (_playingAudioId == audioId) {
         await _audioPlayer.stop();
         setState(() => _playingAudioId = null);
-        await _speakIfEnabled("Preview of $title stopped");
+        await _speakIfEnabled(Speech.t.libraryScreenPreviewStopped(title));
         return;
       }
 
@@ -635,19 +633,17 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
       await _audioPlayer.play(UrlSource(url));
       // updates UI state
       setState(() => _playingAudioId = audioId);
-      await _speakIfEnabled("Previewing $title privately");
+      await _speakIfEnabled(Speech.t.libraryScreenPreviewing(title));
     } catch (e) {
       print('[PLAY] Error: $e');
-      _showError(
-        'Could not play $title. Check your connection and try again.',
-      );
+      _showError(Speech.t.libraryScreenPlayFailed(title));
     }
   }
 
   // Select audio for current session
   Future<void> _selectForSession(int audioId, String title) async {
     if (widget.sessionId == null) {
-      _showError("No active session");
+      _showError(Speech.t.libraryScreenNoActiveSession);
       return;
     }
 
@@ -663,17 +659,17 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
       if (result.isSuccess) {
         // update UI
         setState(() => _selectedAudioId = audioId);
-        await _speakIfEnabled("Selected $title for session");
+        await _speakIfEnabled(Speech.t.libraryScreenSelectedForSession(title));
         if (!mounted) return;
 
         // Ask if they want to play immediately
         final play = await showDialog<bool>(
           context: context,
           builder: (_) => KeypadConfirmationDialog(
-            title: 'Audio Selected',
-            message: 'Play "$title" for everyone in the session now?',
-            cancelLabel: 'Not Yet',
-            confirmLabel: 'Play Now',
+            title: Speech.t.libraryScreenAudioSelectedTitle,
+            message: Speech.t.libraryScreenPlayForEveryoneNow(title),
+            cancelLabel: Speech.t.libraryScreenNotYet,
+            confirmLabel: Speech.t.libraryScreenPlayNow,
             cancelKey: 0,
             confirmKey: 1,
           ),
@@ -687,7 +683,7 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
       }
     } catch (e) {
       print('[SELECT] Error: $e');
-      _showError("Failed to select audio");
+      _showError(Speech.t.libraryScreenSelectFailed);
     }
   }
 
@@ -705,13 +701,13 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
       if (!mounted) return;
 
       if (result.isSuccess) {
-        await _speakIfEnabled("Class playback request accepted");
+        await _speakIfEnabled(Speech.t.libraryScreenPlaybackAccepted);
       } else {
         _showError(result.failure!.message);
       }
     } catch (e) {
       print('[PLAY SESSION] Error: $e');
-      _showError("Failed to start playback");
+      _showError(Speech.t.libraryScreenPlaybackFailed);
     }
   }
 
@@ -727,13 +723,13 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
       if (!mounted) return;
 
       if (result.isSuccess) {
-        await _speakIfEnabled("Class pause request accepted");
+        await _speakIfEnabled(Speech.t.libraryScreenPauseAccepted);
       } else {
         _showError(result.failure!.message);
       }
     } catch (e) {
       print('[PAUSE] Error: $e');
-      _showError("Failed to pause audio");
+      _showError(Speech.t.libraryScreenPauseFailed);
     }
   }
 
@@ -771,14 +767,13 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
     final bool tiny = UIUtils.isTiny(context);
     final bool compact = tiny || UIUtils.isShort(context);
     return KeypadInstructionWrapper(
-      screenName: 'Audio library',
-      navigationSections:
-          'recordings, playback and speech controls, recording sharing, and upload tools when available',
+      screenName: Speech.t.libraryScreenAudioLibraryName,
+      navigationSections: Speech.t.libraryScreenAudioLibrarySections,
       labels: {
-        0: 'Back',
-        1: 'Refresh Audio Files',
-        2: 'Upload Audio',
-        if (widget.sessionId != null) 4: 'Pause Session Audio',
+        0: Speech.t.libraryScreenBack,
+        1: Speech.t.libraryScreenRefreshKey,
+        2: Speech.t.libraryScreenUploadAudioKey,
+        if (widget.sessionId != null) 4: Speech.t.libraryScreenPauseSessionKey,
       },
       actions: {
         0: () => Navigator.pop(context),
@@ -791,14 +786,14 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
         appBar: AppBar(
           leading: IconButton(
             focusNode: _focusNode('back'),
-            tooltip: 'Back',
+            tooltip: Speech.t.settingsBack,
             onPressed: () => Navigator.of(context).maybePop(),
             icon: const Icon(Icons.arrow_back),
           ),
           title: Text(
             widget.sessionId != null
-                ? 'Audio - Session ${widget.sessionId}'
-                : 'Audio Library',
+                ? Speech.t.libraryAudioSessionTitle('${widget.sessionId}')
+                : Speech.t.libraryScreenAudioLibraryName,
             style: TextStyle(
               fontSize: UIUtils.fontSize(context, 16),
               fontWeight: FontWeight.w600,
@@ -811,7 +806,7 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
           actions: [
             IconButton(
               focusNode: _focusNode('refresh'),
-              tooltip: 'Refresh audio files',
+              tooltip: Speech.t.libraryScreenRefreshKey,
               onPressed: _loadAudioFiles,
               icon: const Icon(Icons.refresh),
             ),
@@ -823,7 +818,7 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
                   size: UIUtils.iconSize(context, 24),
                   color: UIUtils.accentColor,
                 ),
-                tooltip: 'Pause audio for the whole session, key 4',
+                tooltip: Speech.t.libraryPauseSessionKey4,
                 onPressed: _pauseSessionAudio,
               ),
           ],
@@ -871,7 +866,9 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
                         size: UIUtils.iconSize(context, 18),
                       ),
                       label: Text(
-                        compact ? 'Upload Audio' : 'Upload New Audio',
+                        compact
+                            ? Speech.t.sessionUploadTitle
+                            : Speech.t.libraryUploadNewAudio,
                         style: TextStyle(
                           fontSize: UIUtils.fontSize(
                             context,
@@ -898,7 +895,7 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
                   Padding(
                     padding: UIUtils.paddingSymmetric(context, horizontal: 10),
                     child: Text(
-                      '${_audioFiles.length} recordings',
+                      Speech.t.libraryRecordingsCount('${_audioFiles.length}'),
                       style: TextStyle(
                         fontSize: UIUtils.fontSize(context, 14),
                         fontWeight: FontWeight.w700,
@@ -913,7 +910,7 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
                     child: _audioFiles.isEmpty
                         ? Center(
                             child: Text(
-                              'No recordings yet. Press 2 to upload audio.',
+                              Speech.t.libraryNoRecordingsUpload,
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: UIUtils.fontSize(context, 13),
@@ -930,7 +927,9 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
                             itemBuilder: (context, index) {
                               final audio = _audioFiles[index];
                               final audioId = audio['audio_id'] ?? audio['id'];
-                              final title = audio['title'] ?? 'Untitled';
+                              final title =
+                                  audio['title'] ??
+                                  Speech.t.libraryScreenUntitled;
                               final description = audio['description'] ?? '';
                               final uploadedAt = audio['uploaded_at'] ?? '';
                               final isPlaying = _playingAudioId == audioId;
@@ -954,7 +953,9 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
                                   ),
                                 ),
                                 color: isSelected
-                                    ? UIUtils.accentColor.withValues(alpha: 0.18)
+                                    ? UIUtils.accentColor.withValues(
+                                        alpha: 0.18,
+                                      )
                                     : UIUtils.cardColor,
                                 child: Padding(
                                   padding: UIUtils.paddingAll(
@@ -1068,7 +1069,9 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
                                             left: 30 * UIUtils.scale(context),
                                           ),
                                           child: Text(
-                                            'Uploaded: $uploadedAt',
+                                            Speech.t.libraryUploadedAt(
+                                              '$uploadedAt',
+                                            ),
                                             style: TextStyle(
                                               fontSize: UIUtils.fontSize(
                                                 context,
@@ -1117,14 +1120,26 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
                                               label: Text(
                                                 compact
                                                     ? (isPlaying
-                                                          ? 'Stop'
-                                                          : 'Preview')
+                                                          ? Speech.t.libraryStop
+                                                          : Speech
+                                                                .t
+                                                                .libraryPreview)
                                                     : (isPlaying
-                                                          ? 'Stop Preview'
-                                                          : 'Preview (Only Me)'),
+                                                          ? Speech
+                                                                .t
+                                                                .libraryStopPreview
+                                                          : Speech
+                                                                .t
+                                                                .libraryPreviewOnlyMe),
                                                 semanticsLabel: isPlaying
-                                                    ? 'Stop preview of $title'
-                                                    : 'Preview $title privately',
+                                                    ? Speech.t
+                                                          .libraryStopPreviewOf(
+                                                            '$title',
+                                                          )
+                                                    : Speech.t
+                                                          .libraryPreviewPrivately(
+                                                            '$title',
+                                                          ),
                                                 style: TextStyle(
                                                   fontSize: UIUtils.fontSize(
                                                     context,
@@ -1172,10 +1187,16 @@ class _AudioLibraryScreenState extends State<AudioLibraryScreen> {
                                                 ),
                                                 label: Text(
                                                   compact
-                                                      ? 'Session'
-                                                      : 'Play in Session',
-                                                  semanticsLabel:
-                                                      'Play $title for everyone in the session',
+                                                      ? Speech
+                                                            .t
+                                                            .librarySessionShort
+                                                      : Speech
+                                                            .t
+                                                            .libraryPlayInSession,
+                                                  semanticsLabel: Speech.t
+                                                      .libraryPlayForEveryone(
+                                                        '$title',
+                                                      ),
                                                   style: TextStyle(
                                                     fontSize: UIUtils.fontSize(
                                                       context,
@@ -1265,44 +1286,43 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
   List<KeypadFocusTarget> get _focusTargets => [
     KeypadFocusTarget(
       node: _focusNode('browse'),
-      label: 'Focus first active class. Use D-pad to browse active sessions',
+      label: Speech.t.libraryScreenBrowseTarget,
       onActivate: _focusFirstActiveClass,
     ),
     KeypadFocusTarget(
       node: _focusNode('back'),
-      label: 'Back',
+      label: Speech.t.libraryScreenBack,
       onActivate: () => Navigator.of(context).maybePop(),
     ),
     KeypadFocusTarget(
       node: _focusNode('refresh'),
-      label: 'Refresh classes',
+      label: Speech.t.libraryScreenRefreshClassesTarget,
       onActivate: _loadSessions,
     ),
     KeypadFocusTarget(
       node: _searchFocusNode,
-      label: 'Search class by name',
+      label: Speech.t.libraryScreenSearchClassField,
       isTextField: true,
     ),
     KeypadFocusTarget(
       node: _focusNode('search'),
-      label: 'Search',
+      label: Speech.t.libraryScreenSearchTarget,
       onActivate: _searchByName,
     ),
     KeypadFocusTarget(
       node: _focusNode('all'),
-      label: 'All recorded audio files',
+      label: Speech.t.libraryScreenAllRecordedTarget,
       onActivate: _openAllAudioFiles,
     ),
     KeypadFocusTarget(
       node: _focusNode('continue'),
-      label: 'Continue learning. Find your last unfinished recorded lesson',
+      label: Speech.t.libraryScreenContinueTarget,
       isEnabled: () => !_continuing,
       onActivate: _continueLearning,
     ),
     KeypadFocusTarget(
       node: _focusNode('downloads'),
-      label:
-          'Downloaded lessons. Open saved recordings without loading online lists',
+      label: Speech.t.libraryScreenDownloadsTarget,
       onActivate: () => Navigator.push<void>(
         context,
         MaterialPageRoute(builder: (_) => const DownloadsScreen()),
@@ -1310,8 +1330,7 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
     ),
     KeypadFocusTarget(
       node: _focusNode('notes'),
-      label:
-          'Private notes and teacher recording drafts. Works from local storage',
+      label: Speech.t.libraryScreenNotesTarget,
       onActivate: () => Navigator.push<void>(
         context,
         MaterialPageRoute(builder: (_) => const PrivateNotesScreen()),
@@ -1320,14 +1339,17 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
     if (!_isTeacher)
       KeypadFocusTarget(
         node: _focusNode('playlists'),
-        label: 'My private playlists',
+        label: Speech.t.libraryScreenMyPlaylistsTarget,
         onActivate: _openMyPlaylists,
       ),
     for (var index = 0; index < _sessions.length; index++)
       KeypadFocusTarget(
         node: _focusNode('session-${_sessions[index]['session_id']}'),
-        label:
-            '${_sessions[index]['title']}. Class ${index + 1} of ${_sessions.length}',
+        label: Speech.t.libraryScreenClassTarget(
+          '${_sessions[index]['title']}',
+          '${index + 1}',
+          '${_sessions.length}',
+        ),
         onActivate: () => _openClassAudio(_sessions[index]),
       ),
   ];
@@ -1367,25 +1389,21 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
       final preferences = await SharedPreferences.getInstance();
       if (!mounted) return;
       if (preferences.getInt('user_id') != store.userId) {
-        report('Your account changed. Open the library again.');
+        report(Speech.t.libraryScreenAccountChanged);
         return;
       }
       if (recent.isEmpty) {
-        report(
-          'No unfinished lesson is saved for this account. Choose a recorded lesson to start learning.',
-        );
+        report(Speech.t.libraryScreenNoUnfinishedLesson);
         return;
       }
       final audio = await ApiService.getAudioList();
       if (!mounted) return;
       if (preferences.getInt('user_id') != store.userId) {
-        report('Your account changed. Open the library again.');
+        report(Speech.t.libraryScreenAccountChanged);
         return;
       }
       if (audio == null) {
-        report(
-          'Could not check lesson access. Connect to the internet and retry. Your saved progress is kept.',
-        );
+        report(Speech.t.libraryScreenAccessCheckFailed);
         return;
       }
       final authorized = audio
@@ -1403,18 +1421,14 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
           .where((lesson) => availableIds.contains(lesson.audioId))
           .toList();
       if (available.isEmpty) {
-        report(
-          'Your unfinished lessons are not currently available in this library. Your saved progress and bookmarks are kept.',
-        );
+        report(Speech.t.libraryScreenUnfinishedUnavailable);
         return;
       }
       if (available.first.audioId != recent.first.audioId) {
-        await TtsService.speak(
-          'The most recent lesson is unavailable here. Opening your next most recent available unfinished lesson. Saved progress is kept.',
-        );
+        await TtsService.speak(Speech.t.libraryScreenOpeningNextUnfinished);
         if (!mounted) return;
         if (preferences.getInt('user_id') != store.userId) {
-          report('Your account changed. Open the library again.');
+          report(Speech.t.libraryScreenAccountChanged);
           return;
         }
       }
@@ -1423,7 +1437,7 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
         MaterialPageRoute(
           builder: (_) => ClassAudioScreen(
             sessionId: 0,
-            sessionTitle: 'Continue Learning',
+            sessionTitle: Speech.t.libraryScreenContinueLearningTitle,
             isTeacher: _isTeacher,
             classId: widget.classId,
             subjectId: widget.subjectId,
@@ -1435,9 +1449,7 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
       report(error.message);
     } on Exception catch (error) {
       debugPrint('[LEARNING] Continue learning failed (${error.runtimeType})');
-      report(
-        'Could not open saved learning progress. Check storage, your connection, and sign-in, then retry.',
-      );
+      report(Speech.t.libraryScreenProgressOpenFailed);
     } finally {
       if (mounted) setState(() => _continuing = false);
     }
@@ -1465,14 +1477,14 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
         });
         TtsService.speak(
           _sessions.isEmpty
-              ? 'No active classes right now. Press 3 for all audio files.'
-              : '${_sessions.length} active classes loaded.',
+              ? Speech.t.libraryScreenNoActiveClasses
+              : Speech.t.libraryScreenActiveClassesLoaded(_sessions.length),
           priority: SpeechPriority.incidental,
         );
       } else {
-        final message =
-            '${result.failure?.message ?? 'The class list could not be read.'} '
-            'Active classes could not be refreshed. Press 1 to retry. Saved downloads remain available.';
+        final message = Speech.t.libraryScreenClassesRefreshFailed(
+          result.failure?.message ?? Speech.t.libraryScreenClassListUnreadable,
+        );
         setState(() => _sessionsIssue = message);
         TtsService.speak(message, priority: SpeechPriority.critical);
       }
@@ -1493,7 +1505,9 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
       MaterialPageRoute(
         builder: (_) => ClassAudioScreen(
           sessionId: session['session_id'] as int,
-          sessionTitle: session['title'] as String? ?? 'Session',
+          sessionTitle:
+              session['title'] as String? ??
+              Speech.t.libraryScreenSessionFallback,
           teacherId: session['created_by'] as int?,
           isTeacher: _isTeacher,
           classId: session['class_id'] as int?,
@@ -1535,7 +1549,9 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
       MaterialPageRoute(
         builder: (_) => ClassAudioScreen(
           sessionId: 0,
-          sessionTitle: _isTeacher ? 'My Audio Library' : 'All Audio Files',
+          sessionTitle: _isTeacher
+              ? Speech.t.libraryScreenMyAudioLibraryTitle
+              : Speech.t.libraryScreenAllAudioFilesTitle,
           teacherId: _isTeacher ? _currentUserId : null,
           isTeacher: _isTeacher,
           classId: widget.classId,
@@ -1555,9 +1571,7 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
       return;
     }
     if (_sessions.isEmpty) {
-      TtsService.speak(
-        'There are no active classes. Staying in the audio library.',
-      );
+      TtsService.speak(Speech.t.libraryScreenNoActiveClassesStaying);
       return;
     }
     final session = _sessions.first;
@@ -1567,9 +1581,7 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
     }
     _navigation.focusAndAnnounce(
       node,
-      '${session['title']}. First active class. '
-      'Use D-pad up and down to browse active class sessions. '
-      'Press OK to open the selected class recordings.',
+      Speech.t.libraryScreenFirstActiveClass('${session['title']}'),
     );
   }
 
@@ -1597,13 +1609,11 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
     final bool tiny = UIUtils.isTiny(context);
 
     return KeypadInstructionWrapper(
-      screenName:
-          'Recorded Audio Library. Online lists require internet. Downloaded lessons open separately for offline playback.',
-      navigationSections:
-          'continue learning, saved downloads and private notes, class search, and active class sessions',
+      screenName: Speech.t.libraryScreenRecordedLibraryName,
+      navigationSections: Speech.t.libraryScreenRecordedLibrarySections,
       labels: {
         ...offlineAudioLibraryKeyLabels,
-        if (!_isTeacher) 4: 'My Private Playlists',
+        if (!_isTeacher) 4: Speech.t.libraryScreenMyPlaylistsKey,
       },
       actions: {
         1: () {
@@ -1625,12 +1635,12 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
         appBar: AppBar(
           leading: IconButton(
             focusNode: _focusNode('back'),
-            tooltip: 'Back',
+            tooltip: Speech.t.settingsBack,
             icon: const Icon(Icons.arrow_back),
             onPressed: () => Navigator.of(context).maybePop(),
           ),
           title: Text(
-            'Recorded Audio Library',
+            Speech.t.keyRecordedAudioLibrary,
             style: TextStyle(
               fontSize: UIUtils.fontSize(context, 18),
               fontWeight: FontWeight.w600,
@@ -1643,7 +1653,7 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
           actions: [
             IconButton(
               focusNode: _focusNode('downloads'),
-              tooltip: 'Downloaded lessons',
+              tooltip: Speech.t.downloadScreenName,
               icon: const Icon(Icons.download_done),
               onPressed: () => Navigator.push<void>(
                 context,
@@ -1652,7 +1662,7 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
             ),
             IconButton(
               focusNode: _focusNode('notes'),
-              tooltip: 'Private notes and recording drafts',
+              tooltip: Speech.t.libraryNotesTooltip,
               icon: const Icon(Icons.mic_none),
               onPressed: () => Navigator.push<void>(
                 context,
@@ -1666,7 +1676,7 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
                 size: UIUtils.iconSize(context, 20),
                 color: UIUtils.accentColor,
               ),
-              tooltip: 'Refresh',
+              tooltip: Speech.t.keyRefresh,
               onPressed: () {
                 setState(() {
                   _sessionsLoaded = false;
@@ -1690,7 +1700,7 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
                     OutlinedButton(
                       focusNode: _focusNode('browse'),
                       onPressed: _focusFirstActiveClass,
-                      child: const Text('5: Browse active classes'),
+                      child: Text(Speech.t.libraryBrowseClassesKey5),
                     ),
                     OutlinedButton.icon(
                       focusNode: _focusNode('continue'),
@@ -1698,8 +1708,8 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
                       icon: const Icon(Icons.history),
                       label: Text(
                         _continuing
-                            ? 'Finding your lesson'
-                            : 'Continue Learning',
+                            ? Speech.t.libraryFindingLesson
+                            : Speech.t.libraryScreenContinueLearningTitle,
                       ),
                     ),
                     // ── Instruction ──────────────────────────────────────
@@ -1708,9 +1718,7 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
                       decoration: BoxDecoration(
                         color: UIUtils.cardColor,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: UIUtils.cardBorderColor,
-                        ),
+                        border: Border.all(color: UIUtils.cardBorderColor),
                       ),
                       child: Row(
                         children: [
@@ -1722,8 +1730,7 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
                           SizedBox(width: UIUtils.spacing(context, 8)),
                           Expanded(
                             child: Text(
-                              'Select a class to play recorded lessons. '
-                              'Online lessons require internet. Use Downloaded lessons for saved audio.',
+                              Speech.t.librarySelectClassHint,
                               style: TextStyle(
                                 fontSize: UIUtils.fontSize(context, 13),
                                 color: UIUtils.textColor,
@@ -1752,7 +1759,7 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Search Class by Name',
+                            Speech.t.librarySearchClassByName,
                             style: TextStyle(
                               fontWeight: FontWeight.w600,
                               fontSize: UIUtils.fontSize(context, 14),
@@ -1767,7 +1774,7 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
                                   controller: _searchController,
                                   focusNode: _searchFocusNode,
                                   decoration: InputDecoration(
-                                    hintText: 'Enter Session/Class Name',
+                                    hintText: Speech.t.librarySearchClassHint,
                                     hintStyle: TextStyle(
                                       fontSize: UIUtils.fontSize(context, 13),
                                     ),
@@ -1842,9 +1849,7 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
                       elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
-                        side: BorderSide(
-                          color: UIUtils.cardBorderColor,
-                        ),
+                        side: BorderSide(color: UIUtils.cardBorderColor),
                       ),
                       child: InkWell(
                         focusNode: _focusNode('all'),
@@ -1856,8 +1861,8 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
                                 sessionId:
                                     0, // 0 simply means 'Not a specific class'
                                 sessionTitle: _isTeacher
-                                    ? 'My Audio Library'
-                                    : 'All Audio Files',
+                                    ? Speech.t.libraryScreenMyAudioLibraryTitle
+                                    : Speech.t.libraryScreenAllAudioFilesTitle,
                                 teacherId: _isTeacher ? _currentUserId : null,
                                 isTeacher: _isTeacher,
                                 classId: widget.classId,
@@ -1891,8 +1896,8 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
                                   children: [
                                     Text(
                                       _isTeacher
-                                          ? 'My Audio Library'
-                                          : 'All Audio Files',
+                                          ? Speech.t.libraryMyAudioLibrary
+                                          : Speech.t.libraryAllAudioFiles,
                                       style: TextStyle(
                                         fontWeight: FontWeight.w700,
                                         fontSize: UIUtils.fontSize(context, 15),
@@ -1904,8 +1909,8 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
                                     ),
                                     Text(
                                       _isTeacher
-                                          ? 'Manage and upload your audio files'
-                                          : 'Browse all uploaded audio files',
+                                          ? Speech.t.libraryManageAudioFiles
+                                          : Speech.t.libraryBrowseAudioFiles,
                                       style: TextStyle(
                                         fontSize: UIUtils.fontSize(context, 12),
                                         color: UIUtils.subtextColor,
@@ -1930,7 +1935,7 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
                         focusNode: _focusNode('playlists'),
                         onPressed: _openMyPlaylists,
                         icon: const Icon(Icons.lock_outline),
-                        label: const Text('4: My Playlists · Private'),
+                        label: Text(Speech.t.studentHomePlaylistsKey4),
                       ),
                       SizedBox(height: UIUtils.spacing(context, 16)),
                     ],
@@ -1946,7 +1951,7 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
                         SizedBox(width: UIUtils.spacing(context, 6)),
                         Expanded(
                           child: Text(
-                            'Active Classes',
+                            Speech.t.libraryActiveClasses,
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: UIUtils.fontSize(context, 16),
@@ -1955,7 +1960,7 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
                           ),
                         ),
                         Text(
-                          '${_sessions.length} found',
+                          Speech.t.libraryFoundCount('${_sessions.length}'),
                           style: TextStyle(
                             fontSize: UIUtils.fontSize(context, 12),
                             color: UIUtils.subtextColor,
@@ -1980,7 +1985,7 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
                             ),
                             SizedBox(height: UIUtils.spacing(context, 8)),
                             Text(
-                              'No active classes found.',
+                              Speech.t.libraryNoActiveClasses,
                               style: TextStyle(
                                 color: UIUtils.subtextColor,
                                 fontSize: UIUtils.fontSize(context, 14),
@@ -1988,7 +1993,7 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
                             ),
                             SizedBox(height: UIUtils.spacing(context, 6)),
                             Text(
-                              'Use "Search by Session Name" above to access a class quickly.',
+                              Speech.t.librarySearchSessionHint,
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 color: UIUtils.subtextColor,
@@ -2066,7 +2071,9 @@ class _OfflineAudioLibraryScreenState extends State<OfflineAudioLibraryScreen> {
                                           height: UIUtils.spacing(context, 3),
                                         ),
                                         Text(
-                                          'Session #$sessionId',
+                                          Speech.t.librarySessionHash(
+                                            '$sessionId',
+                                          ),
                                           style: TextStyle(
                                             fontSize: UIUtils.fontSize(
                                               context,
@@ -2151,8 +2158,8 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
     showSeekControls: false,
     pauseForNotes: () async {
       if (_playPending) {
-        throw const LearningStorageException(
-          'Wait for the recording player before opening study notes.',
+        throw LearningStorageException(
+          Speech.t.libraryScreenWaitForPlayerNotes,
         );
       }
       await _audioPlayer.pause();
@@ -2177,6 +2184,9 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
   bool _isUploadingAudio = false;
   int? _resolvedTeacherId;
   String _playbackStatus = 'Stopped';
+  String get _playbackStatusText => _playbackStatus == 'Stopped'
+      ? Speech.t.libraryStatusStopped
+      : _playbackStatus;
   String? _libraryStatus;
   bool _libraryError = false;
   int? _selectedSubjectId;
@@ -2206,16 +2216,16 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
   String? _audioStatus(int audioId) => _playingAudioId != audioId
       ? null
       : _isPlaying
-      ? 'Playing'
-      : 'Paused';
+      ? Speech.t.libraryScreenStatusPlaying
+      : Speech.t.libraryScreenStatusPaused;
 
   String _audioLabel(int index) {
     final audio = _audioFiles[index];
     final status = _audioStatus(_idOf(audio));
     return [
-      '${audio['title'] ?? 'Untitled'}',
+      '${audio['title'] ?? Speech.t.libraryScreenUntitled}',
       if (status != null) status,
-      '${audio['subject_name'] ?? 'Subject'}',
+      '${audio['subject_name'] ?? Speech.t.libraryScreenSubjectFallback}',
       if ('${audio['description'] ?? ''}'.isNotEmpty) '${audio['description']}',
     ].join('. ');
   }
@@ -2226,8 +2236,8 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
           ? classAudioTeacherKeyLabels
           : classAudioStudentKeyLabels,
       screenName: widget.downloadedOnly
-          ? 'Downloaded lessons. Existing offline access is checked before playing.'
-          : 'Audio Library. Online recordings require internet. Download lessons for offline playback.',
+          ? Speech.t.libraryScreenDownloadedLessonsName
+          : Speech.t.libraryScreenClassAudioName,
     ),
   );
 
@@ -2240,57 +2250,69 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
   List<KeypadFocusTarget> get _focusTargets => [
     KeypadFocusTarget(
       node: _controlNode('back'),
-      label: 'Back',
+      label: Speech.t.libraryScreenBack,
       onActivate: () => Navigator.of(context).maybePop(),
     ),
     KeypadFocusTarget(
       node: _controlNode('refresh'),
-      label: 'Refresh audio files, key 1',
+      label: Speech.t.libraryScreenRefreshTarget,
       onActivate: _loadAudioFiles,
     ),
     if (_playingAudioId != null) ...[
       KeypadFocusTarget(
         node: _controlNode('seek'),
-        label:
-            'Lesson position ${learningSpokenPosition(_position, _duration)}. '
-            'Use left or right to move 10 seconds.',
+        label: Speech.t.libraryScreenLessonPositionTarget(
+          learningSpokenPosition(_position, _duration),
+        ),
         onDecrease: () => _seekBy(-10),
         onIncrease: () => _seekBy(10),
         isEnabled: () => _totalDuration != null,
       ),
       KeypadFocusTarget(
         node: _controlNode('rewind'),
-        label: 'Back 10 seconds, key $playerRewindKey',
+        label: Speech.t.libraryScreenBack10Target('$playerRewindKey'),
         onActivate: () => _seekBy(-10),
       ),
       KeypadFocusTarget(
         node: _controlNode('play'),
         label: _isPlaying
-            ? 'Pause ${_playingAudioTitle ?? 'lesson'}, key $playerPlayPauseKey'
-            : 'Resume ${_playingAudioTitle ?? 'lesson'}, key $playerPlayPauseKey',
+            ? Speech.t.libraryScreenPauseTarget(
+                _playingAudioTitle ?? Speech.t.libraryScreenLessonFallback,
+                '$playerPlayPauseKey',
+              )
+            : Speech.t.libraryScreenResumeTarget(
+                _playingAudioTitle ?? Speech.t.libraryScreenLessonFallback,
+                '$playerPlayPauseKey',
+              ),
         onActivate: _togglePlayPause,
       ),
       KeypadFocusTarget(
         node: _controlNode('forward'),
-        label: 'Forward 10 seconds, key $playerForwardKey',
+        label: Speech.t.libraryScreenForward10Target('$playerForwardKey'),
         onActivate: () => _seekBy(10),
       ),
       KeypadFocusTarget(
         node: _controlNode('slower'),
-        label:
-            'Slower, key $playerSlowerKey. Now ${learningSpeedNumber(_audioSpeed)} times',
+        label: Speech.t.libraryScreenSlowerTarget(
+          '$playerSlowerKey',
+          learningSpeedNumber(_audioSpeed),
+        ),
         onActivate: () => _changeSpeed(-0.25),
         isEnabled: () => _audioSpeed > 0.25,
       ),
       KeypadFocusTarget(
         node: _controlNode('stop'),
-        label: 'Stop ${_playingAudioTitle ?? 'lesson'}, key 8',
+        label: Speech.t.libraryScreenStopTarget(
+          _playingAudioTitle ?? Speech.t.libraryScreenLessonFallback,
+        ),
         onActivate: _stopAudio,
       ),
       KeypadFocusTarget(
         node: _controlNode('faster'),
-        label:
-            'Faster, key $playerFasterKey. Now ${learningSpeedNumber(_audioSpeed)} times',
+        label: Speech.t.libraryScreenFasterTarget(
+          '$playerFasterKey',
+          learningSpeedNumber(_audioSpeed),
+        ),
         onActivate: () => _changeSpeed(0.25),
         isEnabled: () => _audioSpeed < 3.0,
       ),
@@ -2311,17 +2333,17 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
     if (!widget.downloadedOnly)
       KeypadFocusTarget(
         node: _controlNode('downloads'),
-        label: 'Download lessons or manage saved recordings',
+        label: Speech.t.libraryScreenDownloadsManageTarget,
         onActivate: _openDownloads,
       ),
     KeypadFocusTarget(
       node: _controlNode('stop-speech'),
-      label: 'Stop speech',
+      label: Speech.t.libraryScreenStopSpeechTarget,
       onActivate: TtsService.stop,
     ),
     KeypadFocusTarget(
       node: _controlNode('repeat-help'),
-      label: 'Repeat audio library help',
+      label: Speech.t.libraryScreenRepeatHelpTarget,
       onActivate: _repeatHelp,
     ),
     for (var index = 0; index < _audioFiles.length; index++)
@@ -2330,27 +2352,27 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
         label: _audioLabel(index),
         onActivate: () => _playOrPauseAudio(
           _idOf(_audioFiles[index]),
-          '${_audioFiles[index]['title'] ?? 'Untitled'}',
+          '${_audioFiles[index]['title'] ?? Speech.t.libraryScreenUntitled}',
         ),
       ),
     if (_audioFiles.isEmpty) ...[
       if (widget.isTeacher)
         KeypadFocusTarget(
           node: _controlNode('upload-empty'),
-          label: 'Upload first audio',
+          label: Speech.t.libraryScreenUploadFirstTarget,
           onActivate: _uploadAudio,
           isEnabled: () => !_isUploadingAudio,
         ),
       KeypadFocusTarget(
         node: _controlNode('empty-retry'),
-        label: 'Refresh empty audio library',
+        label: Speech.t.libraryScreenRefreshEmptyTarget,
         onActivate: _loadAudioFiles,
       ),
     ],
     if (widget.isTeacher)
       KeypadFocusTarget(
         node: _controlNode('upload'),
-        label: 'Add audio, key 3',
+        label: Speech.t.libraryScreenAddAudioTarget,
         onActivate: _handleAddAudio,
         isEnabled: () => !_isUploadingAudio,
       ),
@@ -2468,13 +2490,14 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
       if (!mounted || revision != _playRevision || !_learning.ready) return;
       final looping = await _learning.handleCompletion();
       if (mounted && revision == _playRevision && !looping) {
-        final title = _playingAudioTitle ?? 'Lesson';
+        final title =
+            _playingAudioTitle ?? Speech.t.libraryScreenLessonTitleFallback;
         setState(() {
           _isPlaying = false;
           _currentPosition = 0;
           _playingAudioId = null;
           _playingAudioTitle = null;
-          _playbackStatus = 'Finished $title';
+          _playbackStatus = Speech.t.libraryStatusFinished(title);
         });
         _speakIfEnabled(LibraryText.finished(title));
       }
@@ -2501,9 +2524,10 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
                 'title': lesson.title,
                 'class_id': lesson.classId,
                 'subject_id': lesson.subjectId,
-                'description':
-                    'Downloaded recording. Access renewal required after 30 days.',
-                'subject_name': 'Saved subject ${lesson.subjectId}',
+                'description': Speech.t.libraryScreenDownloadedDescription,
+                'subject_name': Speech.t.libraryScreenSavedSubject(
+                  '${lesson.subjectId}',
+                ),
               },
             )
             .toList();
@@ -2523,8 +2547,8 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
         if (mounted) {
           _setLibraryStatus(
             widget.downloadedOnly
-                ? 'Could not read downloaded lessons. Press 1 to retry.'
-                : 'Could not load recordings. Check your internet connection and sign-in, then press 1 to retry.',
+                ? Speech.t.libraryScreenDownloadsReadFailed
+                : Speech.t.libraryScreenLoadFailedSignIn,
             error: true,
           );
         }
@@ -2567,8 +2591,11 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
         });
         await _setLibraryStatus(
           _audioFiles.isEmpty
-              ? 'No recordings yet for ${widget.sessionTitle}.'
-              : '${_audioFiles.length} recordings loaded for ${widget.sessionTitle}.',
+              ? Speech.t.libraryScreenNoRecordingsFor(widget.sessionTitle)
+              : Speech.t.libraryScreenRecordingsLoadedFor(
+                  _audioFiles.length,
+                  widget.sessionTitle,
+                ),
         );
         if (mounted &&
             !_initialLessonHandled &&
@@ -2578,9 +2605,7 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
             (audio) => audio['audio_id'] == widget.initialAudioId,
           );
           if (selected.isEmpty) {
-            _showError(
-              'This lesson is no longer available. Your saved progress and bookmarks are kept.',
-            );
+            _showError(Speech.t.libraryScreenLessonNoLongerAvailable);
           } else {
             await _playOrPauseAudio(
               widget.initialAudioId!,
@@ -2592,7 +2617,9 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
     } catch (e) {
       print('[CLASS AUDIO] Error loading files: $e');
       _setLibraryStatus(
-        '${ApiService.mapFailure(error: e, context: 'audio list').message} Press 1 to retry.',
+        Speech.t.libraryScreenFailurePressRetry(
+          ApiService.mapFailure(error: e, context: 'audio list').message,
+        ),
         error: true,
       );
     } finally {
@@ -2607,7 +2634,9 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
       if (id is int) {
         byId[id] = {
           'subject_id': id,
-          'subject_name': audio['subject_name'] ?? 'Subject $id',
+          'subject_name':
+              audio['subject_name'] ??
+              Speech.t.libraryScreenSubjectNumber('$id'),
         };
       }
     }
@@ -2646,8 +2675,11 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
           );
     _speakIfEnabled(
       selected == null
-          ? 'Showing audio from all subjects'
-          : 'Showing ${selected['subject_name']} audio. ${_audioFiles.length} files',
+          ? Speech.t.libraryScreenShowingAllSubjects
+          : Speech.t.libraryScreenShowingSubject(
+              '${selected['subject_name']}',
+              '${_audioFiles.length}',
+            ),
     );
   }
 
@@ -2686,18 +2718,20 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
           if (!mounted || revision != _playRevision) return;
           setState(() {
             _isPlaying = false;
-            _playbackStatus = 'Paused $title';
+            _playbackStatus = Speech.t.libraryStatusPaused(title);
           });
           await _learning.flush();
           await _speakIfEnabled(
-            'Paused at ${learningSpokenPosition(_position, _duration)}.',
+            Speech.t.libraryScreenPausedAt(
+              learningSpokenPosition(_position, _duration),
+            ),
           );
         } else {
           await _audioPlayer.resume();
           if (!mounted || revision != _playRevision) return;
           setState(() {
             _isPlaying = true;
-            _playbackStatus = 'Playing $title';
+            _playbackStatus = Speech.t.libraryStatusPlaying(title);
           });
           await _speakIfEnabled(
             learningPlayingAnnouncement(
@@ -2736,9 +2770,7 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
           await store.renew(audioId);
         } on OfflineLessonException catch (error) {
           if (!error.mayUseExistingAccess) rethrow;
-          await _speakIfEnabled(
-            'Internet unavailable. Checking your saved offline access.',
-          );
+          await _speakIfEnabled(Speech.t.libraryScreenCheckingOfflineAccess);
         }
         final records = await store.list();
         final record = records.firstWhere(
@@ -2761,7 +2793,7 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
       _learning.activate(offline: widget.downloadedOnly);
       setState(() {
         _isPlaying = true;
-        _playbackStatus = 'Playing $title';
+        _playbackStatus = Speech.t.libraryStatusPlaying(title);
       });
       final duration = await _audioPlayer.getDuration();
       if (!mounted || revision != _playRevision) return;
@@ -2784,7 +2816,7 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
       _showError(
         e is OfflineLessonException
             ? e.message
-            : 'Could not play $title. Check your connection, then select it again.',
+            : Speech.t.libraryScreenPlayFailedSelectAgain(title),
       );
       setState(() {
         _isPlaying = false;
@@ -2830,14 +2862,16 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
       _playbackStatus = 'Stopped';
     });
     await _speakIfEnabled(
-      title == null ? 'Nothing is playing.' : '$title stopped.',
+      title == null
+          ? Speech.t.libraryScreenNothingPlaying
+          : Speech.t.libraryScreenTitleStopped(title),
     );
   }
 
   Future<void> _seekBy(int seconds) async {
     if (_playingAudioId == null) {
       await _speakIfEnabled(
-        'No lesson is playing. Press $playerPlayPauseKey to play the first lesson.',
+        Speech.t.libraryScreenNoLessonPlayingPress('$playerPlayPauseKey'),
       );
       return;
     }
@@ -2853,7 +2887,7 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
       await _learning.moveTo(Duration(milliseconds: (position * 1000).round()));
     } on Exception catch (error) {
       debugPrint('[LEARNING] Seek failed (${error.runtimeType})');
-      _showError('Could not move to that lesson position. Try again.');
+      _showError(Speech.t.libraryScreenSeekFailed);
     } on ArgumentError catch (error) {
       _showError(error.message.toString());
     }
@@ -2868,8 +2902,8 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
     if (newSpeed == _audioSpeed) {
       await _speakIfEnabled(
         delta < 0
-            ? 'Already at the slowest speed.'
-            : 'Already at the fastest speed.',
+            ? Speech.t.libraryScreenSlowestSpeed
+            : Speech.t.libraryScreenFastestSpeed,
       );
       return;
     }
@@ -2880,7 +2914,7 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
       }
     } on Exception catch (error) {
       debugPrint('[LEARNING] Speed change failed (${error.runtimeType})');
-      _showError('Could not change playback speed. Try again.');
+      _showError(Speech.t.libraryScreenSpeedFailed);
     } on ArgumentError catch (error) {
       _showError(error.message.toString());
     }
@@ -2943,7 +2977,7 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
 
       // On web, file.path is null but file.bytes is not.
       if (file.path == null && file.bytes == null) {
-        _showError("Failed to read file data.");
+        _showError(Speech.t.libraryScreenReadFileFailed);
         return;
       }
 
@@ -2961,12 +2995,12 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
       final confirmed = await showDialog<bool>(
         context: context,
         builder: (dialogContext) => KeypadInstructionWrapper(
-          screenName: 'Upload audio',
-          labels: const {
-            1: 'Edit Title',
-            2: 'Edit Description',
-            3: 'Upload',
-            0: 'Cancel',
+          screenName: Speech.t.libraryScreenUploadDialogName,
+          labels: {
+            1: Speech.t.libraryScreenEditTitleKey,
+            2: Speech.t.libraryScreenEditDescriptionKey,
+            3: Speech.t.libraryScreenUploadKey,
+            0: Speech.t.libraryScreenCancelKey,
           },
           actions: {
             1: () => keypadController.enterTextEditing(titleNode),
@@ -2978,27 +3012,27 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
           focusTargets: [
             KeypadFocusTarget(
               node: titleNode,
-              label: 'Audio title',
+              label: Speech.t.libraryScreenTitleFieldPlain,
               isTextField: true,
             ),
             KeypadFocusTarget(
               node: descriptionNode,
-              label: 'Audio description, optional',
+              label: Speech.t.libraryScreenDescriptionField,
               isTextField: true,
             ),
             KeypadFocusTarget(
               node: cancelNode,
-              label: 'Cancel upload',
+              label: Speech.t.libraryScreenCancelUpload,
               onActivate: () => Navigator.pop(dialogContext, false),
             ),
             KeypadFocusTarget(
               node: uploadNode,
-              label: 'Upload audio',
+              label: Speech.t.libraryScreenUploadDialogName,
               onActivate: () => Navigator.pop(dialogContext, true),
             ),
           ],
           child: AlertDialog(
-            title: const Text('Upload Audio'),
+            title: Text(Speech.t.sessionUploadTitle),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -3006,8 +3040,8 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
                   controller: titleController,
                   focusNode: titleNode,
                   onTap: () => keypadController.enterTextEditing(titleNode),
-                  decoration: const InputDecoration(
-                    labelText: 'Title',
+                  decoration: InputDecoration(
+                    labelText: Speech.t.libraryTitleField,
                     border: OutlineInputBorder(),
                   ),
                 ),
@@ -3017,8 +3051,8 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
                   focusNode: descriptionNode,
                   onTap: () =>
                       keypadController.enterTextEditing(descriptionNode),
-                  decoration: const InputDecoration(
-                    labelText: 'Description (optional)',
+                  decoration: InputDecoration(
+                    labelText: Speech.t.libraryDescriptionOptional,
                     border: OutlineInputBorder(),
                   ),
                   maxLines: 2,
@@ -3034,12 +3068,12 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
               TextButton(
                 focusNode: cancelNode,
                 onPressed: () => Navigator.pop(dialogContext, false),
-                child: const Text('Cancel (0)'),
+                child: Text(Speech.t.libraryCancelKey0Button),
               ),
               ElevatedButton(
                 focusNode: uploadNode,
                 onPressed: () => Navigator.pop(dialogContext, true),
-                child: const Text('Upload (3)'),
+                child: Text(Speech.t.libraryUploadKey3Button),
               ),
             ],
           ),
@@ -3086,8 +3120,11 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
                 if (!selectedSessionIds.remove(id)) selectedSessionIds.add(id);
               });
               return KeypadInstructionWrapper(
-                screenName: 'Choose sessions for this audio',
-                labels: const {0: 'Cancel', 1: 'Confirm Selected Sessions'},
+                screenName: Speech.t.libraryScreenChooseSessionsName,
+                labels: {
+                  0: Speech.t.libraryScreenCancelKey,
+                  1: Speech.t.libraryScreenConfirmSessionsKey,
+                },
                 actions: {
                   0: () => Navigator.pop(ctx, false),
                   1: () => Navigator.pop(ctx, true),
@@ -3096,26 +3133,33 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
                   for (final session in _teacherSessions)
                     KeypadFocusTarget(
                       node: sessionNodes[session['session_id']]!,
-                      label:
-                          '${session['title'] ?? 'Session ${session['session_id']}'}, '
-                          '${selectedSessionIds.contains(session['session_id']) ? 'selected' : 'not selected'}',
+                      label: () {
+                        final name =
+                            '${session['title'] ?? Speech.t.libraryScreenSessionNumber('${session['session_id']}')}';
+                        return selectedSessionIds.contains(
+                              session['session_id'],
+                            )
+                            ? Speech.t.libraryScreenSessionSelected(name)
+                            : Speech.t.libraryScreenSessionNotSelected(name);
+                      }(),
                       onActivate: () => toggle(session['session_id'] as int),
                     ),
                   KeypadFocusTarget(
                     node: cancelSessionsNode,
-                    label: 'Cancel',
+                    label: Speech.t.libraryScreenCancelKey,
                     onActivate: () => Navigator.pop(ctx, false),
                   ),
                   KeypadFocusTarget(
                     node: confirmSessionsNode,
-                    label:
-                        'Confirm ${selectedSessionIds.length} selected sessions',
+                    label: Speech.t.libraryScreenConfirmSelectedSessions(
+                      selectedSessionIds.length,
+                    ),
                     onActivate: () => Navigator.pop(ctx, true),
                   ),
                 ],
                 child: AlertDialog(
                   scrollable: true,
-                  title: const Text('Add audio to sessions'),
+                  title: Text(Speech.t.libraryAddAudioToSessions),
                   content: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: _teacherSessions.map((session) {
@@ -3126,7 +3170,9 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
                         focusNode: sessionNodes[id],
                         value: selectedSessionIds.contains(id),
                         title: Text(title),
-                        subtitle: Text('Session number $id'),
+                        subtitle: Text(
+                          Speech.t.teacherHomeSessionNumber('$id'),
+                        ),
                         onChanged: (_) => toggle(id),
                       );
                     }).toList(),
@@ -3135,12 +3181,12 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
                     TextButton(
                       focusNode: cancelSessionsNode,
                       onPressed: () => Navigator.pop(ctx, false),
-                      child: const Text('0: Cancel'),
+                      child: Text(Speech.t.uiCancelKey0),
                     ),
                     ElevatedButton(
                       focusNode: confirmSessionsNode,
                       onPressed: () => Navigator.pop(ctx, true),
-                      child: const Text('1: Confirm'),
+                      child: Text(Speech.t.libraryConfirmKey1),
                     ),
                   ],
                 ),
@@ -3156,15 +3202,11 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
           node.dispose();
         }
         if (confirmedSessions != true || selectedSessionIds.isEmpty) {
-          _showError(
-            'Upload cancelled. Select at least one session, then press 3 to add audio again.',
-          );
+          _showError(Speech.t.libraryScreenUploadCancelledNoSession);
           return;
         }
       }
-      await _setLibraryStatus(
-        'Uploading $title. Please wait; you will hear when it finishes.',
-      );
+      await _setLibraryStatus(Speech.t.libraryScreenUploadingWait(title));
 
       Map<String, dynamic>? uploadResult;
       final currentSession = _teacherSessions
@@ -3177,7 +3219,7 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
       final subjectId =
           currentSession?['subject_id'] as int? ?? widget.subjectId;
       if (classId == null || subjectId == null) {
-        _showError('The session class and subject could not be determined');
+        _showError(Speech.t.libraryScreenClassSubjectUnknown);
         return;
       }
 
@@ -3203,12 +3245,10 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
       }
 
       if (uploadResult != null) {
-        await _setLibraryStatus('$title uploaded.');
+        await _setLibraryStatus(Speech.t.libraryScreenUploaded(title));
         _loadAudioFiles(); // Refresh the list
       } else {
-        _showError(
-          '$title could not be uploaded. Check your connection, then press 3 to try again.',
-        );
+        _showError(Speech.t.libraryScreenUploadFailedRetry(title));
       }
     } catch (e) {
       print('[UPLOAD] Error: $e');
@@ -3224,11 +3264,14 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
   /// or start playing the first file if nothing is playing.
   void _togglePlayPause() {
     if (_playingAudioId != null) {
-      _playOrPauseAudio(_playingAudioId!, _playingAudioTitle ?? 'Audio');
+      _playOrPauseAudio(
+        _playingAudioId!,
+        _playingAudioTitle ?? Speech.t.libraryScreenAudioFallback,
+      );
     } else if (_audioFiles.isNotEmpty) {
       final first = _audioFiles.first;
       final id = first['audio_id'] ?? first['id'] ?? 0;
-      final title = first['title'] ?? 'Untitled';
+      final title = first['title'] ?? Speech.t.libraryScreenUntitled;
       _playOrPauseAudio(id, title);
     }
   }
@@ -3318,9 +3361,8 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
     );
 
     return KeypadInstructionWrapper(
-      screenName: 'Class Audio Library',
-      navigationSections:
-          'playback controls, bookmarks and learning progress, subject filter, downloads, recordings, and teacher upload tools when available',
+      screenName: Speech.t.libraryScreenClassLibraryName,
+      navigationSections: Speech.t.libraryScreenClassLibrarySections,
       labels: labels,
       actions: actions,
       focusTargets: _focusTargets,
@@ -3328,7 +3370,7 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
         appBar: AppBar(
           leading: IconButton(
             focusNode: _controlNode('back'),
-            tooltip: 'Back',
+            tooltip: Speech.t.settingsBack,
             icon: const Icon(Icons.arrow_back),
             onPressed: () => Navigator.of(context).maybePop(),
           ),
@@ -3346,7 +3388,7 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
               ),
               if (!tiny)
                 Text(
-                  'Audio Library, session ${widget.sessionId}',
+                  Speech.t.libraryAudioLibrarySession('${widget.sessionId}'),
                   style: TextStyle(
                     fontSize: UIUtils.fontSize(context, 14),
                     color: UIUtils.subtextColor,
@@ -3369,7 +3411,7 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
                 size: UIUtils.iconSize(context, 24),
                 color: UIUtils.accentColor,
               ),
-              tooltip: 'Refresh audio files',
+              tooltip: Speech.t.libraryScreenRefreshKey,
               onPressed: _loadAudioFiles,
             ),
           ],
@@ -3384,8 +3426,8 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
                       backgroundColor: UIUtils.accentColor,
                       foregroundColor: UIUtils.onAccentColor,
                       tooltip: _isUploadingAudio
-                          ? 'Uploading audio'
-                          : 'Add audio, key 3',
+                          ? Speech.t.libraryUploadingAudio
+                          : Speech.t.libraryAddAudioKey3Tooltip,
                       child: _isUploadingAudio
                           ? SizedBox(
                               width: 18,
@@ -3411,7 +3453,9 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
                             )
                           : const Icon(Icons.upload_file_rounded),
                       label: Text(
-                        _isUploadingAudio ? 'Uploading' : '3: Add audio',
+                        _isUploadingAudio
+                            ? Speech.t.libraryUploadingButton
+                            : Speech.t.libraryAddAudioKey3,
                       ),
                       backgroundColor: UIUtils.accentColor,
                       foregroundColor: UIUtils.onAccentColor,
@@ -3460,7 +3504,7 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
                           liveRegion: true,
                           child: Text(
                             _playbackStatus == 'Stopped'
-                                ? 'Nothing playing. Select a lesson or press 5.'
+                                ? Speech.t.libraryNothingPlaying
                                 : _playbackStatus,
                             style: textStyle,
                           ),
@@ -3484,12 +3528,12 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
                           vertical: 6,
                         ),
                         child: KeypadChoiceField<int?>(
-                          label: 'Subject filter (key 2)',
+                          label: Speech.t.libraryScreenSubjectFilterField,
                           focusNode: _subjectFilterFocusNode,
                           values: _subjectChoices,
                           value: _selectedSubjectId,
                           nameOf: (id) => id == null
-                              ? 'All subjects'
+                              ? Speech.t.libraryScreenAllSubjects
                               : '${_availableSubjects.firstWhere((s) => s['subject_id'] == id)['subject_name']}',
                           onChanged: _selectSubject,
                         ),
@@ -3501,7 +3545,9 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
                       child: Semantics(
                         header: true,
                         child: Text(
-                          '${_audioFiles.length} recordings',
+                          Speech.t.libraryRecordingsCount(
+                            '${_audioFiles.length}',
+                          ),
                           style: textStyle.copyWith(
                             fontSize: UIUtils.fontSize(context, 18),
                             fontWeight: FontWeight.w700,
@@ -3516,17 +3562,17 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
                           TextButton(
                             focusNode: _controlNode('downloads'),
                             onPressed: _openDownloads,
-                            child: const Text('Download lessons'),
+                            child: Text(Speech.t.libraryDownloadLessons),
                           ),
                         TextButton(
                           focusNode: _controlNode('stop-speech'),
                           onPressed: TtsService.stop,
-                          child: const Text('Stop speech'),
+                          child: Text(Speech.t.settingsStopLabel),
                         ),
                         TextButton(
                           focusNode: _controlNode('repeat-help'),
                           onPressed: _repeatHelp,
-                          child: const Text('Repeat help'),
+                          child: Text(Speech.t.libraryRepeatHelp),
                         ),
                       ],
                     ),
@@ -3539,8 +3585,8 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
                           children: [
                             Text(
                               widget.isTeacher
-                                  ? 'No recordings for this class yet.'
-                                  : 'No recordings available yet. Ask your teacher to upload some.',
+                                  ? Speech.t.libraryNoRecordingsForClass
+                                  : Speech.t.libraryNoRecordingsAskTeacher,
                               textAlign: TextAlign.center,
                               style: textStyle,
                             ),
@@ -3550,7 +3596,9 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
                                 focusNode: _controlNode('upload-empty'),
                                 onPressed: _uploadAudio,
                                 icon: const Icon(Icons.upload_file_rounded),
-                                label: const Text('Upload first audio'),
+                                label: Text(
+                                  Speech.t.libraryScreenUploadFirstTarget,
+                                ),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: UIUtils.accentColor,
                                   foregroundColor: UIUtils.onAccentColor,
@@ -3562,7 +3610,7 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
                               focusNode: _controlNode('empty-retry'),
                               onPressed: _loadAudioFiles,
                               icon: const Icon(Icons.refresh),
-                              label: const Text('Refresh'),
+                              label: Text(Speech.t.keyRefresh),
                             ),
                           ],
                         ),
@@ -3595,7 +3643,7 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
   Widget _audioTile(int index, bool tiny) {
     final audio = _audioFiles[index];
     final audioId = _idOf(audio);
-    final title = '${audio['title'] ?? 'Untitled'}';
+    final title = '${audio['title'] ?? Speech.t.libraryScreenUntitled}';
     final description = '${audio['description'] ?? ''}';
     final duration = audio['duration'] is num
         ? (audio['duration'] as num).toDouble()
@@ -3603,7 +3651,7 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
     final status = _audioStatus(audioId);
     return AccessibleTile(
       focusNode: _audioNode(audioId),
-      leadingIcon: status == 'Playing'
+      leadingIcon: _playingAudioId == audioId && _isPlaying
           ? Icons.pause_circle_filled
           : Icons.play_circle_fill,
       title: title,
@@ -3611,8 +3659,11 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
       selected: status != null,
       semanticLabel: _audioLabel(index),
       subtitle: [
-        '${audio['class_name'] ?? 'Class'}, ${audio['subject_name'] ?? 'Subject'}',
-        if (duration != null) 'Length ${_formatDuration(duration)}',
+        Speech.t.notesWorkspaceLabel(
+          '${audio['class_name'] ?? Speech.t.sessionScreenClass}',
+          '${audio['subject_name'] ?? Speech.t.quizSubjectFieldName}',
+        ),
+        if (duration != null) Speech.t.libraryLength(_formatDuration(duration)),
         if (description.isNotEmpty && !tiny) description,
       ].join('. '),
       onActivate: () => _playOrPauseAudio(audioId, title),
@@ -3622,8 +3673,9 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
   /// Now-playing panel: status, seek bar, then transport keys laid out like
   /// the keypad (4 5 6 above 7 8 9).
   Widget _buildNowPlayingBar() {
-    final stacked = UIUtils.isTiny(context) || UIUtils.useStackedLayout(context);
-    final title = _playingAudioTitle ?? 'Audio';
+    final stacked =
+        UIUtils.isTiny(context) || UIUtils.useStackedLayout(context);
+    final title = _playingAudioTitle ?? Speech.t.libraryScreenAudioFallback;
     final textStyle = TextStyle(
       color: UIUtils.textColor,
       fontSize: UIUtils.fontSize(context, 16),
@@ -3691,7 +3743,7 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
           node: 'rewind',
           key: playerRewindKey,
           icon: Icons.replay_10,
-          text: 'Back 10 s',
+          text: Speech.t.libraryBack10s,
           semantics: labelOf('rewind'),
           onPressed: () => _seekBy(-10),
         ),
@@ -3699,7 +3751,7 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
           node: 'play',
           key: playerPlayPauseKey,
           icon: _isPlaying ? Icons.pause : Icons.play_arrow,
-          text: _isPlaying ? 'Pause' : 'Play',
+          text: _isPlaying ? Speech.t.libraryPause : Speech.t.libraryPlay,
           semantics: labelOf('play'),
           onPressed: _togglePlayPause,
           primary: true,
@@ -3708,7 +3760,7 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
           node: 'forward',
           key: playerForwardKey,
           icon: Icons.forward_10,
-          text: 'Forward 10 s',
+          text: Speech.t.libraryForward10s,
           semantics: labelOf('forward'),
           onPressed: () => _seekBy(10),
         ),
@@ -3718,7 +3770,7 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
           node: 'slower',
           key: playerSlowerKey,
           icon: Icons.remove,
-          text: 'Slower',
+          text: Speech.t.keySlower,
           semantics: labelOf('slower'),
           onPressed: _audioSpeed > 0.25 ? () => _changeSpeed(-0.25) : null,
         ),
@@ -3726,7 +3778,7 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
           node: 'stop',
           key: 8,
           icon: Icons.stop,
-          text: 'Stop',
+          text: Speech.t.libraryStop,
           semantics: labelOf('stop'),
           onPressed: _stopAudio,
         ),
@@ -3734,7 +3786,7 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
           node: 'faster',
           key: playerFasterKey,
           icon: Icons.add,
-          text: 'Faster',
+          text: Speech.t.keyFaster,
           semantics: labelOf('faster'),
           onPressed: _audioSpeed < 3.0 ? () => _changeSpeed(0.25) : null,
         ),
@@ -3755,7 +3807,7 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
           Semantics(
             liveRegion: true,
             child: Text(
-              _playbackStatus,
+              _playbackStatusText,
               style: textStyle.copyWith(
                 fontSize: UIUtils.fontSize(context, 18),
                 fontWeight: FontWeight.w700,
@@ -3764,9 +3816,13 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
           ),
           ExcludeSemantics(
             child: Text(
-              '${_formatDuration(_currentPosition)} of '
-              '${_totalDuration != null ? _formatDuration(_totalDuration!) : '--:--'}. '
-              'Speed ${learningSpeedNumber(_audioSpeed)}x',
+              Speech.t.libraryPositionSpeed(
+                _formatDuration(_currentPosition),
+                _totalDuration != null
+                    ? _formatDuration(_totalDuration!)
+                    : '--:--',
+                learningSpeedNumber(_audioSpeed),
+              ),
               style: textStyle.copyWith(color: UIUtils.subtextColor),
             ),
           ),
@@ -3796,7 +3852,7 @@ class _ClassAudioScreenState extends State<ClassAudioScreen>
             child: Padding(
               padding: const EdgeInsets.only(top: 4),
               child: Text(
-                'Now playing: $title',
+                Speech.t.libraryNowPlaying(title),
                 style: textStyle.copyWith(color: UIUtils.subtextColor),
               ),
             ),
@@ -3844,7 +3900,7 @@ class _AddAudioOptionsScreenState extends State<AddAudioOptionsScreen> {
       fontWeight: FontWeight.w600,
     );
     return KeypadInstructionWrapper(
-      screenName: 'Add Audio Options',
+      screenName: Speech.t.libraryScreenAddAudioOptionsName,
       labels: addAudioOptionsKeyLabels,
       actions: {
         1: widget.onUploadNew,
@@ -3854,17 +3910,17 @@ class _AddAudioOptionsScreenState extends State<AddAudioOptionsScreen> {
       focusTargets: [
         KeypadFocusTarget(
           node: _closeNode,
-          label: 'Close add audio options',
+          label: Speech.t.libraryScreenCloseAddAudioTarget,
           onActivate: () => Navigator.of(context).pop(),
         ),
         KeypadFocusTarget(
           node: _uploadNode,
-          label: 'Upload new file, key 1',
+          label: Speech.t.libraryScreenUploadNewTarget,
           onActivate: widget.onUploadNew,
         ),
         KeypadFocusTarget(
           node: _existingNode,
-          label: 'Select from existing library, key 2',
+          label: Speech.t.libraryScreenSelectExistingTarget,
           onActivate: widget.onAddExisting,
         ),
       ],
@@ -3882,7 +3938,7 @@ class _AddAudioOptionsScreenState extends State<AddAudioOptionsScreen> {
                     child: Semantics(
                       header: true,
                       child: Text(
-                        'Add Audio',
+                        Speech.t.playlistAddAudioKey,
                         style: TextStyle(
                           color: UIUtils.onPrimaryColor,
                           fontSize: 18,
@@ -3893,7 +3949,7 @@ class _AddAudioOptionsScreenState extends State<AddAudioOptionsScreen> {
                   ),
                   IconButton(
                     focusNode: _closeNode,
-                    tooltip: 'Close add audio options',
+                    tooltip: Speech.t.libraryCloseAddAudio,
                     icon: Icon(Icons.close, color: UIUtils.onPrimaryColor),
                     onPressed: () => Navigator.of(context).pop(),
                   ),
@@ -3908,18 +3964,18 @@ class _AddAudioOptionsScreenState extends State<AddAudioOptionsScreen> {
                   AccessibleTile(
                     focusNode: _uploadNode,
                     leadingIcon: Icons.upload_file,
-                    title: '1: Upload New File',
-                    semanticLabel: 'Upload new file, key 1',
+                    title: Speech.t.libraryUploadNewFileKey1,
+                    semanticLabel: Speech.t.libraryScreenUploadNewTarget,
                     onActivate: widget.onUploadNew,
                   ),
                   AccessibleTile(
                     focusNode: _existingNode,
                     leadingIcon: Icons.library_music,
-                    title: '2: Select from Existing Library',
-                    semanticLabel: 'Select from existing library, key 2',
+                    title: Speech.t.librarySelectExistingKey2,
+                    semanticLabel: Speech.t.libraryScreenSelectExistingTarget,
                     onActivate: widget.onAddExisting,
                   ),
-                  Text('0: Cancel', style: textStyle),
+                  Text(Speech.t.uiCancelKey0, style: textStyle),
                 ],
               ),
             ),
@@ -3978,10 +4034,9 @@ class _SelectExistingAudioScreenState extends State<SelectExistingAudioScreen> {
     if (query.isEmpty) return _availableAudio;
     return _availableAudio
         .where(
-          (audio) =>
-              '${audio['title'] ?? ''} ${audio['description'] ?? ''}'
-                  .toLowerCase()
-                  .contains(query),
+          (audio) => '${audio['title'] ?? ''} ${audio['description'] ?? ''}'
+              .toLowerCase()
+              .contains(query),
         )
         .toList();
   }
@@ -3998,7 +4053,11 @@ class _SelectExistingAudioScreenState extends State<SelectExistingAudioScreen> {
     setState(() => _query = _searchController.text);
   }
 
-  void _announce(String message, {bool error = false, SpeechPriority? priority}) {
+  void _announce(
+    String message, {
+    bool error = false,
+    SpeechPriority? priority,
+  }) {
     if (!mounted) return;
     setState(() {
       _status = message;
@@ -4016,10 +4075,10 @@ class _SelectExistingAudioScreenState extends State<SelectExistingAudioScreen> {
     final count = _visibleAudio.length;
     _announce(
       _query.trim().isEmpty
-          ? '$count recordings available.'
+          ? Speech.t.libraryScreenRecordingsAvailable(count)
           : count == 0
-          ? 'No recordings match ${_query.trim()}.'
-          : '$count recordings match ${_query.trim()}.',
+          ? Speech.t.libraryScreenNoRecordingsMatch(_query.trim())
+          : Speech.t.libraryScreenRecordingsMatch(count, _query.trim()),
     );
   }
 
@@ -4057,16 +4116,13 @@ class _SelectExistingAudioScreenState extends State<SelectExistingAudioScreen> {
       });
       _announce(
         available.isEmpty
-            ? 'No unlinked recordings available for this class.'
-            : '${available.length} recordings available. Use up and down to choose, or search by title.',
+            ? Speech.t.libraryScreenNoUnlinkedRecordings
+            : Speech.t.libraryScreenRecordingsAvailableChoose(available.length),
         priority: firstLoad ? SpeechPriority.incidental : null,
       );
     } else {
       if (mounted) setState(() => _isLoading = false);
-      _announce(
-        'Could not load recordings. Check your internet connection, then press 1 to retry.',
-        error: true,
-      );
+      _announce(Speech.t.libraryScreenLoadFailed, error: true);
     }
   }
 
@@ -4085,10 +4141,7 @@ class _SelectExistingAudioScreenState extends State<SelectExistingAudioScreen> {
       Navigator.of(context).pop();
       TtsService.speak(LibraryText.addedToSession(title));
     } else {
-      _announce(
-        'Could not add $title. Check your connection and try again.',
-        error: true,
-      );
+      _announce(Speech.t.libraryScreenAddFailed(title), error: true);
     }
   }
 
@@ -4112,55 +4165,59 @@ class _SelectExistingAudioScreenState extends State<SelectExistingAudioScreen> {
       fontSize: UIUtils.fontSize(context, 16),
     );
     return KeypadInstructionWrapper(
-      screenName: 'Select Existing Audio',
-      navigationSections: 'search and every available recording',
+      screenName: Speech.t.libraryScreenSelectExistingName,
+      navigationSections: Speech.t.libraryScreenSelectExistingSections,
       labels: selectExistingAudioKeyLabels,
-      actions: {
-        1: _loadAvailableAudio,
-        0: () => Navigator.of(context).pop(),
-      },
+      actions: {1: _loadAvailableAudio, 0: () => Navigator.of(context).pop()},
       navigationController: _navigation,
       focusTargets: [
         KeypadFocusTarget(
           node: _backNode,
-          label: 'Back',
+          label: Speech.t.libraryScreenBack,
           onActivate: () => Navigator.of(context).maybePop(),
         ),
         KeypadFocusTarget(
           node: _refreshNode,
-          label: 'Refresh available audio, key 1',
+          label: Speech.t.libraryScreenRefreshAvailableTarget,
           onActivate: _loadAvailableAudio,
           isEnabled: () => !_linking,
         ),
         KeypadFocusTarget(
           node: _searchNode,
           label: _query.isEmpty
-              ? 'Search recordings by title. Press OK to type'
-              : 'Search recordings, $_query. ${visible.length} matches',
+              ? Speech.t.libraryScreenSearchRecordingsField
+              : Speech.t.libraryScreenSearchRecordingsWithQuery(
+                  _query,
+                  visible.length,
+                ),
           isTextField: true,
         ),
         for (final audio in visible)
           KeypadFocusTarget(
             node: _itemNode(_idOf(audio)),
-            label: 'Add ${audio['title'] ?? 'Untitled'} to this session',
-            onActivate: () =>
-                _linkAudio(_idOf(audio), '${audio['title'] ?? 'Untitled'}'),
+            label: Speech.t.libraryScreenAddToSessionTarget(
+              '${audio['title'] ?? Speech.t.libraryScreenUntitled}',
+            ),
+            onActivate: () => _linkAudio(
+              _idOf(audio),
+              '${audio['title'] ?? Speech.t.libraryScreenUntitled}',
+            ),
             isEnabled: () => !_linking,
           ),
       ],
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Select Audio'),
+          title: Text(Speech.t.librarySelectAudio),
           leading: IconButton(
             focusNode: _backNode,
-            tooltip: 'Back',
+            tooltip: Speech.t.settingsBack,
             icon: const Icon(Icons.arrow_back),
             onPressed: () => Navigator.of(context).maybePop(),
           ),
           actions: [
             IconButton(
               focusNode: _refreshNode,
-              tooltip: 'Refresh available audio',
+              tooltip: Speech.t.libraryRefreshAvailable,
               icon: const Icon(Icons.refresh),
               onPressed: _linking ? null : _loadAvailableAudio,
             ),
@@ -4198,7 +4255,7 @@ class _SelectExistingAudioScreenState extends State<SelectExistingAudioScreen> {
                         },
                         style: textStyle,
                         decoration: InputDecoration(
-                          labelText: 'Search by title',
+                          labelText: Speech.t.librarySearchByTitle,
                           prefixIcon: const Icon(Icons.search),
                           border: OutlineInputBorder(
                             borderSide: BorderSide(
@@ -4210,8 +4267,11 @@ class _SelectExistingAudioScreenState extends State<SelectExistingAudioScreen> {
                     ),
                     Text(
                       _query.trim().isEmpty
-                          ? '${visible.length} recordings'
-                          : '${visible.length} of ${_availableAudio.length} recordings match',
+                          ? Speech.t.libraryRecordingsCount('${visible.length}')
+                          : Speech.t.libraryRecordingsMatch(
+                              '${visible.length}',
+                              '${_availableAudio.length}',
+                            ),
                       style: textStyle,
                     ),
                     if (visible.isEmpty)
@@ -4219,8 +4279,8 @@ class _SelectExistingAudioScreenState extends State<SelectExistingAudioScreen> {
                         padding: const EdgeInsets.all(16),
                         child: Text(
                           _availableAudio.isEmpty
-                              ? 'No unlinked audio available.'
-                              : 'No recordings match your search.',
+                              ? Speech.t.libraryNoUnlinkedAudio
+                              : Speech.t.libraryNoSearchMatches,
                           style: textStyle,
                         ),
                       ),
@@ -4229,14 +4289,15 @@ class _SelectExistingAudioScreenState extends State<SelectExistingAudioScreen> {
                         focusNode: _itemNode(_idOf(audio)),
                         leadingIcon: Icons.library_add,
                         title: '${audio['title'] ?? 'Untitled'}',
-                        semanticLabel:
-                            'Add ${audio['title'] ?? 'Untitled'} to this session',
+                        semanticLabel: Speech.t.libraryScreenAddToSessionTarget(
+                          '${audio['title'] ?? Speech.t.libraryScreenUntitled}',
+                        ),
                         subtitle: '${audio['description'] ?? ''}',
                         onActivate: _linking
                             ? null
                             : () => _linkAudio(
                                 _idOf(audio),
-                                '${audio['title'] ?? 'Untitled'}',
+                                '${audio['title'] ?? Speech.t.libraryScreenUntitled}',
                               ),
                       ),
                   ],

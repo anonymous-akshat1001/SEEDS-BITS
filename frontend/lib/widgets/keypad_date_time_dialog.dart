@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../l10n/speech.dart';
 import '../services/tts_service.dart';
 import '../utils/ui_utils.dart';
 import 'key_instruction_wrapper.dart';
@@ -22,8 +23,16 @@ class KeypadDateTimeDialog extends StatefulWidget {
 }
 
 class _KeypadDateTimeDialogState extends State<KeypadDateTimeDialog> {
-  static const _labels = ['Year', 'Month', 'Day', 'Hour (0 to 23)', 'Minute'];
-  static const _names = ['Year', 'Month', 'Day', 'Hour', 'Minute'];
+  static List<String> get _labels {
+    final t = Speech.t;
+    return [t.uiYear, t.uiMonth, t.uiDay, t.uiHourRange, t.uiMinute];
+  }
+
+  static List<String> get _names {
+    final t = Speech.t;
+    return [t.uiYear, t.uiMonth, t.uiDay, t.uiHour, t.uiMinute];
+  }
+
   final _navigation = KeypadNavigationController();
   final _cancel = FocusNode(debugLabel: 'date-time-cancel');
   final _save = FocusNode(debugLabel: 'date-time-save');
@@ -50,7 +59,7 @@ class _KeypadDateTimeDialogState extends State<KeypadDateTimeDialog> {
   void _saveDateTime() {
     final values = _fields.map((field) => int.tryParse(field.text)).toList();
     if (values.any((value) => value == null)) {
-      _showError('Enter a number in every date and time field.');
+      _showError(Speech.t.uiDateEnterNumbers);
       return;
     }
     final year = values[0]!;
@@ -65,8 +74,10 @@ class _KeypadDateTimeDialogState extends State<KeypadDateTimeDialog> {
         day < 1 ||
         day > 31) {
       _showError(
-        'Choose a valid date from ${_dateLabel(widget.firstDate)} '
-        'to ${_dateLabel(widget.lastDate)}.',
+        Speech.t.uiDateChooseValid(
+          _dateLabel(widget.firstDate),
+          _dateLabel(widget.lastDate),
+        ),
       );
       return;
     }
@@ -78,17 +89,17 @@ class _KeypadDateTimeDialogState extends State<KeypadDateTimeDialog> {
         hour > 23 ||
         minute < 0 ||
         minute > 59) {
-      _showError(
-        'Enter a valid date, an hour from 0 to 23, and a minute from 0 to 59.',
-      );
+      _showError(Speech.t.uiDateInvalid);
       return;
     }
     final date = DateUtils.dateOnly(value);
     if (date.isBefore(DateUtils.dateOnly(widget.firstDate)) ||
         date.isAfter(DateUtils.dateOnly(widget.lastDate))) {
       _showError(
-        'Choose a date from ${_dateLabel(widget.firstDate)} '
-        'to ${_dateLabel(widget.lastDate)}.',
+        Speech.t.uiDateChoose(
+          _dateLabel(widget.firstDate),
+          _dateLabel(widget.lastDate),
+        ),
       );
       return;
     }
@@ -96,26 +107,28 @@ class _KeypadDateTimeDialogState extends State<KeypadDateTimeDialog> {
   }
 
   String _range(int index) {
+    final t = Speech.t;
     switch (index) {
       case 0:
         return widget.firstDate.year == widget.lastDate.year
             ? '${widget.firstDate.year}'
-            : '${widget.firstDate.year} to ${widget.lastDate.year}';
+            : t.uiRange('${widget.firstDate.year}', '${widget.lastDate.year}');
       case 1:
-        return '1 to 12';
+        return t.uiRange('1', '12');
       case 2:
-        return '1 to 31';
+        return t.uiRange('1', '31');
       case 3:
-        return '0 to 23';
+        return t.uiRange('0', '23');
       default:
-        return '0 to 59';
+        return t.uiRange('0', '59');
     }
   }
 
   String _fieldLabel(int index) {
     final value = _fields[index].text.trim();
-    return '${_names[index]}, ${_range(index)}, '
-        '${value.isEmpty ? 'currently empty' : 'currently $value'}';
+    return value.isEmpty
+        ? Speech.t.uiDateFieldEmpty(_names[index], _range(index))
+        : Speech.t.uiDateFieldValue(_names[index], _range(index), value);
   }
 
   String _dateLabel(DateTime value) =>
@@ -141,12 +154,13 @@ class _KeypadDateTimeDialogState extends State<KeypadDateTimeDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final t = Speech.t;
     return KeypadInstructionWrapper(
-      screenName:
-          'Set date and time in the phone\'s local time. '
-          'Choose a date from ${_dateLabel(widget.firstDate)} '
-          'to ${_dateLabel(widget.lastDate)}.',
-      labels: const {0: 'Cancel', 1: 'Save date and time'},
+      screenName: t.uiDateScreen(
+        _dateLabel(widget.firstDate),
+        _dateLabel(widget.lastDate),
+      ),
+      labels: {0: t.uiCancel, 1: t.uiSaveDateTime},
       actions: {0: () => Navigator.pop(context), 1: _saveDateTime},
       navigationController: _navigation,
       focusTargets: [
@@ -158,24 +172,24 @@ class _KeypadDateTimeDialogState extends State<KeypadDateTimeDialog> {
           ),
         KeypadFocusTarget(
           node: _cancel,
-          label: 'Cancel',
+          label: t.uiCancel,
           onActivate: () => Navigator.pop(context),
         ),
         KeypadFocusTarget(
           node: _save,
-          label: 'Save date and time',
+          label: t.uiSaveDateTime,
           onActivate: _saveDateTime,
         ),
       ],
       child: AlertDialog(
-        title: const Text('Set date and time'),
+        title: Text(Speech.t.uiSetDateTimeTitle),
         scrollable: true,
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              'Use local time. Press OK to edit each number.',
+              Speech.t.uiSetDateTimeHint,
               style: TextStyle(color: UIUtils.textColor, fontSize: 16),
             ),
             for (var index = 0; index < _fields.length; index++)
@@ -213,12 +227,12 @@ class _KeypadDateTimeDialogState extends State<KeypadDateTimeDialog> {
           TextButton(
             focusNode: _cancel,
             onPressed: () => Navigator.pop(context),
-            child: const Text('0: Cancel'),
+            child: Text(Speech.t.uiCancelKey0),
           ),
           ElevatedButton(
             focusNode: _save,
             onPressed: _saveDateTime,
-            child: const Text('1: Save'),
+            child: Text(Speech.t.uiSaveKey1),
           ),
         ],
       ),

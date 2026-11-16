@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../l10n/speech.dart';
 import '../main.dart' show routeObserver;
 import '../services/api_service.dart';
 import '../services/private_note_recorder.dart';
@@ -121,11 +122,7 @@ class _PrivateNotesScreenState extends State<PrivateNotesScreen>
       });
       // App speech stops recording, so only screen readers hear this.
       if (TtsService.mode == SpeechMode.screenReader) {
-        unawaited(
-          TtsService.speak(
-            'Recording started. Select Stop recording when finished.',
-          ),
-        );
+        unawaited(TtsService.speak(Speech.t.notesRecordingStarted));
       }
     }
     if (stopped) {
@@ -155,9 +152,7 @@ class _PrivateNotesScreenState extends State<PrivateNotesScreen>
       _report(error.message);
     } on Exception catch (error) {
       debugPrint('[NOTES] Screen operation failed (${error.runtimeType}).');
-      _report(
-        'This note action could not be confirmed. Check storage, microphone permission or connection. Your drafts are kept.',
-      );
+      _report(Speech.t.notesActionNotConfirmed);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -185,8 +180,8 @@ class _PrivateNotesScreenState extends State<PrivateNotesScreen>
     unawaited(
       TtsService.speak(
         _notes.isEmpty
-            ? 'No private notes yet.'
-            : '${_notes.length} private notes loaded.',
+            ? Speech.t.notesNoneYet
+            : Speech.t.notesLoaded(_notes.length),
       ),
     );
   });
@@ -204,21 +199,26 @@ class _PrivateNotesScreenState extends State<PrivateNotesScreen>
     final name = await showDialog<String>(
       context: context,
       builder: (_) => _NoteTitleDialog(
-        title: 'Name private note',
+        title: Speech.t.notesNameDialogTitle,
         initial: widget.lessonTitle == null
-            ? 'Private note'
-            : 'Note for ${widget.lessonTitle}',
+            ? Speech.t.notesDefaultTitle
+            : Speech.t.notesDefaultLessonTitle(widget.lessonTitle!),
       ),
     );
     if (name == null || !mounted) return;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => KeypadConfirmationDialog(
-        title: 'Record private note?',
-        message:
-            'Record microphone audio on this phone only, for up to five minutes or the remaining separate 10 MB note allowance. Stop recording before using spoken controls. App speech, leaving this screen or app interruption stops recording. Live-session recording is blocked. ${widget.position == null ? '' : 'Lesson point: ${widget.position!.inSeconds} seconds.'} No automatic upload or sharing. Microphone permission may be requested.',
-        confirmLabel: 'Start recording',
-        cancelLabel: 'Do not record',
+        title: Speech.t.notesRecordConfirmTitle,
+        message: Speech.t.notesRecordConfirmMessage(
+          widget.position == null
+              ? ''
+              : Speech.t.notesLessonPointSeconds(
+                  '${widget.position!.inSeconds}',
+                ),
+        ),
+        confirmLabel: Speech.t.notesStartRecording,
+        cancelLabel: Speech.t.notesDoNotRecord,
       ),
     );
     if (confirmed != true || !mounted) return;
@@ -257,9 +257,7 @@ class _PrivateNotesScreenState extends State<PrivateNotesScreen>
     }
     if (!_current) {
       await _stopReview();
-      throw const PrivateNoteException(
-        'Review stopped because the screen or app changed. Open this note again to review.',
-      );
+      throw PrivateNoteException(Speech.t.notesReviewStoppedChanged);
     }
     if (mounted) {
       setState(() {
@@ -272,9 +270,7 @@ class _PrivateNotesScreenState extends State<PrivateNotesScreen>
         unawaited(
           _run(() async {
             await _stopReview();
-            throw const PrivateNoteException(
-              'Review stopped because your account changed. Open private notes again.',
-            );
+            throw PrivateNoteException(Speech.t.notesReviewStoppedAccount);
           }),
         );
       }
@@ -283,8 +279,10 @@ class _PrivateNotesScreenState extends State<PrivateNotesScreen>
   Future<void> _rename(PrivateNote note) => _run(() async {
     final title = await showDialog<String>(
       context: context,
-      builder: (_) =>
-          _NoteTitleDialog(title: 'Rename private note', initial: note.title),
+      builder: (_) => _NoteTitleDialog(
+        title: Speech.t.notesRenameDialogTitle,
+        initial: note.title,
+      ),
     );
     if (title == null) return;
     await _store!.rename(note.id, title);
@@ -297,11 +295,10 @@ class _PrivateNotesScreenState extends State<PrivateNotesScreen>
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => KeypadConfirmationDialog(
-        title: 'Remove ${note.title}?',
-        message:
-            'Remove only ${note.title} from this account on this phone? Other notes, learning progress and bookmarks are kept. If previously published, the online recording and downloaded copies are not removed.',
-        confirmLabel: 'Remove selected note',
-        cancelLabel: 'Keep note',
+        title: Speech.t.notesRemoveTitle(note.title),
+        message: Speech.t.notesRemoveMessage(note.title),
+        confirmLabel: Speech.t.notesRemoveSelected,
+        cancelLabel: Speech.t.notesKeepNote,
       ),
     );
     if (confirmed != true) {
@@ -311,9 +308,7 @@ class _PrivateNotesScreenState extends State<PrivateNotesScreen>
     await _store!.remove(note.id);
     _reviewed.remove(note.id);
     await _read();
-    await TtsService.speak(
-      '${note.title} removed. Other notes and learning progress kept.',
-    );
+    await TtsService.speak(Speech.t.notesRemoved(note.title));
   });
 
   Future<Map<String, dynamic>?> _chooseWorkspace(
@@ -327,9 +322,7 @@ class _PrivateNotesScreenState extends State<PrivateNotesScreen>
 
   Future<void> _publish(PrivateNote note) => _run(() async {
     if (!_teacher || !_reviewed.contains(note.id)) {
-      throw const PrivateNoteException(
-        'Play and review this note privately before publishing.',
-      );
+      throw PrivateNoteException(Speech.t.notesReviewBeforePublish);
     }
     await _stopReview();
     final account = _store!;
@@ -337,9 +330,7 @@ class _PrivateNotesScreenState extends State<PrivateNotesScreen>
     final token = prefs.getString('token');
     await account.checkAccount();
     if (token == null || prefs.getString('role') != 'teacher') {
-      throw const PrivateNoteException(
-        'Sign in as the teacher before publishing.',
-      );
+      throw PrivateNoteException(Speech.t.notesSignInAsTeacher);
     }
     final access = await ApiService.getAccessContext().timeout(
       const Duration(seconds: 10),
@@ -349,9 +340,7 @@ class _PrivateNotesScreenState extends State<PrivateNotesScreen>
         .where((w) => w['class_id'] is int && w['subject_id'] is int)
         .toList();
     if (workspaces == null || workspaces.isEmpty) {
-      throw const PrivateNoteException(
-        'No authorized class/subject workspace was confirmed. Your draft is kept.',
-      );
+      throw PrivateNoteException(Speech.t.notesNoWorkspace);
     }
     if (!mounted) return;
     final selected = await _chooseWorkspace(workspaces);
@@ -359,11 +348,14 @@ class _PrivateNotesScreenState extends State<PrivateNotesScreen>
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => KeypadConfirmationDialog(
-        title: 'Publish reviewed note to class?',
-        message:
-            'Confirm you reviewed ${note.title} and want to publish it to ${selected['class_name'] ?? selected['class_id']}, ${selected['subject_name'] ?? selected['subject_id']}. Authorized class members can stream or download it for up to 30 days offline. Disconnected copies cannot be instantly revoked. Your local draft stays. An unconfirmed upload may already have published; check the library before retrying to avoid duplicates.',
-        confirmLabel: 'Publish to selected class',
-        cancelLabel: 'Keep draft private',
+        title: Speech.t.notesPublishTitle,
+        message: Speech.t.notesPublishMessage(
+          note.title,
+          '${selected['class_name'] ?? selected['class_id']}',
+          '${selected['subject_name'] ?? selected['subject_id']}',
+        ),
+        confirmLabel: Speech.t.notesPublishConfirm,
+        cancelLabel: Speech.t.notesKeepDraftPrivate,
       ),
     );
     if (confirmed != true) return;
@@ -371,9 +363,7 @@ class _PrivateNotesScreenState extends State<PrivateNotesScreen>
     await account.checkAccount();
     if (prefs.getString('token') != token ||
         prefs.getString('role') != 'teacher') {
-      throw const PrivateNoteException(
-        'Sign-in changed. The draft was not sent.',
-      );
+      throw PrivateNoteException(Speech.t.notesSignInChanged);
     }
     final request =
         http.MultipartRequest(
@@ -400,9 +390,7 @@ class _PrivateNotesScreenState extends State<PrivateNotesScreen>
     try {
       await account.checkAccount();
       if (prefs.getString('token') != token || !_current) {
-        throw const PrivateNoteException(
-          'Sign-in changed. The draft was not sent.',
-        );
+        throw PrivateNoteException(Speech.t.notesSignInChanged);
       }
       final stream = await client
           .send(request)
@@ -412,35 +400,26 @@ class _PrivateNotesScreenState extends State<PrivateNotesScreen>
       ).timeout(const Duration(seconds: 30));
       await account.checkAccount();
       if (prefs.getString('token') != token) {
-        throw const PrivateNoteException(
-          'Your account changed before publication was confirmed. Check the original teacher library before retrying.',
-        );
+        throw PrivateNoteException(Speech.t.notesAccountChangedBeforePublish);
       }
       if (response.statusCode != 200 && response.statusCode != 201) {
-        throw const PrivateNoteException(
-          'Publication was not confirmed. Check the class library before retrying; your private draft is kept.',
-        );
+        throw PrivateNoteException(Speech.t.notesPublishNotConfirmed);
       }
       final decoded = jsonDecode(response.body);
       if (decoded is! Map<String, dynamic> ||
           decoded['audio'] is! Map<String, dynamic>) {
-        throw const PrivateNoteException(
-          'Publication confirmation was unreadable. Check the library before retrying; your draft is kept.',
-        );
+        throw PrivateNoteException(Speech.t.notesPublishUnreadable);
       }
       final audio = decoded['audio'] as Map<String, dynamic>;
       if (audio['audio_id'] is! int ||
           audio['class_id'] != selected['class_id'] ||
           audio['subject_id'] != selected['subject_id'] ||
           audio['uploaded_by'] != account.userId) {
-        throw const PrivateNoteException(
-          'Publication identity did not match. Check the library before retrying; your draft is kept.',
-        );
+        throw PrivateNoteException(Speech.t.notesPublishIdentityMismatch);
       }
       if (mounted) {
         setState(
-          () => _status =
-              'Published as recording ${audio['audio_id']}. Your local draft is kept. Do not publish again unless you intend another recording.',
+          () => _status = Speech.t.notesPublished('${audio['audio_id']}'),
         );
       }
       if (mounted) await TtsService.speak(_status);
@@ -453,9 +432,7 @@ class _PrivateNotesScreenState extends State<PrivateNotesScreen>
   Future<void> _back() async {
     if (_recorder.active) await _recorder.stop();
     if (_recorder.active) {
-      _report(
-        'Recording stop was not confirmed. Stop again or background the app before leaving.',
-      );
+      _report(Speech.t.notesStopBeforeLeaving);
       return;
     }
     if (mounted) Navigator.pop(context);
@@ -478,23 +455,14 @@ class _PrivateNotesScreenState extends State<PrivateNotesScreen>
     super.dispose();
   }
 
-  static const _rules =
-      'Private note rules. Each note can be up to five minutes. Notes use a '
-      'separate 10 megabyte allowance for each account. Recording only starts '
-      'when you confirm it, and never inside a live session. App speech, '
-      'leaving this screen or an interruption stops recording, so stop '
-      'recording before using spoken controls. Student notes stay private on '
-      'this phone. Teacher drafts must be reviewed and confirmed before '
-      'publishing. Notes are kept after you log out.';
+  static String get _rules => Speech.t.notesRules;
 
   static String _spokenSeconds(int total) {
     final minutes = total ~/ 60;
     final seconds = total % 60;
-    String unit(int value, String name) =>
-        '$value $name${value == 1 ? '' : 's'}';
     return [
-      if (minutes > 0) unit(minutes, 'minute'),
-      if (seconds > 0 || minutes == 0) unit(seconds, 'second'),
+      if (minutes > 0) Speech.t.spokenMinutes(minutes),
+      if (seconds > 0 || minutes == 0) Speech.t.spokenSeconds(seconds),
     ].join(' ');
   }
 
@@ -505,10 +473,10 @@ class _PrivateNotesScreenState extends State<PrivateNotesScreen>
 
   String get _statusText {
     final elapsed = _recorder.recording
-        ? 'Recording for ${_spokenSeconds(_elapsedSeconds)}. '
+        ? '${Speech.t.notesRecordingFor(_spokenSeconds(_elapsedSeconds))} '
         : '';
     return '$elapsed${_recorder.status} ${_recorder.issue ?? ''} ${_issue ?? ''} '
-        '$_status ${(_used / 1000000).toStringAsFixed(2)} of 10 MB private notes used.';
+        '$_status ${Speech.t.notesUsage((_used / 1000000).toStringAsFixed(2))}';
   }
 
   @override
@@ -517,66 +485,75 @@ class _PrivateNotesScreenState extends State<PrivateNotesScreen>
     final targets = <KeypadFocusTarget>[
       KeypadFocusTarget(
         node: _node('back'),
-        label: 'Back. Stops any recording first',
+        label: Speech.t.notesBackStopsRecording,
         onActivate: _back,
       ),
       KeypadFocusTarget(
         node: _node('rules'),
-        label: 'Read note rules',
+        label: Speech.t.notesReadRules,
         isEnabled: () => !_recorder.recording,
         onActivate: () => TtsService.speak(_rules),
       ),
       KeypadFocusTarget(
         node: _node('refresh'),
-        label: 'Refresh private notes',
+        label: Speech.t.notesRefreshPrivate,
         isEnabled: () => !_busy && !active,
         onActivate: () => _load(announce: true),
       ),
       KeypadFocusTarget(
         node: _node('start'),
-        label: 'Record a private note. Asks for a name and confirmation first',
+        label: Speech.t.notesRecordAsksFirst,
         isEnabled: () => !_busy && !active,
         onActivate: _start,
       ),
       KeypadFocusTarget(
         node: _node('stop'),
-        label: 'Stop recording now',
+        label: Speech.t.notesStopRecordingNow,
         isEnabled: () => active && !_recorder.busy,
         onActivate: _stop,
       ),
       KeypadFocusTarget(
         node: _node('status'),
         label: _recorder.recording
-            ? 'Read recording time. Reading aloud stops recording'
-            : 'Read private note status',
+            ? Speech.t.notesReadRecordingTimeStops
+            : Speech.t.notesReadPrivateStatus,
         onActivate: () => TtsService.speak(_statusText),
       ),
       KeypadFocusTarget(
         node: _node('stop-review'),
         label: _playing == null
-            ? 'Stop private review'
-            : 'Stop reviewing ${_notes.where((note) => note.id == _playing).map((note) => note.title).firstOrNull ?? 'note'}',
+            ? Speech.t.notesStopPrivateReview
+            : _notes
+                      .where((note) => note.id == _playing)
+                      .map(
+                        (note) => Speech.t.notesStopReviewingTitle(note.title),
+                      )
+                      .firstOrNull ??
+                  Speech.t.notesStopReviewingNote,
         onActivate: () => _run(_stopReview),
       ),
       for (final note in _notes) ...[
         KeypadFocusTarget(
           node: _node('play-${note.id}'),
-          label:
-              'Review ${note.title} privately. ${note.complete ? '${_spokenSeconds(note.duration.inSeconds)}.' : 'Incomplete recording; cannot play.'}',
+          label: note.complete
+              ? Speech.t.notesReviewTitlePrivately(
+                  note.title,
+                  _spokenSeconds(note.duration.inSeconds),
+                )
+              : Speech.t.notesReviewTitleIncomplete(note.title),
           isEnabled: () => !_busy && !active && note.complete,
           onActivate: () => _review(note),
         ),
         KeypadFocusTarget(
           node: _node('rename-${note.id}'),
-          label: 'Rename ${note.title}',
+          label: Speech.t.notesRenameTitle(note.title),
           isEnabled: () => !_busy && !active && note.issue == null,
           onActivate: () => _rename(note),
         ),
         if (_teacher)
           KeypadFocusTarget(
             node: _node('publish-${note.id}'),
-            label:
-                'Publish reviewed ${note.title} to a class and subject, asks to confirm',
+            label: Speech.t.notesPublishTitleAsks(note.title),
             isEnabled: () =>
                 !_busy &&
                 !active &&
@@ -586,7 +563,7 @@ class _PrivateNotesScreenState extends State<PrivateNotesScreen>
           ),
         KeypadFocusTarget(
           node: _node('remove-${note.id}'),
-          label: 'Remove ${note.title}, asks to confirm',
+          label: Speech.t.notesRemoveTitleAsks(note.title),
           isEnabled: () => !_busy && !active,
           onActivate: () => _remove(note),
         ),
@@ -619,11 +596,11 @@ class _PrivateNotesScreenState extends State<PrivateNotesScreen>
     final elapsed = _elapsedSeconds;
     return KeypadInstructionWrapper(
       autoPlay: !_busy && !active,
-      screenName: 'Private notes',
-      introduction: 'Use Read note rules to hear how notes are kept.',
+      screenName: Speech.t.notesScreenName,
+      introduction: Speech.t.notesIntroduction,
       focusTargets: targets,
       actions: {0: _back},
-      labels: const {0: 'Back'},
+      labels: {0: Speech.t.notesBack},
       child: PopScope(
         canPop: !active,
         onPopInvokedWithResult: (popped, _) {
@@ -631,11 +608,11 @@ class _PrivateNotesScreenState extends State<PrivateNotesScreen>
         },
         child: Scaffold(
           appBar: AppBar(
-            title: const Text('Private notes'),
+            title: Text(Speech.t.notesScreenName),
             leading: IconButton(
               focusNode: _node('back'),
               onPressed: _back,
-              tooltip: 'Back',
+              tooltip: Speech.t.notesBack,
               icon: const Icon(Icons.arrow_back),
             ),
           ),
@@ -645,12 +622,17 @@ class _PrivateNotesScreenState extends State<PrivateNotesScreen>
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
-                  '${(_used / 1000000).toStringAsFixed(2)} / 10 MB private notes. Separate from lesson downloads. No automatic deletion.',
+                  Speech.t.notesStorageSummary(
+                    (_used / 1000000).toStringAsFixed(2),
+                  ),
                   style: textStyle,
                 ),
                 if (widget.lessonTitle != null)
                   Text(
-                    '${widget.lessonTitle}. Captured lesson point: ${widget.position?.inSeconds ?? 0} seconds.',
+                    Speech.t.notesLessonContext(
+                      widget.lessonTitle!,
+                      '${widget.position?.inSeconds ?? 0}',
+                    ),
                     style: textStyle,
                   ),
                 Semantics(
@@ -663,7 +645,9 @@ class _PrivateNotesScreenState extends State<PrivateNotesScreen>
                 if (_recorder.recording)
                   ExcludeSemantics(
                     child: Text(
-                      'Recording time ${elapsed ~/ 60}:${(elapsed % 60).toString().padLeft(2, '0')}',
+                      Speech.t.notesRecordingTime(
+                        '${elapsed ~/ 60}:${(elapsed % 60).toString().padLeft(2, '0')}',
+                      ),
                       style: textStyle.copyWith(
                         color: UIUtils.accentColor,
                         fontSize: 20,
@@ -693,43 +677,50 @@ class _PrivateNotesScreenState extends State<PrivateNotesScreen>
                     child: Text(_status, style: textStyle),
                   ),
                 if (_busy) const LinearProgressIndicator(),
-                button('rules', 'Read note rules'),
-                button('refresh', 'Refresh notes'),
-                button('start', 'Record a private note'),
-                button('stop', 'Stop recording'),
+                button('rules', Speech.t.notesReadRules),
+                button('refresh', Speech.t.notesRefreshNotes),
+                button('start', Speech.t.notesRecordPrivateNote),
+                button('stop', Speech.t.notesStopRecording),
                 button(
                   'status',
-                  _recorder.recording ? 'Read recording time' : 'Read note status',
+                  _recorder.recording
+                      ? Speech.t.notesReadRecordingTime
+                      : Speech.t.notesReadNoteStatus,
                 ),
-                button('stop-review', 'Stop private review'),
+                button('stop-review', Speech.t.notesStopPrivateReview),
                 if (_notes.isEmpty && !_busy)
                   Padding(
                     padding: const EdgeInsets.only(top: 8),
-                    child: Text('No private notes yet.', style: textStyle),
+                    child: Text(Speech.t.notesNoneYet, style: textStyle),
                   ),
                 for (final note in _notes)
                   AccessibleTile(
                     leadingIcon: Icons.mic_none,
                     title: note.title,
                     status: note.issue != null
-                        ? 'Needs attention'
+                        ? Speech.t.notesStatusNeedsAttention
                         : !note.complete
-                        ? 'Incomplete'
+                        ? Speech.t.notesStatusIncomplete
                         : _playing == note.id
-                        ? 'Playing'
+                        ? Speech.t.notesStatusPlaying
                         : _reviewed.contains(note.id)
-                        ? 'Reviewed'
-                        : 'Saved',
+                        ? Speech.t.notesStatusReviewed
+                        : Speech.t.notesStatusSaved,
                     statusColor: note.issue != null || !note.complete
                         ? UIUtils.errorColor
                         : null,
                     subtitle: [
                       note.issue ??
                           (note.complete
-                              ? '${note.duration.inSeconds} seconds. Private local note.'
-                              : 'Interrupted or incomplete note. Cannot play or publish.'),
+                              ? Speech.t.notesNoteSeconds(
+                                  '${note.duration.inSeconds}',
+                                )
+                              : Speech.t.notesNoteIncomplete),
                       if (note.audioId != null)
-                        'Lesson ${note.audioId}, point ${note.position?.inSeconds ?? 0} seconds.',
+                        Speech.t.notesNoteLessonPoint(
+                          '${note.audioId}',
+                          '${note.position?.inSeconds ?? 0}',
+                        ),
                     ].join(' '),
                     trailing: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -737,13 +728,19 @@ class _PrivateNotesScreenState extends State<PrivateNotesScreen>
                         button(
                           'play-${note.id}',
                           _playing == note.id
-                              ? 'Review playing'
-                              : 'Review privately',
+                              ? Speech.t.notesReviewPlaying
+                              : Speech.t.notesReviewPrivately,
                         ),
-                        button('rename-${note.id}', 'Rename'),
+                        button('rename-${note.id}', Speech.t.notesRename),
                         if (_teacher)
-                          button('publish-${note.id}', 'Publish reviewed note'),
-                        button('remove-${note.id}', 'Remove selected note'),
+                          button(
+                            'publish-${note.id}',
+                            Speech.t.notesPublishReviewedNote,
+                          ),
+                        button(
+                          'remove-${note.id}',
+                          Speech.t.notesRemoveSelected,
+                        ),
                       ],
                     ),
                   ),
@@ -776,7 +773,7 @@ class _NoteTitleDialogState extends State<_NoteTitleDialog> {
   String? _issue;
   void _submit() {
     if (_text.text.trim().isEmpty) {
-      setState(() => _issue = 'Enter a name before saving.');
+      setState(() => _issue = Speech.t.notesEnterNameBeforeSaving);
       TtsService.speak(_issue!);
     } else {
       Navigator.pop(context, _text.text.trim());
@@ -794,19 +791,22 @@ class _NoteTitleDialogState extends State<_NoteTitleDialog> {
 
   @override
   Widget build(BuildContext context) => KeypadInstructionWrapper(
-    screenName:
-        '${widget.title}. OK enters editing. Up or Down leaves editing, then choose Save or Cancel.',
+    screenName: Speech.t.notesNameDialogInstructions(widget.title),
     actions: const {},
     focusTargets: [
-      KeypadFocusTarget(node: _field, label: 'Note name', isTextField: true),
+      KeypadFocusTarget(
+        node: _field,
+        label: Speech.t.notesNoteName,
+        isTextField: true,
+      ),
       KeypadFocusTarget(
         node: _save,
-        label: 'Save note name',
+        label: Speech.t.notesSaveNoteName,
         onActivate: _submit,
       ),
       KeypadFocusTarget(
         node: _cancel,
-        label: 'Cancel',
+        label: Speech.t.notesCancel,
         onActivate: () => Navigator.pop(context),
       ),
     ],
@@ -821,19 +821,19 @@ class _NoteTitleDialogState extends State<_NoteTitleDialog> {
             focusNode: _field,
             maxLength: 160,
             decoration: InputDecoration(
-              labelText: 'Note name',
+              labelText: Speech.t.notesNoteName,
               errorText: _issue,
             ),
           ),
           OutlinedButton(
             focusNode: _save,
             onPressed: _submit,
-            child: const Text('Save name'),
+            child: Text(Speech.t.notesSaveName),
           ),
           TextButton(
             focusNode: _cancel,
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(Speech.t.notesCancel),
           ),
         ],
       ),
@@ -866,19 +866,21 @@ class _NoteWorkspaceDialogState extends State<_NoteWorkspaceDialog> {
   Widget build(BuildContext context) {
     String label(int index) {
       final workspace = widget.workspaces[index];
-      return '${workspace['class_name'] ?? workspace['class_id']}, ${workspace['subject_name'] ?? workspace['subject_id']}';
+      return Speech.t.notesWorkspaceLabel(
+        '${workspace['class_name'] ?? workspace['class_id']}',
+        '${workspace['subject_name'] ?? workspace['subject_id']}',
+      );
     }
 
     void choose(int index) => Navigator.pop(context, widget.workspaces[index]);
     return KeypadInstructionWrapper(
-      screenName:
-          'Choose an authorized class and subject before publishing. Nothing is uploaded until the next confirmation.',
+      screenName: Speech.t.notesChooseWorkspaceInstructions,
       actions: {0: () => Navigator.pop(context)},
-      labels: const {0: 'Cancel'},
+      labels: {0: Speech.t.notesCancel},
       focusTargets: [
         KeypadFocusTarget(
           node: _back,
-          label: 'Cancel publication',
+          label: Speech.t.notesCancelPublication,
           onActivate: () => Navigator.pop(context),
         ),
         for (var index = 0; index < _nodes.length; index++)
@@ -889,7 +891,7 @@ class _NoteWorkspaceDialogState extends State<_NoteWorkspaceDialog> {
           ),
       ],
       child: AlertDialog(
-        title: const Text('Publish to which workspace?'),
+        title: Text(Speech.t.notesPublishWhichWorkspace),
         scrollable: true,
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -898,7 +900,7 @@ class _NoteWorkspaceDialogState extends State<_NoteWorkspaceDialog> {
             TextButton(
               focusNode: _back,
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
+              child: Text(Speech.t.notesCancel),
             ),
             for (var index = 0; index < _nodes.length; index++)
               OutlinedButton(

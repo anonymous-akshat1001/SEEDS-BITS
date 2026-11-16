@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../announcers/session_text.dart';
+import '../l10n/speech.dart';
 import '../services/classroom_check_state.dart';
 import '../services/tts_service.dart';
 import '../utils/ui_utils.dart';
@@ -61,19 +63,18 @@ class _ClassroomCheckDialogState extends State<ClassroomCheckDialog> {
       if (type == 'open_check') {
         final confirmed = await showDialog<bool>(
           context: context,
-          builder: (_) => const KeypadConfirmationDialog(
-            title: 'Open a new classroom check?',
-            message:
-                'This clears all responses from the previous check. Students choose Understood, Please repeat or Need help. Only you and each responding student can read their response. It is not graded or retained as an academic record.',
-            confirmLabel: 'Clear previous and open',
-            cancelLabel: 'Keep current check',
+          builder: (_) => KeypadConfirmationDialog(
+            title: SessionText.checkNewTitle,
+            message: SessionText.checkNewMessage,
+            confirmLabel: SessionText.checkNewConfirm,
+            cancelLabel: SessionText.checkNewCancel,
           ),
         );
         if (confirmed != true || !mounted) return;
       }
       unawaited(
         TtsService.speak(
-          'Sending. Waiting for confirmation.',
+          SessionText.checkSending,
           priority: SpeechPriority.navigation,
         ),
       );
@@ -110,120 +111,115 @@ class _ClassroomCheckDialogState extends State<ClassroomCheckDialog> {
   }
 
   @override
-  Widget build(
-    BuildContext context,
-  ) => ValueListenableBuilder<ClassroomCheckState>(
-    valueListenable: widget.state,
-    builder: (_, state, child) {
-      final targets = [
-        KeypadFocusTarget(
-          node: _node('back'),
-          label: 'Back to session',
-          onActivate: () => Navigator.pop(context),
-        ),
-        KeypadFocusTarget(
-          node: _node('read'),
-          label: 'Read check status and confirmed responses',
-          onActivate: () => TtsService.speak(
-            '${state.describe(widget.teacher)} ${_issue ?? ''}',
-          ),
-        ),
-        KeypadFocusTarget(
-          node: _node('refresh'),
-          label: 'Refresh private check state. Requires class connection',
-          isEnabled: () => !_busy,
-          onActivate: () => _act('read_check'),
-        ),
-        if (widget.teacher) ...[
-          KeypadFocusTarget(
-            node: _node('open'),
-            label: 'Open a new check. Confirm clearing previous responses',
-            isEnabled: () => !_busy,
-            onActivate: () => _act('open_check'),
-          ),
-          KeypadFocusTarget(
-            node: _node('close'),
-            label:
-                'Close this check. Keep current results until next check or session end',
-            isEnabled: () => !_busy && state.open,
-            onActivate: () => _act('close_check'),
-          ),
-        ] else
-          for (final choice in ClassroomCheckState.labels.entries)
+  Widget build(BuildContext context) =>
+      ValueListenableBuilder<ClassroomCheckState>(
+        valueListenable: widget.state,
+        builder: (_, state, child) {
+          final targets = [
             KeypadFocusTarget(
-              node: _node(choice.key),
-              label:
-                  '${choice.value}. Send or change your private, ungraded response',
-              isEnabled: () => !_busy && state.open,
-              onActivate: () => _act('check_response', choice: choice.key),
+              node: _node('back'),
+              label: SessionText.backToSession,
+              onActivate: () => Navigator.pop(context),
             ),
-        KeypadFocusTarget(
-          node: _node('stop'),
-          label: 'Stop speech',
-          onActivate: TtsService.stop,
-        ),
-      ];
-      Widget button(String id, String label) {
-        final target = targets.firstWhere((target) => target.node == _node(id));
-        return OutlinedButton(
-          focusNode: target.node,
-          onPressed: target.isEnabled?.call() == false
-              ? null
-              : target.onActivate,
-          child: Text(label),
-        );
-      }
-
-      return KeypadInstructionWrapper(
-        screenName:
-            'Private classroom check. Understood, Please repeat or Need help. '
-            'Only the responding student and session teacher can read a response. '
-            'It is not graded. Responses clear on the next check, session end or server restart. '
-            'Use Read or Refresh for confirmed state. Stop speech and Back are available.',
-        actions: {0: () => Navigator.pop(context)},
-        labels: const {0: 'Back'},
-        focusTargets: targets,
-        child: AlertDialog(
-          title: const Text('Classroom check'),
-          scrollable: true,
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Semantics(
-                liveRegion: true,
-                child: Text(state.describe(widget.teacher)),
+            KeypadFocusTarget(
+              node: _node('read'),
+              label: SessionText.checkRead,
+              onActivate: () => TtsService.speak(
+                '${state.describe(widget.teacher)} ${_issue ?? ''}',
               ),
-              if (_issue != null)
-                Semantics(
-                  liveRegion: true,
-                  child: Text(
-                    _issue!,
-                    style: TextStyle(
-                      color: UIUtils.errorColor,
-                      fontWeight: FontWeight.w700,
-                    ),
+            ),
+            KeypadFocusTarget(
+              node: _node('refresh'),
+              label: SessionText.checkRefresh,
+              isEnabled: () => !_busy,
+              onActivate: () => _act('read_check'),
+            ),
+            if (widget.teacher) ...[
+              KeypadFocusTarget(
+                node: _node('open'),
+                label: SessionText.checkOpenLabel,
+                isEnabled: () => !_busy,
+                onActivate: () => _act('open_check'),
+              ),
+              KeypadFocusTarget(
+                node: _node('close'),
+                label: SessionText.checkCloseLabel,
+                isEnabled: () => !_busy && state.open,
+                onActivate: () => _act('close_check'),
+              ),
+            ] else
+              for (final choice in ClassroomCheckState.labels.entries)
+                KeypadFocusTarget(
+                  node: _node(choice.key),
+                  label: SessionText.checkAnswer(choice.value),
+                  isEnabled: () => !_busy && state.open,
+                  onActivate: () => _act('check_response', choice: choice.key),
+                ),
+            KeypadFocusTarget(
+              node: _node('stop'),
+              label: SessionText.stopSpeech,
+              onActivate: TtsService.stop,
+            ),
+          ];
+          Widget button(String id, String label) {
+            final target = targets.firstWhere(
+              (target) => target.node == _node(id),
+            );
+            return OutlinedButton(
+              focusNode: target.node,
+              onPressed: target.isEnabled?.call() == false
+                  ? null
+                  : target.onActivate,
+              child: Text(label),
+            );
+          }
+
+          return KeypadInstructionWrapper(
+            screenName: SessionText.checkHelp,
+            actions: {0: () => Navigator.pop(context)},
+            labels: {0: SessionText.back},
+            focusTargets: targets,
+            child: AlertDialog(
+              title: Text(Speech.t.classroomCheckTitle),
+              scrollable: true,
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Semantics(
+                    liveRegion: true,
+                    child: Text(state.describe(widget.teacher)),
                   ),
-                ),
-              if (_busy)
-                Semantics(
-                  liveRegion: true,
-                  child: const Text('Waiting for confirmation. Do not resend.'),
-                ),
-              button('read', 'Read status and responses'),
-              button('refresh', 'Refresh from server'),
-              if (widget.teacher) ...[
-                button('open', 'Open new check'),
-                button('close', 'Close check'),
-              ] else
-                for (final choice in ClassroomCheckState.labels.entries)
-                  button(choice.key, choice.value),
-              button('stop', 'Stop speech'),
-              button('back', 'Back to session'),
-            ],
-          ),
-        ),
+                  if (_issue != null)
+                    Semantics(
+                      liveRegion: true,
+                      child: Text(
+                        _issue!,
+                        style: TextStyle(
+                          color: UIUtils.errorColor,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  if (_busy)
+                    Semantics(
+                      liveRegion: true,
+                      child: Text(SessionText.checkWaiting),
+                    ),
+                  button('read', SessionText.checkReadButton),
+                  button('refresh', SessionText.checkRefreshButton),
+                  if (widget.teacher) ...[
+                    button('open', SessionText.checkOpenButton),
+                    button('close', SessionText.checkCloseButton),
+                  ] else
+                    for (final choice in ClassroomCheckState.labels.entries)
+                      button(choice.key, choice.value),
+                  button('stop', SessionText.stopSpeech),
+                  button('back', SessionText.backToSession),
+                ],
+              ),
+            ),
+          );
+        },
       );
-    },
-  );
 }

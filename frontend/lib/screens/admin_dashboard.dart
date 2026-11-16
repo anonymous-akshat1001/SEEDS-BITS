@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../l10n/speech.dart';
 import '../services/api_service.dart';
 import '../services/auth_session_service.dart';
 import '../services/tts_service.dart';
@@ -127,9 +128,9 @@ class _AdminDashboardState extends State<AdminDashboard> {
           .where((result) => !result.isSuccess)
           .firstOrNull
           ?.failure;
-      final message =
-          '${failure?.message ?? 'The administration list could not be read.'} '
-          'Administration data was not refreshed. Press 1 to retry.';
+      final message = Speech.t.adminNotRefreshed(
+        failure?.message ?? Speech.t.adminListReadFailed,
+      );
       setState(() {
         _loading = false;
         _issue = message;
@@ -159,7 +160,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
       _initialAnnouncementPending = false;
       await TtsService.speak(
         '${buildTtsInstructions(_sectionKeyLabels, screenName: _sectionTitle)} '
-        'Use D-pad up and down to explore $_sectionNavigation. Press OK to select. $summary',
+        '${Speech.t.adminExploreIntro(_sectionNavigation)} $summary',
       );
     } else {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -174,40 +175,48 @@ class _AdminDashboardState extends State<AdminDashboard> {
     }
   }
 
-  String get _sectionTitle => 'Administration. ${_section.name} section';
+  String get _sectionTitle =>
+      Speech.t.adminSectionTitle(_sectionName(_section));
 
-  String _plural(int count, String noun) => count == 1
-      ? '$count $noun'
-      : '$count ${noun.endsWith('s') ? '${noun}es' : '${noun}s'}';
+  /// Spoken section name, e.g. "accounts".
+  String _sectionName(_AdminSection section) => switch (section) {
+    _AdminSection.accounts => Speech.t.adminSectionNameAccounts,
+    _AdminSection.classes => Speech.t.adminSectionNameClasses,
+    _AdminSection.subjects => Speech.t.adminSectionNameSubjects,
+  };
 
   /// Result counts for the current section, naming the active search so the
   /// user knows why the list changed.
   String _resultSummary() {
+    final t = Speech.t;
     final search = _searchController.text.trim();
     return switch (_section) {
       _AdminSection.accounts =>
         _users.isEmpty
-            ? 'No matching accounts${search.isEmpty ? '' : ' for $search'}. '
-                  'Change the search or filters.'
-            : '${_plural(_users.length, 'account')}'
-                  '${search.isEmpty ? '' : ' match $search'}. '
-                  '${_plural(_classes.length, 'class')} and '
-                  '${_plural(_subjects.length, 'subject')}.',
-      _AdminSection.classes => '${_plural(_classes.length, 'class')}.',
-      _AdminSection.subjects => '${_plural(_subjects.length, 'subject')}.',
+            ? (search.isEmpty
+                  ? t.adminNoMatchingAccounts
+                  : t.adminNoMatchingAccountsFor(search))
+            : search.isEmpty
+            ? t.adminAccountsSummary(
+                _users.length,
+                t.adminClasses(_classes.length),
+                t.adminSubjects(_subjects.length),
+              )
+            : t.adminAccountsSummarySearch(
+                _users.length,
+                search,
+                t.adminClasses(_classes.length),
+                t.adminSubjects(_subjects.length),
+              ),
+      _AdminSection.classes => t.adminClassesSentence(_classes.length),
+      _AdminSection.subjects => t.adminSubjectsSentence(_subjects.length),
     };
   }
 
   String get _sectionNavigation => switch (_section) {
-    _AdminSection.accounts =>
-      'account search, account type and enrollment filters, and account management. '
-          'Use left or right on a filter to change it',
-    _AdminSection.classes =>
-      'create class and the list of active or archived classes. '
-          'Press OK on a class for its subject assignments and archive or restore actions',
-    _AdminSection.subjects =>
-      'create subject and the list of active or archived subjects. '
-          'Press OK on a subject to archive or restore it',
+    _AdminSection.accounts => Speech.t.adminNavigationAccounts,
+    _AdminSection.classes => Speech.t.adminNavigationClasses,
+    _AdminSection.subjects => Speech.t.adminNavigationSubjects,
   };
 
   Map<int, String> get _sectionKeyLabels => {
@@ -225,14 +234,14 @@ class _AdminDashboardState extends State<AdminDashboard> {
       context,
       MaterialPageRoute(
         builder: (menuContext) => NumberedMenu(
-          title: 'Administration sections',
+          title: Speech.t.adminSectionsTitle,
           choices: [
             for (final section in _AdminSection.values)
               NumberedChoice(
                 label: switch (section) {
-                  _AdminSection.accounts => 'Accounts and enrollment',
-                  _AdminSection.classes => 'Classes and their subjects',
-                  _AdminSection.subjects => 'Subjects',
+                  _AdminSection.accounts => Speech.t.adminSectionAccounts,
+                  _AdminSection.classes => Speech.t.adminSectionClasses,
+                  _AdminSection.subjects => Speech.t.adminSectionSubjects,
                 },
                 onSelected: () => Navigator.pop(menuContext, section),
               ),
@@ -247,16 +256,17 @@ class _AdminDashboardState extends State<AdminDashboard> {
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
+      final t = Speech.t;
+      final explore = switch (section) {
+        _AdminSection.accounts => t.adminExploreAccounts,
+        _AdminSection.classes => t.adminExploreClasses,
+        _AdminSection.subjects => t.adminExploreSubjects,
+      };
       _keypad.focusAndAnnounce(
         _sectionNode,
-        '${section.name} section. ${_issue == null ? _summary : ''} '
-        'Use the D-pad to explore '
-        '${section == _AdminSection.accounts
-            ? 'account filters, search and account management'
-            : section == _AdminSection.classes
-            ? 'class creation, subject assignments, and archive or restore actions'
-            : 'subject creation and archive or restore actions'}. '
-        'Press 7 to change section.',
+        '${t.adminSectionChosen(_sectionName(section))} '
+        '${_issue == null ? _summary : ''} '
+        '${t.adminSectionExplore(explore)}',
       );
     });
   }
@@ -279,7 +289,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
     });
     await _refresh(
       retainFocus: _roleFilterNode,
-      filterFeedback: 'Account type filter: ${_roleFilterLabel()}, selected.',
+      filterFeedback: Speech.t.adminRoleFilterSelected(_roleFilterLabel()),
     );
   }
 
@@ -306,26 +316,34 @@ class _AdminDashboardState extends State<AdminDashboard> {
     });
     await _refresh(
       retainFocus: _assignmentFilterNode,
-      filterFeedback:
-          'Assignment filter: ${_assignmentFilterLabel()}, selected.',
+      filterFeedback: Speech.t.adminAssignmentFilterSelected(
+        _assignmentFilterLabel(),
+      ),
     );
   }
 
   String _roleFilterLabel() => switch (_roleFilter) {
-    'student' => 'Students only',
-    'teacher' => 'Teachers only',
-    _ => 'All registered accounts',
+    'student' => Speech.t.adminRoleFilterStudents,
+    'teacher' => Speech.t.adminRoleFilterTeachers,
+    _ => Speech.t.adminRoleFilterAll,
   };
 
   String _assignmentFilterLabel() => switch (_assignmentStatus) {
     'assigned' =>
       _roleFilter == 'student'
-          ? 'Enrolled'
+          ? Speech.t.adminAssignmentEnrolled
           : _roleFilter == 'teacher'
-          ? 'Assigned'
-          : 'Enrolled or assigned',
-    'unassigned' => 'Unassigned',
-    _ => 'All assignment states',
+          ? Speech.t.adminAssignmentAssigned
+          : Speech.t.adminAssignmentEnrolledOrAssigned,
+    'unassigned' => Speech.t.adminAssignmentUnassigned,
+    _ => Speech.t.adminAssignmentAll,
+  };
+
+  /// Spoken role word for an account ("student" or "teacher").
+  String _roleName(Object? role) => switch (role) {
+    'student' => Speech.t.adminRoleStudent,
+    'teacher' => Speech.t.adminRoleTeacher,
+    _ => '$role',
   };
 
   List<dynamic> get _orderedUsers {
@@ -337,18 +355,23 @@ class _AdminDashboardState extends State<AdminDashboard> {
   }
 
   String _accountLabel(Map<String, dynamic> user) {
+    final t = Speech.t;
     final accessDescription = user['role'] == 'student'
-        ? (user['class_name'] ?? 'No class assigned')
-        : '${user['assignment_count']} assignments';
-    return '${user['name']}, ${user['role']}. $accessDescription. Press OK to manage';
+        ? (user['class_name'] ?? t.adminNoClassAssigned)
+        : t.adminAssignmentCount('${user['assignment_count']}');
+    return t.adminAccountLabel(
+      '${user['name']}',
+      _roleName(user['role']),
+      '$accessDescription',
+    );
   }
 
   Widget _accountCard(dynamic entry) {
     final user = Map<String, dynamic>.from(entry as Map);
     final id = user['user_id'] as int;
     final detail = user['role'] == 'student'
-        ? (user['class_name'] ?? 'No class assigned')
-        : '${user['assignment_count']} active assignments';
+        ? (user['class_name'] ?? Speech.t.adminNoClassAssigned)
+        : Speech.t.adminActiveAssignmentCount('${user['assignment_count']}');
     return AccessibleTile(
       focusNode: _userNodes.putIfAbsent(
         id,
@@ -371,7 +394,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
         child: Semantics(
           header: true,
           child: Text(
-            '$heading (${entries.length})',
+            Speech.t.adminHeadingCount(heading, '${entries.length}'),
             style: Theme.of(context).textTheme.titleMedium,
           ),
         ),
@@ -395,7 +418,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
       barrierDismissible: false,
       builder: (dialogContext) => KeypadInstructionWrapper(
         screenName: title,
-        labels: const {0: 'Cancel', 1: 'Save'},
+        labels: {0: Speech.t.adminCancel, 1: Speech.t.adminSave},
         actions: {
           0: () => Navigator.pop(dialogContext),
           1: () => Navigator.pop(dialogContext, controller.text.trim()),
@@ -405,12 +428,12 @@ class _AdminDashboardState extends State<AdminDashboard> {
           KeypadFocusTarget(node: fieldNode, label: label, isTextField: true),
           KeypadFocusTarget(
             node: cancelNode,
-            label: 'Cancel',
+            label: Speech.t.adminCancel,
             onActivate: () => Navigator.pop(dialogContext),
           ),
           KeypadFocusTarget(
             node: saveNode,
-            label: 'Save',
+            label: Speech.t.adminSave,
             onActivate: () =>
                 Navigator.pop(dialogContext, controller.text.trim()),
           ),
@@ -425,7 +448,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
             onTap: () => dialogKeypad.enterTextEditing(fieldNode),
             decoration: InputDecoration(
               labelText: label,
-              helperText: 'Press OK to type, then 1 to save or 0 to cancel',
+              helperText: Speech.t.adminTextDialogHelper,
               helperMaxLines: 10,
             ),
           ),
@@ -433,13 +456,13 @@ class _AdminDashboardState extends State<AdminDashboard> {
             TextButton(
               focusNode: cancelNode,
               onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('Cancel (0)'),
+              child: Text(Speech.t.libraryCancelKey0Button),
             ),
             FilledButton(
               focusNode: saveNode,
               onPressed: () =>
                   Navigator.pop(dialogContext, controller.text.trim()),
-              child: const Text('Save (1)'),
+              child: Text(Speech.t.adminSaveKey1),
             ),
           ],
         ),
@@ -454,8 +477,8 @@ class _AdminDashboardState extends State<AdminDashboard> {
 
   Future<void> _addSubject() async {
     final name = await _textDialog(
-      title: 'Create subject',
-      label: 'Subject name',
+      title: Speech.t.adminCreateSubjectTitle,
+      label: Speech.t.adminSubjectNameField,
     );
     if (name == null) return;
     if (name.isEmpty) {
@@ -463,11 +486,14 @@ class _AdminDashboardState extends State<AdminDashboard> {
       return;
     }
     final result = await ApiService.createSubject(name);
-    await _announceResult(result != null, 'Subject $name created');
+    await _announceResult(result != null, Speech.t.adminSubjectCreated(name));
   }
 
   Future<void> _addClass() async {
-    final name = await _textDialog(title: 'Create class', label: 'Class name');
+    final name = await _textDialog(
+      title: Speech.t.adminCreateClassTitle,
+      label: Speech.t.adminClassNameField,
+    );
     if (name == null) return;
     if (name.isEmpty) {
       await TtsService.speak(AdminText.noClassName);
@@ -480,15 +506,17 @@ class _AdminDashboardState extends State<AdminDashboard> {
         ? 0
         : activeOrders.reduce((a, b) => a > b ? a : b) + 1;
     final result = await ApiService.createClass(name, nextOrder);
-    await _announceResult(result != null, 'Class $name created');
+    await _announceResult(result != null, Speech.t.adminClassCreated(name));
   }
 
   Future<void> _announceResult(
     bool success,
     String successMessage, {
-    String failureMessage = AdminText.saveFailed,
+    String? failureMessage,
   }) async {
-    final message = success ? successMessage : failureMessage;
+    final message = success
+        ? successMessage
+        : failureMessage ?? AdminText.saveFailed;
     if (success) {
       // The refresh speaks this message together with the new counts.
       MessageCenter.show('$message.', kind: MessageKind.success, speak: false);
@@ -503,12 +531,16 @@ class _AdminDashboardState extends State<AdminDashboard> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => KeypadConfirmationDialog(
-        title: currentlyActive ? 'Archive class?' : 'Restore class?',
+        title: currentlyActive
+            ? Speech.t.adminArchiveClassTitle
+            : Speech.t.adminRestoreClassTitle,
         message: currentlyActive
-            ? 'New sessions, audio, and assignments cannot use ${schoolClass['name']} while it is archived.'
-            : '${schoolClass['name']} will become available for assignments again.',
-        cancelLabel: 'Cancel',
-        confirmLabel: currentlyActive ? 'Archive' : 'Restore',
+            ? Speech.t.adminArchiveItemMessage('${schoolClass['name']}')
+            : Speech.t.adminRestoreItemMessage('${schoolClass['name']}'),
+        cancelLabel: Speech.t.adminCancel,
+        confirmLabel: currentlyActive
+            ? Speech.t.adminArchive
+            : Speech.t.adminRestore,
         cancelKey: 0,
         confirmKey: 1,
       ),
@@ -520,7 +552,9 @@ class _AdminDashboardState extends State<AdminDashboard> {
     );
     await _announceResult(
       result != null,
-      currentlyActive ? 'Class archived' : 'Class restored',
+      currentlyActive
+          ? Speech.t.adminClassArchived
+          : Speech.t.adminClassRestored,
     );
   }
 
@@ -530,17 +564,17 @@ class _AdminDashboardState extends State<AdminDashboard> {
       context,
       MaterialPageRoute(
         builder: (menuContext) => NumberedMenu(
-          title: 'Manage ${schoolClass['name']}',
+          title: Speech.t.adminManageTitle('${schoolClass['name']}'),
           choices: [
             if (active)
               NumberedChoice(
-                label: 'Manage class subjects',
+                label: Speech.t.adminManageClassSubjects,
                 onSelected: () => Navigator.pop(menuContext, 'subjects'),
               ),
             NumberedChoice(
               label: active
-                  ? 'Archive class with confirmation'
-                  : 'Restore class with confirmation',
+                  ? Speech.t.adminArchiveClassChoice
+                  : Speech.t.adminRestoreClassChoice,
               onSelected: () => Navigator.pop(menuContext, 'archive'),
             ),
           ],
@@ -578,7 +612,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
       context,
       MaterialPageRoute(
         builder: (listContext) => KeypadPagedList<Map<String, dynamic>>(
-          title: 'Subjects for ${schoolClass['name']}',
+          title: Speech.t.adminSubjectsForClass('${schoolClass['name']}'),
           scope: schoolClass['class_id'] as int,
           loadPage: (query) async {
             final matches = subjects
@@ -599,8 +633,9 @@ class _AdminDashboardState extends State<AdminDashboard> {
             );
           },
           labelOf: (subject) =>
-              '${subject['name']}. '
-              '${activeBySubject.containsKey(subject['subject_id']) ? 'Available in this class. Select to remove' : 'Not available in this class. Select to add'}',
+              activeBySubject.containsKey(subject['subject_id'])
+              ? Speech.t.adminSubjectInClass('${subject['name']}')
+              : Speech.t.adminSubjectNotInClass('${subject['name']}'),
           onSelected: (subject) {
             final association = activeBySubject[subject['subject_id']];
             Navigator.pop(listContext, {
@@ -627,8 +662,8 @@ class _AdminDashboardState extends State<AdminDashboard> {
     await _announceResult(
       success,
       remove
-          ? 'Subject removed from ${schoolClass['name']}'
-          : 'Subject added to ${schoolClass['name']}',
+          ? Speech.t.adminSubjectRemovedFrom('${schoolClass['name']}')
+          : Speech.t.adminSubjectAddedTo('${schoolClass['name']}'),
     );
   }
 
@@ -637,12 +672,16 @@ class _AdminDashboardState extends State<AdminDashboard> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => KeypadConfirmationDialog(
-        title: currentlyActive ? 'Archive subject?' : 'Restore subject?',
+        title: currentlyActive
+            ? Speech.t.adminArchiveSubjectTitle
+            : Speech.t.adminRestoreSubjectTitle,
         message: currentlyActive
-            ? 'New sessions, audio, and assignments cannot use ${subject['name']} while it is archived.'
-            : '${subject['name']} will become available for assignments again.',
-        cancelLabel: 'Cancel',
-        confirmLabel: currentlyActive ? 'Archive' : 'Restore',
+            ? Speech.t.adminArchiveItemMessage('${subject['name']}')
+            : Speech.t.adminRestoreItemMessage('${subject['name']}'),
+        cancelLabel: Speech.t.adminCancel,
+        confirmLabel: currentlyActive
+            ? Speech.t.adminArchive
+            : Speech.t.adminRestore,
         cancelKey: 0,
         confirmKey: 1,
       ),
@@ -654,7 +693,9 @@ class _AdminDashboardState extends State<AdminDashboard> {
     );
     await _announceResult(
       result != null,
-      currentlyActive ? 'Subject archived' : 'Subject restored',
+      currentlyActive
+          ? Speech.t.adminSubjectArchived
+          : Speech.t.adminSubjectRestored,
     );
   }
 
@@ -663,17 +704,18 @@ class _AdminDashboardState extends State<AdminDashboard> {
       3,
       (i) => FocusNode(debugLabel: 'admin-account-action-$i'),
     );
+    final t = Speech.t;
+    final actionLabels = [
+      t.adminCancel,
+      t.adminManageAssignments,
+      t.adminPasswordRecovery,
+    ];
     final action = await showDialog<int>(
       context: context,
       barrierDismissible: false,
       builder: (dialogContext) => KeypadInstructionWrapper(
-        screenName:
-            'Manage ${user['name']}. Choose assignments, password recovery, or Cancel.',
-        labels: const {
-          0: 'Cancel',
-          1: 'Manage assignments',
-          2: 'Password recovery',
-        },
+        screenName: t.adminManageUserScreen('${user['name']}'),
+        labels: {for (var i = 0; i < 3; i++) i: actionLabels[i]},
         actions: {
           for (var i = 0; i < 3; i++) i: () => Navigator.pop(dialogContext, i),
         },
@@ -681,7 +723,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
           for (var i = 0; i < 3; i++)
             KeypadFocusTarget(
               node: nodes[i],
-              label: ['Cancel', 'Manage assignments', 'Password recovery'][i],
+              label: actionLabels[i],
               onActivate: () => Navigator.pop(dialogContext, i),
             ),
         ],
@@ -693,7 +735,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
-                  'Manage ${user['name']}',
+                  Speech.t.adminManageUser('${user['name']}'),
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 for (var i = 0; i < 3; i++)
@@ -702,9 +744,9 @@ class _AdminDashboardState extends State<AdminDashboard> {
                     onPressed: () => Navigator.pop(dialogContext, i),
                     child: Text(
                       [
-                        '0: Cancel',
-                        '1: Manage assignments',
-                        '2: Password recovery',
+                        Speech.t.uiCancelKey0,
+                        Speech.t.adminManageAssignmentsKey1,
+                        Speech.t.adminPasswordRecoveryKey2,
                       ][i],
                     ),
                   ),
@@ -730,8 +772,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
         await _announceResult(
           false,
           '',
-          failureMessage:
-              'Account recovery requires a current server version. Refresh the account.',
+          failureMessage: Speech.t.adminRecoveryNeedsVersion,
         );
         return;
       }
@@ -757,13 +798,12 @@ class _AdminDashboardState extends State<AdminDashboard> {
         .where((entry) => entry['is_active'] == true)
         .toList();
     if (activeClasses.isEmpty) {
-      await TtsService.speak(
-        'No active classes. Create or restore a class in the classes section first.',
-      );
+      await TtsService.speak(Speech.t.adminNoActiveClasses);
       return;
     }
+    final t = Speech.t;
     final currentClassId = int.tryParse('${student['class_id']}');
-    final currentClassName = student['class_name'] ?? 'the current class';
+    final currentClassName = student['class_name'] ?? t.adminTheCurrentClass;
     int classId =
         activeClasses.any((entry) => entry['class_id'] == currentClassId)
         ? currentClassId!
@@ -793,11 +833,11 @@ class _AdminDashboardState extends State<AdminDashboard> {
       context: context,
       barrierDismissible: false,
       builder: (dialogContext) => KeypadInstructionWrapper(
-        screenName: 'Assign class to ${student['name']}',
+        screenName: t.adminAssignClassTo('${student['name']}'),
         labels: {
-          0: 'Cancel',
-          1: 'Assign',
-          if (currentClassId != null) 2: 'Remove class',
+          0: t.adminCancel,
+          1: t.adminAssign,
+          if (currentClassId != null) 2: t.adminRemoveClass,
         },
         actions: {
           0: () => Navigator.pop(dialogContext),
@@ -809,9 +849,11 @@ class _AdminDashboardState extends State<AdminDashboard> {
           KeypadFocusTarget(
             node: classNode,
             label: AdminText.choiceLabel(
-              'Class',
+              t.adminClassField,
               '${activeClasses.firstWhere((e) => e['class_id'] == classId, orElse: () => activeClasses.first)['name']}',
-              activeClasses.indexWhere((e) => e['class_id'] == classId).clamp(0, activeClasses.length),
+              activeClasses
+                  .indexWhere((e) => e['class_id'] == classId)
+                  .clamp(0, activeClasses.length),
               activeClasses.length,
             ),
             onActivate: () => moveClass(1),
@@ -820,19 +862,21 @@ class _AdminDashboardState extends State<AdminDashboard> {
           ),
           KeypadFocusTarget(
             node: cancelNode,
-            label: 'Cancel',
+            label: t.adminCancel,
             onActivate: () => Navigator.pop(dialogContext),
           ),
           if (currentClassId != null)
             KeypadFocusTarget(
               node: removeNode,
-              label:
-                  'Remove ${student['name']} from $currentClassName, asks to confirm',
+              label: t.adminRemoveStudentLabel(
+                '${student['name']}',
+                '$currentClassName',
+              ),
               onActivate: () => Navigator.pop(dialogContext, 'remove'),
             ),
           KeypadFocusTarget(
             node: assignNode,
-            label: 'Assign ${student['name']} to the selected class',
+            label: t.adminAssignStudentLabel('${student['name']}'),
             onActivate: () => Navigator.pop(dialogContext, 'assign'),
           ),
         ],
@@ -842,9 +886,9 @@ class _AdminDashboardState extends State<AdminDashboard> {
             return AlertDialog(
               scrollable: true,
               insetPadding: const EdgeInsets.all(8),
-              title: Text('Assign class to ${student['name']}'),
+              title: Text(Speech.t.adminAssignClassTo('${student['name']}')),
               content: KeypadChoiceField<int>(
-                label: 'Class',
+                label: t.adminClassField,
                 focusNode: classNode,
                 values: [
                   for (final entry in activeClasses) entry['class_id'] as int,
@@ -858,23 +902,25 @@ class _AdminDashboardState extends State<AdminDashboard> {
                 TextButton(
                   focusNode: cancelNode,
                   onPressed: () => Navigator.pop(dialogContext),
-                  child: const Text('Cancel (0)'),
+                  child: Text(Speech.t.libraryCancelKey0Button),
                 ),
                 if (currentClassId != null)
                   TextButton(
                     focusNode: removeNode,
                     onPressed: () => Navigator.pop(dialogContext, 'remove'),
                     child: Semantics(
-                      label:
-                          'Remove ${student['name']} from $currentClassName (2)',
+                      label: Speech.t.adminRemoveStudentFromClass(
+                        '${student['name']}',
+                        '$currentClassName',
+                      ),
                       excludeSemantics: true,
-                      child: const Text('Remove class (2)'),
+                      child: Text(Speech.t.adminRemoveClassKey2),
                     ),
                   ),
                 FilledButton(
                   focusNode: assignNode,
                   onPressed: () => Navigator.pop(dialogContext, 'assign'),
-                  child: const Text('Assign (1)'),
+                  child: Text(Speech.t.adminAssignKey1),
                 ),
               ],
             );
@@ -892,11 +938,13 @@ class _AdminDashboardState extends State<AdminDashboard> {
         context: context,
         barrierDismissible: false,
         builder: (_) => KeypadConfirmationDialog(
-          title: 'Remove from class?',
-          message:
-              'Remove ${student['name']} from $currentClassName? They will no longer see that class until assigned again.',
-          cancelLabel: 'Keep in class',
-          confirmLabel: 'Remove from class',
+          title: t.adminRemoveFromClassTitle,
+          message: t.adminRemoveFromClassMessage(
+            '${student['name']}',
+            '$currentClassName',
+          ),
+          cancelLabel: t.adminKeepInClass,
+          confirmLabel: t.adminRemoveFromClass,
           cancelKey: 0,
           confirmKey: 1,
         ),
@@ -905,7 +953,10 @@ class _AdminDashboardState extends State<AdminDashboard> {
       final removed = await ApiService.removeStudentClass(
         student['user_id'] as int,
       );
-      await _announceResult(removed, '${student['name']} removed from class');
+      await _announceResult(
+        removed,
+        t.adminStudentRemovedFromClass('${student['name']}'),
+      );
       return;
     }
     if (action != 'assign') return;
@@ -918,7 +969,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
     )['name'];
     await _announceResult(
       result != null,
-      '${student['name']} assigned to $className',
+      t.adminStudentAssignedTo('${student['name']}', '$className'),
     );
   }
 
@@ -927,9 +978,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
         .where((entry) => entry['is_active'] == true)
         .toList();
     if (activeClasses.isEmpty) {
-      await TtsService.speak(
-        'No active classes. Create or restore a class in the classes section first.',
-      );
+      await TtsService.speak(Speech.t.adminNoActiveClasses);
       return;
     }
     final assignments = await ApiService.getTeacherAssignments(
@@ -1002,12 +1051,13 @@ class _AdminDashboardState extends State<AdminDashboard> {
       );
     }
 
+    final t = Speech.t;
     final confirmed = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
       builder: (dialogContext) => KeypadInstructionWrapper(
-        screenName: 'Assign ${teacher['name']} to a class and subject',
-        labels: const {0: 'Cancel', 1: 'Assign'},
+        screenName: t.adminAssignTeacherScreen('${teacher['name']}'),
+        labels: {0: t.adminCancel, 1: t.adminAssign},
         actions: {
           0: () => Navigator.pop(dialogContext, false),
           1: () => Navigator.pop(dialogContext, true),
@@ -1016,8 +1066,11 @@ class _AdminDashboardState extends State<AdminDashboard> {
           for (final entry in assignments)
             KeypadFocusTarget(
               node: assignmentNodes[entry['assignment_id']]!,
-              label:
-                  'Remove ${teacher['name']} from ${entry['class_name']}, ${entry['subject_name']}, asks to confirm',
+              label: t.adminRemoveAssignmentLabel(
+                '${teacher['name']}',
+                '${entry['class_name']}',
+                '${entry['subject_name']}',
+              ),
               onActivate: () => _removeTeacherAssignment(
                 teacher,
                 Map<String, dynamic>.from(entry as Map),
@@ -1027,9 +1080,11 @@ class _AdminDashboardState extends State<AdminDashboard> {
           KeypadFocusTarget(
             node: classNode,
             label: AdminText.choiceLabel(
-              'Class',
+              t.adminClassField,
               '${activeClasses.firstWhere((e) => e['class_id'] == classId, orElse: () => activeClasses.first)['name']}',
-              activeClasses.indexWhere((e) => e['class_id'] == classId).clamp(0, activeClasses.length),
+              activeClasses
+                  .indexWhere((e) => e['class_id'] == classId)
+                  .clamp(0, activeClasses.length),
               activeClasses.length,
             ),
             onActivate: () => moveTeacherClass(1),
@@ -1041,9 +1096,11 @@ class _AdminDashboardState extends State<AdminDashboard> {
             label: classSubjects.isEmpty
                 ? AdminText.noSubjects
                 : AdminText.choiceLabel(
-                    'Subject',
+                    t.adminSubjectField,
                     '${classSubjects.firstWhere((e) => e['subject_id'] == subjectId, orElse: () => classSubjects.first)['subject_name']}',
-                    classSubjects.indexWhere((e) => e['subject_id'] == subjectId).clamp(0, classSubjects.length),
+                    classSubjects
+                        .indexWhere((e) => e['subject_id'] == subjectId)
+                        .clamp(0, classSubjects.length),
                     classSubjects.length,
                   ),
             onActivate: () => moveSubject(1),
@@ -1052,12 +1109,12 @@ class _AdminDashboardState extends State<AdminDashboard> {
           ),
           KeypadFocusTarget(
             node: cancelNode,
-            label: 'Cancel',
+            label: t.adminCancel,
             onActivate: () => Navigator.pop(dialogContext, false),
           ),
           KeypadFocusTarget(
             node: assignNode,
-            label: 'Save assignment',
+            label: t.adminSaveAssignment,
             onActivate: () => Navigator.pop(dialogContext, true),
           ),
         ],
@@ -1067,14 +1124,14 @@ class _AdminDashboardState extends State<AdminDashboard> {
             return AlertDialog(
               scrollable: true,
               insetPadding: const EdgeInsets.all(8),
-              title: Text('Assign ${teacher['name']}'),
+              title: Text(Speech.t.adminAssignTeacher('${teacher['name']}')),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   if (assignments.isNotEmpty) ...[
-                    const Align(
+                    Align(
                       alignment: Alignment.centerLeft,
-                      child: Text('Current assignments'),
+                      child: Text(Speech.t.adminCurrentAssignments),
                     ),
                     const SizedBox(height: 8),
                     ConstrainedBox(
@@ -1089,8 +1146,11 @@ class _AdminDashboardState extends State<AdminDashboard> {
                               subtitle: Text('${entry['subject_name']}'),
                               trailing: IconButton(
                                 focusNode: assignmentNodes[assignmentId],
-                                tooltip:
-                                    'Remove ${teacher['name']} from ${entry['class_name']}, ${entry['subject_name']}',
+                                tooltip: Speech.t.adminRemoveTeacherAssignment(
+                                  '${teacher['name']}',
+                                  '${entry['class_name']}',
+                                  '${entry['subject_name']}',
+                                ),
                                 icon: const Icon(Icons.remove_circle_outline),
                                 onPressed: () => _removeTeacherAssignment(
                                   teacher,
@@ -1104,13 +1164,13 @@ class _AdminDashboardState extends State<AdminDashboard> {
                       ),
                     ),
                     const Divider(),
-                    const Align(
+                    Align(
                       alignment: Alignment.centerLeft,
-                      child: Text('Add an assignment'),
+                      child: Text(Speech.t.adminAddAssignment),
                     ),
                   ],
                   KeypadChoiceField<int>(
-                    label: 'Class',
+                    label: t.adminClassField,
                     focusNode: classNode,
                     values: [
                       for (final entry in activeClasses)
@@ -1123,7 +1183,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                   ),
                   const SizedBox(height: 12),
                   KeypadChoiceField<int>(
-                    label: 'Subject',
+                    label: t.adminSubjectField,
                     focusNode: subjectNode,
                     values: [
                       for (final entry in classSubjects)
@@ -1140,12 +1200,12 @@ class _AdminDashboardState extends State<AdminDashboard> {
                 TextButton(
                   focusNode: cancelNode,
                   onPressed: () => Navigator.pop(dialogContext, false),
-                  child: const Text('Cancel (0)'),
+                  child: Text(Speech.t.libraryCancelKey0Button),
                 ),
                 FilledButton(
                   focusNode: assignNode,
                   onPressed: () => Navigator.pop(dialogContext, true),
-                  child: const Text('Assign (1)'),
+                  child: Text(Speech.t.adminAssignKey1),
                 ),
               ],
             );
@@ -1166,7 +1226,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
       classId,
       subjectId,
     );
-    await _announceResult(result != null, 'Teacher assignment saved');
+    await _announceResult(result != null, Speech.t.adminTeacherAssignmentSaved);
   }
 
   Future<void> _removeTeacherAssignment(
@@ -1177,11 +1237,14 @@ class _AdminDashboardState extends State<AdminDashboard> {
     final remove = await showDialog<bool>(
       context: dialogContext,
       builder: (_) => KeypadConfirmationDialog(
-        title: 'Remove assignment?',
-        message:
-            'Remove ${teacher['name']} from ${assignment['class_name']}, ${assignment['subject_name']}?',
-        cancelLabel: 'Keep',
-        confirmLabel: 'Remove',
+        title: Speech.t.adminRemoveAssignmentTitle,
+        message: Speech.t.adminRemoveAssignmentMessage(
+          '${teacher['name']}',
+          '${assignment['class_name']}',
+          '${assignment['subject_name']}',
+        ),
+        cancelLabel: Speech.t.adminKeep,
+        confirmLabel: Speech.t.adminRemove,
         cancelKey: 0,
         confirmKey: 1,
       ),
@@ -1194,44 +1257,43 @@ class _AdminDashboardState extends State<AdminDashboard> {
     if (dialogContext.mounted) {
       Navigator.pop(dialogContext, false);
     }
-    await _announceResult(removed, 'Teacher assignment removed');
+    await _announceResult(removed, Speech.t.adminTeacherAssignmentRemoved);
   }
 
   List<KeypadFocusTarget> _focusTargets() {
+    final t = Speech.t;
     final targets = <KeypadFocusTarget>[
       KeypadFocusTarget(
         node: _refreshNode,
-        label: 'Refresh admin data',
+        label: t.adminRefreshData,
         onActivate: _refresh,
       ),
       KeypadFocusTarget(
         node: _logoutNode,
-        label: 'Log out, asks to confirm',
+        label: t.adminLogout,
         onActivate: () => AuthSessionService.logoutFrom(context),
       ),
       KeypadFocusTarget(
         node: _sectionNode,
-        label: '${_section.name} section. Change administration section',
+        label: t.adminSectionButton(_sectionName(_section)),
         onActivate: _chooseSection,
       ),
       if (_section == _AdminSection.accounts) ...[
         KeypadFocusTarget(
           node: _searchNode,
-          label: 'Search accounts by name or phone number. Press OK to type',
+          label: t.adminSearchAccounts,
           isTextField: true,
         ),
         KeypadFocusTarget(
           node: _roleFilterNode,
-          label:
-              'Account type filter: ${_roleFilterLabel()}, selected. Use left or right to change',
+          label: t.adminRoleFilterLabel(_roleFilterLabel()),
           onActivate: () => _cycleRoleFilter(1),
           onDecrease: () => _cycleRoleFilter(-1),
           onIncrease: () => _cycleRoleFilter(1),
         ),
         KeypadFocusTarget(
           node: _assignmentFilterNode,
-          label:
-              'Assignment filter: ${_assignmentFilterLabel()}, selected. Use left or right to change',
+          label: t.adminAssignmentFilterLabel(_assignmentFilterLabel()),
           onActivate: () => _cycleAssignmentFilter(1),
           onDecrease: () => _cycleAssignmentFilter(-1),
           onIncrease: () => _cycleAssignmentFilter(1),
@@ -1240,13 +1302,13 @@ class _AdminDashboardState extends State<AdminDashboard> {
       if (_section == _AdminSection.subjects)
         KeypadFocusTarget(
           node: _subjectNode,
-          label: 'Create subject',
+          label: t.adminCreateSubjectTitle,
           onActivate: _addSubject,
         ),
       if (_section == _AdminSection.classes)
         KeypadFocusTarget(
           node: _classNode,
-          label: 'Create class',
+          label: t.adminCreateClassTitle,
           onActivate: _addClass,
         ),
     ];
@@ -1260,8 +1322,9 @@ class _AdminDashboardState extends State<AdminDashboard> {
             id,
             () => FocusNode(debugLabel: 'admin-class-$id'),
           ),
-          label:
-              '${schoolClass['name']}, ${schoolClass['is_active'] == true ? 'active' : 'archived'}. Press OK for class subjects and archive or restore actions',
+          label: schoolClass['is_active'] == true
+              ? t.adminClassActiveLabel('${schoolClass['name']}')
+              : t.adminClassArchivedLabel('${schoolClass['name']}'),
           onActivate: () => _manageClass(schoolClass),
         ),
       );
@@ -1276,8 +1339,9 @@ class _AdminDashboardState extends State<AdminDashboard> {
             id,
             () => FocusNode(debugLabel: 'admin-subject-$id'),
           ),
-          label:
-              '${subject['name']}, ${subject['is_active'] == true ? 'active' : 'archived'}. Press OK to ${subject['is_active'] == true ? 'archive' : 'restore'}',
+          label: subject['is_active'] == true
+              ? t.adminSubjectActiveLabel('${subject['name']}')
+              : t.adminSubjectArchivedLabel('${subject['name']}'),
           onActivate: () => _toggleSubject(subject),
         ),
       );
@@ -1366,7 +1430,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
       screenName: _sectionTitle,
       navigationSections: _sectionNavigation,
       stateSummary: () => AdminText.state(
-        section: _section.name,
+        section: _sectionName(_section),
         shown: switch (_section) {
           _AdminSection.accounts => _users.length,
           _AdminSection.classes => _classes.length,
@@ -1401,19 +1465,19 @@ class _AdminDashboardState extends State<AdminDashboard> {
         },
         child: Scaffold(
           appBar: AppBar(
-            title: const Text('SEEDS Administration'),
+            title: Text(Speech.t.adminAppBarTitle),
             actions: [
               IconButton(
                 focusNode: _refreshNode,
                 onPressed: _refresh,
                 icon: const Icon(Icons.refresh),
-                tooltip: '1: Refresh administration data',
+                tooltip: Speech.t.adminRefreshKey1,
               ),
               IconButton(
                 focusNode: _logoutNode,
                 onPressed: () => AuthSessionService.logoutFrom(context),
                 icon: const Icon(Icons.logout),
-                tooltip: '0: Log out',
+                tooltip: Speech.t.dashboardLogOutKey0,
               ),
             ],
           ),
@@ -1427,7 +1491,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                 children: [
                   if (_loading)
                     Semantics(
-                      label: 'Loading administration data',
+                      label: Speech.t.adminLoading,
                       child: const LinearProgressIndicator(),
                     ),
                   if (_issue != null)
@@ -1457,7 +1521,9 @@ class _AdminDashboardState extends State<AdminDashboard> {
                   OutlinedButton(
                     focusNode: _sectionNode,
                     onPressed: _chooseSection,
-                    child: Text('7: Change section. Now: ${_section.name}'),
+                    child: Text(
+                      Speech.t.adminChangeSectionKey7(_sectionName(_section)),
+                    ),
                   ),
                   if (_section == _AdminSection.accounts) ...[
                     const SizedBox(height: 8),
@@ -1466,9 +1532,9 @@ class _AdminDashboardState extends State<AdminDashboard> {
                       focusNode: _searchNode,
                       onTap: () => _keypad.enterTextEditing(_searchNode),
                       onSubmitted: (_) => _refresh(),
-                      decoration: const InputDecoration(
-                        labelText: '2: Search by name or phone number',
-                        helperText: 'Press OK when done to show matches',
+                      decoration: InputDecoration(
+                        labelText: Speech.t.adminSearchKey2,
+                        helperText: Speech.t.adminSearchHelper,
                         helperMaxLines: 10,
                         prefixIcon: ExcludeSemantics(child: Icon(Icons.search)),
                       ),
@@ -1476,22 +1542,23 @@ class _AdminDashboardState extends State<AdminDashboard> {
                     const SizedBox(height: 12),
                     _filterGroup(
                       node: _roleFilterNode,
-                      label:
-                          'Account type filter: ${_roleFilterLabel()}, selected. Use left and right arrows to change.',
-                      heading: '3: Account type',
+                      label: Speech.t.adminRoleFilterChipsLabel(
+                        _roleFilterLabel(),
+                      ),
+                      heading: Speech.t.adminAccountTypeKey3,
                       chips: [
                         (
-                          'All accounts',
+                          Speech.t.adminChipAllAccounts,
                           _roleFilter == null,
                           () => _setRoleFilter(null),
                         ),
                         (
-                          'Students',
+                          Speech.t.adminChipStudents,
                           _roleFilter == 'student',
                           () => _setRoleFilter('student'),
                         ),
                         (
-                          'Teachers',
+                          Speech.t.adminChipTeachers,
                           _roleFilter == 'teacher',
                           () => _setRoleFilter('teacher'),
                         ),
@@ -1500,26 +1567,27 @@ class _AdminDashboardState extends State<AdminDashboard> {
                     const SizedBox(height: 12),
                     _filterGroup(
                       node: _assignmentFilterNode,
-                      label:
-                          'Assignment filter: ${_assignmentFilterLabel()}, selected. Use left and right arrows to change.',
-                      heading: '4: Assignment',
+                      label: Speech.t.adminAssignmentFilterChipsLabel(
+                        _assignmentFilterLabel(),
+                      ),
+                      heading: Speech.t.adminAssignmentKey4,
                       chips: [
                         (
-                          'All',
+                          Speech.t.adminChipAll,
                           _assignmentStatus == 'all',
                           () => _setAssignmentFilter('all'),
                         ),
                         (
                           _roleFilter == 'student'
-                              ? 'Enrolled'
+                              ? Speech.t.adminAssignmentEnrolled
                               : _roleFilter == 'teacher'
-                              ? 'Assigned'
-                              : 'Enrolled or assigned',
+                              ? Speech.t.adminAssignmentAssigned
+                              : Speech.t.adminAssignmentEnrolledOrAssigned,
                           _assignmentStatus == 'assigned',
                           () => _setAssignmentFilter('assigned'),
                         ),
                         (
-                          'Unassigned',
+                          Speech.t.adminAssignmentUnassigned,
                           _assignmentStatus == 'unassigned',
                           () => _setAssignmentFilter('unassigned'),
                         ),
@@ -1532,7 +1600,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                       focusNode: _subjectNode,
                       onPressed: _addSubject,
                       icon: const Icon(Icons.menu_book),
-                      label: const Text('5: Create subject'),
+                      label: Text(Speech.t.adminCreateSubjectKey5),
                     ),
                   ],
                   if (_section == _AdminSection.classes) ...[
@@ -1541,7 +1609,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                       focusNode: _classNode,
                       onPressed: _addClass,
                       icon: const Icon(Icons.class_outlined),
-                      label: const Text('6: Create class'),
+                      label: Text(Speech.t.adminCreateClassKey6),
                     ),
                   ],
                   if (_section == _AdminSection.classes) ...[
@@ -1567,15 +1635,22 @@ class _AdminDashboardState extends State<AdminDashboard> {
                               () => FocusNode(debugLabel: 'admin-class-$id'),
                             ),
                             title: '${schoolClass['name']}',
-                            status: active ? 'Active' : 'Archived',
+                            status: active
+                                ? Speech.t.adminStatusActive
+                                : Speech.t.playlistStatusArchived,
                             statusColor: active
                                 ? UIUtils.successColor
                                 : UIUtils.subtextColor,
                             subtitle: active
-                                ? 'Press OK for subjects, or to archive'
-                                : 'Press OK to restore',
-                            semanticLabel:
-                                '${schoolClass['name']}, ${active ? 'active' : 'archived'}. Press OK for class subjects and archive or restore actions',
+                                ? Speech.t.adminClassTileHint
+                                : Speech.t.adminPressOkRestore,
+                            semanticLabel: active
+                                ? Speech.t.adminClassActiveLabel(
+                                    '${schoolClass['name']}',
+                                  )
+                                : Speech.t.adminClassArchivedLabel(
+                                    '${schoolClass['name']}',
+                                  ),
                             onActivate: () => _manageClass(schoolClass),
                           );
                         },
@@ -1604,15 +1679,22 @@ class _AdminDashboardState extends State<AdminDashboard> {
                               () => FocusNode(debugLabel: 'admin-subject-$id'),
                             ),
                             title: '${subject['name']}',
-                            status: active ? 'Active' : 'Archived',
+                            status: active
+                                ? Speech.t.adminStatusActive
+                                : Speech.t.playlistStatusArchived,
                             statusColor: active
                                 ? UIUtils.successColor
                                 : UIUtils.subtextColor,
                             subtitle: active
-                                ? 'Press OK to archive'
-                                : 'Press OK to restore',
-                            semanticLabel:
-                                '${subject['name']}, ${active ? 'active' : 'archived'}. Press OK to ${active ? 'archive' : 'restore'}',
+                                ? Speech.t.adminPressOkArchive
+                                : Speech.t.adminPressOkRestore,
+                            semanticLabel: active
+                                ? Speech.t.adminSubjectActiveLabel(
+                                    '${subject['name']}',
+                                  )
+                                : Speech.t.adminSubjectArchivedLabel(
+                                    '${subject['name']}',
+                                  ),
                             onActivate: () => _toggleSubject(subject),
                           );
                         },

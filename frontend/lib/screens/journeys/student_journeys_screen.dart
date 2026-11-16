@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 
+import '../../l10n/speech.dart';
 import '../../services/undo_service.dart';
 import '../../services/message_center.dart';
 import '../../services/feedback_cues.dart';
@@ -81,13 +82,13 @@ class _StudentJourneysScreenState extends State<StudentJourneysScreen> {
     } on JourneyApiException catch (error) {
       _online = false;
       _issue = error.network
-          ? 'No internet. Downloaded journeys still work. Press 5 for downloaded journeys.'
+          ? Speech.t.journeyNoInternetDownloaded
           : error.message;
     }
     if (!mounted) return;
     final waiting = sync.remaining == 0
         ? ''
-        : ' ${sync.remaining} finished ${sync.remaining == 1 ? 'journey is' : 'journeys are'} waiting to be sent.';
+        : ' ${Speech.t.journeyWaitingToSend(sync.remaining)}';
     setState(() {
       _busy = false;
       _status = _online ? '${_summary()}$waiting' : waiting.trim();
@@ -100,9 +101,12 @@ class _StudentJourneysScreenState extends State<StudentJourneysScreen> {
   Iterable<StudentJourneySummary> _with(String status) =>
       _journeys.where((journey) => journey.status == status);
 
-  String _summary() =>
-      '${_with('new').length} new, ${_with('in_progress').length} in progress, '
-      '${_with('completed').length} completed, ${_downloaded.length} downloaded.';
+  String _summary() => Speech.t.journeyStudentSummary(
+    '${_with('new').length}',
+    '${_with('in_progress').length}',
+    '${_with('completed').length}',
+    '${_downloaded.length}',
+  );
 
   bool _isDownloaded(int id) => _downloaded.any((s) => s.journeyId == id);
 
@@ -128,10 +132,12 @@ class _StudentJourneysScreenState extends State<StudentJourneysScreen> {
   Future<void> _openDownloaded() async {
     final chosen = await JourneyPrompts.choose<JourneySnapshot>(
       context,
-      title: 'Downloaded journeys',
+      title: Speech.t.journeyDownloadedJourneys,
       items: _downloaded,
-      labelOf: (snapshot) =>
-          '${snapshot.title}. ${snapshot.steps.length} steps. Downloaded.',
+      labelOf: (snapshot) => Speech.t.journeyDownloadedRow(
+        snapshot.title,
+        '${snapshot.steps.length}',
+      ),
     );
     if (chosen == null || !mounted) return;
     await _openOptions(
@@ -200,43 +206,47 @@ class _StudentJourneysScreenState extends State<StudentJourneysScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = Speech.t;
     final fresh = _with('new').toList();
     final started = _with('in_progress').toList();
     final completed = _with('completed').toList();
-    const offlineReason = 'This needs internet. Press 5 for downloaded journeys.';
+    final offlineReason = t.journeyOfflineReason;
     return JourneyMenu(
-      title: 'Learning journeys',
-      introduction:
-          'Listen to stories and lessons, answer questions as you go, and repeat parts you need.',
+      title: t.journeyLearningJourneys,
+      introduction: t.journeyStudentIntro,
       status: _status,
       issue: _issue,
       busy: _busy,
       choices: [
-        JourneyChoice('Continue my last journey', () => unawaited(_continueLast())),
         JourneyChoice(
-          'New journeys, ${fresh.length}',
-          () => unawaited(_openList('New journeys', fresh)),
+          t.journeyContinueLast,
+          () => unawaited(_continueLast()),
+        ),
+        JourneyChoice(
+          t.journeyNewJourneys('${fresh.length}'),
+          () => unawaited(_openList(t.journeyNewJourneysTitle, fresh)),
           enabled: _online && fresh.isNotEmpty,
-          unavailableReason: _online ? 'There are no new journeys.' : offlineReason,
+          unavailableReason: _online ? t.journeyNoNewJourneys : offlineReason,
         ),
         JourneyChoice(
-          'In progress, ${started.length}',
-          () => unawaited(_openList('Journeys in progress', started)),
+          t.journeyInProgressCount('${started.length}'),
+          () => unawaited(_openList(t.journeyInProgressTitle, started)),
           enabled: _online && started.isNotEmpty,
-          unavailableReason: _online ? 'Nothing is in progress.' : offlineReason,
+          unavailableReason: _online
+              ? t.journeyNothingInProgressShort
+              : offlineReason,
         ),
         JourneyChoice(
-          'Completed, ${completed.length}',
-          () => unawaited(_openList('Completed journeys', completed)),
+          t.journeyCompletedCount('${completed.length}'),
+          () => unawaited(_openList(t.journeyCompletedTitle, completed)),
           enabled: _online && completed.isNotEmpty,
-          unavailableReason: _online ? 'No journeys completed yet.' : offlineReason,
+          unavailableReason: _online ? t.journeyNoneCompleted : offlineReason,
         ),
         JourneyChoice(
-          'Downloaded, ${_downloaded.length}',
+          t.journeyDownloadedCount('${_downloaded.length}'),
           () => unawaited(_openDownloaded()),
           enabled: _downloaded.isNotEmpty,
-          unavailableReason:
-              'Nothing is downloaded. Open a journey and choose Download.',
+          unavailableReason: t.journeyNothingDownloaded,
         ),
       ],
       details: [_issue, _status].whereType<String>().join(' '),
@@ -332,7 +342,7 @@ class _StudentJourneyOptionsScreenState
       if (error.network && saved != null) return (saved, true);
       _fail(
         error.network
-            ? 'No internet, and this journey is not downloaded.'
+            ? Speech.t.journeyNoInternetNotDownloaded
             : error.message,
       );
       return null;
@@ -364,9 +374,9 @@ class _StudentJourneyOptionsScreenState
   Future<void> _startOver() async {
     final confirmed = await JourneyPrompts.confirm(
       context,
-      title: 'Start over?',
+      title: Speech.t.journeyStartOverTitle,
       message: JourneyAnnouncer.startOverMessage(widget.title),
-      confirmLabel: 'Start over',
+      confirmLabel: Speech.t.journeyStartOver,
     );
     if (!confirmed) return;
     await widget.store.clearProgress(widget.journeyId);
@@ -377,9 +387,9 @@ class _StudentJourneyOptionsScreenState
     if (_downloaded || _saved != null) {
       final confirmed = await JourneyPrompts.confirm(
         context,
-        title: 'Remove download?',
+        title: Speech.t.journeyRemoveDownloadTitle,
         message: JourneyAnnouncer.removeDownloadMessage(widget.title),
-        confirmLabel: 'Remove download',
+        confirmLabel: Speech.t.journeyRemoveDownload,
       );
       if (!confirmed) return;
       // Files are deleted only after the undo window closes.
@@ -410,7 +420,12 @@ class _StudentJourneyOptionsScreenState
         operation: operation,
         onProgress: (done, total) {
           if (mounted && total > 0) {
-            setState(() => _status = 'Saved $done of $total recordings.');
+            setState(
+              () => _status = Speech.t.journeySavedRecordings(
+                '$done',
+                '$total',
+              ),
+            );
           }
         },
       );
@@ -438,15 +453,16 @@ class _StudentJourneyOptionsScreenState
 
   @override
   Widget build(BuildContext context) {
+    final t = Speech.t;
     final about = [
       widget.title,
       if (widget.description != null) widget.description!,
-      _downloaded ? 'Downloaded on this phone.' : 'Not downloaded.',
-      _hasProgress ? 'You have started this journey.' : '',
+      _downloaded ? t.journeyDownloadedOnPhone : t.journeyNotDownloadedShort,
+      _hasProgress ? t.journeyStartedThis : '',
     ].where((part) => part.isNotEmpty).join(' ');
     return JourneyMenu(
       title: widget.title,
-      introduction: _downloaded ? 'Downloaded. Works without internet.' : null,
+      introduction: _downloaded ? t.journeyWorksOffline : null,
       status: _status,
       issue: _issue,
       busy: _busy && _download == null,
@@ -454,28 +470,28 @@ class _StudentJourneyOptionsScreenState
       details: about,
       choices: [
         JourneyChoice(
-          _hasProgress ? 'Continue journey' : 'Start journey',
+          _hasProgress ? t.journeyContinueJourney : t.journeyStartJourney,
           () => unawaited(_start()),
         ),
         JourneyChoice(
-          'Hear about this journey',
+          t.journeyHearAbout,
           () => unawaited(TtsService.speak(about)),
         ),
         JourneyChoice(
           _downloaded || _saved != null
-              ? 'Remove download'
-              : 'Download to play without internet',
+              ? t.journeyRemoveDownload
+              : t.journeyDownloadOffline,
           () => unawaited(_toggleDownload()),
           enabled: _download == null && (!kIsWeb || _saved != null),
           unavailableReason: kIsWeb
               ? StreamOnlyMedia.unavailable
-              : 'A download is in progress. Press 0 to cancel it.',
+              : t.journeyDownloadInProgress,
         ),
         JourneyChoice(
-          'Start over from the beginning',
+          t.journeyStartFromBeginning,
           () => unawaited(_startOver()),
           enabled: _hasProgress,
-          unavailableReason: 'You have not started this journey yet.',
+          unavailableReason: t.journeyNotStartedYet,
         ),
       ],
     );

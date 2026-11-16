@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
+import '../l10n/speech.dart';
 import 'feedback_cues.dart';
 import 'message_center.dart';
 import 'tts_service.dart';
@@ -39,7 +40,7 @@ class UndoService {
     final timer = Timer(duration, () => unawaited(_finish(commitNow: true)));
     _pending = _PendingUndo(done, undo, commit, timer);
     MessageCenter.show(
-      '$done Press 1 within ${duration.inSeconds} seconds to undo.',
+      '$done ${Speech.t.undoOffer('${duration.inSeconds}')}',
       kind: MessageKind.success,
     );
   }
@@ -58,11 +59,12 @@ class UndoService {
     try {
       await pending.undo();
       unawaited(FeedbackCues.play(Cue.ok));
-      MessageCenter.show('Undone. ${pending.label.replaceAll(RegExp(r'\.$'), '')} was reversed.',
+      MessageCenter.show(
+          Speech.t.undoDone(pending.label.replaceAll(RegExp(r'\.$'), '')),
           kind: MessageKind.info, priority: SpeechPriority.critical);
     } catch (error) {
       debugPrint('[UNDO] Failed (${error.runtimeType})');
-      MessageCenter.error('Undo did not work. Check the item and add it again if needed.');
+      MessageCenter.error(Speech.t.undoFailed);
     }
   }
 
