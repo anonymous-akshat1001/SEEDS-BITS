@@ -20,7 +20,6 @@ import access_control as access  # noqa: E402
 import main  # noqa: E402
 import models  # noqa: E402
 import playlist_routes  # noqa: E402
-import classroom_checks  # noqa: E402
 
 
 @pytest.mark.asyncio
@@ -175,60 +174,60 @@ async def live_room(seeded_db, monkeypatch):
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("transport", ["legacy", "action"])
-async def test_teacher_cannot_remotely_unmute(live_room, transport):
+async def test_mute_all_mutes_every_student_once_and_never_the_teacher(live_room):
     db, data, room, teacher, student, logs, broadcast = live_room
-    with pytest.raises(HTTPException) as denied:
-        if transport == "legacy":
-            await main.mute_participant(
-                room.session_id, student.participant_id, mute=False,
-                current_user=data["teacher"], db=db,
-                background_tasks=BackgroundTasks(),
-            )
-        else:
-            await main.session_action(
-                room.session_id,
-                main.SessionAction(
-                    type="unmute_participant",
-                    target_participant_id=student.participant_id,
-                ),
-                current_user=data["teacher"], db=db,
-            )
-    assert denied.value.status_code == 403
-    assert "Only the participant" in denied.value.detail
+    teacher.is_muted = False
+    student.is_muted = False
+    await db.commit()
+    state = main.SESSION_STATE[room.session_id]["participants"]
+    state[student.participant_id]["is_muted"] = False
+    state[teacher.participant_id]["is_muted"] = False
+    action = main.SessionAction(type="mute_all_students", request_id="press-1")
+    result = await main.session_action(room.session_id, action, current_user=data["teacher"], db=db)
+    assert result == {"ok": True, "muted": 1, "already_muted": 0}
     await db.refresh(student)
-    assert student.is_muted is True
-    assert main.SESSION_STATE[room.session_id]["participants"][student.participant_id]["is_muted"] is True
-    broadcast.assert_not_awaited()
-    logs["log_participant_unmuted"].assert_not_awaited()
+    await db.refresh(teacher)
+    assert student.is_muted is True and teacher.is_muted is False
+    assert state[student.participant_id]["is_muted"] is True
+    assert state[teacher.participant_id]["is_muted"] is False
+    events = [call.args[1] for call in broadcast.await_args_list]
+    assert events == [{
+        "type": "participant_muted", "participant_id": student.participant_id,
+        "is_muted": True, "by_teacher": True,
+    }]
+    # The student may speak again afterwards; a retried request is answered
+    # from the first result and does not silence them a second time.
+    await main.session_action(
+        room.session_id, main.SessionAction(type="mute_self", mute=False),
+        current_user=data["student"], db=db,
+    )
+    replay = await main.session_action(room.session_id, action, current_user=data["teacher"], db=db)
+    assert replay == result
+    await db.refresh(student)
+    assert student.is_muted is False
+    again = await main.session_action(
+        room.session_id, main.SessionAction(type="mute_all_students", request_id="press-2"),
+        current_user=data["teacher"], db=db,
+    )
+    assert again["muted"] == 1
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("transport", ["legacy", "action"])
-async def test_teacher_can_still_mute_and_persist_state(live_room, transport):
+async def test_mute_all_needs_a_request_id_and_the_teacher(live_room):
     db, data, room, teacher, student, logs, broadcast = live_room
-    student.is_muted = False
-    await db.commit()
-    main.SESSION_STATE[room.session_id]["participants"][student.participant_id]["is_muted"] = False
-    if transport == "legacy":
-        tasks = BackgroundTasks()
-        result = await main.mute_participant(
-            room.session_id, student.participant_id, mute=True,
-            current_user=data["teacher"], db=db, background_tasks=tasks,
-        )
-        await tasks()
-    else:
-        result = await main.session_action(
-            room.session_id,
-            main.SessionAction(type="mute_participant", target_participant_id=student.participant_id),
+    with pytest.raises(HTTPException) as missing:
+        await main.session_action(
+            room.session_id, main.SessionAction(type="mute_all_students"),
             current_user=data["teacher"], db=db,
         )
-    assert result["ok"] is True
-    await db.refresh(student)
-    assert student.is_muted is True
-    assert main.SESSION_STATE[room.session_id]["participants"][student.participant_id]["is_muted"] is True
-    logs["log_participant_muted"].assert_awaited_once()
-    broadcast.assert_awaited_once()
+    assert missing.value.status_code == 400
+    with pytest.raises(HTTPException) as student_denied:
+        await main.session_action(
+            room.session_id, main.SessionAction(type="mute_all_students", request_id="x"),
+            current_user=data["student"], db=db,
+        )
+    assert student_denied.value.status_code == 403
+    broadcast.assert_not_awaited()
 
 
 @pytest.mark.asyncio
@@ -278,15 +277,17 @@ async def test_teacher_adding_existing_student_does_not_change_microphone(live_r
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("action", ["mute_participant", "unmute_participant"])
-async def test_student_cannot_control_another_microphone(live_room, action):
+@pytest.mark.parametrize("role", ["teacher", "student"])
+async def test_single_participant_microphone_control_no_longer_exists(live_room, action, role):
     db, data, room, teacher, student, logs, broadcast = live_room
+    target = student if role == "teacher" else teacher
     with pytest.raises(HTTPException) as denied:
         await main.session_action(
             room.session_id,
-            main.SessionAction(type=action, target_participant_id=teacher.participant_id),
-            current_user=data["student"], db=db,
+            main.SessionAction(type=action, target_participant_id=target.participant_id),
+            current_user=data[role], db=db,
         )
-    assert denied.value.status_code == 403
+    assert denied.value.status_code == 400
     broadcast.assert_not_awaited()
 
 
@@ -409,6 +410,7 @@ async def test_transient_stream_reconnect_retains_queue_position_and_sends_it_to
         response = await main.session_sse(room.session_id, current_user=data["student"], db=db)
         try:
             snapshot = await _read_live_snapshot(response)
+            assert isinstance(snapshot["enrolled_students"], int)
             own = snapshot["participants"][str(student.participant_id)]
             assert own["hand_queue_order"] == expected["hand_queue_order"]
             assert own["hand_revision"] == expected["hand_revision"]
@@ -440,9 +442,10 @@ async def test_removal_clears_persisted_queue_state(live_room, transport):
 @pytest.mark.asyncio
 async def test_acknowledgment_cannot_target_another_session(live_room):
     db, data, room, teacher, student, logs, broadcast = live_room
+    # A teacher has at most one live class, so the other room is an earlier one.
     other_room = models.Session(
         title="Other room", created_by=data["teacher"].user_id,
-        class_id=room.class_id, subject_id=room.subject_id, is_active=True,
+        class_id=room.class_id, subject_id=room.subject_id, is_active=False,
     )
     db.add(other_room)
     await db.flush()
@@ -456,84 +459,6 @@ async def test_acknowledgment_cannot_target_another_session(live_room):
         )
     assert denied.value.status_code == 404
     assert other.hand_raised is True
-
-
-@pytest.mark.asyncio
-async def test_classroom_checks_are_private_changeable_and_never_broadcast_named_results(live_room):
-    db, data, room, teacher, student, logs, broadcast = live_room
-    queues = {teacher.participant_id: asyncio.Queue(), student.participant_id: asyncio.Queue(), 999: asyncio.Queue()}
-    state = main.SESSION_STATE[room.session_id]
-    state["connections"] = queues
-    state["participants"][999] = {"user_id": data["other_student"].user_id, "name": "Other"}
-    opened = await main.session_action(room.session_id, main.SessionAction(type="open_check"), current_user=data["teacher"], db=db)
-    check = opened["check_state"]
-    for choice in ("understood", "repeat", "help"):
-        response = await main.session_action(
-            room.session_id, main.SessionAction(type="check_response", check_id=check["check_id"], choice=choice),
-            current_user=data["student"], db=db,
-        )
-        assert response["check_state"]["responses"] == [{"user_id": student.user_id, "name": data["student"].name, "choice": choice}]
-    assert len(state["classroom_check"]["responses"]) == 1
-    last = {}
-    for pid, queue in queues.items():
-        while not queue.empty():
-            last[pid] = queue.get_nowait()
-    assert last[teacher.participant_id]["responses"][0]["choice"] == "help"
-    assert last[student.participant_id]["responses"][0]["choice"] == "help"
-    assert last[999]["responses"] == []
-    broadcast.assert_not_awaited()
-    for logger in logs.values():
-        logger.assert_not_awaited()
-
-
-@pytest.mark.asyncio
-async def test_classroom_checks_reject_closed_stale_invalid_and_student_management(live_room):
-    db, data, room, teacher, student, logs, broadcast = live_room
-    with pytest.raises(HTTPException) as denied:
-        await main.session_action(room.session_id, main.SessionAction(type="open_check"), current_user=data["student"], db=db)
-    assert denied.value.status_code == 403
-    opened = await main.session_action(room.session_id, main.SessionAction(type="open_check"), current_user=data["teacher"], db=db)
-    identity = opened["check_state"]["check_id"]
-    for kind, actor, id_value, choice, status in (
-        ("check_response", "student", identity, "invalid", 400),
-        ("check_response", "student", "stale", "help", 409),
-        ("close_check", "student", identity, None, 403),
-        ("open_check", "teacher", None, None, 409),
-        ("check_response", "teacher", identity, "understood", 403),
-    ):
-        with pytest.raises(HTTPException) as denied:
-            await main.session_action(
-                room.session_id, main.SessionAction(type=kind, check_id=id_value, choice=choice),
-                current_user=data[actor], db=db,
-            )
-        assert denied.value.status_code == status
-    await main.session_action(room.session_id, main.SessionAction(type="close_check", check_id=identity), current_user=data["teacher"], db=db)
-    with pytest.raises(HTTPException) as denied:
-        await main.session_action(room.session_id, main.SessionAction(type="check_response", check_id=identity, choice="help"), current_user=data["student"], db=db)
-    assert denied.value.status_code == 409
-
-
-@pytest.mark.asyncio
-async def test_next_check_and_server_state_reset_clear_responses_but_transient_reconnect_preserves_them(live_room):
-    db, data, room, teacher, student, logs, broadcast = live_room
-    opened = await main.session_action(room.session_id, main.SessionAction(type="open_check"), current_user=data["teacher"], db=db)
-    identity = opened["check_state"]["check_id"]
-    await main.session_action(room.session_id, main.SessionAction(type="check_response", check_id=identity, choice="repeat"), current_user=data["student"], db=db)
-    for user in ("student", "teacher"):
-        response = await main.session_sse(room.session_id, current_user=data[user], db=db)
-        try:
-            snapshot = await _read_live_snapshot(response)
-            assert snapshot["classroom_check"]["check_id"] == identity
-            assert snapshot["classroom_check"]["responses"][0]["choice"] == "repeat"
-        finally:
-            await response.body_iterator.aclose()
-    replacement = await main.session_action(room.session_id, main.SessionAction(type="open_check", check_id=identity), current_user=data["teacher"], db=db)
-    assert replacement["check_state"]["check_id"] != identity
-    assert replacement["check_state"]["responses"] == []
-    main.SESSION_STATE[room.session_id].pop("classroom_check")
-    refreshed = await main.session_action(room.session_id, main.SessionAction(type="read_check"), current_user=data["student"], db=db)
-    assert refreshed["check_state"]["check_id"] is None
-    assert refreshed["check_state"]["responses"] == []
 
 
 @pytest.mark.asyncio
@@ -777,49 +702,6 @@ async def test_teacher_can_list_ended_sessions_without_exposing_them_as_active(
         session for session in history if session["session_id"] == ended.session_id
     )
     assert ended_payload["is_active"] is False
-
-
-@pytest.mark.asyncio
-async def test_teacher_can_reactivate_then_permanently_delete_ended_session(
-    seeded_db,
-):
-    db, data = seeded_db
-    session = models.Session(
-        title="Reusable lesson",
-        created_by=data["teacher"].user_id,
-        class_id=data["class_one"].class_id,
-        subject_id=data["english"].subject_id,
-        is_active=False,
-    )
-    db.add(session)
-    await db.commit()
-
-    response = await main.reactivate_session(
-        session_id=session.session_id,
-        user=data["teacher"],
-        db=db,
-    )
-    assert response["ok"] is True
-    assert session.is_active is True
-    assert session.ended_at is None
-
-    with pytest.raises(HTTPException) as active_delete:
-        await main.permanently_delete_session(
-            session_id=session.session_id,
-            user=data["teacher"],
-            db=db,
-        )
-    assert active_delete.value.status_code == 409
-
-    session.is_active = False
-    await db.commit()
-    response = await main.permanently_delete_session(
-        session_id=session.session_id,
-        user=data["teacher"],
-        db=db,
-    )
-    assert response["ok"] is True
-    assert await db.get(models.Session, session.session_id) is None
 
 
 @pytest.mark.asyncio

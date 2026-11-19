@@ -39,6 +39,8 @@ class JourneyMenu extends StatefulWidget {
     this.onBack,
     this.details,
     this.autoPlay = true,
+    this.brief,
+    this.onSystemBack,
     String? backLabel,
   }) : _backLabel = backLabel {
     if (choices.length > 5) {
@@ -63,8 +65,31 @@ class JourneyMenu extends StatefulWidget {
   final bool autoPlay;
   final String? _backLabel;
 
+  /// Short arrival speech instead of every choice; star reads them all.
+  final String? brief;
+
+  /// Android Back, when it must differ from key 0 (home: Back leaves the
+  /// app, 0 signs out after asking).
+  final VoidCallback? onSystemBack;
+
   /// Label of key 0; "Back" unless the screen names it.
   String get backLabel => _backLabel ?? Speech.t.uiBack;
+
+  /// "Press 1 for ..., press 0 for ..." for screens that speak their own
+  /// arrival (the homes), so every key is still read when they open.
+  static String spokenKeys(List<JourneyChoice> choices, String backLabel) {
+    final t = Speech.t;
+    return [
+      for (var index = 0; index < choices.length; index++)
+        t.uiPressFor(
+          '${index + 1}',
+          choices[index].enabled
+              ? choices[index].label
+              : t.uiLabelUnavailable(choices[index].label),
+        ),
+      t.journeyMenuBackHelp(backLabel),
+    ].join(' ');
+  }
 
   @override
   State<JourneyMenu> createState() => _JourneyMenuState();
@@ -175,14 +200,15 @@ class _JourneyMenuState extends State<JourneyMenu> {
     final t = Speech.t;
     final hasDetails = widget.details != null || widget.introduction != null;
     return PopScope(
-      canPop: widget.onBack == null,
+      canPop: widget.onBack == null && widget.onSystemBack == null,
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) _back();
+        if (!didPop) (widget.onSystemBack ?? _back)();
       },
       child: KeypadInstructionWrapper(
         interactionPolicy: KeypadInteractionPolicy.numbered,
         screenName: widget.title,
         introduction: widget.introduction,
+        brief: widget.brief,
         stateSummary: () => [
           if (widget.busy) t.journeyMenuWorking,
           widget.issue,

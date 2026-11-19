@@ -246,6 +246,30 @@ class SessionPeers {
   Future<void> closeAll() =>
       Future.wait(_connections.values.map((peer) => peer.close()));
 
+  /// Adds a microphone obtained after joining (the class is joined first,
+  /// listen-only, and permission may be granted later on Unmute). Each link
+  /// is renegotiated; the receiving side answers on its existing connection.
+  Future<void> addLocalStream(MediaStream stream) async {
+    for (final entry in _connections.entries.toList()) {
+      try {
+        for (final track in stream.getTracks()) {
+          await entry.value.addTrack(track, stream);
+        }
+        final offer = await entry.value.createOffer();
+        await entry.value.setLocalDescription(offer);
+        await send({
+          'type': 'webrtc_signal',
+          'target_participant_id': entry.key,
+          'payload': {'type': 'offer', 'sdp': offer.sdp},
+        });
+      } catch (error) {
+        debugPrint(
+          '[WebRTC] Adding microphone to pid=${entry.key} failed: $error',
+        );
+      }
+    }
+  }
+
   void _ensureSpeakingPoll() {
     if (_speakingTimer != null || _connections.isEmpty) return;
     _speakingTimer = Timer.periodic(

@@ -112,7 +112,6 @@ void main() {
         'pause': () => ApiService.pauseAudio(42),
         'seek': () => ApiService.seekAudio(42, 30),
         'speed': () => ApiService.controlAudio(42, action: 'play', speed: 1.5),
-        'mute participant': () => ApiService.muteParticipant(42, 11),
       }.entries) {
     testWidgets(
       'class audio ${command.key} requires a confirmed acknowledgment',

@@ -18,6 +18,7 @@ import access_control as access
 import auth
 import journey_schemas as js
 import models
+import teacher_notices
 from database import get_db
 from notification_service import fcm_service
 from quiz_routes import _score
@@ -242,7 +243,7 @@ async def _notify_published(db: AsyncSession, journey: models.LearningJourney) -
 @router.get("/teacher/journeys")
 async def list_teacher_journeys(
     class_id: int, subject_id: int,
-    teacher: models.User = Depends(auth.require_teacher), db: AsyncSession = Depends(get_db),
+    teacher: models.User = Depends(auth.acting_teacher), db: AsyncSession = Depends(get_db),
 ):
     await access.require_teacher_assignment(db, teacher.user_id, class_id, subject_id)
     journeys = (await db.execute(select(models.LearningJourney).where(
@@ -259,7 +260,7 @@ async def list_teacher_journeys(
 @router.post("/teacher/journeys")
 async def create_journey(
     body: js.JourneyCreate,
-    teacher: models.User = Depends(auth.require_teacher), db: AsyncSession = Depends(get_db),
+    teacher: models.User = Depends(auth.acting_teacher), db: AsyncSession = Depends(get_db),
 ):
     await access.require_teacher_assignment(db, teacher.user_id, body.class_id, body.subject_id)
     journey = models.LearningJourney(
@@ -267,6 +268,7 @@ async def create_journey(
         title=body.title, steps=[], revision=1, status="draft", graded=False, max_retries=1,
     )
     db.add(journey)
+    await teacher_notices.record(db, teacher, "journey", journey, "created")
     await db.commit()
     await db.refresh(journey)
     return {"ok": True, "journey": _teacher_payload(journey)}
@@ -275,7 +277,7 @@ async def create_journey(
 @router.get("/teacher/journeys/{journey_id}")
 async def get_teacher_journey(
     journey_id: int,
-    teacher: models.User = Depends(auth.require_teacher), db: AsyncSession = Depends(get_db),
+    teacher: models.User = Depends(auth.acting_teacher), db: AsyncSession = Depends(get_db),
 ):
     return {"journey": _teacher_payload(await _owned(db, teacher, journey_id))}
 
@@ -283,7 +285,7 @@ async def get_teacher_journey(
 @router.put("/teacher/journeys/{journey_id}")
 async def update_journey(
     journey_id: int, body: js.JourneyUpdate,
-    teacher: models.User = Depends(auth.require_teacher), db: AsyncSession = Depends(get_db),
+    teacher: models.User = Depends(auth.acting_teacher), db: AsyncSession = Depends(get_db),
 ):
     journey = await _owned(db, teacher, journey_id, lock=True)
     _require_revision(journey, body.revision)
@@ -302,7 +304,7 @@ async def update_journey(
 @router.get("/teacher/journeys/{journey_id}/preview")
 async def preview_journey(
     journey_id: int,
-    teacher: models.User = Depends(auth.require_teacher), db: AsyncSession = Depends(get_db),
+    teacher: models.User = Depends(auth.acting_teacher), db: AsyncSession = Depends(get_db),
 ):
     journey = await _owned(db, teacher, journey_id)
     snapshot, issues, warnings = await _build_snapshot(db, journey, (journey.published_revision or 0) + 1)
@@ -315,7 +317,7 @@ async def preview_journey(
 @router.post("/teacher/journeys/{journey_id}/publish")
 async def publish_journey(
     journey_id: int, body: js.RevisionBody,
-    teacher: models.User = Depends(auth.require_teacher), db: AsyncSession = Depends(get_db),
+    teacher: models.User = Depends(auth.acting_teacher), db: AsyncSession = Depends(get_db),
 ):
     journey = await _owned(db, teacher, journey_id, lock=True)
     _require_revision(journey, body.revision)
@@ -329,6 +331,7 @@ async def publish_journey(
     journey.published_from_revision = journey.revision
     journey.published_at = now
     journey.status = "published"
+    await teacher_notices.record(db, teacher, "journey", journey, "published")
     await db.commit()
     notifications = await _notify_published(db, journey)
     return {"ok": True, "journey": _teacher_payload(journey), "notifications": notifications}
@@ -337,13 +340,14 @@ async def publish_journey(
 @router.post("/teacher/journeys/{journey_id}/archive")
 async def archive_journey(
     journey_id: int, body: js.RevisionBody,
-    teacher: models.User = Depends(auth.require_teacher), db: AsyncSession = Depends(get_db),
+    teacher: models.User = Depends(auth.acting_teacher), db: AsyncSession = Depends(get_db),
 ):
     journey = await _owned(db, teacher, journey_id, lock=True)
     _require_revision(journey, body.revision)
     if journey.status != "published":
         raise HTTPException(status_code=409, detail="Only a published journey can be archived.")
     journey.status = "archived"
+    await teacher_notices.record(db, teacher, "journey", journey, "archived")
     await db.commit()
     return {"ok": True, "journey": _teacher_payload(journey)}
 
@@ -351,7 +355,7 @@ async def archive_journey(
 @router.post("/teacher/journeys/{journey_id}/restore")
 async def restore_journey(
     journey_id: int, body: js.RevisionBody,
-    teacher: models.User = Depends(auth.require_teacher), db: AsyncSession = Depends(get_db),
+    teacher: models.User = Depends(auth.acting_teacher), db: AsyncSession = Depends(get_db),
 ):
     journey = await _owned(db, teacher, journey_id, lock=True)
     _require_revision(journey, body.revision)
@@ -365,7 +369,7 @@ async def restore_journey(
 @router.post("/teacher/journeys/{journey_id}/duplicate")
 async def duplicate_journey(
     journey_id: int,
-    teacher: models.User = Depends(auth.require_teacher), db: AsyncSession = Depends(get_db),
+    teacher: models.User = Depends(auth.acting_teacher), db: AsyncSession = Depends(get_db),
 ):
     source = await _owned(db, teacher, journey_id)
     copy = models.LearningJourney(
@@ -375,6 +379,7 @@ async def duplicate_journey(
         steps=list(source.steps or []), revision=1, status="draft",
     )
     db.add(copy)
+    await teacher_notices.record(db, teacher, "journey", copy, "created")
     await db.commit()
     await db.refresh(copy)
     return {"ok": True, "journey": _teacher_payload(copy)}
@@ -383,7 +388,7 @@ async def duplicate_journey(
 @router.delete("/teacher/journeys/{journey_id}")
 async def delete_journey(
     journey_id: int, revision: int,
-    teacher: models.User = Depends(auth.require_teacher), db: AsyncSession = Depends(get_db),
+    teacher: models.User = Depends(auth.acting_teacher), db: AsyncSession = Depends(get_db),
 ):
     journey = await _owned(db, teacher, journey_id, lock=True)
     _require_revision(journey, revision)

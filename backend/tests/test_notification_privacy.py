@@ -39,10 +39,30 @@ async def test_actual_fcm_wire_payload_has_generic_preview_and_no_personal_metad
 
 
 @pytest.mark.asyncio
-async def test_private_session_invitation_retains_only_authorization_checked_destination(monkeypatch):
+async def test_class_alert_is_data_only_and_carries_only_routing_identifiers(monkeypatch):
     service = object.__new__(notification_service.FCMNotificationService)
     service.project_id = "test-project"
-    service._get_access_token = lambda: None
-    assert await service.send_session_invitation(
-        "fake-token", 8, "Personal title", "Teacher name", "Class name", "Subject name",
-    ) is False
+    service._get_access_token = lambda: "fake-access-token"
+    sent = []
+
+    class Client:
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, *_):
+            pass
+
+        async def post(self, url, *, json, headers):
+            sent.append(json["message"])
+            return type("Response", (), {"status_code": 200})()
+
+    monkeypatch.setattr(notification_service.httpx, "AsyncClient", Client)
+    assert await service.send_class_alert(
+        "fake-token", session_id=8, alert_id="a1", alert_kind="start", ring_until_ms=123,
+    )
+    assert "notification" not in sent[0]
+    assert sent[0]["android"]["priority"] == "high"
+    assert sent[0]["data"] == {
+        "type": "class_alert", "session_id": "8", "alert_id": "a1",
+        "alert_kind": "start", "ring_until": "123",
+    }

@@ -7,6 +7,7 @@ import '../announcers/settings_text.dart';
 import '../l10n/speech.dart';
 import '../utils/spoken_format.dart';
 import '../services/feedback_cues.dart';
+import '../services/learning_autopilot.dart';
 import '../services/message_center.dart';
 import '../services/activity_telemetry.dart';
 import '../utils/ui_utils.dart';
@@ -67,6 +68,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final FocusNode _saveFocus = FocusNode(debugLabel: 'settings-save');
   final FocusNode _cuesFocus = FocusNode(debugLabel: 'settings-sound-cues');
   final FocusNode _vibrationFocus = FocusNode(debugLabel: 'settings-vibration');
+  final FocusNode _autoDownloadFocus = FocusNode(
+    debugLabel: 'settings-auto-download',
+  );
+  bool _autoDownload = true;
 
   static String get _voiceHelpText => Speech.t.settingsVoiceHelp;
 
@@ -129,6 +134,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         _ => SpeechVerbosity.standard,
       };
       _language = SpeechLanguage.fromCode(prefs.getString('speech_language'));
+      _autoDownload = prefs.getBool(LearningAutopilot.autoDownloadKey) ?? true;
     });
 
     UIUtils.setHighContrastMode(_highContrastMode);
@@ -398,6 +404,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (enabled) unawaited(FeedbackCues.play(Cue.ok));
   }
 
+  /// S28: new journeys are prepared for offline use on Wi-Fi only.
+  void _toggleAutoDownload() {
+    setState(() => _autoDownload = !_autoDownload);
+    _saveBoolSetting(LearningAutopilot.autoDownloadKey, _autoDownload);
+    _speakIfEnabled(
+      _autoDownload
+          ? Speech.t.settingsAutoDownloadOn
+          : Speech.t.settingsAutoDownloadOff,
+    );
+  }
+
   void _toggleVoiceCommands() {
     setState(() => _voiceCommandsEnabled = !_voiceCommandsEnabled);
     _saveBoolSetting('voice_commands_enabled', _voiceCommandsEnabled);
@@ -640,6 +657,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _saveFocus.dispose();
     _cuesFocus.dispose();
     _vibrationFocus.dispose();
+    _autoDownloadFocus.dispose();
     super.dispose();
   }
 
@@ -825,6 +843,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
           node: _vibrationFocus,
           label: SettingsText.vibrationLabel(FeedbackCues.vibrationEnabled),
           onActivate: () => unawaited(_toggleVibration()),
+        ),
+        KeypadFocusTarget(
+          node: _autoDownloadFocus,
+          label: t.settingsAutoDownload(_onOff(_autoDownload)),
+          onActivate: _toggleAutoDownload,
         ),
         if (!tiny)
           KeypadFocusTarget(
@@ -1085,6 +1108,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   value: FeedbackCues.vibrationEnabled,
                   onChanged: (_) => unawaited(_toggleVibration()),
                   focusNode: _vibrationFocus,
+                ),
+                _buildSwitchTile(
+                  context,
+                  title: Speech.t.settingsAutoDownload(_onOff(_autoDownload)),
+                  subtitle: _autoDownload
+                      ? Speech.t.settingsAutoDownloadOn
+                      : Speech.t.settingsAutoDownloadOff,
+                  value: _autoDownload,
+                  onChanged: (_) => _toggleAutoDownload(),
+                  focusNode: _autoDownloadFocus,
                 ),
                 if (!tiny)
                   _buildActionButton(

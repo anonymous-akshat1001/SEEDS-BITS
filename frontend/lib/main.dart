@@ -4,13 +4,11 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'screens/login_screen.dart';
 import 'screens/change_password_screen.dart';
-import 'screens/register_screen.dart';
 import 'screens/teacher_dashboard.dart';
 import 'screens/student_dashboard.dart';
 import 'screens/session_screen.dart';
 import 'screens/audio_library_screen.dart';
 import 'screens/settings_screen.dart';
-import 'screens/invite_students_screen.dart';
 import 'screens/admin_dashboard.dart';
 import 'screens/notification_landing_screen.dart';
 import 'announcers/announce.dart';
@@ -18,6 +16,8 @@ import 'announcers/notification_text.dart';
 import 'services/feedback_cues.dart';
 import 'services/message_center.dart';
 import 'utils/ui_utils.dart';
+import 'services/class_alerts.dart';
+import 'services/class_entry.dart';
 import 'services/notification_services.dart';
 import 'services/tts_service.dart';
 import 'widgets/key_instruction_wrapper.dart';
@@ -102,8 +102,10 @@ WEB_VAPID_KEY=BOYVjb77moWEwSyBY-HxCkiAFBuNrCncK9oSobRL1TubgfGicL1JOiw_B0Nod74jEb
       await FeedbackCues.loadFromPreferences();
       final token = prefs.getString('token');
       final role = prefs.getString('role');
+      // Only administrators have passwords to change.
       if (token != null &&
           token.isNotEmpty &&
+          role == 'admin' &&
           prefs.getBool('must_change_password') == true) {
         _initialRoute = '/change_password';
       } else if (token != null && token.isNotEmpty && role == 'teacher') {
@@ -160,11 +162,16 @@ WEB_VAPID_KEY=BOYVjb77moWEwSyBY-HxCkiAFBuNrCncK9oSobRL1TubgfGicL1JOiw_B0Nod74jEb
         );
         if (confirmed != true) return;
       }
-      await notificationService.initialize();
+      // Set before initializing, so an alert that launched the app is not lost.
       notificationService.onNotificationTap = _handleNotificationTap;
+      ClassAlerts.instance.onJoin = (sessionId) => ClassEntry.open(sessionId);
+      await notificationService.initialize();
       notificationService.foregroundMessages.listen((data) {
+        final type = '${data['type'] ?? ''}';
+        // Class alerts speak and offer joining themselves.
+        if (type.startsWith('class_alert')) return;
         MessageCenter.show(
-          NotificationText.foreground('${data['type'] ?? ''}'),
+          NotificationText.foreground(type),
           kind: MessageKind.success,
         );
       });
@@ -173,11 +180,11 @@ WEB_VAPID_KEY=BOYVjb77moWEwSyBY-HxCkiAFBuNrCncK9oSobRL1TubgfGicL1JOiw_B0Nod74jEb
     }
   }
 
-  /// A tapped notification opens a spoken landing page; nothing is joined
-  /// or opened until the user presses 1.
+  /// Opening a class alert (tap, or OK on the focused alert) joins the class
+  /// directly. Other updates open a spoken landing page and wait for a key.
   Future<void> _handleNotificationTap(Map<String, dynamic> data) async {
     const known = {
-      'session_invitation',
+      'class_alert',
       'journey_published',
       'quiz_published',
       'quiz_reminder',
@@ -189,14 +196,12 @@ WEB_VAPID_KEY=BOYVjb77moWEwSyBY-HxCkiAFBuNrCncK9oSobRL1TubgfGicL1JOiw_B0Nod74jEb
       navigatorKey.currentState?.pushNamed('/login');
       return;
     }
-    if (prefs.getBool('must_change_password') == true) {
-      navigatorKey.currentState?.pushNamedAndRemoveUntil(
-        '/change_password',
-        (_) => false,
-      );
+    if (prefs.getString('role') != 'student') return;
+    if (data['type'] == 'class_alert') {
+      final sessionId = int.tryParse('${data['session_id'] ?? ''}');
+      if (sessionId != null) await ClassEntry.open(sessionId);
       return;
     }
-    if (prefs.getString('role') != 'student') return;
     navigatorKey.currentState?.push(
       MaterialPageRoute(builder: (_) => NotificationLandingScreen(data: data)),
     );
@@ -644,7 +649,6 @@ class MyApp extends StatelessWidget {
               '/welcome': (context) => const WelcomeScreen(),
               '/login': (context) => const LoginScreen(),
               '/change_password': (context) => const ChangePasswordScreen(),
-              '/register': (context) => const RegisterScreen(),
               '/teacher_dashboard': (context) => const TeacherDashboard(),
               '/student_dashboard': (context) => const StudentDashboard(),
               '/admin_dashboard': (context) => const AdminDashboard(),
@@ -708,28 +712,6 @@ class MyApp extends StatelessWidget {
                 );
               }
 
-              // Invite students screen route
-              if (settings.name == '/invite_students') {
-                final args = settings.arguments;
-                if (args is Map<String, dynamic>) {
-                  final sessionId = args['sessionId'];
-                  final sessionTitle = args['sessionTitle'];
-
-                  if (sessionId is int && sessionTitle is String) {
-                    return MaterialPageRoute(
-                      builder: (_) => InviteStudentsScreen(
-                        sessionId: sessionId,
-                        sessionTitle: sessionTitle,
-                      ),
-                      settings: settings,
-                    );
-                  }
-                }
-                return MaterialPageRoute(
-                  builder: (_) => const TeacherDashboard(),
-                );
-              }
-
               // Offline audio library route
               if (settings.name == '/offline_audio_library') {
                 return MaterialPageRoute(
@@ -756,9 +738,6 @@ class WelcomeScreen extends StatefulWidget {
 
 class _WelcomeScreenState extends State<WelcomeScreen> {
   final FocusNode _loginFocusNode = FocusNode(debugLabel: 'welcome-login');
-  final FocusNode _registerFocusNode = FocusNode(
-    debugLabel: 'welcome-register',
-  );
   final FocusNode _settingsFocusNode = FocusNode(
     debugLabel: 'welcome-settings',
   );
@@ -769,7 +748,6 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   @override
   void dispose() {
     _loginFocusNode.dispose();
-    _registerFocusNode.dispose();
     _settingsFocusNode.dispose();
     _repeatFocusNode.dispose();
     super.dispose();
@@ -787,19 +765,13 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
       labels: welcomeKeyLabels,
       actions: {
         1: () => Navigator.pushNamed(context, '/login'),
-        2: () => Navigator.pushNamed(context, '/register'),
-        3: () => Navigator.pushNamed(context, '/settings'),
+        2: () => Navigator.pushNamed(context, '/settings'),
       },
       focusTargets: [
         KeypadFocusTarget(
           node: _loginFocusNode,
           label: t.startupLoginButton,
           onActivate: () => Navigator.pushNamed(context, '/login'),
-        ),
-        KeypadFocusTarget(
-          node: _registerFocusNode,
-          label: t.startupRegisterButton,
-          onActivate: () => Navigator.pushNamed(context, '/register'),
         ),
         KeypadFocusTarget(
           node: _settingsFocusNode,
@@ -914,44 +886,6 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     SizedBox(
                       width: double.infinity,
                       child: OutlinedButton.icon(
-                        focusNode: _registerFocusNode,
-                        onPressed: () =>
-                            Navigator.pushNamed(context, '/register'),
-                        icon: Icon(
-                          Icons.app_registration,
-                          size: UIUtils.iconSize(context, 24),
-                        ),
-                        label: Text(
-                          isKeypad
-                              ? Speech.t.startupRegisterKey2
-                              : Speech.t.startupRegister,
-                          style: TextStyle(
-                            fontSize: UIUtils.fontSize(context, 18),
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: UIUtils.textColor,
-                          side: BorderSide(
-                            color: UIUtils.accentColor,
-                            width: 2,
-                          ),
-                          padding: UIUtils.paddingSymmetric(
-                            context,
-                            vertical: 16,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    SizedBox(height: UIUtils.spacing(context, 14)),
-
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton.icon(
                         focusNode: _settingsFocusNode,
                         onPressed: () =>
                             Navigator.pushNamed(context, '/settings'),
@@ -961,7 +895,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                         ),
                         label: Text(
                           isKeypad
-                              ? Speech.t.startupSettingsKey3
+                              ? Speech.t.startupSettingsKey2
                               : Speech.t.startupSettings,
                           style: TextStyle(
                             fontSize: UIUtils.fontSize(context, 16),

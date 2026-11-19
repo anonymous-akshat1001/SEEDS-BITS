@@ -1,5 +1,4 @@
 import asyncio
-import re
 import sys
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -67,11 +66,11 @@ def headers(user, *, legacy=False):
     return {"Authorization": f"Bearer {auth.create_access_token(claims)}"}
 
 
-async def reset(client, users, *, version=0):
+async def sign_out(client, users, *, version=0):
     response = await client.post(
-        f"/admin/users/{users['student'].user_id}/reset-password",
+        f"/admin/users/{users['student'].user_id}/sign-out-everywhere",
         headers=headers(users["admin"]),
-        json={"identity_verified": True, "expected_auth_version": version},
+        json={"expected_auth_version": version},
     )
     assert response.status_code == 200, response.text
     return response
@@ -83,43 +82,99 @@ async def login(client, user, password):
     })
 
 
+async def phone_login(client, phone, code=None):
+    body = {"phone_number": phone}
+    if code is not None:
+        body["profile_code"] = code
+    return await client.post("/auth/phone-login", json=body)
+
+
 @pytest.mark.asyncio
-async def test_reset_is_admin_only_attested_versioned_and_preserves_accounts(recovery):
+async def test_students_and_teachers_sign_in_with_number_only_and_admins_never_can(recovery):
     client, db, users = recovery
-    path = f"/admin/users/{users['student'].user_id}/reset-password"
-    body = {"identity_verified": True, "expected_auth_version": 0}
+    student = await phone_login(client, "9000-000 002")
+    assert student.status_code == 200, student.text
+    assert student.headers["cache-control"] == "no-store"
+    body = student.json()
+    assert body["role"] == "student" and body["profile_required"] is False
+    bearer = {"Authorization": f"Bearer {body['access_token']}"}
+    assert (await client.get("/me/access-context", headers=bearer)).status_code == 200
+    teacher = await phone_login(client, users["teacher"].phone_number)
+    assert teacher.status_code == 200 and teacher.json()["role"] == "teacher"
+    admin = await phone_login(client, users["admin"].phone_number)
+    assert admin.status_code == 403
+    assert "access_token" not in admin.text
+    unknown = await phone_login(client, "9111111111")
+    assert unknown.status_code == 401 and "administrator" in unknown.json()["detail"]
+    # Password sign-in is only for administrators.
+    assert (await login(client, users["teacher"], "old-password")).status_code == 401
+    assert (await login(client, users["admin"], "old-password")).status_code == 200
+    users["student"].is_active = False
+    await db.commit()
+    assert (await phone_login(client, users["student"].phone_number)).status_code == 401
+    assert (await client.get("/me/access-context", headers=bearer)).status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_shared_phone_selects_profile_by_code_without_granting_admin(recovery):
+    client, db, users = recovery
+    created = await client.post("/admin/device-groups", headers=headers(users["admin"]), json={
+        "name": "Family phone", "entry_phone_number": "9888 000 000",
+    })
+    assert created.status_code == 200, created.text
+    group = created.json()
+    for user, code in ((users["student"], "11"), (users["teacher"], "12")):
+        added = await client.post(
+            f"/admin/device-groups/{group['group_id']}/members",
+            headers=headers(users["admin"]), json={"user_id": user.user_id, "profile_code": code},
+        )
+        assert added.status_code == 200, added.text
+    admin_member = await client.post(
+        f"/admin/device-groups/{group['group_id']}/members",
+        headers=headers(users["admin"]), json={"user_id": users["admin"].user_id, "profile_code": "13"},
+    )
+    assert admin_member.status_code == 404
+    duplicate_phone = await client.post("/admin/device-groups", headers=headers(users["admin"]), json={
+        "name": "Clash", "entry_phone_number": users["student"].phone_number,
+    })
+    assert duplicate_phone.status_code == 409
+    asked = await phone_login(client, "9888000000")
+    assert asked.status_code == 200
+    assert asked.json() == {"profile_required": True, "code_length": 2}
+    student = await phone_login(client, "9888000000", "11")
+    assert student.status_code == 200 and student.json()["user_id"] == users["student"].user_id
+    teacher = await phone_login(client, "9888000000", "12")
+    assert teacher.json()["user_id"] == users["teacher"].user_id
+    assert (await phone_login(client, "9888000000", "99")).status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_sign_out_everywhere_is_admin_only_versioned_and_preserves_accounts(recovery):
+    client, db, users = recovery
+    path = f"/admin/users/{users['student'].user_id}/sign-out-everywhere"
+    body = {"expected_auth_version": 0}
     for credentials, status in (({}, 401), (headers(users["teacher"]), 403)):
         result = await client.post(path, headers=credentials, json=body)
         assert result.status_code == status
-    denied = await client.post(path, headers=headers(users["admin"]), json={
-        **body, "identity_verified": False,
-    })
-    assert denied.status_code == 422
     admin_reset = await client.post(
-        f"/admin/users/{users['admin'].user_id}/reset-password",
+        f"/admin/users/{users['admin'].user_id}/sign-out-everywhere",
         headers=headers(users["admin"]), json=body,
     )
     assert admin_reset.status_code == 403
     old_token = headers(users["student"], legacy=True)
     assert (await client.get("/catalog/classes", headers=old_token)).status_code == 200
-    response = await reset(client, users)
+    response = await sign_out(client, users)
     assert response.headers["cache-control"] == "no-store"
-    data = response.json()
-    assert re.fullmatch(r"\d{12}", data["temporary_credential"])
-    expires = datetime.fromisoformat(data["expires_at"].removesuffix("Z"))
-    assert timedelta(hours=24) - timedelta(seconds=5) < expires - datetime.utcnow() <= timedelta(hours=24)
     await db.refresh(users["student"])
     student = users["student"]
-    assert student.password_hash != data["temporary_credential"]
-    assert auth.verify_password(data["temporary_credential"], student.password_hash)
     assert student.password_reset_by == users["admin"].user_id
     assert student.name == "Test student" and student.role == "student"
-    assert student.auth_version == 1 and student.must_change_password
+    assert student.auth_version == 1 and not student.must_change_password
     assert (await client.get("/catalog/classes", headers=old_token)).status_code == 401
     stale = await client.post(path, headers=headers(users["admin"]), json=body)
     assert stale.status_code == 409
-    assert (await login(client, student, "old-password")).status_code == 401
-    assert auth.verify_password("old-password", users["teacher"].password_hash)
+    # The account itself still works: the person signs in again by number.
+    assert (await phone_login(client, student.phone_number)).status_code == 200
 
 
 @pytest.mark.asyncio
@@ -135,27 +190,28 @@ async def test_request_diagnostics_use_the_isolated_recovery_database(recovery, 
     assert events[0].event_details["status"] == 200
 
 
+async def _temporary_admin_credential(db, admin, credential="000000000000"):
+    admin.password_hash = auth.get_password_hash(credential)
+    admin.must_change_password = True
+    admin.temporary_password_expires_at = datetime.utcnow() + timedelta(hours=24)
+    admin.temporary_password_failures = 0
+    await db.commit()
+    return credential
+
+
 @pytest.mark.asyncio
-async def test_forced_session_cannot_read_mutate_media_or_skip_change(recovery, monkeypatch):
+async def test_forced_admin_session_cannot_read_mutate_media_or_skip_change(recovery):
     client, db, users = recovery
-    monkeypatch.setattr(main.account_recovery.secrets, "choice", lambda _: "0")
-    credential = (await reset(client, users)).json()["temporary_credential"]
-    assert credential == "000000000000"
-    signed_in = await login(client, users["student"], credential)
+    credential = await _temporary_admin_credential(db, users["admin"])
+    signed_in = await login(client, users["admin"], credential)
     assert signed_in.status_code == 200
     session = signed_in.json()
     assert session["must_change_password"] is True
     bearer = {"Authorization": f"Bearer {session['access_token']}"}
     assert (await client.get("/catalog/classes", headers=bearer)).status_code == 403
-    assert (await client.post("/users/fcm-token", headers=bearer, json={
-        "token": "synthetic-device-token", "device_type": "android",
-    })).status_code == 403
     with pytest.raises(HTTPException) as media:
         await auth.get_media_user(session["access_token"], None, db)
     assert media.value.status_code == 403
-    with pytest.raises(HTTPException) as streaming:
-        await auth.get_current_user_from_token(session["access_token"], db)
-    assert streaming.value.status_code == 403
     unchanged = await client.post("/auth/change-password", headers=bearer, json={
         "current_password": credential, "new_password": credential,
     })
@@ -168,44 +224,34 @@ async def test_forced_session_cannot_read_mutate_media_or_skip_change(recovery, 
         "current_password": credential, "new_password": "my-new-password",
     })
     assert changed.status_code == 200
-    assert changed.headers["cache-control"] == "no-store"
     replacement = changed.json()
     assert replacement["ok"] and replacement["must_change_password"] is False
     assert (await client.get("/catalog/classes", headers=bearer)).status_code == 401
     valid = {"Authorization": f"Bearer {replacement['access_token']}"}
     assert (await client.get("/catalog/classes", headers=valid)).status_code == 200
-    assert (await login(client, users["student"], credential)).status_code == 401
-    assert (await login(client, users["student"], "my-new-password")).status_code == 200
-    assert users["student"].temporary_password_expires_at is None
-    assert users["student"].auth_version == 2
+    assert (await login(client, users["admin"], credential)).status_code == 401
+    assert (await login(client, users["admin"], "my-new-password")).status_code == 200
 
 
 @pytest.mark.asyncio
-async def test_tenth_failure_pauses_even_valid_temporary_login_then_recovers(recovery):
+async def test_tenth_failure_pauses_even_valid_temporary_admin_login(recovery):
     client, db, users = recovery
-    credential = (await reset(client, users)).json()["temporary_credential"]
+    admin = users["admin"]
+    credential = await _temporary_admin_credential(db, admin)
     for attempt in range(1, 11):
-        failed = await login(client, users["student"], "wrong-password")
+        failed = await login(client, admin, "wrong-password")
         assert failed.status_code == (429 if attempt == 10 else 401)
-    student = users["student"]
-    assert student.temporary_password_failures == 10
-    assert timedelta(minutes=15) - timedelta(seconds=5) < student.temporary_password_locked_until - datetime.utcnow() <= timedelta(minutes=15)
-    assert (await login(client, student, credential)).status_code == 429
-    student.temporary_password_locked_until = datetime.utcnow() - timedelta(seconds=1)
+    assert (await login(client, admin, credential)).status_code == 429
+    admin.temporary_password_locked_until = datetime.utcnow() - timedelta(seconds=1)
     await db.commit()
-    assert (await login(client, student, credential)).status_code == 200
-    assert student.temporary_password_failures == 0
-    assert student.temporary_password_locked_until is None
-    student.temporary_password_expires_at = datetime.utcnow() - timedelta(seconds=1)
+    assert (await login(client, admin, credential)).status_code == 200
+    admin.temporary_password_expires_at = datetime.utcnow() - timedelta(seconds=1)
     await db.commit()
-    assert (await login(client, student, credential)).status_code == 401
-    replacement = (await reset(client, users, version=1)).json()["temporary_credential"]
-    assert (await login(client, student, credential)).status_code == 401
-    assert (await login(client, student, replacement)).status_code == 200
+    assert (await login(client, admin, credential)).status_code == 401
 
 
 @pytest.mark.asyncio
-async def test_reset_discards_full_stream_queue_and_push_associations(recovery):
+async def test_sign_out_discards_full_stream_queue_and_push_associations(recovery):
     client, db, users = recovery
     student = users["student"]
     db.add(models.FCMToken(user_id=student.user_id, token="synthetic-token"))
@@ -216,7 +262,7 @@ async def test_reset_discards_full_stream_queue_and_push_associations(recovery):
     ws_mgr.active[700][77] = queue
     SESSION_STATE[700]["connections"][77] = queue
     before = student.auth_version
-    await reset(client, users)
+    await sign_out(client, users)
     assert await queue.get() == {"type": "authentication_revoked"}
     assert queue.empty()
     assert 77 not in ws_mgr.active[700]

@@ -25,7 +25,9 @@ class SessionChatScreen extends StatelessWidget {
       return;
     }
     await Navigator.of(context).push<void>(
-      MaterialPageRoute(builder: (_) => SessionMessagesScreen(session: session)),
+      MaterialPageRoute(
+        builder: (_) => SessionMessagesScreen(session: session),
+      ),
     );
   }
 

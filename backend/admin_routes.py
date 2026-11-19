@@ -242,6 +242,7 @@ async def admin_list_users(
                 "name": user.name,
                 "phone_number": user.phone_number,
                 "role": user.role,
+                "is_active": user.is_active,
                 "auth_version": user.auth_version,
                 "must_change_password": user.must_change_password,
                 "class_id": membership.class_id if membership else None,

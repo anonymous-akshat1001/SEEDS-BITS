@@ -7,9 +7,10 @@ package `com.example.frontend`. The repository contains:
 - generated `lib/firebase_options.dart` Android/Web options
 - the Google Services Gradle plugin
 - `firebase_core`, `firebase_messaging`, and local-notification packages
-- Android 13 notification permission and the `session_channel`
+- Android 13 notification permission, the `session_channel`, and the
+  `class_ring` / `class_waiting` channels for class alerts
 - foreground, background, terminated-launch, and token-refresh handlers
-- backend token registration and session-invitation delivery endpoints
+- backend token registration and class-alert delivery (durable jobs)
 
 The missing production prerequisite is the backend service-account credential.
 Apple platforms also still need to be registered and configured separately.
@@ -115,23 +116,29 @@ message** and target the device registration token.
 For the real SEEDS journey:
 
 1. Log in as a student and confirm their token is registered.
-2. Log in as a teacher on another device.
-3. Create a session and invite the student.
-4. The backend calls FCM HTTP v1 with these data fields:
+2. Add a timetable lesson for the student's class (administrator dashboard),
+   then log in as its teacher on another device.
+3. Press **1: Start** on the teacher's Home. The backend sends a data-only
+   class alert (no system notification block, so the app rings itself):
 
    ```json
    {
-     "type": "session_invitation",
+     "type": "class_alert",
      "session_id": "123",
-     "session_title": "English Unit 5",
-     "teacher_name": "Teacher name"
+     "alert_id": "<uuid>",
+     "alert_kind": "start",
+     "ring_until": "1700000000000"
    }
    ```
 
-5. Verify notification receipt with SEEDS foregrounded, backgrounded, and
-   terminated. Tapping it should open the corresponding session route.
-6. Log out and verify the token is unregistered/invalidated so the logged-out
-   user no longer receives session invitations on that app installation.
+4. Verify with SEEDS foregrounded (ringing plus "OK to join" dialog),
+   backgrounded and terminated (ringing notification on the `class_ring`
+   channel). Ringing must stop within 60 seconds of the start; a silent
+   `class_waiting` notification stays. Opening either joins the class
+   directly, muted. Ten minutes later a student who has not joined is rung
+   once more. Ending the class sends `class_alert_cancel`.
+5. Log out and verify the token is unregistered/invalidated so the logged-out
+   user no longer receives class alerts on that app installation.
 
 ## 5. Optional Apple setup
 

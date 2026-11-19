@@ -3162,7 +3162,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Press 0 to leave the class. It asks to confirm.';
 
   @override
-  String get sessionKeyLine => '*: Help. #: Stop app speech. 8: Last message.';
+  String get sessionKeyLine => '*: Help and last message. #: Stop speech.';
 
   @override
   String sessionJoinedBrief(String status) {
@@ -3237,17 +3237,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sessionChatButton => '4: Chat';
 
   @override
-  String get sessionRecordingPlayerNone =>
-      'Class recording player. No recording selected yet';
+  String get sessionRecordingPlayerNone => 'Lesson recording. None chosen yet';
 
   @override
   String sessionRecordingPlayerPlaying(String title) {
-    return 'Class recording player. $title, playing';
+    return 'Lesson recording. $title, playing';
   }
 
   @override
   String sessionRecordingPlayerPaused(String title) {
-    return 'Class recording player. $title, paused';
+    return 'Lesson recording. $title, paused';
   }
 
   @override
@@ -3282,22 +3281,21 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get sessionRecordingPlayerButton => '5: Recording player';
+  String get sessionRecordingPlayerButton => '5: Lesson recording';
 
   @override
   String get sessionOpeningPlayerToChoose =>
       'No recording is selected yet. Press 1 to choose one.';
 
   @override
-  String get sessionCheckLabel =>
-      'Answer classroom check. Private and ungraded';
+  String get sessionCheckLabel => 'Answer the teacher\'s question';
 
   @override
-  String get sessionCheckButton => '6: Classroom check';
+  String get sessionCheckButton => '3: Answer the question';
 
   @override
   String sessionHandsLabel(String waiting) {
-    return 'Raised hands. $waiting Acknowledge and lower hands in order';
+    return 'Raised hands. $waiting';
   }
 
   @override
@@ -3322,7 +3320,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sessionToolsLabel =>
-      'Teacher tools. Invite students or end the class for everyone';
+      'Teacher tools. Add time or end the class for everyone';
 
   @override
   String get sessionToolsButton => '9: Teacher tools';
@@ -3353,7 +3351,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sessionRetryButton => 'Retry connection';
 
   @override
-  String get sessionLeaveLabel => 'Leave class and return to your dashboard';
+  String get sessionLeaveLabel => 'Leave class';
 
   @override
   String get sessionLeaveButton => '0: Leave class';
@@ -4126,7 +4124,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get classroomCheckOpenedForYou =>
-      'Your teacher opened a classroom check. Use the D-pad to reach Answer classroom check.';
+      'Your teacher asked a question. Press 3 to answer.';
 
   @override
   String get classroomCheckHelp =>
@@ -6240,7 +6238,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get libraryScreenPauseSessionTarget =>
-      'Pause audio for the whole session, key 4';
+      'Pause audio for the whole session, key 3';
 
   @override
   String get libraryScreenUploadTarget => 'Upload audio, key 2';
@@ -11351,9 +11349,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Your school administrator issued a temporary credential. It lasts 24 hours. After 10 wrong attempts, sign-in pauses for 15 minutes. Choose a different password of at least 6 characters. This requires internet.';
 
   @override
-  String get authSaveNewPasswordKey => '4: Save new password';
-
-  @override
   String get authSignOutKey => '0: Sign out';
 
   @override
@@ -12289,9 +12284,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get startupRegister => 'Register';
 
   @override
-  String get startupSettingsKey3 => '3. Settings';
-
-  @override
   String get startupSettings => 'Settings';
 
   @override
@@ -12755,10 +12747,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get libraryTitleRequiredField => 'Title *';
-
-  @override
-  String get libraryPauseSessionKey4 =>
-      'Pause audio for the whole session, key 4';
 
   @override
   String get libraryUploadNewAudio => 'Upload New Audio';
@@ -13388,15 +13376,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get quizClosingTimeHint => 'Optional · must be after opening time';
 
   @override
-  String get quizContinueToQuestionsKey8 => '8: Continue to questions';
-
-  @override
-  String get quizSaveSettingsKey8 => '8: Save settings';
-
-  @override
-  String get quizSaveQuestionKey9 => '9: Save question';
-
-  @override
   String get quizShuffleQuestions => 'Shuffle questions once per attempt';
 
   @override
@@ -13410,5 +13389,2229 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String messageMessage(String text) {
     return 'Message: $text';
+  }
+
+  @override
+  String get adminSetupSectionAccounts => 'Accounts';
+
+  @override
+  String get adminSetupSectionCatalog => 'Classes and subjects';
+
+  @override
+  String get adminSetupSectionTimetable => 'Timetable';
+
+  @override
+  String get adminSetupSectionSchedule => 'Today\'s schedule';
+
+  @override
+  String get adminSetupSectionSharedPhones => 'Shared phones';
+
+  @override
+  String get adminSetupSectionHolidays => 'Holidays';
+
+  @override
+  String get adminSetupSectionIssues => 'Issues';
+
+  @override
+  String get adminSetupSectionRecords => 'Class records';
+
+  @override
+  String get adminSetupSectionPicker => 'Section';
+
+  @override
+  String adminSetupRefresh(String section) {
+    return 'Refresh $section';
+  }
+
+  @override
+  String get adminSetupLogOut => 'Log out';
+
+  @override
+  String get adminSetupLoading => 'Loading';
+
+  @override
+  String get adminSetupSaving => 'Saving';
+
+  @override
+  String get adminSetupRetry => 'Try again';
+
+  @override
+  String adminSetupLoadFailed(String reason) {
+    return 'This list could not be loaded. $reason';
+  }
+
+  @override
+  String get adminSetupUnknownError =>
+      'Something went wrong. Please try again.';
+
+  @override
+  String get adminSetupNotSaved =>
+      'The change could not be saved. Refresh and try again.';
+
+  @override
+  String get adminSetupCancel => 'Cancel';
+
+  @override
+  String get adminSetupSave => 'Save';
+
+  @override
+  String get adminSetupClose => 'Close';
+
+  @override
+  String get adminSetupDelete => 'Delete';
+
+  @override
+  String get adminSetupRemove => 'Remove';
+
+  @override
+  String get adminSetupEdit => 'Edit';
+
+  @override
+  String adminSetupEditNamed(String name) {
+    return 'Edit $name';
+  }
+
+  @override
+  String adminSetupRequiredField(String field) {
+    return '$field is required.';
+  }
+
+  @override
+  String get adminSetupNoDate => 'Not set';
+
+  @override
+  String adminSetupDateValue(String field, String date) {
+    return '$field: $date';
+  }
+
+  @override
+  String adminSetupClearDate(String field) {
+    return 'Clear $field';
+  }
+
+  @override
+  String adminSetupDateFormat(
+    String weekday,
+    String day,
+    String month,
+    String year,
+  ) {
+    return '$weekday $day $month $year';
+  }
+
+  @override
+  String adminSetupDateTime(String date, String time) {
+    return '$date, $time';
+  }
+
+  @override
+  String get adminSetupDateField => 'Date';
+
+  @override
+  String get adminSetupInactive => 'Deactivated';
+
+  @override
+  String get adminSetupFilterAll => 'All';
+
+  @override
+  String get adminSetupShowFilter => 'Show';
+
+  @override
+  String get adminSetupRoleStudent => 'Student';
+
+  @override
+  String get adminSetupRoleTeacher => 'Teacher';
+
+  @override
+  String get adminSetupAddPerson => 'Add person';
+
+  @override
+  String get adminSetupSearchLabel => 'Search by name or phone number';
+
+  @override
+  String get adminSetupSearchButton => 'Search';
+
+  @override
+  String get adminSetupAccountTypeHeading => 'Account type';
+
+  @override
+  String get adminSetupAssignmentHeading => 'Class or subject assignment';
+
+  @override
+  String adminSetupAccountsShown(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count accounts shown.',
+      one: '1 account shown.',
+      zero: 'No matching accounts.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String adminSetupTeachersHeading(int count) {
+    return 'Teachers ($count)';
+  }
+
+  @override
+  String adminSetupStudentsHeading(int count) {
+    return 'Students ($count)';
+  }
+
+  @override
+  String get adminSetupNameField => 'Name';
+
+  @override
+  String get adminSetupPhoneField => 'Phone number';
+
+  @override
+  String get adminSetupRoleField => 'Role';
+
+  @override
+  String get adminSetupTeacherPairsHeading =>
+      'Classes and subjects this teacher teaches';
+
+  @override
+  String get adminSetupNoPairs => 'None yet. You can add them later.';
+
+  @override
+  String get adminSetupClassField => 'Class';
+
+  @override
+  String get adminSetupSubjectField => 'Subject';
+
+  @override
+  String get adminSetupAddPair => 'Add class and subject';
+
+  @override
+  String adminSetupPairLabel(String className, String subject) {
+    return '$className, $subject';
+  }
+
+  @override
+  String adminSetupRemovePair(String className, String subject) {
+    return 'Remove $className, $subject';
+  }
+
+  @override
+  String get adminSetupNoSubjectsInClass =>
+      'This class has no subjects yet. Add subjects under Classes and subjects.';
+
+  @override
+  String get adminSetupNoActiveClasses =>
+      'There are no active classes yet. Add one under Classes and subjects.';
+
+  @override
+  String adminSetupPersonAdded(String name) {
+    return '$name was added.';
+  }
+
+  @override
+  String adminSetupEditPerson(String name) {
+    return 'Edit $name';
+  }
+
+  @override
+  String get adminSetupPhoneChangeNote =>
+      'Changing the phone number signs this person out on every phone.';
+
+  @override
+  String adminSetupPersonSaved(String name) {
+    return 'Changes to $name were saved.';
+  }
+
+  @override
+  String get adminSetupDeactivate => 'Deactivate';
+
+  @override
+  String get adminSetupActivate => 'Activate';
+
+  @override
+  String adminSetupDeactivateNamed(String name) {
+    return 'Deactivate $name';
+  }
+
+  @override
+  String adminSetupActivateNamed(String name) {
+    return 'Activate $name';
+  }
+
+  @override
+  String adminSetupDeactivateTitle(String name) {
+    return 'Deactivate $name?';
+  }
+
+  @override
+  String adminSetupDeactivateMessage(String name) {
+    return '$name will be signed out and cannot sign in until the account is activated again.';
+  }
+
+  @override
+  String adminSetupActivated(String name) {
+    return '$name can sign in again.';
+  }
+
+  @override
+  String adminSetupDeactivated(String name) {
+    return '$name was deactivated.';
+  }
+
+  @override
+  String get adminSetupSignOutEverywhere => 'Sign out everywhere';
+
+  @override
+  String adminSetupSignOutNamed(String name) {
+    return 'Sign $name out everywhere';
+  }
+
+  @override
+  String adminSetupSignOutTitle(String name) {
+    return 'Sign $name out everywhere?';
+  }
+
+  @override
+  String adminSetupSignOutMessage(String name) {
+    return 'This ends $name\'s sign-in on every phone, for example if someone else used their number. They can sign in again with their phone number.';
+  }
+
+  @override
+  String adminSetupSignedOut(String name) {
+    return '$name was signed out everywhere.';
+  }
+
+  @override
+  String get adminSetupStudentClassAction => 'Change class';
+
+  @override
+  String get adminSetupTeacherAssignmentsAction => 'Classes and subjects';
+
+  @override
+  String adminSetupStudentDetail(String className) {
+    return 'Student. Class: $className';
+  }
+
+  @override
+  String get adminSetupStudentNoClass => 'Student. No class yet.';
+
+  @override
+  String adminSetupTeacherDetail(String pairs) {
+    return 'Teacher. Teaches: $pairs';
+  }
+
+  @override
+  String get adminSetupTeacherNoPairs => 'Teacher. No classes or subjects yet.';
+
+  @override
+  String adminSetupPhoneDetail(String phone) {
+    return 'Phone: $phone';
+  }
+
+  @override
+  String adminSetupClassDialogTitle(String name) {
+    return 'Class for $name';
+  }
+
+  @override
+  String adminSetupRemoveFromClass(String className) {
+    return 'Remove from $className';
+  }
+
+  @override
+  String adminSetupStudentEnrolled(String name, String className) {
+    return '$name is now in $className.';
+  }
+
+  @override
+  String adminSetupStudentRemoved(String name) {
+    return '$name was removed from their class.';
+  }
+
+  @override
+  String adminSetupAssignmentsTitle(String name) {
+    return 'Classes and subjects for $name';
+  }
+
+  @override
+  String get adminSetupCurrentPairs => 'Currently teaches';
+
+  @override
+  String adminSetupPairAdded(String name, String className, String subject) {
+    return '$name now teaches $className, $subject.';
+  }
+
+  @override
+  String adminSetupPairRemoved(String name, String className, String subject) {
+    return '$name no longer teaches $className, $subject.';
+  }
+
+  @override
+  String get adminSetupClassesHeading => 'Classes';
+
+  @override
+  String get adminSetupSubjectsHeading => 'Subjects';
+
+  @override
+  String get adminSetupAddClass => 'Add class';
+
+  @override
+  String get adminSetupAddSubject => 'Add subject';
+
+  @override
+  String get adminSetupNoClasses => 'No classes yet.';
+
+  @override
+  String get adminSetupNoSubjects => 'No subjects yet.';
+
+  @override
+  String get adminSetupSubjectsButton => 'Subjects';
+
+  @override
+  String adminSetupClassSubjects(String className) {
+    return 'Subjects in $className';
+  }
+
+  @override
+  String adminSetupArchiveNamed(String name) {
+    return 'Archive $name';
+  }
+
+  @override
+  String adminSetupRestoreNamed(String name) {
+    return 'Restore $name';
+  }
+
+  @override
+  String get adminSetupNoSubjectsToChoose =>
+      'There are no active subjects yet. Add a subject first.';
+
+  @override
+  String get adminSetupAddLesson => 'Add lesson to timetable';
+
+  @override
+  String get adminSetupEditLesson => 'Edit timetable lesson';
+
+  @override
+  String get adminSetupAllTeachers => 'All teachers';
+
+  @override
+  String get adminSetupAllClasses => 'All classes';
+
+  @override
+  String get adminSetupTeacherField => 'Teacher';
+
+  @override
+  String get adminSetupWeekdayField => 'Day of the week';
+
+  @override
+  String get adminSetupStartField => 'Start time';
+
+  @override
+  String get adminSetupEndField => 'End time';
+
+  @override
+  String get adminSetupTimeHelper =>
+      '24-hour India time (IST), for example 09:30';
+
+  @override
+  String adminSetupTimeInvalid(String field) {
+    return 'Enter the $field as 24-hour time, for example 09:30.';
+  }
+
+  @override
+  String get adminSetupEndBeforeStart => 'The lesson must end after it starts.';
+
+  @override
+  String get adminSetupUntilBeforeFrom =>
+      'The last date must be on or after the first date.';
+
+  @override
+  String get adminSetupValidFrom => 'First date';
+
+  @override
+  String get adminSetupValidUntil => 'Last date';
+
+  @override
+  String get adminSetupLessonField => 'Lesson playlist (optional)';
+
+  @override
+  String get adminSetupNoLesson => 'No lesson playlist';
+
+  @override
+  String get adminSetupNoLessonsFound =>
+      'This teacher has no lesson playlists for this class and subject yet.';
+
+  @override
+  String get adminSetupShowInactive => 'Show deactivated lessons';
+
+  @override
+  String get adminSetupNoTimetable => 'No timetable lessons match.';
+
+  @override
+  String adminSetupEntryTitle(
+    String start,
+    String end,
+    String subject,
+    String className,
+  ) {
+    return '$start to $end: $subject, $className';
+  }
+
+  @override
+  String adminSetupEntryTeacher(String name) {
+    return 'Teacher: $name';
+  }
+
+  @override
+  String adminSetupEntryLesson(String title) {
+    return 'Lesson playlist: $title';
+  }
+
+  @override
+  String get adminSetupEntryNoLesson => 'No lesson playlist chosen.';
+
+  @override
+  String adminSetupEntryFrom(String date) {
+    return 'From $date';
+  }
+
+  @override
+  String adminSetupEntryUntil(String date) {
+    return 'Until $date';
+  }
+
+  @override
+  String get adminSetupDateChanges => 'Date changes';
+
+  @override
+  String adminSetupDateChangesNamed(String title) {
+    return 'Date changes for $title';
+  }
+
+  @override
+  String get adminSetupDeactivateLesson => 'Deactivate';
+
+  @override
+  String get adminSetupReactivateLesson => 'Reactivate';
+
+  @override
+  String get adminSetupDeactivateLessonTitle => 'Deactivate this lesson?';
+
+  @override
+  String adminSetupDeactivateLessonMessage(
+    String subject,
+    String className,
+    String weekday,
+    String start,
+  ) {
+    return '$subject for $className on $weekday at $start will no longer be scheduled.';
+  }
+
+  @override
+  String get adminSetupLessonSaved => 'Timetable saved.';
+
+  @override
+  String get adminSetupLessonDeactivated => 'Lesson deactivated.';
+
+  @override
+  String get adminSetupLessonReactivated => 'Lesson reactivated.';
+
+  @override
+  String adminSetupClassSubjectFixed(String className, String subject) {
+    return '$className, $subject. To change the class or subject, deactivate this lesson and add a new one.';
+  }
+
+  @override
+  String adminSetupDateChangesTitle(String lesson, String weekday) {
+    return 'Date changes: $lesson, every $weekday';
+  }
+
+  @override
+  String get adminSetupNoDateChanges => 'No date changes.';
+
+  @override
+  String get adminSetupAddDateChange => 'Change one date';
+
+  @override
+  String get adminSetupCancelledLabel => 'Cancelled on this date.';
+
+  @override
+  String adminSetupSubstituteLabel(String name) {
+    return 'Substitute teacher: $name';
+  }
+
+  @override
+  String get adminSetupDifferentLesson =>
+      'A different lesson playlist is used on this date.';
+
+  @override
+  String adminSetupNoteLabel(String note) {
+    return 'Note: $note';
+  }
+
+  @override
+  String get adminSetupClearChange => 'Clear change';
+
+  @override
+  String adminSetupClearChangeNamed(String date) {
+    return 'Clear the change for $date';
+  }
+
+  @override
+  String adminSetupEditDateChangeNamed(String date) {
+    return 'Edit the change for $date';
+  }
+
+  @override
+  String adminSetupChangeCleared(String date) {
+    return 'The change for $date was cleared.';
+  }
+
+  @override
+  String adminSetupDateChangeTitle(String lesson) {
+    return 'Change one date: $lesson';
+  }
+
+  @override
+  String get adminSetupCancelOnDate => 'Cancel the lesson on this date';
+
+  @override
+  String get adminSetupSubstituteField => 'Substitute teacher (optional)';
+
+  @override
+  String adminSetupRegularTeacher(String name) {
+    return 'No substitute ($name teaches)';
+  }
+
+  @override
+  String get adminSetupDateLessonField => 'Lesson playlist on this date';
+
+  @override
+  String get adminSetupUsualLesson => 'Same as usual';
+
+  @override
+  String get adminSetupNoteField => 'Note (optional)';
+
+  @override
+  String adminSetupDateChangeSaved(String date) {
+    return 'The change for $date was saved.';
+  }
+
+  @override
+  String get adminSetupChooseDateFirst => 'Choose a date.';
+
+  @override
+  String get adminSetupPreviousDay => 'Previous day';
+
+  @override
+  String get adminSetupNextDay => 'Next day';
+
+  @override
+  String get adminSetupToday => 'Today';
+
+  @override
+  String adminSetupScheduleFor(String date) {
+    return 'Lessons on $date';
+  }
+
+  @override
+  String get adminSetupNoLessonsOnDay => 'No lessons on this date.';
+
+  @override
+  String adminSetupScheduleSubstitute(String name) {
+    return 'Teacher: $name (substitute)';
+  }
+
+  @override
+  String adminSetupStateLabel(String state) {
+    return 'Status: $state';
+  }
+
+  @override
+  String get adminSetupStateUpcoming => 'Upcoming';
+
+  @override
+  String get adminSetupStateLive => 'Live now';
+
+  @override
+  String get adminSetupStateHeld => 'Held';
+
+  @override
+  String get adminSetupStateCancelled => 'Cancelled';
+
+  @override
+  String get adminSetupStateNotStarted => 'Not started';
+
+  @override
+  String get adminSetupLessonReady => 'Lesson playlist ready.';
+
+  @override
+  String get adminSetupSharedPhoneNote =>
+      'On a shared phone, each person enters the shared phone number, then their short profile number. The profile number only chooses whose account opens. It is not a password.';
+
+  @override
+  String get adminSetupAddSharedPhone => 'Add shared phone';
+
+  @override
+  String get adminSetupEditSharedPhone => 'Edit shared phone';
+
+  @override
+  String get adminSetupSharedPhoneName => 'Name, for example Class 5 phone';
+
+  @override
+  String get adminSetupSharedPhoneNumber => 'Shared phone number';
+
+  @override
+  String get adminSetupSharedPhoneActiveSwitch => 'Shared phone can be used';
+
+  @override
+  String get adminSetupSharedPhoneSaved => 'Shared phone saved.';
+
+  @override
+  String get adminSetupNoSharedPhones => 'No shared phones yet.';
+
+  @override
+  String adminSetupGroupNumber(String phone) {
+    return 'Number: $phone';
+  }
+
+  @override
+  String adminSetupMemberLine(String name, String role, String code) {
+    return '$name, $role. Profile number $code';
+  }
+
+  @override
+  String get adminSetupNoMembers => 'No people on this phone yet.';
+
+  @override
+  String get adminSetupAddMember => 'Add person';
+
+  @override
+  String adminSetupAddMemberTitle(String group) {
+    return 'Add a person to $group';
+  }
+
+  @override
+  String get adminSetupSearchPeople => 'Search people by name or phone number';
+
+  @override
+  String get adminSetupNoPeopleFound => 'No matching people.';
+
+  @override
+  String get adminSetupPersonField => 'Person';
+
+  @override
+  String adminSetupPersonOption(String name, String role, String phone) {
+    return '$name, $role, $phone';
+  }
+
+  @override
+  String get adminSetupChoosePerson => 'Choose a person.';
+
+  @override
+  String get adminSetupProfileCodeField => 'Profile number';
+
+  @override
+  String get adminSetupProfileCodeHelper =>
+      '1 to 4 digits, different for each person on this phone.';
+
+  @override
+  String get adminSetupProfileCodeInvalid =>
+      'Enter a profile number of 1 to 4 digits.';
+
+  @override
+  String adminSetupMemberAdded(String name, String group) {
+    return '$name was added to $group.';
+  }
+
+  @override
+  String adminSetupRemoveMemberNamed(String name, String group) {
+    return 'Remove $name from $group';
+  }
+
+  @override
+  String adminSetupRemoveMemberTitle(String name, String group) {
+    return 'Remove $name from $group?';
+  }
+
+  @override
+  String adminSetupRemoveMemberMessage(String name) {
+    return '$name will no longer be able to choose their profile on this shared phone.';
+  }
+
+  @override
+  String adminSetupMemberRemoved(String name, String group) {
+    return '$name was removed from $group.';
+  }
+
+  @override
+  String get adminSetupHolidayNote => 'No lessons are scheduled on holidays.';
+
+  @override
+  String get adminSetupAddHoliday => 'Add holiday';
+
+  @override
+  String get adminSetupHolidayName => 'Holiday name';
+
+  @override
+  String get adminSetupNoHolidays => 'No holidays yet.';
+
+  @override
+  String adminSetupHolidayAdded(String name, String date) {
+    return '$name on $date was added.';
+  }
+
+  @override
+  String adminSetupDeleteHolidayNamed(String name, String date) {
+    return 'Delete $name on $date';
+  }
+
+  @override
+  String get adminSetupDeleteHolidayTitle => 'Delete this holiday?';
+
+  @override
+  String adminSetupDeleteHolidayMessage(String name, String date) {
+    return '$name on $date will be removed, and lessons will be scheduled on that date again.';
+  }
+
+  @override
+  String get adminSetupHolidayDeleted => 'The holiday was deleted.';
+
+  @override
+  String get adminSetupIssuesOpen => 'Open';
+
+  @override
+  String get adminSetupIssuesResolved => 'Resolved';
+
+  @override
+  String get adminSetupNoIssues => 'No issues to show.';
+
+  @override
+  String adminSetupIssueSeen(int count, String when) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Seen $count times.',
+      one: 'Seen once.',
+    );
+    return '$_temp0 Last seen $when.';
+  }
+
+  @override
+  String get adminSetupMarkResolved => 'Mark resolved';
+
+  @override
+  String adminSetupMarkResolvedNamed(String message) {
+    return 'Mark resolved: $message';
+  }
+
+  @override
+  String get adminSetupIssueResolved => 'Issue marked resolved.';
+
+  @override
+  String get adminSetupRecordsLive => 'Live';
+
+  @override
+  String get adminSetupRecordsEnded => 'Ended';
+
+  @override
+  String get adminSetupNoRecords => 'No classes to show.';
+
+  @override
+  String adminSetupRecordTitle(String subject, String className) {
+    return '$subject, $className';
+  }
+
+  @override
+  String get adminSetupRecordLive => 'Live now';
+
+  @override
+  String adminSetupRecordLiveUntil(String clock) {
+    return 'Live now. Ends at $clock';
+  }
+
+  @override
+  String adminSetupRecordStarted(String when) {
+    return 'Started $when';
+  }
+
+  @override
+  String adminSetupRecordEnded(String when) {
+    return 'Ended $when';
+  }
+
+  @override
+  String get adminSetupEndedByTeacher => 'The teacher ended the class.';
+
+  @override
+  String get adminSetupEndedByAdmin => 'An administrator ended the class.';
+
+  @override
+  String get adminSetupEndedAutomatically =>
+      'The class ended automatically at its end time.';
+
+  @override
+  String adminSetupEndedOther(String reason) {
+    return 'End reason: $reason';
+  }
+
+  @override
+  String adminSetupStudentsJoined(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count students joined.',
+      one: '1 student joined.',
+      zero: 'No students joined.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String adminSetupExtensionMinutes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count extra minutes added.',
+      one: '1 extra minute added.',
+      zero: 'No extra time added.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get adminSetupAddFifteen => 'Add 15 minutes';
+
+  @override
+  String adminSetupAddFifteenNamed(String title) {
+    return 'Add 15 minutes to $title';
+  }
+
+  @override
+  String get adminSetupEndForEveryone => 'End class for everyone';
+
+  @override
+  String adminSetupEndForEveryoneNamed(String title) {
+    return 'End $title for everyone';
+  }
+
+  @override
+  String get adminSetupEndTitle => 'End this class for everyone?';
+
+  @override
+  String adminSetupEndMessage(String title) {
+    return '$title will end now for the teacher and every student.';
+  }
+
+  @override
+  String get adminSetupKeepClass => 'Keep class going';
+
+  @override
+  String get adminSetupEndClass => 'End class';
+
+  @override
+  String get adminSetupEnded => 'The class was ended.';
+
+  @override
+  String adminSetupExtended(String clock) {
+    return 'The class now ends at $clock.';
+  }
+
+  @override
+  String get loginScreenName => 'Sign in';
+
+  @override
+  String get loginIntro => 'Type your phone number, then press 1 to sign in.';
+
+  @override
+  String get loginPhoneField => 'Phone number. Type it with the number keys.';
+
+  @override
+  String get loginPhoneLabel => 'Phone number';
+
+  @override
+  String get loginProfileField => 'Your profile number on this shared phone';
+
+  @override
+  String get loginProfileLabel => 'Profile number';
+
+  @override
+  String get loginEnterProfileCode =>
+      'This phone is shared. Type your profile number, then press 1.';
+
+  @override
+  String get loginKeySignIn => 'Sign in';
+
+  @override
+  String get loginKeyContinue => 'Continue';
+
+  @override
+  String get loginKeySim => 'Fill in my number from the SIM card';
+
+  @override
+  String get loginKeyAdmin => 'Administrator sign in';
+
+  @override
+  String get loginKeyChangeNumber => 'Use a different number';
+
+  @override
+  String get loginErrorEnterPhone => 'Type your phone number first.';
+
+  @override
+  String get loginErrorEnterProfile => 'Type your profile number first.';
+
+  @override
+  String get loginNumberNotRegistered =>
+      'This number is not registered. Ask your school administrator to add you.';
+
+  @override
+  String get loginProfileNotRecognised =>
+      'That profile number is not on this phone. Try again.';
+
+  @override
+  String get loginAdminUsesPassword =>
+      'Administrators sign in with a password. Press 3.';
+
+  @override
+  String get loginSigningIn => 'Signing in.';
+
+  @override
+  String get adminLoginScreenName => 'Administrator sign in';
+
+  @override
+  String get adminLoginIntro =>
+      'Type your phone number and password, then press 1.';
+
+  @override
+  String get classNoLongerLive => 'That class is not live now.';
+
+  @override
+  String get classAlertTitle => 'Class has started';
+
+  @override
+  String get classAlertBody => 'Your class has started. Open to join.';
+
+  @override
+  String get classAlertWaitingBody => 'Your class is live. Open to join.';
+
+  @override
+  String get classAlertChannelName => 'Class starting';
+
+  @override
+  String get classAlertChannelDescription =>
+      'Rings for up to one minute when your class starts.';
+
+  @override
+  String get classAlertWaitingChannelName => 'Class live';
+
+  @override
+  String get classAlertWaitingChannelDescription =>
+      'Stays while your class is live so you can join.';
+
+  @override
+  String get classAlertStarted => 'Your class has started.';
+
+  @override
+  String classAlertSubjectStarted(String subject) {
+    return '$subject class has started.';
+  }
+
+  @override
+  String get classAlertKeys =>
+      'Press OK or 1 to join. Press 0 to stop the ringing.';
+
+  @override
+  String get classAlertJoin => 'Join class';
+
+  @override
+  String get classAlertNotNow => 'Not now';
+
+  @override
+  String get homeTitle => 'Home';
+
+  @override
+  String get homeChecking => 'Checking for your class.';
+
+  @override
+  String get homeOffline =>
+      'No internet. Your class will appear when you are back online.';
+
+  @override
+  String get homeSignInAgain => 'Please sign in again.';
+
+  @override
+  String get homeStarForAll => 'Press star for all options.';
+
+  @override
+  String homeBriefLive(String subject) {
+    return '$subject class is live. Press 1 to join.';
+  }
+
+  @override
+  String homeBriefNext(String subject, String time) {
+    return 'Next class: $subject at $time. You can use other options while you wait.';
+  }
+
+  @override
+  String get homeBriefNoClass =>
+      'No class right now. Press 2 to continue learning.';
+
+  @override
+  String homeJoinClass(String subject) {
+    return 'Join $subject class';
+  }
+
+  @override
+  String get homeNoClassNow => 'No class now';
+
+  @override
+  String get homeNoClassReason =>
+      'Your class will appear here by itself when your teacher starts it.';
+
+  @override
+  String homeJoinWhenStarts(String subject, String time) {
+    return 'Join $subject automatically when it starts at $time';
+  }
+
+  @override
+  String get homeCancelAutoJoin => 'Stop joining automatically';
+
+  @override
+  String homeAutoJoinArmed(String subject) {
+    return 'I will open $subject when your teacher starts it, if you stay on this screen. You will join muted. Press 1 to cancel.';
+  }
+
+  @override
+  String get homeAutoJoinCancelled => 'Automatic joining cancelled.';
+
+  @override
+  String get homeAutoJoinLeft =>
+      'Automatic joining stopped because you left the home screen.';
+
+  @override
+  String homeAutoJoined(String subject) {
+    return '$subject has started. Joining you now, muted.';
+  }
+
+  @override
+  String get homeReturningToClass => 'Returning to your class.';
+
+  @override
+  String get homeContinueLearning => 'Continue learning';
+
+  @override
+  String get homeNothingToContinue =>
+      'Nothing to continue yet. Press 3 for learning journeys.';
+
+  @override
+  String homeContinuing(String title) {
+    return 'Continuing $title.';
+  }
+
+  @override
+  String get homeJourneys => 'Learning journeys';
+
+  @override
+  String get homeQuizzes => 'Quizzes';
+
+  @override
+  String get homeMore => 'More';
+
+  @override
+  String get homeMoreBrief => 'Less used options.';
+
+  @override
+  String homeYourClass(String className) {
+    return 'Your class: $className.';
+  }
+
+  @override
+  String homeSubjectInClass(String subject, String className) {
+    return '$subject, $className';
+  }
+
+  @override
+  String teacherHomeBriefLive(String subject) {
+    return 'Your $subject class is live. Press 1 to return to it.';
+  }
+
+  @override
+  String teacherHomeBriefReady(String place) {
+    return '$place is ready. Press 1 to start it.';
+  }
+
+  @override
+  String teacherHomeBriefNext(String place, String time) {
+    return 'Next class: $place at $time.';
+  }
+
+  @override
+  String get teacherHomeBriefNoClass => 'No class on your timetable now.';
+
+  @override
+  String teacherHomeReturn(String subject) {
+    return 'Return to $subject class';
+  }
+
+  @override
+  String teacherHomeStart(String place) {
+    return 'Start $place';
+  }
+
+  @override
+  String teacherHomeNext(String place, String time) {
+    return 'Next: $place at $time';
+  }
+
+  @override
+  String teacherHomeOpensAt(String time) {
+    return 'You can start it from $time.';
+  }
+
+  @override
+  String get teacherHomeNoClassReason =>
+      'Nothing is scheduled now. To teach anyway, press 5 for More, then 3.';
+
+  @override
+  String get teacherHomeStarting => 'Starting your class.';
+
+  @override
+  String teacherHomeStarted(String subject) {
+    return '$subject class started. Your students are being called.';
+  }
+
+  @override
+  String get teacherHomeUnscheduled => 'Start an unscheduled class';
+
+  @override
+  String get teacherHomeUnscheduledTitle =>
+      'Which class do you want to teach now?';
+
+  @override
+  String get teacherHomeAlreadyLive =>
+      'You already have a live class. Press 1 on Home to return to it.';
+
+  @override
+  String get teacherHomeChangeWorkspace =>
+      'Change class and subject for lessons';
+
+  @override
+  String get teacherHomeOneWorkspace => 'You teach one class and subject.';
+
+  @override
+  String teacherHomeContentFor(String place) {
+    return 'Lessons, quizzes and playlists are for $place.';
+  }
+
+  @override
+  String teacherHomeLaterItem(String place, String time) {
+    return 'Later: $place at $time.';
+  }
+
+  @override
+  String get keyClassListWhoJoined =>
+      'Class list: who is here, who left, who has not joined';
+
+  @override
+  String get keyMuteAllStudents => 'Mute all students';
+
+  @override
+  String get keyTeacherToolsAddTimeOrEnd =>
+      'Teacher tools: add time or end the class for everyone';
+
+  @override
+  String get sessionMicAskOnce =>
+      'You join muted. SEEDS will now ask to use the microphone, so you can speak when you choose.';
+
+  @override
+  String get sessionMicAskAgain => 'To speak, allow the microphone.';
+
+  @override
+  String get sessionMicStillOff =>
+      'The microphone is still off. You can keep listening.';
+
+  @override
+  String get sessionMicSettingsTitle => 'Microphone is blocked';
+
+  @override
+  String get sessionMicSettingsMessage =>
+      'Android will not ask again. To speak, open Settings, choose Permissions, and allow the microphone. You can keep listening.';
+
+  @override
+  String get sessionMicSettingsOpen => 'Open settings';
+
+  @override
+  String get sessionMicSettingsCancel => 'Keep listening';
+
+  @override
+  String get sessionMuteAllButton => '3: Mute all students';
+
+  @override
+  String get sessionMuteAllLabel => 'Mute all students';
+
+  @override
+  String get sessionMuteAllWaiting => 'Still muting everyone. Please wait.';
+
+  @override
+  String sessionMuteAllDone(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count students muted.',
+      one: '1 student muted.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get sessionMuteAllNone => 'Every student was already muted.';
+
+  @override
+  String sessionMuteAllNotConfirmed(String reason) {
+    return 'Muting everyone was not confirmed. $reason Press 3 to try again.';
+  }
+
+  @override
+  String get sessionClassListButton => '4: Class list';
+
+  @override
+  String sessionClassListLabel(String people) {
+    return 'Class list. $people';
+  }
+
+  @override
+  String get sessionClassListTitle => 'Class list';
+
+  @override
+  String sessionRosterCounts(int here, int left, int notJoined) {
+    return '$here here, $left left, $notJoined not joined yet.';
+  }
+
+  @override
+  String sessionHereNow(int count) {
+    return 'Here now: $count';
+  }
+
+  @override
+  String sessionLeftClass(int count) {
+    return 'Joined, then left: $count';
+  }
+
+  @override
+  String sessionNotJoined(int count) {
+    return 'Not joined yet: $count';
+  }
+
+  @override
+  String get sessionHereNowTitle => 'Here now';
+
+  @override
+  String get sessionLeftClassTitle => 'Joined, then left';
+
+  @override
+  String get sessionNotJoinedTitle => 'Not joined yet';
+
+  @override
+  String sessionRemovedName(String name) {
+    return '$name, removed by you';
+  }
+
+  @override
+  String get sessionNobody => 'Nobody.';
+
+  @override
+  String get sessionRemindNotJoined => 'Ring students who have not joined';
+
+  @override
+  String get sessionEveryoneJoined => 'Everyone has joined.';
+
+  @override
+  String sessionReminderSent(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Ringing $count students.',
+      one: 'Ringing 1 student.',
+      zero: 'Nobody to ring now.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String sessionReminderSentSomeWaiting(int queued, int cooling) {
+    return 'Ringing $queued. $cooling were rung in the last 5 minutes and will not be rung again yet.';
+  }
+
+  @override
+  String get sessionRosterUnavailable =>
+      'The class list could not be read. Try again.';
+
+  @override
+  String get sessionAddTime => 'Add 15 minutes';
+
+  @override
+  String get sessionCannotAddTime =>
+      'No more time can be added before the next class.';
+
+  @override
+  String sessionEndsBy(String clock) {
+    return 'Class ends by $clock.';
+  }
+
+  @override
+  String sessionExtendedUntil(String clock) {
+    return 'Done. The class now ends by $clock.';
+  }
+
+  @override
+  String sessionEndingSoonTeacher(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: 'The class ends automatically in $minutes minutes.',
+      one: 'The class ends automatically in 1 minute.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String sessionEndingSoonTeacherExtend(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other:
+          'The class ends automatically in $minutes minutes. To add 15 minutes, press 8 then 1.',
+      one:
+          'The class ends automatically in 1 minute. To add 15 minutes, press 8 then 1.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String sessionEndingSoonStudent(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: 'The class ends in $minutes minutes.',
+      one: 'The class ends in 1 minute.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get sessionLessonReady =>
+      'Today\'s lesson is ready. Press 5 to play it for the class.';
+
+  @override
+  String get sessionLessonNextReady =>
+      'The next part of today\'s lesson is ready. Press 5 to play it.';
+
+  @override
+  String get sessionJoinedStudentBrief =>
+      'You are in class and muted. Press 1 to speak, 2 to raise your hand.';
+
+  @override
+  String get sessionJoinedTeacherBrief =>
+      'Your class is live. You are muted. Press 1 to speak, 3 to mute all students.';
+
+  @override
+  String get sessionStarForKeys => 'Press star for all keys.';
+
+  @override
+  String settingsAutoDownload(String state) {
+    return 'Prepare new journeys for offline use on Wi-Fi: $state';
+  }
+
+  @override
+  String get settingsAutoDownloadOn => 'Journeys will be prepared on Wi-Fi.';
+
+  @override
+  String get settingsAutoDownloadOff =>
+      'Journeys will not be prepared automatically.';
+
+  @override
+  String get adminSetupTeacherNeedsPair =>
+      'Add at least one class and subject for the teacher.';
+
+  @override
+  String get adminSetupTeacherHasNoPairs =>
+      'No teacher has a class and subject yet. Add them to a teacher in People first.';
+
+  @override
+  String get adminSetupDaysField => 'Days';
+
+  @override
+  String get adminSetupChooseDays => 'Choose at least one day.';
+
+  @override
+  String adminSetupLessonsAdded(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count lessons added, one for each day.',
+      one: 'Lesson added.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get adminSetupArrangeBy => 'Arrange by';
+
+  @override
+  String get adminSetupArrangeDay => 'Day';
+
+  @override
+  String get adminSetupArrangeTeacher => 'Teacher';
+
+  @override
+  String get adminSetupArrangeClass => 'Class';
+
+  @override
+  String adminSetupGroupHeading(String name, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count lessons',
+      one: '1 lesson',
+    );
+    return '$name · $_temp0';
+  }
+
+  @override
+  String adminSetupEntryDayTitle(String day, String title) {
+    return '$day, $title';
+  }
+
+  @override
+  String get adminSetupTimetableSearch => 'Search lessons';
+
+  @override
+  String get adminSetupNoMatchingLessons => 'No lessons match.';
+
+  @override
+  String get sessionMoreButton => '8: More';
+
+  @override
+  String get sessionMoreLabel => 'More options';
+
+  @override
+  String get sessionMoreTitle => 'More options';
+
+  @override
+  String get sessionMoreClassroomCheck => 'Classroom check';
+
+  @override
+  String get sessionMoreStatus => 'Class status';
+
+  @override
+  String get sessionMoreWhatIsPlaying => 'What is playing';
+
+  @override
+  String get sessionMoreWhoIsHere => 'Who is in class';
+
+  @override
+  String get sessionKeyRaisedHands => 'Raised hands';
+
+  @override
+  String get sessionKeyClassList => 'Class list';
+
+  @override
+  String get sessionKeyLessonRecording => 'Lesson recording';
+
+  @override
+  String get sessionKeyAnswerQuestion => 'Answer the question';
+
+  @override
+  String get sessionKeyMore => 'More options';
+
+  @override
+  String get sessionKeyLeave => 'Leave class';
+
+  @override
+  String get sessionEndClassButton => '9: End class for everyone';
+
+  @override
+  String get sessionEndClassLabel => 'End class for everyone. Asks to confirm';
+
+  @override
+  String sessionActivityQuizItem(String title, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count questions',
+      one: '1 question',
+    );
+    return 'Quiz: $title, $_temp0';
+  }
+
+  @override
+  String sessionActivityJourneyItem(String title) {
+    return 'Journey: $title';
+  }
+
+  @override
+  String sessionActivityStopItem(String title) {
+    return 'Stop offering $title';
+  }
+
+  @override
+  String sessionActivityStartedTeacher(String title) {
+    return '$title is open for the class. Press the same key again to hear who is left.';
+  }
+
+  @override
+  String sessionActivityStoppedTeacher(String title) {
+    return '$title is no longer offered in class. Students can still find it on Home.';
+  }
+
+  @override
+  String sessionActivityQuizStarted(String title) {
+    return 'Your teacher started a quiz: $title. Press 4 to begin.';
+  }
+
+  @override
+  String sessionActivityJourneyStarted(String title) {
+    return 'Your teacher started a journey: $title. Press 4 to begin.';
+  }
+
+  @override
+  String sessionActivityStoppedStudent(String title) {
+    return '$title is closed in class. You can still find it on Home.';
+  }
+
+  @override
+  String sessionActivityStartQuizLabel(String title) {
+    return 'Start the quiz $title';
+  }
+
+  @override
+  String sessionActivityStartJourneyLabel(String title) {
+    return 'Start the journey $title';
+  }
+
+  @override
+  String sessionActivityStateStudent(String title) {
+    return '$title is open.';
+  }
+
+  @override
+  String sessionActivityStateTeacher(String title) {
+    return '$title is open for the class.';
+  }
+
+  @override
+  String sessionActivityOpening(String title) {
+    return 'Opening $title.';
+  }
+
+  @override
+  String sessionActivityCouldNotOpen(String title) {
+    return '$title could not be opened. Check your connection and try again.';
+  }
+
+  @override
+  String get sessionBackInClass => 'Back in class.';
+
+  @override
+  String sessionActivityProgress(String title, int started, int finished) {
+    return '$title: $started started, $finished finished.';
+  }
+
+  @override
+  String get sessionWhatIsPlayingButton => '3: What is playing';
+
+  @override
+  String get sessionKeyEndClass => 'End class for everyone';
+
+  @override
+  String get sessionKeyWhatIsPlaying => 'What is playing';
+
+  @override
+  String get sessionQuizButton => '6: Quiz';
+
+  @override
+  String get sessionJourneyButton => '7: Journey';
+
+  @override
+  String get sessionQuizLabel => 'Start a quiz for the class';
+
+  @override
+  String get sessionJourneyLabel => 'Start a journey for the class';
+
+  @override
+  String sessionOpenLabel(String title) {
+    return '$title is open. Hear who is left, remind them, or stop it';
+  }
+
+  @override
+  String get sessionKeyQuiz => 'Quiz for the class';
+
+  @override
+  String get sessionKeyJourney => 'Journey for the class';
+
+  @override
+  String sessionStartQuizButton(String title) {
+    return '4: Start quiz: $title';
+  }
+
+  @override
+  String sessionStartJourneyButton(String title) {
+    return '4: Start journey: $title';
+  }
+
+  @override
+  String get sessionPickQuizTitle => 'Start a quiz for the class';
+
+  @override
+  String get sessionPickJourneyTitle => 'Start a journey for the class';
+
+  @override
+  String get sessionNoQuizToStart =>
+      'No published quiz is open for this class and subject. Publish one from Quizzes on Home first.';
+
+  @override
+  String get sessionNoJourneyToStart =>
+      'No published journey for this class and subject. Publish one from Journeys on Home first.';
+
+  @override
+  String sessionFinishedOf(int finished, int enrolled) {
+    return '$finished of $enrolled finished.';
+  }
+
+  @override
+  String sessionLeftInClass(int count) {
+    return 'In class, not done ($count)';
+  }
+
+  @override
+  String sessionLeftWholeClass(int count) {
+    return 'Whole class, not done ($count)';
+  }
+
+  @override
+  String get sessionLeftInClassTitle => 'In class, not done';
+
+  @override
+  String get sessionLeftWholeClassTitle => 'Whole class, not done';
+
+  @override
+  String get sessionRemindLeft => 'Remind those in class who are not done';
+
+  @override
+  String get sessionStartDifferentQuiz => 'Start a different quiz';
+
+  @override
+  String get sessionStartDifferentJourney => 'Start a different journey';
+
+  @override
+  String sessionLeftNotStarted(String name) {
+    return '$name, not started';
+  }
+
+  @override
+  String sessionLeftStarted(String name) {
+    return '$name, started, not finished';
+  }
+
+  @override
+  String get sessionLeftHere => 'in class';
+
+  @override
+  String get sessionLeftAway => 'not in class';
+
+  @override
+  String get sessionLeftNobodyInClass => 'Everyone in class has finished.';
+
+  @override
+  String get sessionLeftNobody => 'Everyone in the class has finished.';
+
+  @override
+  String sessionRemindedLeft(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Reminded $count students.',
+      one: 'Reminded 1 student.',
+      zero: 'Nobody in class needs a reminder.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String sessionActivityReminderQuiz(String title) {
+    return 'Your teacher reminds you to do the quiz $title. Press 4 to begin.';
+  }
+
+  @override
+  String sessionActivityReminderJourney(String title) {
+    return 'Your teacher reminds you to do the journey $title. Press 4 to begin.';
+  }
+
+  @override
+  String get sessionKeyStartActivity => 'Start the quiz or journey';
+
+  @override
+  String get startupSettingsKey2 => '2. Settings';
+
+  @override
+  String get libraryPauseSessionKey3 =>
+      'Pause audio for the whole session, key 3';
+
+  @override
+  String get authSaveNewPasswordKey1 => '1: Save new password';
+
+  @override
+  String get quizSaveSettingsKey1 => '1: Save settings';
+
+  @override
+  String get quizSaveQuestionKey1 => '1: Save question';
+
+  @override
+  String get quizContinueToQuestionsKey1 => '1: Continue to questions';
+
+  @override
+  String get adminAuthorSection => 'Quizzes and journeys';
+
+  @override
+  String get adminAuthorNote =>
+      'Create and publish quizzes and learning journeys for a teacher. Everything you make belongs to that teacher, uses only their question bank and their own recordings, and the teacher is told about it on their Home.';
+
+  @override
+  String get adminAuthorTeacher => 'Teacher';
+
+  @override
+  String get adminAuthorWorkspace => 'Class and subject';
+
+  @override
+  String adminAuthorWorkspaceName(String className, String subjectName) {
+    return '$className, $subjectName';
+  }
+
+  @override
+  String get adminAuthorNoTeachers =>
+      'No teacher has a class and subject yet. Assign one in Accounts first.';
+
+  @override
+  String get adminAuthorKind => 'Show';
+
+  @override
+  String get adminAuthorKindQuizzes => 'Quizzes';
+
+  @override
+  String get adminAuthorKindJourneys => 'Journeys';
+
+  @override
+  String get adminAuthorNewQuiz => 'New quiz';
+
+  @override
+  String get adminAuthorNewJourney => 'New journey';
+
+  @override
+  String adminAuthorNewQuizFor(String teacher) {
+    return 'New quiz for $teacher';
+  }
+
+  @override
+  String adminAuthorNewJourneyFor(String teacher) {
+    return 'New journey for $teacher';
+  }
+
+  @override
+  String get adminAuthorNoQuizzes =>
+      'This teacher has no quizzes for this class and subject.';
+
+  @override
+  String get adminAuthorNoJourneys =>
+      'This teacher has no journeys for this class and subject.';
+
+  @override
+  String get adminAuthorStatusDraft => 'Draft';
+
+  @override
+  String get adminAuthorStatusPublished => 'Published';
+
+  @override
+  String get adminAuthorStatusScheduled => 'Published, opens later';
+
+  @override
+  String get adminAuthorStatusClosed => 'Closed';
+
+  @override
+  String get adminAuthorStatusArchived => 'Archived';
+
+  @override
+  String adminAuthorStatusChanged(String status) {
+    return '$status, with unpublished changes';
+  }
+
+  @override
+  String adminAuthorQuestionCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count questions',
+      one: '1 question',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String adminAuthorStepCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count steps',
+      one: '1 step',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get adminAuthorMode => 'Quiz type';
+
+  @override
+  String get adminAuthorModeGraded => 'Graded';
+
+  @override
+  String get adminAuthorModePractice => 'Practice';
+
+  @override
+  String get adminAuthorEdit => 'Edit';
+
+  @override
+  String adminAuthorEditNamed(String title) {
+    return 'Edit $title';
+  }
+
+  @override
+  String get adminAuthorPublish => 'Publish';
+
+  @override
+  String adminAuthorPublishNamed(String title) {
+    return 'Publish $title';
+  }
+
+  @override
+  String get adminAuthorClose => 'Close quiz';
+
+  @override
+  String adminAuthorCloseNamed(String title) {
+    return 'Close $title';
+  }
+
+  @override
+  String get adminAuthorArchive => 'Archive';
+
+  @override
+  String adminAuthorArchiveNamed(String title) {
+    return 'Archive $title';
+  }
+
+  @override
+  String get adminAuthorPublishQuizTitle => 'Publish this quiz?';
+
+  @override
+  String adminAuthorPublishQuizMessage(String title, String teacher) {
+    return '$title will open to the class as $teacher\'s quiz, and the students will be notified.';
+  }
+
+  @override
+  String get adminAuthorPublishJourneyTitle => 'Publish this journey?';
+
+  @override
+  String adminAuthorPublishJourneyMessage(String title, String teacher) {
+    return '$title will be available to the class as $teacher\'s journey, and the students will be notified.';
+  }
+
+  @override
+  String get adminAuthorCloseQuizTitle => 'Close this quiz?';
+
+  @override
+  String adminAuthorCloseQuizMessage(String title) {
+    return 'Students can no longer answer $title. Unfinished attempts are submitted as they are.';
+  }
+
+  @override
+  String get adminAuthorArchiveTitle => 'Archive this journey?';
+
+  @override
+  String adminAuthorArchiveMessage(String title) {
+    return 'Students will no longer see $title.';
+  }
+
+  @override
+  String adminAuthorPublished(String title) {
+    return '$title published.';
+  }
+
+  @override
+  String adminAuthorClosed(String title) {
+    return '$title closed.';
+  }
+
+  @override
+  String adminAuthorArchived(String title) {
+    return '$title archived.';
+  }
+
+  @override
+  String adminAuthorCreated(String title) {
+    return '$title created as a draft.';
+  }
+
+  @override
+  String get adminAuthorSaved => 'Journey saved.';
+
+  @override
+  String adminAuthorNotReady(String problems) {
+    return 'This quiz is not ready to publish. $problems';
+  }
+
+  @override
+  String get adminAuthorTitle => 'Title';
+
+  @override
+  String get adminAuthorDescription => 'Description (optional)';
+
+  @override
+  String get adminAuthorQuizSettings => 'Quiz settings';
+
+  @override
+  String adminAuthorEditQuiz(String title) {
+    return 'Edit quiz: $title';
+  }
+
+  @override
+  String adminAuthorEditJourney(String title) {
+    return 'Edit journey: $title';
+  }
+
+  @override
+  String get adminAuthorQuestions => 'Questions';
+
+  @override
+  String get adminAuthorNoQuestions => 'No questions yet.';
+
+  @override
+  String adminAuthorQuestionLine(int number, String text) {
+    return '$number. $text';
+  }
+
+  @override
+  String adminAuthorCorrectAnswer(String answer) {
+    return 'Correct answer: $answer';
+  }
+
+  @override
+  String get adminAuthorRemove => 'Remove';
+
+  @override
+  String adminAuthorRemoveNamed(String item) {
+    return 'Remove $item';
+  }
+
+  @override
+  String get adminAuthorAddNewQuestion => 'Type a new question';
+
+  @override
+  String get adminAuthorAddBankQuestion => 'Add from question bank';
+
+  @override
+  String get adminAuthorQuestionText => 'Question';
+
+  @override
+  String adminAuthorOption(int number) {
+    return 'Option $number';
+  }
+
+  @override
+  String adminAuthorOptionalOption(int number) {
+    return 'Option $number (optional)';
+  }
+
+  @override
+  String get adminAuthorCorrectOption => 'Correct answer';
+
+  @override
+  String get adminAuthorCorrectIsBlank =>
+      'The correct answer is blank. Fill it in or choose another option.';
+
+  @override
+  String get adminAuthorExplanation => 'Explanation (optional)';
+
+  @override
+  String get adminAuthorSaveToBank =>
+      'Also save to the teacher\'s question bank';
+
+  @override
+  String get adminAuthorNeedFourOptions => 'Fill in all four options.';
+
+  @override
+  String get adminAuthorNeedTwoOptions => 'Fill in at least two options.';
+
+  @override
+  String get adminAuthorDuplicateOptions => 'Each option must be different.';
+
+  @override
+  String adminAuthorRequired(String field) {
+    return '$field is required.';
+  }
+
+  @override
+  String get adminAuthorAdd => 'Add';
+
+  @override
+  String adminAuthorAddNamed(String item) {
+    return 'Add $item';
+  }
+
+  @override
+  String get adminAuthorBankTitle => 'Teacher\'s question bank';
+
+  @override
+  String get adminAuthorBankEmpty =>
+      'This teacher has no saved questions for this class and subject.';
+
+  @override
+  String get adminAuthorDone => 'Done';
+
+  @override
+  String get adminAuthorGraded => 'Graded: score the questions';
+
+  @override
+  String get adminAuthorRetries => 'Retries after a wrong answer';
+
+  @override
+  String get adminAuthorSteps => 'Steps';
+
+  @override
+  String get adminAuthorNoSteps => 'No steps yet.';
+
+  @override
+  String adminAuthorStepRecording(String title) {
+    return 'Recording: $title';
+  }
+
+  @override
+  String adminAuthorStepNarration(String text) {
+    return 'Narration: $text';
+  }
+
+  @override
+  String adminAuthorStepQuestion(String text) {
+    return 'Question: $text';
+  }
+
+  @override
+  String adminAuthorStepPoll(String text) {
+    return 'Poll: $text';
+  }
+
+  @override
+  String get adminAuthorMoveUp => 'Move up';
+
+  @override
+  String adminAuthorMoveUpNamed(String item) {
+    return 'Move $item up';
+  }
+
+  @override
+  String get adminAuthorMoveDown => 'Move down';
+
+  @override
+  String adminAuthorMoveDownNamed(String item) {
+    return 'Move $item down';
+  }
+
+  @override
+  String get adminAuthorAddRecording => 'Add recording';
+
+  @override
+  String get adminAuthorAddNarration => 'Add narration';
+
+  @override
+  String get adminAuthorAddQuestion => 'Add question';
+
+  @override
+  String get adminAuthorAddPoll => 'Add poll';
+
+  @override
+  String get adminAuthorRecordingsTitle => 'Teacher\'s recordings';
+
+  @override
+  String get adminAuthorRecordingsNote =>
+      'Only recordings this teacher uploaded for this class and subject can be used.';
+
+  @override
+  String get adminAuthorNoRecordings =>
+      'This teacher has not uploaded a recording for this class and subject.';
+
+  @override
+  String get adminAuthorNarrationText => 'Narration text';
+
+  @override
+  String get adminAuthorPollText => 'Poll question';
+
+  @override
+  String get adminAuthorSaveJourney => 'Save journey';
+
+  @override
+  String teacherHomeNotice(String kind, String title, String action) {
+    return '$kind $title: $action for you by your administrator.';
+  }
+
+  @override
+  String get teacherHomeNoticeQuiz => 'Quiz';
+
+  @override
+  String get teacherHomeNoticeJourney => 'Journey';
+
+  @override
+  String get teacherHomeNoticeCreated => 'added';
+
+  @override
+  String get teacherHomeNoticePublished => 'published';
+
+  @override
+  String get teacherHomeNoticeClosed => 'closed';
+
+  @override
+  String get teacherHomeNoticeArchived => 'archived';
+
+  @override
+  String sessionPeopleJoined(String names) {
+    return '$names joined.';
+  }
+
+  @override
+  String sessionPeopleLeft(String names) {
+    return '$names left.';
+  }
+
+  @override
+  String sessionNamesAnd(String first, String last) {
+    return '$first and $last';
+  }
+
+  @override
+  String sessionHereOf(int here, int total) {
+    return '$here of $total here.';
+  }
+
+  @override
+  String sessionHereCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count students here.',
+      one: '1 student here.',
+      zero: 'No students here.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String sessionStartSummary(int here, int total) {
+    return '$here of $total students here.';
   }
 }

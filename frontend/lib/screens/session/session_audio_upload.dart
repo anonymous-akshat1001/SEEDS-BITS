@@ -350,7 +350,9 @@ class SessionAudioUpload {
                           child: CheckboxListTile(
                             value: selected.contains(id),
                             title: Text(SessionText.sessionTitle(session)),
-                            subtitle: Text(Speech.t.librarySessionNumber('$id')),
+                            subtitle: Text(
+                              Speech.t.librarySessionNumber('$id'),
+                            ),
                             onChanged: (_) => toggle(id),
                           ),
                         ),

@@ -10,6 +10,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../l10n/speech.dart';
 import './api_service.dart';
+import './class_alerts.dart';
 import './tts_service.dart';
 import '../firebase_options.dart';
 // Allows reading environment variables
@@ -32,9 +33,21 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   print('[FCM BG] Handling background message: ${message.messageId}');
-
-  // You can process the message here if needed
-  // For now, we'll just log it
+  final type = message.data['type'];
+  if (type != 'class_alert' && type != 'class_alert_cancel') return;
+  // Class alerts are data-only: this phone rings itself, for at most the
+  // time left in the alert's minute.
+  await ClassAlerts.instance.plugin.initialize(
+    const InitializationSettings(
+      android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+    ),
+  );
+  final sessionId = int.tryParse('${message.data['session_id'] ?? ''}');
+  if (type == 'class_alert_cancel') {
+    if (sessionId != null) await ClassAlerts.instance.cancelFor(sessionId);
+    return;
+  }
+  await ClassAlerts.instance.present(Map<String, dynamic>.from(message.data));
 }
 
 // Singletion class of notification services
@@ -49,6 +62,8 @@ class NotificationService {
       'journey_id',
       'class_id',
       'subject_id',
+      'alert_id',
+      'ring_until',
     ])
       if (data.containsKey(key)) key: data[key],
   };
@@ -188,6 +203,13 @@ class NotificationService {
           _handleNotificationTap(message);
         }
       });
+      // A ringing class alert opened while the app was closed.
+      final launch = await _localNotifications
+          .getNotificationAppLaunchDetails();
+      final response = launch?.notificationResponse;
+      if (launch?.didNotificationLaunchApp == true && response != null) {
+        _onNotificationTapped(response);
+      }
     } else {
       print('[NOTIFICATIONS] Permission denied');
     }
@@ -296,9 +318,24 @@ class NotificationService {
   // Handle foreground message on mobile - called when app is open
   void _handleForegroundMessage(RemoteMessage message) {
     print('[NOTIFICATIONS] Foreground update received');
-
-    // Show local notification manually - firebase doesn't auto show in foreground
-    unawaited(showPrivateUpdate(message.data));
+    final type = message.data['type'];
+    if (type == 'class_alert') {
+      // Rings, and the screen offers "OK to join" at once.
+      unawaited(
+        ClassAlerts.instance.present(
+          Map<String, dynamic>.from(message.data),
+          inApp: true,
+        ),
+      );
+    } else if (type == 'class_alert_cancel') {
+      final sessionId = int.tryParse('${message.data['session_id'] ?? ''}');
+      if (sessionId != null) {
+        unawaited(ClassAlerts.instance.cancelFor(sessionId));
+      }
+    } else {
+      // Show local notification manually - firebase doesn't auto show in foreground
+      unawaited(showPrivateUpdate(message.data));
+    }
 
     // Emits event to stream(app listeners)
     _notificationController.add(privatePayload(message.data));

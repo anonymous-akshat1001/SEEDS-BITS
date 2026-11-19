@@ -193,7 +193,7 @@ After installation:
 3. Test both teacher and student dashboards.
 4. Confirm classes, subjects, sessions, and audio load.
 5. Allow notifications and verify FCM token registration.
-6. Test a session invitation and any required WebSocket/SSE behavior.
+6. Start a timetabled class and verify the class alert rings and joins.
 
 Useful device logs:
 

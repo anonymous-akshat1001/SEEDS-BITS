@@ -3,7 +3,7 @@ from datetime import datetime
 from sqlalchemy import (
     Column, Integer, String, Text, ForeignKey, Boolean,
     TIMESTAMP, CheckConstraint, JSON, text, Float, UniqueConstraint, Index,
-    ForeignKeyConstraint,
+    ForeignKeyConstraint, Date,
 )
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
@@ -121,6 +121,9 @@ class User(Base):
     temporary_password_locked_until = Column(TIMESTAMP)
     password_reset_at = Column(TIMESTAMP)
     password_reset_by = Column(Integer)
+    # Students and teachers sign in by phone number only; an inactive account
+    # cannot sign in or receive class alerts.
+    is_active = Column(Boolean, nullable=False, default=True, server_default=text("true"))
     created_at = Column(TIMESTAMP, server_default=func.now())
     fcm_tokens = relationship("FCMToken", back_populates="user", cascade="all, delete-orphan")
 
@@ -269,10 +272,31 @@ class Session(Base):
     created_by = Column(Integer, ForeignKey("users.user_id", ondelete="SET NULL"))
     class_id = Column(Integer, ForeignKey("classes.class_id", ondelete="RESTRICT"), nullable=False)
     subject_id = Column(Integer, ForeignKey("subjects.subject_id", ondelete="RESTRICT"), nullable=False)
+    # True only while the class is live (started by its teacher and not ended).
     is_active = Column(Boolean, server_default=text("true"))
     created_at = Column(TIMESTAMP, server_default=func.now())
     ended_at = Column(TIMESTAMP)
     hand_queue_sequence = Column(Integer, nullable=False, server_default=text("0"))
+    # Timetable occurrence this live class belongs to; NULL for an unscheduled class.
+    timetable_entry_id = Column(
+        Integer, ForeignKey("timetable_entries.entry_id", ondelete="SET NULL"),
+    )
+    occurrence_date = Column(Date)
+    scheduled_start = Column(TIMESTAMP)
+    scheduled_end = Column(TIMESTAMP)
+    started_at = Column(TIMESTAMP)
+    # Automatic safety end; moved later only by bounded extensions.
+    cutoff_at = Column(TIMESTAMP)
+    extension_minutes = Column(Integer, nullable=False, server_default=text("0"))
+    lesson_playlist_id = Column(
+        Integer, ForeignKey("teacher_playlists.playlist_id", ondelete="SET NULL"),
+    )
+    end_reason = Column(String(20))
+    # The quiz or journey the teacher started for the class, if any.
+    activity_kind = Column(String(10))
+    activity_id = Column(Integer)
+    activity_title = Column(String(300))
+    activity_started_at = Column(TIMESTAMP)
     # Relationships
     creator = relationship("User", back_populates="sessions_created")
     participants = relationship("Participant", back_populates="session", cascade="all, delete-orphan")
@@ -295,6 +319,17 @@ class Session(Base):
             name="fk_session_class_subject",
             ondelete="RESTRICT",
         ),
+        UniqueConstraint("timetable_entry_id", "occurrence_date", name="uq_session_occurrence"),
+        # One live class per teacher and per enrolled class (which also gives
+        # each student at most one live class).
+        Index(
+            "uq_live_session_teacher", "created_by", unique=True,
+            postgresql_where=text("is_active = true"), sqlite_where=text("is_active = 1"),
+        ),
+        Index(
+            "uq_live_session_class", "class_id", unique=True,
+            postgresql_where=text("is_active = true"), sqlite_where=text("is_active = 1"),
+        ),
     )
 
 
@@ -312,6 +347,8 @@ class Participant(Base):
     hand_raised = Column(Boolean, server_default=text("false"))  # Added for raise hand feature
     hand_queue_order = Column(Integer)
     hand_revision = Column(Integer, nullable=False, server_default=text("0"))
+    # First authenticated live-class connection; "ever joined" for rosters and reminders.
+    first_connected_at = Column(TIMESTAMP)
 
     # Relationships
     session = relationship("Session", back_populates="participants")
@@ -846,3 +883,244 @@ class MaintenanceState(Base):
     succeeded_at = Column(TIMESTAMP)
     status = Column(String(24), nullable=False)
     count = Column(Integer, nullable=False, server_default=text("0"))
+
+# ─── Shared devices (S43) ────────────────────────────────────────────────────
+
+
+class DeviceGroup(Base):
+    """Accounts that share one phone. The entry number selects the group and a
+    short numeric profile code selects the person; neither proves identity."""
+
+    __tablename__ = "device_groups"
+
+    group_id = Column(Integer, primary_key=True)
+    name = Column(String(120), nullable=False)
+    entry_phone_number = Column(Text, unique=True, nullable=False)
+    is_active = Column(Boolean, nullable=False, server_default=text("true"))
+    created_at = Column(TIMESTAMP, nullable=False, server_default=func.now())
+
+    members = relationship(
+        "DeviceGroupMember", back_populates="group",
+        cascade="all, delete-orphan", order_by="DeviceGroupMember.profile_code",
+    )
+
+
+class DeviceGroupMember(Base):
+    __tablename__ = "device_group_members"
+
+    member_id = Column(Integer, primary_key=True)
+    group_id = Column(Integer, ForeignKey("device_groups.group_id", ondelete="CASCADE"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False)
+    profile_code = Column(String(8), nullable=False)
+
+    group = relationship("DeviceGroup", back_populates="members")
+    user = relationship("User")
+
+    __table_args__ = (
+        UniqueConstraint("group_id", "profile_code", name="uq_device_group_profile_code"),
+        UniqueConstraint("user_id", name="uq_device_group_member_user"),
+    )
+
+
+# ─── Timetable (S05) ─────────────────────────────────────────────────────────
+
+
+class TimetableEntry(Base):
+    """A weekly lesson slot in school-local time. Occurrences are derived per
+    date; a live Session is created only when the teacher starts one."""
+
+    __tablename__ = "timetable_entries"
+
+    entry_id = Column(Integer, primary_key=True)
+    teacher_id = Column(Integer, ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False)
+    class_id = Column(Integer, ForeignKey("classes.class_id", ondelete="RESTRICT"), nullable=False)
+    subject_id = Column(Integer, ForeignKey("subjects.subject_id", ondelete="RESTRICT"), nullable=False)
+    # Monday = 0 … Sunday = 6.
+    weekday = Column(Integer, nullable=False)
+    # Minutes after local midnight.
+    start_minute = Column(Integer, nullable=False)
+    end_minute = Column(Integer, nullable=False)
+    valid_from = Column(Date)
+    valid_until = Column(Date)
+    # Prepared lesson package reused by every occurrence (S21/S23).
+    lesson_playlist_id = Column(
+        Integer, ForeignKey("teacher_playlists.playlist_id", ondelete="SET NULL"),
+    )
+    is_active = Column(Boolean, nullable=False, server_default=text("true"))
+    created_at = Column(TIMESTAMP, nullable=False, server_default=func.now())
+
+    teacher = relationship("User", foreign_keys=[teacher_id])
+    school_class = relationship("SchoolClass")
+    subject = relationship("Subject")
+    lesson_playlist = relationship("TeacherPlaylist")
+
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["class_id", "subject_id"],
+            ["class_subject_associations.class_id", "class_subject_associations.subject_id"],
+            name="fk_timetable_class_subject",
+            ondelete="RESTRICT",
+        ),
+        CheckConstraint("weekday >= 0 AND weekday <= 6", name="check_timetable_weekday"),
+        CheckConstraint(
+            "start_minute >= 0 AND end_minute <= 1440 AND start_minute < end_minute",
+            name="check_timetable_minutes",
+        ),
+        Index("ix_timetable_teacher_day", "teacher_id", "weekday"),
+        Index("ix_timetable_class_day", "class_id", "weekday"),
+    )
+
+
+class OccurrenceOverride(Base):
+    """One date of a timetable entry: cancelled, taught by a substitute, or
+    using a different prepared lesson."""
+
+    __tablename__ = "timetable_occurrence_overrides"
+
+    override_id = Column(Integer, primary_key=True)
+    entry_id = Column(Integer, ForeignKey("timetable_entries.entry_id", ondelete="CASCADE"), nullable=False)
+    occurrence_date = Column(Date, nullable=False)
+    is_cancelled = Column(Boolean, nullable=False, server_default=text("false"))
+    substitute_teacher_id = Column(Integer, ForeignKey("users.user_id", ondelete="SET NULL"))
+    lesson_playlist_id = Column(
+        Integer, ForeignKey("teacher_playlists.playlist_id", ondelete="SET NULL"),
+    )
+    note = Column(Text)
+
+    entry = relationship("TimetableEntry")
+    substitute = relationship("User", foreign_keys=[substitute_teacher_id])
+
+    __table_args__ = (
+        UniqueConstraint("entry_id", "occurrence_date", name="uq_occurrence_override"),
+    )
+
+
+class SchoolHoliday(Base):
+    __tablename__ = "school_holidays"
+
+    holiday_id = Column(Integer, primary_key=True)
+    holiday_date = Column(Date, unique=True, nullable=False)
+    name = Column(String(120), nullable=False)
+
+
+# ─── Durable background jobs (S39) ───────────────────────────────────────────
+
+
+class ScheduledJob(Base):
+    __tablename__ = "scheduled_jobs"
+
+    job_id = Column(Integer, primary_key=True)
+    kind = Column(String(40), nullable=False)
+    dedupe_key = Column(String(200), unique=True, nullable=False)
+    run_at = Column(TIMESTAMP, nullable=False)
+    payload = Column(JSON, nullable=False)
+    status = Column(String(20), nullable=False, server_default="pending")
+    attempts = Column(Integer, nullable=False, server_default=text("0"))
+    last_error = Column(Text)
+    locked_until = Column(TIMESTAMP)
+    created_at = Column(TIMESTAMP, nullable=False, server_default=func.now())
+    completed_at = Column(TIMESTAMP)
+
+    __table_args__ = (
+        CheckConstraint(
+            "status IN ('pending', 'running', 'done', 'failed', 'cancelled')",
+            name="check_job_status",
+        ),
+        Index("ix_job_due", "status", "run_at"),
+    )
+
+
+# ─── Class alerts (S13/S15/S40/S45) ──────────────────────────────────────────
+
+
+class ClassAlert(Base):
+    """One ringing alert event for a live class: the start alert, the single
+    automatic ten-minute reminder, or a teacher's manual reminder."""
+
+    __tablename__ = "class_alerts"
+
+    alert_id = Column(String(36), primary_key=True)
+    session_id = Column(Integer, ForeignKey("sessions.session_id", ondelete="CASCADE"), nullable=False)
+    kind = Column(String(20), nullable=False)
+    requested_by = Column(Integer, ForeignKey("users.user_id", ondelete="SET NULL"))
+    created_at = Column(TIMESTAMP, nullable=False)
+    # Ringing stops at this instant even if the push arrives late.
+    ring_until = Column(TIMESTAMP, nullable=False)
+
+    recipients = relationship("ClassAlertRecipient", back_populates="alert", cascade="all, delete-orphan")
+
+    __table_args__ = (
+        CheckConstraint(
+            "kind IN ('start', 'auto_reminder', 'manual_reminder')",
+            name="check_class_alert_kind",
+        ),
+    )
+
+
+class ClassAlertRecipient(Base):
+    __tablename__ = "class_alert_recipients"
+
+    recipient_id = Column(Integer, primary_key=True)
+    alert_id = Column(String(36), ForeignKey("class_alerts.alert_id", ondelete="CASCADE"), nullable=False)
+    session_id = Column(Integer, nullable=False)
+    user_id = Column(Integer, ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False)
+    # queued, sent, failed, no_device, skipped_cooldown, skipped_joined, cancelled
+    status = Column(String(20), nullable=False)
+    created_at = Column(TIMESTAMP, nullable=False)
+    sent_at = Column(TIMESTAMP)
+
+    alert = relationship("ClassAlert", back_populates="recipients")
+
+    __table_args__ = (
+        UniqueConstraint("alert_id", "user_id", name="uq_class_alert_recipient"),
+        Index("ix_class_alert_cooldown", "session_id", "user_id", "created_at"),
+    )
+
+
+# ─── Administrator exception queue (S41) ─────────────────────────────────────
+
+
+class AdminIssue(Base):
+    __tablename__ = "admin_issues"
+
+    issue_id = Column(Integer, primary_key=True)
+    kind = Column(String(40), nullable=False)
+    dedupe_key = Column(String(200), unique=True, nullable=False)
+    message = Column(Text, nullable=False)
+    details = Column(JSON)
+    status = Column(String(20), nullable=False, server_default="open")
+    occurrences = Column(Integer, nullable=False, server_default=text("1"))
+    created_at = Column(TIMESTAMP, nullable=False, server_default=func.now())
+    last_seen_at = Column(TIMESTAMP, nullable=False, server_default=func.now())
+    resolved_at = Column(TIMESTAMP)
+    resolved_by = Column(Integer, ForeignKey("users.user_id", ondelete="SET NULL"))
+
+    __table_args__ = (
+        CheckConstraint("status IN ('open', 'resolved')", name="check_admin_issue_status"),
+        Index("ix_admin_issue_status", "status", "last_seen_at"),
+    )
+
+
+class TeacherNotice(Base):
+    """Tells a teacher that an administrator changed their quiz or journey."""
+
+    __tablename__ = "teacher_notices"
+
+    notice_id = Column(Integer, primary_key=True)
+    teacher_id = Column(Integer, ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False)
+    actor_id = Column(Integer, ForeignKey("users.user_id", ondelete="SET NULL"))
+    kind = Column(String(10), nullable=False)
+    item_id = Column(Integer, nullable=False)
+    title = Column(String(300), nullable=False)
+    action = Column(String(12), nullable=False)
+    created_at = Column(TIMESTAMP, nullable=False, default=datetime.utcnow)
+    seen_at = Column(TIMESTAMP)
+
+    __table_args__ = (
+        CheckConstraint("kind IN ('quiz', 'journey')", name="check_teacher_notice_kind"),
+        CheckConstraint(
+            "action IN ('created', 'published', 'closed', 'archived')",
+            name="check_teacher_notice_action",
+        ),
+        Index("ix_teacher_notice_unseen", "teacher_id", "seen_at"),
+    )

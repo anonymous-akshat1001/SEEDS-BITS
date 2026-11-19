@@ -50,27 +50,14 @@ Map<int, String> get playerFallbackKeyLabels => {
 };
 
 // ─── Welcome Screen ──────────────────────────────────────────────────────────
+// Accounts are created by the school administrator; there is no registration.
 Map<int, String> get welcomeKeyLabels => {
-  1: Speech.t.keyLogin,
-  2: Speech.t.keyRegister,
-  3: Speech.t.keySettings,
+    1: Speech.t.keyLogin,
+  2: Speech.t.keySettings,
 };
 
 // ─── Login Screen ────────────────────────────────────────────────────────────
-Map<int, String> get loginKeyLabels => {
-  1: Speech.t.keySelectStudentAccount,
-  2: Speech.t.keySelectTeacherAccount,
-  3: Speech.t.keySelectAdministratorAccount,
-  4: Speech.t.keyLogin,
-  5: Speech.t.keyRegister,
-};
-
-// ─── Register Screen ─────────────────────────────────────────────────────────
-Map<int, String> get registerKeyLabels => {
-  1: Speech.t.keyRegister,
-  2: Speech.t.keyGoToLogin,
-  3: Speech.t.keyToggleTeacherRegistration,
-};
+// Keys are defined on the sign-in screen itself (1 sign in, 2 SIM, 3 admin).
 
 // ─── Settings Screen ─────────────────────────────────────────────────────────
 Map<int, String> get settingsKeyLabels => {
@@ -149,28 +136,30 @@ Map<int, String> get quizAttemptKeyLabels => {
 };
 
 // ─── Live session (both roles) ───────────────────────────────────────────────
-// One small main screen. Everything else opens from it on demand.
-Map<int, String> get sessionStudentKeyLabels => {
+// Both screens: 1 microphone, 2 hand, 8 More, 0 leave; ending is highest
+// (teacher 9 ends the class). Teachers: 3 mute all, 4 class list, 5 lesson
+// recording, 6 quiz, 7 journey. Students: 3 what is playing, 4 start the
+// open quiz or journey (shown only while one is open).
+Map<int, String> sessionStudentKeyLabels({bool activityOpen = false}) => {
   1: Speech.t.keyMuteOrUnmute,
   2: Speech.t.keyRaiseOrLowerHand,
-  3: Speech.t.keyHearClassStatus,
-  4: Speech.t.keyChat,
-  5: Speech.t.keyHearWhatTheTeacherIsPlaying,
-  6: Speech.t.keyAnswerClassroomCheck,
-  7: Speech.t.keyWhoIsInTheClass,
-  0: Speech.t.keyLeaveSessionAsksToConfirm,
+  3: Speech.t.sessionKeyWhatIsPlaying,
+  if (activityOpen) 4: Speech.t.sessionKeyStartActivity,
+  8: Speech.t.sessionKeyMore,
+  0: Speech.t.sessionKeyLeave,
 };
 
 Map<int, String> get sessionTeacherKeyLabels => {
   1: Speech.t.keyMuteOrUnmute,
-  2: Speech.t.keyRaisedHandsAcknowledgeAndLowerThemInOrder,
-  3: Speech.t.keyHearClassStatus,
-  4: Speech.t.keyChat,
-  5: Speech.t.keyClassRecordingPlayerPlayAndControlTheRecording,
-  6: Speech.t.keyClassroomCheckStartCloseAndHearResponses,
-  7: Speech.t.keyParticipantsMuteOrRemoveSomeone,
-  9: Speech.t.keyTeacherToolsInviteStudentsEndClassForEveryone,
-  0: Speech.t.keyLeaveSessionAsksToConfirm,
+  2: Speech.t.sessionKeyRaisedHands,
+  3: Speech.t.keyMuteAllStudents,
+  4: Speech.t.sessionKeyClassList,
+  5: Speech.t.sessionKeyLessonRecording,
+  6: Speech.t.sessionKeyQuiz,
+  7: Speech.t.sessionKeyJourney,
+  8: Speech.t.sessionKeyMore,
+  9: Speech.t.sessionKeyEndClass,
+  0: Speech.t.sessionKeyLeave,
 };
 
 // ─── Simple Session Screen ───────────────────────────────────────────────────

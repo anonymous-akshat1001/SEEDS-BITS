@@ -1,9 +1,12 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../l10n/speech.dart';
+import '../utils/ui_utils.dart';
+import 'class_alerts.dart';
 import 'notification_services.dart';
 import 'api_service.dart';
 import 'activity_telemetry.dart';
@@ -32,9 +35,82 @@ class AuthSessionService {
     ApiService.cachedToken = null;
     await TtsService.stop();
     final preferences = await SharedPreferences.getInstance();
+    await rememberAccountProfile(preferences);
+    // A class alert for the previous person must not keep ringing.
+    unawaited(ClassAlerts.instance.cancelAll());
     for (final key in _sessionKeys) {
       await preferences.remove(key);
     }
+  }
+
+  /// Speech and display preferences kept per person, so on a shared phone
+  /// each profile hears the app the way they set it (S04).
+  static const profileKeys = [
+    'tts_enabled',
+    'tts_volume',
+    'tts_speech_rate',
+    'speech_mode',
+    'speech_verbosity',
+    'speech_language',
+    'high_contrast_mode',
+    'text_scale',
+    'voice_commands_enabled',
+    'show_keyboard_shortcuts',
+    FeedbackCues.soundPreference,
+    FeedbackCues.vibrationPreference,
+  ];
+
+  static String _profileKey(int userId) => 'account_profile_$userId';
+
+  @visibleForTesting
+  static Future<void> rememberAccountProfile(SharedPreferences prefs) async {
+    final userId = prefs.getInt('user_id');
+    if (userId == null) return;
+    final profile = <String, Object>{
+      for (final key in profileKeys)
+        if (prefs.get(key) case final Object value) key: value,
+    };
+    await prefs.setString(_profileKey(userId), jsonEncode(profile));
+  }
+
+  /// Restores [userId]'s own preferences when they were saved on this phone;
+  /// a first sign-in keeps the phone's current settings.
+  @visibleForTesting
+  static Future<bool> restoreAccountProfile(
+    SharedPreferences prefs,
+    int userId,
+  ) async {
+    final raw = prefs.getString(_profileKey(userId));
+    if (raw == null) return false;
+    final Object? decoded;
+    try {
+      decoded = jsonDecode(raw);
+    } on FormatException {
+      return false;
+    }
+    if (decoded is! Map) return false;
+    for (final key in profileKeys) {
+      final value = decoded[key];
+      if (value is bool) {
+        await prefs.setBool(key, value);
+      } else if (value is int) {
+        await prefs.setInt(key, value);
+      } else if (value is double) {
+        await prefs.setDouble(key, value);
+      } else if (value is String) {
+        await prefs.setString(key, value);
+      } else if (value == null) {
+        await prefs.remove(key);
+      }
+    }
+    return true;
+  }
+
+  static Future<void> _applyPreferences(SharedPreferences prefs) async {
+    UIUtils.setHighContrastMode(prefs.getBool('high_contrast_mode') ?? true);
+    UIUtils.setTextScale(prefs.getDouble('text_scale') ?? 1.0);
+    await FeedbackCues.loadFromPreferences();
+    await TtsService.loadFromPreferences();
   }
 
   static Future<void> saveLoginState(
@@ -72,6 +148,9 @@ class AuthSessionService {
     ];
     if (saved.any((ok) => !ok) || !await prefs.setString('token', token)) {
       throw StateError('Sign-in could not be saved');
+    }
+    if (await restoreAccountProfile(prefs, userId)) {
+      await _applyPreferences(prefs);
     }
   }
 

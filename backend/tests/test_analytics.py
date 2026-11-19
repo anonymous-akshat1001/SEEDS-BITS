@@ -458,9 +458,11 @@ async def test_session_created_while_collection_off_is_counted_and_gaps_are_expl
 ):
     db, admin, teacher, other, _, room, _ = data
     monkeypatch.setenv("ACTIVITY_COLLECTION_ENABLED", "false")
+    # Ended already: a teacher can have only one live class at a time.
     unrecorded = models.Session(
         title="Rivers today", created_by=teacher.user_id, class_id=room.class_id,
-        subject_id=room.subject_id, is_active=True, created_at=datetime.utcnow(),
+        subject_id=room.subject_id, is_active=False, created_at=datetime.utcnow(),
+        ended_at=datetime.utcnow(),
     )
     db.add(unrecorded)
     await db.flush()

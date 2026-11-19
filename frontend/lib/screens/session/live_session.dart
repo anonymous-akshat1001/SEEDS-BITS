@@ -18,8 +18,17 @@ abstract interface class LiveSession {
   int get raisedHandCount;
   String participantSummary(Map<String, dynamic> participant);
   Future<void> openHandQueue();
-  Future<void> muteParticipant(int participantId);
   Future<void> removeParticipant(int participantId);
+
+  /// Teacher key 3: mutes every student once; they may unmute themselves.
+  Future<void> muteAllStudents();
+
+  /// Who is connected, who joined and left, who never joined (teacher only).
+  /// Null when it could not be read; the reason is spoken.
+  Future<Map<String, dynamic>?> loadRoster();
+
+  /// Rings, once, every student who has not joined yet.
+  Future<void> remindNotJoined();
 
   // Chat. Messages are oldest first.
   List<Map<String, dynamic>> get messages;
@@ -50,7 +59,11 @@ abstract interface class LiveSession {
   Future<void> selectAudio(int audioId, String title, {required bool play});
 
   // Teacher tools.
-  void openInvite();
-  Future<void> openClassroomCheck();
   Future<void> confirmEndSession();
+
+  /// The class ends automatically at [endsAt] ("10:10") unless ended
+  /// earlier; [extendClass] adds up to 15 minutes when [canExtend].
+  String? get endsAt;
+  bool get canExtend;
+  Future<void> extendClass();
 }

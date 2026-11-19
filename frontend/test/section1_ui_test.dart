@@ -4,7 +4,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:frontend/widgets/key_instruction_wrapper.dart';
 import 'package:frontend/main.dart';
 import 'package:frontend/screens/login_screen.dart';
-import 'package:frontend/screens/register_screen.dart';
 import 'package:frontend/screens/settings_screen.dart';
 import 'package:frontend/utils/ui_utils.dart';
 import 'package:frontend/widgets/keypad_confirmation_dialog.dart';
@@ -22,61 +21,37 @@ void main() {
     UIUtils.setTextScale(1.0);
   });
 
-  testWidgets('login validates locally and password visibility works', (
+  testWidgets('login asks only for the phone number and validates it locally', (
     tester,
   ) async {
     await tester.pumpWidget(const MaterialApp(home: LoginScreen()));
     await tester.pump(const Duration(milliseconds: 100));
 
-    expect(find.text('1 Student'), findsOneWidget);
-    expect(find.text('2 Teacher'), findsOneWidget);
-    expect(find.text('3 Admin'), findsOneWidget);
-    await tester.sendKeyEvent(LogicalKeyboardKey.digit3);
+    // No role choice and no password for students and teachers.
+    expect(find.byType(TextField), findsOneWidget);
+    expect(find.text('1 Student'), findsNothing);
+    expect(find.textContaining('Password'), findsNothing);
+    await tester.tap(find.text('1: Sign in'));
     await tester.pump();
-    expect(find.text('4: Login as Administrator'), findsOneWidget);
-    await tester.tap(find.text('1 Student'));
+    expect(find.text('Type your phone number first.'), findsOneWidget);
+  });
+
+  testWidgets('administrator sign-in keeps a password with visibility control', (
+    tester,
+  ) async {
+    await tester.pumpWidget(const MaterialApp(home: AdminLoginScreen()));
     await tester.pump();
     final fields = find.byType(TextField);
+    expect(fields, findsNWidgets(2));
     await tester.enterText(fields.at(0), '9876543210');
-    await tester.enterText(fields.at(1), 'short');
-    await tester.tap(find.text('4: Login as Student'));
+    await tester.tap(find.text('1: Sign in'));
     await tester.pump();
-    expect(
-      find.text('Password must be at least 6 characters.'),
-      findsOneWidget,
-    );
-
+    expect(find.textContaining('password'), findsWidgets);
     var passwordField = tester.widget<TextField>(fields.at(1));
     expect(passwordField.obscureText, isTrue);
     await tester.tap(find.byTooltip('Show password'));
     await tester.pump();
     passwordField = tester.widget<TextField>(fields.at(1));
-    expect(passwordField.obscureText, isFalse);
-  });
-
-  testWidgets('registration validates locally and password visibility works', (
-    tester,
-  ) async {
-    await tester.pumpWidget(const MaterialApp(home: RegisterScreen()));
-    await tester.pump();
-
-    final fields = find.byType(TextField);
-    await tester.enterText(fields.at(0), 'Student');
-    await tester.enterText(fields.at(1), '9876543210');
-    await tester.enterText(fields.at(2), 'short');
-    await tester.ensureVisible(find.text('1: Register'));
-    await tester.tap(find.text('1: Register'));
-    await tester.pump();
-    expect(
-      find.text('Password must be at least 6 characters.'),
-      findsOneWidget,
-    );
-
-    var passwordField = tester.widget<TextField>(fields.at(2));
-    expect(passwordField.obscureText, isTrue);
-    await tester.tap(find.byTooltip('Show password'));
-    await tester.pump();
-    passwordField = tester.widget<TextField>(fields.at(2));
     expect(passwordField.obscureText, isFalse);
   });
 
@@ -207,7 +182,8 @@ void main() {
       ),
     );
     expect(find.text('Login'), findsOneWidget);
-    expect(find.text('Register'), findsOneWidget);
+    // Accounts are created by the administrator.
+    expect(find.text('Register'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 

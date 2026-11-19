@@ -212,21 +212,6 @@ class WebSocketManager:
 
 
 
-    # Mute any participant - only accessible by teacher
-    async def mute_participant(self, session_id: int, participant_id: int, mute: bool):
-        async with SESSION_LOCK:
-            if session_id not in SESSION_STATE:
-                return
-            SESSION_STATE[session_id]["participants"] \
-                .setdefault(participant_id, {})["is_muted"] = mute
-
-        await self.broadcast(
-            session_id,
-            {"type": "participant_muted", "participant_id": participant_id, "is_muted": mute},
-        )
-        logging.getLogger("seeds").info("sse_mute_changed", extra={"event_code": "sse_mute_changed"})
-
-
     # Kick any participant - only accessible by teacher
     async def kick_participant(
         self, session_id: int, participant_id: int, reason: Optional[str] = None

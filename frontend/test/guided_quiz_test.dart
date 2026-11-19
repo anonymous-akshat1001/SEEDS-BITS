@@ -102,7 +102,7 @@ void main() {
           'Practice numbers',
         );
         await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
-        await tester.sendKeyEvent(LogicalKeyboardKey.digit8);
+        await tester.sendKeyEvent(LogicalKeyboardKey.digit1);
         await tester.pumpAndSettle();
         expect(submitted?['mode'], 'practice');
         expect(submitted?['time_limit_minutes'], isNull);
@@ -225,7 +225,7 @@ void main() {
               );
             }
             await activate(tester, 'bank-question-correct-answer');
-            await tester.sendKeyEvent(LogicalKeyboardKey.digit9);
+            await tester.sendKeyEvent(LogicalKeyboardKey.digit1);
             await tester.pumpAndSettle();
             expect(
               find.textContaining('Question save could not be confirmed.'),
@@ -301,7 +301,7 @@ void main() {
           );
           await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
           await tester.pump();
-          await tester.sendKeyEvent(LogicalKeyboardKey.digit8);
+          await tester.sendKeyEvent(LogicalKeyboardKey.digit1);
           await tester.pumpAndSettle();
           expect(find.text('Step 2: Add questions'), findsOneWidget);
           expect(mutations.length, 1);
@@ -309,7 +309,7 @@ void main() {
           expect(create['attempt_limit'], 1);
           expect(create['time_limit_minutes'], isNull);
           expect(create['feedback_policy'], 'after_completion');
-          await tester.sendKeyEvent(LogicalKeyboardKey.digit6);
+          await tester.sendKeyEvent(LogicalKeyboardKey.digit5);
           await tester.pumpAndSettle();
           expect(find.text('Step 3: Review and publish'), findsNothing);
 
@@ -327,7 +327,7 @@ void main() {
             );
           }
           await activate(tester, 'bank-question-correct-answer');
-          await tester.sendKeyEvent(LogicalKeyboardKey.digit9);
+          await tester.sendKeyEvent(LogicalKeyboardKey.digit1);
           await tester.pumpAndSettle();
           expect(mutations.last.url.path, '/teacher/quizzes/3/questions/new');
           expect(jsonDecode(mutations.last.body)['save_to_bank'], isTrue);
@@ -349,7 +349,7 @@ void main() {
             mutations.where((r) => r.url.path.endsWith('/publish')),
             isEmpty,
           );
-          await tester.sendKeyEvent(LogicalKeyboardKey.digit8);
+          await tester.sendKeyEvent(LogicalKeyboardKey.digit3);
           await tester.pumpAndSettle();
           expect(find.text('Publish quiz?'), findsOneWidget);
           await tester.sendKeyEvent(LogicalKeyboardKey.digit1);
@@ -433,7 +433,7 @@ void main() {
               findsOneWidget,
             );
             await tester.sendKeyEvent(LogicalKeyboardKey.digit3);
-            await tester.sendKeyEvent(LogicalKeyboardKey.digit6);
+            await tester.sendKeyEvent(LogicalKeyboardKey.digit5);
             await tester.pumpAndSettle();
             expect(adds, 1);
             expect(find.text('Step 3: Review and publish'), findsNothing);
@@ -541,9 +541,9 @@ void main() {
               ),
             );
             await tester.pumpAndSettle();
-            await tester.sendKeyEvent(LogicalKeyboardKey.digit6);
-            await tester.pumpAndSettle();
             await tester.sendKeyEvent(LogicalKeyboardKey.digit5);
+            await tester.pumpAndSettle();
+            await tester.sendKeyEvent(LogicalKeyboardKey.digit2);
             await tester.pumpAndSettle();
             await tester.enterText(
               find.widgetWithText(TextField, 'Quiz title'),
@@ -551,7 +551,7 @@ void main() {
             );
             await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
             await tester.pump();
-            await tester.sendKeyEvent(LogicalKeyboardKey.digit8);
+            await tester.sendKeyEvent(LogicalKeyboardKey.digit1);
             await tester.pumpAndSettle();
             expect(update!['feedback_policy'], 'legacy_immediate');
             expect(update!['attempt_limit'], 3);
@@ -572,7 +572,7 @@ void main() {
                 find.textContaining('Settings save could not be confirmed.'),
                 findsOneWidget,
               );
-              await tester.sendKeyEvent(LogicalKeyboardKey.digit8);
+              await tester.sendKeyEvent(LogicalKeyboardKey.digit3);
               await tester.pumpAndSettle();
               expect(publishes, 0);
               await tester.sendKeyEvent(LogicalKeyboardKey.digit1);
@@ -755,7 +755,7 @@ void main() {
           await tester.pumpAndSettle();
           for (final review in [false, true]) {
             if (review) {
-              await tester.sendKeyEvent(LogicalKeyboardKey.digit6);
+              await tester.sendKeyEvent(LogicalKeyboardKey.digit5);
               await tester.pumpAndSettle();
             }
             final wrapper = tester.widget<KeypadInstructionWrapper>(

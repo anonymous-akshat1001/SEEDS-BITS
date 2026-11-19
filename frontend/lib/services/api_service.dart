@@ -64,6 +64,43 @@ class ApiService {
     final normalized = raw.toLowerCase();
     final normalizedContext = context.toLowerCase();
 
+    if (normalizedContext.contains('phone login') && statusCode != null) {
+      if (statusCode == 403) {
+        return ApiFailure(
+          kind: ApiFailureKind.unauthorized,
+          statusCode: statusCode,
+          message: Speech.t.loginAdminUsesPassword,
+          debugDetails: raw,
+        );
+      }
+      if (statusCode == 401) {
+        return ApiFailure(
+          kind: ApiFailureKind.unauthorized,
+          statusCode: statusCode,
+          message: normalized.contains('profile')
+              ? Speech.t.loginProfileNotRecognised
+              : Speech.t.loginNumberNotRegistered,
+          debugDetails: raw,
+        );
+      }
+    }
+    // Class lifecycle refusals explain themselves ("This class can start
+    // from 08:50."); say that instead of a generic failure.
+    final detail = responseBody is Map ? responseBody['detail'] : null;
+    if (normalizedContext.startsWith('class ') &&
+        (statusCode == 409 || statusCode == 404) &&
+        detail is String &&
+        detail.isNotEmpty) {
+      return ApiFailure(
+        kind: statusCode == 404
+            ? ApiFailureKind.notFound
+            : ApiFailureKind.validation,
+        statusCode: statusCode,
+        message: detail,
+        debugDetails: raw,
+      );
+    }
+
     if (normalizedContext.contains('login') ||
         normalizedContext.contains('password change')) {
       if (statusCode == 429) {
@@ -408,6 +445,46 @@ class ApiService {
     }
   }
 
+  /// Students and teachers sign in with their phone number only; a shared
+  /// phone also needs the person's short [profileCode]. The result may be
+  /// `{"profile_required": true, "code_length": n}` instead of a session.
+  static Future<ApiResult<Map<String, dynamic>>> phoneLoginResult({
+    required String phoneNumber,
+    String? profileCode,
+  }) async {
+    final uri = await _buildUri('/auth/phone-login');
+    try {
+      final response = await http
+          .post(
+            uri,
+            headers: const {'Content-Type': 'application/json'},
+            body: jsonEncode({
+              'phone_number': phoneNumber,
+              'profile_code': ?profileCode,
+            }),
+          )
+          .timeout(const Duration(seconds: 10));
+      final body = _decodeBody(response.body);
+      if (response.statusCode >= 200 &&
+          response.statusCode < 300 &&
+          body is Map<String, dynamic>) {
+        return ApiResult<Map<String, dynamic>>.success(body);
+      }
+      final failure = mapFailure(
+        statusCode: response.statusCode,
+        responseBody: body,
+        context: 'phone login',
+      );
+      _debugFailure('PHONE LOGIN', failure);
+      return ApiResult<Map<String, dynamic>>.failure(failure);
+    } catch (error) {
+      final failure = mapFailure(error: error, context: 'phone login');
+      _debugFailure('PHONE LOGIN', failure);
+      return ApiResult<Map<String, dynamic>>.failure(failure);
+    }
+  }
+
+  /// Administrator password sign-in.
   static Future<ApiResult<Map<String, dynamic>>> loginResult({
     required String phoneNumber,
     required String password,
@@ -733,70 +810,7 @@ class ApiService {
 
   /////////////////////////// AUTHENTICATION ENDPOINTS /////////////////////////
 
-  /// Register a new user
-  static Future<Map<String, dynamic>?> register({
-    required String name,
-    required String phoneNumber,
-    required String password,
-    required String role,
-  }) async {
-    return await post('/auth/register', {
-      'name': name,
-      'phone_number': phoneNumber,
-      'password': password,
-      'role': role,
-    });
-  }
-
-  /// Login
-  static Future<Map<String, dynamic>?> login({
-    required String phoneNumber,
-    required String password,
-  }) async {
-    // Using OAuth2 form format
-    final uri = await _buildUri('/auth/login');
-
-    try {
-      final res = await http.post(
-        uri,
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: {'username': phoneNumber, 'password': password},
-      );
-
-      if (res.statusCode >= 200 && res.statusCode < 300) {
-        final data = jsonDecode(res.body);
-
-        // Store token and user info
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('token', data['access_token'] ?? '');
-        await prefs.setInt('user_id', data['user_id'] ?? 0);
-        await prefs.setString('role', data['role'] ?? '');
-
-        return data;
-      } else {
-        debugPrint('[API] Login failed (${res.statusCode}).');
-        return null;
-      }
-    } catch (e) {
-      debugPrint('[API] Login error (${e.runtimeType}).');
-      return null;
-    }
-  }
-
   /////////////////////////// SESSION ENDPOINTS /////////////////////////
-
-  /// Create a new session (teacher only)
-  static Future<Map<String, dynamic>?> createSession(
-    String title, {
-    required int classId,
-    required int subjectId,
-  }) async {
-    return await post('/sessions', {
-      'title': title,
-      'class_id': classId,
-      'subject_id': subjectId,
-    }, useAuth: true);
-  }
 
   /// Get all active sessions
   static Future<List<dynamic>?> getActiveSessions() async {
@@ -818,18 +832,140 @@ class ApiService {
     return result.isSuccess;
   }
 
-  static Future<bool> reactivateSession(int sessionId) async {
-    final result = await postResult(
-      '/sessions/$sessionId/reactivate',
-      const {},
+  /// What this person can do now: the live class, today's classes and,
+  /// for teachers, their class and subject workspaces.
+  static Future<ApiResult<dynamic>> home() => getResult(
+    '/me/home',
+    useAuth: true,
+    context: 'home',
+    requestTimeout: const Duration(seconds: 15),
+  );
+
+  /// Starts (or returns to) a timetabled class, or an unscheduled class for
+  /// an assigned class and subject.
+  static Future<ApiResult<Map<String, dynamic>>> startClass({
+    int? entryId,
+    String? occurrenceDate,
+    int? classId,
+    int? subjectId,
+  }) => postResult(
+    '/classes/start',
+    {
+      'entry_id': ?entryId,
+      'occurrence_date': ?occurrenceDate,
+      'class_id': ?classId,
+      'subject_id': ?subjectId,
+    },
+    useAuth: true,
+    context: 'class start',
+    requireJsonObject: true,
+  );
+
+  static Future<ApiResult<Map<String, dynamic>>> extendClass(int sessionId) =>
+      postResult(
+        '/sessions/$sessionId/extend',
+        const {},
+        useAuth: true,
+        context: 'class extension',
+        requireJsonObject: true,
+      );
+
+  static Future<ApiResult<dynamic>> classRoster(int sessionId) => getResult(
+    '/sessions/$sessionId/roster',
+    useAuth: true,
+    context: 'class roster',
+  );
+
+  static Future<ApiResult<Map<String, dynamic>>> remindNotJoined(
+    int sessionId,
+  ) => postResult(
+    '/sessions/$sessionId/remind-not-joined',
+    const {},
+    useAuth: true,
+    context: 'class reminder',
+    requireJsonObject: true,
+  );
+
+  /// Marks the administrator's notices on the teacher's Home as heard.
+  static Future<ApiResult<Map<String, dynamic>>> markNoticesSeen(
+    List<int> noticeIds,
+  ) => postResult(
+    '/me/notices/seen',
+    {'notice_ids': noticeIds},
+    useAuth: true,
+    context: 'home notices',
+    requireJsonObject: true,
+  );
+
+  /// Published quizzes and journeys the teacher can start in this class.
+  static Future<ApiResult<Map<String, dynamic>>> classActivities(
+    int sessionId,
+  ) async {
+    final result = await getResult(
+      '/sessions/$sessionId/activities',
       useAuth: true,
-      context: 'session reactivation',
+      context: 'class activities',
     );
-    return result.isSuccess;
+    if (!result.isSuccess) return ApiResult.failure(result.failure!);
+    return result.data is Map
+        ? ApiResult.success(Map<String, dynamic>.from(result.data as Map))
+        : ApiResult.success(const {'quizzes': [], 'journeys': []});
   }
 
-  static Future<bool> permanentlyDeleteSession(int sessionId) =>
-      delete('/sessions/$sessionId', useAuth: true);
+  static Future<ApiResult<Map<String, dynamic>>> startClassActivity(
+    int sessionId, {
+    required String kind,
+    required int id,
+  }) => postResult(
+    '/sessions/$sessionId/activity',
+    {'kind': kind, 'id': id},
+    useAuth: true,
+    context: 'class activity',
+    requireJsonObject: true,
+  );
+
+  static Future<ApiResult<void>> stopClassActivity(int sessionId) =>
+      deleteResult(
+        '/sessions/$sessionId/activity',
+        useAuth: true,
+        context: 'class activity',
+      );
+
+  /// Enrolled students who have not finished the open quiz or journey.
+  static Future<ApiResult<Map<String, dynamic>>> classActivityLeft(
+    int sessionId,
+  ) async {
+    final result = await getResult(
+      '/sessions/$sessionId/activity/left',
+      useAuth: true,
+      context: 'class activity',
+    );
+    if (!result.isSuccess) return ApiResult.failure(result.failure!);
+    return result.data is Map
+        ? ApiResult.success(Map<String, dynamic>.from(result.data as Map))
+        : ApiResult.success(const {'in_class': [], 'whole_class': []});
+  }
+
+  static Future<ApiResult<Map<String, dynamic>>> remindClassActivity(
+    int sessionId,
+  ) => postResult(
+    '/sessions/$sessionId/activity/remind',
+    const {},
+    useAuth: true,
+    context: 'class activity',
+    requireJsonObject: true,
+  );
+
+  /// Starts or resumes a quiz attempt; the failure carries the server's
+  /// reason ("This quiz is closed.") so it can be spoken as is.
+  static Future<ApiResult<Map<String, dynamic>>> startClassQuiz(int quizId) =>
+      postResult(
+        '/student/quizzes/$quizId/attempts',
+        const {},
+        useAuth: true,
+        context: 'class quiz',
+        requireJsonObject: true,
+      );
 
   /// Get session state
   static Future<Map<String, dynamic>?> getSessionState(int sessionId) async {
@@ -869,93 +1005,12 @@ class ApiService {
     }
   }
 
-  /// Add a student to a session (teacher only)
-  static Future<Map<String, dynamic>?> addStudentToSession(
-    int sessionId,
-    int studentId,
-  ) async {
-    final uri = await _buildUri('/sessions/$sessionId/join');
-    final prefs = await SharedPreferences.getInstance();
-
-    try {
-      var req = http.MultipartRequest("POST", uri);
-      req.fields['user_id'] = studentId.toString();
-
-      if (!devMode) {
-        final token = prefs.getString('token');
-        if (token != null) {
-          req.headers['Authorization'] = 'Bearer $token';
-        }
-      }
-
-      var res = await req.send();
-      final body = await res.stream.bytesToString();
-
-      if (res.statusCode >= 200 && res.statusCode < 300) {
-        return jsonDecode(body);
-      }
-      return null;
-    } catch (e) {
-      debugPrint('[API] Add participant error (${e.runtimeType}).');
-      return null;
-    }
-  }
-
-  /// Mute another participant. Only they can unmute their own microphone.
-  static Future<ApiResult<Map<String, dynamic>>> muteParticipant(
-    int sessionId,
-    int participantId,
-  ) async {
-    return postAcknowledged(
-      '/sessions/$sessionId/participants/$participantId/mute',
-      const {},
-      context: 'session participant mute',
-    );
-  }
-
   /// Remove a participant from session (teacher only)
   static Future<bool> kickParticipant(int sessionId, int participantId) async {
     return await delete(
       '/sessions/$sessionId/participants/$participantId',
       useAuth: true,
     );
-  }
-
-  /// Invite student to session (teacher only)
-  static Future<Map<String, dynamic>?> inviteStudent(
-    int sessionId,
-    int studentId,
-  ) async {
-    final uri = await _buildUri('/sessions/$sessionId/invite');
-    final prefs = await SharedPreferences.getInstance();
-
-    try {
-      var req = http.MultipartRequest("POST", uri);
-
-      // Add student_id as form field
-      req.fields['student_id'] = studentId.toString();
-
-      // Add auth if not in dev mode
-      if (!devMode) {
-        final token = prefs.getString('token');
-        if (token != null && token.isNotEmpty) {
-          req.headers['Authorization'] = 'Bearer $token';
-        }
-      }
-
-      var res = await req.send();
-      final body = await res.stream.bytesToString();
-
-      if (res.statusCode >= 200 && res.statusCode < 300) {
-        return body.isEmpty ? {'ok': true} : jsonDecode(body);
-      } else {
-        debugPrint('[API] Invite failed (${res.statusCode}).');
-        return null;
-      }
-    } catch (e) {
-      debugPrint('[API] Invite error (${e.runtimeType}).');
-      return null;
-    }
   }
 
   // Uploads file using bytes (for web support)

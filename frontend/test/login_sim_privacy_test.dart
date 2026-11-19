@@ -101,7 +101,7 @@ void main() {
   });
 
   androidTestWidgets(
-    'OK after editing the phone number restores role shortcuts without editing the password',
+    'OK after editing the phone number restores the number shortcuts without changing the number',
     (tester) async {
       await tester.pumpWidget(const MaterialApp(home: LoginScreen()));
       await tester.pump();
@@ -109,16 +109,13 @@ void main() {
       await tester.sendKeyEvent(LogicalKeyboardKey.select);
       await tester.pump();
       expect(tester.testTextInput.hasAnyClients, isFalse);
+      // 2 is now the optional SIM suggestion, which first asks for consent.
       await tester.sendKeyEvent(LogicalKeyboardKey.digit2);
-      await tester.pump();
-      expect(find.text('4: Login as Teacher'), findsOneWidget);
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Read SIM suggestions'), findsOneWidget);
       expect(
         tester.widget<TextField>(find.byType(TextField).first).controller!.text,
         '9000000002',
-      );
-      expect(
-        tester.widget<TextField>(find.byType(TextField).at(1)).controller!.text,
-        isEmpty,
       );
       expect(phoneCalls, isEmpty);
       expect(simCalls, isEmpty);
@@ -167,10 +164,8 @@ void main() {
         simCalls.where((call) => call.method == 'getMobileNumber'),
         hasLength(1),
       );
-      expect(
-        tester.widget<TextField>(find.byType(TextField).at(1)).controller!.text,
-        isEmpty,
-      );
+      // There is no password field to fill or leak into.
+      expect(find.byType(TextField), findsOneWidget);
     },
   );
 
@@ -192,7 +187,7 @@ void main() {
         tester.widget<TextField>(find.byType(TextField).first).controller!.text,
         '9000000002',
       );
-      expect(find.text('4: Login as Student'), findsOneWidget);
+      expect(find.text('1: Sign in'), findsOneWidget);
     },
   );
 
@@ -306,7 +301,7 @@ void main() {
         tester.widget<TextField>(find.byType(TextField).first).controller!.text,
         '9000000002',
       );
-      expect(find.text('4: Login as Student'), findsOneWidget);
+      expect(find.text('1: Sign in'), findsOneWidget);
       expect(find.text('Choose SIM suggestion'), findsNothing);
     },
   );
@@ -371,7 +366,7 @@ void main() {
               .text,
           '9000000002',
         );
-        expect(find.text('4: Login as Student'), findsOneWidget);
+        expect(find.text('1: Sign in'), findsOneWidget);
         expect(tester.takeException(), isNull);
       },
     );

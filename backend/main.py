@@ -13,7 +13,7 @@ from datetime import datetime, timedelta, timezone
 from pydantic import BaseModel
 from fastapi import Response
 
-from fastapi import FastAPI, Depends, WebSocket, WebSocketDisconnect, BackgroundTasks, Query, Form, HTTPException, status, UploadFile, File, APIRouter, Request
+from fastapi import FastAPI, Depends, WebSocket, WebSocketDisconnect, BackgroundTasks, Query, Form, HTTPException, status, UploadFile, File, APIRouter, Request, Header
 from fastapi.responses import StreamingResponse
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -27,8 +27,9 @@ from sqlalchemy.dialects.postgresql import insert as postgres_insert
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 
 import models, schemas, auth, ws_manager, access_control as access, bootstrap
-import admin_routes, playlist_routes, quiz_routes, classroom_checks, journey_routes
+import admin_routes, playlist_routes, quiz_routes, journey_routes
 import account_recovery
+import classroom, jobs, school_admin_routes, sign_in_routes, teacher_notices
 from database import AsyncSessionLocal, engine, get_db
 from notification_service import fcm_service
 from ws_manager import ws_mgr, SESSION_STATE, SESSION_LOCK
@@ -50,7 +51,16 @@ async def lifespan(app: FastAPI):
         await conn.run_sync(models.Base.metadata.create_all)
     async with AsyncSessionLocal() as db:
         await bootstrap.ensure_bootstrap_admin(db)
-    yield
+    # Class alerts, reminders and automatic ending run here; overdue work is
+    # picked up immediately after a restart.
+    worker = jobs.JobWorker(AsyncSessionLocal) if jobs.worker_enabled() else None
+    if worker is not None:
+        worker.start()
+    try:
+        yield
+    finally:
+        if worker is not None:
+            await worker.stop()
 
 
 # Create FastAPI app
@@ -63,6 +73,10 @@ app.include_router(playlist_routes.router)
 app.include_router(quiz_routes.router)
 app.include_router(journey_routes.router)
 app.include_router(account_recovery.router)
+app.include_router(sign_in_routes.router)
+app.include_router(classroom.router)
+app.include_router(school_admin_routes.router)
+app.include_router(teacher_notices.router)
 
 
 @app.get("/healthz", include_in_schema=False)
@@ -98,64 +112,8 @@ require_admin = auth.require_admin
 
 # AUTHENTICATION using JWT and FASTAPI Defaults :
 
-@app.post("/auth/register", response_model=schemas.UserOut)
-# The parameters are : Schema to create a User , endpoint dependency
-async def register(user_in: schemas.UserCreate, db: AsyncSession = Depends(get_db)):
-
-    role = user_in.role.lower()   # normalize role to lowercase
-
-    # Only two roles are possible
-    if role not in ("teacher", "student"):
-        raise HTTPException(status_code=400, detail="Invalid role")
-    
-    # Uses Phone Number as Unique Key
-    q = await db.execute(select(models.User).filter(models.User.phone_number == user_in.phone_number))
-    existing = q.scalar_one_or_none()
-    if existing:
-        raise HTTPException(status_code=400, detail="Phone already registered")
-
-    user = models.User(
-        name=user_in.name,
-        phone_number=user_in.phone_number,
-        role=role,
-        password_hash=auth.get_password_hash(user_in.password)    # Hashes the password to maintain security in Database
-    )
-
-    db.add(user)
-    await db.commit()
-    await db.refresh(user)
-    return user
-
-
-# In-built FASTAPI authentication method :
-
-@app.post("/auth/login")
-async def login(response: Response, form_data: OAuth2PasswordRequestForm = Depends(),
-                db: AsyncSession = Depends(get_db)):
-    # Treat username as phone_number
-    phone = form_data.username
-    password = form_data.password
-
-    # Check if the phone number exists
-    q = await db.execute(select(models.User).filter(
-        models.User.phone_number == phone,
-    ).with_for_update().execution_options(populate_existing=True))
-    user = q.scalar_one_or_none()
-
-    if not user:
-        import logging
-        logging.getLogger("seeds").warning("login_denied", extra={"event_code": "login_denied"})
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
-    if user.must_change_password:
-        await auth.verify_temporary_password(user, password, db)
-    elif not auth.verify_password(password, user.password_hash):
-        import logging
-        logging.getLogger("seeds").warning("login_denied", extra={"event_code": "login_denied"})
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
-    record_event(db, "login_succeeded", actor_id=user.user_id, resource_type="user", resource_id=user.user_id)
-    await db.commit()
-    response.headers["Cache-Control"] = "no-store"
-    return auth.session_payload(user)
+# Sign-in lives in sign_in_routes.py: phone number for students and
+# teachers, password for administrators. There is no self-registration.
 
 
 
@@ -164,166 +122,30 @@ async def login(response: Response, form_data: OAuth2PasswordRequestForm = Depen
 
 # SESSIONS : 
 
-@app.post("/sessions", response_model=schemas.SessionOut)
-# The payload parameter automatically receives the JSON body of the request and validates it using the schema SessionCreate
-async def create_session(payload: schemas.SessionCreate, 
-                         user: models.User = Depends(require_teacher), 
-                         db: AsyncSession = Depends(get_db)):
-    title = payload.title.strip()
-    if not title:
-        raise HTTPException(status_code=422, detail="Session title is required")
-    school_class, subject = await access.require_active_class_subject(
-        db, payload.class_id, payload.subject_id
-    )
-    await access.require_teacher_assignment(
-        db, user.user_id, payload.class_id, payload.subject_id
-    )
-    # Creates a new session object
-    s = models.Session(
-        title=title,
-        created_by=user.user_id,
-        class_id=school_class.class_id,
-        subject_id=subject.subject_id,
-        is_active=True,
-    )
-    # stages the new session for saving
-    db.add(s)
-    await db.flush()
-    await ensure_history(db, s, opening=True)
-    await db.commit()
-    # Reloads s from the database to get autogenerated fields
-    await db.refresh(s)
-
-    # Initialize in-memory runtime state
-    async with SESSION_LOCK:
-        SESSION_STATE.setdefault(s.session_id, {
-            "connections": {},
-            "participants": {},
-            "playback": {"audio_id": None, "status": "stopped", "speed": 1.0, "position": 0.0}
-        })
-    
-    # Log session creation
-    await SessionLogger.log_session_created(db, s.session_id, user.user_id, title)
-    
-    return {
-        "session_id": s.session_id,
-        "title": s.title,
-        "created_by": s.created_by,
-        "is_active": s.is_active,
-        "created_at": s.created_at,
-        "class_id": s.class_id,
-        "class_name": school_class.name,
-        "subject_id": s.subject_id,
-        "subject_name": subject.name,
-        "participant_count": 0,
-    }
+# Classes are started with POST /classes/start (classroom.py); the session
+# label is generated, so teachers never type a title.
 
 
 # End a session for all participants while preserving its history.
 @app.post("/sessions/{session_id}/end")
 async def end_session(session_id: int,
                       user: models.User = Depends(require_teacher),
-                      db: AsyncSession = Depends(get_db),
-                      background_tasks: BackgroundTasks = None):
-    # Fetches the session with the given ID from the database
-    q = await db.execute(
-        select(models.Session).options(
-            selectinload(models.Session.school_class),
-            selectinload(models.Session.subject),
-        ).filter(models.Session.session_id == session_id)
-    )
+                      db: AsyncSession = Depends(get_db)):
+    q = await db.execute(select(models.Session).filter(models.Session.session_id == session_id))
     s = q.scalar_one_or_none()
-
     if not s:
         raise HTTPException(status_code=404, detail="Session not found")
     await access.require_session_access(db, user, s, manage=True)
-    
     if not s.is_active:
         raise HTTPException(status_code=400, detail="Session already ended")
-    
-    s.is_active = False
-    s.ended_at = datetime.utcnow()
-    await close_run(db, s)
-    await db.commit()
-    
-    # Close all WebSocket connections for this session
-    if background_tasks is not None:
-        background_tasks.add_task(ws_mgr.close_session, session_id)
-    else:
-        asyncio.create_task(ws_mgr.close_session(session_id))
-    
+    await classroom.end_class(db, s, reason="teacher", ended_by=user.user_id)
     return {"ok": True, "message": "Session ended and retained in history"}
 
 
-@app.post("/sessions/{session_id}/reactivate")
-async def reactivate_session(
-    session_id: int,
-    user: models.User = Depends(require_teacher),
-    db: AsyncSession = Depends(get_db),
-):
-    classroom_session = await db.get(models.Session, session_id)
-    if classroom_session is None:
-        raise HTTPException(status_code=404, detail="Session not found")
-    await access.require_session_access(
-        db, user, classroom_session, manage=True,
-    )
-    if classroom_session.is_active:
-        raise HTTPException(status_code=409, detail="Session is already active")
-
-    classroom_session.is_active = True
-    classroom_session.ended_at = None
-    await ensure_history(db, classroom_session, opening=True)
-    await db.commit()
-    async with SESSION_LOCK:
-        SESSION_STATE[session_id] = {
-            "connections": {},
-            "participants": {},
-            "playback": {
-                "audio_id": None,
-                "status": "stopped",
-                "speed": 1.0,
-                "position": 0.0,
-            },
-        }
-    return {"ok": True, "message": "Session reactivated"}
+# Ended classes stay as backend records only; there is no teacher-facing
+# reactivation or deletion.
 
 
-@app.delete("/sessions/{session_id}")
-async def permanently_delete_session(
-    session_id: int,
-    user: models.User = Depends(require_teacher),
-    db: AsyncSession = Depends(get_db),
-):
-    classroom_session = await db.get(models.Session, session_id)
-    if classroom_session is None:
-        raise HTTPException(status_code=404, detail="Session not found")
-    await access.require_session_access(
-        db, user, classroom_session, manage=True,
-    )
-    if classroom_session.is_active:
-        raise HTTPException(
-            status_code=409,
-            detail="End the session before deleting it permanently",
-        )
-
-    history = await db.get(models.AnalyticsSession, session_id)
-    if history:
-        history.deleted_at = datetime.utcnow()
-    record_event(db, "session_deleted", actor_id=user.user_id, resource_type="session",
-                 resource_id=session_id, owner_teacher_id=classroom_session.created_by,
-                 class_id=classroom_session.class_id, subject_id=classroom_session.subject_id)
-    await db.execute(
-        delete(models.Session).where(
-            models.Session.session_id == session_id,
-        )
-    )
-    await db.commit()
-    async with SESSION_LOCK:
-        SESSION_STATE.pop(session_id, None)
-    return {"ok": True, "message": "Session permanently deleted"}
-
-
-# Get the list of active sessions : 
 @app.get("/sessions/active", response_model=List[schemas.SessionOut])
 async def get_active_sessions(
     include_ended: bool = False,
@@ -451,115 +273,8 @@ async def get_active_sessions(
 
 # PARTICIPANTS : 
 
-# Get all students (for inviting to session)
-@app.get("/users/students", response_model=List[schemas.UserOut])
-async def get_all_students(
-    session_id: int = Query(...),
-    current_user: models.User = Depends(require_teacher),
-    db: AsyncSession = Depends(get_db)
-):
-    """Get only students enrolled in the class of a teacher-owned session."""
-    session_result = await db.execute(
-        select(models.Session).filter(models.Session.session_id == session_id)
-    )
-    classroom_session = session_result.scalar_one_or_none()
-    if classroom_session is None:
-        raise HTTPException(status_code=404, detail="Session not found")
-    await access.require_session_access(db, current_user, classroom_session, manage=True)
-    q = await db.execute(
-        select(models.User)
-        .join(
-            models.StudentClassMembership,
-            models.StudentClassMembership.student_id == models.User.user_id,
-        )
-        .filter(
-            models.User.role == "student",
-            models.StudentClassMembership.class_id == classroom_session.class_id,
-            models.StudentClassMembership.is_active.is_(True),
-        )
-    )
-    students = q.scalars().all()
-    return students
-
-
-
-# Invite students and also send a notification to join the session
-@app.post("/sessions/{session_id}/invite")
-async def invite_student_to_session(
-    session_id: int,
-    student_id: int = Form(...),
-    db: AsyncSession = Depends(get_db),
-    current_user: models.User = Depends(require_teacher),
-    background_tasks: BackgroundTasks = None
-):
-    # Verify session exists and belongs to teacher
-    q = await db.execute(
-        select(models.Session).options(
-            selectinload(models.Session.school_class),
-            selectinload(models.Session.subject),
-        ).filter(models.Session.session_id == session_id)
-    )
-    session = q.scalar_one_or_none()
-    
-    if not session:
-        raise HTTPException(status_code=404, detail="Session not found")
-    await access.require_session_access(db, current_user, session, manage=True)
-    
-    # Get student info
-    q = await db.execute(select(models.User).filter(models.User.user_id == student_id))
-    student = q.scalar_one_or_none()
-    
-    if not student:
-        raise HTTPException(status_code=404, detail="Student not found")
-    if student.role != "student":
-        raise HTTPException(status_code=400, detail="Only students may be invited")
-    membership = await access.get_active_student_membership(db, student.user_id)
-    if membership.class_id != session.class_id:
-        raise HTTPException(status_code=403, detail="Student is not enrolled in this session class")
-    
-    # Get student's FCM tokens
-    q = await db.execute(
-        select(models.FCMToken).filter(models.FCMToken.user_id == student_id)
-    )
-    fcm_tokens = q.scalars().all()
-    
-    # Send push notifications
-    if fcm_tokens and background_tasks:
-        for fcm_token in fcm_tokens:
-            background_tasks.add_task(
-                fcm_service.send_session_invitation,
-                token=fcm_token.token,
-                session_id=session_id,
-                session_title=session.title,
-                teacher_name=current_user.name,
-                class_name=session.school_class.name,
-                subject_name=session.subject.name,
-            )
-    
-    # Send invitation via WebSocket if student is online
-    invitation = {
-        "type": "session_invitation",
-        "session_id": session_id,
-        "session_title": session.title,
-        "teacher_name": current_user.name,
-        "teacher_id": current_user.user_id,
-        "class_name": session.school_class.name,
-        "subject_name": session.subject.name,
-    }
-    
-    # Try to send to student via any active WebSocket connections
-    # (This would require tracking user connections globally, not just per-session)
-    
-    # Log invitation
-    await SessionLogger.log_participant_invited(db, session_id, student_id, current_user.user_id)
-    
-    return {
-        "ok": True,
-        "message": f"Invitation sent to {student.name}",
-        "student_id": student_id,
-        "session_id": session_id,
-        "notifications_sent": len(fcm_tokens)
-    }
+# Students are alerted automatically when the class starts (classroom.py);
+# there are no per-student invitations.
 
 
 # Allows teacher to add participants - can be extended to allow students to join by themselves too
@@ -722,48 +437,8 @@ async def remove_participant(session_id: int, participant_id: int,
     return {"ok": True}
 
 
-# Mute -
-@app.post("/sessions/{session_id}/participants/{participant_id}/mute")
-async def mute_participant(session_id: int, participant_id: int, mute: bool = True,
-                           current_user: models.User = Depends(require_teacher),
-                           db: AsyncSession = Depends(get_db),
-                           background_tasks: BackgroundTasks = None):
-    session_result = await db.execute(
-        select(models.Session).filter(models.Session.session_id == session_id)
-    )
-    classroom_session = session_result.scalar_one_or_none()
-    if classroom_session is None:
-        raise HTTPException(status_code=404, detail="Session not found")
-    await access.require_session_access(db, current_user, classroom_session, manage=True)
-    # Find student ID who is to be muted
-    q = await db.execute(select(models.Participant).filter(
-        models.Participant.participant_id == participant_id,
-        models.Participant.session_id == session_id
-    ))
-    p = q.scalar_one_or_none()
-    if not p:
-        raise HTTPException(status_code=404, detail="Participant not found")
-    
-    if not mute and p.user_id != current_user.user_id:
-        raise HTTPException(
-            status_code=403,
-            detail="Only the participant can unmute their own microphone",
-        )
-    p.is_muted = mute
-    await db.commit()
-    # Inform ws clients
-    if background_tasks is not None:
-        background_tasks.add_task(ws_mgr.mute_participant, session_id, participant_id, mute)
-    else:
-        asyncio.create_task(ws_mgr.mute_participant(session_id, participant_id, mute))
-    
-    # Log mute/unmute
-    if mute:
-        await SessionLogger.log_participant_muted(db, session_id, p.user_id, current_user.user_id, participant_id)
-    else:
-        await SessionLogger.log_participant_unmuted(db, session_id, p.user_id, current_user.user_id, participant_id)
-        
-    return {"ok": True, "muted": mute}
+# Teachers mute every student at once with the mute_all_students action;
+# there is no single-participant teacher mute.
 
 
 
@@ -809,7 +484,7 @@ async def upload_audio(title: str = Form(...),
                        class_id: int = Form(...),
                        subject_id: int = Form(...),
                        file: UploadFile = File(...),
-                       current_user: models.User = Depends(require_teacher),
+                       current_user: models.User = Depends(auth.acting_teacher),
                        db: AsyncSession = Depends(get_db)):
 
     title = title.strip()
@@ -932,8 +607,14 @@ async def upload_audio(title: str = Form(...),
 async def list_audio_files(
     subject_id: Optional[int] = Query(None),
     current_user: models.User = Depends(get_user_by_id),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    x_act_as_teacher: Optional[int] = Header(None, alias="X-Act-As-Teacher"),
+    as_teacher: Optional[int] = Query(None),
 ):
+    acting_for = next((value for value in (x_act_as_teacher, as_teacher) if isinstance(value, int)), None)
+    if current_user.role == "admin" and acting_for is not None:
+        # An administrator authoring for a teacher sees exactly that teacher's library.
+        current_user = await auth.resolve_acted_teacher(db, current_user, acting_for)
     base_query = select(models.AudioFile).options(
         selectinload(models.AudioFile.school_class),
         selectinload(models.AudioFile.subject),
@@ -1867,10 +1548,16 @@ async def session_sse(
             session_id=session_id,
             user_id=user_id,
             joined_at=datetime.utcnow(),
+            first_connected_at=datetime.utcnow(),
         )
         db.add(p)
         await db.commit()
         await db.refresh(p)
+    elif p.first_connected_at is None:
+        # Joining (not receiving an alert) is what counts as "joined" for the
+        # teacher's roster and for reminders.
+        p.first_connected_at = datetime.utcnow()
+        await db.commit()
     participant_id = p.participant_id
     await SessionLogger.log_participant_joined(db, session_id, user_id, participant_id, uname)
 
@@ -1910,6 +1597,9 @@ async def session_sse(
         exclude={participant_id},
     )
 
+    # Enrolled students, so the teacher hears "4 of 5 here".
+    enrolled_students = len(await classroom._enrolled_students(db, classroom_session.class_id))
+
     # build state snapshot for the new joiner 
     async with SESSION_LOCK:
         raw_participants = SESSION_STATE[session_id]["participants"]
@@ -1934,7 +1624,8 @@ async def session_sse(
             "participant_id": participant_id,   # tells Flutter "this is you"
             "participants":   participants_out,
             "playback":       dict(raw_playback),
-            "classroom_check": classroom_checks.snapshot(SESSION_STATE[session_id], user_id, classroom_session.created_by),
+            "activity": classroom.activity_payload(classroom_session),
+            "enrolled_students": enrolled_students,
         }
 
     # SSE generator 
@@ -2009,10 +1700,10 @@ class SessionAction(BaseModel):
     # teacher actions targeting another participant
     target_participant_id:  Optional[int]   = None
     hand_queue_order:       Optional[int]   = None
-    check_id:               Optional[str]   = None
-    choice:                 Optional[str]   = None
     # webrtc signalling payload (offer, answer, ice_candidate)
     payload:                Optional[dict]  = None
+    # mute_all_students: a retried request is answered once, never re-applied
+    request_id:             Optional[str]   = None
 
 
 @app.post("/sessions/{session_id}/action")
@@ -2032,7 +1723,7 @@ async def session_action(
     uname      = current_user.name
     typ        = action.type
 
-    if typ in {"raise_hand", "lower_hand", "acknowledge_hand", "leave_session", "kick_participant"}:
+    if typ in {"raise_hand", "lower_hand", "acknowledge_hand", "leave_session", "kick_participant", "mute_all_students"}:
         locked_session = await db.execute(
             select(models.Session).where(models.Session.session_id == session_id)
             .with_for_update().execution_options(populate_existing=True)
@@ -2059,31 +1750,6 @@ async def session_action(
                    "Connect to the SSE stream first.",
         )
     participant_id = p.participant_id
-    if typ in {"open_check", "close_check", "check_response", "read_check"}:
-        if p.left_at is not None or p.is_kicked:
-            raise HTTPException(status_code=403, detail="Join the classroom before using a check.")
-        result = await classroom_checks.act(
-            session_id, kind=typ, user_id=user_id, name=uname,
-            teacher_id=classroom_session.created_by, check_id=action.check_id,
-            choice=action.choice,
-        )
-        if typ in {"open_check", "close_check"}:
-            record_event(db, typ, actor_id=user_id, resource_type="session",
-                         resource_id=session_id, owner_teacher_id=classroom_session.created_by,
-                         class_id=classroom_session.class_id, subject_id=classroom_session.subject_id,
-                         outcome="observed")
-            await db.commit()
-        elif typ == "read_check" and is_teacher:
-            counts = {key: 0 for key in ("understood", "repeat", "help")}
-            for response in result.get("responses", []):
-                counts[response["choice"]] += 1
-            record_event(db, "check_observed", resource_type="session",
-                         resource_id=session_id, owner_teacher_id=classroom_session.created_by,
-                         class_id=classroom_session.class_id, subject_id=classroom_session.subject_id,
-                         outcome="observed", details=counts)
-            await db.commit()
-        return {"ok": True, "check_state": result}
-
     # mute self 
     if typ == "mute_self":
         is_muted = bool(action.mute)
@@ -2190,48 +1856,58 @@ async def session_action(
             },
         )
 
-    # teacher: mute / unmute another participant 
-    elif typ in ("mute_participant", "unmute_participant"):
+    # teacher: mute every student at once (students may unmute themselves later)
+    elif typ == "mute_all_students":
         if not is_teacher:
             raise HTTPException(status_code=403, detail="Teacher permission required")
         await access.require_session_access(db, current_user, classroom_session, manage=True)
-        target = action.target_participant_id
-        if target is None:
-            raise HTTPException(status_code=400, detail="target_participant_id required")
-        q_target = await db.execute(
-            select(models.Participant).filter(
-                models.Participant.session_id == session_id,
-                models.Participant.participant_id == target,
-            )
-        )
-        target_participant = q_target.scalar_one_or_none()
-        if not target_participant:
-            raise HTTPException(status_code=404, detail="Target participant not found")
-        target_user_id = target_participant.user_id
-        mute_val = (typ == "mute_participant")
-        if not mute_val and target_user_id != user_id:
-            raise HTTPException(
-                status_code=403,
-                detail="Only the participant can unmute their own microphone",
-            )
-        target_participant.is_muted = mute_val
-        await db.commit()
+        request_id = (action.request_id or "").strip()
+        if not request_id or len(request_id) > 64:
+            raise HTTPException(status_code=400, detail="request_id required")
         async with SESSION_LOCK:
-            if session_id in SESSION_STATE:
-                SESSION_STATE[session_id]["participants"] \
-                    .setdefault(target, {})["is_muted"] = mute_val
-        if mute_val:
+            replay = SESSION_STATE.setdefault(session_id, {
+                "connections": {}, "participants": {},
+                "playback": {"audio_id": None, "status": "stopped", "speed": 1.0, "position": 0.0},
+            }).setdefault("mute_all_requests", {})
+            if request_id in replay:
+                return replay[request_id]
+        rows = (await db.execute(
+            select(models.Participant).join(
+                models.User, models.User.user_id == models.Participant.user_id,
+            ).filter(
+                models.Participant.session_id == session_id,
+                models.Participant.is_kicked.is_(False),
+                models.Participant.left_at.is_(None),
+                models.User.role == "student",
+            )
+        )).scalars().all()
+        changed = [row for row in rows if not row.is_muted]
+        for row in changed:
+            row.is_muted = True
+        await db.commit()
+        result = {"ok": True, "muted": len(changed), "already_muted": len(rows) - len(changed)}
+        async with SESSION_LOCK:
+            state = SESSION_STATE.get(session_id)
+            if state is not None:
+                for row in changed:
+                    meta = state["participants"].get(row.participant_id)
+                    if meta is not None:
+                        meta["is_muted"] = True
+                replay = state.setdefault("mute_all_requests", {})
+                replay[request_id] = result
+                while len(replay) > 20:
+                    replay.pop(next(iter(replay)))
+        for row in changed:
+            await ws_mgr.broadcast(session_id, {
+                "type": "participant_muted",
+                "participant_id": row.participant_id,
+                "is_muted": True,
+                "by_teacher": True,
+            })
             await SessionLogger.log_participant_muted(
-                db, session_id, target_user_id, user_id, target
+                db, session_id, row.user_id, user_id, row.participant_id,
             )
-        else:
-            await SessionLogger.log_participant_unmuted(
-                db, session_id, target_user_id, user_id, target
-            )
-        await ws_mgr.broadcast(
-            session_id,
-            {"type": "participant_muted", "participant_id": target, "is_muted": mute_val},
-        )
+        return result
 
     # teacher: kick participant 
     elif typ == "kick_participant":
@@ -2267,36 +1943,14 @@ async def session_action(
                 "Removed by teacher",
             )
 
-    # teacher: end session 
+    # teacher: end session for everyone
     elif typ == "end_session":
         if not is_teacher:
             raise HTTPException(status_code=403, detail="Teacher permission required")
         await access.require_session_access(db, current_user, classroom_session, manage=True)
-
-        q_session = await db.execute(
-            select(models.Session).filter(models.Session.session_id == session_id)
-        )
-        session = q_session.scalar_one_or_none()
-        if not session:
-            raise HTTPException(status_code=404, detail="Session not found")
-        if session.created_by != user_id:
+        if classroom_session.created_by != user_id:
             raise HTTPException(status_code=403, detail="Only creator can end session")
-        if not session.is_active:
-            raise HTTPException(status_code=400, detail="Session already ended")
-
-        # Persist the lifecycle transition before notifying clients. Without
-        # this, dashboards immediately list the ended session as active again.
-        session.is_active = False
-        session.ended_at = datetime.utcnow()
-        await close_run(db, session)
-        await db.commit()
-        async with SESSION_LOCK:
-            if session_id in SESSION_STATE:
-                SESSION_STATE[session_id].pop("classroom_check", None)
-
-        await ws_mgr.broadcast(session_id, {"type": "session_ending"})
-        asyncio.create_task(ws_mgr.close_session(session_id))
-        await SessionLogger.log_session_ended(db, session_id, user_id)
+        await classroom.end_class(db, classroom_session, reason="teacher", ended_by=user_id)
 
     # WebRTC signalling 
     # ICE candidates, offers, and answers are routed peer-to-peer through

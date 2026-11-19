@@ -214,7 +214,8 @@ class _SessionRecordingsScreenState extends State<SessionRecordingsScreen> {
             ),
             KeypadFocusTarget(
               node: _play,
-              label: '5. ${SessionText.recordingLabel(teacher: true, title: _session.recordingTitle, playing: playing)}',
+              label:
+                  '5. ${SessionText.recordingLabel(teacher: true, title: _session.recordingTitle, playing: playing)}',
               onActivate: _session.toggleRecording,
             ),
             KeypadFocusTarget(
@@ -303,7 +304,9 @@ class _SessionRecordingsScreenState extends State<SessionRecordingsScreen> {
                     _button(
                       _slower,
                       '7: ${SessionText.slower}',
-                      _session.recordingSpeed > 0.5 ? () => _speed(-0.25) : null,
+                      _session.recordingSpeed > 0.5
+                          ? () => _speed(-0.25)
+                          : null,
                     ),
                     _button(
                       _faster,

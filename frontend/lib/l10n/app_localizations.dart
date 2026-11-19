@@ -4668,7 +4668,7 @@ abstract class AppLocalizations {
   /// No description provided for @sessionKeyLine.
   ///
   /// In en, this message translates to:
-  /// **'*: Help. #: Stop app speech. 8: Last message.'**
+  /// **'*: Help and last message. #: Stop speech.'**
   String get sessionKeyLine;
 
   /// status: sentences describing microphone, hand and connection state.
@@ -4788,19 +4788,19 @@ abstract class AppLocalizations {
   /// No description provided for @sessionRecordingPlayerNone.
   ///
   /// In en, this message translates to:
-  /// **'Class recording player. No recording selected yet'**
+  /// **'Lesson recording. None chosen yet'**
   String get sessionRecordingPlayerNone;
 
   /// title: recording title.
   ///
   /// In en, this message translates to:
-  /// **'Class recording player. {title}, playing'**
+  /// **'Lesson recording. {title}, playing'**
   String sessionRecordingPlayerPlaying(String title);
 
   /// title: recording title.
   ///
   /// In en, this message translates to:
-  /// **'Class recording player. {title}, paused'**
+  /// **'Lesson recording. {title}, paused'**
   String sessionRecordingPlayerPaused(String title);
 
   /// No description provided for @sessionRecordingStudentNone.
@@ -4848,7 +4848,7 @@ abstract class AppLocalizations {
   /// Button text; 5 is the keypad key.
   ///
   /// In en, this message translates to:
-  /// **'5: Recording player'**
+  /// **'5: Lesson recording'**
   String get sessionRecordingPlayerButton;
 
   /// No description provided for @sessionOpeningPlayerToChoose.
@@ -4860,19 +4860,19 @@ abstract class AppLocalizations {
   /// No description provided for @sessionCheckLabel.
   ///
   /// In en, this message translates to:
-  /// **'Answer classroom check. Private and ungraded'**
+  /// **'Answer the teacher\'s question'**
   String get sessionCheckLabel;
 
   /// Button text; 6 is the keypad key.
   ///
   /// In en, this message translates to:
-  /// **'6: Classroom check'**
+  /// **'3: Answer the question'**
   String get sessionCheckButton;
 
   /// waiting: sentence such as "2 hands waiting."
   ///
   /// In en, this message translates to:
-  /// **'Raised hands. {waiting} Acknowledge and lower hands in order'**
+  /// **'Raised hands. {waiting}'**
   String sessionHandsLabel(String waiting);
 
   /// Button text; 2 is the keypad key.
@@ -4908,7 +4908,7 @@ abstract class AppLocalizations {
   /// No description provided for @sessionToolsLabel.
   ///
   /// In en, this message translates to:
-  /// **'Teacher tools. Invite students or end the class for everyone'**
+  /// **'Teacher tools. Add time or end the class for everyone'**
   String get sessionToolsLabel;
 
   /// Button text; 9 is the keypad key.
@@ -4968,7 +4968,7 @@ abstract class AppLocalizations {
   /// No description provided for @sessionLeaveLabel.
   ///
   /// In en, this message translates to:
-  /// **'Leave class and return to your dashboard'**
+  /// **'Leave class'**
   String get sessionLeaveLabel;
 
   /// Button text; 0 is the keypad key.
@@ -6200,7 +6200,7 @@ abstract class AppLocalizations {
   /// No description provided for @classroomCheckOpenedForYou.
   ///
   /// In en, this message translates to:
-  /// **'Your teacher opened a classroom check. Use the D-pad to reach Answer classroom check.'**
+  /// **'Your teacher asked a question. Press 3 to answer.'**
   String get classroomCheckOpenedForYou;
 
   /// No description provided for @classroomCheckHelp.
@@ -9014,7 +9014,7 @@ abstract class AppLocalizations {
   /// No description provided for @libraryScreenPauseSessionTarget.
   ///
   /// In en, this message translates to:
-  /// **'Pause audio for the whole session, key 4'**
+  /// **'Pause audio for the whole session, key 3'**
   String get libraryScreenPauseSessionTarget;
 
   /// No description provided for @libraryScreenUploadTarget.
@@ -16544,12 +16544,6 @@ abstract class AppLocalizations {
   /// **'Your school administrator issued a temporary credential. It lasts 24 hours. After 10 wrong attempts, sign-in pauses for 15 minutes. Choose a different password of at least 6 characters. This requires internet.'**
   String get authChangePasswordInfo;
 
-  /// 4 is the keypad key.
-  ///
-  /// In en, this message translates to:
-  /// **'4: Save new password'**
-  String get authSaveNewPasswordKey;
-
   /// 0 is the keypad key.
   ///
   /// In en, this message translates to:
@@ -18092,12 +18086,6 @@ abstract class AppLocalizations {
   /// **'Register'**
   String get startupRegister;
 
-  /// No description provided for @startupSettingsKey3.
-  ///
-  /// In en, this message translates to:
-  /// **'3. Settings'**
-  String get startupSettingsKey3;
-
   /// No description provided for @startupSettings.
   ///
   /// In en, this message translates to:
@@ -18833,12 +18821,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Title *'**
   String get libraryTitleRequiredField;
-
-  /// No description provided for @libraryPauseSessionKey4.
-  ///
-  /// In en, this message translates to:
-  /// **'Pause audio for the whole session, key 4'**
-  String get libraryPauseSessionKey4;
 
   /// No description provided for @libraryUploadNewAudio.
   ///
@@ -19924,24 +19906,6 @@ abstract class AppLocalizations {
   /// **'Optional · must be after opening time'**
   String get quizClosingTimeHint;
 
-  /// No description provided for @quizContinueToQuestionsKey8.
-  ///
-  /// In en, this message translates to:
-  /// **'8: Continue to questions'**
-  String get quizContinueToQuestionsKey8;
-
-  /// No description provided for @quizSaveSettingsKey8.
-  ///
-  /// In en, this message translates to:
-  /// **'8: Save settings'**
-  String get quizSaveSettingsKey8;
-
-  /// No description provided for @quizSaveQuestionKey9.
-  ///
-  /// In en, this message translates to:
-  /// **'9: Save question'**
-  String get quizSaveQuestionKey9;
-
   /// No description provided for @quizShuffleQuestions.
   ///
   /// In en, this message translates to:
@@ -19965,6 +19929,3351 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Message: {text}'**
   String messageMessage(String text);
+
+  /// Administrator dashboard section: student and teacher accounts.
+  ///
+  /// In en, this message translates to:
+  /// **'Accounts'**
+  String get adminSetupSectionAccounts;
+
+  /// Administrator dashboard section: class and subject catalog.
+  ///
+  /// In en, this message translates to:
+  /// **'Classes and subjects'**
+  String get adminSetupSectionCatalog;
+
+  /// Administrator dashboard section: weekly timetable.
+  ///
+  /// In en, this message translates to:
+  /// **'Timetable'**
+  String get adminSetupSectionTimetable;
+
+  /// Administrator dashboard section: lessons on one date.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s schedule'**
+  String get adminSetupSectionSchedule;
+
+  /// Administrator dashboard section: phones shared by several people.
+  ///
+  /// In en, this message translates to:
+  /// **'Shared phones'**
+  String get adminSetupSectionSharedPhones;
+
+  /// Administrator dashboard section: school holidays.
+  ///
+  /// In en, this message translates to:
+  /// **'Holidays'**
+  String get adminSetupSectionHolidays;
+
+  /// Administrator dashboard section: problems the server noticed.
+  ///
+  /// In en, this message translates to:
+  /// **'Issues'**
+  String get adminSetupSectionIssues;
+
+  /// Administrator dashboard section: live and ended classes.
+  ///
+  /// In en, this message translates to:
+  /// **'Class records'**
+  String get adminSetupSectionRecords;
+
+  /// Label of the menu that chooses an administrator dashboard section.
+  ///
+  /// In en, this message translates to:
+  /// **'Section'**
+  String get adminSetupSectionPicker;
+
+  /// Tooltip of the administrator refresh button.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh {section}'**
+  String adminSetupRefresh(String section);
+
+  /// Tooltip of the administrator log out button.
+  ///
+  /// In en, this message translates to:
+  /// **'Log out'**
+  String get adminSetupLogOut;
+
+  /// Spoken label of a loading indicator in the administrator dashboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading'**
+  String get adminSetupLoading;
+
+  /// Spoken label of the progress indicator while a form is saved.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving'**
+  String get adminSetupSaving;
+
+  /// Button that reloads a list that failed to load.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get adminSetupRetry;
+
+  /// Shown when an administrator list fails to load; reason is a full sentence.
+  ///
+  /// In en, this message translates to:
+  /// **'This list could not be loaded. {reason}'**
+  String adminSetupLoadFailed(String reason);
+
+  /// Fallback error message in the administrator dashboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong. Please try again.'**
+  String get adminSetupUnknownError;
+
+  /// Shown when an administrator change fails without a reason from the server.
+  ///
+  /// In en, this message translates to:
+  /// **'The change could not be saved. Refresh and try again.'**
+  String get adminSetupNotSaved;
+
+  /// Button that closes an administrator dialog without saving.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get adminSetupCancel;
+
+  /// Button that saves an administrator form.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get adminSetupSave;
+
+  /// Button that closes an administrator dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get adminSetupClose;
+
+  /// Button that deletes an item.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get adminSetupDelete;
+
+  /// Button that removes an item.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get adminSetupRemove;
+
+  /// Short visible label of an edit button.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get adminSetupEdit;
+
+  /// Spoken label of an edit button, naming the item.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit {name}'**
+  String adminSetupEditNamed(String name);
+
+  /// Form error when a required field is empty.
+  ///
+  /// In en, this message translates to:
+  /// **'{field} is required.'**
+  String adminSetupRequiredField(String field);
+
+  /// Shown for an optional date that has not been chosen.
+  ///
+  /// In en, this message translates to:
+  /// **'Not set'**
+  String get adminSetupNoDate;
+
+  /// A date field with its label and value, e.g. "First date: Monday 3 November 2026".
+  ///
+  /// In en, this message translates to:
+  /// **'{field}: {date}'**
+  String adminSetupDateValue(String field, String date);
+
+  /// Button that removes the chosen date from a date field.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear {field}'**
+  String adminSetupClearDate(String field);
+
+  /// How a date is shown, e.g. "Monday 3 November 2026".
+  ///
+  /// In en, this message translates to:
+  /// **'{weekday} {day} {month} {year}'**
+  String adminSetupDateFormat(
+    String weekday,
+    String day,
+    String month,
+    String year,
+  );
+
+  /// A date followed by a 24-hour time.
+  ///
+  /// In en, this message translates to:
+  /// **'{date}, {time}'**
+  String adminSetupDateTime(String date, String time);
+
+  /// Label of a date field.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get adminSetupDateField;
+
+  /// Status shown for a deactivated account, lesson or shared phone.
+  ///
+  /// In en, this message translates to:
+  /// **'Deactivated'**
+  String get adminSetupInactive;
+
+  /// Filter choice that shows every item.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get adminSetupFilterAll;
+
+  /// Heading of a filter that chooses which items are listed.
+  ///
+  /// In en, this message translates to:
+  /// **'Show'**
+  String get adminSetupShowFilter;
+
+  /// Account role: student.
+  ///
+  /// In en, this message translates to:
+  /// **'Student'**
+  String get adminSetupRoleStudent;
+
+  /// Account role: teacher.
+  ///
+  /// In en, this message translates to:
+  /// **'Teacher'**
+  String get adminSetupRoleTeacher;
+
+  /// Button and dialog title for adding a student or teacher.
+  ///
+  /// In en, this message translates to:
+  /// **'Add person'**
+  String get adminSetupAddPerson;
+
+  /// Label of the account search field.
+  ///
+  /// In en, this message translates to:
+  /// **'Search by name or phone number'**
+  String get adminSetupSearchLabel;
+
+  /// Tooltip of a search button.
+  ///
+  /// In en, this message translates to:
+  /// **'Search'**
+  String get adminSetupSearchButton;
+
+  /// Heading of the student or teacher filter.
+  ///
+  /// In en, this message translates to:
+  /// **'Account type'**
+  String get adminSetupAccountTypeHeading;
+
+  /// Heading of the assigned or unassigned filter.
+  ///
+  /// In en, this message translates to:
+  /// **'Class or subject assignment'**
+  String get adminSetupAssignmentHeading;
+
+  /// Number of accounts listed.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No matching accounts.} =1{1 account shown.} other{{count} accounts shown.}}'**
+  String adminSetupAccountsShown(int count);
+
+  /// Heading above the teacher accounts with their number.
+  ///
+  /// In en, this message translates to:
+  /// **'Teachers ({count})'**
+  String adminSetupTeachersHeading(int count);
+
+  /// Heading above the student accounts with their number.
+  ///
+  /// In en, this message translates to:
+  /// **'Students ({count})'**
+  String adminSetupStudentsHeading(int count);
+
+  /// Label of a person's name field.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get adminSetupNameField;
+
+  /// Label of a person's phone number field.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone number'**
+  String get adminSetupPhoneField;
+
+  /// Heading of the student or teacher choice when adding a person.
+  ///
+  /// In en, this message translates to:
+  /// **'Role'**
+  String get adminSetupRoleField;
+
+  /// Heading of a new teacher's class and subject list.
+  ///
+  /// In en, this message translates to:
+  /// **'Classes and subjects this teacher teaches'**
+  String get adminSetupTeacherPairsHeading;
+
+  /// Shown when a teacher has no classes and subjects.
+  ///
+  /// In en, this message translates to:
+  /// **'None yet. You can add them later.'**
+  String get adminSetupNoPairs;
+
+  /// Label of a class choice.
+  ///
+  /// In en, this message translates to:
+  /// **'Class'**
+  String get adminSetupClassField;
+
+  /// Label of a subject choice.
+  ///
+  /// In en, this message translates to:
+  /// **'Subject'**
+  String get adminSetupSubjectField;
+
+  /// Button that adds the chosen class and subject to a teacher.
+  ///
+  /// In en, this message translates to:
+  /// **'Add class and subject'**
+  String get adminSetupAddPair;
+
+  /// A class and subject pair.
+  ///
+  /// In en, this message translates to:
+  /// **'{className}, {subject}'**
+  String adminSetupPairLabel(String className, String subject);
+
+  /// Tooltip of the button removing a class and subject pair from a new teacher.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove {className}, {subject}'**
+  String adminSetupRemovePair(String className, String subject);
+
+  /// Shown when a chosen class has no subjects.
+  ///
+  /// In en, this message translates to:
+  /// **'This class has no subjects yet. Add subjects under Classes and subjects.'**
+  String get adminSetupNoSubjectsInClass;
+
+  /// Shown when no classes can be chosen.
+  ///
+  /// In en, this message translates to:
+  /// **'There are no active classes yet. Add one under Classes and subjects.'**
+  String get adminSetupNoActiveClasses;
+
+  /// Confirmation after adding a person.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} was added.'**
+  String adminSetupPersonAdded(String name);
+
+  /// Title of the dialog editing a person's name and phone number.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit {name}'**
+  String adminSetupEditPerson(String name);
+
+  /// Helper text under the phone number field when editing a person.
+  ///
+  /// In en, this message translates to:
+  /// **'Changing the phone number signs this person out on every phone.'**
+  String get adminSetupPhoneChangeNote;
+
+  /// Confirmation after editing a person.
+  ///
+  /// In en, this message translates to:
+  /// **'Changes to {name} were saved.'**
+  String adminSetupPersonSaved(String name);
+
+  /// Button that deactivates an account.
+  ///
+  /// In en, this message translates to:
+  /// **'Deactivate'**
+  String get adminSetupDeactivate;
+
+  /// Button that activates an account again.
+  ///
+  /// In en, this message translates to:
+  /// **'Activate'**
+  String get adminSetupActivate;
+
+  /// Spoken label of the deactivate button, naming the item.
+  ///
+  /// In en, this message translates to:
+  /// **'Deactivate {name}'**
+  String adminSetupDeactivateNamed(String name);
+
+  /// Spoken label of the activate button, naming the item.
+  ///
+  /// In en, this message translates to:
+  /// **'Activate {name}'**
+  String adminSetupActivateNamed(String name);
+
+  /// Title of the confirmation before deactivating an account.
+  ///
+  /// In en, this message translates to:
+  /// **'Deactivate {name}?'**
+  String adminSetupDeactivateTitle(String name);
+
+  /// Explains what deactivating an account does.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} will be signed out and cannot sign in until the account is activated again.'**
+  String adminSetupDeactivateMessage(String name);
+
+  /// Confirmation after activating an account.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} can sign in again.'**
+  String adminSetupActivated(String name);
+
+  /// Confirmation after deactivating an account.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} was deactivated.'**
+  String adminSetupDeactivated(String name);
+
+  /// Button that ends every sign-in of an account.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out everywhere'**
+  String get adminSetupSignOutEverywhere;
+
+  /// Spoken label of the sign out everywhere button.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign {name} out everywhere'**
+  String adminSetupSignOutNamed(String name);
+
+  /// Title of the confirmation before signing a person out everywhere.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign {name} out everywhere?'**
+  String adminSetupSignOutTitle(String name);
+
+  /// Explains sign out everywhere.
+  ///
+  /// In en, this message translates to:
+  /// **'This ends {name}\'s sign-in on every phone, for example if someone else used their number. They can sign in again with their phone number.'**
+  String adminSetupSignOutMessage(String name);
+
+  /// Confirmation after signing a person out everywhere.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} was signed out everywhere.'**
+  String adminSetupSignedOut(String name);
+
+  /// Button that changes a student's class.
+  ///
+  /// In en, this message translates to:
+  /// **'Change class'**
+  String get adminSetupStudentClassAction;
+
+  /// Button that manages a teacher's classes and subjects.
+  ///
+  /// In en, this message translates to:
+  /// **'Classes and subjects'**
+  String get adminSetupTeacherAssignmentsAction;
+
+  /// Account card detail for a student in a class.
+  ///
+  /// In en, this message translates to:
+  /// **'Student. Class: {className}'**
+  String adminSetupStudentDetail(String className);
+
+  /// Account card detail for a student without a class.
+  ///
+  /// In en, this message translates to:
+  /// **'Student. No class yet.'**
+  String get adminSetupStudentNoClass;
+
+  /// Account card detail for a teacher; pairs is a list of class and subject pairs.
+  ///
+  /// In en, this message translates to:
+  /// **'Teacher. Teaches: {pairs}'**
+  String adminSetupTeacherDetail(String pairs);
+
+  /// Account card detail for a teacher without classes.
+  ///
+  /// In en, this message translates to:
+  /// **'Teacher. No classes or subjects yet.'**
+  String get adminSetupTeacherNoPairs;
+
+  /// A person's phone number.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone: {phone}'**
+  String adminSetupPhoneDetail(String phone);
+
+  /// Title of the dialog choosing a student's class.
+  ///
+  /// In en, this message translates to:
+  /// **'Class for {name}'**
+  String adminSetupClassDialogTitle(String name);
+
+  /// Button that removes a student from their class.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from {className}'**
+  String adminSetupRemoveFromClass(String className);
+
+  /// Confirmation after putting a student in a class.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is now in {className}.'**
+  String adminSetupStudentEnrolled(String name, String className);
+
+  /// Confirmation after removing a student from a class.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} was removed from their class.'**
+  String adminSetupStudentRemoved(String name);
+
+  /// Title of the dialog managing a teacher's classes and subjects.
+  ///
+  /// In en, this message translates to:
+  /// **'Classes and subjects for {name}'**
+  String adminSetupAssignmentsTitle(String name);
+
+  /// Heading of a teacher's current classes and subjects.
+  ///
+  /// In en, this message translates to:
+  /// **'Currently teaches'**
+  String get adminSetupCurrentPairs;
+
+  /// Confirmation after assigning a teacher.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} now teaches {className}, {subject}.'**
+  String adminSetupPairAdded(String name, String className, String subject);
+
+  /// Confirmation after removing a teacher assignment.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} no longer teaches {className}, {subject}.'**
+  String adminSetupPairRemoved(String name, String className, String subject);
+
+  /// Heading of the class list.
+  ///
+  /// In en, this message translates to:
+  /// **'Classes'**
+  String get adminSetupClassesHeading;
+
+  /// Heading of the subject list.
+  ///
+  /// In en, this message translates to:
+  /// **'Subjects'**
+  String get adminSetupSubjectsHeading;
+
+  /// Button that creates a class.
+  ///
+  /// In en, this message translates to:
+  /// **'Add class'**
+  String get adminSetupAddClass;
+
+  /// Button that creates a subject.
+  ///
+  /// In en, this message translates to:
+  /// **'Add subject'**
+  String get adminSetupAddSubject;
+
+  /// Shown when there are no classes.
+  ///
+  /// In en, this message translates to:
+  /// **'No classes yet.'**
+  String get adminSetupNoClasses;
+
+  /// Shown when there are no subjects.
+  ///
+  /// In en, this message translates to:
+  /// **'No subjects yet.'**
+  String get adminSetupNoSubjects;
+
+  /// Short label of the button choosing a class's subjects.
+  ///
+  /// In en, this message translates to:
+  /// **'Subjects'**
+  String get adminSetupSubjectsButton;
+
+  /// Title and spoken label for choosing a class's subjects.
+  ///
+  /// In en, this message translates to:
+  /// **'Subjects in {className}'**
+  String adminSetupClassSubjects(String className);
+
+  /// Spoken label of an archive button.
+  ///
+  /// In en, this message translates to:
+  /// **'Archive {name}'**
+  String adminSetupArchiveNamed(String name);
+
+  /// Spoken label of a restore button.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore {name}'**
+  String adminSetupRestoreNamed(String name);
+
+  /// Shown when no subjects can be added to a class.
+  ///
+  /// In en, this message translates to:
+  /// **'There are no active subjects yet. Add a subject first.'**
+  String get adminSetupNoSubjectsToChoose;
+
+  /// Button and dialog title for a new weekly lesson.
+  ///
+  /// In en, this message translates to:
+  /// **'Add lesson to timetable'**
+  String get adminSetupAddLesson;
+
+  /// Title of the dialog editing a weekly lesson.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit timetable lesson'**
+  String get adminSetupEditLesson;
+
+  /// Timetable filter choice showing every teacher.
+  ///
+  /// In en, this message translates to:
+  /// **'All teachers'**
+  String get adminSetupAllTeachers;
+
+  /// Timetable filter choice showing every class.
+  ///
+  /// In en, this message translates to:
+  /// **'All classes'**
+  String get adminSetupAllClasses;
+
+  /// Label of a teacher choice.
+  ///
+  /// In en, this message translates to:
+  /// **'Teacher'**
+  String get adminSetupTeacherField;
+
+  /// Label of the weekday choice of a lesson.
+  ///
+  /// In en, this message translates to:
+  /// **'Day of the week'**
+  String get adminSetupWeekdayField;
+
+  /// Label of a lesson start time field.
+  ///
+  /// In en, this message translates to:
+  /// **'Start time'**
+  String get adminSetupStartField;
+
+  /// Label of a lesson end time field.
+  ///
+  /// In en, this message translates to:
+  /// **'End time'**
+  String get adminSetupEndField;
+
+  /// Helper text under a time field.
+  ///
+  /// In en, this message translates to:
+  /// **'24-hour India time (IST), for example 09:30'**
+  String get adminSetupTimeHelper;
+
+  /// Error when a time field is not a valid time.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the {field} as 24-hour time, for example 09:30.'**
+  String adminSetupTimeInvalid(String field);
+
+  /// Error when a lesson ends before it starts.
+  ///
+  /// In en, this message translates to:
+  /// **'The lesson must end after it starts.'**
+  String get adminSetupEndBeforeStart;
+
+  /// Error when the date range of a lesson is reversed.
+  ///
+  /// In en, this message translates to:
+  /// **'The last date must be on or after the first date.'**
+  String get adminSetupUntilBeforeFrom;
+
+  /// Optional first date a weekly lesson happens.
+  ///
+  /// In en, this message translates to:
+  /// **'First date'**
+  String get adminSetupValidFrom;
+
+  /// Optional last date a weekly lesson happens.
+  ///
+  /// In en, this message translates to:
+  /// **'Last date'**
+  String get adminSetupValidUntil;
+
+  /// Label of the choice of a teacher's lesson playlist.
+  ///
+  /// In en, this message translates to:
+  /// **'Lesson playlist (optional)'**
+  String get adminSetupLessonField;
+
+  /// Lesson playlist choice meaning none.
+  ///
+  /// In en, this message translates to:
+  /// **'No lesson playlist'**
+  String get adminSetupNoLesson;
+
+  /// Shown when a teacher has no lesson playlists to choose.
+  ///
+  /// In en, this message translates to:
+  /// **'This teacher has no lesson playlists for this class and subject yet.'**
+  String get adminSetupNoLessonsFound;
+
+  /// Checkbox that also lists deactivated timetable lessons.
+  ///
+  /// In en, this message translates to:
+  /// **'Show deactivated lessons'**
+  String get adminSetupShowInactive;
+
+  /// Shown when the timetable list is empty.
+  ///
+  /// In en, this message translates to:
+  /// **'No timetable lessons match.'**
+  String get adminSetupNoTimetable;
+
+  /// A lesson with its time, e.g. "09:00 to 09:45: Science, Class 5".
+  ///
+  /// In en, this message translates to:
+  /// **'{start} to {end}: {subject}, {className}'**
+  String adminSetupEntryTitle(
+    String start,
+    String end,
+    String subject,
+    String className,
+  );
+
+  /// The teacher of a lesson or class.
+  ///
+  /// In en, this message translates to:
+  /// **'Teacher: {name}'**
+  String adminSetupEntryTeacher(String name);
+
+  /// The lesson playlist chosen for a lesson.
+  ///
+  /// In en, this message translates to:
+  /// **'Lesson playlist: {title}'**
+  String adminSetupEntryLesson(String title);
+
+  /// Shown when a lesson has no lesson playlist.
+  ///
+  /// In en, this message translates to:
+  /// **'No lesson playlist chosen.'**
+  String get adminSetupEntryNoLesson;
+
+  /// First date of a weekly lesson.
+  ///
+  /// In en, this message translates to:
+  /// **'From {date}'**
+  String adminSetupEntryFrom(String date);
+
+  /// Last date of a weekly lesson.
+  ///
+  /// In en, this message translates to:
+  /// **'Until {date}'**
+  String adminSetupEntryUntil(String date);
+
+  /// Button that opens the changes to single dates of a lesson.
+  ///
+  /// In en, this message translates to:
+  /// **'Date changes'**
+  String get adminSetupDateChanges;
+
+  /// Spoken label of the date changes button.
+  ///
+  /// In en, this message translates to:
+  /// **'Date changes for {title}'**
+  String adminSetupDateChangesNamed(String title);
+
+  /// Button that deactivates a timetable lesson.
+  ///
+  /// In en, this message translates to:
+  /// **'Deactivate'**
+  String get adminSetupDeactivateLesson;
+
+  /// Button that reactivates a timetable lesson.
+  ///
+  /// In en, this message translates to:
+  /// **'Reactivate'**
+  String get adminSetupReactivateLesson;
+
+  /// Title of the confirmation before deactivating a timetable lesson.
+  ///
+  /// In en, this message translates to:
+  /// **'Deactivate this lesson?'**
+  String get adminSetupDeactivateLessonTitle;
+
+  /// Explains deactivating a timetable lesson.
+  ///
+  /// In en, this message translates to:
+  /// **'{subject} for {className} on {weekday} at {start} will no longer be scheduled.'**
+  String adminSetupDeactivateLessonMessage(
+    String subject,
+    String className,
+    String weekday,
+    String start,
+  );
+
+  /// Confirmation after saving a timetable lesson.
+  ///
+  /// In en, this message translates to:
+  /// **'Timetable saved.'**
+  String get adminSetupLessonSaved;
+
+  /// Confirmation after deactivating a timetable lesson.
+  ///
+  /// In en, this message translates to:
+  /// **'Lesson deactivated.'**
+  String get adminSetupLessonDeactivated;
+
+  /// Confirmation after reactivating a timetable lesson.
+  ///
+  /// In en, this message translates to:
+  /// **'Lesson reactivated.'**
+  String get adminSetupLessonReactivated;
+
+  /// Shown when editing a lesson, whose class and subject cannot change.
+  ///
+  /// In en, this message translates to:
+  /// **'{className}, {subject}. To change the class or subject, deactivate this lesson and add a new one.'**
+  String adminSetupClassSubjectFixed(String className, String subject);
+
+  /// Title of the list of single-date changes of a weekly lesson.
+  ///
+  /// In en, this message translates to:
+  /// **'Date changes: {lesson}, every {weekday}'**
+  String adminSetupDateChangesTitle(String lesson, String weekday);
+
+  /// Shown when a lesson has no single-date changes.
+  ///
+  /// In en, this message translates to:
+  /// **'No date changes.'**
+  String get adminSetupNoDateChanges;
+
+  /// Button that adds a change for one date of a lesson.
+  ///
+  /// In en, this message translates to:
+  /// **'Change one date'**
+  String get adminSetupAddDateChange;
+
+  /// A lesson is cancelled on one date.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled on this date.'**
+  String get adminSetupCancelledLabel;
+
+  /// A substitute teacher on one date.
+  ///
+  /// In en, this message translates to:
+  /// **'Substitute teacher: {name}'**
+  String adminSetupSubstituteLabel(String name);
+
+  /// A different lesson playlist on one date.
+  ///
+  /// In en, this message translates to:
+  /// **'A different lesson playlist is used on this date.'**
+  String get adminSetupDifferentLesson;
+
+  /// A note about a date change.
+  ///
+  /// In en, this message translates to:
+  /// **'Note: {note}'**
+  String adminSetupNoteLabel(String note);
+
+  /// Button that removes a single-date change.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear change'**
+  String get adminSetupClearChange;
+
+  /// Spoken label of the clear change button.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear the change for {date}'**
+  String adminSetupClearChangeNamed(String date);
+
+  /// Spoken label of the edit date change button.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit the change for {date}'**
+  String adminSetupEditDateChangeNamed(String date);
+
+  /// Confirmation after clearing a date change.
+  ///
+  /// In en, this message translates to:
+  /// **'The change for {date} was cleared.'**
+  String adminSetupChangeCleared(String date);
+
+  /// Title of the dialog changing one date of a lesson.
+  ///
+  /// In en, this message translates to:
+  /// **'Change one date: {lesson}'**
+  String adminSetupDateChangeTitle(String lesson);
+
+  /// Checkbox that cancels a lesson on one date.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel the lesson on this date'**
+  String get adminSetupCancelOnDate;
+
+  /// Label of the substitute teacher choice.
+  ///
+  /// In en, this message translates to:
+  /// **'Substitute teacher (optional)'**
+  String get adminSetupSubstituteField;
+
+  /// Substitute choice meaning the usual teacher teaches.
+  ///
+  /// In en, this message translates to:
+  /// **'No substitute ({name} teaches)'**
+  String adminSetupRegularTeacher(String name);
+
+  /// Label of the lesson playlist choice for one date.
+  ///
+  /// In en, this message translates to:
+  /// **'Lesson playlist on this date'**
+  String get adminSetupDateLessonField;
+
+  /// Lesson playlist choice meaning no change.
+  ///
+  /// In en, this message translates to:
+  /// **'Same as usual'**
+  String get adminSetupUsualLesson;
+
+  /// Label of the note field of a date change.
+  ///
+  /// In en, this message translates to:
+  /// **'Note (optional)'**
+  String get adminSetupNoteField;
+
+  /// Confirmation after saving a date change.
+  ///
+  /// In en, this message translates to:
+  /// **'The change for {date} was saved.'**
+  String adminSetupDateChangeSaved(String date);
+
+  /// Form error when no date was chosen.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a date.'**
+  String get adminSetupChooseDateFirst;
+
+  /// Button showing the previous day of the schedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous day'**
+  String get adminSetupPreviousDay;
+
+  /// Button showing the next day of the schedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Next day'**
+  String get adminSetupNextDay;
+
+  /// Button showing today's schedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get adminSetupToday;
+
+  /// Heading of the schedule for one date.
+  ///
+  /// In en, this message translates to:
+  /// **'Lessons on {date}'**
+  String adminSetupScheduleFor(String date);
+
+  /// Shown when a date has no lessons.
+  ///
+  /// In en, this message translates to:
+  /// **'No lessons on this date.'**
+  String get adminSetupNoLessonsOnDay;
+
+  /// The substitute teacher of a lesson.
+  ///
+  /// In en, this message translates to:
+  /// **'Teacher: {name} (substitute)'**
+  String adminSetupScheduleSubstitute(String name);
+
+  /// State of a scheduled lesson.
+  ///
+  /// In en, this message translates to:
+  /// **'Status: {state}'**
+  String adminSetupStateLabel(String state);
+
+  /// Lesson state: not yet started and still to come.
+  ///
+  /// In en, this message translates to:
+  /// **'Upcoming'**
+  String get adminSetupStateUpcoming;
+
+  /// Lesson state: the class is live.
+  ///
+  /// In en, this message translates to:
+  /// **'Live now'**
+  String get adminSetupStateLive;
+
+  /// Lesson state: the class took place.
+  ///
+  /// In en, this message translates to:
+  /// **'Held'**
+  String get adminSetupStateHeld;
+
+  /// Lesson state: cancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get adminSetupStateCancelled;
+
+  /// Lesson state: its time passed and the class never started.
+  ///
+  /// In en, this message translates to:
+  /// **'Not started'**
+  String get adminSetupStateNotStarted;
+
+  /// Shown when a lesson has a lesson playlist.
+  ///
+  /// In en, this message translates to:
+  /// **'Lesson playlist ready.'**
+  String get adminSetupLessonReady;
+
+  /// Explains shared phones and profile numbers.
+  ///
+  /// In en, this message translates to:
+  /// **'On a shared phone, each person enters the shared phone number, then their short profile number. The profile number only chooses whose account opens. It is not a password.'**
+  String get adminSetupSharedPhoneNote;
+
+  /// Button and dialog title for a new shared phone.
+  ///
+  /// In en, this message translates to:
+  /// **'Add shared phone'**
+  String get adminSetupAddSharedPhone;
+
+  /// Title of the dialog editing a shared phone.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit shared phone'**
+  String get adminSetupEditSharedPhone;
+
+  /// Label of the shared phone name field.
+  ///
+  /// In en, this message translates to:
+  /// **'Name, for example Class 5 phone'**
+  String get adminSetupSharedPhoneName;
+
+  /// Label of the shared phone number field.
+  ///
+  /// In en, this message translates to:
+  /// **'Shared phone number'**
+  String get adminSetupSharedPhoneNumber;
+
+  /// Switch that activates or deactivates a shared phone.
+  ///
+  /// In en, this message translates to:
+  /// **'Shared phone can be used'**
+  String get adminSetupSharedPhoneActiveSwitch;
+
+  /// Confirmation after saving a shared phone.
+  ///
+  /// In en, this message translates to:
+  /// **'Shared phone saved.'**
+  String get adminSetupSharedPhoneSaved;
+
+  /// Shown when there are no shared phones.
+  ///
+  /// In en, this message translates to:
+  /// **'No shared phones yet.'**
+  String get adminSetupNoSharedPhones;
+
+  /// The number of a shared phone.
+  ///
+  /// In en, this message translates to:
+  /// **'Number: {phone}'**
+  String adminSetupGroupNumber(String phone);
+
+  /// A person on a shared phone.
+  ///
+  /// In en, this message translates to:
+  /// **'{name}, {role}. Profile number {code}'**
+  String adminSetupMemberLine(String name, String role, String code);
+
+  /// Shown when a shared phone has no people.
+  ///
+  /// In en, this message translates to:
+  /// **'No people on this phone yet.'**
+  String get adminSetupNoMembers;
+
+  /// Short label of the button adding a person to a shared phone.
+  ///
+  /// In en, this message translates to:
+  /// **'Add person'**
+  String get adminSetupAddMember;
+
+  /// Title and spoken label for adding a person to a shared phone.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a person to {group}'**
+  String adminSetupAddMemberTitle(String group);
+
+  /// Label of the person search field.
+  ///
+  /// In en, this message translates to:
+  /// **'Search people by name or phone number'**
+  String get adminSetupSearchPeople;
+
+  /// Shown when the person search finds nobody.
+  ///
+  /// In en, this message translates to:
+  /// **'No matching people.'**
+  String get adminSetupNoPeopleFound;
+
+  /// Label of the person choice.
+  ///
+  /// In en, this message translates to:
+  /// **'Person'**
+  String get adminSetupPersonField;
+
+  /// A person in the person choice.
+  ///
+  /// In en, this message translates to:
+  /// **'{name}, {role}, {phone}'**
+  String adminSetupPersonOption(String name, String role, String phone);
+
+  /// Form error when no person was chosen.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a person.'**
+  String get adminSetupChoosePerson;
+
+  /// Label of the profile number field of a shared phone.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile number'**
+  String get adminSetupProfileCodeField;
+
+  /// Helper text under the profile number field.
+  ///
+  /// In en, this message translates to:
+  /// **'1 to 4 digits, different for each person on this phone.'**
+  String get adminSetupProfileCodeHelper;
+
+  /// Form error for an invalid profile number.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a profile number of 1 to 4 digits.'**
+  String get adminSetupProfileCodeInvalid;
+
+  /// Confirmation after adding a person to a shared phone.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} was added to {group}.'**
+  String adminSetupMemberAdded(String name, String group);
+
+  /// Tooltip of the button removing a person from a shared phone.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove {name} from {group}'**
+  String adminSetupRemoveMemberNamed(String name, String group);
+
+  /// Title of the confirmation before removing a person from a shared phone.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove {name} from {group}?'**
+  String adminSetupRemoveMemberTitle(String name, String group);
+
+  /// Explains removing a person from a shared phone.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} will no longer be able to choose their profile on this shared phone.'**
+  String adminSetupRemoveMemberMessage(String name);
+
+  /// Confirmation after removing a person from a shared phone.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} was removed from {group}.'**
+  String adminSetupMemberRemoved(String name, String group);
+
+  /// Explains holidays.
+  ///
+  /// In en, this message translates to:
+  /// **'No lessons are scheduled on holidays.'**
+  String get adminSetupHolidayNote;
+
+  /// Button and dialog title for a new holiday.
+  ///
+  /// In en, this message translates to:
+  /// **'Add holiday'**
+  String get adminSetupAddHoliday;
+
+  /// Label of the holiday name field.
+  ///
+  /// In en, this message translates to:
+  /// **'Holiday name'**
+  String get adminSetupHolidayName;
+
+  /// Shown when there are no holidays.
+  ///
+  /// In en, this message translates to:
+  /// **'No holidays yet.'**
+  String get adminSetupNoHolidays;
+
+  /// Confirmation after adding a holiday.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} on {date} was added.'**
+  String adminSetupHolidayAdded(String name, String date);
+
+  /// Spoken label of the delete holiday button.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete {name} on {date}'**
+  String adminSetupDeleteHolidayNamed(String name, String date);
+
+  /// Title of the confirmation before deleting a holiday.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this holiday?'**
+  String get adminSetupDeleteHolidayTitle;
+
+  /// Explains deleting a holiday.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} on {date} will be removed, and lessons will be scheduled on that date again.'**
+  String adminSetupDeleteHolidayMessage(String name, String date);
+
+  /// Confirmation after deleting a holiday.
+  ///
+  /// In en, this message translates to:
+  /// **'The holiday was deleted.'**
+  String get adminSetupHolidayDeleted;
+
+  /// Issue filter and status: not yet resolved.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get adminSetupIssuesOpen;
+
+  /// Issue filter and status: resolved.
+  ///
+  /// In en, this message translates to:
+  /// **'Resolved'**
+  String get adminSetupIssuesResolved;
+
+  /// Shown when there are no issues.
+  ///
+  /// In en, this message translates to:
+  /// **'No issues to show.'**
+  String get adminSetupNoIssues;
+
+  /// How often an issue happened and when it was last seen.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Seen once.} other{Seen {count} times.}} Last seen {when}.'**
+  String adminSetupIssueSeen(int count, String when);
+
+  /// Button that marks an issue resolved.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark resolved'**
+  String get adminSetupMarkResolved;
+
+  /// Spoken label of the mark resolved button.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark resolved: {message}'**
+  String adminSetupMarkResolvedNamed(String message);
+
+  /// Confirmation after resolving an issue.
+  ///
+  /// In en, this message translates to:
+  /// **'Issue marked resolved.'**
+  String get adminSetupIssueResolved;
+
+  /// Class records filter: live classes.
+  ///
+  /// In en, this message translates to:
+  /// **'Live'**
+  String get adminSetupRecordsLive;
+
+  /// Class records filter and status: ended classes.
+  ///
+  /// In en, this message translates to:
+  /// **'Ended'**
+  String get adminSetupRecordsEnded;
+
+  /// Shown when there are no class records.
+  ///
+  /// In en, this message translates to:
+  /// **'No classes to show.'**
+  String get adminSetupNoRecords;
+
+  /// Title of a class record.
+  ///
+  /// In en, this message translates to:
+  /// **'{subject}, {className}'**
+  String adminSetupRecordTitle(String subject, String className);
+
+  /// Status of a live class.
+  ///
+  /// In en, this message translates to:
+  /// **'Live now'**
+  String get adminSetupRecordLive;
+
+  /// Status of a live class with its end time.
+  ///
+  /// In en, this message translates to:
+  /// **'Live now. Ends at {clock}'**
+  String adminSetupRecordLiveUntil(String clock);
+
+  /// When a class started.
+  ///
+  /// In en, this message translates to:
+  /// **'Started {when}'**
+  String adminSetupRecordStarted(String when);
+
+  /// When a class ended.
+  ///
+  /// In en, this message translates to:
+  /// **'Ended {when}'**
+  String adminSetupRecordEnded(String when);
+
+  /// End reason: the teacher.
+  ///
+  /// In en, this message translates to:
+  /// **'The teacher ended the class.'**
+  String get adminSetupEndedByTeacher;
+
+  /// End reason: an administrator.
+  ///
+  /// In en, this message translates to:
+  /// **'An administrator ended the class.'**
+  String get adminSetupEndedByAdmin;
+
+  /// End reason: automatic.
+  ///
+  /// In en, this message translates to:
+  /// **'The class ended automatically at its end time.'**
+  String get adminSetupEndedAutomatically;
+
+  /// Any other end reason, as recorded by the server.
+  ///
+  /// In en, this message translates to:
+  /// **'End reason: {reason}'**
+  String adminSetupEndedOther(String reason);
+
+  /// How many students joined a class.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No students joined.} =1{1 student joined.} other{{count} students joined.}}'**
+  String adminSetupStudentsJoined(int count);
+
+  /// Extra minutes added to a class.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No extra time added.} =1{1 extra minute added.} other{{count} extra minutes added.}}'**
+  String adminSetupExtensionMinutes(int count);
+
+  /// Button that extends a live class.
+  ///
+  /// In en, this message translates to:
+  /// **'Add 15 minutes'**
+  String get adminSetupAddFifteen;
+
+  /// Spoken label of the extend button.
+  ///
+  /// In en, this message translates to:
+  /// **'Add 15 minutes to {title}'**
+  String adminSetupAddFifteenNamed(String title);
+
+  /// Button that ends a live class.
+  ///
+  /// In en, this message translates to:
+  /// **'End class for everyone'**
+  String get adminSetupEndForEveryone;
+
+  /// Spoken label of the end class button.
+  ///
+  /// In en, this message translates to:
+  /// **'End {title} for everyone'**
+  String adminSetupEndForEveryoneNamed(String title);
+
+  /// Title of the confirmation before ending a live class.
+  ///
+  /// In en, this message translates to:
+  /// **'End this class for everyone?'**
+  String get adminSetupEndTitle;
+
+  /// Explains ending a live class.
+  ///
+  /// In en, this message translates to:
+  /// **'{title} will end now for the teacher and every student.'**
+  String adminSetupEndMessage(String title);
+
+  /// Button that cancels ending a class.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep class going'**
+  String get adminSetupKeepClass;
+
+  /// Button that confirms ending a class.
+  ///
+  /// In en, this message translates to:
+  /// **'End class'**
+  String get adminSetupEndClass;
+
+  /// Confirmation after ending a class.
+  ///
+  /// In en, this message translates to:
+  /// **'The class was ended.'**
+  String get adminSetupEnded;
+
+  /// Confirmation after extending a class.
+  ///
+  /// In en, this message translates to:
+  /// **'The class now ends at {clock}.'**
+  String adminSetupExtended(String clock);
+
+  /// Title of the sign-in screen for students and teachers.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in'**
+  String get loginScreenName;
+
+  /// Short arrival speech on the sign-in screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Type your phone number, then press 1 to sign in.'**
+  String get loginIntro;
+
+  /// Focus label of the phone number field.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone number. Type it with the number keys.'**
+  String get loginPhoneField;
+
+  /// Visible label of the phone number field.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone number'**
+  String get loginPhoneLabel;
+
+  /// Focus label of the shared-phone profile number field.
+  ///
+  /// In en, this message translates to:
+  /// **'Your profile number on this shared phone'**
+  String get loginProfileField;
+
+  /// Visible label of the shared-phone profile number field.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile number'**
+  String get loginProfileLabel;
+
+  /// Spoken when the number belongs to a shared phone.
+  ///
+  /// In en, this message translates to:
+  /// **'This phone is shared. Type your profile number, then press 1.'**
+  String get loginEnterProfileCode;
+
+  /// Key 1 on the sign-in screens.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in'**
+  String get loginKeySignIn;
+
+  /// Key 1 after entering a shared-phone profile number.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get loginKeyContinue;
+
+  /// Optional SIM suggestion on the sign-in screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill in my number from the SIM card'**
+  String get loginKeySim;
+
+  /// Opens the administrator password sign-in.
+  ///
+  /// In en, this message translates to:
+  /// **'Administrator sign in'**
+  String get loginKeyAdmin;
+
+  /// Key 0 on the profile number step.
+  ///
+  /// In en, this message translates to:
+  /// **'Use a different number'**
+  String get loginKeyChangeNumber;
+
+  /// Sign-in error when the number is missing.
+  ///
+  /// In en, this message translates to:
+  /// **'Type your phone number first.'**
+  String get loginErrorEnterPhone;
+
+  /// Sign-in error when the profile number is missing.
+  ///
+  /// In en, this message translates to:
+  /// **'Type your profile number first.'**
+  String get loginErrorEnterProfile;
+
+  /// Sign-in error for an unknown number.
+  ///
+  /// In en, this message translates to:
+  /// **'This number is not registered. Ask your school administrator to add you.'**
+  String get loginNumberNotRegistered;
+
+  /// Sign-in error for a wrong shared-phone profile number.
+  ///
+  /// In en, this message translates to:
+  /// **'That profile number is not on this phone. Try again.'**
+  String get loginProfileNotRecognised;
+
+  /// Sign-in error when an administrator number is typed.
+  ///
+  /// In en, this message translates to:
+  /// **'Administrators sign in with a password. Press 3.'**
+  String get loginAdminUsesPassword;
+
+  /// Spoken while sign-in is in progress.
+  ///
+  /// In en, this message translates to:
+  /// **'Signing in.'**
+  String get loginSigningIn;
+
+  /// Title of the administrator password screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Administrator sign in'**
+  String get adminLoginScreenName;
+
+  /// Short arrival speech on the administrator sign-in screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Type your phone number and password, then press 1.'**
+  String get adminLoginIntro;
+
+  /// Spoken when a class to open has ended or has not started.
+  ///
+  /// In en, this message translates to:
+  /// **'That class is not live now.'**
+  String get classNoLongerLive;
+
+  /// Title of the ringing class alert.
+  ///
+  /// In en, this message translates to:
+  /// **'Class has started'**
+  String get classAlertTitle;
+
+  /// Private body text of the ringing class notification.
+  ///
+  /// In en, this message translates to:
+  /// **'Your class has started. Open to join.'**
+  String get classAlertBody;
+
+  /// Silent notification left after the ringing stops.
+  ///
+  /// In en, this message translates to:
+  /// **'Your class is live. Open to join.'**
+  String get classAlertWaitingBody;
+
+  /// Android notification channel for ringing class alerts.
+  ///
+  /// In en, this message translates to:
+  /// **'Class starting'**
+  String get classAlertChannelName;
+
+  /// Android channel description.
+  ///
+  /// In en, this message translates to:
+  /// **'Rings for up to one minute when your class starts.'**
+  String get classAlertChannelDescription;
+
+  /// Android channel for the silent class notification.
+  ///
+  /// In en, this message translates to:
+  /// **'Class live'**
+  String get classAlertWaitingChannelName;
+
+  /// Android channel description.
+  ///
+  /// In en, this message translates to:
+  /// **'Stays while your class is live so you can join.'**
+  String get classAlertWaitingChannelDescription;
+
+  /// Class alert speech without a subject.
+  ///
+  /// In en, this message translates to:
+  /// **'Your class has started.'**
+  String get classAlertStarted;
+
+  /// Class alert speech.
+  ///
+  /// In en, this message translates to:
+  /// **'{subject} class has started.'**
+  String classAlertSubjectStarted(String subject);
+
+  /// Keys on the in-app class alert.
+  ///
+  /// In en, this message translates to:
+  /// **'Press OK or 1 to join. Press 0 to stop the ringing.'**
+  String get classAlertKeys;
+
+  /// Join button on the class alert.
+  ///
+  /// In en, this message translates to:
+  /// **'Join class'**
+  String get classAlertJoin;
+
+  /// Dismiss button on the class alert.
+  ///
+  /// In en, this message translates to:
+  /// **'Not now'**
+  String get classAlertNotNow;
+
+  /// Title of the student and teacher home screens.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get homeTitle;
+
+  /// Home status while loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking for your class.'**
+  String get homeChecking;
+
+  /// Home status when offline.
+  ///
+  /// In en, this message translates to:
+  /// **'No internet. Your class will appear when you are back online.'**
+  String get homeOffline;
+
+  /// Spoken after the sign-in expired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please sign in again.'**
+  String get homeSignInAgain;
+
+  /// Ends the short home arrival speech.
+  ///
+  /// In en, this message translates to:
+  /// **'Press star for all options.'**
+  String get homeStarForAll;
+
+  /// Student home when a class is live.
+  ///
+  /// In en, this message translates to:
+  /// **'{subject} class is live. Press 1 to join.'**
+  String homeBriefLive(String subject);
+
+  /// Student home before a class.
+  ///
+  /// In en, this message translates to:
+  /// **'Next class: {subject} at {time}. You can use other options while you wait.'**
+  String homeBriefNext(String subject, String time);
+
+  /// Student home with no class.
+  ///
+  /// In en, this message translates to:
+  /// **'No class right now. Press 2 to continue learning.'**
+  String get homeBriefNoClass;
+
+  /// Key 1 when a class is live.
+  ///
+  /// In en, this message translates to:
+  /// **'Join {subject} class'**
+  String homeJoinClass(String subject);
+
+  /// Key 1 when there is no class.
+  ///
+  /// In en, this message translates to:
+  /// **'No class now'**
+  String get homeNoClassNow;
+
+  /// Spoken when key 1 has no class.
+  ///
+  /// In en, this message translates to:
+  /// **'Your class will appear here by itself when your teacher starts it.'**
+  String get homeNoClassReason;
+
+  /// Key 1 before a class: consent to automatic joining.
+  ///
+  /// In en, this message translates to:
+  /// **'Join {subject} automatically when it starts at {time}'**
+  String homeJoinWhenStarts(String subject, String time);
+
+  /// Key 1 after choosing automatic joining.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop joining automatically'**
+  String get homeCancelAutoJoin;
+
+  /// Spoken after consenting to automatic joining.
+  ///
+  /// In en, this message translates to:
+  /// **'I will open {subject} when your teacher starts it, if you stay on this screen. You will join muted. Press 1 to cancel.'**
+  String homeAutoJoinArmed(String subject);
+
+  /// Spoken after cancelling automatic joining.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatic joining cancelled.'**
+  String get homeAutoJoinCancelled;
+
+  /// Spoken when automatic joining ends because another screen opened.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatic joining stopped because you left the home screen.'**
+  String get homeAutoJoinLeft;
+
+  /// Spoken when automatic joining opens the class.
+  ///
+  /// In en, this message translates to:
+  /// **'{subject} has started. Joining you now, muted.'**
+  String homeAutoJoined(String subject);
+
+  /// Spoken when the app reopens an interrupted class.
+  ///
+  /// In en, this message translates to:
+  /// **'Returning to your class.'**
+  String get homeReturningToClass;
+
+  /// Home key 2.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue learning'**
+  String get homeContinueLearning;
+
+  /// Spoken when nothing is in progress.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing to continue yet. Press 3 for learning journeys.'**
+  String get homeNothingToContinue;
+
+  /// Spoken when continuing a journey.
+  ///
+  /// In en, this message translates to:
+  /// **'Continuing {title}.'**
+  String homeContinuing(String title);
+
+  /// Home key 3.
+  ///
+  /// In en, this message translates to:
+  /// **'Learning journeys'**
+  String get homeJourneys;
+
+  /// Home quizzes choice.
+  ///
+  /// In en, this message translates to:
+  /// **'Quizzes'**
+  String get homeQuizzes;
+
+  /// Home key 5.
+  ///
+  /// In en, this message translates to:
+  /// **'More'**
+  String get homeMore;
+
+  /// Arrival speech on the More menu.
+  ///
+  /// In en, this message translates to:
+  /// **'Less used options.'**
+  String get homeMoreBrief;
+
+  /// Home details.
+  ///
+  /// In en, this message translates to:
+  /// **'Your class: {className}.'**
+  String homeYourClass(String className);
+
+  /// A subject taught in a class.
+  ///
+  /// In en, this message translates to:
+  /// **'{subject}, {className}'**
+  String homeSubjectInClass(String subject, String className);
+
+  /// Teacher home with a live class.
+  ///
+  /// In en, this message translates to:
+  /// **'Your {subject} class is live. Press 1 to return to it.'**
+  String teacherHomeBriefLive(String subject);
+
+  /// Teacher home when a class can start.
+  ///
+  /// In en, this message translates to:
+  /// **'{place} is ready. Press 1 to start it.'**
+  String teacherHomeBriefReady(String place);
+
+  /// Teacher home before a class.
+  ///
+  /// In en, this message translates to:
+  /// **'Next class: {place} at {time}.'**
+  String teacherHomeBriefNext(String place, String time);
+
+  /// Teacher home with no class.
+  ///
+  /// In en, this message translates to:
+  /// **'No class on your timetable now.'**
+  String get teacherHomeBriefNoClass;
+
+  /// Teacher key 1 with a live class.
+  ///
+  /// In en, this message translates to:
+  /// **'Return to {subject} class'**
+  String teacherHomeReturn(String subject);
+
+  /// Teacher key 1 when a class can start.
+  ///
+  /// In en, this message translates to:
+  /// **'Start {place}'**
+  String teacherHomeStart(String place);
+
+  /// Teacher key 1 before a class can start.
+  ///
+  /// In en, this message translates to:
+  /// **'Next: {place} at {time}'**
+  String teacherHomeNext(String place, String time);
+
+  /// Spoken when a class cannot start yet.
+  ///
+  /// In en, this message translates to:
+  /// **'You can start it from {time}.'**
+  String teacherHomeOpensAt(String time);
+
+  /// Spoken when key 1 has no class.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing is scheduled now. To teach anyway, press 5 for More, then 3.'**
+  String get teacherHomeNoClassReason;
+
+  /// Spoken while starting.
+  ///
+  /// In en, this message translates to:
+  /// **'Starting your class.'**
+  String get teacherHomeStarting;
+
+  /// Spoken on entering a newly started class.
+  ///
+  /// In en, this message translates to:
+  /// **'{subject} class started. Your students are being called.'**
+  String teacherHomeStarted(String subject);
+
+  /// More menu choice for teachers.
+  ///
+  /// In en, this message translates to:
+  /// **'Start an unscheduled class'**
+  String get teacherHomeUnscheduled;
+
+  /// Picker title for an unscheduled class.
+  ///
+  /// In en, this message translates to:
+  /// **'Which class do you want to teach now?'**
+  String get teacherHomeUnscheduledTitle;
+
+  /// Why an unscheduled class cannot start.
+  ///
+  /// In en, this message translates to:
+  /// **'You already have a live class. Press 1 on Home to return to it.'**
+  String get teacherHomeAlreadyLive;
+
+  /// More menu choice for teachers.
+  ///
+  /// In en, this message translates to:
+  /// **'Change class and subject for lessons'**
+  String get teacherHomeChangeWorkspace;
+
+  /// Why the class cannot be changed.
+  ///
+  /// In en, this message translates to:
+  /// **'You teach one class and subject.'**
+  String get teacherHomeOneWorkspace;
+
+  /// Teacher home details.
+  ///
+  /// In en, this message translates to:
+  /// **'Lessons, quizzes and playlists are for {place}.'**
+  String teacherHomeContentFor(String place);
+
+  /// Teacher home details for later classes.
+  ///
+  /// In en, this message translates to:
+  /// **'Later: {place} at {time}.'**
+  String teacherHomeLaterItem(String place, String time);
+
+  /// Teacher key 7 in class.
+  ///
+  /// In en, this message translates to:
+  /// **'Class list: who is here, who left, who has not joined'**
+  String get keyClassListWhoJoined;
+
+  /// Teacher key 8 in class.
+  ///
+  /// In en, this message translates to:
+  /// **'Mute all students'**
+  String get keyMuteAllStudents;
+
+  /// Teacher key 9 in class.
+  ///
+  /// In en, this message translates to:
+  /// **'Teacher tools: add time or end the class for everyone'**
+  String get keyTeacherToolsAddTimeOrEnd;
+
+  /// Spoken before the first microphone request.
+  ///
+  /// In en, this message translates to:
+  /// **'You join muted. SEEDS will now ask to use the microphone, so you can speak when you choose.'**
+  String get sessionMicAskOnce;
+
+  /// Spoken before asking again on Unmute.
+  ///
+  /// In en, this message translates to:
+  /// **'To speak, allow the microphone.'**
+  String get sessionMicAskAgain;
+
+  /// Spoken when microphone access was refused.
+  ///
+  /// In en, this message translates to:
+  /// **'The microphone is still off. You can keep listening.'**
+  String get sessionMicStillOff;
+
+  /// Dialog title when Android will not ask again.
+  ///
+  /// In en, this message translates to:
+  /// **'Microphone is blocked'**
+  String get sessionMicSettingsTitle;
+
+  /// Dialog message.
+  ///
+  /// In en, this message translates to:
+  /// **'Android will not ask again. To speak, open Settings, choose Permissions, and allow the microphone. You can keep listening.'**
+  String get sessionMicSettingsMessage;
+
+  /// Dialog confirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Open settings'**
+  String get sessionMicSettingsOpen;
+
+  /// Dialog cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep listening'**
+  String get sessionMicSettingsCancel;
+
+  /// Teacher key 8 button.
+  ///
+  /// In en, this message translates to:
+  /// **'3: Mute all students'**
+  String get sessionMuteAllButton;
+
+  /// Teacher key 8 focus label.
+  ///
+  /// In en, this message translates to:
+  /// **'Mute all students'**
+  String get sessionMuteAllLabel;
+
+  /// Spoken while mute all is pending.
+  ///
+  /// In en, this message translates to:
+  /// **'Still muting everyone. Please wait.'**
+  String get sessionMuteAllWaiting;
+
+  /// Spoken after mute all.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 student muted.} other{{count} students muted.}}'**
+  String sessionMuteAllDone(int count);
+
+  /// Spoken when nobody needed muting.
+  ///
+  /// In en, this message translates to:
+  /// **'Every student was already muted.'**
+  String get sessionMuteAllNone;
+
+  /// Spoken when mute all failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Muting everyone was not confirmed. {reason} Press 3 to try again.'**
+  String sessionMuteAllNotConfirmed(String reason);
+
+  /// Teacher key 7 button.
+  ///
+  /// In en, this message translates to:
+  /// **'4: Class list'**
+  String get sessionClassListButton;
+
+  /// Teacher key 7 focus label.
+  ///
+  /// In en, this message translates to:
+  /// **'Class list. {people}'**
+  String sessionClassListLabel(String people);
+
+  /// Class list screen title.
+  ///
+  /// In en, this message translates to:
+  /// **'Class list'**
+  String get sessionClassListTitle;
+
+  /// Class list counts.
+  ///
+  /// In en, this message translates to:
+  /// **'{here} here, {left} left, {notJoined} not joined yet.'**
+  String sessionRosterCounts(int here, int left, int notJoined);
+
+  /// Class list key 1.
+  ///
+  /// In en, this message translates to:
+  /// **'Here now: {count}'**
+  String sessionHereNow(int count);
+
+  /// Class list key 2.
+  ///
+  /// In en, this message translates to:
+  /// **'Joined, then left: {count}'**
+  String sessionLeftClass(int count);
+
+  /// Class list key 3.
+  ///
+  /// In en, this message translates to:
+  /// **'Not joined yet: {count}'**
+  String sessionNotJoined(int count);
+
+  /// List title.
+  ///
+  /// In en, this message translates to:
+  /// **'Here now'**
+  String get sessionHereNowTitle;
+
+  /// List title.
+  ///
+  /// In en, this message translates to:
+  /// **'Joined, then left'**
+  String get sessionLeftClassTitle;
+
+  /// List title.
+  ///
+  /// In en, this message translates to:
+  /// **'Not joined yet'**
+  String get sessionNotJoinedTitle;
+
+  /// A removed student in the class list.
+  ///
+  /// In en, this message translates to:
+  /// **'{name}, removed by you'**
+  String sessionRemovedName(String name);
+
+  /// Spoken for an empty list.
+  ///
+  /// In en, this message translates to:
+  /// **'Nobody.'**
+  String get sessionNobody;
+
+  /// Class list key 4.
+  ///
+  /// In en, this message translates to:
+  /// **'Ring students who have not joined'**
+  String get sessionRemindNotJoined;
+
+  /// Why there is nobody to remind.
+  ///
+  /// In en, this message translates to:
+  /// **'Everyone has joined.'**
+  String get sessionEveryoneJoined;
+
+  /// Spoken after a reminder.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{Nobody to ring now.} =1{Ringing 1 student.} other{Ringing {count} students.}}'**
+  String sessionReminderSent(int count);
+
+  /// Spoken when some students are in the 5-minute pause.
+  ///
+  /// In en, this message translates to:
+  /// **'Ringing {queued}. {cooling} were rung in the last 5 minutes and will not be rung again yet.'**
+  String sessionReminderSentSomeWaiting(int queued, int cooling);
+
+  /// Spoken when the roster failed.
+  ///
+  /// In en, this message translates to:
+  /// **'The class list could not be read. Try again.'**
+  String get sessionRosterUnavailable;
+
+  /// Teacher tools key 1.
+  ///
+  /// In en, this message translates to:
+  /// **'Add 15 minutes'**
+  String get sessionAddTime;
+
+  /// Why time cannot be added.
+  ///
+  /// In en, this message translates to:
+  /// **'No more time can be added before the next class.'**
+  String get sessionCannotAddTime;
+
+  /// Class end time.
+  ///
+  /// In en, this message translates to:
+  /// **'Class ends by {clock}.'**
+  String sessionEndsBy(String clock);
+
+  /// Spoken after adding time.
+  ///
+  /// In en, this message translates to:
+  /// **'Done. The class now ends by {clock}.'**
+  String sessionExtendedUntil(String clock);
+
+  /// Warning for teachers when no time can be added.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes, plural, =1{The class ends automatically in 1 minute.} other{The class ends automatically in {minutes} minutes.}}'**
+  String sessionEndingSoonTeacher(int minutes);
+
+  /// Warning for teachers.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes, plural, =1{The class ends automatically in 1 minute. To add 15 minutes, press 8 then 1.} other{The class ends automatically in {minutes} minutes. To add 15 minutes, press 8 then 1.}}'**
+  String sessionEndingSoonTeacherExtend(int minutes);
+
+  /// Warning for students.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes, plural, =1{The class ends in 1 minute.} other{The class ends in {minutes} minutes.}}'**
+  String sessionEndingSoonStudent(int minutes);
+
+  /// Spoken when a prepared lesson is selected.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s lesson is ready. Press 5 to play it for the class.'**
+  String get sessionLessonReady;
+
+  /// Spoken when the next lesson part is selected.
+  ///
+  /// In en, this message translates to:
+  /// **'The next part of today\'s lesson is ready. Press 5 to play it.'**
+  String get sessionLessonNextReady;
+
+  /// Short speech on joining a class as a student.
+  ///
+  /// In en, this message translates to:
+  /// **'You are in class and muted. Press 1 to speak, 2 to raise your hand.'**
+  String get sessionJoinedStudentBrief;
+
+  /// Short speech on entering a class as a teacher.
+  ///
+  /// In en, this message translates to:
+  /// **'Your class is live. You are muted. Press 1 to speak, 3 to mute all students.'**
+  String get sessionJoinedTeacherBrief;
+
+  /// Ends short class speech.
+  ///
+  /// In en, this message translates to:
+  /// **'Press star for all keys.'**
+  String get sessionStarForKeys;
+
+  /// Settings toggle for automatic offline preparation.
+  ///
+  /// In en, this message translates to:
+  /// **'Prepare new journeys for offline use on Wi-Fi: {state}'**
+  String settingsAutoDownload(String state);
+
+  /// Spoken when the setting is turned on.
+  ///
+  /// In en, this message translates to:
+  /// **'Journeys will be prepared on Wi-Fi.'**
+  String get settingsAutoDownloadOn;
+
+  /// Spoken when the setting is turned off.
+  ///
+  /// In en, this message translates to:
+  /// **'Journeys will not be prepared automatically.'**
+  String get settingsAutoDownloadOff;
+
+  /// Admin add person: teacher saved without a class and subject
+  ///
+  /// In en, this message translates to:
+  /// **'Add at least one class and subject for the teacher.'**
+  String get adminSetupTeacherNeedsPair;
+
+  /// Admin timetable: no teacher can be scheduled yet
+  ///
+  /// In en, this message translates to:
+  /// **'No teacher has a class and subject yet. Add them to a teacher in People first.'**
+  String get adminSetupTeacherHasNoPairs;
+
+  /// Admin timetable: heading above the weekday choices
+  ///
+  /// In en, this message translates to:
+  /// **'Days'**
+  String get adminSetupDaysField;
+
+  /// Admin timetable: no weekday chosen
+  ///
+  /// In en, this message translates to:
+  /// **'Choose at least one day.'**
+  String get adminSetupChooseDays;
+
+  /// Admin timetable: lessons created
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Lesson added.} other{{count} lessons added, one for each day.}}'**
+  String adminSetupLessonsAdded(int count);
+
+  /// Admin timetable: heading of the grouping choice
+  ///
+  /// In en, this message translates to:
+  /// **'Arrange by'**
+  String get adminSetupArrangeBy;
+
+  /// Admin timetable: group lessons by weekday
+  ///
+  /// In en, this message translates to:
+  /// **'Day'**
+  String get adminSetupArrangeDay;
+
+  /// Admin timetable: group lessons by teacher
+  ///
+  /// In en, this message translates to:
+  /// **'Teacher'**
+  String get adminSetupArrangeTeacher;
+
+  /// Admin timetable: group lessons by class
+  ///
+  /// In en, this message translates to:
+  /// **'Class'**
+  String get adminSetupArrangeClass;
+
+  /// Admin timetable: group heading with lesson count
+  ///
+  /// In en, this message translates to:
+  /// **'{name} · {count, plural, =1{1 lesson} other{{count} lessons}}'**
+  String adminSetupGroupHeading(String name, int count);
+
+  /// Admin timetable: lesson title with its weekday
+  ///
+  /// In en, this message translates to:
+  /// **'{day}, {title}'**
+  String adminSetupEntryDayTitle(String day, String title);
+
+  /// Admin timetable: text filter over teacher, class and subject
+  ///
+  /// In en, this message translates to:
+  /// **'Search lessons'**
+  String get adminSetupTimetableSearch;
+
+  /// Admin timetable: search found nothing
+  ///
+  /// In en, this message translates to:
+  /// **'No lessons match.'**
+  String get adminSetupNoMatchingLessons;
+
+  /// Live class: visible button that opens the less used actions
+  ///
+  /// In en, this message translates to:
+  /// **'8: More'**
+  String get sessionMoreButton;
+
+  /// Live class: spoken name of the More button
+  ///
+  /// In en, this message translates to:
+  /// **'More options'**
+  String get sessionMoreLabel;
+
+  /// Live class: title of the More screen
+  ///
+  /// In en, this message translates to:
+  /// **'More options'**
+  String get sessionMoreTitle;
+
+  /// Live class More: teacher starts or closes a classroom check
+  ///
+  /// In en, this message translates to:
+  /// **'Classroom check'**
+  String get sessionMoreClassroomCheck;
+
+  /// Live class More: hear the class status and any updates
+  ///
+  /// In en, this message translates to:
+  /// **'Class status'**
+  String get sessionMoreStatus;
+
+  /// Live class More: student hears the lesson recording status
+  ///
+  /// In en, this message translates to:
+  /// **'What is playing'**
+  String get sessionMoreWhatIsPlaying;
+
+  /// Live class More: student hears who is in class
+  ///
+  /// In en, this message translates to:
+  /// **'Who is in class'**
+  String get sessionMoreWhoIsHere;
+
+  /// Live class key help, teacher key 2
+  ///
+  /// In en, this message translates to:
+  /// **'Raised hands'**
+  String get sessionKeyRaisedHands;
+
+  /// Live class key help, teacher key 4
+  ///
+  /// In en, this message translates to:
+  /// **'Class list'**
+  String get sessionKeyClassList;
+
+  /// Live class key help, teacher key 5
+  ///
+  /// In en, this message translates to:
+  /// **'Lesson recording'**
+  String get sessionKeyLessonRecording;
+
+  /// Live class key help, student key 3 while a check is open
+  ///
+  /// In en, this message translates to:
+  /// **'Answer the question'**
+  String get sessionKeyAnswerQuestion;
+
+  /// Live class key help, key 9
+  ///
+  /// In en, this message translates to:
+  /// **'More options'**
+  String get sessionKeyMore;
+
+  /// Live class key help, key 0
+  ///
+  /// In en, this message translates to:
+  /// **'Leave class'**
+  String get sessionKeyLeave;
+
+  /// Teacher class screen key 6
+  ///
+  /// In en, this message translates to:
+  /// **'9: End class for everyone'**
+  String get sessionEndClassButton;
+
+  /// Teacher class screen key 6, spoken
+  ///
+  /// In en, this message translates to:
+  /// **'End class for everyone. Asks to confirm'**
+  String get sessionEndClassLabel;
+
+  /// Teacher list item
+  ///
+  /// In en, this message translates to:
+  /// **'Quiz: {title}, {count, plural, =1{1 question} other{{count} questions}}'**
+  String sessionActivityQuizItem(String title, int count);
+
+  /// Teacher list item
+  ///
+  /// In en, this message translates to:
+  /// **'Journey: {title}'**
+  String sessionActivityJourneyItem(String title);
+
+  /// Teacher list item that stops the running one
+  ///
+  /// In en, this message translates to:
+  /// **'Stop offering {title}'**
+  String sessionActivityStopItem(String title);
+
+  /// Teacher confirmation
+  ///
+  /// In en, this message translates to:
+  /// **'{title} is open for the class. Press the same key again to hear who is left.'**
+  String sessionActivityStartedTeacher(String title);
+
+  /// Teacher confirmation
+  ///
+  /// In en, this message translates to:
+  /// **'{title} is no longer offered in class. Students can still find it on Home.'**
+  String sessionActivityStoppedTeacher(String title);
+
+  /// Student announcement
+  ///
+  /// In en, this message translates to:
+  /// **'Your teacher started a quiz: {title}. Press 4 to begin.'**
+  String sessionActivityQuizStarted(String title);
+
+  /// Student announcement
+  ///
+  /// In en, this message translates to:
+  /// **'Your teacher started a journey: {title}. Press 4 to begin.'**
+  String sessionActivityJourneyStarted(String title);
+
+  /// Student announcement
+  ///
+  /// In en, this message translates to:
+  /// **'{title} is closed in class. You can still find it on Home.'**
+  String sessionActivityStoppedStudent(String title);
+
+  /// Student key 3 spoken
+  ///
+  /// In en, this message translates to:
+  /// **'Start the quiz {title}'**
+  String sessionActivityStartQuizLabel(String title);
+
+  /// Student key 3 spoken
+  ///
+  /// In en, this message translates to:
+  /// **'Start the journey {title}'**
+  String sessionActivityStartJourneyLabel(String title);
+
+  /// Student class status
+  ///
+  /// In en, this message translates to:
+  /// **'{title} is open.'**
+  String sessionActivityStateStudent(String title);
+
+  /// Teacher class status
+  ///
+  /// In en, this message translates to:
+  /// **'{title} is open for the class.'**
+  String sessionActivityStateTeacher(String title);
+
+  /// Student opening the activity
+  ///
+  /// In en, this message translates to:
+  /// **'Opening {title}.'**
+  String sessionActivityOpening(String title);
+
+  /// Student activity failed to open
+  ///
+  /// In en, this message translates to:
+  /// **'{title} could not be opened. Check your connection and try again.'**
+  String sessionActivityCouldNotOpen(String title);
+
+  /// Student returns to the class screen
+  ///
+  /// In en, this message translates to:
+  /// **'Back in class.'**
+  String get sessionBackInClass;
+
+  /// Teacher class list progress
+  ///
+  /// In en, this message translates to:
+  /// **'{title}: {started} started, {finished} finished.'**
+  String sessionActivityProgress(String title, int started, int finished);
+
+  /// Student class screen key 4
+  ///
+  /// In en, this message translates to:
+  /// **'3: What is playing'**
+  String get sessionWhatIsPlayingButton;
+
+  /// Key help, teacher key 6
+  ///
+  /// In en, this message translates to:
+  /// **'End class for everyone'**
+  String get sessionKeyEndClass;
+
+  /// Key help, student key 4
+  ///
+  /// In en, this message translates to:
+  /// **'What is playing'**
+  String get sessionKeyWhatIsPlaying;
+
+  /// Teacher class screen key 6
+  ///
+  /// In en, this message translates to:
+  /// **'6: Quiz'**
+  String get sessionQuizButton;
+
+  /// Teacher class screen key 7
+  ///
+  /// In en, this message translates to:
+  /// **'7: Journey'**
+  String get sessionJourneyButton;
+
+  /// Teacher key 6 spoken, no quiz open
+  ///
+  /// In en, this message translates to:
+  /// **'Start a quiz for the class'**
+  String get sessionQuizLabel;
+
+  /// Teacher key 7 spoken, no journey open
+  ///
+  /// In en, this message translates to:
+  /// **'Start a journey for the class'**
+  String get sessionJourneyLabel;
+
+  /// Teacher key 6 or 7 spoken while it is open
+  ///
+  /// In en, this message translates to:
+  /// **'{title} is open. Hear who is left, remind them, or stop it'**
+  String sessionOpenLabel(String title);
+
+  /// Key help, teacher key 6
+  ///
+  /// In en, this message translates to:
+  /// **'Quiz for the class'**
+  String get sessionKeyQuiz;
+
+  /// Key help, teacher key 7
+  ///
+  /// In en, this message translates to:
+  /// **'Journey for the class'**
+  String get sessionKeyJourney;
+
+  /// Student key 6 while a quiz is open
+  ///
+  /// In en, this message translates to:
+  /// **'4: Start quiz: {title}'**
+  String sessionStartQuizButton(String title);
+
+  /// Student key 7 while a journey is open
+  ///
+  /// In en, this message translates to:
+  /// **'4: Start journey: {title}'**
+  String sessionStartJourneyButton(String title);
+
+  /// Teacher list of quizzes
+  ///
+  /// In en, this message translates to:
+  /// **'Start a quiz for the class'**
+  String get sessionPickQuizTitle;
+
+  /// Teacher list of journeys
+  ///
+  /// In en, this message translates to:
+  /// **'Start a journey for the class'**
+  String get sessionPickJourneyTitle;
+
+  /// Teacher key 6, nothing to start
+  ///
+  /// In en, this message translates to:
+  /// **'No published quiz is open for this class and subject. Publish one from Quizzes on Home first.'**
+  String get sessionNoQuizToStart;
+
+  /// Teacher key 7, nothing to start
+  ///
+  /// In en, this message translates to:
+  /// **'No published journey for this class and subject. Publish one from Journeys on Home first.'**
+  String get sessionNoJourneyToStart;
+
+  /// Teacher quiz or journey menu status
+  ///
+  /// In en, this message translates to:
+  /// **'{finished} of {enrolled} finished.'**
+  String sessionFinishedOf(int finished, int enrolled);
+
+  /// Teacher menu choice
+  ///
+  /// In en, this message translates to:
+  /// **'In class, not done ({count})'**
+  String sessionLeftInClass(int count);
+
+  /// Teacher menu choice
+  ///
+  /// In en, this message translates to:
+  /// **'Whole class, not done ({count})'**
+  String sessionLeftWholeClass(int count);
+
+  /// List title
+  ///
+  /// In en, this message translates to:
+  /// **'In class, not done'**
+  String get sessionLeftInClassTitle;
+
+  /// List title
+  ///
+  /// In en, this message translates to:
+  /// **'Whole class, not done'**
+  String get sessionLeftWholeClassTitle;
+
+  /// Teacher menu choice
+  ///
+  /// In en, this message translates to:
+  /// **'Remind those in class who are not done'**
+  String get sessionRemindLeft;
+
+  /// Teacher menu choice
+  ///
+  /// In en, this message translates to:
+  /// **'Start a different quiz'**
+  String get sessionStartDifferentQuiz;
+
+  /// Teacher menu choice
+  ///
+  /// In en, this message translates to:
+  /// **'Start a different journey'**
+  String get sessionStartDifferentJourney;
+
+  /// Who is left: one student
+  ///
+  /// In en, this message translates to:
+  /// **'{name}, not started'**
+  String sessionLeftNotStarted(String name);
+
+  /// Who is left: one student
+  ///
+  /// In en, this message translates to:
+  /// **'{name}, started, not finished'**
+  String sessionLeftStarted(String name);
+
+  /// Who is left, whole class: present
+  ///
+  /// In en, this message translates to:
+  /// **'in class'**
+  String get sessionLeftHere;
+
+  /// Who is left, whole class: absent
+  ///
+  /// In en, this message translates to:
+  /// **'not in class'**
+  String get sessionLeftAway;
+
+  /// Who is left: nobody in class
+  ///
+  /// In en, this message translates to:
+  /// **'Everyone in class has finished.'**
+  String get sessionLeftNobodyInClass;
+
+  /// Who is left: nobody
+  ///
+  /// In en, this message translates to:
+  /// **'Everyone in the class has finished.'**
+  String get sessionLeftNobody;
+
+  /// Teacher reminder result
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{Nobody in class needs a reminder.} =1{Reminded 1 student.} other{Reminded {count} students.}}'**
+  String sessionRemindedLeft(int count);
+
+  /// Student reminder
+  ///
+  /// In en, this message translates to:
+  /// **'Your teacher reminds you to do the quiz {title}. Press 4 to begin.'**
+  String sessionActivityReminderQuiz(String title);
+
+  /// Student reminder
+  ///
+  /// In en, this message translates to:
+  /// **'Your teacher reminds you to do the journey {title}. Press 4 to begin.'**
+  String sessionActivityReminderJourney(String title);
+
+  /// Key help, student key 4 while a quiz or journey is open
+  ///
+  /// In en, this message translates to:
+  /// **'Start the quiz or journey'**
+  String get sessionKeyStartActivity;
+
+  /// Key label
+  ///
+  /// In en, this message translates to:
+  /// **'2. Settings'**
+  String get startupSettingsKey2;
+
+  /// Key label
+  ///
+  /// In en, this message translates to:
+  /// **'Pause audio for the whole session, key 3'**
+  String get libraryPauseSessionKey3;
+
+  /// 4 is the keypad key.
+  ///
+  /// In en, this message translates to:
+  /// **'1: Save new password'**
+  String get authSaveNewPasswordKey1;
+
+  /// Visible button with its key
+  ///
+  /// In en, this message translates to:
+  /// **'1: Save settings'**
+  String get quizSaveSettingsKey1;
+
+  /// Visible button with its key
+  ///
+  /// In en, this message translates to:
+  /// **'1: Save question'**
+  String get quizSaveQuestionKey1;
+
+  /// Visible button with its key
+  ///
+  /// In en, this message translates to:
+  /// **'1: Continue to questions'**
+  String get quizContinueToQuestionsKey1;
+
+  /// Administrator dashboard section where quizzes and learning journeys are made on a teacher's behalf.
+  ///
+  /// In en, this message translates to:
+  /// **'Quizzes and journeys'**
+  String get adminAuthorSection;
+
+  /// Explanation at the top of the quizzes and journeys section.
+  ///
+  /// In en, this message translates to:
+  /// **'Create and publish quizzes and learning journeys for a teacher. Everything you make belongs to that teacher, uses only their question bank and their own recordings, and the teacher is told about it on their Home.'**
+  String get adminAuthorNote;
+
+  /// Label of the dropdown choosing the teacher to work for.
+  ///
+  /// In en, this message translates to:
+  /// **'Teacher'**
+  String get adminAuthorTeacher;
+
+  /// Label of the dropdown choosing one of the teacher's assigned class and subject pairs.
+  ///
+  /// In en, this message translates to:
+  /// **'Class and subject'**
+  String get adminAuthorWorkspace;
+
+  /// One class and subject pair in the dropdown, e.g. 'Class 5, Science'.
+  ///
+  /// In en, this message translates to:
+  /// **'{className}, {subjectName}'**
+  String adminAuthorWorkspaceName(String className, String subjectName);
+
+  /// Shown when no active teacher has an assigned class and subject.
+  ///
+  /// In en, this message translates to:
+  /// **'No teacher has a class and subject yet. Assign one in Accounts first.'**
+  String get adminAuthorNoTeachers;
+
+  /// Heading of the choice between quizzes and journeys.
+  ///
+  /// In en, this message translates to:
+  /// **'Show'**
+  String get adminAuthorKind;
+
+  /// Choice that lists the teacher's quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'Quizzes'**
+  String get adminAuthorKindQuizzes;
+
+  /// Choice that lists the teacher's learning journeys.
+  ///
+  /// In en, this message translates to:
+  /// **'Journeys'**
+  String get adminAuthorKindJourneys;
+
+  /// Button that starts a new quiz for the chosen teacher.
+  ///
+  /// In en, this message translates to:
+  /// **'New quiz'**
+  String get adminAuthorNewQuiz;
+
+  /// Button that starts a new learning journey for the chosen teacher.
+  ///
+  /// In en, this message translates to:
+  /// **'New journey'**
+  String get adminAuthorNewJourney;
+
+  /// Title of the dialog creating a quiz for a teacher.
+  ///
+  /// In en, this message translates to:
+  /// **'New quiz for {teacher}'**
+  String adminAuthorNewQuizFor(String teacher);
+
+  /// Title of the dialog creating a journey for a teacher.
+  ///
+  /// In en, this message translates to:
+  /// **'New journey for {teacher}'**
+  String adminAuthorNewJourneyFor(String teacher);
+
+  /// Empty quiz list.
+  ///
+  /// In en, this message translates to:
+  /// **'This teacher has no quizzes for this class and subject.'**
+  String get adminAuthorNoQuizzes;
+
+  /// Empty journey list.
+  ///
+  /// In en, this message translates to:
+  /// **'This teacher has no journeys for this class and subject.'**
+  String get adminAuthorNoJourneys;
+
+  /// Status of an unpublished quiz or journey.
+  ///
+  /// In en, this message translates to:
+  /// **'Draft'**
+  String get adminAuthorStatusDraft;
+
+  /// Status of a published quiz or journey.
+  ///
+  /// In en, this message translates to:
+  /// **'Published'**
+  String get adminAuthorStatusPublished;
+
+  /// Status of a published quiz whose opening time is in the future.
+  ///
+  /// In en, this message translates to:
+  /// **'Published, opens later'**
+  String get adminAuthorStatusScheduled;
+
+  /// Status of a closed quiz.
+  ///
+  /// In en, this message translates to:
+  /// **'Closed'**
+  String get adminAuthorStatusClosed;
+
+  /// Status of an archived journey.
+  ///
+  /// In en, this message translates to:
+  /// **'Archived'**
+  String get adminAuthorStatusArchived;
+
+  /// Status of a journey edited since it was published.
+  ///
+  /// In en, this message translates to:
+  /// **'{status}, with unpublished changes'**
+  String adminAuthorStatusChanged(String status);
+
+  /// Number of questions in a quiz or journey.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 question} other{{count} questions}}'**
+  String adminAuthorQuestionCount(int count);
+
+  /// Number of steps in a journey.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 step} other{{count} steps}}'**
+  String adminAuthorStepCount(int count);
+
+  /// Heading of the graded or practice choice.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiz type'**
+  String get adminAuthorMode;
+
+  /// A quiz that is scored.
+  ///
+  /// In en, this message translates to:
+  /// **'Graded'**
+  String get adminAuthorModeGraded;
+
+  /// A practice quiz with immediate feedback.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice'**
+  String get adminAuthorModePractice;
+
+  /// Short button text to edit a quiz or journey.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get adminAuthorEdit;
+
+  /// Spoken label of the Edit button.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit {title}'**
+  String adminAuthorEditNamed(String title);
+
+  /// Short button text to publish a quiz or journey.
+  ///
+  /// In en, this message translates to:
+  /// **'Publish'**
+  String get adminAuthorPublish;
+
+  /// Spoken label of the Publish button.
+  ///
+  /// In en, this message translates to:
+  /// **'Publish {title}'**
+  String adminAuthorPublishNamed(String title);
+
+  /// Button that closes a published quiz.
+  ///
+  /// In en, this message translates to:
+  /// **'Close quiz'**
+  String get adminAuthorClose;
+
+  /// Spoken label of the Close quiz button.
+  ///
+  /// In en, this message translates to:
+  /// **'Close {title}'**
+  String adminAuthorCloseNamed(String title);
+
+  /// Button that archives a published journey.
+  ///
+  /// In en, this message translates to:
+  /// **'Archive'**
+  String get adminAuthorArchive;
+
+  /// Spoken label of the Archive button.
+  ///
+  /// In en, this message translates to:
+  /// **'Archive {title}'**
+  String adminAuthorArchiveNamed(String title);
+
+  /// Confirmation title before publishing a quiz.
+  ///
+  /// In en, this message translates to:
+  /// **'Publish this quiz?'**
+  String get adminAuthorPublishQuizTitle;
+
+  /// Confirmation message before publishing a quiz for a teacher.
+  ///
+  /// In en, this message translates to:
+  /// **'{title} will open to the class as {teacher}\'s quiz, and the students will be notified.'**
+  String adminAuthorPublishQuizMessage(String title, String teacher);
+
+  /// Confirmation title before publishing a journey.
+  ///
+  /// In en, this message translates to:
+  /// **'Publish this journey?'**
+  String get adminAuthorPublishJourneyTitle;
+
+  /// Confirmation message before publishing a journey for a teacher.
+  ///
+  /// In en, this message translates to:
+  /// **'{title} will be available to the class as {teacher}\'s journey, and the students will be notified.'**
+  String adminAuthorPublishJourneyMessage(String title, String teacher);
+
+  /// Confirmation title before closing a quiz.
+  ///
+  /// In en, this message translates to:
+  /// **'Close this quiz?'**
+  String get adminAuthorCloseQuizTitle;
+
+  /// Confirmation message before closing a quiz.
+  ///
+  /// In en, this message translates to:
+  /// **'Students can no longer answer {title}. Unfinished attempts are submitted as they are.'**
+  String adminAuthorCloseQuizMessage(String title);
+
+  /// Confirmation title before archiving a journey.
+  ///
+  /// In en, this message translates to:
+  /// **'Archive this journey?'**
+  String get adminAuthorArchiveTitle;
+
+  /// Confirmation message before archiving a journey.
+  ///
+  /// In en, this message translates to:
+  /// **'Students will no longer see {title}.'**
+  String adminAuthorArchiveMessage(String title);
+
+  /// Shown after publishing.
+  ///
+  /// In en, this message translates to:
+  /// **'{title} published.'**
+  String adminAuthorPublished(String title);
+
+  /// Shown after closing a quiz.
+  ///
+  /// In en, this message translates to:
+  /// **'{title} closed.'**
+  String adminAuthorClosed(String title);
+
+  /// Shown after archiving a journey.
+  ///
+  /// In en, this message translates to:
+  /// **'{title} archived.'**
+  String adminAuthorArchived(String title);
+
+  /// Shown after creating a quiz or journey.
+  ///
+  /// In en, this message translates to:
+  /// **'{title} created as a draft.'**
+  String adminAuthorCreated(String title);
+
+  /// Shown after saving a journey.
+  ///
+  /// In en, this message translates to:
+  /// **'Journey saved.'**
+  String get adminAuthorSaved;
+
+  /// Shown instead of publishing when the quiz has problems; problems are the server's sentences.
+  ///
+  /// In en, this message translates to:
+  /// **'This quiz is not ready to publish. {problems}'**
+  String adminAuthorNotReady(String problems);
+
+  /// Title field of a quiz or journey.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get adminAuthorTitle;
+
+  /// Description field of a quiz.
+  ///
+  /// In en, this message translates to:
+  /// **'Description (optional)'**
+  String get adminAuthorDescription;
+
+  /// Button and dialog title for a quiz's title, description and type.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiz settings'**
+  String get adminAuthorQuizSettings;
+
+  /// Title of the quiz editor.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit quiz: {title}'**
+  String adminAuthorEditQuiz(String title);
+
+  /// Title of the journey editor.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit journey: {title}'**
+  String adminAuthorEditJourney(String title);
+
+  /// Heading of a quiz's question list.
+  ///
+  /// In en, this message translates to:
+  /// **'Questions'**
+  String get adminAuthorQuestions;
+
+  /// Empty question list of a quiz.
+  ///
+  /// In en, this message translates to:
+  /// **'No questions yet.'**
+  String get adminAuthorNoQuestions;
+
+  /// A numbered question or journey step.
+  ///
+  /// In en, this message translates to:
+  /// **'{number}. {text}'**
+  String adminAuthorQuestionLine(int number, String text);
+
+  /// The correct option of a question.
+  ///
+  /// In en, this message translates to:
+  /// **'Correct answer: {answer}'**
+  String adminAuthorCorrectAnswer(String answer);
+
+  /// Short button text to remove a question or step.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get adminAuthorRemove;
+
+  /// Spoken label of the Remove button.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove {item}'**
+  String adminAuthorRemoveNamed(String item);
+
+  /// Button and dialog title for writing a new question.
+  ///
+  /// In en, this message translates to:
+  /// **'Type a new question'**
+  String get adminAuthorAddNewQuestion;
+
+  /// Button that adds a question from the teacher's question bank.
+  ///
+  /// In en, this message translates to:
+  /// **'Add from question bank'**
+  String get adminAuthorAddBankQuestion;
+
+  /// Field for the question text.
+  ///
+  /// In en, this message translates to:
+  /// **'Question'**
+  String get adminAuthorQuestionText;
+
+  /// Field for an answer option, and the choice of which option is correct.
+  ///
+  /// In en, this message translates to:
+  /// **'Option {number}'**
+  String adminAuthorOption(int number);
+
+  /// Field for an optional answer option.
+  ///
+  /// In en, this message translates to:
+  /// **'Option {number} (optional)'**
+  String adminAuthorOptionalOption(int number);
+
+  /// Heading of the choice of the correct option.
+  ///
+  /// In en, this message translates to:
+  /// **'Correct answer'**
+  String get adminAuthorCorrectOption;
+
+  /// Shown when the option marked correct has no text.
+  ///
+  /// In en, this message translates to:
+  /// **'The correct answer is blank. Fill it in or choose another option.'**
+  String get adminAuthorCorrectIsBlank;
+
+  /// Field for the explanation shown after answering.
+  ///
+  /// In en, this message translates to:
+  /// **'Explanation (optional)'**
+  String get adminAuthorExplanation;
+
+  /// Checkbox that keeps a new quiz question in the teacher's question bank.
+  ///
+  /// In en, this message translates to:
+  /// **'Also save to the teacher\'s question bank'**
+  String get adminAuthorSaveToBank;
+
+  /// Shown when a quiz question has a blank option.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill in all four options.'**
+  String get adminAuthorNeedFourOptions;
+
+  /// Shown when a journey question or poll has fewer than two options.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill in at least two options.'**
+  String get adminAuthorNeedTwoOptions;
+
+  /// Shown when two options have the same text.
+  ///
+  /// In en, this message translates to:
+  /// **'Each option must be different.'**
+  String get adminAuthorDuplicateOptions;
+
+  /// Shown when a required field is empty.
+  ///
+  /// In en, this message translates to:
+  /// **'{field} is required.'**
+  String adminAuthorRequired(String field);
+
+  /// Short button text to add a question or recording.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get adminAuthorAdd;
+
+  /// Spoken label of the Add button.
+  ///
+  /// In en, this message translates to:
+  /// **'Add {item}'**
+  String adminAuthorAddNamed(String item);
+
+  /// Title of the dialog listing the teacher's saved questions.
+  ///
+  /// In en, this message translates to:
+  /// **'Teacher\'s question bank'**
+  String get adminAuthorBankTitle;
+
+  /// Empty question bank.
+  ///
+  /// In en, this message translates to:
+  /// **'This teacher has no saved questions for this class and subject.'**
+  String get adminAuthorBankEmpty;
+
+  /// Closes the quiz editor.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get adminAuthorDone;
+
+  /// Switch that makes a journey graded.
+  ///
+  /// In en, this message translates to:
+  /// **'Graded: score the questions'**
+  String get adminAuthorGraded;
+
+  /// Dropdown of how many retries a journey question allows.
+  ///
+  /// In en, this message translates to:
+  /// **'Retries after a wrong answer'**
+  String get adminAuthorRetries;
+
+  /// Heading of a journey's step list.
+  ///
+  /// In en, this message translates to:
+  /// **'Steps'**
+  String get adminAuthorSteps;
+
+  /// Empty step list of a journey.
+  ///
+  /// In en, this message translates to:
+  /// **'No steps yet.'**
+  String get adminAuthorNoSteps;
+
+  /// A recording step in a journey.
+  ///
+  /// In en, this message translates to:
+  /// **'Recording: {title}'**
+  String adminAuthorStepRecording(String title);
+
+  /// A narration step in a journey.
+  ///
+  /// In en, this message translates to:
+  /// **'Narration: {text}'**
+  String adminAuthorStepNarration(String text);
+
+  /// A question step in a journey.
+  ///
+  /// In en, this message translates to:
+  /// **'Question: {text}'**
+  String adminAuthorStepQuestion(String text);
+
+  /// A poll step in a journey.
+  ///
+  /// In en, this message translates to:
+  /// **'Poll: {text}'**
+  String adminAuthorStepPoll(String text);
+
+  /// Short button text to move a step earlier.
+  ///
+  /// In en, this message translates to:
+  /// **'Move up'**
+  String get adminAuthorMoveUp;
+
+  /// Spoken label of the Move up button.
+  ///
+  /// In en, this message translates to:
+  /// **'Move {item} up'**
+  String adminAuthorMoveUpNamed(String item);
+
+  /// Short button text to move a step later.
+  ///
+  /// In en, this message translates to:
+  /// **'Move down'**
+  String get adminAuthorMoveDown;
+
+  /// Spoken label of the Move down button.
+  ///
+  /// In en, this message translates to:
+  /// **'Move {item} down'**
+  String adminAuthorMoveDownNamed(String item);
+
+  /// Button that adds one of the teacher's recordings as a journey step.
+  ///
+  /// In en, this message translates to:
+  /// **'Add recording'**
+  String get adminAuthorAddRecording;
+
+  /// Button and dialog title for adding narration text to a journey.
+  ///
+  /// In en, this message translates to:
+  /// **'Add narration'**
+  String get adminAuthorAddNarration;
+
+  /// Button and dialog title for adding a question to a journey.
+  ///
+  /// In en, this message translates to:
+  /// **'Add question'**
+  String get adminAuthorAddQuestion;
+
+  /// Button and dialog title for adding a poll to a journey.
+  ///
+  /// In en, this message translates to:
+  /// **'Add poll'**
+  String get adminAuthorAddPoll;
+
+  /// Title of the dialog listing the teacher's recordings.
+  ///
+  /// In en, this message translates to:
+  /// **'Teacher\'s recordings'**
+  String get adminAuthorRecordingsTitle;
+
+  /// Explanation in the recordings dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Only recordings this teacher uploaded for this class and subject can be used.'**
+  String get adminAuthorRecordingsNote;
+
+  /// Empty recordings list.
+  ///
+  /// In en, this message translates to:
+  /// **'This teacher has not uploaded a recording for this class and subject.'**
+  String get adminAuthorNoRecordings;
+
+  /// Field for narration text.
+  ///
+  /// In en, this message translates to:
+  /// **'Narration text'**
+  String get adminAuthorNarrationText;
+
+  /// Field for the poll question.
+  ///
+  /// In en, this message translates to:
+  /// **'Poll question'**
+  String get adminAuthorPollText;
+
+  /// Saves the journey editor.
+  ///
+  /// In en, this message translates to:
+  /// **'Save journey'**
+  String get adminAuthorSaveJourney;
+
+  /// Teacher home: an admin change
+  ///
+  /// In en, this message translates to:
+  /// **'{kind} {title}: {action} for you by your administrator.'**
+  String teacherHomeNotice(String kind, String title, String action);
+
+  /// Notice kind
+  ///
+  /// In en, this message translates to:
+  /// **'Quiz'**
+  String get teacherHomeNoticeQuiz;
+
+  /// Notice kind
+  ///
+  /// In en, this message translates to:
+  /// **'Journey'**
+  String get teacherHomeNoticeJourney;
+
+  /// Notice action
+  ///
+  /// In en, this message translates to:
+  /// **'added'**
+  String get teacherHomeNoticeCreated;
+
+  /// Notice action
+  ///
+  /// In en, this message translates to:
+  /// **'published'**
+  String get teacherHomeNoticePublished;
+
+  /// Notice action
+  ///
+  /// In en, this message translates to:
+  /// **'closed'**
+  String get teacherHomeNoticeClosed;
+
+  /// Notice action
+  ///
+  /// In en, this message translates to:
+  /// **'archived'**
+  String get teacherHomeNoticeArchived;
+
+  /// Teacher: students who joined
+  ///
+  /// In en, this message translates to:
+  /// **'{names} joined.'**
+  String sessionPeopleJoined(String names);
+
+  /// Teacher: students who left
+  ///
+  /// In en, this message translates to:
+  /// **'{names} left.'**
+  String sessionPeopleLeft(String names);
+
+  /// Joins a list of names
+  ///
+  /// In en, this message translates to:
+  /// **'{first} and {last}'**
+  String sessionNamesAnd(String first, String last);
+
+  /// Teacher: students present of enrolled
+  ///
+  /// In en, this message translates to:
+  /// **'{here} of {total} here.'**
+  String sessionHereOf(int here, int total);
+
+  /// Teacher: students present, enrolled count unknown
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No students here.} =1{1 student here.} other{{count} students here.}}'**
+  String sessionHereCount(int count);
+
+  /// Teacher: one summary a minute after the class starts
+  ///
+  /// In en, this message translates to:
+  /// **'{here} of {total} students here.'**
+  String sessionStartSummary(int here, int total);
 }
 
 class _AppLocalizationsDelegate

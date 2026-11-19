@@ -191,9 +191,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       child: KeypadInstructionWrapper(
         screenName: Speech.t.authChangePasswordScreenName,
         introduction: Speech.t.authChangePasswordIntro,
-        labels: {4: Speech.t.authSaveNewPassword, 0: Speech.t.authSignOut},
+        labels: {1: Speech.t.authSaveNewPassword, 0: Speech.t.authSignOut},
         navigationController: _keypadController,
-        actions: {4: _save, 0: _signOut},
+        actions: {1: _save, 0: _signOut},
         focusTargets: [
           KeypadFocusTarget(
             node: _currentFocus,
@@ -311,7 +311,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                       ),
                     ),
                     child: Text(
-                      Speech.t.authSaveNewPasswordKey,
+                      Speech.t.authSaveNewPasswordKey1,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: UIUtils.fontSize(context, 16),

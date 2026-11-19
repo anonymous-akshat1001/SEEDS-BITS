@@ -724,9 +724,11 @@ void main() {
         await tester.pumpAndSettle();
         await tester.pump(const Duration(milliseconds: 600));
         expect(opener.hasFocus, isTrue);
-        expect(spoken.last, contains('Quiz publication review'));
-        expect(spoken.last, contains('draft status, questions and publish'));
-        expect(spoken.last, contains('Press OK'));
+        // Coming back is short: where you are, and that star reads every key.
+        expect(
+          spoken.last,
+          'Quiz publication review. Press star for all keys.',
+        );
         await tester.pumpWidget(const SizedBox.shrink());
         opener.dispose();
       },
@@ -790,8 +792,7 @@ void main() {
       expect(spoken.last, contains('Action feedback still speaking'));
       feedback.complete(1);
       await tester.pumpAndSettle();
-      expect(spoken.last, contains('Current lesson plan'));
-      expect(spoken.last, contains('add step and run selected step'));
+      expect(spoken.last, 'Current lesson plan. Press star for all keys.');
       await tester.pumpWidget(const SizedBox.shrink());
     },
   );

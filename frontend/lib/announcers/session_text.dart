@@ -39,8 +39,12 @@ abstract final class SessionText {
 
   static String keyHelp(Map<int, String> labels) {
     final keys = labels.entries.toList()
-      ..sort((a, b) => (a.key == 0 ? 10 : a.key).compareTo(b.key == 0 ? 10 : b.key));
-    return keys.map((e) => _t.sessionPressKeyFor('${e.key}', e.value)).join(' ');
+      ..sort(
+        (a, b) => (a.key == 0 ? 10 : a.key).compareTo(b.key == 0 ? 10 : b.key),
+      );
+    return keys
+        .map((e) => _t.sessionPressKeyFor('${e.key}', e.value))
+        .join(' ');
   }
 
   // Focus labels and visible button text on the main screen.
@@ -99,15 +103,11 @@ abstract final class SessionText {
       : _t.sessionStudentRecordingPaused(title, position);
   static String get recordingPlayerButton => _t.sessionRecordingPlayerButton;
   static String get openingPlayerToChoose => _t.sessionOpeningPlayerToChoose;
-  static String get checkLabel => _t.sessionCheckLabel;
-  static String get checkButton => _t.sessionCheckButton;
   // Teacher-only main screen controls.
   static String handsLabel(int count) =>
       _t.sessionHandsLabel(handsWaiting(count));
-  static String handsButton(int count) => count == 0
-      ? _t.sessionHandsButton
-      : _t.sessionHandsButtonCount(count);
-  static String get teacherCheckLabel => _t.sessionTeacherCheckLabel;
+  static String handsButton(int count) =>
+      count == 0 ? _t.sessionHandsButton : _t.sessionHandsButtonCount(count);
   static String participantsLabel(int count) =>
       _t.sessionParticipantsLabel(people(count));
   static String get participantsButton => _t.sessionParticipantsButton;
@@ -149,7 +149,6 @@ abstract final class SessionText {
         : _t.sessionRecordingStatePaused(title);
   }
 
-  static String get checkOpen => _t.sessionCheckOpen;
   static String connection(String label) => _t.sessionConnectionLabel(label);
   static String messages(int count) =>
       count == 0 ? '' : _t.sessionChatMessages(count);
@@ -188,18 +187,43 @@ abstract final class SessionText {
   static String get handRaised => _t.sessionHandRaised;
   static String get handLowered => _t.sessionHandLowered;
   static String get handNotConfirmed => _t.sessionHandNotConfirmed;
-  static String raisedHandBy(String? name) => name == null
-      ? _t.sessionRaisedHandUnknown
-      : _t.sessionRaisedHandBy(name);
+  static String raisedHandBy(String? name) =>
+      name == null ? _t.sessionRaisedHandUnknown : _t.sessionRaisedHandBy(name);
 
   // ─── Participants ────────────────────────────────────────────────────────
   static String get participantJoined => _t.sessionParticipantJoined;
-  static String get participantsJoinedGroup => _t.sessionParticipantsJoinedGroup;
+
+  /// "Akshat", "Akshat and Meena", "Akshat, Meena and Ravi".
+  static String names(List<String> names) => names.length < 2
+      ? names.join()
+      : _t.sessionNamesAnd(
+          names.sublist(0, names.length - 1).join(', '),
+          names.last,
+        );
+
+  /// "Akshat and Meena joined. Ravi left. 4 of 5 here."
+  static String presence({
+    required List<String> joined,
+    required List<String> left,
+    required int here,
+    int? total,
+  }) => [
+    if (joined.isNotEmpty) _t.sessionPeopleJoined(names(joined)),
+    if (left.isNotEmpty) _t.sessionPeopleLeft(names(left)),
+    total == null ? _t.sessionHereCount(here) : _t.sessionHereOf(here, total),
+  ].join(' ');
+
+  static String startSummary(int here, int? total) => total == null
+      ? _t.sessionHereCount(here)
+      : _t.sessionStartSummary(here, total);
+  static String get participantsJoinedGroup =>
+      _t.sessionParticipantsJoinedGroup;
   static String get participantLeft => _t.sessionParticipantLeft;
   static String get participantsLeftGroup => _t.sessionParticipantsLeftGroup;
   static String get participantFallback => _t.sessionParticipantFallback;
   static String get thisParticipant => _t.sessionThisParticipant;
-  static String participant(Map<String, dynamic> p, {
+  static String participant(
+    Map<String, dynamic> p, {
     required bool self,
     required bool muted,
     required bool speaking,
@@ -215,7 +239,8 @@ abstract final class SessionText {
   }
 
   static String alreadyMuted(String name) => _t.sessionAlreadyMuted(name);
-  static String participantMuted(String name) => _t.sessionParticipantMuted(name);
+  static String participantMuted(String name) =>
+      _t.sessionParticipantMuted(name);
   static String removeTitle(String name) => _t.sessionRemoveTitle(name);
   static String removeMessage(String name) => _t.sessionRemoveMessage(name);
   static String keep(String name) => _t.sessionKeep(name);
@@ -246,12 +271,12 @@ abstract final class SessionText {
   static String sendPhrase(String phrase) => _t.chatSendPhrase(phrase);
   static String chatCount(int count) =>
       count == 0 ? noMessages : _t.chatCount(count);
-  static String get chatHelp => Announce.pick(
-    brief: _t.chatHelpBrief,
-    detailed: _t.chatHelpDetailed,
-  );
+  static String get chatHelp =>
+      Announce.pick(brief: _t.chatHelpBrief, detailed: _t.chatHelpDetailed);
   static String messageLine(Map<String, dynamic> message) {
-    final sender = message['isMe'] == true ? _t.chatYou : '${message['sender']}';
+    final sender = message['isMe'] == true
+        ? _t.chatYou
+        : '${message['sender']}';
     final delivery = message['delivery'];
     final text = '${message['text']}';
     return delivery == null
@@ -325,17 +350,19 @@ abstract final class SessionText {
   // ─── Class recording ─────────────────────────────────────────────────────
   static String get recordingSelectionChanged =>
       _t.sessionRecordingSelectionChanged;
-  static String get recordingSelectionGroup => _t.sessionRecordingSelectionGroup;
+  static String get recordingSelectionGroup =>
+      _t.sessionRecordingSelectionGroup;
   static String get playbackFinished => _t.sessionPlaybackFinished;
   static String get noRecording => _t.sessionNoRecording;
   static String get noRecordingTeacher => _t.sessionNoRecordingTeacher;
   static String get previewFailed => _t.sessionPreviewFailed;
   static String classPauseUnconfirmed(String reason) =>
       _t.sessionClassPauseUnconfirmed(reason);
-  static String position(double seconds, double? total) => SpokenFormat.position(
-    Duration(seconds: seconds.round()),
-    total == null ? null : Duration(seconds: total.round()),
-  );
+  static String position(double seconds, double? total) =>
+      SpokenFormat.position(
+        Duration(seconds: seconds.round()),
+        total == null ? null : Duration(seconds: total.round()),
+      );
   static String speed(double value) => _t.sessionSpeed(
     value.toStringAsFixed(2).replaceAll(RegExp(r'\.?0+$'), ''),
   );
@@ -424,32 +451,10 @@ abstract final class SessionText {
   static String get uploadKey => _t.sessionUploadKey;
   static String get cancelKey => _t.sessionCancel;
 
-  // ─── Classroom checks ───────────────────────────────────────────────────
-  static String get checkUnreadable => _t.classroomCheckUnreadable;
-  static String get checkUnconfirmed => _t.classroomCheckUnconfirmed;
-  static String get checkConfirmationUnreadable =>
-      _t.classroomCheckConfirmationUnreadable;
-  static String get checkOpenedForYou => _t.classroomCheckOpenedForYou;
-  static String get checkHelp => _t.classroomCheckHelp;
-  static String get checkTitle => _t.classroomCheckTitle;
-  static String get checkNewTitle => _t.classroomCheckNewTitle;
-  static String get checkNewMessage => _t.classroomCheckNewMessage;
-  static String get checkNewConfirm => _t.classroomCheckNewConfirm;
-  static String get checkNewCancel => _t.classroomCheckNewCancel;
-  static String get checkSending => _t.classroomCheckSending;
-  static String get checkWaiting => _t.classroomCheckWaiting;
+  // ─── Leaving sub-screens ──────────────────────────────────────────────────
   static String get backToClass => _t.sessionBackToClass;
   static String get backToSession => _t.classroomBackToSession;
   static String get back => _t.classroomBack;
-  static String get checkRead => _t.classroomCheckRead;
-  static String get checkReadButton => _t.classroomCheckReadButton;
-  static String get checkRefresh => _t.classroomCheckRefresh;
-  static String get checkRefreshButton => _t.classroomCheckRefreshButton;
-  static String get checkOpenLabel => _t.classroomCheckOpenLabel;
-  static String get checkOpenButton => _t.classroomCheckOpenButton;
-  static String get checkCloseLabel => _t.classroomCheckCloseLabel;
-  static String get checkCloseButton => _t.classroomCheckCloseButton;
-  static String checkAnswer(String choice) => _t.classroomCheckAnswer(choice);
   static String get stopSpeech => _t.sessionStopSpeech;
 
   // ─── Hands queue (classroom console dialog) ─────────────────────────────
@@ -533,7 +538,8 @@ abstract final class SessionText {
   // ─── Who is in the class (students, key 7) ──────────────────────────────
   static String get membersTitle => _t.sessionMembersTitle;
   static String get membersButton => _t.sessionMembersButton;
-  static String membersLabel(int count) => _t.sessionMembersLabel(people(count));
+  static String membersLabel(int count) =>
+      _t.sessionMembersLabel(people(count));
   static String get hearDetails => _t.sessionHearDetails;
   static String muteParticipant(String name) => _t.sessionMuteParticipant(name);
   static String removeParticipant(String name) =>
@@ -569,4 +575,136 @@ abstract final class SessionText {
   static String unmuteParticipant(String name) =>
       _t.sessionUnmuteParticipant(name);
   static String removeFromClass(String name) => _t.sessionRemoveFromClass(name);
+
+  // ─── Class lifecycle (S06/S19/S20/S22/S44/S45) ──────────────────────────
+  static String get micAskOnce => _t.sessionMicAskOnce;
+  static String get micAskAgain => _t.sessionMicAskAgain;
+  static String get micStillOff => _t.sessionMicStillOff;
+  static String get micSettingsTitle => _t.sessionMicSettingsTitle;
+  static String get micSettingsMessage => _t.sessionMicSettingsMessage;
+  static String get micSettingsOpen => _t.sessionMicSettingsOpen;
+  static String get micSettingsCancel => _t.sessionMicSettingsCancel;
+  static String get muteAllButton => _t.sessionMuteAllButton;
+  static String get muteAllLabel => _t.sessionMuteAllLabel;
+  static String get muteAllWaiting => _t.sessionMuteAllWaiting;
+  static String muteAllDone(int count) => _t.sessionMuteAllDone(count);
+  static String get muteAllNone => _t.sessionMuteAllNone;
+  static String muteAllNotConfirmed(String reason) =>
+      _t.sessionMuteAllNotConfirmed(reason);
+  static String get classListButton => _t.sessionClassListButton;
+  static String classListLabel(int people) =>
+      _t.sessionClassListLabel(SessionText.people(people));
+  static String get classListTitle => _t.sessionClassListTitle;
+  static String rosterCounts(int here, int left, int notJoined) =>
+      _t.sessionRosterCounts(here, left, notJoined);
+  static String hereNow(int count) => _t.sessionHereNow(count);
+  static String leftClass(int count) => _t.sessionLeftClass(count);
+  static String notJoined(int count) => _t.sessionNotJoined(count);
+  static String get hereNowTitle => _t.sessionHereNowTitle;
+  static String get leftClassTitle => _t.sessionLeftClassTitle;
+  static String get notJoinedTitle => _t.sessionNotJoinedTitle;
+  static String removedName(String name) => _t.sessionRemovedName(name);
+  static String get nobody => _t.sessionNobody;
+  static String get remindNotJoined => _t.sessionRemindNotJoined;
+  static String get everyoneJoined => _t.sessionEveryoneJoined;
+  static String reminderResult(int queued, int cooling) => cooling == 0
+      ? _t.sessionReminderSent(queued)
+      : _t.sessionReminderSentSomeWaiting(queued, cooling);
+  static String get rosterUnavailable => _t.sessionRosterUnavailable;
+  static String get addTime => _t.sessionAddTime;
+  static String get cannotAddTime => _t.sessionCannotAddTime;
+  static String endsBy(String clock) => _t.sessionEndsBy(clock);
+  static String extendedUntil(String clock) => _t.sessionExtendedUntil(clock);
+  static String endingSoonTeacher(int minutes, bool canExtend) => canExtend
+      ? _t.sessionEndingSoonTeacherExtend(minutes)
+      : _t.sessionEndingSoonTeacher(minutes);
+  static String endingSoonStudent(int minutes) =>
+      _t.sessionEndingSoonStudent(minutes);
+  static String get lessonReady => _t.sessionLessonReady;
+  static String get lessonNextReady => _t.sessionLessonNextReady;
+  static String get joinedStudentBrief => _t.sessionJoinedStudentBrief;
+  static String get joinedTeacherBrief => _t.sessionJoinedTeacherBrief;
+  static String get starForKeys => _t.sessionStarForKeys;
+
+  // Teacher keys 6 and 7, student keys 3 and 4.
+  static String get endClassButton => _t.sessionEndClassButton;
+  static String get endClassLabel => _t.sessionEndClassLabel;
+  static String kindButton(String kind) =>
+      kind == 'quiz' ? _t.sessionQuizButton : _t.sessionJourneyButton;
+  static String kindLabel(String kind, {String? open}) => open != null
+      ? _t.sessionOpenLabel(open)
+      : kind == 'quiz'
+      ? _t.sessionQuizLabel
+      : _t.sessionJourneyLabel;
+  static String pickTitle(String kind) =>
+      kind == 'quiz' ? _t.sessionPickQuizTitle : _t.sessionPickJourneyTitle;
+  static String noneToStart(String kind) =>
+      kind == 'quiz' ? _t.sessionNoQuizToStart : _t.sessionNoJourneyToStart;
+  static String startDifferent(String kind) => kind == 'quiz'
+      ? _t.sessionStartDifferentQuiz
+      : _t.sessionStartDifferentJourney;
+  static String finishedOf(int finished, int enrolled) =>
+      _t.sessionFinishedOf(finished, enrolled);
+  static String leftInClass(int count) => _t.sessionLeftInClass(count);
+  static String leftWholeClass(int count) => _t.sessionLeftWholeClass(count);
+  static String get leftInClassTitle => _t.sessionLeftInClassTitle;
+  static String get leftWholeClassTitle => _t.sessionLeftWholeClassTitle;
+  static String get remindLeft => _t.sessionRemindLeft;
+  static String leftPerson(Map<String, dynamic> person, {required bool whole}) {
+    final name = '${person['name']}';
+    final state = person['status'] == 'in_progress'
+        ? _t.sessionLeftStarted(name)
+        : _t.sessionLeftNotStarted(name);
+    if (!whole) return state;
+    return '$state, ${person['in_class'] == true ? _t.sessionLeftHere : _t.sessionLeftAway}';
+  }
+
+  static String leftNobody({required bool inClass}) =>
+      inClass ? _t.sessionLeftNobodyInClass : _t.sessionLeftNobody;
+  static String remindedLeft(int count) => _t.sessionRemindedLeft(count);
+  static String activityReminder(String kind, String title) => kind == 'quiz'
+      ? _t.sessionActivityReminderQuiz(title)
+      : _t.sessionActivityReminderJourney(title);
+  static String activityQuizItem(String title, int questions) =>
+      _t.sessionActivityQuizItem(title, questions);
+  static String activityJourneyItem(String title) =>
+      _t.sessionActivityJourneyItem(title);
+  static String activityStopItem(String title) =>
+      _t.sessionActivityStopItem(title);
+  static String activityStartedTeacher(String title) =>
+      _t.sessionActivityStartedTeacher(title);
+  static String activityStoppedTeacher(String title) =>
+      _t.sessionActivityStoppedTeacher(title);
+  static String activityStartedStudent(String kind, String title) =>
+      kind == 'quiz'
+      ? _t.sessionActivityQuizStarted(title)
+      : _t.sessionActivityJourneyStarted(title);
+  static String activityStoppedStudent(String title) =>
+      _t.sessionActivityStoppedStudent(title);
+  static String activityStartButton(String kind, String title) => kind == 'quiz'
+      ? _t.sessionStartQuizButton(title)
+      : _t.sessionStartJourneyButton(title);
+  static String activityStartLabel(String kind, String title) => kind == 'quiz'
+      ? _t.sessionActivityStartQuizLabel(title)
+      : _t.sessionActivityStartJourneyLabel(title);
+  static String activityState({required bool teacher, required String title}) =>
+      teacher
+      ? _t.sessionActivityStateTeacher(title)
+      : _t.sessionActivityStateStudent(title);
+  static String activityOpening(String title) =>
+      _t.sessionActivityOpening(title);
+  static String activityCouldNotOpen(String title) =>
+      _t.sessionActivityCouldNotOpen(title);
+  static String get backInClass => _t.sessionBackInClass;
+  static String activityProgress(String title, int started, int finished) =>
+      _t.sessionActivityProgress(title, started, finished);
+  static String get whatIsPlayingButton => _t.sessionWhatIsPlayingButton;
+
+  // More (key 9)
+  static String get moreButton => _t.sessionMoreButton;
+  static String get moreLabel => _t.sessionMoreLabel;
+  static String get moreTitle => _t.sessionMoreTitle;
+  static String get moreStatus => _t.sessionMoreStatus;
+  static String get moreWhatIsPlaying => _t.sessionMoreWhatIsPlaying;
+  static String get moreWhoIsHere => _t.sessionMoreWhoIsHere;
 }

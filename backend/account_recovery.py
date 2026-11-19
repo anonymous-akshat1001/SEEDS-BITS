@@ -1,7 +1,7 @@
-"""School-admin-assisted reset; no SMS, identity inference, or plaintext storage."""
+"""School-admin-assisted recovery: revoke a phone-number account everywhere,
+and the administrator's own temporary-password change."""
 
-import secrets
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Response
@@ -17,8 +17,7 @@ from ws_manager import ws_mgr
 router = APIRouter(tags=["Account recovery"])
 
 
-class ResetRequest(BaseModel):
-    identity_verified: Literal[True]
+class RevokeRequest(BaseModel):
     expected_auth_version: int = Field(ge=0, strict=True)
 
 
@@ -27,12 +26,14 @@ class PasswordChange(BaseModel):
     new_password: str = Field(min_length=6)
 
 
-@router.post("/admin/users/{account_id}/reset-password")
-async def reset_password(
-    account_id: int, payload: ResetRequest, response: Response,
+@router.post("/admin/users/{account_id}/sign-out-everywhere")
+async def sign_out_everywhere(
+    account_id: int, payload: RevokeRequest, response: Response,
     admin: models.User = Depends(auth.require_admin),
     db: AsyncSession = Depends(get_db),
 ):
+    """Ends every app session and removes push devices for a student or
+    teacher, for example after their number was used on someone else's phone."""
     user_id = account_id
     result = await db.execute(select(models.User).where(
         models.User.user_id == user_id,
@@ -41,18 +42,11 @@ async def reset_password(
     if user is None:
         raise HTTPException(status_code=404, detail="Account not found")
     if user.role not in {"teacher", "student"}:
-        raise HTTPException(status_code=403, detail="Only teacher and student accounts can be reset here")
+        raise HTTPException(status_code=403, detail="Only teacher and student accounts can be signed out here")
     if user.auth_version != payload.expected_auth_version:
-        raise HTTPException(status_code=409, detail="Account changed. Refresh before considering another reset.")
-    credential = "".join(secrets.choice("0123456789") for _ in range(12))
-    now = datetime.utcnow()
-    user.password_hash = auth.get_password_hash(credential)
+        raise HTTPException(status_code=409, detail="Account changed. Refresh before trying again.")
     user.auth_version += 1
-    user.must_change_password = True
-    user.temporary_password_expires_at = now + timedelta(hours=24)
-    user.temporary_password_failures = 0
-    user.temporary_password_locked_until = None
-    user.password_reset_at = now
+    user.password_reset_at = datetime.utcnow()
     user.password_reset_by = admin.user_id
     await db.execute(delete(models.FCMToken).where(models.FCMToken.user_id == user_id))
     await db.execute(update(models.Participant).where(
@@ -64,11 +58,7 @@ async def reset_password(
     await db.commit()
     await ws_mgr.revoke_user(user_id)
     response.headers["Cache-Control"] = "no-store"
-    return {
-        "ok": True, "temporary_credential": credential,
-        "expires_at": user.temporary_password_expires_at.isoformat() + "Z",
-        "auth_version": user.auth_version,
-    }
+    return {"ok": True, "auth_version": user.auth_version}
 
 
 @router.post("/auth/change-password")

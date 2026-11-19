@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:frontend/announcers/dashboard_text.dart';
 import 'package:frontend/main.dart' show WelcomeScreen, routeObserver;
 import 'package:frontend/screens/login_screen.dart';
-import 'package:frontend/screens/register_screen.dart';
 import 'package:frontend/screens/settings_screen.dart';
 import 'package:frontend/screens/student_dashboard.dart';
 import 'package:frontend/services/tts_service.dart';
@@ -16,8 +16,8 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Keypad and speech behaviour of the welcome, login, registration,
-/// settings and student dashboard screens.
+/// Keypad and speech behaviour of the welcome, sign-in, settings and
+/// student home screens.
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   final spoken = <String>[];
@@ -71,7 +71,6 @@ void main() {
     await open(tester, const WelcomeScreen());
     expect(targetOrder(tester), [
       'welcome-login',
-      'welcome-register',
       'welcome-settings',
       'welcome-repeat-instructions',
     ]);
@@ -89,13 +88,9 @@ void main() {
     final order = targetOrder(tester);
     expect(order, [
       'login-phone',
-      'login-password',
-      'login-password-visibility',
-      'login-role',
       'login-submit',
-      'login-register',
       'login-sim-suggestion',
-      'login-recovery-help',
+      'login-admin',
     ]);
     double top(String label) => tester
         .getTopLeft(
@@ -117,65 +112,68 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
-  testWidgets('login account type is one semantic control with its value', (
+  testWidgets('a shared phone asks for the profile number, then signs in', (
     tester,
   ) async {
-    final semantics = tester.ensureSemantics();
-    await open(tester, const LoginScreen());
-    expect(find.bySemanticsLabel('Account type'), findsOneWidget);
-    final node = tester.getSemantics(find.bySemanticsLabel('Account type'));
-    expect(node.value, 'Student, selected. Press 1, 2 or 3 to change');
-    semantics.dispose();
-    await tester.pumpWidget(const SizedBox.shrink());
+    final bodies = <Map<String, dynamic>>[];
+    await http.runWithClient(
+      () async {
+        await open(tester, const LoginScreen());
+        await tester.enterText(find.byType(TextField).first, '9888000000');
+        await tester.tap(find.text('1: Sign in'));
+        await tester.pumpAndSettle();
+        expect(
+          FocusManager.instance.primaryFocus?.debugLabel,
+          'login-profile-code',
+        );
+        expect(spoken.join(' '), contains('This phone is shared'));
+        await tester.enterText(find.byType(TextField).at(1), '12');
+        await tester.tap(find.text('1: Continue'));
+        await tester.pumpAndSettle();
+        expect(bodies.last, {'phone_number': '9888000000', 'profile_code': '12'});
+        expect(bodies.first.containsKey('profile_code'), isFalse);
+        await tester.pumpWidget(const SizedBox.shrink());
+      },
+      () => MockClient((request) async {
+        final body = jsonDecode(request.body) as Map<String, dynamic>;
+        bodies.add(body);
+        return http.Response(
+          body.containsKey('profile_code')
+              ? '{"detail":"That profile number is not recognised on this phone."}'
+              : '{"profile_required":true,"code_length":2}',
+          body.containsKey('profile_code') ? 401 : 200,
+        );
+      }),
+    );
   });
 
-  testWidgets('login error is spoken and focus moves to the field to fix', (
+  testWidgets('login error is spoken and focus moves to the number field', (
     tester,
   ) async {
     await open(tester, const LoginScreen());
     await tester.enterText(find.byType(TextField).first, '12');
-    await tester.enterText(find.byType(TextField).at(1), 'secret-password');
-    await tester.ensureVisible(find.text('4: Login as Student'));
-    await tester.tap(find.text('4: Login as Student'));
+    await tester.tap(find.text('1: Sign in'));
     await tester.pumpAndSettle();
     expect(FocusManager.instance.primaryFocus?.debugLabel, 'login-phone');
-    expect(spoken.last, contains('Enter a valid 10-digit phone number.'));
-    expect(spoken.last, contains('phone number field'));
-    expect(find.text('Enter a valid 10-digit phone number.'), findsOneWidget);
+    expect(spoken.last, contains('Type your phone number first.'));
+    expect(find.text('Type your phone number first.'), findsOneWidget);
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
-  testWidgets('registration error focuses the first invalid field', (
-    tester,
-  ) async {
-    await open(tester, const RegisterScreen());
-    await tester.enterText(find.byType(TextField).at(1), '9876543210');
-    // Digits typed while a field is focused stay in the field, so leave it
-    // with the D-pad and activate Register with OK.
-    for (
-      var press = 0;
-      press < 12 &&
-          FocusManager.instance.primaryFocus?.debugLabel != 'register-submit';
-      press++
-    ) {
-      await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
-      await tester.pump();
-    }
-    expect(FocusManager.instance.primaryFocus?.debugLabel, 'register-submit');
-    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
-    await tester.pumpAndSettle();
-    expect(FocusManager.instance.primaryFocus?.debugLabel, 'register-name');
-    expect(spoken.last, contains('Enter your name.'));
-    await tester.pumpWidget(const SizedBox.shrink());
-  });
-
-  testWidgets('after registering, login says so and focuses the phone field', (
-    tester,
-  ) async {
-    await open(tester, const LoginScreen(justRegistered: true));
-    expect(FocusManager.instance.primaryFocus?.debugLabel, 'login-phone');
-    expect(spoken.join(' '), contains('Registered. Now log in.'));
-    await tester.pumpWidget(const SizedBox.shrink());
+  testWidgets('an unknown number says to ask the administrator', (tester) async {
+    await http.runWithClient(
+      () async {
+        await open(tester, const LoginScreen());
+        await tester.enterText(find.byType(TextField).first, '9111111111');
+        await tester.tap(find.text('1: Sign in'));
+        await tester.pumpAndSettle();
+        expect(spoken.last, contains('Ask your school administrator'));
+        await tester.pumpWidget(const SizedBox.shrink());
+      },
+      () => MockClient(
+        (_) async => http.Response('{"detail":"not registered"}', 401),
+      ),
+    );
   });
 
   testWidgets(
@@ -223,86 +221,77 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
+  Map<String, dynamic> studentHome({bool live = false}) => {
+    'role': 'student',
+    'class_name': 'Class 6',
+    'live_class': live
+        ? {
+            'session_id': 12,
+            'subject_name': 'English',
+            'class_name': 'Class 6',
+            'teacher_name': 'Mrs Rao',
+          }
+        : null,
+    'next_class': live
+        ? null
+        : {
+            'entry_id': 3,
+            'occurrence_date': '2026-11-16',
+            'subject_name': 'English',
+            'start_clock': '10:00',
+          },
+  };
+
   testWidgets(
-    'student dashboard: every session is a focus stop with a concise label, count is spoken, number search filters',
+    'student home: one sentence on arrival, join is key 1, nothing to type, search or refresh',
     (tester) async {
-      final sessions = [
-        {
-          'session_id': 12,
-          'title': 'Science',
-          'subject_name': 'Science',
-          'class_name': 'Class 6',
-          'teacher_name': 'Mrs Rao',
-          'subject_id': 1,
-        },
-        {
-          'session_id': 34,
-          'title': 'Maths revision',
-          'subject_name': 'Maths',
-          'class_name': 'Class 6',
-          'teacher_name': 'Mr Das',
-          'subject_id': 2,
-        },
-      ];
       await http.runWithClient(
         () async {
           await open(tester, const StudentDashboard());
           await tester.pump(const Duration(seconds: 2));
-          final wrapper = tester.widget<KeypadInstructionWrapper>(
-            find.byType(KeypadInstructionWrapper).first,
+          expect(find.text('1: Join English class'), findsOneWidget);
+          expect(find.byType(TextField), findsNothing);
+          expect(find.textContaining('Refresh'), findsNothing);
+          expect(
+            spoken.join(' '),
+            contains('English class is live. Press 1 to join.'),
           );
-          final sessionLabels = wrapper.focusTargets
-              .where(
-                (target) =>
-                    target.node.debugLabel?.startsWith('student-session-') ==
-                        true &&
-                    target.node.debugLabel != 'student-session-number',
-              )
-              .map((target) => target.label)
-              .toList();
-          expect(sessionLabels, [
-            'Science, Class 6, Teacher Mrs Rao, live now, session one two. Press OK to join',
-            'Maths revision, Maths, Class 6, Teacher Mr Das, live now, session three four. Press OK to join',
-          ]);
-          expect(spoken.join(' '), contains('2 sessions available'));
-          expect(wrapper.labels[0], 'Log out, asks to confirm');
-
-          await tester.enterText(
-            find.byWidgetPredicate(
-              (widget) =>
-                  widget is TextField &&
-                  widget.focusNode?.debugLabel == 'student-session-number',
-            ),
-            '34',
-          );
-          await tester.pump(const Duration(seconds: 2));
-          expect(find.text('Science'), findsNothing);
-          expect(find.text('Maths revision'), findsOneWidget);
-          // A pause in typing never searches; Show matching sessions does.
-          expect(spoken.last, isNot(contains('Found:')));
-          tester
-              .widget<KeypadInstructionWrapper>(
-                find.byType(KeypadInstructionWrapper),
-              )
-              .focusTargets
-              .singleWhere(
-                (target) => target.node.debugLabel == 'student-search-results',
-              )
-              .onActivate!();
-          await tester.pump();
-          expect(spoken.last, contains('Found: Maths revision'));
-
-          await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
-          await tester.pumpAndSettle();
+          expect(find.text('0: ${DashboardText.logout}'), findsOneWidget);
           await tester.pumpWidget(const SizedBox.shrink());
         },
         () => MockClient(
-          (request) async => http.Response(
-            request.url.path.endsWith('/sessions/active')
-                ? jsonEncode(sessions)
-                : '{}',
-            200,
-          ),
+          (request) async =>
+              http.Response(jsonEncode(studentHome(live: true)), 200),
+        ),
+      );
+    },
+  );
+
+  testWidgets(
+    'before class, key 1 consents to joining automatically and pressing it again cancels',
+    (tester) async {
+      await http.runWithClient(
+        () async {
+          await open(tester, const StudentDashboard());
+          await tester.pump(const Duration(seconds: 2));
+          expect(
+            find.text('1: Join English automatically when it starts at 10:00'),
+            findsOneWidget,
+          );
+          await tester.sendKeyEvent(LogicalKeyboardKey.digit1);
+          await tester.pumpAndSettle();
+          expect(spoken.last, contains('I will open English'));
+          expect(find.text('1: Stop joining automatically'), findsOneWidget);
+          await tester.runAsync(
+            () => Future<void>.delayed(const Duration(milliseconds: 350)),
+          );
+          await tester.sendKeyEvent(LogicalKeyboardKey.digit1);
+          await tester.pumpAndSettle();
+          expect(spoken.last, contains('Automatic joining cancelled'));
+          await tester.pumpWidget(const SizedBox.shrink());
+        },
+        () => MockClient(
+          (request) async => http.Response(jsonEncode(studentHome()), 200),
         ),
       );
     },

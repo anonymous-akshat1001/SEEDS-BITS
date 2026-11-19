@@ -8,6 +8,9 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <!-- For Android 13+ notifications -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <!-- A class alert may wake the screen like an incoming call; Android
+         decides when this is allowed and never bypasses the lock screen. -->
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT"/>
     
     <!-- SIM Card Detection Permissions -->
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />

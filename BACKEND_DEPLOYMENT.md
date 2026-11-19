@@ -687,6 +687,21 @@ The migration configuration is `/home/seeds/alembic.ini`, **not**
 `/home/seeds/backend/alembic.ini`. Run Alembic from `/home/seeds`, as shown,
 because its script paths are relative to the repository root.
 
+Revision `20261117_12` (interaction reduction) adds the timetable, shared
+phones, class alerts, durable jobs and the administrator issue queue. After
+upgrading:
+
+- `pip install -r backend/requirements.txt` must succeed first: `tzdata` is now
+  required so `SCHOOL_TIMEZONE` (default `Asia/Kolkata`) resolves on every OS.
+- Class alerts, the ten-minute reminder, end-of-class warnings and automatic
+  ending run inside the API process (`JOB_WORKER_ENABLED=true`). Keep
+  `--workers 1`: the class list's "who is connected" view is held in that
+  process. Jobs that fell due while the service was stopped run at start-up.
+- Students and teachers now sign in with their phone number only and there is
+  no self-registration; create their accounts in the administrator dashboard.
+- Class alerts need Firebase configured; without it, students still see the
+  live class on Home, and **Issues** lists students who cannot be alerted.
+
 ### 9.1 Optional: destructive full application database reset
 
 **Skip this section for normal upgrades.** This deletes all data in the

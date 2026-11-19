@@ -1457,9 +1457,9 @@ class _GuidedQuizDraftScreenState extends State<GuidedQuizDraftScreen> {
           if (_draft && !_review) 3: t.quizUseSavedQuestion,
           if (_draft && !_review && _questions.isNotEmpty)
             4: t.quizRemoveQuestion,
-          if (_draft && !_review) 6: t.quizReview,
-          if (_draft && _review) 8: t.quizPublishConfirmLabel,
-          if (_draft && _review) 5: t.quizChangeSettingsLabel,
+          if (_draft && !_review) 5: t.quizReview,
+          if (_draft && _review) 3: t.quizPublishConfirmLabel,
+          if (_draft && _review) 2: t.quizChangeSettingsLabel,
         },
         actions: {
           0: () {
@@ -1472,13 +1472,13 @@ class _GuidedQuizDraftScreenState extends State<GuidedQuizDraftScreen> {
           if (_draft && !_review) 3: () => _add(reuse: true),
           if (_draft && !_review && _questions.isNotEmpty) 4: _removeQuestion,
           if (_draft && !_review)
-            6: () {
+            5: () {
               if (!_busy && !_needsRefresh && _questions.isNotEmpty) {
                 setState(() => _review = true);
               }
             },
-          if (_draft && _review) 8: _publish,
-          if (_draft && _review) 5: _editSettings,
+          if (_draft && _review) 3: _publish,
+          if (_draft && _review) 2: _editSettings,
         },
         focusTargets: targets,
         child: Scaffold(
@@ -4068,8 +4068,8 @@ class _AccessibleQuestionEditorDialogState
     return KeypadInstructionWrapper(
       screenName: title,
       navigationSections: t.quizEditorNavigation,
-      labels: {0: QuizText.cancel, 9: t.quizSaveQuestion},
-      actions: {0: () => Navigator.pop(context), 9: _save},
+      labels: {0: QuizText.cancel, 1: t.quizSaveQuestion},
+      actions: {0: () => Navigator.pop(context), 1: _save},
       navigationController: _navigationController,
       focusTargets: [
         KeypadFocusTarget(
@@ -4281,7 +4281,7 @@ class _AccessibleQuestionEditorDialogState
                 ElevatedButton(
                   focusNode: _saveFocus,
                   onPressed: _save,
-                  child: Text(Speech.t.quizSaveQuestionKey9),
+                  child: Text(Speech.t.quizSaveQuestionKey1),
                 ),
               ],
             ),
@@ -4497,11 +4497,11 @@ class _AccessibleQuizEditorDialogState
           : QuizText.createQuiz,
       labels: {
         0: QuizText.cancel,
-        8: widget.initialQuiz == null
+        1: widget.initialQuiz == null
             ? t.quizContinueToQuestions
             : t.quizSaveSettingsReturn,
       },
-      actions: {0: () => Navigator.pop(context), 8: _save},
+      actions: {0: () => Navigator.pop(context), 1: _save},
       navigationController: _navigationController,
       focusTargets: [
         KeypadFocusTarget(
@@ -4786,8 +4786,8 @@ class _AccessibleQuizEditorDialogState
                   onPressed: _save,
                   child: Text(
                     widget.initialQuiz == null
-                        ? Speech.t.quizContinueToQuestionsKey8
-                        : Speech.t.quizSaveSettingsKey8,
+                        ? Speech.t.quizContinueToQuestionsKey1
+                        : Speech.t.quizSaveSettingsKey1,
                   ),
                 ),
               ],

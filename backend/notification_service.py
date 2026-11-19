@@ -14,6 +14,11 @@ SERVICE_ACCOUNT_FILE = (
     or "./seeds-bits-firebase.json"
 )
 SCOPES = ['https://www.googleapis.com/auth/firebase.messaging']
+# Only routing identifiers ever leave the server; no names, titles or phones.
+DATA_ALLOWLIST = {
+    "type", "session_id", "quiz_id", "class_id", "subject_id",
+    "alert_id", "alert_kind", "ring_until",
+}
 
 class FCMNotificationService:
     def __init__(self):
@@ -61,7 +66,8 @@ class FCMNotificationService:
         title: str,
         body: str,
         data: dict = None,
-        priority: str = "high"
+        priority: str = "high",
+        data_only: bool = False,
     ) -> bool:
         """
         Send push notification using FCM v1 API
@@ -72,6 +78,8 @@ class FCMNotificationService:
             body: Notification body
             data: Additional data payload
             priority: Message priority ('high' or 'normal')
+            data_only: Omit the system notification so the app itself shows
+                the ringing class alert (it carries no personal text either way)
         """
         try:
             access_token = self._get_access_token()
@@ -122,8 +130,13 @@ class FCMNotificationService:
             if data:
                 message["message"]["data"] = {
                     k: str(v) for k, v in data.items()
-                    if k in {"type", "session_id", "quiz_id", "class_id", "subject_id"}
+                    if k in DATA_ALLOWLIST
                 }
+            if data_only:
+                # The app shows its own private, ringing notification.
+                message["message"].pop("notification", None)
+                message["message"]["android"] = {"priority": "high", "ttl": "600s"}
+                message["message"].pop("webpush", None)
             
             # Send request
             headers = {
@@ -167,28 +180,29 @@ class FCMNotificationService:
         
         return results
     
-    async def send_session_invitation(
+    async def send_class_alert(
         self,
         token: str,
+        *,
         session_id: int,
-        session_title: str,
-        teacher_name: str,
-        class_name: str,
-        subject_name: str,
+        alert_id: str,
+        alert_kind: str,
+        ring_until_ms: int,
     ) -> bool:
-        """Send session invitation notification"""
+        """Data-only class alert. The app rings until ``ring_until_ms`` and
+        joins the class directly when the alert is opened."""
         return await self.send_notification(
             token=token,
-            title="Session Invitation",
-            body=f"{teacher_name} invited you to {class_name} {subject_name}: '{session_title}'",
+            title="SEEDS update",
+            body="Open SEEDS to review your updates.",
             data={
-                "type": "session_invitation",
+                "type": "class_alert",
                 "session_id": str(session_id),
-                "session_title": session_title,
-                "teacher_name": teacher_name,
-                "class_name": class_name,
-                "subject_name": subject_name,
-            }
+                "alert_id": alert_id,
+                "alert_kind": alert_kind,
+                "ring_until": str(ring_until_ms),
+            },
+            data_only=True,
         )
 
 # Global instance

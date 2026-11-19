@@ -99,6 +99,7 @@ class KeypadInstructionWrapper extends StatefulWidget {
     this.navigationSections,
     this.introduction,
     this.stateSummary,
+    this.brief,
   });
 
   final Widget child;
@@ -121,6 +122,12 @@ class KeypadInstructionWrapper extends StatefulWidget {
   /// "Muted. Hand raised. 3 hands waiting. Recording playing."
   final String? Function()? stateSummary;
 
+  /// The screen's current state in one sentence ("English is live. Press 1
+  /// to join."). Spoken first when the screen opens, followed by every key;
+  /// when coming back from a sub-screen only this sentence is spoken, with
+  /// a reminder that star reads every key.
+  final String? brief;
+
   @override
   State<KeypadInstructionWrapper> createState() =>
       _KeypadInstructionWrapperState();
@@ -141,6 +148,8 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
   Timer? _instructionTimer;
   VoidCallback? _speechCompletionListener;
   bool _returnHelpPending = false;
+  // Set when a screen above this one closes; the next announcement is short.
+  bool _cameBack = false;
   ModalRoute<void>? _subscribedRoute;
   static const _debounceDuration = Duration(milliseconds: 300);
   static bool _userInteracted = false;
@@ -212,6 +221,7 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
   @override
   void didPopNext() {
     _returnHelpPending = true;
+    _cameBack = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _navigationController.exitTextEditing();
@@ -385,6 +395,8 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
     if (kIsWeb && !_userInteracted) return;
     final route = ModalRoute.of(context);
     if (route != null && !route.isCurrent) return;
+    final cameBack = _cameBack && !detailed;
+    _cameBack = false;
     final arrival = detailed
         ? lead
         : [?lead, ?MessageCenter.takeArrivalMessage()].join(' ');
@@ -413,7 +425,9 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
       unawaited(_audioPlayer.stop());
       final instructions = [
         ?opening,
-        detailed ? _whereAmIText() : _instructionText(detailed: detailed),
+        detailed
+            ? _whereAmIText()
+            : _instructionText(detailed: detailed, cameBack: cameBack),
       ].where((part) => part.isNotEmpty).join(' ');
       if (instructions.isNotEmpty) await TtsService.speak(instructions);
     } catch (error) {
@@ -510,12 +524,31 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
     return labels;
   }
 
-  String _instructionText({bool detailed = false, bool withName = true}) {
+  /// Opening a screen reads its state sentence and every key, so a blind
+  /// user always knows all their options. [cameBack]: only the screen, its
+  /// state and that star reads every key.
+  String _instructionText({
+    bool detailed = false,
+    bool withName = true,
+    bool cameBack = false,
+  }) {
     final t = Speech.t;
     final name = withName ? '$_screenName. ' : '';
-    final introduction = widget.introduction == null
-        ? ''
-        : '${widget.introduction} ';
+    final brief = widget.brief == null || widget.brief!.isEmpty
+        ? null
+        : widget.brief;
+    if (cameBack) {
+      final state = brief ?? widget.stateSummary?.call();
+      return [
+        '$_screenName.',
+        if (state != null && state.isNotEmpty) state,
+        t.sessionStarForKeys,
+      ].join(' ');
+    }
+    final introduction = [
+      if (!detailed && brief != null) brief,
+      ?widget.introduction,
+    ].map((part) => '$part ').join();
     final sections = widget.navigationSections == null
         ? ''
         : '${t.keypadMoveThroughSections(widget.navigationSections!)} ';
@@ -538,7 +571,10 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
     }
     if (_labels.isNotEmpty) {
       final back = _labels.containsKey(0) ? '' : '${t.keypadPressZeroBack} ';
-      return '$introduction${buildTtsInstructions(_labels, screenName: withName ? widget.screenName : null, includeRepeatHint: false)} '
+      final keys = !detailed && brief != null
+          ? '$name$introduction${buildTtsInstructions(_labels, includeRepeatHint: false)}'
+          : '$introduction${buildTtsInstructions(_labels, screenName: withName ? widget.screenName : null, includeRepeatHint: false)}';
+      return '$keys '
           '$back${t.keypadHashAndStar} '
           '${sections.isEmpty ? '${t.keypadDirectionKeys} ' : sections}${t.keypadActivateOrEdit} '
           '${t.keypadLeaveField}';

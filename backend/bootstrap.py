@@ -11,8 +11,10 @@ import models
 
 
 def required_admin_environment() -> tuple[str, str, str]:
+    from sign_in_routes import normalize_phone
+
     name = os.getenv("BOOTSTRAP_ADMIN_NAME", "").strip()
-    phone = os.getenv("BOOTSTRAP_ADMIN_PHONE", "").strip()
+    phone = normalize_phone(os.getenv("BOOTSTRAP_ADMIN_PHONE", "").strip())
     password = os.getenv("BOOTSTRAP_ADMIN_PASSWORD", "")
     if not name or not phone or not password:
         raise RuntimeError(

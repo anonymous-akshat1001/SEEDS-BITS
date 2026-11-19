@@ -18,7 +18,47 @@ class _ClassServer {
   int actions = 0;
   final actionBodies = <Map<String, dynamic>>[];
   final audioControls = <Map<String, dynamic>>[];
+  final activityRequests = <String>[];
+  Map<String, dynamic> left = const {};
+  Map<String, dynamic> activities = const {
+    'current': null,
+    'quizzes': [],
+    'journeys': [],
+  };
+  (int, Map<String, dynamic>) quizStart = (
+    409,
+    {'detail': 'This quiz is closed.'},
+  );
   late final client = MockClient.streaming((request, body) async {
+    final path = request.url.path;
+    if (path.endsWith('/activities') ||
+        path.contains('/activity') ||
+        path.startsWith('/student/quizzes/')) {
+      final sent = await utf8.decodeStream(body);
+      activityRequests.add('${request.method} $path $sent'.trim());
+      final (status, reply) = path.endsWith('/activities')
+          ? (200, activities)
+          : path.endsWith('/activity/left')
+          ? (200, left)
+          : path.endsWith('/activity/remind')
+          ? (200, {'ok': true, 'reminded': 1})
+          : path.startsWith('/student/quizzes/')
+          ? quizStart
+          : (
+              200,
+              {
+                'ok': true,
+                'activity': {
+                  ...jsonDecode(sent) as Map<String, dynamic>,
+                  'title': 'Plants',
+                },
+              },
+            );
+      return http.StreamedResponse(
+        Stream.value(utf8.encode(jsonEncode(reply))),
+        status,
+      );
+    }
     if (request.url.path.startsWith('/sse/')) {
       return http.StreamedResponse(
         events.stream,
@@ -267,29 +307,30 @@ void main() {
               await tester.pump(const Duration(milliseconds: 40));
               reached.add(FocusManager.instance.primaryFocus?.debugLabel ?? '');
             }
-            // One short list: the main keys, then the extras, then leave.
-            expect(
-              reached,
-              containsAll([
-                'session-mute',
-                'session-status',
-                'session-chat',
+            // One short list: the everyday keys, More, then leave.
+            expect(reached, {
+              'session-mute',
+              if (teacher) ...[
+                'session-raised-hands',
+                'session-mute-all',
+                'session-participants',
                 'session-recording',
-                'session-classroom-check',
-                if (teacher) ...[
-                  'session-raised-hands',
-                  'session-participants',
-                  'session-teacher-tools',
-                ] else ...[
-                  'session-hand',
-                  'session-members',
-                ],
-                'session-read-updates',
-                'session-leave',
-              ]),
+                'session-activity',
+                'session-journey',
+                'session-end-class',
+              ] else ...[
+                'session-hand',
+                'session-recording',
+              ],
+              'session-more',
+              'session-leave',
+            });
+            // Chat is under More (9, then its number); the class keeps running.
+            await tester.sendKeyEvent(LogicalKeyboardKey.digit8);
+            await tester.pumpAndSettle();
+            await tester.sendKeyEvent(
+              teacher ? LogicalKeyboardKey.digit2 : LogicalKeyboardKey.digit1,
             );
-            // Chat is its own screen on key 4; the class keeps running.
-            await tester.sendKeyEvent(LogicalKeyboardKey.digit4);
             await tester.pumpAndSettle();
             expect(find.text('Chat'), findsWidgets);
             expect(find.textContaining('Read messages'), findsOneWidget);
@@ -343,108 +384,6 @@ void main() {
       });
     },
   );
-
-  for (final outcome in ['confirmed', 'malformed', 'failed']) {
-    testWidgets(
-      'student private check native session acknowledgment: $outcome',
-      (tester) async {
-        final server = _ClassServer();
-        await _withClass(tester, server, () async {
-          server.emit({
-            'type': 'classroom_check',
-            'check_id': 'one',
-            'revision': 1,
-            'open': true,
-            'responses': [],
-          });
-          await tester.pumpAndSettle();
-          for (
-            var press = 0;
-            press < 40 &&
-                FocusManager.instance.primaryFocus?.debugLabel !=
-                    'session-classroom-check';
-            press++
-          ) {
-            await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
-            await tester.pump();
-          }
-          expect(
-            FocusManager.instance.primaryFocus?.debugLabel,
-            'session-classroom-check',
-          );
-          await tester.sendKeyEvent(LogicalKeyboardKey.enter);
-          await tester.pumpAndSettle();
-          for (
-            var press = 0;
-            press < 40 &&
-                FocusManager.instance.primaryFocus?.debugLabel != 'check-help';
-            press++
-          ) {
-            await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
-            await tester.pump();
-          }
-          await tester.sendKeyEvent(LogicalKeyboardKey.enter);
-          await tester.pump();
-          expect(server.actionBodies.single, {
-            'type': 'check_response',
-            'check_id': 'one',
-            'choice': 'help',
-          });
-          expect(
-            find.textContaining('No response confirmed yet.'),
-            findsOneWidget,
-          );
-          server.acknowledge(
-            outcome == 'failed' ? 503 : 200,
-            body: outcome == 'malformed'
-                ? {'ok': true}
-                : {
-                    'ok': true,
-                    'check_state': {
-                      'type': 'classroom_check',
-                      'check_id': 'one',
-                      'revision': 2,
-                      'open': true,
-                      'responses': [
-                        {'user_id': 7, 'name': 'Test user', 'choice': 'help'},
-                      ],
-                    },
-                  },
-          );
-          await tester.pumpAndSettle();
-          if (outcome == 'confirmed') {
-            expect(
-              find.textContaining('Your confirmed response: Need help.'),
-              findsOneWidget,
-            );
-            server.emit({
-              'type': 'classroom_check',
-              'check_id': 'one',
-              'revision': 1,
-              'open': true,
-              'responses': [],
-            });
-            await tester.pumpAndSettle();
-            expect(
-              find.textContaining('Your confirmed response: Need help.'),
-              findsOneWidget,
-            );
-          } else {
-            expect(
-              find.textContaining('No response confirmed yet.'),
-              findsOneWidget,
-            );
-            expect(
-              find.textContaining('Your confirmed response:'),
-              findsNothing,
-            );
-          }
-          expect(captureChanges, everyElement(isFalse));
-          expect(tester.takeException(), isNull);
-        });
-      },
-    );
-  }
 
   for (final failed in [false, true]) {
     testWidgets(
@@ -630,92 +569,302 @@ void main() {
     });
   }
 
-  testWidgets('7 lists everyone in the class for a student, teacher first', (
-    tester,
-  ) async {
+  testWidgets(
+    'More, Who is in class lists everyone for a student, teacher first',
+    (tester) async {
+      final server = _ClassServer();
+      await _withClass(tester, server, () async {
+        for (final person in [
+          {'participant_id': 13, 'user_id': 9, 'name': 'Zara'},
+          {
+            'participant_id': 12,
+            'user_id': 8,
+            'name': 'Ms Rao',
+            'is_teacher': true,
+          },
+          {
+            'participant_id': 14,
+            'user_id': 10,
+            'name': 'Asha',
+            'raised_hand': true,
+          },
+        ]) {
+          server.emit({
+            'type': 'participant_joined',
+            'is_muted': true,
+            ...person,
+          });
+        }
+        await tester.pumpAndSettle();
+        await tester.sendKeyEvent(LogicalKeyboardKey.digit8);
+        await tester.pumpAndSettle();
+        expect(find.text('2: Who is in class'), findsOneWidget);
+        await tester.sendKeyEvent(LogicalKeyboardKey.digit2);
+        await tester.pumpAndSettle();
+        final rows = tester
+            .widgetList<Text>(find.byType(Text))
+            .map((text) => text.data ?? '')
+            .where(
+              (text) =>
+                  text.contains(', student') || text.contains(', teacher'),
+            )
+            .toList();
+        expect(rows.length, 4, reason: '$rows');
+        expect(rows[0], startsWith('1: Ms Rao, teacher'));
+        expect(rows[1], startsWith('2: Test user, you'));
+        expect(rows[2], startsWith('3: Asha, student, hand raised'));
+        expect(rows[3], startsWith('4: Zara, student'));
+        expect(server.actions, 0, reason: 'The list is read only.');
+      });
+    },
+  );
+
+  for (final teacher in [false, true]) {
+    testWidgets(
+      'main screen shows only the options of the role: teacher=$teacher',
+      (tester) async {
+        final server = _ClassServer();
+        await _withClass(tester, server, () async {
+          final teacherOnly = [
+            '2: Raised hands',
+            '3: Mute all students',
+            '4: Class list',
+            '5: Lesson recording',
+            '6: Quiz',
+            '7: Journey',
+            '9: End class for everyone',
+          ];
+          final studentOnly = ['2: Raise hand', '3: What is playing'];
+          for (final text in teacherOnly) {
+            expect(find.text(text), teacher ? findsOneWidget : findsNothing);
+          }
+          for (final text in studentOnly) {
+            expect(find.text(text), teacher ? findsNothing : findsOneWidget);
+          }
+          // Everything else waits under More; no quiz or journey is open yet.
+          for (final text in [
+            '3: Answer the question',
+            '4: Start quiz: Plants',
+            '4: Chat',
+            '3: Class status',
+            'Class updates',
+            '9: Teacher tools',
+          ]) {
+            expect(find.text(text), findsNothing);
+          }
+          expect(find.text('8: More'), findsOneWidget);
+          // Joining reads every key once.
+          final joined = spoken.join(' ');
+          expect(joined, contains('Press 1 for Mute or unmute.'));
+          expect(joined, contains('Press 8 for More options.'));
+          expect(joined, contains('Press 0 for Leave class.'));
+          if (teacher)
+            expect(joined, contains('Press 9 for End class for everyone.'));
+          expect(find.text('0: Leave class'), findsOneWidget);
+          await tester.sendKeyEvent(LogicalKeyboardKey.digit8);
+          await tester.pumpAndSettle();
+          expect(
+            find.textContaining('Add 15 minutes'),
+            teacher ? findsOneWidget : findsNothing,
+          );
+          expect(find.textContaining('Classroom check'), findsNothing);
+          expect(find.textContaining('Invite students'), findsNothing);
+          expect(find.textContaining('Chat'), findsOneWidget);
+          expect(find.textContaining('Class status'), findsOneWidget);
+        }, teacher: teacher);
+      },
+    );
+  }
+
+  testWidgets(
+    'teacher hears one summary after a minute, then names grouped as they join and leave',
+    (tester) async {
+      final server = _ClassServer();
+      await _withClass(tester, server, () async {
+        server.emit({
+          'type': 'session_state',
+          'participants': <String, dynamic>{},
+          'playback': <String, dynamic>{},
+          'enrolled_students': 5,
+        });
+        for (final person in [
+          {'participant_id': 13, 'user_id': 9, 'name': 'Asha'},
+          {'participant_id': 14, 'user_id': 10, 'name': 'Ravi'},
+        ]) {
+          server.emit({
+            'type': 'participant_joined',
+            'is_muted': true,
+            ...person,
+          });
+        }
+        await tester.pump(const Duration(seconds: 3));
+        expect(spoken.join(' '), isNot(contains('joined')));
+        // Like the server's keepalive, so the stream stays open.
+        await tester.pump(const Duration(seconds: 30));
+        server.emit({'type': 'keepalive'});
+        await tester.pump(const Duration(seconds: 30));
+        expect(spoken.join(' '), contains('2 of 5 students here.'));
+        server.emit({
+          'type': 'participant_joined',
+          'is_muted': true,
+          'participant_id': 15,
+          'user_id': 11,
+          'name': 'Zara',
+        });
+        await tester.pump(const Duration(milliseconds: 500));
+        server.emit({'type': 'participant_left', 'participant_id': 13});
+        await tester.pump(const Duration(seconds: 3));
+        // The test server sends no keepalives, so a watchdog message may follow.
+        expect(spoken, contains('Zara joined. Asha left. 2 of 5 here.'));
+      }, teacher: true);
+    },
+  );
+
+  testWidgets('students are not told each time someone joins', (tester) async {
     final server = _ClassServer();
     await _withClass(tester, server, () async {
-      for (final person in [
-        {'participant_id': 13, 'user_id': 9, 'name': 'Zara'},
-        {'participant_id': 12, 'user_id': 8, 'name': 'Ms Rao', 'is_teacher': true},
-        {'participant_id': 14, 'user_id': 10, 'name': 'Asha', 'raised_hand': true},
-      ]) {
-        server.emit({'type': 'participant_joined', 'is_muted': true, ...person});
-      }
-      await tester.pumpAndSettle();
-      expect(find.text('7: Who is in class'), findsOneWidget);
-      await tester.sendKeyEvent(LogicalKeyboardKey.digit7);
-      await tester.pumpAndSettle();
-      final rows = tester
-          .widgetList<Text>(find.byType(Text))
-          .map((text) => text.data ?? '')
-          .where((text) => text.contains(', student') || text.contains(', teacher'))
-          .toList();
-      expect(rows.length, 4, reason: '$rows');
-      expect(rows[0], startsWith('1: Ms Rao, teacher'));
-      expect(rows[1], startsWith('2: Test user, you'));
-      expect(rows[2], startsWith('3: Asha, student, hand raised'));
-      expect(rows[3], startsWith('4: Zara, student'));
-      expect(server.actions, 0, reason: 'The list is read only.');
+      server.emit({
+        'type': 'participant_joined',
+        'is_muted': true,
+        'participant_id': 13,
+        'user_id': 9,
+        'name': 'Asha',
+      });
+      await tester.pump(const Duration(seconds: 3));
+      expect(spoken.join(' '), isNot(contains('joined')));
     });
   });
 
-  for (final teacher in [false, true]) {
-    testWidgets('main screen shows only the options of the role: teacher=$teacher', (
-      tester,
-    ) async {
+  testWidgets('teacher 6 starts a published quiz; journeys are on 7', (
+    tester,
+  ) async {
+    final server = _ClassServer()
+      ..activities = {
+        'current': null,
+        'quizzes': [
+          {'kind': 'quiz', 'id': 5, 'title': 'Plants', 'questions': 3},
+        ],
+        'journeys': [
+          {'kind': 'journey', 'id': 8, 'title': 'Leaves'},
+        ],
+      };
+    await _withClass(tester, server, () async {
+      await tester.sendKeyEvent(LogicalKeyboardKey.digit6);
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Quiz: Plants, 3 questions'), findsOneWidget);
+      expect(find.textContaining('Journey: Leaves'), findsNothing);
+      await tester.tap(find.textContaining('Quiz: Plants'));
+      await tester.pumpAndSettle();
+      expect(
+        server.activityRequests.last,
+        endsWith('/activity {"kind":"quiz","id":5}'),
+      );
+      expect(spoken.join(' '), contains('Plants is open for the class.'));
+      expect(spoken.join(' '), contains('Press the same key again'));
+      expect(find.text('6: Quiz'), findsOneWidget);
+    }, teacher: true);
+  });
+
+  testWidgets(
+    'teacher 6 again: who is left in class and in the whole class, and remind',
+    (tester) async {
+      final server = _ClassServer()
+        ..left = {
+          'kind': 'quiz',
+          'id': 5,
+          'title': 'Plants',
+          'finished': 1,
+          'enrolled': 3,
+          'in_class': [
+            {'name': 'Ravi', 'status': 'in_progress', 'in_class': true},
+          ],
+          'whole_class': [
+            {'name': 'Ravi', 'status': 'in_progress', 'in_class': true},
+            {'name': 'Zara', 'status': 'not_started', 'in_class': false},
+          ],
+        };
+      await _withClass(tester, server, () async {
+        server.emit({
+          'type': 'activity_started',
+          'kind': 'quiz',
+          'id': 5,
+          'title': 'Plants',
+        });
+        await tester.pumpAndSettle();
+        await tester.sendKeyEvent(LogicalKeyboardKey.digit6);
+        await tester.pumpAndSettle();
+        expect(find.textContaining('In class, not done (1)'), findsOneWidget);
+        expect(
+          find.textContaining('Whole class, not done (2)'),
+          findsOneWidget,
+        );
+        expect(find.textContaining('Stop offering Plants'), findsOneWidget);
+        await tester.tap(find.textContaining('Whole class, not done'));
+        await tester.pumpAndSettle();
+        expect(
+          find.textContaining('Ravi, started, not finished, in class'),
+          findsOneWidget,
+        );
+        expect(
+          find.textContaining('Zara, not started, not in class'),
+          findsOneWidget,
+        );
+        await tester.sendKeyEvent(LogicalKeyboardKey.digit0);
+        await tester.pumpAndSettle();
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 350)),
+        );
+        await tester.sendKeyEvent(LogicalKeyboardKey.digit6);
+        await tester.pumpAndSettle();
+        await tester.tap(find.textContaining('Remind those in class'));
+        await tester.pumpAndSettle();
+        expect(server.activityRequests.last, contains('POST'));
+        expect(server.activityRequests.last, contains('/activity/remind'));
+        expect(spoken.join(' '), contains('Reminded 1 student.'));
+      }, teacher: true);
+    },
+  );
+
+  testWidgets(
+    'a student hears the quiz, presses 4 once, and hears why it cannot open',
+    (tester) async {
       final server = _ClassServer();
       await _withClass(tester, server, () async {
-        final teacherOnly = [
-          '2: Raised hands',
-          '7: Participants',
-          '9: Teacher tools',
-          '5: Recording player',
-        ];
-        final studentOnly = [
-          '2: Raise hand',
-          '7: Who is in class',
-          '5: Recording status',
-        ];
-        for (final text in teacherOnly) {
-          expect(find.text(text), teacher ? findsOneWidget : findsNothing);
-        }
-        for (final text in studentOnly) {
-          expect(find.text(text), teacher ? findsNothing : findsOneWidget);
-        }
-        spoken.clear();
-        await tester.sendKeyEvent(LogicalKeyboardKey.digit3);
-        await tester.pump();
+        expect(find.textContaining('3: Start'), findsNothing);
+        server.emit({
+          'type': 'activity_started',
+          'kind': 'quiz',
+          'id': 5,
+          'title': 'Plants',
+        });
+        await tester.pumpAndSettle();
         expect(
-          spoken.last.contains('Hand down'),
-          !teacher,
-          reason: 'Teachers have no hand to raise: ${spoken.last}',
+          spoken.join(' '),
+          contains('Your teacher started a quiz: Plants. Press 4 to begin.'),
         );
-        if (teacher) {
-          // 9 Teacher tools, and the raised hands queue is one key away.
-          await tester.sendKeyEvent(LogicalKeyboardKey.digit9);
-          await tester.pumpAndSettle();
-          expect(find.textContaining('Invite students'), findsOneWidget);
-          expect(find.textContaining('End class for everyone'), findsOneWidget);
-        } else {
-          // Key 9 does nothing for a student.
-          await tester.sendKeyEvent(LogicalKeyboardKey.digit9);
-          await tester.pumpAndSettle();
-          expect(find.textContaining('Invite students'), findsNothing);
-        }
-      }, teacher: teacher);
-    });
-  }
+        expect(find.text('4: Start quiz: Plants'), findsOneWidget);
+        await tester.sendKeyEvent(LogicalKeyboardKey.digit4);
+        await tester.pumpAndSettle();
+        expect(
+          server.activityRequests.single,
+          'POST /student/quizzes/5/attempts {}',
+        );
+        expect(spoken.join(' '), contains('This quiz is closed.'));
+        server.emit({'type': 'activity_stopped'});
+        await tester.pumpAndSettle();
+        expect(find.text('4: Start quiz: Plants'), findsNothing);
+        expect(spoken.last, contains('Plants is closed in class'));
+      });
+    },
+  );
 
   testWidgets(
     'confirmed end of class returns the teacher without waiting for the event',
     (tester) async {
       final server = _ClassServer();
       await _withClass(tester, server, () async {
-        // 9 Teacher tools, 2 End class, then 1 confirms (0 would cancel).
+        // 9 End class for everyone, then 1 confirms (0 would cancel).
         await tester.sendKeyEvent(LogicalKeyboardKey.digit9);
-        await tester.pumpAndSettle();
-        await tester.sendKeyEvent(LogicalKeyboardKey.digit2);
         await tester.pumpAndSettle();
         expect(find.text('End class for everyone?'), findsOneWidget);
         await tester.sendKeyEvent(LogicalKeyboardKey.digit1);
@@ -927,11 +1076,14 @@ void main() {
     final server = _ClassServer();
     await _withClass(tester, server, () async {
       await tester.sendKeyEvent(LogicalKeyboardKey.digit1);
+      // The permission check gives up after 3 seconds on a silent platform.
+      await tester.pump(const Duration(seconds: 4));
       await tester.pumpAndSettle();
       expect(server.actions, 0);
       expect(captureChanges, isEmpty);
+      // Unmute asks for the microphone again; refusal keeps listening.
       expect(
-        spoken.any((text) => text.contains('Check microphone permission')),
+        spoken.any((text) => text.contains('microphone is still off')),
         isTrue,
       );
       expect(spoken, isNot(contains('Unmuted')));
@@ -968,7 +1120,7 @@ void main() {
               );
               expect(
                 find.text(
-                  teacher ? '5: Recording player' : '5: Recording status',
+                  teacher ? '5: Lesson recording' : '3: What is playing',
                 ),
                 findsOneWidget,
               );
@@ -985,7 +1137,7 @@ void main() {
 
   for (final teacher in [false, true]) {
     testWidgets(
-      '5 controls class audio for teachers; students only hear its status: teacher=$teacher',
+      'teacher 5 controls class audio; students only hear its status with 3: teacher=$teacher',
       (tester) async {
         final server = _ClassServer();
         await _withClass(
@@ -1003,7 +1155,7 @@ void main() {
             await tester.pumpAndSettle();
             if (teacher) {
               // 5 opens the recording player; inside it, 5 pauses for the class.
-              expect(find.text('5: Recording player'), findsOneWidget);
+              expect(find.text('5: Lesson recording'), findsOneWidget);
               await tester.sendKeyEvent(LogicalKeyboardKey.digit5);
               await tester.pumpAndSettle();
               expect(find.text('Class recording player'), findsWidgets);
@@ -1015,9 +1167,9 @@ void main() {
               await tester.pump();
               expect(find.text('5: Play for class'), findsOneWidget);
             } else {
-              expect(find.text('5: Recording status'), findsOneWidget);
+              // Students hear it with key 3.
               spoken.clear();
-              await tester.sendKeyEvent(LogicalKeyboardKey.digit5);
+              await tester.sendKeyEvent(LogicalKeyboardKey.digit3);
               await tester.pump();
               expect(spoken.last, contains('Plants, playing'));
               expect(spoken.last, contains('Only the teacher'));
@@ -1032,7 +1184,8 @@ void main() {
               expect(server.audioControls, isEmpty);
               expect(
                 audioCalls.where(
-                  (call) => const {'pause', 'resume', 'seek'}.contains(call.method),
+                  (call) =>
+                      const {'pause', 'resume', 'seek'}.contains(call.method),
                 ),
                 isEmpty,
               );

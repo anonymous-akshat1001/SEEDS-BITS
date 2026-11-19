@@ -3069,7 +3069,7 @@
   "sessionConnecting": "Connecting to the class.",
   "sessionJoinFailed": "The class could not be joined. Press 0 to leave, then try again.",
   "sessionLeaveKeyHint": "Press 0 to leave the class. It asks to confirm.",
-  "sessionKeyLine": "*: Help. #: Stop app speech. 8: Last message.",
+  "sessionKeyLine": "*: Help and last message. #: Stop speech.",
   "sessionJoinedBrief": "In class. {status} Press star for help.",
   "@sessionJoinedBrief": {
     "description": "status: sentences describing microphone, hand and connection state.",
@@ -3149,8 +3149,8 @@
   "@sessionChatButton": {
     "description": "Button text; 4 is the keypad key."
   },
-  "sessionRecordingPlayerNone": "Class recording player. No recording selected yet",
-  "sessionRecordingPlayerPlaying": "Class recording player. {title}, playing",
+  "sessionRecordingPlayerNone": "Lesson recording. None chosen yet",
+  "sessionRecordingPlayerPlaying": "Lesson recording. {title}, playing",
   "@sessionRecordingPlayerPlaying": {
     "description": "title: recording title.",
     "placeholders": {
@@ -3159,7 +3159,7 @@
       }
     }
   },
-  "sessionRecordingPlayerPaused": "Class recording player. {title}, paused",
+  "sessionRecordingPlayerPaused": "Lesson recording. {title}, paused",
   "@sessionRecordingPlayerPaused": {
     "description": "title: recording title.",
     "placeholders": {
@@ -3216,17 +3216,17 @@
       }
     }
   },
-  "sessionRecordingPlayerButton": "5: Recording player",
+  "sessionRecordingPlayerButton": "5: Lesson recording",
   "@sessionRecordingPlayerButton": {
     "description": "Button text; 5 is the keypad key."
   },
   "sessionOpeningPlayerToChoose": "No recording is selected yet. Press 1 to choose one.",
-  "sessionCheckLabel": "Answer classroom check. Private and ungraded",
-  "sessionCheckButton": "6: Classroom check",
+  "sessionCheckLabel": "Answer the teacher's question",
+  "sessionCheckButton": "3: Answer the question",
   "@sessionCheckButton": {
     "description": "Button text; 6 is the keypad key."
   },
-  "sessionHandsLabel": "Raised hands. {waiting} Acknowledge and lower hands in order",
+  "sessionHandsLabel": "Raised hands. {waiting}",
   "@sessionHandsLabel": {
     "description": "waiting: sentence such as \"2 hands waiting.\"",
     "placeholders": {
@@ -3262,7 +3262,7 @@
   "@sessionParticipantsButton": {
     "description": "Button text; 7 is the keypad key."
   },
-  "sessionToolsLabel": "Teacher tools. Invite students or end the class for everyone",
+  "sessionToolsLabel": "Teacher tools. Add time or end the class for everyone",
   "sessionToolsButton": "9: Teacher tools",
   "@sessionToolsButton": {
     "description": "Button text; 9 is the keypad key."
@@ -3275,7 +3275,7 @@
   "sessionUpdatesButton": "Class updates",
   "sessionRetryLabel": "Retry class connection",
   "sessionRetryButton": "Retry connection",
-  "sessionLeaveLabel": "Leave class and return to your dashboard",
+  "sessionLeaveLabel": "Leave class",
   "sessionLeaveButton": "0: Leave class",
   "@sessionLeaveButton": {
     "description": "Button text; 0 is the keypad key."
@@ -3937,7 +3937,7 @@
   "classroomCheckUnreadable": "Classroom check state could not be read. Refresh before responding.",
   "classroomCheckUnconfirmed": "The classroom check action was not confirmed. Refresh before trying again.",
   "classroomCheckConfirmationUnreadable": "The classroom check confirmation was unreadable. Refresh before trying again.",
-  "classroomCheckOpenedForYou": "Your teacher opened a classroom check. Use the D-pad to reach Answer classroom check.",
+  "classroomCheckOpenedForYou": "Your teacher asked a question. Press 3 to answer.",
   "classroomCheckHelp": "Private classroom check. Understood, Please repeat or Need help. Only the responding student and session teacher can read a response. It is not graded. Responses clear on the next check, session end or server restart. Use Read or Refresh for confirmed state. Stop speech and Back are available.",
   "classroomCheckTitle": "Classroom check",
   "classroomCheckNewTitle": "Open a new classroom check?",
@@ -6007,7 +6007,7 @@
   "libraryErrRepeatFailed": "Repeat playback failed. Pause and try again.",
   "libraryScreenBack": "Back",
   "libraryScreenRefreshTarget": "Refresh audio files, key 1",
-  "libraryScreenPauseSessionTarget": "Pause audio for the whole session, key 4",
+  "libraryScreenPauseSessionTarget": "Pause audio for the whole session, key 3",
   "libraryScreenUploadTarget": "Upload audio, key 2",
   "libraryScreenStopPreviewTarget": "Stop preview of {title} privately. Only you can hear this.",
   "@libraryScreenStopPreviewTarget": {
@@ -10916,10 +10916,6 @@
   "authSignOutConfirmButton": "Sign out, asks to confirm",
   "authChangePasswordTitle": "Change password",
   "authChangePasswordInfo": "Your school administrator issued a temporary credential. It lasts 24 hours. After 10 wrong attempts, sign-in pauses for 15 minutes. Choose a different password of at least 6 characters. This requires internet.",
-  "authSaveNewPasswordKey": "4: Save new password",
-  "@authSaveNewPasswordKey": {
-    "description": "4 is the keypad key."
-  },
   "authSignOutKey": "0: Sign out",
   "@authSignOutKey": {
     "description": "0 is the keypad key."
@@ -11593,7 +11589,6 @@
   "startupLogin": "Login",
   "startupRegisterKey2": "2. Register",
   "startupRegister": "Register",
-  "startupSettingsKey3": "3. Settings",
   "startupSettings": "Settings",
   "startupRepeatInstructions": "Repeat instructions",
   "startupFeatureAudioTitle": "Real-time Audio",
@@ -12044,7 +12039,6 @@
   "libraryNoSearchMatches": "No recordings match your search.",
   "libraryFindingLesson": "Finding your lesson",
   "libraryTitleRequiredField": "Title *",
-  "libraryPauseSessionKey4": "Pause audio for the whole session, key 4",
   "libraryUploadNewAudio": "Upload New Audio",
   "libraryStopPreview": "Stop Preview",
   "libraryPreviewOnlyMe": "Preview (Only Me)",
@@ -12448,9 +12442,6 @@
   "quizNoClosingTimeSet": "No closing time set",
   "quizNoClosingTimeShort": "No closing time",
   "quizClosingTimeHint": "Optional · must be after opening time",
-  "quizContinueToQuestionsKey8": "8: Continue to questions",
-  "quizSaveSettingsKey8": "8: Save settings",
-  "quizSaveQuestionKey9": "9: Save question",
   "quizShuffleQuestions": "Shuffle questions once per attempt",
   "quizShuffleOptions": "Shuffle options once per attempt",
   "messageProblem": "Problem: {text}",
@@ -12466,6 +12457,3352 @@
     "placeholders": {
       "text": {
         "type": "String"
+      }
+    }
+  },
+  "adminSetupSectionAccounts": "Accounts",
+  "@adminSetupSectionAccounts": {
+    "description": "Administrator dashboard section: student and teacher accounts."
+  },
+  "adminSetupSectionCatalog": "Classes and subjects",
+  "@adminSetupSectionCatalog": {
+    "description": "Administrator dashboard section: class and subject catalog."
+  },
+  "adminSetupSectionTimetable": "Timetable",
+  "@adminSetupSectionTimetable": {
+    "description": "Administrator dashboard section: weekly timetable."
+  },
+  "adminSetupSectionSchedule": "Today's schedule",
+  "@adminSetupSectionSchedule": {
+    "description": "Administrator dashboard section: lessons on one date."
+  },
+  "adminSetupSectionSharedPhones": "Shared phones",
+  "@adminSetupSectionSharedPhones": {
+    "description": "Administrator dashboard section: phones shared by several people."
+  },
+  "adminSetupSectionHolidays": "Holidays",
+  "@adminSetupSectionHolidays": {
+    "description": "Administrator dashboard section: school holidays."
+  },
+  "adminSetupSectionIssues": "Issues",
+  "@adminSetupSectionIssues": {
+    "description": "Administrator dashboard section: problems the server noticed."
+  },
+  "adminSetupSectionRecords": "Class records",
+  "@adminSetupSectionRecords": {
+    "description": "Administrator dashboard section: live and ended classes."
+  },
+  "adminSetupSectionPicker": "Section",
+  "@adminSetupSectionPicker": {
+    "description": "Label of the menu that chooses an administrator dashboard section."
+  },
+  "adminSetupRefresh": "Refresh {section}",
+  "@adminSetupRefresh": {
+    "description": "Tooltip of the administrator refresh button.",
+    "placeholders": {
+      "section": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupLogOut": "Log out",
+  "@adminSetupLogOut": {
+    "description": "Tooltip of the administrator log out button."
+  },
+  "adminSetupLoading": "Loading",
+  "@adminSetupLoading": {
+    "description": "Spoken label of a loading indicator in the administrator dashboard."
+  },
+  "adminSetupSaving": "Saving",
+  "@adminSetupSaving": {
+    "description": "Spoken label of the progress indicator while a form is saved."
+  },
+  "adminSetupRetry": "Try again",
+  "@adminSetupRetry": {
+    "description": "Button that reloads a list that failed to load."
+  },
+  "adminSetupLoadFailed": "This list could not be loaded. {reason}",
+  "@adminSetupLoadFailed": {
+    "description": "Shown when an administrator list fails to load; reason is a full sentence.",
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupUnknownError": "Something went wrong. Please try again.",
+  "@adminSetupUnknownError": {
+    "description": "Fallback error message in the administrator dashboard."
+  },
+  "adminSetupNotSaved": "The change could not be saved. Refresh and try again.",
+  "@adminSetupNotSaved": {
+    "description": "Shown when an administrator change fails without a reason from the server."
+  },
+  "adminSetupCancel": "Cancel",
+  "@adminSetupCancel": {
+    "description": "Button that closes an administrator dialog without saving."
+  },
+  "adminSetupSave": "Save",
+  "@adminSetupSave": {
+    "description": "Button that saves an administrator form."
+  },
+  "adminSetupClose": "Close",
+  "@adminSetupClose": {
+    "description": "Button that closes an administrator dialog."
+  },
+  "adminSetupDelete": "Delete",
+  "@adminSetupDelete": {
+    "description": "Button that deletes an item."
+  },
+  "adminSetupRemove": "Remove",
+  "@adminSetupRemove": {
+    "description": "Button that removes an item."
+  },
+  "adminSetupEdit": "Edit",
+  "@adminSetupEdit": {
+    "description": "Short visible label of an edit button."
+  },
+  "adminSetupEditNamed": "Edit {name}",
+  "@adminSetupEditNamed": {
+    "description": "Spoken label of an edit button, naming the item.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupRequiredField": "{field} is required.",
+  "@adminSetupRequiredField": {
+    "description": "Form error when a required field is empty.",
+    "placeholders": {
+      "field": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupNoDate": "Not set",
+  "@adminSetupNoDate": {
+    "description": "Shown for an optional date that has not been chosen."
+  },
+  "adminSetupDateValue": "{field}: {date}",
+  "@adminSetupDateValue": {
+    "description": "A date field with its label and value, e.g. \"First date: Monday 3 November 2026\".",
+    "placeholders": {
+      "field": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupClearDate": "Clear {field}",
+  "@adminSetupClearDate": {
+    "description": "Button that removes the chosen date from a date field.",
+    "placeholders": {
+      "field": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupDateFormat": "{weekday} {day} {month} {year}",
+  "@adminSetupDateFormat": {
+    "description": "How a date is shown, e.g. \"Monday 3 November 2026\".",
+    "placeholders": {
+      "weekday": {
+        "type": "String"
+      },
+      "day": {
+        "type": "String"
+      },
+      "month": {
+        "type": "String"
+      },
+      "year": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupDateTime": "{date}, {time}",
+  "@adminSetupDateTime": {
+    "description": "A date followed by a 24-hour time.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupDateField": "Date",
+  "@adminSetupDateField": {
+    "description": "Label of a date field."
+  },
+  "adminSetupInactive": "Deactivated",
+  "@adminSetupInactive": {
+    "description": "Status shown for a deactivated account, lesson or shared phone."
+  },
+  "adminSetupFilterAll": "All",
+  "@adminSetupFilterAll": {
+    "description": "Filter choice that shows every item."
+  },
+  "adminSetupShowFilter": "Show",
+  "@adminSetupShowFilter": {
+    "description": "Heading of a filter that chooses which items are listed."
+  },
+  "adminSetupRoleStudent": "Student",
+  "@adminSetupRoleStudent": {
+    "description": "Account role: student."
+  },
+  "adminSetupRoleTeacher": "Teacher",
+  "@adminSetupRoleTeacher": {
+    "description": "Account role: teacher."
+  },
+  "adminSetupAddPerson": "Add person",
+  "@adminSetupAddPerson": {
+    "description": "Button and dialog title for adding a student or teacher."
+  },
+  "adminSetupSearchLabel": "Search by name or phone number",
+  "@adminSetupSearchLabel": {
+    "description": "Label of the account search field."
+  },
+  "adminSetupSearchButton": "Search",
+  "@adminSetupSearchButton": {
+    "description": "Tooltip of a search button."
+  },
+  "adminSetupAccountTypeHeading": "Account type",
+  "@adminSetupAccountTypeHeading": {
+    "description": "Heading of the student or teacher filter."
+  },
+  "adminSetupAssignmentHeading": "Class or subject assignment",
+  "@adminSetupAssignmentHeading": {
+    "description": "Heading of the assigned or unassigned filter."
+  },
+  "adminSetupAccountsShown": "{count, plural, =0{No matching accounts.} =1{1 account shown.} other{{count} accounts shown.}}",
+  "@adminSetupAccountsShown": {
+    "description": "Number of accounts listed.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "adminSetupTeachersHeading": "Teachers ({count})",
+  "@adminSetupTeachersHeading": {
+    "description": "Heading above the teacher accounts with their number.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "adminSetupStudentsHeading": "Students ({count})",
+  "@adminSetupStudentsHeading": {
+    "description": "Heading above the student accounts with their number.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "adminSetupNameField": "Name",
+  "@adminSetupNameField": {
+    "description": "Label of a person's name field."
+  },
+  "adminSetupPhoneField": "Phone number",
+  "@adminSetupPhoneField": {
+    "description": "Label of a person's phone number field."
+  },
+  "adminSetupRoleField": "Role",
+  "@adminSetupRoleField": {
+    "description": "Heading of the student or teacher choice when adding a person."
+  },
+  "adminSetupTeacherPairsHeading": "Classes and subjects this teacher teaches",
+  "@adminSetupTeacherPairsHeading": {
+    "description": "Heading of a new teacher's class and subject list."
+  },
+  "adminSetupNoPairs": "None yet. You can add them later.",
+  "@adminSetupNoPairs": {
+    "description": "Shown when a teacher has no classes and subjects."
+  },
+  "adminSetupClassField": "Class",
+  "@adminSetupClassField": {
+    "description": "Label of a class choice."
+  },
+  "adminSetupSubjectField": "Subject",
+  "@adminSetupSubjectField": {
+    "description": "Label of a subject choice."
+  },
+  "adminSetupAddPair": "Add class and subject",
+  "@adminSetupAddPair": {
+    "description": "Button that adds the chosen class and subject to a teacher."
+  },
+  "adminSetupPairLabel": "{className}, {subject}",
+  "@adminSetupPairLabel": {
+    "description": "A class and subject pair.",
+    "placeholders": {
+      "className": {
+        "type": "String"
+      },
+      "subject": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupRemovePair": "Remove {className}, {subject}",
+  "@adminSetupRemovePair": {
+    "description": "Tooltip of the button removing a class and subject pair from a new teacher.",
+    "placeholders": {
+      "className": {
+        "type": "String"
+      },
+      "subject": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupNoSubjectsInClass": "This class has no subjects yet. Add subjects under Classes and subjects.",
+  "@adminSetupNoSubjectsInClass": {
+    "description": "Shown when a chosen class has no subjects."
+  },
+  "adminSetupNoActiveClasses": "There are no active classes yet. Add one under Classes and subjects.",
+  "@adminSetupNoActiveClasses": {
+    "description": "Shown when no classes can be chosen."
+  },
+  "adminSetupPersonAdded": "{name} was added.",
+  "@adminSetupPersonAdded": {
+    "description": "Confirmation after adding a person.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupEditPerson": "Edit {name}",
+  "@adminSetupEditPerson": {
+    "description": "Title of the dialog editing a person's name and phone number.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupPhoneChangeNote": "Changing the phone number signs this person out on every phone.",
+  "@adminSetupPhoneChangeNote": {
+    "description": "Helper text under the phone number field when editing a person."
+  },
+  "adminSetupPersonSaved": "Changes to {name} were saved.",
+  "@adminSetupPersonSaved": {
+    "description": "Confirmation after editing a person.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupDeactivate": "Deactivate",
+  "@adminSetupDeactivate": {
+    "description": "Button that deactivates an account."
+  },
+  "adminSetupActivate": "Activate",
+  "@adminSetupActivate": {
+    "description": "Button that activates an account again."
+  },
+  "adminSetupDeactivateNamed": "Deactivate {name}",
+  "@adminSetupDeactivateNamed": {
+    "description": "Spoken label of the deactivate button, naming the item.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupActivateNamed": "Activate {name}",
+  "@adminSetupActivateNamed": {
+    "description": "Spoken label of the activate button, naming the item.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupDeactivateTitle": "Deactivate {name}?",
+  "@adminSetupDeactivateTitle": {
+    "description": "Title of the confirmation before deactivating an account.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupDeactivateMessage": "{name} will be signed out and cannot sign in until the account is activated again.",
+  "@adminSetupDeactivateMessage": {
+    "description": "Explains what deactivating an account does.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupActivated": "{name} can sign in again.",
+  "@adminSetupActivated": {
+    "description": "Confirmation after activating an account.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupDeactivated": "{name} was deactivated.",
+  "@adminSetupDeactivated": {
+    "description": "Confirmation after deactivating an account.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupSignOutEverywhere": "Sign out everywhere",
+  "@adminSetupSignOutEverywhere": {
+    "description": "Button that ends every sign-in of an account."
+  },
+  "adminSetupSignOutNamed": "Sign {name} out everywhere",
+  "@adminSetupSignOutNamed": {
+    "description": "Spoken label of the sign out everywhere button.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupSignOutTitle": "Sign {name} out everywhere?",
+  "@adminSetupSignOutTitle": {
+    "description": "Title of the confirmation before signing a person out everywhere.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupSignOutMessage": "This ends {name}'s sign-in on every phone, for example if someone else used their number. They can sign in again with their phone number.",
+  "@adminSetupSignOutMessage": {
+    "description": "Explains sign out everywhere.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupSignedOut": "{name} was signed out everywhere.",
+  "@adminSetupSignedOut": {
+    "description": "Confirmation after signing a person out everywhere.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupStudentClassAction": "Change class",
+  "@adminSetupStudentClassAction": {
+    "description": "Button that changes a student's class."
+  },
+  "adminSetupTeacherAssignmentsAction": "Classes and subjects",
+  "@adminSetupTeacherAssignmentsAction": {
+    "description": "Button that manages a teacher's classes and subjects."
+  },
+  "adminSetupStudentDetail": "Student. Class: {className}",
+  "@adminSetupStudentDetail": {
+    "description": "Account card detail for a student in a class.",
+    "placeholders": {
+      "className": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupStudentNoClass": "Student. No class yet.",
+  "@adminSetupStudentNoClass": {
+    "description": "Account card detail for a student without a class."
+  },
+  "adminSetupTeacherDetail": "Teacher. Teaches: {pairs}",
+  "@adminSetupTeacherDetail": {
+    "description": "Account card detail for a teacher; pairs is a list of class and subject pairs.",
+    "placeholders": {
+      "pairs": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupTeacherNoPairs": "Teacher. No classes or subjects yet.",
+  "@adminSetupTeacherNoPairs": {
+    "description": "Account card detail for a teacher without classes."
+  },
+  "adminSetupPhoneDetail": "Phone: {phone}",
+  "@adminSetupPhoneDetail": {
+    "description": "A person's phone number.",
+    "placeholders": {
+      "phone": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupClassDialogTitle": "Class for {name}",
+  "@adminSetupClassDialogTitle": {
+    "description": "Title of the dialog choosing a student's class.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupRemoveFromClass": "Remove from {className}",
+  "@adminSetupRemoveFromClass": {
+    "description": "Button that removes a student from their class.",
+    "placeholders": {
+      "className": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupStudentEnrolled": "{name} is now in {className}.",
+  "@adminSetupStudentEnrolled": {
+    "description": "Confirmation after putting a student in a class.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "className": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupStudentRemoved": "{name} was removed from their class.",
+  "@adminSetupStudentRemoved": {
+    "description": "Confirmation after removing a student from a class.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupAssignmentsTitle": "Classes and subjects for {name}",
+  "@adminSetupAssignmentsTitle": {
+    "description": "Title of the dialog managing a teacher's classes and subjects.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupCurrentPairs": "Currently teaches",
+  "@adminSetupCurrentPairs": {
+    "description": "Heading of a teacher's current classes and subjects."
+  },
+  "adminSetupPairAdded": "{name} now teaches {className}, {subject}.",
+  "@adminSetupPairAdded": {
+    "description": "Confirmation after assigning a teacher.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "className": {
+        "type": "String"
+      },
+      "subject": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupPairRemoved": "{name} no longer teaches {className}, {subject}.",
+  "@adminSetupPairRemoved": {
+    "description": "Confirmation after removing a teacher assignment.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "className": {
+        "type": "String"
+      },
+      "subject": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupClassesHeading": "Classes",
+  "@adminSetupClassesHeading": {
+    "description": "Heading of the class list."
+  },
+  "adminSetupSubjectsHeading": "Subjects",
+  "@adminSetupSubjectsHeading": {
+    "description": "Heading of the subject list."
+  },
+  "adminSetupAddClass": "Add class",
+  "@adminSetupAddClass": {
+    "description": "Button that creates a class."
+  },
+  "adminSetupAddSubject": "Add subject",
+  "@adminSetupAddSubject": {
+    "description": "Button that creates a subject."
+  },
+  "adminSetupNoClasses": "No classes yet.",
+  "@adminSetupNoClasses": {
+    "description": "Shown when there are no classes."
+  },
+  "adminSetupNoSubjects": "No subjects yet.",
+  "@adminSetupNoSubjects": {
+    "description": "Shown when there are no subjects."
+  },
+  "adminSetupSubjectsButton": "Subjects",
+  "@adminSetupSubjectsButton": {
+    "description": "Short label of the button choosing a class's subjects."
+  },
+  "adminSetupClassSubjects": "Subjects in {className}",
+  "@adminSetupClassSubjects": {
+    "description": "Title and spoken label for choosing a class's subjects.",
+    "placeholders": {
+      "className": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupArchiveNamed": "Archive {name}",
+  "@adminSetupArchiveNamed": {
+    "description": "Spoken label of an archive button.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupRestoreNamed": "Restore {name}",
+  "@adminSetupRestoreNamed": {
+    "description": "Spoken label of a restore button.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupNoSubjectsToChoose": "There are no active subjects yet. Add a subject first.",
+  "@adminSetupNoSubjectsToChoose": {
+    "description": "Shown when no subjects can be added to a class."
+  },
+  "adminSetupAddLesson": "Add lesson to timetable",
+  "@adminSetupAddLesson": {
+    "description": "Button and dialog title for a new weekly lesson."
+  },
+  "adminSetupEditLesson": "Edit timetable lesson",
+  "@adminSetupEditLesson": {
+    "description": "Title of the dialog editing a weekly lesson."
+  },
+  "adminSetupAllTeachers": "All teachers",
+  "@adminSetupAllTeachers": {
+    "description": "Timetable filter choice showing every teacher."
+  },
+  "adminSetupAllClasses": "All classes",
+  "@adminSetupAllClasses": {
+    "description": "Timetable filter choice showing every class."
+  },
+  "adminSetupTeacherField": "Teacher",
+  "@adminSetupTeacherField": {
+    "description": "Label of a teacher choice."
+  },
+  "adminSetupWeekdayField": "Day of the week",
+  "@adminSetupWeekdayField": {
+    "description": "Label of the weekday choice of a lesson."
+  },
+  "adminSetupStartField": "Start time",
+  "@adminSetupStartField": {
+    "description": "Label of a lesson start time field."
+  },
+  "adminSetupEndField": "End time",
+  "@adminSetupEndField": {
+    "description": "Label of a lesson end time field."
+  },
+  "adminSetupTimeHelper": "24-hour India time (IST), for example 09:30",
+  "@adminSetupTimeHelper": {
+    "description": "Helper text under a time field."
+  },
+  "adminSetupTimeInvalid": "Enter the {field} as 24-hour time, for example 09:30.",
+  "@adminSetupTimeInvalid": {
+    "description": "Error when a time field is not a valid time.",
+    "placeholders": {
+      "field": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupEndBeforeStart": "The lesson must end after it starts.",
+  "@adminSetupEndBeforeStart": {
+    "description": "Error when a lesson ends before it starts."
+  },
+  "adminSetupUntilBeforeFrom": "The last date must be on or after the first date.",
+  "@adminSetupUntilBeforeFrom": {
+    "description": "Error when the date range of a lesson is reversed."
+  },
+  "adminSetupValidFrom": "First date",
+  "@adminSetupValidFrom": {
+    "description": "Optional first date a weekly lesson happens."
+  },
+  "adminSetupValidUntil": "Last date",
+  "@adminSetupValidUntil": {
+    "description": "Optional last date a weekly lesson happens."
+  },
+  "adminSetupLessonField": "Lesson playlist (optional)",
+  "@adminSetupLessonField": {
+    "description": "Label of the choice of a teacher's lesson playlist."
+  },
+  "adminSetupNoLesson": "No lesson playlist",
+  "@adminSetupNoLesson": {
+    "description": "Lesson playlist choice meaning none."
+  },
+  "adminSetupNoLessonsFound": "This teacher has no lesson playlists for this class and subject yet.",
+  "@adminSetupNoLessonsFound": {
+    "description": "Shown when a teacher has no lesson playlists to choose."
+  },
+  "adminSetupShowInactive": "Show deactivated lessons",
+  "@adminSetupShowInactive": {
+    "description": "Checkbox that also lists deactivated timetable lessons."
+  },
+  "adminSetupNoTimetable": "No timetable lessons match.",
+  "@adminSetupNoTimetable": {
+    "description": "Shown when the timetable list is empty."
+  },
+  "adminSetupEntryTitle": "{start} to {end}: {subject}, {className}",
+  "@adminSetupEntryTitle": {
+    "description": "A lesson with its time, e.g. \"09:00 to 09:45: Science, Class 5\".",
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      },
+      "subject": {
+        "type": "String"
+      },
+      "className": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupEntryTeacher": "Teacher: {name}",
+  "@adminSetupEntryTeacher": {
+    "description": "The teacher of a lesson or class.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupEntryLesson": "Lesson playlist: {title}",
+  "@adminSetupEntryLesson": {
+    "description": "The lesson playlist chosen for a lesson.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupEntryNoLesson": "No lesson playlist chosen.",
+  "@adminSetupEntryNoLesson": {
+    "description": "Shown when a lesson has no lesson playlist."
+  },
+  "adminSetupEntryFrom": "From {date}",
+  "@adminSetupEntryFrom": {
+    "description": "First date of a weekly lesson.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupEntryUntil": "Until {date}",
+  "@adminSetupEntryUntil": {
+    "description": "Last date of a weekly lesson.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupDateChanges": "Date changes",
+  "@adminSetupDateChanges": {
+    "description": "Button that opens the changes to single dates of a lesson."
+  },
+  "adminSetupDateChangesNamed": "Date changes for {title}",
+  "@adminSetupDateChangesNamed": {
+    "description": "Spoken label of the date changes button.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupDeactivateLesson": "Deactivate",
+  "@adminSetupDeactivateLesson": {
+    "description": "Button that deactivates a timetable lesson."
+  },
+  "adminSetupReactivateLesson": "Reactivate",
+  "@adminSetupReactivateLesson": {
+    "description": "Button that reactivates a timetable lesson."
+  },
+  "adminSetupDeactivateLessonTitle": "Deactivate this lesson?",
+  "@adminSetupDeactivateLessonTitle": {
+    "description": "Title of the confirmation before deactivating a timetable lesson."
+  },
+  "adminSetupDeactivateLessonMessage": "{subject} for {className} on {weekday} at {start} will no longer be scheduled.",
+  "@adminSetupDeactivateLessonMessage": {
+    "description": "Explains deactivating a timetable lesson.",
+    "placeholders": {
+      "subject": {
+        "type": "String"
+      },
+      "className": {
+        "type": "String"
+      },
+      "weekday": {
+        "type": "String"
+      },
+      "start": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupLessonSaved": "Timetable saved.",
+  "@adminSetupLessonSaved": {
+    "description": "Confirmation after saving a timetable lesson."
+  },
+  "adminSetupLessonDeactivated": "Lesson deactivated.",
+  "@adminSetupLessonDeactivated": {
+    "description": "Confirmation after deactivating a timetable lesson."
+  },
+  "adminSetupLessonReactivated": "Lesson reactivated.",
+  "@adminSetupLessonReactivated": {
+    "description": "Confirmation after reactivating a timetable lesson."
+  },
+  "adminSetupClassSubjectFixed": "{className}, {subject}. To change the class or subject, deactivate this lesson and add a new one.",
+  "@adminSetupClassSubjectFixed": {
+    "description": "Shown when editing a lesson, whose class and subject cannot change.",
+    "placeholders": {
+      "className": {
+        "type": "String"
+      },
+      "subject": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupDateChangesTitle": "Date changes: {lesson}, every {weekday}",
+  "@adminSetupDateChangesTitle": {
+    "description": "Title of the list of single-date changes of a weekly lesson.",
+    "placeholders": {
+      "lesson": {
+        "type": "String"
+      },
+      "weekday": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupNoDateChanges": "No date changes.",
+  "@adminSetupNoDateChanges": {
+    "description": "Shown when a lesson has no single-date changes."
+  },
+  "adminSetupAddDateChange": "Change one date",
+  "@adminSetupAddDateChange": {
+    "description": "Button that adds a change for one date of a lesson."
+  },
+  "adminSetupCancelledLabel": "Cancelled on this date.",
+  "@adminSetupCancelledLabel": {
+    "description": "A lesson is cancelled on one date."
+  },
+  "adminSetupSubstituteLabel": "Substitute teacher: {name}",
+  "@adminSetupSubstituteLabel": {
+    "description": "A substitute teacher on one date.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupDifferentLesson": "A different lesson playlist is used on this date.",
+  "@adminSetupDifferentLesson": {
+    "description": "A different lesson playlist on one date."
+  },
+  "adminSetupNoteLabel": "Note: {note}",
+  "@adminSetupNoteLabel": {
+    "description": "A note about a date change.",
+    "placeholders": {
+      "note": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupClearChange": "Clear change",
+  "@adminSetupClearChange": {
+    "description": "Button that removes a single-date change."
+  },
+  "adminSetupClearChangeNamed": "Clear the change for {date}",
+  "@adminSetupClearChangeNamed": {
+    "description": "Spoken label of the clear change button.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupEditDateChangeNamed": "Edit the change for {date}",
+  "@adminSetupEditDateChangeNamed": {
+    "description": "Spoken label of the edit date change button.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupChangeCleared": "The change for {date} was cleared.",
+  "@adminSetupChangeCleared": {
+    "description": "Confirmation after clearing a date change.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupDateChangeTitle": "Change one date: {lesson}",
+  "@adminSetupDateChangeTitle": {
+    "description": "Title of the dialog changing one date of a lesson.",
+    "placeholders": {
+      "lesson": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupCancelOnDate": "Cancel the lesson on this date",
+  "@adminSetupCancelOnDate": {
+    "description": "Checkbox that cancels a lesson on one date."
+  },
+  "adminSetupSubstituteField": "Substitute teacher (optional)",
+  "@adminSetupSubstituteField": {
+    "description": "Label of the substitute teacher choice."
+  },
+  "adminSetupRegularTeacher": "No substitute ({name} teaches)",
+  "@adminSetupRegularTeacher": {
+    "description": "Substitute choice meaning the usual teacher teaches.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupDateLessonField": "Lesson playlist on this date",
+  "@adminSetupDateLessonField": {
+    "description": "Label of the lesson playlist choice for one date."
+  },
+  "adminSetupUsualLesson": "Same as usual",
+  "@adminSetupUsualLesson": {
+    "description": "Lesson playlist choice meaning no change."
+  },
+  "adminSetupNoteField": "Note (optional)",
+  "@adminSetupNoteField": {
+    "description": "Label of the note field of a date change."
+  },
+  "adminSetupDateChangeSaved": "The change for {date} was saved.",
+  "@adminSetupDateChangeSaved": {
+    "description": "Confirmation after saving a date change.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupChooseDateFirst": "Choose a date.",
+  "@adminSetupChooseDateFirst": {
+    "description": "Form error when no date was chosen."
+  },
+  "adminSetupPreviousDay": "Previous day",
+  "@adminSetupPreviousDay": {
+    "description": "Button showing the previous day of the schedule."
+  },
+  "adminSetupNextDay": "Next day",
+  "@adminSetupNextDay": {
+    "description": "Button showing the next day of the schedule."
+  },
+  "adminSetupToday": "Today",
+  "@adminSetupToday": {
+    "description": "Button showing today's schedule."
+  },
+  "adminSetupScheduleFor": "Lessons on {date}",
+  "@adminSetupScheduleFor": {
+    "description": "Heading of the schedule for one date.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupNoLessonsOnDay": "No lessons on this date.",
+  "@adminSetupNoLessonsOnDay": {
+    "description": "Shown when a date has no lessons."
+  },
+  "adminSetupScheduleSubstitute": "Teacher: {name} (substitute)",
+  "@adminSetupScheduleSubstitute": {
+    "description": "The substitute teacher of a lesson.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupStateLabel": "Status: {state}",
+  "@adminSetupStateLabel": {
+    "description": "State of a scheduled lesson.",
+    "placeholders": {
+      "state": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupStateUpcoming": "Upcoming",
+  "@adminSetupStateUpcoming": {
+    "description": "Lesson state: not yet started and still to come."
+  },
+  "adminSetupStateLive": "Live now",
+  "@adminSetupStateLive": {
+    "description": "Lesson state: the class is live."
+  },
+  "adminSetupStateHeld": "Held",
+  "@adminSetupStateHeld": {
+    "description": "Lesson state: the class took place."
+  },
+  "adminSetupStateCancelled": "Cancelled",
+  "@adminSetupStateCancelled": {
+    "description": "Lesson state: cancelled."
+  },
+  "adminSetupStateNotStarted": "Not started",
+  "@adminSetupStateNotStarted": {
+    "description": "Lesson state: its time passed and the class never started."
+  },
+  "adminSetupLessonReady": "Lesson playlist ready.",
+  "@adminSetupLessonReady": {
+    "description": "Shown when a lesson has a lesson playlist."
+  },
+  "adminSetupSharedPhoneNote": "On a shared phone, each person enters the shared phone number, then their short profile number. The profile number only chooses whose account opens. It is not a password.",
+  "@adminSetupSharedPhoneNote": {
+    "description": "Explains shared phones and profile numbers."
+  },
+  "adminSetupAddSharedPhone": "Add shared phone",
+  "@adminSetupAddSharedPhone": {
+    "description": "Button and dialog title for a new shared phone."
+  },
+  "adminSetupEditSharedPhone": "Edit shared phone",
+  "@adminSetupEditSharedPhone": {
+    "description": "Title of the dialog editing a shared phone."
+  },
+  "adminSetupSharedPhoneName": "Name, for example Class 5 phone",
+  "@adminSetupSharedPhoneName": {
+    "description": "Label of the shared phone name field."
+  },
+  "adminSetupSharedPhoneNumber": "Shared phone number",
+  "@adminSetupSharedPhoneNumber": {
+    "description": "Label of the shared phone number field."
+  },
+  "adminSetupSharedPhoneActiveSwitch": "Shared phone can be used",
+  "@adminSetupSharedPhoneActiveSwitch": {
+    "description": "Switch that activates or deactivates a shared phone."
+  },
+  "adminSetupSharedPhoneSaved": "Shared phone saved.",
+  "@adminSetupSharedPhoneSaved": {
+    "description": "Confirmation after saving a shared phone."
+  },
+  "adminSetupNoSharedPhones": "No shared phones yet.",
+  "@adminSetupNoSharedPhones": {
+    "description": "Shown when there are no shared phones."
+  },
+  "adminSetupGroupNumber": "Number: {phone}",
+  "@adminSetupGroupNumber": {
+    "description": "The number of a shared phone.",
+    "placeholders": {
+      "phone": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupMemberLine": "{name}, {role}. Profile number {code}",
+  "@adminSetupMemberLine": {
+    "description": "A person on a shared phone.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "role": {
+        "type": "String"
+      },
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupNoMembers": "No people on this phone yet.",
+  "@adminSetupNoMembers": {
+    "description": "Shown when a shared phone has no people."
+  },
+  "adminSetupAddMember": "Add person",
+  "@adminSetupAddMember": {
+    "description": "Short label of the button adding a person to a shared phone."
+  },
+  "adminSetupAddMemberTitle": "Add a person to {group}",
+  "@adminSetupAddMemberTitle": {
+    "description": "Title and spoken label for adding a person to a shared phone.",
+    "placeholders": {
+      "group": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupSearchPeople": "Search people by name or phone number",
+  "@adminSetupSearchPeople": {
+    "description": "Label of the person search field."
+  },
+  "adminSetupNoPeopleFound": "No matching people.",
+  "@adminSetupNoPeopleFound": {
+    "description": "Shown when the person search finds nobody."
+  },
+  "adminSetupPersonField": "Person",
+  "@adminSetupPersonField": {
+    "description": "Label of the person choice."
+  },
+  "adminSetupPersonOption": "{name}, {role}, {phone}",
+  "@adminSetupPersonOption": {
+    "description": "A person in the person choice.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "role": {
+        "type": "String"
+      },
+      "phone": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupChoosePerson": "Choose a person.",
+  "@adminSetupChoosePerson": {
+    "description": "Form error when no person was chosen."
+  },
+  "adminSetupProfileCodeField": "Profile number",
+  "@adminSetupProfileCodeField": {
+    "description": "Label of the profile number field of a shared phone."
+  },
+  "adminSetupProfileCodeHelper": "1 to 4 digits, different for each person on this phone.",
+  "@adminSetupProfileCodeHelper": {
+    "description": "Helper text under the profile number field."
+  },
+  "adminSetupProfileCodeInvalid": "Enter a profile number of 1 to 4 digits.",
+  "@adminSetupProfileCodeInvalid": {
+    "description": "Form error for an invalid profile number."
+  },
+  "adminSetupMemberAdded": "{name} was added to {group}.",
+  "@adminSetupMemberAdded": {
+    "description": "Confirmation after adding a person to a shared phone.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "group": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupRemoveMemberNamed": "Remove {name} from {group}",
+  "@adminSetupRemoveMemberNamed": {
+    "description": "Tooltip of the button removing a person from a shared phone.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "group": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupRemoveMemberTitle": "Remove {name} from {group}?",
+  "@adminSetupRemoveMemberTitle": {
+    "description": "Title of the confirmation before removing a person from a shared phone.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "group": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupRemoveMemberMessage": "{name} will no longer be able to choose their profile on this shared phone.",
+  "@adminSetupRemoveMemberMessage": {
+    "description": "Explains removing a person from a shared phone.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupMemberRemoved": "{name} was removed from {group}.",
+  "@adminSetupMemberRemoved": {
+    "description": "Confirmation after removing a person from a shared phone.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "group": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupHolidayNote": "No lessons are scheduled on holidays.",
+  "@adminSetupHolidayNote": {
+    "description": "Explains holidays."
+  },
+  "adminSetupAddHoliday": "Add holiday",
+  "@adminSetupAddHoliday": {
+    "description": "Button and dialog title for a new holiday."
+  },
+  "adminSetupHolidayName": "Holiday name",
+  "@adminSetupHolidayName": {
+    "description": "Label of the holiday name field."
+  },
+  "adminSetupNoHolidays": "No holidays yet.",
+  "@adminSetupNoHolidays": {
+    "description": "Shown when there are no holidays."
+  },
+  "adminSetupHolidayAdded": "{name} on {date} was added.",
+  "@adminSetupHolidayAdded": {
+    "description": "Confirmation after adding a holiday.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupDeleteHolidayNamed": "Delete {name} on {date}",
+  "@adminSetupDeleteHolidayNamed": {
+    "description": "Spoken label of the delete holiday button.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupDeleteHolidayTitle": "Delete this holiday?",
+  "@adminSetupDeleteHolidayTitle": {
+    "description": "Title of the confirmation before deleting a holiday."
+  },
+  "adminSetupDeleteHolidayMessage": "{name} on {date} will be removed, and lessons will be scheduled on that date again.",
+  "@adminSetupDeleteHolidayMessage": {
+    "description": "Explains deleting a holiday.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupHolidayDeleted": "The holiday was deleted.",
+  "@adminSetupHolidayDeleted": {
+    "description": "Confirmation after deleting a holiday."
+  },
+  "adminSetupIssuesOpen": "Open",
+  "@adminSetupIssuesOpen": {
+    "description": "Issue filter and status: not yet resolved."
+  },
+  "adminSetupIssuesResolved": "Resolved",
+  "@adminSetupIssuesResolved": {
+    "description": "Issue filter and status: resolved."
+  },
+  "adminSetupNoIssues": "No issues to show.",
+  "@adminSetupNoIssues": {
+    "description": "Shown when there are no issues."
+  },
+  "adminSetupIssueSeen": "{count, plural, =1{Seen once.} other{Seen {count} times.}} Last seen {when}.",
+  "@adminSetupIssueSeen": {
+    "description": "How often an issue happened and when it was last seen.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupMarkResolved": "Mark resolved",
+  "@adminSetupMarkResolved": {
+    "description": "Button that marks an issue resolved."
+  },
+  "adminSetupMarkResolvedNamed": "Mark resolved: {message}",
+  "@adminSetupMarkResolvedNamed": {
+    "description": "Spoken label of the mark resolved button.",
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupIssueResolved": "Issue marked resolved.",
+  "@adminSetupIssueResolved": {
+    "description": "Confirmation after resolving an issue."
+  },
+  "adminSetupRecordsLive": "Live",
+  "@adminSetupRecordsLive": {
+    "description": "Class records filter: live classes."
+  },
+  "adminSetupRecordsEnded": "Ended",
+  "@adminSetupRecordsEnded": {
+    "description": "Class records filter and status: ended classes."
+  },
+  "adminSetupNoRecords": "No classes to show.",
+  "@adminSetupNoRecords": {
+    "description": "Shown when there are no class records."
+  },
+  "adminSetupRecordTitle": "{subject}, {className}",
+  "@adminSetupRecordTitle": {
+    "description": "Title of a class record.",
+    "placeholders": {
+      "subject": {
+        "type": "String"
+      },
+      "className": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupRecordLive": "Live now",
+  "@adminSetupRecordLive": {
+    "description": "Status of a live class."
+  },
+  "adminSetupRecordLiveUntil": "Live now. Ends at {clock}",
+  "@adminSetupRecordLiveUntil": {
+    "description": "Status of a live class with its end time.",
+    "placeholders": {
+      "clock": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupRecordStarted": "Started {when}",
+  "@adminSetupRecordStarted": {
+    "description": "When a class started.",
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupRecordEnded": "Ended {when}",
+  "@adminSetupRecordEnded": {
+    "description": "When a class ended.",
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupEndedByTeacher": "The teacher ended the class.",
+  "@adminSetupEndedByTeacher": {
+    "description": "End reason: the teacher."
+  },
+  "adminSetupEndedByAdmin": "An administrator ended the class.",
+  "@adminSetupEndedByAdmin": {
+    "description": "End reason: an administrator."
+  },
+  "adminSetupEndedAutomatically": "The class ended automatically at its end time.",
+  "@adminSetupEndedAutomatically": {
+    "description": "End reason: automatic."
+  },
+  "adminSetupEndedOther": "End reason: {reason}",
+  "@adminSetupEndedOther": {
+    "description": "Any other end reason, as recorded by the server.",
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupStudentsJoined": "{count, plural, =0{No students joined.} =1{1 student joined.} other{{count} students joined.}}",
+  "@adminSetupStudentsJoined": {
+    "description": "How many students joined a class.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "adminSetupExtensionMinutes": "{count, plural, =0{No extra time added.} =1{1 extra minute added.} other{{count} extra minutes added.}}",
+  "@adminSetupExtensionMinutes": {
+    "description": "Extra minutes added to a class.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "adminSetupAddFifteen": "Add 15 minutes",
+  "@adminSetupAddFifteen": {
+    "description": "Button that extends a live class."
+  },
+  "adminSetupAddFifteenNamed": "Add 15 minutes to {title}",
+  "@adminSetupAddFifteenNamed": {
+    "description": "Spoken label of the extend button.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupEndForEveryone": "End class for everyone",
+  "@adminSetupEndForEveryone": {
+    "description": "Button that ends a live class."
+  },
+  "adminSetupEndForEveryoneNamed": "End {title} for everyone",
+  "@adminSetupEndForEveryoneNamed": {
+    "description": "Spoken label of the end class button.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupEndTitle": "End this class for everyone?",
+  "@adminSetupEndTitle": {
+    "description": "Title of the confirmation before ending a live class."
+  },
+  "adminSetupEndMessage": "{title} will end now for the teacher and every student.",
+  "@adminSetupEndMessage": {
+    "description": "Explains ending a live class.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupKeepClass": "Keep class going",
+  "@adminSetupKeepClass": {
+    "description": "Button that cancels ending a class."
+  },
+  "adminSetupEndClass": "End class",
+  "@adminSetupEndClass": {
+    "description": "Button that confirms ending a class."
+  },
+  "adminSetupEnded": "The class was ended.",
+  "@adminSetupEnded": {
+    "description": "Confirmation after ending a class."
+  },
+  "adminSetupExtended": "The class now ends at {clock}.",
+  "@adminSetupExtended": {
+    "description": "Confirmation after extending a class.",
+    "placeholders": {
+      "clock": {
+        "type": "String"
+      }
+    }
+  },
+  "loginScreenName": "Sign in",
+  "@loginScreenName": {
+    "description": "Title of the sign-in screen for students and teachers."
+  },
+  "loginIntro": "Type your phone number, then press 1 to sign in.",
+  "@loginIntro": {
+    "description": "Short arrival speech on the sign-in screen."
+  },
+  "loginPhoneField": "Phone number. Type it with the number keys.",
+  "@loginPhoneField": {
+    "description": "Focus label of the phone number field."
+  },
+  "loginPhoneLabel": "Phone number",
+  "@loginPhoneLabel": {
+    "description": "Visible label of the phone number field."
+  },
+  "loginProfileField": "Your profile number on this shared phone",
+  "@loginProfileField": {
+    "description": "Focus label of the shared-phone profile number field."
+  },
+  "loginProfileLabel": "Profile number",
+  "@loginProfileLabel": {
+    "description": "Visible label of the shared-phone profile number field."
+  },
+  "loginEnterProfileCode": "This phone is shared. Type your profile number, then press 1.",
+  "@loginEnterProfileCode": {
+    "description": "Spoken when the number belongs to a shared phone."
+  },
+  "loginKeySignIn": "Sign in",
+  "@loginKeySignIn": {
+    "description": "Key 1 on the sign-in screens."
+  },
+  "loginKeyContinue": "Continue",
+  "@loginKeyContinue": {
+    "description": "Key 1 after entering a shared-phone profile number."
+  },
+  "loginKeySim": "Fill in my number from the SIM card",
+  "@loginKeySim": {
+    "description": "Optional SIM suggestion on the sign-in screen."
+  },
+  "loginKeyAdmin": "Administrator sign in",
+  "@loginKeyAdmin": {
+    "description": "Opens the administrator password sign-in."
+  },
+  "loginKeyChangeNumber": "Use a different number",
+  "@loginKeyChangeNumber": {
+    "description": "Key 0 on the profile number step."
+  },
+  "loginErrorEnterPhone": "Type your phone number first.",
+  "@loginErrorEnterPhone": {
+    "description": "Sign-in error when the number is missing."
+  },
+  "loginErrorEnterProfile": "Type your profile number first.",
+  "@loginErrorEnterProfile": {
+    "description": "Sign-in error when the profile number is missing."
+  },
+  "loginNumberNotRegistered": "This number is not registered. Ask your school administrator to add you.",
+  "@loginNumberNotRegistered": {
+    "description": "Sign-in error for an unknown number."
+  },
+  "loginProfileNotRecognised": "That profile number is not on this phone. Try again.",
+  "@loginProfileNotRecognised": {
+    "description": "Sign-in error for a wrong shared-phone profile number."
+  },
+  "loginAdminUsesPassword": "Administrators sign in with a password. Press 3.",
+  "@loginAdminUsesPassword": {
+    "description": "Sign-in error when an administrator number is typed."
+  },
+  "loginSigningIn": "Signing in.",
+  "@loginSigningIn": {
+    "description": "Spoken while sign-in is in progress."
+  },
+  "adminLoginScreenName": "Administrator sign in",
+  "@adminLoginScreenName": {
+    "description": "Title of the administrator password screen."
+  },
+  "adminLoginIntro": "Type your phone number and password, then press 1.",
+  "@adminLoginIntro": {
+    "description": "Short arrival speech on the administrator sign-in screen."
+  },
+  "classNoLongerLive": "That class is not live now.",
+  "@classNoLongerLive": {
+    "description": "Spoken when a class to open has ended or has not started."
+  },
+  "classAlertTitle": "Class has started",
+  "@classAlertTitle": {
+    "description": "Title of the ringing class alert."
+  },
+  "classAlertBody": "Your class has started. Open to join.",
+  "@classAlertBody": {
+    "description": "Private body text of the ringing class notification."
+  },
+  "classAlertWaitingBody": "Your class is live. Open to join.",
+  "@classAlertWaitingBody": {
+    "description": "Silent notification left after the ringing stops."
+  },
+  "classAlertChannelName": "Class starting",
+  "@classAlertChannelName": {
+    "description": "Android notification channel for ringing class alerts."
+  },
+  "classAlertChannelDescription": "Rings for up to one minute when your class starts.",
+  "@classAlertChannelDescription": {
+    "description": "Android channel description."
+  },
+  "classAlertWaitingChannelName": "Class live",
+  "@classAlertWaitingChannelName": {
+    "description": "Android channel for the silent class notification."
+  },
+  "classAlertWaitingChannelDescription": "Stays while your class is live so you can join.",
+  "@classAlertWaitingChannelDescription": {
+    "description": "Android channel description."
+  },
+  "classAlertStarted": "Your class has started.",
+  "@classAlertStarted": {
+    "description": "Class alert speech without a subject."
+  },
+  "classAlertSubjectStarted": "{subject} class has started.",
+  "@classAlertSubjectStarted": {
+    "description": "Class alert speech.",
+    "placeholders": {
+      "subject": {
+        "type": "String"
+      }
+    }
+  },
+  "classAlertKeys": "Press OK or 1 to join. Press 0 to stop the ringing.",
+  "@classAlertKeys": {
+    "description": "Keys on the in-app class alert."
+  },
+  "classAlertJoin": "Join class",
+  "@classAlertJoin": {
+    "description": "Join button on the class alert."
+  },
+  "classAlertNotNow": "Not now",
+  "@classAlertNotNow": {
+    "description": "Dismiss button on the class alert."
+  },
+  "homeTitle": "Home",
+  "@homeTitle": {
+    "description": "Title of the student and teacher home screens."
+  },
+  "homeChecking": "Checking for your class.",
+  "@homeChecking": {
+    "description": "Home status while loading."
+  },
+  "homeOffline": "No internet. Your class will appear when you are back online.",
+  "@homeOffline": {
+    "description": "Home status when offline."
+  },
+  "homeSignInAgain": "Please sign in again.",
+  "@homeSignInAgain": {
+    "description": "Spoken after the sign-in expired."
+  },
+  "homeStarForAll": "Press star for all options.",
+  "@homeStarForAll": {
+    "description": "Ends the short home arrival speech."
+  },
+  "homeBriefLive": "{subject} class is live. Press 1 to join.",
+  "@homeBriefLive": {
+    "description": "Student home when a class is live.",
+    "placeholders": {
+      "subject": {
+        "type": "String"
+      }
+    }
+  },
+  "homeBriefNext": "Next class: {subject} at {time}. You can use other options while you wait.",
+  "@homeBriefNext": {
+    "description": "Student home before a class.",
+    "placeholders": {
+      "subject": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "homeBriefNoClass": "No class right now. Press 2 to continue learning.",
+  "@homeBriefNoClass": {
+    "description": "Student home with no class."
+  },
+  "homeJoinClass": "Join {subject} class",
+  "@homeJoinClass": {
+    "description": "Key 1 when a class is live.",
+    "placeholders": {
+      "subject": {
+        "type": "String"
+      }
+    }
+  },
+  "homeNoClassNow": "No class now",
+  "@homeNoClassNow": {
+    "description": "Key 1 when there is no class."
+  },
+  "homeNoClassReason": "Your class will appear here by itself when your teacher starts it.",
+  "@homeNoClassReason": {
+    "description": "Spoken when key 1 has no class."
+  },
+  "homeJoinWhenStarts": "Join {subject} automatically when it starts at {time}",
+  "@homeJoinWhenStarts": {
+    "description": "Key 1 before a class: consent to automatic joining.",
+    "placeholders": {
+      "subject": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "homeCancelAutoJoin": "Stop joining automatically",
+  "@homeCancelAutoJoin": {
+    "description": "Key 1 after choosing automatic joining."
+  },
+  "homeAutoJoinArmed": "I will open {subject} when your teacher starts it, if you stay on this screen. You will join muted. Press 1 to cancel.",
+  "@homeAutoJoinArmed": {
+    "description": "Spoken after consenting to automatic joining.",
+    "placeholders": {
+      "subject": {
+        "type": "String"
+      }
+    }
+  },
+  "homeAutoJoinCancelled": "Automatic joining cancelled.",
+  "@homeAutoJoinCancelled": {
+    "description": "Spoken after cancelling automatic joining."
+  },
+  "homeAutoJoinLeft": "Automatic joining stopped because you left the home screen.",
+  "@homeAutoJoinLeft": {
+    "description": "Spoken when automatic joining ends because another screen opened."
+  },
+  "homeAutoJoined": "{subject} has started. Joining you now, muted.",
+  "@homeAutoJoined": {
+    "description": "Spoken when automatic joining opens the class.",
+    "placeholders": {
+      "subject": {
+        "type": "String"
+      }
+    }
+  },
+  "homeReturningToClass": "Returning to your class.",
+  "@homeReturningToClass": {
+    "description": "Spoken when the app reopens an interrupted class."
+  },
+  "homeContinueLearning": "Continue learning",
+  "@homeContinueLearning": {
+    "description": "Home key 2."
+  },
+  "homeNothingToContinue": "Nothing to continue yet. Press 3 for learning journeys.",
+  "@homeNothingToContinue": {
+    "description": "Spoken when nothing is in progress."
+  },
+  "homeContinuing": "Continuing {title}.",
+  "@homeContinuing": {
+    "description": "Spoken when continuing a journey.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "homeJourneys": "Learning journeys",
+  "@homeJourneys": {
+    "description": "Home key 3."
+  },
+  "homeQuizzes": "Quizzes",
+  "@homeQuizzes": {
+    "description": "Home quizzes choice."
+  },
+  "homeMore": "More",
+  "@homeMore": {
+    "description": "Home key 5."
+  },
+  "homeMoreBrief": "Less used options.",
+  "@homeMoreBrief": {
+    "description": "Arrival speech on the More menu."
+  },
+  "homeYourClass": "Your class: {className}.",
+  "@homeYourClass": {
+    "description": "Home details.",
+    "placeholders": {
+      "className": {
+        "type": "String"
+      }
+    }
+  },
+  "homeSubjectInClass": "{subject}, {className}",
+  "@homeSubjectInClass": {
+    "description": "A subject taught in a class.",
+    "placeholders": {
+      "subject": {
+        "type": "String"
+      },
+      "className": {
+        "type": "String"
+      }
+    }
+  },
+  "teacherHomeBriefLive": "Your {subject} class is live. Press 1 to return to it.",
+  "@teacherHomeBriefLive": {
+    "description": "Teacher home with a live class.",
+    "placeholders": {
+      "subject": {
+        "type": "String"
+      }
+    }
+  },
+  "teacherHomeBriefReady": "{place} is ready. Press 1 to start it.",
+  "@teacherHomeBriefReady": {
+    "description": "Teacher home when a class can start.",
+    "placeholders": {
+      "place": {
+        "type": "String"
+      }
+    }
+  },
+  "teacherHomeBriefNext": "Next class: {place} at {time}.",
+  "@teacherHomeBriefNext": {
+    "description": "Teacher home before a class.",
+    "placeholders": {
+      "place": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "teacherHomeBriefNoClass": "No class on your timetable now.",
+  "@teacherHomeBriefNoClass": {
+    "description": "Teacher home with no class."
+  },
+  "teacherHomeReturn": "Return to {subject} class",
+  "@teacherHomeReturn": {
+    "description": "Teacher key 1 with a live class.",
+    "placeholders": {
+      "subject": {
+        "type": "String"
+      }
+    }
+  },
+  "teacherHomeStart": "Start {place}",
+  "@teacherHomeStart": {
+    "description": "Teacher key 1 when a class can start.",
+    "placeholders": {
+      "place": {
+        "type": "String"
+      }
+    }
+  },
+  "teacherHomeNext": "Next: {place} at {time}",
+  "@teacherHomeNext": {
+    "description": "Teacher key 1 before a class can start.",
+    "placeholders": {
+      "place": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "teacherHomeOpensAt": "You can start it from {time}.",
+  "@teacherHomeOpensAt": {
+    "description": "Spoken when a class cannot start yet.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "teacherHomeNoClassReason": "Nothing is scheduled now. To teach anyway, press 5 for More, then 3.",
+  "@teacherHomeNoClassReason": {
+    "description": "Spoken when key 1 has no class."
+  },
+  "teacherHomeStarting": "Starting your class.",
+  "@teacherHomeStarting": {
+    "description": "Spoken while starting."
+  },
+  "teacherHomeStarted": "{subject} class started. Your students are being called.",
+  "@teacherHomeStarted": {
+    "description": "Spoken on entering a newly started class.",
+    "placeholders": {
+      "subject": {
+        "type": "String"
+      }
+    }
+  },
+  "teacherHomeUnscheduled": "Start an unscheduled class",
+  "@teacherHomeUnscheduled": {
+    "description": "More menu choice for teachers."
+  },
+  "teacherHomeUnscheduledTitle": "Which class do you want to teach now?",
+  "@teacherHomeUnscheduledTitle": {
+    "description": "Picker title for an unscheduled class."
+  },
+  "teacherHomeAlreadyLive": "You already have a live class. Press 1 on Home to return to it.",
+  "@teacherHomeAlreadyLive": {
+    "description": "Why an unscheduled class cannot start."
+  },
+  "teacherHomeChangeWorkspace": "Change class and subject for lessons",
+  "@teacherHomeChangeWorkspace": {
+    "description": "More menu choice for teachers."
+  },
+  "teacherHomeOneWorkspace": "You teach one class and subject.",
+  "@teacherHomeOneWorkspace": {
+    "description": "Why the class cannot be changed."
+  },
+  "teacherHomeContentFor": "Lessons, quizzes and playlists are for {place}.",
+  "@teacherHomeContentFor": {
+    "description": "Teacher home details.",
+    "placeholders": {
+      "place": {
+        "type": "String"
+      }
+    }
+  },
+  "teacherHomeLaterItem": "Later: {place} at {time}.",
+  "@teacherHomeLaterItem": {
+    "description": "Teacher home details for later classes.",
+    "placeholders": {
+      "place": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "keyClassListWhoJoined": "Class list: who is here, who left, who has not joined",
+  "@keyClassListWhoJoined": {
+    "description": "Teacher key 7 in class."
+  },
+  "keyMuteAllStudents": "Mute all students",
+  "@keyMuteAllStudents": {
+    "description": "Teacher key 8 in class."
+  },
+  "keyTeacherToolsAddTimeOrEnd": "Teacher tools: add time or end the class for everyone",
+  "@keyTeacherToolsAddTimeOrEnd": {
+    "description": "Teacher key 9 in class."
+  },
+  "sessionMicAskOnce": "You join muted. SEEDS will now ask to use the microphone, so you can speak when you choose.",
+  "@sessionMicAskOnce": {
+    "description": "Spoken before the first microphone request."
+  },
+  "sessionMicAskAgain": "To speak, allow the microphone.",
+  "@sessionMicAskAgain": {
+    "description": "Spoken before asking again on Unmute."
+  },
+  "sessionMicStillOff": "The microphone is still off. You can keep listening.",
+  "@sessionMicStillOff": {
+    "description": "Spoken when microphone access was refused."
+  },
+  "sessionMicSettingsTitle": "Microphone is blocked",
+  "@sessionMicSettingsTitle": {
+    "description": "Dialog title when Android will not ask again."
+  },
+  "sessionMicSettingsMessage": "Android will not ask again. To speak, open Settings, choose Permissions, and allow the microphone. You can keep listening.",
+  "@sessionMicSettingsMessage": {
+    "description": "Dialog message."
+  },
+  "sessionMicSettingsOpen": "Open settings",
+  "@sessionMicSettingsOpen": {
+    "description": "Dialog confirm."
+  },
+  "sessionMicSettingsCancel": "Keep listening",
+  "@sessionMicSettingsCancel": {
+    "description": "Dialog cancel."
+  },
+  "sessionMuteAllButton": "3: Mute all students",
+  "@sessionMuteAllButton": {
+    "description": "Teacher key 8 button."
+  },
+  "sessionMuteAllLabel": "Mute all students",
+  "@sessionMuteAllLabel": {
+    "description": "Teacher key 8 focus label."
+  },
+  "sessionMuteAllWaiting": "Still muting everyone. Please wait.",
+  "@sessionMuteAllWaiting": {
+    "description": "Spoken while mute all is pending."
+  },
+  "sessionMuteAllDone": "{count, plural, =1{1 student muted.} other{{count} students muted.}}",
+  "@sessionMuteAllDone": {
+    "description": "Spoken after mute all.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sessionMuteAllNone": "Every student was already muted.",
+  "@sessionMuteAllNone": {
+    "description": "Spoken when nobody needed muting."
+  },
+  "sessionMuteAllNotConfirmed": "Muting everyone was not confirmed. {reason} Press 3 to try again.",
+  "@sessionMuteAllNotConfirmed": {
+    "description": "Spoken when mute all failed.",
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionClassListButton": "4: Class list",
+  "@sessionClassListButton": {
+    "description": "Teacher key 7 button."
+  },
+  "sessionClassListLabel": "Class list. {people}",
+  "@sessionClassListLabel": {
+    "description": "Teacher key 7 focus label.",
+    "placeholders": {
+      "people": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionClassListTitle": "Class list",
+  "@sessionClassListTitle": {
+    "description": "Class list screen title."
+  },
+  "sessionRosterCounts": "{here} here, {left} left, {notJoined} not joined yet.",
+  "@sessionRosterCounts": {
+    "description": "Class list counts.",
+    "placeholders": {
+      "here": {
+        "type": "int"
+      },
+      "left": {
+        "type": "int"
+      },
+      "notJoined": {
+        "type": "int"
+      }
+    }
+  },
+  "sessionHereNow": "Here now: {count}",
+  "@sessionHereNow": {
+    "description": "Class list key 1.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sessionLeftClass": "Joined, then left: {count}",
+  "@sessionLeftClass": {
+    "description": "Class list key 2.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sessionNotJoined": "Not joined yet: {count}",
+  "@sessionNotJoined": {
+    "description": "Class list key 3.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sessionHereNowTitle": "Here now",
+  "@sessionHereNowTitle": {
+    "description": "List title."
+  },
+  "sessionLeftClassTitle": "Joined, then left",
+  "@sessionLeftClassTitle": {
+    "description": "List title."
+  },
+  "sessionNotJoinedTitle": "Not joined yet",
+  "@sessionNotJoinedTitle": {
+    "description": "List title."
+  },
+  "sessionRemovedName": "{name}, removed by you",
+  "@sessionRemovedName": {
+    "description": "A removed student in the class list.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionNobody": "Nobody.",
+  "@sessionNobody": {
+    "description": "Spoken for an empty list."
+  },
+  "sessionRemindNotJoined": "Ring students who have not joined",
+  "@sessionRemindNotJoined": {
+    "description": "Class list key 4."
+  },
+  "sessionEveryoneJoined": "Everyone has joined.",
+  "@sessionEveryoneJoined": {
+    "description": "Why there is nobody to remind."
+  },
+  "sessionReminderSent": "{count, plural, =0{Nobody to ring now.} =1{Ringing 1 student.} other{Ringing {count} students.}}",
+  "@sessionReminderSent": {
+    "description": "Spoken after a reminder.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sessionReminderSentSomeWaiting": "Ringing {queued}. {cooling} were rung in the last 5 minutes and will not be rung again yet.",
+  "@sessionReminderSentSomeWaiting": {
+    "description": "Spoken when some students are in the 5-minute pause.",
+    "placeholders": {
+      "queued": {
+        "type": "int"
+      },
+      "cooling": {
+        "type": "int"
+      }
+    }
+  },
+  "sessionRosterUnavailable": "The class list could not be read. Try again.",
+  "@sessionRosterUnavailable": {
+    "description": "Spoken when the roster failed."
+  },
+  "sessionAddTime": "Add 15 minutes",
+  "@sessionAddTime": {
+    "description": "Teacher tools key 1."
+  },
+  "sessionCannotAddTime": "No more time can be added before the next class.",
+  "@sessionCannotAddTime": {
+    "description": "Why time cannot be added."
+  },
+  "sessionEndsBy": "Class ends by {clock}.",
+  "@sessionEndsBy": {
+    "description": "Class end time.",
+    "placeholders": {
+      "clock": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionExtendedUntil": "Done. The class now ends by {clock}.",
+  "@sessionExtendedUntil": {
+    "description": "Spoken after adding time.",
+    "placeholders": {
+      "clock": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionEndingSoonTeacher": "{minutes, plural, =1{The class ends automatically in 1 minute.} other{The class ends automatically in {minutes} minutes.}}",
+  "@sessionEndingSoonTeacher": {
+    "description": "Warning for teachers when no time can be added.",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "sessionEndingSoonTeacherExtend": "{minutes, plural, =1{The class ends automatically in 1 minute. To add 15 minutes, press 8 then 1.} other{The class ends automatically in {minutes} minutes. To add 15 minutes, press 8 then 1.}}",
+  "@sessionEndingSoonTeacherExtend": {
+    "description": "Warning for teachers.",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "sessionEndingSoonStudent": "{minutes, plural, =1{The class ends in 1 minute.} other{The class ends in {minutes} minutes.}}",
+  "@sessionEndingSoonStudent": {
+    "description": "Warning for students.",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "sessionLessonReady": "Today's lesson is ready. Press 5 to play it for the class.",
+  "@sessionLessonReady": {
+    "description": "Spoken when a prepared lesson is selected."
+  },
+  "sessionLessonNextReady": "The next part of today's lesson is ready. Press 5 to play it.",
+  "@sessionLessonNextReady": {
+    "description": "Spoken when the next lesson part is selected."
+  },
+  "sessionJoinedStudentBrief": "You are in class and muted. Press 1 to speak, 2 to raise your hand.",
+  "@sessionJoinedStudentBrief": {
+    "description": "Short speech on joining a class as a student."
+  },
+  "sessionJoinedTeacherBrief": "Your class is live. You are muted. Press 1 to speak, 3 to mute all students.",
+  "@sessionJoinedTeacherBrief": {
+    "description": "Short speech on entering a class as a teacher."
+  },
+  "sessionStarForKeys": "Press star for all keys.",
+  "@sessionStarForKeys": {
+    "description": "Ends short class speech."
+  },
+  "settingsAutoDownload": "Prepare new journeys for offline use on Wi-Fi: {state}",
+  "@settingsAutoDownload": {
+    "description": "Settings toggle for automatic offline preparation.",
+    "placeholders": {
+      "state": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsAutoDownloadOn": "Journeys will be prepared on Wi-Fi.",
+  "@settingsAutoDownloadOn": {
+    "description": "Spoken when the setting is turned on."
+  },
+  "settingsAutoDownloadOff": "Journeys will not be prepared automatically.",
+  "@settingsAutoDownloadOff": {
+    "description": "Spoken when the setting is turned off."
+  },
+  "adminSetupTeacherNeedsPair": "Add at least one class and subject for the teacher.",
+  "@adminSetupTeacherNeedsPair": {
+    "description": "Admin add person: teacher saved without a class and subject"
+  },
+  "adminSetupTeacherHasNoPairs": "No teacher has a class and subject yet. Add them to a teacher in People first.",
+  "@adminSetupTeacherHasNoPairs": {
+    "description": "Admin timetable: no teacher can be scheduled yet"
+  },
+  "adminSetupDaysField": "Days",
+  "@adminSetupDaysField": {
+    "description": "Admin timetable: heading above the weekday choices"
+  },
+  "adminSetupChooseDays": "Choose at least one day.",
+  "@adminSetupChooseDays": {
+    "description": "Admin timetable: no weekday chosen"
+  },
+  "adminSetupLessonsAdded": "{count, plural, =1{Lesson added.} other{{count} lessons added, one for each day.}}",
+  "@adminSetupLessonsAdded": {
+    "description": "Admin timetable: lessons created",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "adminSetupArrangeBy": "Arrange by",
+  "@adminSetupArrangeBy": {
+    "description": "Admin timetable: heading of the grouping choice"
+  },
+  "adminSetupArrangeDay": "Day",
+  "@adminSetupArrangeDay": {
+    "description": "Admin timetable: group lessons by weekday"
+  },
+  "adminSetupArrangeTeacher": "Teacher",
+  "@adminSetupArrangeTeacher": {
+    "description": "Admin timetable: group lessons by teacher"
+  },
+  "adminSetupArrangeClass": "Class",
+  "@adminSetupArrangeClass": {
+    "description": "Admin timetable: group lessons by class"
+  },
+  "adminSetupGroupHeading": "{name} · {count, plural, =1{1 lesson} other{{count} lessons}}",
+  "@adminSetupGroupHeading": {
+    "description": "Admin timetable: group heading with lesson count",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "adminSetupEntryDayTitle": "{day}, {title}",
+  "@adminSetupEntryDayTitle": {
+    "description": "Admin timetable: lesson title with its weekday",
+    "placeholders": {
+      "day": {
+        "type": "String"
+      },
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupTimetableSearch": "Search lessons",
+  "@adminSetupTimetableSearch": {
+    "description": "Admin timetable: text filter over teacher, class and subject"
+  },
+  "adminSetupNoMatchingLessons": "No lessons match.",
+  "@adminSetupNoMatchingLessons": {
+    "description": "Admin timetable: search found nothing"
+  },
+  "sessionMoreButton": "8: More",
+  "@sessionMoreButton": {
+    "description": "Live class: visible button that opens the less used actions"
+  },
+  "sessionMoreLabel": "More options",
+  "@sessionMoreLabel": {
+    "description": "Live class: spoken name of the More button"
+  },
+  "sessionMoreTitle": "More options",
+  "@sessionMoreTitle": {
+    "description": "Live class: title of the More screen"
+  },
+  "sessionMoreClassroomCheck": "Classroom check",
+  "@sessionMoreClassroomCheck": {
+    "description": "Live class More: teacher starts or closes a classroom check"
+  },
+  "sessionMoreStatus": "Class status",
+  "@sessionMoreStatus": {
+    "description": "Live class More: hear the class status and any updates"
+  },
+  "sessionMoreWhatIsPlaying": "What is playing",
+  "@sessionMoreWhatIsPlaying": {
+    "description": "Live class More: student hears the lesson recording status"
+  },
+  "sessionMoreWhoIsHere": "Who is in class",
+  "@sessionMoreWhoIsHere": {
+    "description": "Live class More: student hears who is in class"
+  },
+  "sessionKeyRaisedHands": "Raised hands",
+  "@sessionKeyRaisedHands": {
+    "description": "Live class key help, teacher key 2"
+  },
+  "sessionKeyClassList": "Class list",
+  "@sessionKeyClassList": {
+    "description": "Live class key help, teacher key 4"
+  },
+  "sessionKeyLessonRecording": "Lesson recording",
+  "@sessionKeyLessonRecording": {
+    "description": "Live class key help, teacher key 5"
+  },
+  "sessionKeyAnswerQuestion": "Answer the question",
+  "@sessionKeyAnswerQuestion": {
+    "description": "Live class key help, student key 3 while a check is open"
+  },
+  "sessionKeyMore": "More options",
+  "@sessionKeyMore": {
+    "description": "Live class key help, key 9"
+  },
+  "sessionKeyLeave": "Leave class",
+  "@sessionKeyLeave": {
+    "description": "Live class key help, key 0"
+  },
+  "sessionEndClassButton": "9: End class for everyone",
+  "@sessionEndClassButton": {
+    "description": "Teacher class screen key 6"
+  },
+  "sessionEndClassLabel": "End class for everyone. Asks to confirm",
+  "@sessionEndClassLabel": {
+    "description": "Teacher class screen key 6, spoken"
+  },
+  "sessionActivityQuizItem": "Quiz: {title}, {count, plural, =1{1 question} other{{count} questions}}",
+  "@sessionActivityQuizItem": {
+    "description": "Teacher list item",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sessionActivityJourneyItem": "Journey: {title}",
+  "@sessionActivityJourneyItem": {
+    "description": "Teacher list item",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionActivityStopItem": "Stop offering {title}",
+  "@sessionActivityStopItem": {
+    "description": "Teacher list item that stops the running one",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionActivityStartedTeacher": "{title} is open for the class. Press the same key again to hear who is left.",
+  "@sessionActivityStartedTeacher": {
+    "description": "Teacher confirmation",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionActivityStoppedTeacher": "{title} is no longer offered in class. Students can still find it on Home.",
+  "@sessionActivityStoppedTeacher": {
+    "description": "Teacher confirmation",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionActivityQuizStarted": "Your teacher started a quiz: {title}. Press 4 to begin.",
+  "@sessionActivityQuizStarted": {
+    "description": "Student announcement",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionActivityJourneyStarted": "Your teacher started a journey: {title}. Press 4 to begin.",
+  "@sessionActivityJourneyStarted": {
+    "description": "Student announcement",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionActivityStoppedStudent": "{title} is closed in class. You can still find it on Home.",
+  "@sessionActivityStoppedStudent": {
+    "description": "Student announcement",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionActivityStartQuizLabel": "Start the quiz {title}",
+  "@sessionActivityStartQuizLabel": {
+    "description": "Student key 3 spoken",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionActivityStartJourneyLabel": "Start the journey {title}",
+  "@sessionActivityStartJourneyLabel": {
+    "description": "Student key 3 spoken",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionActivityStateStudent": "{title} is open.",
+  "@sessionActivityStateStudent": {
+    "description": "Student class status",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionActivityStateTeacher": "{title} is open for the class.",
+  "@sessionActivityStateTeacher": {
+    "description": "Teacher class status",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionActivityOpening": "Opening {title}.",
+  "@sessionActivityOpening": {
+    "description": "Student opening the activity",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionActivityCouldNotOpen": "{title} could not be opened. Check your connection and try again.",
+  "@sessionActivityCouldNotOpen": {
+    "description": "Student activity failed to open",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionBackInClass": "Back in class.",
+  "@sessionBackInClass": {
+    "description": "Student returns to the class screen"
+  },
+  "sessionActivityProgress": "{title}: {started} started, {finished} finished.",
+  "@sessionActivityProgress": {
+    "description": "Teacher class list progress",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "started": {
+        "type": "int"
+      },
+      "finished": {
+        "type": "int"
+      }
+    }
+  },
+  "sessionWhatIsPlayingButton": "3: What is playing",
+  "@sessionWhatIsPlayingButton": {
+    "description": "Student class screen key 4"
+  },
+  "sessionKeyEndClass": "End class for everyone",
+  "@sessionKeyEndClass": {
+    "description": "Key help, teacher key 6"
+  },
+  "sessionKeyWhatIsPlaying": "What is playing",
+  "@sessionKeyWhatIsPlaying": {
+    "description": "Key help, student key 4"
+  },
+  "sessionQuizButton": "6: Quiz",
+  "@sessionQuizButton": {
+    "description": "Teacher class screen key 6"
+  },
+  "sessionJourneyButton": "7: Journey",
+  "@sessionJourneyButton": {
+    "description": "Teacher class screen key 7"
+  },
+  "sessionQuizLabel": "Start a quiz for the class",
+  "@sessionQuizLabel": {
+    "description": "Teacher key 6 spoken, no quiz open"
+  },
+  "sessionJourneyLabel": "Start a journey for the class",
+  "@sessionJourneyLabel": {
+    "description": "Teacher key 7 spoken, no journey open"
+  },
+  "sessionOpenLabel": "{title} is open. Hear who is left, remind them, or stop it",
+  "@sessionOpenLabel": {
+    "description": "Teacher key 6 or 7 spoken while it is open",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionKeyQuiz": "Quiz for the class",
+  "@sessionKeyQuiz": {
+    "description": "Key help, teacher key 6"
+  },
+  "sessionKeyJourney": "Journey for the class",
+  "@sessionKeyJourney": {
+    "description": "Key help, teacher key 7"
+  },
+  "sessionStartQuizButton": "4: Start quiz: {title}",
+  "@sessionStartQuizButton": {
+    "description": "Student key 6 while a quiz is open",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionStartJourneyButton": "4: Start journey: {title}",
+  "@sessionStartJourneyButton": {
+    "description": "Student key 7 while a journey is open",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionPickQuizTitle": "Start a quiz for the class",
+  "@sessionPickQuizTitle": {
+    "description": "Teacher list of quizzes"
+  },
+  "sessionPickJourneyTitle": "Start a journey for the class",
+  "@sessionPickJourneyTitle": {
+    "description": "Teacher list of journeys"
+  },
+  "sessionNoQuizToStart": "No published quiz is open for this class and subject. Publish one from Quizzes on Home first.",
+  "@sessionNoQuizToStart": {
+    "description": "Teacher key 6, nothing to start"
+  },
+  "sessionNoJourneyToStart": "No published journey for this class and subject. Publish one from Journeys on Home first.",
+  "@sessionNoJourneyToStart": {
+    "description": "Teacher key 7, nothing to start"
+  },
+  "sessionFinishedOf": "{finished} of {enrolled} finished.",
+  "@sessionFinishedOf": {
+    "description": "Teacher quiz or journey menu status",
+    "placeholders": {
+      "finished": {
+        "type": "int"
+      },
+      "enrolled": {
+        "type": "int"
+      }
+    }
+  },
+  "sessionLeftInClass": "In class, not done ({count})",
+  "@sessionLeftInClass": {
+    "description": "Teacher menu choice",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sessionLeftWholeClass": "Whole class, not done ({count})",
+  "@sessionLeftWholeClass": {
+    "description": "Teacher menu choice",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sessionLeftInClassTitle": "In class, not done",
+  "@sessionLeftInClassTitle": {
+    "description": "List title"
+  },
+  "sessionLeftWholeClassTitle": "Whole class, not done",
+  "@sessionLeftWholeClassTitle": {
+    "description": "List title"
+  },
+  "sessionRemindLeft": "Remind those in class who are not done",
+  "@sessionRemindLeft": {
+    "description": "Teacher menu choice"
+  },
+  "sessionStartDifferentQuiz": "Start a different quiz",
+  "@sessionStartDifferentQuiz": {
+    "description": "Teacher menu choice"
+  },
+  "sessionStartDifferentJourney": "Start a different journey",
+  "@sessionStartDifferentJourney": {
+    "description": "Teacher menu choice"
+  },
+  "sessionLeftNotStarted": "{name}, not started",
+  "@sessionLeftNotStarted": {
+    "description": "Who is left: one student",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionLeftStarted": "{name}, started, not finished",
+  "@sessionLeftStarted": {
+    "description": "Who is left: one student",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionLeftHere": "in class",
+  "@sessionLeftHere": {
+    "description": "Who is left, whole class: present"
+  },
+  "sessionLeftAway": "not in class",
+  "@sessionLeftAway": {
+    "description": "Who is left, whole class: absent"
+  },
+  "sessionLeftNobodyInClass": "Everyone in class has finished.",
+  "@sessionLeftNobodyInClass": {
+    "description": "Who is left: nobody in class"
+  },
+  "sessionLeftNobody": "Everyone in the class has finished.",
+  "@sessionLeftNobody": {
+    "description": "Who is left: nobody"
+  },
+  "sessionRemindedLeft": "{count, plural, =0{Nobody in class needs a reminder.} =1{Reminded 1 student.} other{Reminded {count} students.}}",
+  "@sessionRemindedLeft": {
+    "description": "Teacher reminder result",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sessionActivityReminderQuiz": "Your teacher reminds you to do the quiz {title}. Press 4 to begin.",
+  "@sessionActivityReminderQuiz": {
+    "description": "Student reminder",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionActivityReminderJourney": "Your teacher reminds you to do the journey {title}. Press 4 to begin.",
+  "@sessionActivityReminderJourney": {
+    "description": "Student reminder",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionKeyStartActivity": "Start the quiz or journey",
+  "@sessionKeyStartActivity": {
+    "description": "Key help, student key 4 while a quiz or journey is open"
+  },
+  "startupSettingsKey2": "2. Settings",
+  "@startupSettingsKey2": {
+    "description": "Key label"
+  },
+  "libraryPauseSessionKey3": "Pause audio for the whole session, key 3",
+  "@libraryPauseSessionKey3": {
+    "description": "Key label"
+  },
+  "authSaveNewPasswordKey1": "1: Save new password",
+  "@authSaveNewPasswordKey1": {
+    "description": "4 is the keypad key."
+  },
+  "quizSaveSettingsKey1": "1: Save settings",
+  "@quizSaveSettingsKey1": {
+    "description": "Visible button with its key"
+  },
+  "quizSaveQuestionKey1": "1: Save question",
+  "@quizSaveQuestionKey1": {
+    "description": "Visible button with its key"
+  },
+  "quizContinueToQuestionsKey1": "1: Continue to questions",
+  "@quizContinueToQuestionsKey1": {
+    "description": "Visible button with its key"
+  },
+  "adminAuthorSection": "Quizzes and journeys",
+  "@adminAuthorSection": {
+    "description": "Administrator dashboard section where quizzes and learning journeys are made on a teacher's behalf."
+  },
+  "adminAuthorNote": "Create and publish quizzes and learning journeys for a teacher. Everything you make belongs to that teacher, uses only their question bank and their own recordings, and the teacher is told about it on their Home.",
+  "@adminAuthorNote": {
+    "description": "Explanation at the top of the quizzes and journeys section."
+  },
+  "adminAuthorTeacher": "Teacher",
+  "@adminAuthorTeacher": {
+    "description": "Label of the dropdown choosing the teacher to work for."
+  },
+  "adminAuthorWorkspace": "Class and subject",
+  "@adminAuthorWorkspace": {
+    "description": "Label of the dropdown choosing one of the teacher's assigned class and subject pairs."
+  },
+  "adminAuthorWorkspaceName": "{className}, {subjectName}",
+  "@adminAuthorWorkspaceName": {
+    "description": "One class and subject pair in the dropdown, e.g. 'Class 5, Science'.",
+    "placeholders": {
+      "className": {
+        "type": "String"
+      },
+      "subjectName": {
+        "type": "String"
+      }
+    }
+  },
+  "adminAuthorNoTeachers": "No teacher has a class and subject yet. Assign one in Accounts first.",
+  "@adminAuthorNoTeachers": {
+    "description": "Shown when no active teacher has an assigned class and subject."
+  },
+  "adminAuthorKind": "Show",
+  "@adminAuthorKind": {
+    "description": "Heading of the choice between quizzes and journeys."
+  },
+  "adminAuthorKindQuizzes": "Quizzes",
+  "@adminAuthorKindQuizzes": {
+    "description": "Choice that lists the teacher's quizzes."
+  },
+  "adminAuthorKindJourneys": "Journeys",
+  "@adminAuthorKindJourneys": {
+    "description": "Choice that lists the teacher's learning journeys."
+  },
+  "adminAuthorNewQuiz": "New quiz",
+  "@adminAuthorNewQuiz": {
+    "description": "Button that starts a new quiz for the chosen teacher."
+  },
+  "adminAuthorNewJourney": "New journey",
+  "@adminAuthorNewJourney": {
+    "description": "Button that starts a new learning journey for the chosen teacher."
+  },
+  "adminAuthorNewQuizFor": "New quiz for {teacher}",
+  "@adminAuthorNewQuizFor": {
+    "description": "Title of the dialog creating a quiz for a teacher.",
+    "placeholders": {
+      "teacher": {
+        "type": "String"
+      }
+    }
+  },
+  "adminAuthorNewJourneyFor": "New journey for {teacher}",
+  "@adminAuthorNewJourneyFor": {
+    "description": "Title of the dialog creating a journey for a teacher.",
+    "placeholders": {
+      "teacher": {
+        "type": "String"
+      }
+    }
+  },
+  "adminAuthorNoQuizzes": "This teacher has no quizzes for this class and subject.",
+  "@adminAuthorNoQuizzes": {
+    "description": "Empty quiz list."
+  },
+  "adminAuthorNoJourneys": "This teacher has no journeys for this class and subject.",
+  "@adminAuthorNoJourneys": {
+    "description": "Empty journey list."
+  },
+  "adminAuthorStatusDraft": "Draft",
+  "@adminAuthorStatusDraft": {
+    "description": "Status of an unpublished quiz or journey."
+  },
+  "adminAuthorStatusPublished": "Published",
+  "@adminAuthorStatusPublished": {
+    "description": "Status of a published quiz or journey."
+  },
+  "adminAuthorStatusScheduled": "Published, opens later",
+  "@adminAuthorStatusScheduled": {
+    "description": "Status of a published quiz whose opening time is in the future."
+  },
+  "adminAuthorStatusClosed": "Closed",
+  "@adminAuthorStatusClosed": {
+    "description": "Status of a closed quiz."
+  },
+  "adminAuthorStatusArchived": "Archived",
+  "@adminAuthorStatusArchived": {
+    "description": "Status of an archived journey."
+  },
+  "adminAuthorStatusChanged": "{status}, with unpublished changes",
+  "@adminAuthorStatusChanged": {
+    "description": "Status of a journey edited since it was published.",
+    "placeholders": {
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "adminAuthorQuestionCount": "{count, plural, =1{1 question} other{{count} questions}}",
+  "@adminAuthorQuestionCount": {
+    "description": "Number of questions in a quiz or journey.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "adminAuthorStepCount": "{count, plural, =1{1 step} other{{count} steps}}",
+  "@adminAuthorStepCount": {
+    "description": "Number of steps in a journey.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "adminAuthorMode": "Quiz type",
+  "@adminAuthorMode": {
+    "description": "Heading of the graded or practice choice."
+  },
+  "adminAuthorModeGraded": "Graded",
+  "@adminAuthorModeGraded": {
+    "description": "A quiz that is scored."
+  },
+  "adminAuthorModePractice": "Practice",
+  "@adminAuthorModePractice": {
+    "description": "A practice quiz with immediate feedback."
+  },
+  "adminAuthorEdit": "Edit",
+  "@adminAuthorEdit": {
+    "description": "Short button text to edit a quiz or journey."
+  },
+  "adminAuthorEditNamed": "Edit {title}",
+  "@adminAuthorEditNamed": {
+    "description": "Spoken label of the Edit button.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "adminAuthorPublish": "Publish",
+  "@adminAuthorPublish": {
+    "description": "Short button text to publish a quiz or journey."
+  },
+  "adminAuthorPublishNamed": "Publish {title}",
+  "@adminAuthorPublishNamed": {
+    "description": "Spoken label of the Publish button.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "adminAuthorClose": "Close quiz",
+  "@adminAuthorClose": {
+    "description": "Button that closes a published quiz."
+  },
+  "adminAuthorCloseNamed": "Close {title}",
+  "@adminAuthorCloseNamed": {
+    "description": "Spoken label of the Close quiz button.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "adminAuthorArchive": "Archive",
+  "@adminAuthorArchive": {
+    "description": "Button that archives a published journey."
+  },
+  "adminAuthorArchiveNamed": "Archive {title}",
+  "@adminAuthorArchiveNamed": {
+    "description": "Spoken label of the Archive button.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "adminAuthorPublishQuizTitle": "Publish this quiz?",
+  "@adminAuthorPublishQuizTitle": {
+    "description": "Confirmation title before publishing a quiz."
+  },
+  "adminAuthorPublishQuizMessage": "{title} will open to the class as {teacher}'s quiz, and the students will be notified.",
+  "@adminAuthorPublishQuizMessage": {
+    "description": "Confirmation message before publishing a quiz for a teacher.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "teacher": {
+        "type": "String"
+      }
+    }
+  },
+  "adminAuthorPublishJourneyTitle": "Publish this journey?",
+  "@adminAuthorPublishJourneyTitle": {
+    "description": "Confirmation title before publishing a journey."
+  },
+  "adminAuthorPublishJourneyMessage": "{title} will be available to the class as {teacher}'s journey, and the students will be notified.",
+  "@adminAuthorPublishJourneyMessage": {
+    "description": "Confirmation message before publishing a journey for a teacher.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "teacher": {
+        "type": "String"
+      }
+    }
+  },
+  "adminAuthorCloseQuizTitle": "Close this quiz?",
+  "@adminAuthorCloseQuizTitle": {
+    "description": "Confirmation title before closing a quiz."
+  },
+  "adminAuthorCloseQuizMessage": "Students can no longer answer {title}. Unfinished attempts are submitted as they are.",
+  "@adminAuthorCloseQuizMessage": {
+    "description": "Confirmation message before closing a quiz.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "adminAuthorArchiveTitle": "Archive this journey?",
+  "@adminAuthorArchiveTitle": {
+    "description": "Confirmation title before archiving a journey."
+  },
+  "adminAuthorArchiveMessage": "Students will no longer see {title}.",
+  "@adminAuthorArchiveMessage": {
+    "description": "Confirmation message before archiving a journey.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "adminAuthorPublished": "{title} published.",
+  "@adminAuthorPublished": {
+    "description": "Shown after publishing.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "adminAuthorClosed": "{title} closed.",
+  "@adminAuthorClosed": {
+    "description": "Shown after closing a quiz.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "adminAuthorArchived": "{title} archived.",
+  "@adminAuthorArchived": {
+    "description": "Shown after archiving a journey.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "adminAuthorCreated": "{title} created as a draft.",
+  "@adminAuthorCreated": {
+    "description": "Shown after creating a quiz or journey.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "adminAuthorSaved": "Journey saved.",
+  "@adminAuthorSaved": {
+    "description": "Shown after saving a journey."
+  },
+  "adminAuthorNotReady": "This quiz is not ready to publish. {problems}",
+  "@adminAuthorNotReady": {
+    "description": "Shown instead of publishing when the quiz has problems; problems are the server's sentences.",
+    "placeholders": {
+      "problems": {
+        "type": "String"
+      }
+    }
+  },
+  "adminAuthorTitle": "Title",
+  "@adminAuthorTitle": {
+    "description": "Title field of a quiz or journey."
+  },
+  "adminAuthorDescription": "Description (optional)",
+  "@adminAuthorDescription": {
+    "description": "Description field of a quiz."
+  },
+  "adminAuthorQuizSettings": "Quiz settings",
+  "@adminAuthorQuizSettings": {
+    "description": "Button and dialog title for a quiz's title, description and type."
+  },
+  "adminAuthorEditQuiz": "Edit quiz: {title}",
+  "@adminAuthorEditQuiz": {
+    "description": "Title of the quiz editor.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "adminAuthorEditJourney": "Edit journey: {title}",
+  "@adminAuthorEditJourney": {
+    "description": "Title of the journey editor.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "adminAuthorQuestions": "Questions",
+  "@adminAuthorQuestions": {
+    "description": "Heading of a quiz's question list."
+  },
+  "adminAuthorNoQuestions": "No questions yet.",
+  "@adminAuthorNoQuestions": {
+    "description": "Empty question list of a quiz."
+  },
+  "adminAuthorQuestionLine": "{number}. {text}",
+  "@adminAuthorQuestionLine": {
+    "description": "A numbered question or journey step.",
+    "placeholders": {
+      "number": {
+        "type": "int"
+      },
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "adminAuthorCorrectAnswer": "Correct answer: {answer}",
+  "@adminAuthorCorrectAnswer": {
+    "description": "The correct option of a question.",
+    "placeholders": {
+      "answer": {
+        "type": "String"
+      }
+    }
+  },
+  "adminAuthorRemove": "Remove",
+  "@adminAuthorRemove": {
+    "description": "Short button text to remove a question or step."
+  },
+  "adminAuthorRemoveNamed": "Remove {item}",
+  "@adminAuthorRemoveNamed": {
+    "description": "Spoken label of the Remove button.",
+    "placeholders": {
+      "item": {
+        "type": "String"
+      }
+    }
+  },
+  "adminAuthorAddNewQuestion": "Type a new question",
+  "@adminAuthorAddNewQuestion": {
+    "description": "Button and dialog title for writing a new question."
+  },
+  "adminAuthorAddBankQuestion": "Add from question bank",
+  "@adminAuthorAddBankQuestion": {
+    "description": "Button that adds a question from the teacher's question bank."
+  },
+  "adminAuthorQuestionText": "Question",
+  "@adminAuthorQuestionText": {
+    "description": "Field for the question text."
+  },
+  "adminAuthorOption": "Option {number}",
+  "@adminAuthorOption": {
+    "description": "Field for an answer option, and the choice of which option is correct.",
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "adminAuthorOptionalOption": "Option {number} (optional)",
+  "@adminAuthorOptionalOption": {
+    "description": "Field for an optional answer option.",
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "adminAuthorCorrectOption": "Correct answer",
+  "@adminAuthorCorrectOption": {
+    "description": "Heading of the choice of the correct option."
+  },
+  "adminAuthorCorrectIsBlank": "The correct answer is blank. Fill it in or choose another option.",
+  "@adminAuthorCorrectIsBlank": {
+    "description": "Shown when the option marked correct has no text."
+  },
+  "adminAuthorExplanation": "Explanation (optional)",
+  "@adminAuthorExplanation": {
+    "description": "Field for the explanation shown after answering."
+  },
+  "adminAuthorSaveToBank": "Also save to the teacher's question bank",
+  "@adminAuthorSaveToBank": {
+    "description": "Checkbox that keeps a new quiz question in the teacher's question bank."
+  },
+  "adminAuthorNeedFourOptions": "Fill in all four options.",
+  "@adminAuthorNeedFourOptions": {
+    "description": "Shown when a quiz question has a blank option."
+  },
+  "adminAuthorNeedTwoOptions": "Fill in at least two options.",
+  "@adminAuthorNeedTwoOptions": {
+    "description": "Shown when a journey question or poll has fewer than two options."
+  },
+  "adminAuthorDuplicateOptions": "Each option must be different.",
+  "@adminAuthorDuplicateOptions": {
+    "description": "Shown when two options have the same text."
+  },
+  "adminAuthorRequired": "{field} is required.",
+  "@adminAuthorRequired": {
+    "description": "Shown when a required field is empty.",
+    "placeholders": {
+      "field": {
+        "type": "String"
+      }
+    }
+  },
+  "adminAuthorAdd": "Add",
+  "@adminAuthorAdd": {
+    "description": "Short button text to add a question or recording."
+  },
+  "adminAuthorAddNamed": "Add {item}",
+  "@adminAuthorAddNamed": {
+    "description": "Spoken label of the Add button.",
+    "placeholders": {
+      "item": {
+        "type": "String"
+      }
+    }
+  },
+  "adminAuthorBankTitle": "Teacher's question bank",
+  "@adminAuthorBankTitle": {
+    "description": "Title of the dialog listing the teacher's saved questions."
+  },
+  "adminAuthorBankEmpty": "This teacher has no saved questions for this class and subject.",
+  "@adminAuthorBankEmpty": {
+    "description": "Empty question bank."
+  },
+  "adminAuthorDone": "Done",
+  "@adminAuthorDone": {
+    "description": "Closes the quiz editor."
+  },
+  "adminAuthorGraded": "Graded: score the questions",
+  "@adminAuthorGraded": {
+    "description": "Switch that makes a journey graded."
+  },
+  "adminAuthorRetries": "Retries after a wrong answer",
+  "@adminAuthorRetries": {
+    "description": "Dropdown of how many retries a journey question allows."
+  },
+  "adminAuthorSteps": "Steps",
+  "@adminAuthorSteps": {
+    "description": "Heading of a journey's step list."
+  },
+  "adminAuthorNoSteps": "No steps yet.",
+  "@adminAuthorNoSteps": {
+    "description": "Empty step list of a journey."
+  },
+  "adminAuthorStepRecording": "Recording: {title}",
+  "@adminAuthorStepRecording": {
+    "description": "A recording step in a journey.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "adminAuthorStepNarration": "Narration: {text}",
+  "@adminAuthorStepNarration": {
+    "description": "A narration step in a journey.",
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "adminAuthorStepQuestion": "Question: {text}",
+  "@adminAuthorStepQuestion": {
+    "description": "A question step in a journey.",
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "adminAuthorStepPoll": "Poll: {text}",
+  "@adminAuthorStepPoll": {
+    "description": "A poll step in a journey.",
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "adminAuthorMoveUp": "Move up",
+  "@adminAuthorMoveUp": {
+    "description": "Short button text to move a step earlier."
+  },
+  "adminAuthorMoveUpNamed": "Move {item} up",
+  "@adminAuthorMoveUpNamed": {
+    "description": "Spoken label of the Move up button.",
+    "placeholders": {
+      "item": {
+        "type": "String"
+      }
+    }
+  },
+  "adminAuthorMoveDown": "Move down",
+  "@adminAuthorMoveDown": {
+    "description": "Short button text to move a step later."
+  },
+  "adminAuthorMoveDownNamed": "Move {item} down",
+  "@adminAuthorMoveDownNamed": {
+    "description": "Spoken label of the Move down button.",
+    "placeholders": {
+      "item": {
+        "type": "String"
+      }
+    }
+  },
+  "adminAuthorAddRecording": "Add recording",
+  "@adminAuthorAddRecording": {
+    "description": "Button that adds one of the teacher's recordings as a journey step."
+  },
+  "adminAuthorAddNarration": "Add narration",
+  "@adminAuthorAddNarration": {
+    "description": "Button and dialog title for adding narration text to a journey."
+  },
+  "adminAuthorAddQuestion": "Add question",
+  "@adminAuthorAddQuestion": {
+    "description": "Button and dialog title for adding a question to a journey."
+  },
+  "adminAuthorAddPoll": "Add poll",
+  "@adminAuthorAddPoll": {
+    "description": "Button and dialog title for adding a poll to a journey."
+  },
+  "adminAuthorRecordingsTitle": "Teacher's recordings",
+  "@adminAuthorRecordingsTitle": {
+    "description": "Title of the dialog listing the teacher's recordings."
+  },
+  "adminAuthorRecordingsNote": "Only recordings this teacher uploaded for this class and subject can be used.",
+  "@adminAuthorRecordingsNote": {
+    "description": "Explanation in the recordings dialog."
+  },
+  "adminAuthorNoRecordings": "This teacher has not uploaded a recording for this class and subject.",
+  "@adminAuthorNoRecordings": {
+    "description": "Empty recordings list."
+  },
+  "adminAuthorNarrationText": "Narration text",
+  "@adminAuthorNarrationText": {
+    "description": "Field for narration text."
+  },
+  "adminAuthorPollText": "Poll question",
+  "@adminAuthorPollText": {
+    "description": "Field for the poll question."
+  },
+  "adminAuthorSaveJourney": "Save journey",
+  "@adminAuthorSaveJourney": {
+    "description": "Saves the journey editor."
+  },
+  "teacherHomeNotice": "{kind} {title}: {action} for you by your administrator.",
+  "@teacherHomeNotice": {
+    "description": "Teacher home: an admin change",
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      },
+      "title": {
+        "type": "String"
+      },
+      "action": {
+        "type": "String"
+      }
+    }
+  },
+  "teacherHomeNoticeQuiz": "Quiz",
+  "@teacherHomeNoticeQuiz": {
+    "description": "Notice kind"
+  },
+  "teacherHomeNoticeJourney": "Journey",
+  "@teacherHomeNoticeJourney": {
+    "description": "Notice kind"
+  },
+  "teacherHomeNoticeCreated": "added",
+  "@teacherHomeNoticeCreated": {
+    "description": "Notice action"
+  },
+  "teacherHomeNoticePublished": "published",
+  "@teacherHomeNoticePublished": {
+    "description": "Notice action"
+  },
+  "teacherHomeNoticeClosed": "closed",
+  "@teacherHomeNoticeClosed": {
+    "description": "Notice action"
+  },
+  "teacherHomeNoticeArchived": "archived",
+  "@teacherHomeNoticeArchived": {
+    "description": "Notice action"
+  },
+  "sessionPeopleJoined": "{names} joined.",
+  "@sessionPeopleJoined": {
+    "description": "Teacher: students who joined",
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionPeopleLeft": "{names} left.",
+  "@sessionPeopleLeft": {
+    "description": "Teacher: students who left",
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionNamesAnd": "{first} and {last}",
+  "@sessionNamesAnd": {
+    "description": "Joins a list of names",
+    "placeholders": {
+      "first": {
+        "type": "String"
+      },
+      "last": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionHereOf": "{here} of {total} here.",
+  "@sessionHereOf": {
+    "description": "Teacher: students present of enrolled",
+    "placeholders": {
+      "here": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "sessionHereCount": "{count, plural, =0{No students here.} =1{1 student here.} other{{count} students here.}}",
+  "@sessionHereCount": {
+    "description": "Teacher: students present, enrolled count unknown",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sessionStartSummary": "{here} of {total} students here.",
+  "@sessionStartSummary": {
+    "description": "Teacher: one summary a minute after the class starts",
+    "placeholders": {
+      "here": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
       }
     }
   }

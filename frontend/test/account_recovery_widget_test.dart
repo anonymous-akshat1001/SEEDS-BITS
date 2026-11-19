@@ -9,7 +9,6 @@ import 'package:frontend/screens/change_password_screen.dart';
 import 'package:frontend/screens/login_screen.dart';
 import 'package:frontend/services/auth_session_service.dart';
 import 'package:frontend/services/tts_service.dart';
-import 'package:frontend/widgets/admin_password_reset_dialog.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -85,36 +84,8 @@ void main() {
     await tester.enterText(fields.at(2), password);
   }
 
-  Future<void> adminForm(WidgetTester tester) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('role', 'admin');
-    await prefs.setBool('must_change_password', false);
-    await tester.pumpWidget(
-      MaterialApp(
-        home: Builder(
-          builder: (context) => Scaffold(
-            body: TextButton(
-              onPressed: () => showDialog<void>(
-                context: context,
-                builder: (_) => const AdminPasswordResetDialog(
-                  accountId: 8,
-                  authVersion: 3,
-                  accountName: 'Selected learner',
-                  phoneNumber: '9000000008',
-                ),
-              ),
-              child: const Text('Recover selected account'),
-            ),
-          ),
-        ),
-      ),
-    );
-    await tester.tap(find.text('Recover selected account'));
-    await tester.pumpAndSettle();
-  }
-
   testWidgets(
-    'temporary login routes only to required change and persists the restricted state',
+    'temporary administrator login routes only to required change and persists the restricted state',
     (tester) async {
       await http.runWithClient(
         () async {
@@ -124,13 +95,14 @@ void main() {
                 '/change_password': (_) =>
                     const Scaffold(body: Text('Required change')),
               },
-              home: const LoginScreen(),
+              // Only administrators have passwords to change.
+              home: const AdminLoginScreen(),
             ),
           );
           await tester.pump();
           await tester.enterText(find.byType(TextField).first, '9000000007');
           await tester.enterText(find.byType(TextField).at(1), credential);
-          await tester.tap(find.text('4: Login as Student'));
+          await tester.tap(find.text('1: Sign in'));
           await tester.pumpAndSettle();
           final prefs = await SharedPreferences.getInstance();
           expect(prefs.getBool('must_change_password'), isTrue);
@@ -143,6 +115,7 @@ void main() {
           (request) async => http.Response(
             jsonEncode({
               ...replacement,
+              'role': 'admin',
               'access_token': 'temporary-session',
               'must_change_password': true,
             }),
@@ -250,100 +223,6 @@ void main() {
       expect(find.text('Sign in again'), findsOneWidget);
       expect(prefs.getString('token'), isNull);
       expect(prefs.getBool('must_change_password'), isNull);
-    },
-  );
-
-  testWidgets(
-    'admin recovery requires attestation and separate confirmation; credential is revealed only on explicit Read',
-    (tester) async {
-      final requests = <http.Request>[];
-      await http.runWithClient(
-        () async {
-          await adminForm(tester);
-          expect(
-            tester
-                .widget<ElevatedButton>(find.byType(ElevatedButton))
-                .onPressed,
-            isNull,
-          );
-          await activate(tester, 'admin-reset-attestation');
-          await activate(tester, 'admin-reset-submit');
-          expect(requests, isEmpty);
-          await activate(tester, 'dialog-confirm');
-          expect(requests, hasLength(1));
-          expect(jsonDecode(requests.single.body), {
-            'identity_verified': true,
-            'expected_auth_version': 3,
-          });
-          expect(
-            find.textContaining('Temporary credential: 0 1'),
-            findsNothing,
-          );
-          expect(spoken.join(' '), isNot(contains('0 1 2 3 4 5 6 7 8 9 0 1')));
-          await activate(tester, 'admin-reset-read');
-          expect(
-            find.textContaining('Temporary credential: 0 1'),
-            findsOneWidget,
-          );
-          expect(spoken.join(' '), contains('0 1 2 3 4 5 6 7 8 9 0 1'));
-          final prefs = await SharedPreferences.getInstance();
-          expect(
-            prefs.getKeys().any(
-              (key) => prefs.get(key).toString().contains(credential),
-            ),
-            isFalse,
-          );
-          await activate(tester, 'admin-reset-close');
-          await activate(tester, 'dialog-cancel');
-          expect(find.byType(AdminPasswordResetDialog), findsOneWidget);
-          await activate(tester, 'admin-reset-close');
-          await activate(tester, 'dialog-confirm');
-          expect(find.byType(AdminPasswordResetDialog), findsNothing);
-        },
-        () => MockClient((request) async {
-          requests.add(request);
-          return http.Response(
-            jsonEncode({
-              'ok': true,
-              'temporary_credential': credential,
-              'expires_at': DateTime.now()
-                  .toUtc()
-                  .add(const Duration(hours: 24))
-                  .toIso8601String(),
-              'auth_version': 4,
-            }),
-            200,
-          );
-        }),
-      );
-    },
-  );
-
-  testWidgets(
-    'unconfirmed admin reset cannot be automatically retried from the same review',
-    (tester) async {
-      var requests = 0;
-      await http.runWithClient(
-        () async {
-          await adminForm(tester);
-          await activate(tester, 'admin-reset-attestation');
-          await activate(tester, 'admin-reset-submit');
-          await activate(tester, 'dialog-confirm');
-          expect(requests, 1);
-          expect(find.textContaining('Reset not confirmed.'), findsOneWidget);
-          expect(
-            find.text('Reset password and end online sessions'),
-            findsNothing,
-          );
-          await activate(tester, 'admin-reset-close');
-          expect(find.byType(AdminPasswordResetDialog), findsNothing);
-          expect(requests, 1);
-        },
-        () => MockClient((_) async {
-          requests++;
-          return http.Response('{"detail":"conflict"}', 409);
-        }),
-      );
     },
   );
 

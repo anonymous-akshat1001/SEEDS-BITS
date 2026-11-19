@@ -5,7 +5,7 @@ from passlib.context import CryptContext
 from fastapi import HTTPException, status, Query
 import schemas, models
 import os
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, Header, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -17,6 +17,9 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 1 day
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# Stored for students and teachers, who sign in by phone number only; it can
+# never match a bcrypt verification.
+UNUSABLE_PASSWORD = "!phone-only"
 
 # Type of authentication used by FASTAPI endpoints
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login", auto_error=False)
@@ -101,6 +104,8 @@ async def get_current_user_from_token(
 def _check_session(user, version, *, allow_password_change=False):
     if user.auth_version != version:
         raise HTTPException(status_code=401, detail="Session expired. Sign in again.")
+    if not getattr(user, "is_active", True):
+        raise HTTPException(status_code=401, detail="This account is no longer active.")
     if user.must_change_password and not allow_password_change:
         raise HTTPException(status_code=403, detail="Password change required")
 
@@ -183,6 +188,52 @@ async def require_teacher(current_user: models.User = Depends(get_current_user))
     if current_user.role != "teacher":
         raise HTTPException(status_code=403, detail="Teacher role required")
     return current_user
+
+ACTING_ADMIN_KEY = "acting_admin_id"
+
+
+async def resolve_acted_teacher(
+    db: AsyncSession, admin: models.User, teacher_id: Optional[int],
+) -> models.User:
+    """The active teacher an administrator is working for."""
+    if teacher_id is None:
+        raise HTTPException(status_code=422, detail="Choose the teacher to work for.")
+    result = await db.execute(select(models.User).filter(models.User.user_id == teacher_id))
+    teacher = result.scalar_one_or_none()
+    if teacher is None or teacher.role != "teacher":
+        raise HTTPException(status_code=404, detail="Teacher not found.")
+    if not getattr(teacher, "is_active", True):
+        raise HTTPException(status_code=409, detail="This teacher account is no longer active.")
+    db.info[ACTING_ADMIN_KEY] = (admin.user_id, teacher.user_id)
+    return teacher
+
+
+# A teacher acts for themselves. An administrator acts for the teacher named by
+# the X-Act-As-Teacher header (or the as_teacher query parameter); everything
+# they create is owned by, and checked against, that teacher.
+async def acting_teacher(
+    current_user: models.User = Depends(get_current_user),
+    x_act_as_teacher: Optional[int] = Header(None, alias="X-Act-As-Teacher"),
+    as_teacher: Optional[int] = Query(None),
+    db: AsyncSession = Depends(get_db),
+) -> models.User:
+    db.info.pop(ACTING_ADMIN_KEY, None)
+    if current_user.role == "teacher":
+        return current_user
+    if current_user.role == "admin":
+        return await resolve_acted_teacher(
+            db, current_user, x_act_as_teacher if x_act_as_teacher is not None else as_teacher,
+        )
+    raise HTTPException(status_code=403, detail="Teacher role required")
+
+
+def acting_admin_id(db: AsyncSession, teacher: models.User) -> Optional[int]:
+    """The administrator acting for this teacher in this request, if any."""
+    acting = db.info.get(ACTING_ADMIN_KEY)
+    if acting and acting[1] == teacher.user_id:
+        return acting[0]
+    return None
+
 
 # Only allow students
 async def require_student(current_user: models.User = Depends(get_current_user)) -> models.User:

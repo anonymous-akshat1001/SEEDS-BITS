@@ -11,14 +11,22 @@ administrators. The repository contains:
 - a **PostgreSQL database** accessed asynchronously through SQLAlchemy; and
 - optional **Firebase Cloud Messaging** support for session notifications.
 
-Teachers can create classes and live sessions, invite students, share and
-control audio, manage participants, and review session activity. Students can
-join sessions, receive synchronized updates, communicate, and use the
-accessibility-focused keypad and text-to-speech interface.
+The school administrator creates every account, enrolls students, assigns
+teachers and sets up the weekly timetable. Students and teachers sign in with
+their phone number only. A teacher starts today's class with one key; every
+enrolled student's phone rings and opening the alert joins the class. Teachers
+share and control audio, mute all students at once, hear who has joined and
+who has not, and ring those who have not joined. Students join, listen,
+speak when they choose, and use the accessibility-focused keypad and
+text-to-speech interface. See [Interaction-reduction model](#interaction-reduction-model).
+
+The design principles, flows, key maps and open decisions are in
+[INTERFACE_DESIGN.md](INTERFACE_DESIGN.md).
 
 ## Contents
 
 - [Architecture](#architecture)
+- [Interaction-reduction model](#interaction-reduction-model)
 - [Technology stack](#technology-stack)
 - [Repository structure](#repository-structure)
 - [Prerequisites](#prerequisites)
@@ -116,6 +124,155 @@ aid and is not an authorization boundary.
 | Services | `frontend/lib/services/` | REST, authentication state, SSE, WebSocket/RTC, notifications, and TTS |
 | Shared UI | `frontend/lib/widgets/` | Reusable participant, chat, keypad, and dialog widgets |
 | Utilities | `frontend/lib/utils/` | Access control, search, keypad behavior, and UI preferences |
+
+## Interaction-reduction model
+
+SEEDS is built for blind teachers and students on Android button phones. Setup
+that used to be repeated by teachers and students is done once by the
+administrator or by the backend, and each screen speaks only what to do now
+(**star** always reads every key). Numbers such as S05 refer to the approved
+interaction-reduction plan.
+
+### Accounts and sign-in (S01–S04, S43)
+
+- The administrator creates accounts, enrolls students and assigns teachers.
+  There is no self-registration.
+- Students and teachers type their phone number and press **1**. No password,
+  OTP or role choice; the server's role decides the home screen. This is an
+  unverified testing-phase identity model (see Backend setup).
+- **Shared phones:** the administrator creates a shared-phone group with its own
+  entry number and gives each person a 1–4 digit profile number. Entering the
+  shared number asks for the profile number; it selects an account and is not
+  a password. Each profile keeps its own speech and display settings on the
+  phone, and switching account stops any ringing class alert.
+- Administrators sign in with a password on a separate screen (**3** on
+  sign-in) and can never use the number-only path.
+
+### Timetable and class lifecycle (S05–S10, S24, S25)
+
+- The administrator enters weekly lessons (teacher, class, subject, one or
+  more weekdays, start and end time, optional date range and prepared lesson
+  playlist), holidays, and per-date cancellations, substitutes or lesson
+  changes. Choosing several days creates one weekly lesson per day in one
+  step; if any day overlaps, none is created. After choosing the teacher, only
+  the classes and subjects assigned to them in **People** are offered, and the
+  server rejects any other pair. Overlapping lessons for a teacher or a class
+  are rejected. Times are typed and shown in the school's time zone
+  (`SCHOOL_TIMEZONE`, India Standard Time by default), never UTC; class
+  records and issues also show IST whatever the admin computer's clock says.
+  The timetable can be arranged by day, teacher or class (each
+  heading shows its lesson count) and searched by teacher, class, subject or
+  lesson.
+- Adding a person requires a class for a student and at least one class and
+  subject for a teacher (enforced by the server too).
+- A class becomes live only when its teacher presses **1: Start** on Home. It
+  can start from `CLASS_EARLY_START_MINUTES` (default 10) before the scheduled
+  start. Starting is idempotent; the session label is generated, so there is
+  no title to type. With nothing scheduled, a teacher can still start an
+  unscheduled class from **More** (`UNSCHEDULED_CLASS_MINUTES`, default 45).
+- One live class at a time per teacher and per enrolled class (so per
+  student), enforced by unique database indexes, not only by the app.
+- The scheduled end does not end the class. It ends when the teacher ends it
+  for everyone, or automatically at the **cutoff**: the earlier of scheduled
+  end + 30 minutes and 5 minutes before the teacher's or the class's next
+  lesson. Spoken warnings come 5 minutes and 1 minute before. **8 → 1** (More,
+  Add 15 minutes) adds
+  15 minutes, never past the next-lesson limit; the administrator can also
+  add time or end a class in **Class records**.
+- Ended classes are kept as backend records only (no teacher history).
+
+### Alerts, joining and the live class (S11–S20, S44, S45)
+
+- Starting a class rings every enrolled student's phone for up to 60 seconds.
+  Ten minutes after the start, students who have never joined get one more
+  ringing alert. The teacher's **4 → 4** (class list, remind) rings everyone
+  not yet joined again.
+  No student is rung twice within 5 minutes, whatever the source.
+- Opening the alert, or pressing OK on it while the app is open, joins the
+  class directly. After the ringing stops, a silent notification stays and
+  still joins while the class is live. The student home also shows **1: Join**
+  by itself within about 20 seconds, so there is no Refresh button.
+- Before a class, a student can explore Home freely, or press **1** to join
+  automatically when that class starts (only while Home stays open).
+- Everyone joins muted. The first class asks once for the microphone;
+  refusing still allows listening, later classes do not ask again, and
+  pressing Unmute asks again or offers Android settings.
+- After an interruption (network loss or the app closing), opening SEEDS
+  returns to the same live class. Leaving on purpose, the class ending or
+  signing out prevents this.
+- Teachers: **3** mute all students, **4** class list (who is here, who
+  joined and left, who has not joined; ring those not joined; raised hands;
+  remove someone; progress of the open quiz or journey), **6** quiz, **7**
+  journey, **8** More (add time, chat, class status), **9** end the class for
+  everyone. A prepared lesson is selected on entry, so **5** plays it, and the
+  next part is selected when one finishes.
+- Who came: one minute after the class starts the teacher hears "4 of 5
+  students here." After that, joins and leaves are spoken by name and grouped
+  when they happen together: "Akshat and Meena joined. Ravi left. 4 of 5
+  here." ("of 5" is the number of enrolled students, sent by the server with
+  the class state.) Students are not told when others join or leave.
+
+### Quiz or journey in class
+
+- The teacher presses **6** for a quiz or **7** for a journey and picks one of
+  the **published** ones for the class's subject (quizzes only while open).
+  One is open at a time; opening a quiz replaces an open journey and the
+  other way round.
+- Every student in class hears "Your teacher started a quiz: Plants. Press 4
+  to begin." and gets **4: Start quiz: Plants** (or **4: Start journey: …**)
+  on the class screen; students who join later see it too. That key goes straight into the first question or step, with no list
+  or confirmation; leaving returns to the class and says "Back in class." The
+  class sound keeps playing meanwhile.
+- If it cannot start (closed, no attempts left), the server's reason is
+  spoken. It stays in the student's normal Quizzes or Journeys list after the
+  class.
+- Pressing the same key again while it is open says "8 of 30 finished." and
+  offers: **1** who in class has not finished, **2** who in the whole class
+  has not finished (each name says not started or started, and in the whole
+  list whether they are in class), **3** remind those in class who have not
+  finished (only their phones announce it again), **4** start a different
+  one, **5** stop offering it.
+- The class list (**4**) also says "Plants: 12 started, 8 finished." Journey
+  progress counts once the student's phone has sent it.
+
+### Learning that runs itself (S26, S28–S30)
+
+- **2: Continue learning** opens the journey in progress straight into the
+  player at the saved place.
+- Progress saved offline is sent automatically. New journeys are prepared for
+  offline use on Wi-Fi only (Settings toggle, on by default), at most two per
+  run and within the existing download allowance.
+- Each published quiz gets one automatic reminder for students who have not
+  attempted it (a day before it closes, halfway through a shorter window, or
+  two days after publishing when it never closes).
+
+### Backend automation and operations (S38–S41)
+
+- `GET /me/home` tells each app what to offer now.
+- Alerts, reminders, warnings and automatic ending are durable jobs in
+  `scheduled_jobs`, run by the API process (`JOB_WORKER_ENABLED`, default true;
+  `JOB_POLL_SECONDS`, default 2). Overdue jobs run right after a restart.
+  Run one API process (or several sharing PostgreSQL; claims use
+  `SKIP LOCKED`). Live presence for the class list is held in that process.
+- Problems that need an administrator (student without a class, teacher
+  without an assignment, student phone not registered for alerts, prepared
+  lesson without playable audio, repeatedly failing background task) appear
+  once each under **Issues** in the administrator dashboard.
+- `SCHOOL_TIMEZONE` (default `Asia/Kolkata`) is the timezone of timetable times.
+
+### Limits and real-phone checks (S42)
+
+- A push is not guaranteed: notifications may be disabled, delayed, or
+  blocked by battery savers, Do Not Disturb or a force-stopped app. Home still
+  shows the class. Ringing uses Android's repeating notification sound and a
+  full-screen request; Android decides whether the screen wakes, and the lock
+  screen is never bypassed.
+- Before rollout, check on each target phone with touch disabled: sign-in by
+  number with no SIM over Wi-Fi; start and join in one key each; the alert
+  rings no longer than 60 seconds and OK joins; the 10-minute reminder and
+  5-minute pause; mute all on several phones (actual sound, not just state);
+  microphone refusal and later Unmute; warnings and the exact cutoff; recovery
+  after closing the app; 30 consecutive presses of each changed shortcut.
 
 ## Technology stack
 
@@ -301,8 +458,13 @@ Important:
 - All three `BOOTSTRAP_ADMIN_*` values are required. The backend creates that
   administrator idempotently on startup, keyed by phone number, and never
   overwrites an existing administrator password.
-- Public registration accepts only `teacher` and `student`; administrators
-  sign in through the normal login endpoint but cannot register publicly.
+- There is no public registration. The administrator creates student and
+  teacher accounts (dashboard **Accounts → Add person**). Students and teachers
+  sign in with `POST /auth/phone-login` (phone number only); administrators
+  sign in with `POST /auth/login` (password). Neither path serves the other.
+- **Testing-phase identity model:** a phone number is not verified, so anyone
+  who knows a registered number (and, on a shared phone, its short profile
+  number) can use that account. Review identity before any real deployment.
 - Never commit `.env`, Firebase credentials, private keys, or production
   passwords.
 - Keep `ALLOW_DEV_USER_IMPERSONATION=false` except in a controlled development
@@ -319,6 +481,17 @@ root:
 .\.venv\Scripts\Activate.ps1
 alembic upgrade head
 ```
+
+The current head is `20261119_14`, which adds `teacher_notices` (what an
+administrator created, published, closed or archived for a teacher). Before
+it, `20261119_13` adds the quiz or journey a teacher
+starts in class (`sessions.activity_*`). Before it, `20261117_12` (interaction
+reduction): accounts gain
+`is_active`; new tables hold shared phones, the timetable, per-date overrides,
+holidays, durable jobs, class alerts and administrator issues; sessions gain
+their timetable occurrence, start, cutoff and end reason; participants gain
+`first_connected_at`. It closes all but the newest live session per teacher
+and per class so the one-live-class indexes can be built.
 
 The migration creates the class-subject association table and backfills pairs
 observed in existing sessions, audio, and teacher assignments. It stops with an
@@ -733,11 +906,13 @@ backend is running. Major endpoint groups include:
 
 | Area | Example endpoints |
 |------|-------------------|
-| Authentication | `POST /auth/register`, `POST /auth/login` |
+| Authentication | `POST /auth/phone-login` (students, teachers; `profile_code` on shared phones), `POST /auth/login` (administrators) |
+| Home | `GET /me/home`: the live class, today's classes and, for teachers, their class-subject workspaces |
+| Classes | `POST /classes/start`, `POST /sessions/{id}/extend`, `GET /sessions/{id}/roster`, `POST /sessions/{id}/remind-not-joined`, `POST /sessions/{id}/end` |
+| School setup | `/admin/users`, `/admin/device-groups`, `/admin/timetable`, `/admin/timetable/{id}/occurrences/{date}`, `/admin/holidays`, `/admin/schedule`, `/admin/issues`, `/admin/sessions` |
 | Classes and subjects | Administrator, teacher, and membership routes |
-| Sessions | Create, list, join, invite, end, and delete |
-| Live events | `GET /sse/sessions/{session_id}`, session action routes |
-| Participants | Join, remove, mute, hand raise, and access control |
+| Live events | `GET /sse/sessions/{session_id}`, session action routes (`mute_all_students` with a `request_id`) |
+| Participants | Join, remove, mute all students, hand raise, and access control |
 | Audio | Upload, list, stream, select, play, pause, seek, and speed |
 | Playlists | Create, update, order, and assign audio |
 | Chat | Send messages and retrieve session history |
@@ -776,30 +951,56 @@ version, English TTS engine, audio, and available memory.
   edit mode.
 - Up/Down exits text editing. While editing, digits, star, and hash belong to
   the field rather than triggering screen shortcuts.
+- Opening any screen speaks where you are, its current state in one
+  sentence, and then every key that screen offers ("Press 1 for ..., press 2
+  for ..."), so nothing has to be discovered. Coming back to a screen from
+  one opened on top of it (a list, chat, a dialog) says only the screen, its
+  state and "Press star for all keys." The class screen reads all its keys
+  when you join.
+- Keys are numbered from 1 with no unused gaps, except where a key keeps the
+  same meaning everywhere. Welcome: **1** sign in, **2** settings. Single-
+  action forms (change password, a question, quiz settings) save with **1**.
+  Quiz draft: **1** refresh, **2** write a question, **3** use a saved
+  question, **4** remove one, **5** review; while reviewing, **1** refresh,
+  **2** settings, **3** publish. The class audio library pauses the class
+  audio with **3**.
 - Outside editing, every screen uses the same keys: **0** goes back or
   cancels, **star** repeats screen help, **hash** stops app speech (it never
-  navigates). Back does not log out. Logout, leaving a live session and ending
+  navigates), **8** repeats the last message (in class it opens More). Back does not log out. Logout, leaving a live session and ending
   a session require confirmation; cancelling a dialog returns focus to the
   control that opened it.
 - Audio players share one layout around the raised 5 key: **4** back 10
   seconds, **5** play or pause, **6** forward 10 seconds, **7** slower,
   **9** faster. Turning app speech off is only offered in Settings.
-- A live session is one short screen. Students: **1** mute or unmute,
-  **2** raise or lower hand, **3** hear class status, **4** chat (its own
-  screen), **5** hear what the teacher is playing (read only: only the
-  teacher can play, pause, seek or change the class recording), **6**
-  answer the classroom check, **7** who is in the class (teacher first, then
-  you, then everyone by name, with raised hands and microphones; read only),
-  **0** leave (asks to confirm: 0 stays, 1 leaves). Teachers get their own
-  session screen with only teacher options (they have no hand to raise):
-  **1** mute or unmute, **2** raised hands queue, **3** class status,
-  **4** chat, **5** the **Class recording player** (it starts the
-  selected recording for the class; inside, 4/6 seek 10 seconds, 5 play or
-  pause, 7/9 speed, 1 choose, 2 upload, 3 status), **6** run the classroom
-  check, **7** participants (mute or remove someone, classroom summary),
-  **9** teacher tools (invite students, end class for everyone) and **0**
-  leave (the class keeps running). Only the teacher's player controls the
-  class recording, for everyone at once.
+- A live session is one short screen showing only what is needed every
+  minute. Keys mean the same on both screens where they can: **1**
+  microphone, **2** hand, **8** More (the less used actions); ending is
+  highest: **9** ends the class for everyone (teacher)
+  and **0** leaves. In class, **8** opens More instead of repeating the last
+  message; star still says it. Joining says the state ("You are in class
+  and muted. Press 1 to speak, 2 to raise your hand.") and then every key;
+  the status
+  only mentions what is not ordinary (a raised hand, playing audio, an open
+  quiz or journey, the end time, a connection problem). Star still reads
+  every key.
+  Students: **1** mute or unmute, **2** raise or lower hand, **3** what is
+  playing (read only), **4** start the quiz or journey the teacher opened
+  (shown only while one is open), **8** More (**1** chat, **2** who is in
+  class, read only, **3** class status and held-back updates), **0** leave
+  (asks to confirm: 0 stays, 1 leaves).
+  Teachers (they have no hand to raise): **1** mute or unmute, **2** raised
+  hands queue, **3** mute all students (the teacher's microphone is not
+  touched; students may unmute themselves afterwards), **4** class list
+  (counts first; then who is here, who joined and left, who has not joined;
+  ring everyone not yet joined; raised hands; remove someone), **5** the
+  lesson recording player (it starts the selected recording for the class;
+  inside, 4/6 seek 10 seconds, 5 play or pause, 7/9 speed, 1 choose, 2
+  upload, 3 status), **6** quiz and **7** journey (start one; while open, who
+  is left, remind, change or stop), **8** More (**1** add 15 minutes, **2**
+  chat, **3** class status and summary), **9** end class for everyone (asks
+  to confirm) and **0** leave (the class keeps running). Only the teacher's
+  player controls the class recording, for everyone at once. There is no
+  single-student mute.
 - While answering or reviewing a quiz, **7** and **9** make quiz speech
   slower or faster (also the D-pad **Quiz speech speed** control: left or
   right). If options were being read, they are read again at the new speed.
@@ -988,9 +1189,10 @@ tests are not physical-device airplane-mode or blind-user validation.
 
 ### Optional SIM suggestions and private notifications
 
-Teacher and student self-registration and existing password requirements remain
-unchanged. Login never scans SIMs automatically. **6: Read optional SIM
-suggestions** first explains the optional access, even when Android permission
+Accounts are created by the school administrator; there is no registration
+screen. Sign-in asks only for the phone number, typed on the keypad, so it
+works with no SIM card and on Wi-Fi. Login never scans SIMs automatically.
+**2: Fill in my number from the SIM card** first explains the optional access, even when Android permission
 was granted earlier. After permission, a keypad-accessible chooser requires an
 explicit selection, including for a single SIM. Choosing fills only the phone
 field; it neither verifies account ownership nor signs in. Cancel, missing SIMs,
@@ -1003,13 +1205,15 @@ New FCM previews and foreground local notifications use **SEEDS update** and
 visibility. Routing retains only update type and session/quiz/class/subject IDs;
 names, titles, phone numbers, grades and message text are not included. Local
 notification taps also discard personal fields from legacy routing payloads.
-Session invitations continue to open a generic session destination whose access
-is checked by the backend. Actual OEM lock-screen behaviour still requires
+Class alerts are data-only pushes (type, session, alert and ring-until only);
+the app builds its own private notification. Opening one joins the class
+directly after the backend rechecks that it is live for this account.
+Actual OEM lock-screen behaviour still requires
 device testing; previously displayed OS notifications are not retroactively
 rewritten by this change.
 
-**7: School-admin password recovery help** explains the recovery process without
-requiring SIM access or an SMS service.
+**3: Administrator sign in** opens the separate password screen used only by
+administrators.
 
 Push-token registration is an atomic database upsert against a unique token.
 A token has one signed-in account owner, rather than accumulating links across
@@ -1058,7 +1262,48 @@ Existing feedback-release authorization and academic policy remain unchanged.
 Broader populated-route/dialog reflow, personal-speech/shared-device audit,
 physical screen-reader/OEM behavior and blind-user acceptance remain open.
 
-### School-admin-assisted password recovery
+### Administrator recovery: sign out everywhere
+
+Students and teachers no longer have passwords, so there is nothing to reset.
+If a phone number was used on the wrong phone, an administrator opens the
+account and chooses **Sign out everywhere** (`POST
+/admin/users/{id}/sign-out-everywhere` with the expected authentication
+version). Every app session for that account ends, push devices are removed
+and live-class streams close; the person signs in again with their number.
+Deactivating an account (`PATCH /admin/users/{id}` with `is_active: false`)
+does the same and blocks sign-in. Changing an account's phone number also
+signs it out everywhere.
+
+The administrator's own temporary-password flow below is unchanged: it applies
+only to administrator accounts.
+
+### Admin: quizzes and journeys for a teacher
+
+The administrator dashboard's **Quizzes and journeys** section lets an
+administrator pick a teacher and one of that teacher's assigned classes and
+subjects, then list that teacher's quizzes and journeys, create and edit
+drafts, publish them, close a published quiz and archive a published journey.
+Quiz questions are typed new (optionally saved to the teacher's bank) or
+picked from that teacher's own question bank. Journeys use every step type
+(recording, narration, question, bank question, poll); the recordings offered
+are only audio that teacher uploaded for that class and subject.
+
+The app calls the ordinary teacher routes (`/teacher/quizzes*`,
+`/question-bank*`, `/teacher/journeys*`, `/audio/list`, `/audio/upload`) with
+the administrator's token and an `X-Act-As-Teacher: <teacher user_id>` header
+(or `?as_teacher=<id>`). The server resolves an active teacher and applies
+exactly that teacher's rules: ownership, class-and-subject assignment,
+readiness and publish checks, student notifications and the quiz auto-reminder.
+A teacher's own token ignores the header. Audit events record the
+administrator as the actor.
+
+Each creation, publication, closure or archive made this way is stored in
+`teacher_notices`. The teacher's `GET /me/home` includes unseen ones as
+`admin_notices: [{notice_id, kind: "quiz"|"journey", title, action:
+"created"|"published"|"closed"|"archived"}]` (oldest first, at most 50), and
+`POST /me/notices/seen` with `{"notice_ids": [...]}` marks them seen.
+
+### Administrator temporary-password change
 
 An administrator can open an existing teacher/student account, choose
 **Password recovery**, attest that identity was verified outside SEEDS, and
@@ -1197,11 +1442,14 @@ and performance/distribution limits are not yet known; these gates remain blocke
 
 ### Teacher classroom controls
 
-In a live session teachers press **2** for the raised hands queue, **6** for
-the classroom check, **7** for participants and **9** for **Teacher tools**
-(**1** invite, **2** end class, asks to confirm, **3** classroom summary).
-The class keeps running underneath. Participants offers the raised hands
-queue, the participants list and the classroom summary. The
+In a live session teachers press **2** for the raised hands queue, **3** to
+mute all students, **4** for the class list, **6** for a quiz, **7** for a
+journey, **8** for **More** (**1** add 15 minutes, **2** chat, **3** class
+status and summary) and **9** to end the class (asks to confirm). The class
+keeps running
+underneath. The
+class list offers who is here, who joined and left, who has not joined,
+ringing everyone not yet joined, and the raised hands queue. The
 raised hands queue provides:
 
 - **Read classroom summary** on demand: the local connection state, last
@@ -1310,22 +1558,6 @@ phone, with TalkBack on and off: a blind teacher authors and publishes a
 five-step journey without touch; a student plays it in airplane mode after
 downloading, answers wrongly to hear the replay, leaves and resumes, then
 reconnects and the teacher sees the results.
-
-### Private classroom understanding checks
-
-The session connection row also exposes **Classroom check** independently of
-Chat. The owning teacher explicitly opens a check (confirming that previous
-responses will be cleared) or closes it. Students use D-pad/OK or touch to
-choose **Understood**, **Please repeat**, or **Need help**. Their latest choice
-can be changed while the check is open. Pending requests are not announced as
-confirmed responses; failed or unreadable acknowledgments expose an error.
-
-These checks are ungraded and never become academic records. Named responses
-are visible only to the responding student and owning teacher; they are not
-broadcast to other students. Teacher counts and names are read on demand,
-not continuously narrated. Responses exist only in server process memory:
-the next check, session end, or server restart clears them. Transient stream
-reconnects preserve them only while that process state survives.
 
 ### Private recorded notes and reviewed teacher publication
 
@@ -1579,11 +1811,11 @@ restore revoked ambiguous links; users must re-register their devices after
 signing in. Do not use a rollback to reintroduce multi-account token associations.
 
 Ending a live session closes it for all connected participants and marks it
-ended; it does not delete the session. Teachers continue to see active and
-ended sessions in dashboard history, while students see only active sessions.
-An ended session can be reactivated and opened again. It can also be
-permanently deleted after a separate destructive confirmation; active sessions
-must be ended before permanent deletion is allowed.
+ended; it does not delete the session. A class also ends automatically at its
+safety cutoff (see [Interaction-reduction model](#interaction-reduction-model)).
+Ended classes are backend records only: teachers have no history, reactivation
+or deletion screens. Administrators read records in **Class records**
+(`GET /admin/sessions`); a new lesson is always a new occurrence.
 
 ## Session logging
 
@@ -1635,8 +1867,7 @@ run's expiry. Self-listen log history becomes a 30-day view.
 ORM mutations receive transaction-coupled, content-free events; live controls
 and external effects have separate observed outcomes. Passwords, tokens, chat,
 question/answer bodies, private notes and bookmark labels are excluded.
-Private-playlist operations expose only global admin counts. Classroom checks
-stay transient/ungraded; only open/close and anonymous observed counts are stored.
+Private-playlist operations expose only global admin counts.
 
 Build the learning app with `--dart-define=TELEMETRY_ENABLED=true` only after
 the notice/server ingestion are ready. Approved bookmark, seek/speed/repeat/

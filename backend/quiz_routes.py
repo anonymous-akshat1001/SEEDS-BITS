@@ -13,8 +13,10 @@ from sqlalchemy.orm import selectinload
 
 import access_control as access
 import auth
+import jobs
 import models
 import quiz_schemas as qs
+import teacher_notices
 from database import get_db
 from notification_service import fcm_service
 
@@ -405,7 +407,7 @@ async def list_bank_questions(
     search: str = "",
     include_archived: bool = False,
     limit: int = Query(100, ge=1, le=200),
-    teacher: models.User = Depends(auth.require_teacher),
+    teacher: models.User = Depends(auth.acting_teacher),
     db: AsyncSession = Depends(get_db),
 ):
     query = select(models.QuestionBankQuestion).options(*_bank_options()).filter(
@@ -435,7 +437,7 @@ async def list_bank_questions(
 @router.post("/question-bank", response_model=qs.BankQuestionOut)
 async def create_bank_question(
     payload: qs.BankQuestionCreate,
-    teacher: models.User = Depends(auth.require_teacher),
+    teacher: models.User = Depends(auth.acting_teacher),
     db: AsyncSession = Depends(get_db),
 ):
     await access.require_teacher_assignment(
@@ -468,7 +470,7 @@ async def create_bank_question(
 @router.get("/question-bank/{question_id}", response_model=qs.BankQuestionOut)
 async def get_bank_question(
     question_id: int,
-    teacher: models.User = Depends(auth.require_teacher),
+    teacher: models.User = Depends(auth.acting_teacher),
     db: AsyncSession = Depends(get_db),
 ):
     question = await _get_bank_question(db, question_id)
@@ -480,7 +482,7 @@ async def get_bank_question(
 async def update_bank_question(
     question_id: int,
     payload: qs.BankQuestionUpdate,
-    teacher: models.User = Depends(auth.require_teacher),
+    teacher: models.User = Depends(auth.acting_teacher),
     db: AsyncSession = Depends(get_db),
 ):
     question = await _get_bank_question(db, question_id, lock=True)
@@ -507,7 +509,7 @@ async def update_bank_question(
 async def bank_question_revisions(
     question_id: int,
     offset: int = Query(0, ge=0),
-    teacher: models.User = Depends(auth.require_teacher),
+    teacher: models.User = Depends(auth.acting_teacher),
     db: AsyncSession = Depends(get_db),
 ):
     question = await _get_bank_question(db, question_id)
@@ -529,7 +531,7 @@ async def bank_question_revisions(
 async def archive_bank_question(
     question_id: int,
     archived: bool = True,
-    teacher: models.User = Depends(auth.require_teacher),
+    teacher: models.User = Depends(auth.acting_teacher),
     db: AsyncSession = Depends(get_db),
 ):
     question = await _get_bank_question(db, question_id)
@@ -543,7 +545,7 @@ async def archive_bank_question(
 @router.post("/question-bank/{question_id}/duplicate", response_model=qs.BankQuestionOut)
 async def duplicate_bank_question(
     question_id: int,
-    teacher: models.User = Depends(auth.require_teacher),
+    teacher: models.User = Depends(auth.acting_teacher),
     db: AsyncSession = Depends(get_db),
 ):
     source = await _get_bank_question(db, question_id)
@@ -581,7 +583,7 @@ async def list_teacher_quizzes(
     subject_id: int | None = None,
     quiz_status: str | None = Query(None, alias="status"),
     limit: int = Query(100, ge=1, le=200),
-    teacher: models.User = Depends(auth.require_teacher),
+    teacher: models.User = Depends(auth.acting_teacher),
     db: AsyncSession = Depends(get_db),
 ):
     query = select(models.Quiz).options(*_quiz_options()).filter(
@@ -604,7 +606,7 @@ async def list_teacher_quizzes(
 @router.post("/teacher/quizzes", response_model=qs.QuizOut)
 async def create_quiz(
     payload: qs.QuizCreate,
-    teacher: models.User = Depends(auth.require_teacher),
+    teacher: models.User = Depends(auth.acting_teacher),
     db: AsyncSession = Depends(get_db),
 ):
     if payload.feedback_policy == "legacy_immediate":
@@ -618,6 +620,7 @@ async def create_quiz(
         **payload.dict(),
     )
     db.add(quiz)
+    await teacher_notices.record(db, teacher, "quiz", quiz, "created")
     await db.commit()
     return _quiz_payload(await _get_quiz(db, quiz.quiz_id), include_questions=True)
 
@@ -625,7 +628,7 @@ async def create_quiz(
 @router.get("/teacher/quizzes/{quiz_id}", response_model=qs.QuizOut)
 async def get_teacher_quiz(
     quiz_id: int,
-    teacher: models.User = Depends(auth.require_teacher),
+    teacher: models.User = Depends(auth.acting_teacher),
     db: AsyncSession = Depends(get_db),
 ):
     quiz = await _get_quiz(db, quiz_id)
@@ -637,7 +640,7 @@ async def get_teacher_quiz(
 async def update_quiz(
     quiz_id: int,
     payload: qs.QuizUpdate,
-    teacher: models.User = Depends(auth.require_teacher),
+    teacher: models.User = Depends(auth.acting_teacher),
     db: AsyncSession = Depends(get_db),
 ):
     quiz = await _get_quiz(db, quiz_id)
@@ -664,7 +667,7 @@ async def update_quiz(
 async def add_bank_question_to_quiz(
     quiz_id: int,
     payload: qs.AddBankQuestion,
-    teacher: models.User = Depends(auth.require_teacher),
+    teacher: models.User = Depends(auth.acting_teacher),
     db: AsyncSession = Depends(get_db),
 ):
     quiz = await _get_quiz(db, quiz_id)
@@ -690,7 +693,7 @@ async def add_bank_question_to_quiz(
 async def create_and_add_question(
     quiz_id: int,
     payload: qs.AddNewQuestion,
-    teacher: models.User = Depends(auth.require_teacher),
+    teacher: models.User = Depends(auth.acting_teacher),
     db: AsyncSession = Depends(get_db),
 ):
     quiz = await _get_quiz(db, quiz_id)
@@ -751,7 +754,7 @@ async def create_and_add_question(
 async def remove_quiz_question(
     quiz_id: int,
     quiz_question_id: int,
-    teacher: models.User = Depends(auth.require_teacher),
+    teacher: models.User = Depends(auth.acting_teacher),
     db: AsyncSession = Depends(get_db),
 ):
     quiz = await _get_quiz(db, quiz_id)
@@ -780,7 +783,7 @@ async def remove_quiz_question(
 async def reorder_quiz_questions(
     quiz_id: int,
     payload: qs.QuizReorder,
-    teacher: models.User = Depends(auth.require_teacher),
+    teacher: models.User = Depends(auth.acting_teacher),
     db: AsyncSession = Depends(get_db),
 ):
     quiz = await _get_quiz(db, quiz_id)
@@ -809,7 +812,7 @@ async def reorder_quiz_questions(
 @router.get("/teacher/quizzes/{quiz_id}/preview")
 async def preview_quiz(
     quiz_id: int,
-    teacher: models.User = Depends(auth.require_teacher),
+    teacher: models.User = Depends(auth.acting_teacher),
     db: AsyncSession = Depends(get_db),
 ):
     quiz = await _get_quiz(db, quiz_id)
@@ -826,7 +829,7 @@ async def preview_quiz(
 )
 async def quiz_readiness(
     quiz_id: int,
-    teacher: models.User = Depends(auth.require_teacher),
+    teacher: models.User = Depends(auth.acting_teacher),
     db: AsyncSession = Depends(get_db),
 ):
     quiz = await _get_quiz(db, quiz_id)
@@ -844,7 +847,7 @@ async def quiz_readiness(
 @router.post("/teacher/quizzes/{quiz_id}/publish", response_model=qs.QuizOut)
 async def publish_quiz(
     quiz_id: int,
-    teacher: models.User = Depends(auth.require_teacher),
+    teacher: models.User = Depends(auth.acting_teacher),
     db: AsyncSession = Depends(get_db),
 ):
     quiz = await _get_quiz(db, quiz_id)
@@ -859,6 +862,13 @@ async def publish_quiz(
         raise HTTPException(status_code=422, detail=errors)
     quiz.status = "published"
     quiz.published_at = _now()
+    reminder_at = _auto_reminder_time(quiz, quiz.published_at)
+    if reminder_at is not None:
+        await jobs.enqueue(
+            db, "quiz_auto_reminder", f"quiz:{quiz.quiz_id}:auto_reminder",
+            reminder_at, {"quiz_id": quiz.quiz_id},
+        )
+    await teacher_notices.record(db, teacher, "quiz", quiz, "published")
     await db.commit()
     published = await _get_quiz(db, quiz_id)
     students = await _eligible_students(db, published.class_id)
@@ -905,7 +915,7 @@ async def _finalize_attempt(
 @router.post("/teacher/quizzes/{quiz_id}/close", response_model=qs.QuizOut)
 async def close_quiz(
     quiz_id: int,
-    teacher: models.User = Depends(auth.require_teacher),
+    teacher: models.User = Depends(auth.acting_teacher),
     db: AsyncSession = Depends(get_db),
 ):
     quiz = await _get_quiz(db, quiz_id)
@@ -927,6 +937,7 @@ async def close_quiz(
         await _finalize_attempt(db, attempt, "timed_out", now)
     quiz.status = "closed"
     quiz.closed_at = now
+    await teacher_notices.record(db, teacher, "quiz", quiz, "closed")
     await db.commit()
     return _quiz_payload(await _get_quiz(db, quiz_id), include_questions=True)
 
@@ -934,7 +945,7 @@ async def close_quiz(
 @router.post("/teacher/quizzes/{quiz_id}/duplicate", response_model=qs.QuizOut)
 async def duplicate_quiz(
     quiz_id: int,
-    teacher: models.User = Depends(auth.require_teacher),
+    teacher: models.User = Depends(auth.acting_teacher),
     db: AsyncSession = Depends(get_db),
 ):
     source = await _get_quiz(db, quiz_id)
@@ -979,6 +990,7 @@ async def duplicate_quiz(
         ]
         duplicate.questions.append(question)
     db.add(duplicate)
+    await teacher_notices.record(db, teacher, "quiz", duplicate, "created")
     await db.commit()
     return _quiz_payload(await _get_quiz(db, duplicate.quiz_id), include_questions=True)
 
@@ -986,7 +998,7 @@ async def duplicate_quiz(
 @router.delete("/teacher/quizzes/{quiz_id}")
 async def delete_draft_quiz(
     quiz_id: int,
-    teacher: models.User = Depends(auth.require_teacher),
+    teacher: models.User = Depends(auth.acting_teacher),
     db: AsyncSession = Depends(get_db),
 ):
     quiz = await _get_quiz(db, quiz_id)
@@ -1664,23 +1676,7 @@ async def remind_students_not_attempted(
     db: AsyncSession = Depends(get_db),
 ):
     quiz = await _owner_quiz(db, teacher, quiz_id)
-    students = await _eligible_students(db, quiz.class_id)
-    attempted_student_ids = set(
-        (
-            await db.execute(
-                select(models.QuizAttempt.student_id)
-                .filter(models.QuizAttempt.quiz_id == quiz_id)
-                .distinct()
-            )
-        )
-        .scalars()
-        .all()
-    )
-    not_attempted = [
-        student
-        for student in students
-        if student.user_id not in attempted_student_ids
-    ]
+    students, not_attempted = await _not_attempted(db, quiz)
     delivery = await _send_quiz_notifications(
         db,
         quiz,
@@ -1697,6 +1693,59 @@ async def remind_students_not_attempted(
         "students_notified": len(not_attempted),
         "device_notifications_queued": delivery["success"],
     }
+
+
+async def _not_attempted(db: AsyncSession, quiz: models.Quiz):
+    students = await _eligible_students(db, quiz.class_id)
+    attempted_student_ids = set(
+        (
+            await db.execute(
+                select(models.QuizAttempt.student_id)
+                .filter(models.QuizAttempt.quiz_id == quiz.quiz_id)
+                .distinct()
+            )
+        )
+        .scalars()
+        .all()
+    )
+    return students, [
+        student
+        for student in students
+        if student.user_id not in attempted_student_ids
+    ]
+
+
+AUTO_REMINDER_BEFORE_CLOSE = timedelta(hours=24)
+AUTO_REMINDER_WITHOUT_CLOSE = timedelta(hours=48)
+
+
+def _auto_reminder_time(quiz: models.Quiz, published_at: datetime) -> datetime | None:
+    """One automatic reminder (S30): a day before closing, halfway through a
+    shorter window, or two days after publishing when the quiz never closes."""
+    opens = max(published_at, quiz.opens_at or published_at)
+    if quiz.closes_at is None:
+        return opens + AUTO_REMINDER_WITHOUT_CLOSE
+    remaining = quiz.closes_at - opens
+    if remaining <= timedelta(hours=1):
+        return None
+    if remaining > AUTO_REMINDER_BEFORE_CLOSE * 2:
+        return quiz.closes_at - AUTO_REMINDER_BEFORE_CLOSE
+    return opens + remaining / 2
+
+
+@jobs.handler("quiz_auto_reminder")
+async def quiz_auto_reminder(db: AsyncSession, payload: dict) -> None:
+    quiz = await _get_quiz(db, payload["quiz_id"])
+    now = _now()
+    if quiz.status != "published" or (quiz.closes_at is not None and quiz.closes_at <= now):
+        return
+    _, not_attempted = await _not_attempted(db, quiz)
+    await _send_quiz_notifications(
+        db, quiz, not_attempted,
+        title="Quiz reminder",
+        body=f"Please attempt '{quiz.title}' for {quiz.subject.name}.",
+        notification_type="quiz_reminder",
+    )
 
 
 @router.get(

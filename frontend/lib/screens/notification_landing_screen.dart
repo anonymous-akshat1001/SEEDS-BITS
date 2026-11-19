@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../announcers/notification_text.dart';
 import '../l10n/speech.dart';
@@ -13,7 +12,8 @@ import 'journeys/student_journeys_screen.dart';
 import 'quiz_screens.dart';
 
 /// Opened from a tapped notification. Says what arrived and waits for the
-/// user: 1 opens it, 0 goes back. Nothing is joined or opened silently.
+/// user: 1 opens it, 0 goes back. Class alerts never come here: opening one
+/// joins the class directly (see ClassEntry).
 class NotificationLandingScreen extends StatefulWidget {
   const NotificationLandingScreen({
     super.key,
@@ -38,26 +38,6 @@ class _NotificationLandingScreenState extends State<NotificationLandingScreen> {
   Future<void> _open() async {
     final navigator = Navigator.of(context);
     switch (_type) {
-      case 'session_invitation':
-        final sessionId = _id('session_id');
-        final prefs = await SharedPreferences.getInstance();
-        final userId = prefs.getInt('user_id');
-        final userName =
-            prefs.getString('user_name') ?? prefs.getString('name');
-        if (sessionId == null || userId == null || userName == null) {
-          MessageCenter.error(NotificationText.cannotOpen);
-          return;
-        }
-        await navigator.pushReplacementNamed(
-          '/session',
-          arguments: {
-            'sessionId': sessionId,
-            'userId': userId,
-            'userName': userName,
-            'isTeacher': false,
-            'sessionTitle': Speech.t.sessionScreenClass,
-          },
-        );
       case 'journey_published':
         final id = _id('journey_id');
         if (id == null) {

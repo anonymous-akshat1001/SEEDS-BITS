@@ -6,21 +6,6 @@ from datetime import datetime
 
 # ==================== USER SCHEMAS ====================
 
-# Input Schema - when input is received for registration
-class UserCreate(BaseModel):
-    # The ... signifies that the field is required
-    name: str = Field(..., min_length=1, max_length=200)
-    phone_number: str = Field(..., min_length=10, max_length=20)
-    password: str = Field(..., min_length=6)
-    role: str  # 'teacher' or 'student'
-    # validator runs automatically when input is received
-    @validator('role')
-    def validate_role(cls, v):
-        # only roles applicable are - teacher or student
-        if v.lower() not in ['teacher', 'student']:
-            raise ValueError('Role must be either teacher or student')
-        return v.lower()
-
 
 # Output Schema
 class UserOut(BaseModel):
@@ -31,12 +16,6 @@ class UserOut(BaseModel):
     created_at: datetime
     
     model_config = ConfigDict(from_attributes=True)
-
-
-# Input for user login
-class UserLogin(BaseModel):
-    phone_number: str
-    password: str
 
 
 # ==================== AUTH SCHEMAS ====================
@@ -56,13 +35,6 @@ class TokenData(BaseModel):
 
 
 # ==================== SESSION SCHEMAS ====================
-
-# Input schema when the teacher creates a session
-class SessionCreate(BaseModel):
-    title: str = Field(..., min_length=1, max_length=500)
-    class_id: int
-    subject_id: int
-
 
 # Table stores what is returned when session has been created succesfully
 class SessionOut(BaseModel):
@@ -401,6 +373,7 @@ class AdminUserOut(BaseModel):
     name: str
     phone_number: str
     role: str
+    is_active: bool = True
     class_id: Optional[int] = None
     class_name: Optional[str] = None
     assignment_count: int = 0

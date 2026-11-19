@@ -5,7 +5,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:frontend/main.dart';
 import 'package:frontend/screens/change_password_screen.dart';
 import 'package:frontend/screens/login_screen.dart';
-import 'package:frontend/screens/register_screen.dart';
 import 'package:frontend/screens/settings_screen.dart';
 import 'package:frontend/screens/student_dashboard.dart';
 import 'package:frontend/screens/teacher_dashboard.dart';
@@ -97,7 +96,7 @@ void main() {
   final routes = <String, Widget Function()>{
     'Welcome': () => const WelcomeScreen(),
     'Login': () => const LoginScreen(),
-    'Register': () => const RegisterScreen(),
+    'Administrator sign-in': () => const AdminLoginScreen(),
     'Settings': () => const SettingsScreen(),
     'Password change': () => const ChangePasswordScreen(),
     'Student dashboard': () => const StudentDashboard(),
@@ -221,7 +220,9 @@ void main() {
           },
           () => MockClient(
             (request) async => http.Response(
-              request.url.path == '/me/access-context' ? '{}' : '[]',
+              const {'/me/access-context', '/me/home'}.contains(request.url.path)
+                  ? '{}'
+                  : '[]',
               200,
             ),
           ),

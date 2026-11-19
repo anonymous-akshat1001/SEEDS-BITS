@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -6,14 +5,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frontend/main.dart' show routeObserver;
-import 'package:frontend/screens/admin_dashboard.dart';
 import 'package:frontend/screens/audio_library_screen.dart';
 import 'package:frontend/screens/login_screen.dart';
 import 'package:frontend/screens/quiz_screens.dart';
-import 'package:frontend/screens/register_screen.dart';
 import 'package:frontend/screens/teacher_dashboard.dart';
 import 'package:frontend/services/tts_service.dart';
-import 'package:frontend/widgets/key_instruction_wrapper.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -92,10 +88,10 @@ void main() {
     'phone focus is spoken before any typing and delayed help does not overwrite it',
     (tester) async {
       await open(tester, const LoginScreen());
-      spoken.clear();
-      await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
       await tester.pump(const Duration(seconds: 1));
-      expect(spoken.last, contains('Phone number field'));
+      // The number field is focused at once, so typing can start at once.
+      expect(FocusManager.instance.primaryFocus?.debugLabel, 'login-phone');
+      expect(spoken.join(' '), contains('Phone number'));
       expect(
         tester.widget<TextField>(find.byType(TextField).first).controller!.text,
         isEmpty,
@@ -104,184 +100,59 @@ void main() {
     },
   );
 
-  testWidgets(
-    'stale admin filter responses cannot erase the current failure or steal focus',
-    (tester) async {
-      final student = Completer<http.Response>();
-      final teacher = Completer<http.Response>();
-      await http.runWithClient(
-        () async {
-          await open(tester, const AdminDashboard());
-          await focus(tester, 'admin-account-type-filter');
-          await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
-          await tester.pump();
-          await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
-          await tester.pump();
-          teacher.complete(http.Response('{"detail":"Unavailable"}', 503));
-          await tester.pumpAndSettle();
-          expect(
-            find.textContaining('Administration data was not refreshed'),
-            findsOneWidget,
-          );
-          expect(spoken.last, contains('Teachers only'));
-          expect(
-            FocusManager.instance.primaryFocus?.debugLabel,
-            'admin-account-type-filter',
-          );
-          student.complete(http.Response('[]', 200));
-          await tester.pumpAndSettle();
-          expect(
-            find.textContaining('Administration data was not refreshed'),
-            findsOneWidget,
-          );
-          expect(find.text('No matching accounts.'), findsNothing);
-          expect(
-            FocusManager.instance.primaryFocus?.debugLabel,
-            'admin-account-type-filter',
-          );
-          await tester.pumpWidget(const SizedBox.shrink());
-        },
-        () => MockClient((request) async {
-          if (request.url.path == '/admin/users') {
-            switch (request.url.queryParameters['role']) {
-              case 'student':
-                return student.future;
-              case 'teacher':
-                return teacher.future;
-            }
-          }
-          return http.Response('[]', 200);
-        }),
-      );
-    },
-  );
-
-  testWidgets('registration key 3 toggles the role and is visible and spoken', (
-    tester,
-  ) async {
-    await open(tester, const RegisterScreen());
-    await tester.sendKeyEvent(LogicalKeyboardKey.digit3);
-    await tester.pumpAndSettle();
-    expect(
-      find.text('3: Register as Teacher. Change account type'),
-      findsOneWidget,
-    );
-    expect(spoken.last.toLowerCase(), contains('teacher'));
-    await tester.runAsync(
-      () => Future<void>.delayed(const Duration(milliseconds: 350)),
-    );
-    await tester.sendKeyEvent(LogicalKeyboardKey.digit3);
-    await tester.pumpAndSettle();
-    expect(
-      find.text('3: Register as Student. Change account type'),
-      findsOneWidget,
-    );
-    await tester.pumpWidget(const SizedBox.shrink());
-  });
-
-  testWidgets(
-    'admin filters stay mounted, retain keypad focus and announce the new button state',
-    (tester) async {
-      final pending = Completer<http.Response>();
-      await http.runWithClient(
-        () async {
-          await open(tester, const AdminDashboard());
-          await focus(tester, 'admin-account-type-filter');
-          await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
-          await tester.pump();
-          expect(
-            FocusManager.instance.primaryFocus?.debugLabel,
-            'admin-account-type-filter',
-          );
-          expect(find.byType(TextField), findsOneWidget);
-          pending.complete(http.Response('[]', 200));
-          await tester.pumpAndSettle();
-          expect(
-            FocusManager.instance.primaryFocus?.debugLabel,
-            'admin-account-type-filter',
-          );
-          expect(
-            spoken.last,
-            contains('Account type filter: Students only, selected'),
-          );
-          await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
-          await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
-          await tester.pumpAndSettle();
-          expect(
-            FocusManager.instance.primaryFocus?.debugLabel,
-            'admin-assignment-filter',
-          );
-          expect(
-            spoken.last,
-            contains('Assignment filter: Enrolled, selected'),
-          );
-          await tester.sendKeyEvent(LogicalKeyboardKey.digit7);
-          await tester.pumpAndSettle();
-          await tester.sendKeyEvent(LogicalKeyboardKey.digit2);
-          await tester.pumpAndSettle();
-          expect(find.text('Classes'), findsOneWidget);
-          expect(find.text('Accounts'), findsNothing);
-          expect(find.text('Subjects'), findsNothing);
-          await tester.pumpWidget(const SizedBox.shrink());
-        },
-        () => MockClient((request) async {
-          if (request.url.queryParameters['role'] == 'student' &&
-              request.url.queryParameters['assignment_status'] == 'all') {
-            return pending.future;
-          }
-          return http.Response('[]', 200);
-        }),
-      );
-    },
-  );
-
-  testWidgets(
-    'teacher sessions are labelled keypad targets, digit search ranks the session number first, and 0 asks before logging out',
-    (tester) async {
-      Map<String, dynamic> session(
-        int id,
-        String title, {
-        bool active = true,
-      }) => {
-        'session_id': id,
-        'title': title,
-        'created_by': 7,
-        'is_active': active,
+  Map<String, dynamic> teacherHome({
+    bool canStart = true,
+    int workspaces = 1,
+  }) => {
+    'role': 'teacher',
+    'live_class': null,
+    'today': [
+      {
+        'entry_id': 5,
+        'occurrence_date': '2026-11-16',
         'class_id': 1,
-        'subject_id': 2,
         'class_name': 'Class 6',
-        'subject_name': 'Science',
-        if (active) 'participant_count': 12,
-      };
+        'subject_id': 2,
+        'subject_name': 'English',
+        'start_clock': '09:00',
+        'end_clock': '09:40',
+        'opens_at': '2026-11-16T03:20:00Z',
+        'status': canStart ? 'open' : 'upcoming',
+        'can_start': canStart,
+      },
+    ],
+    'workspaces': [
+      for (var i = 1; i <= workspaces; i++)
+        {
+          'assignment_id': i,
+          'class_id': i,
+          'class_name': 'Class $i',
+          'subject_id': 2,
+          'subject_name': 'English',
+        },
+    ],
+  };
+
+  testWidgets(
+    'teacher home starts the timetabled class with one key, has no title, list or refresh, and 0 asks before logging out',
+    (tester) async {
+      final requests = <http.Request>[];
       await http.runWithClient(
         () async {
           await open(tester, const TeacherDashboard());
-          expect(find.text('3 sessions, 2 live now.'), findsOneWidget);
-          List<KeypadFocusTarget> sessionTargets() => tester
-              .widget<KeypadInstructionWrapper>(
-                find.byType(KeypadInstructionWrapper),
-              )
-              .focusTargets
-              .where(
-                (target) =>
-                    target.node.debugLabel?.startsWith('teacher-open-') ??
-                    false,
-              )
-              .toList();
-          final live = sessionTargets().firstWhere(
-            (target) => target.node.debugLabel == 'teacher-open-142',
-          );
-          expect(live.enabled, isTrue);
-          expect(
-            live.label,
-            startsWith('Plants, Class 6, Science, live now, 12 joined'),
-          );
-          expect(live.label, endsWith('Press OK to open'));
-          final ended = sessionTargets().firstWhere(
-            (target) => target.node.debugLabel == 'teacher-open-7',
-          );
-          expect(ended.label, contains('ended'));
-          expect(ended.label, endsWith('Press OK to reactivate'));
+          expect(find.text('1: Start English, Class 6'), findsOneWidget);
+          expect(find.byType(TextField), findsNothing);
+          expect(find.textContaining('Refresh'), findsNothing);
+          expect(spoken.join(' '), contains('English, Class 6 is ready'));
+
+          await tester.sendKeyEvent(LogicalKeyboardKey.digit1);
+          await tester.pumpAndSettle();
+          final start = requests.where((r) => r.url.path == '/classes/start');
+          expect(start, hasLength(1));
+          expect(jsonDecode(start.single.body), {
+            'entry_id': 5,
+            'occurrence_date': '2026-11-16',
+          });
 
           await tester.sendKeyEvent(LogicalKeyboardKey.digit0);
           await tester.pumpAndSettle();
@@ -289,127 +160,129 @@ void main() {
           await tester.sendKeyEvent(LogicalKeyboardKey.digit1);
           await tester.pumpAndSettle();
           expect(find.byType(TeacherDashboard), findsOneWidget);
-
-          await tester.enterText(find.byType(TextField), '42');
-          await tester.pump();
-          expect(sessionTargets().map((target) => target.node.debugLabel), [
-            'teacher-open-42',
-            'teacher-open-142',
-            'teacher-open-7',
-          ]);
           await tester.pumpWidget(const SizedBox.shrink());
         },
-        () => MockClient(
-          (request) async => http.Response(
-            jsonEncode(
-              request.url.path == '/me/access-context'
-                  ? {
-                      'teacher_workspaces': [
-                        {
-                          'assignment_id': 1,
-                          'class_id': 1,
-                          'subject_id': 2,
-                          'class_name': 'Class 6',
-                          'subject_name': 'Science',
-                        },
-                      ],
-                    }
-                  : [
-                      session(7, 'Review of 42 seeds', active: false),
-                      session(142, 'Plants'),
-                      session(42, 'Science'),
-                    ],
-            ),
-            200,
-          ),
-        ),
+        () => MockClient((request) async {
+          requests.add(request);
+          if (request.url.path == '/classes/start') {
+            return http.Response(
+              jsonEncode({
+                'created': true,
+                'live_class': {
+                  'session_id': 9,
+                  'subject_name': 'English',
+                  'class_name': 'Class 6',
+                },
+              }),
+              200,
+            );
+          }
+          return http.Response(jsonEncode(teacherHome()), 200);
+        }),
       );
     },
   );
 
-  testWidgets('workspace selection is numbered, paged, and has no dropdown', (
+  testWidgets(
+    'teacher home reads every key and what the administrator did, once',
+    (tester) async {
+      final seen = <Object?>[];
+      await http.runWithClient(
+        () async {
+          await open(tester, const TeacherDashboard());
+          final arrival = spoken.join(' ');
+          expect(arrival, contains('English, Class 6 is ready'));
+          expect(
+            arrival,
+            contains('Quiz Plants: published for you by your administrator.'),
+          );
+          for (final key in ['1', '2', '3', '4', '5', '0']) {
+            expect(arrival, contains('Press $key for'));
+          }
+          expect(seen, [
+            {
+              'notice_ids': [4],
+            },
+          ]);
+          await tester.pumpWidget(const SizedBox.shrink());
+        },
+        () => MockClient((request) async {
+          if (request.url.path == '/me/notices/seen') {
+            seen.add(jsonDecode(request.body));
+            return http.Response('{"ok":true,"seen":1}', 200);
+          }
+          return http.Response(
+            jsonEncode({
+              ...teacherHome(),
+              'admin_notices': seen.isEmpty
+                  ? [
+                      {
+                        'notice_id': 4,
+                        'kind': 'quiz',
+                        'title': 'Plants',
+                        'action': 'published',
+                      },
+                    ]
+                  : [],
+            }),
+            200,
+          );
+        }),
+      );
+    },
+  );
+
+  testWidgets('a class that cannot start yet says when it can, without starting', (
+    tester,
+  ) async {
+    final requests = <String>[];
+    await http.runWithClient(
+      () async {
+        await open(tester, const TeacherDashboard());
+        expect(find.text('1: Next: English, Class 6 at 09:00'), findsOneWidget);
+        await tester.sendKeyEvent(LogicalKeyboardKey.digit1);
+        await tester.pumpAndSettle();
+        expect(spoken.last, contains('You can start it from'));
+        expect(requests, isNot(contains('/classes/start')));
+        await tester.pumpWidget(const SizedBox.shrink());
+      },
+      () => MockClient((request) async {
+        requests.add(request.url.path);
+        return http.Response(jsonEncode(teacherHome(canStart: false)), 200);
+      }),
+    );
+  });
+
+  testWidgets('changing class and subject is a numbered choice under More', (
     tester,
   ) async {
     await http.runWithClient(
       () async {
         await open(tester, const TeacherDashboard());
+        await tester.sendKeyEvent(LogicalKeyboardKey.digit5);
+        await tester.pumpAndSettle();
+        expect(
+          find.text('2: Change class and subject for lessons'),
+          findsOneWidget,
+        );
+        await tester.sendKeyEvent(LogicalKeyboardKey.digit2);
+        await tester.pumpAndSettle();
         expect(find.byType(DropdownButtonFormField<int>), findsNothing);
-        await tester.sendKeyEvent(LogicalKeyboardKey.digit7);
-        await tester.pumpAndSettle();
-        expect(find.textContaining('1: Class 1, English'), findsOneWidget);
-        expect(find.textContaining('Class 6, English'), findsNothing);
-        for (final instruction in [
-          'Press 6 for list options',
-          'Press 7 for the previous page',
-          'Press 8 to search all items',
-          'Press 9 for the next page',
-          'Press 0 to go back',
-          'D-pad up and down',
-        ]) {
-          expect(spoken.join(' '), contains(instruction));
-        }
-        await tester.sendKeyEvent(LogicalKeyboardKey.digit9);
-        await tester.pumpAndSettle();
+        expect(find.textContaining('1: English, Class 1'), findsOneWidget);
         await tester.sendKeyEvent(LogicalKeyboardKey.digit1);
         await tester.pumpAndSettle();
         expect(
-          find.text('7: Class 6, English. Change workspace'),
-          findsOneWidget,
+          spoken.join(' '),
+          contains('Lessons, quizzes and playlists are for English, Class 1'),
         );
-        expect(spoken.join(' '), contains('Class 6, English selected'));
         await tester.pumpWidget(const SizedBox.shrink());
       },
       () => MockClient(
-        (request) async => http.Response(
-          jsonEncode(
-            request.url.path == '/me/access-context'
-                ? {
-                    'teacher_workspaces': [
-                      for (var i = 1; i <= 6; i++)
-                        {
-                          'assignment_id': i,
-                          'class_id': i,
-                          'subject_id': 2,
-                          'class_name': 'Class $i',
-                          'subject_name': 'English',
-                        },
-                    ],
-                  }
-                : [],
-          ),
-          200,
-        ),
+        (request) async =>
+            http.Response(jsonEncode(teacherHome(workspaces: 6)), 200),
       ),
     );
   });
-
-  for (final section in [
-    (LogicalKeyboardKey.digit2, 'classes', 'Create Class'),
-    (LogicalKeyboardKey.digit3, 'subjects', 'Create Subject'),
-  ]) {
-    testWidgets(
-      'administration ${section.$2} help names only that section controls',
-      (tester) async {
-        await http.runWithClient(() async {
-          await open(tester, const AdminDashboard());
-          await tester.sendKeyEvent(LogicalKeyboardKey.digit7);
-          await tester.pumpAndSettle();
-          await tester.sendKeyEvent(section.$1);
-          await tester.pumpAndSettle();
-          await tester.pump(const Duration(milliseconds: 600));
-          expect(spoken.last, contains('${section.$2} section'));
-          expect(spoken.last, contains(section.$3));
-          expect(spoken.last, isNot(contains('Account Type Filter')));
-          spoken.clear();
-          await tester.sendKeyEvent(LogicalKeyboardKey.numpadMultiply);
-          await tester.pumpAndSettle();
-          expect(spoken.last, contains('${section.$2} section'));
-          expect(spoken.last, contains(section.$3));
-          await tester.pumpWidget(const SizedBox.shrink());
-        }, () => MockClient((_) async => http.Response('[]', 200)));
-      },
-    );
-  }
 
   for (final hasClasses in [false, true]) {
     testWidgets(
