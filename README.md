@@ -175,7 +175,7 @@ interaction-reduction plan.
 - The scheduled end does not end the class. It ends when the teacher ends it
   for everyone, or automatically at the **cutoff**: the earlier of scheduled
   end + 30 minutes and 5 minutes before the teacher's or the class's next
-  lesson. Spoken warnings come 5 minutes and 1 minute before. **8 → 1** (More,
+  lesson. Spoken warnings come 5 minutes and 1 minute before. **7 → 1** (More,
   Add 15 minutes) adds
   15 minutes, never past the next-lesson limit; the administrator can also
   add time or end a class in **Class records**.
@@ -202,36 +202,47 @@ interaction-reduction plan.
   signing out prevents this.
 - Teachers: **3** mute all students, **4** class list (who is here, who
   joined and left, who has not joined; ring those not joined; raised hands;
-  remove someone; progress of the open quiz or journey), **6** quiz, **7**
-  journey, **8** More (add time, chat, class status), **9** end the class for
-  everyone. A prepared lesson is selected on entry, so **5** plays it, and the
-  next part is selected when one finishes.
+  remove someone), **5** Start (**1** quiz, **2** journey, **3** recording),
+  **6** status of what is running (only while something runs), **7** More
+  (add time, chat, class status), **8** end the class for everyone. A
+  prepared lesson is selected on entry, so **5 → 3** plays it, and the next
+  part is selected when one finishes.
+- Leaving needs one confirmation. The app tells the server, waits at most 3
+  seconds, then returns Home whatever happens (closing the class connection
+  also tells the server).
 - Who came: one minute after the class starts the teacher hears "4 of 5
   students here." After that, joins and leaves are spoken by name and grouped
   when they happen together: "Akshat and Meena joined. Ravi left. 4 of 5
   here." ("of 5" is the number of enrolled students, sent by the server with
   the class state.) Students are not told when others join or leave.
 
-### Quiz or journey in class
+### Quiz, journey or recording in class
 
-- The teacher presses **6** for a quiz or **7** for a journey and picks one of
-  the **published** ones for the class's subject (quizzes only while open).
-  One is open at a time; opening a quiz replaces an open journey and the
-  other way round.
+- The teacher presses **5: Start**, then **1** quiz, **2** journey or **3**
+  recording. Quizzes and journeys are the **published** ones for the class's
+  subject (quizzes only while open).
+- One thing runs at a time: starting a quiz or journey pauses the recording;
+  starting a recording closes the open quiz or journey.
 - Every student in class hears "Your teacher started a quiz: Plants. Press 4
   to begin." and gets **4: Start quiz: Plants** (or **4: Start journey: …**)
-  on the class screen; students who join later see it too. That key goes straight into the first question or step, with no list
-  or confirmation; leaving returns to the class and says "Back in class." The
-  class sound keeps playing meanwhile.
+  on the class screen; students who join later see it too. That key goes
+  straight into the first question or step, with no list or confirmation;
+  leaving returns to the class and says "Back in class." The class sound
+  keeps playing meanwhile.
 - If it cannot start (closed, no attempts left), the server's reason is
   spoken. It stays in the student's normal Quizzes or Journeys list after the
   class.
-- Pressing the same key again while it is open says "8 of 30 finished." and
-  offers: **1** who in class has not finished, **2** who in the whole class
-  has not finished (each name says not started or started, and in the whole
-  list whether they are in class), **3** remind those in class who have not
-  finished (only their phones announce it again), **4** start a different
-  one, **5** stop offering it.
+- **Recording:** the player opens and reads its keys first (5 play or pause,
+  4/6 back and forward 10 seconds, 7/9 speed, 1 choose, 2 upload, 3 status,
+  0 back); the selected recording starts for the class when that speech
+  ends. Pressing any key in the player first cancels the automatic start.
+- **6: Status** appears only while something runs. For a quiz or journey it
+  says "5 students in class. 3 have attempted it, 1 finished." and offers:
+  **1** who in class has not finished, **2** who in the whole class has not
+  finished (each name says not started or started, and in the whole list
+  whether they are in class), **3** remind those in class who have not
+  finished, **4** start a different one, **5** stop offering it. For a
+  recording it opens the player with all its controls.
 - The class list (**4**) also says "Plants: 12 started, 8 finished." Journey
   progress counts once the student's phone has sent it.
 
@@ -953,10 +964,16 @@ version, English TTS engine, audio, and available memory.
   the field rather than triggering screen shortcuts.
 - Opening any screen speaks where you are, its current state in one
   sentence, and then every key that screen offers ("Press 1 for ..., press 2
-  for ..."), so nothing has to be discovered. Coming back to a screen from
-  one opened on top of it (a list, chat, a dialog) says only the screen, its
-  state and "Press star for all keys." The class screen reads all its keys
-  when you join.
+  for ..."), so nothing has to be discovered. This holds on every screen,
+  including the journey player and the class list, and also with
+  "Essential" speech or TalkBack. Sign-in opens in the phone field and still
+  reads every key, then "You are in Phone number" and how editing works.
+  Coming back to a screen from one opened on top of it (a list, chat,
+  settings, a dialog) reads the screen, its state, keys 1 to 3 and 0, then
+  "Press star for all keys". A screen that is still loading says only that
+  it is loading and reads its counts and keys once loaded. Pressing a key
+  before the opening speech starts drops that speech. The class screen reads
+  all its keys when you join.
 - Keys are numbered from 1 with no unused gaps, except where a key keeps the
   same meaning everywhere. Welcome: **1** sign in, **2** settings. Single-
   action forms (change password, a question, quiz settings) save with **1**.
@@ -966,7 +983,8 @@ version, English TTS engine, audio, and available memory.
   audio with **3**.
 - Outside editing, every screen uses the same keys: **0** goes back or
   cancels, **star** repeats screen help, **hash** stops app speech (it never
-  navigates), **8** repeats the last message (in class it opens More). Back does not log out. Logout, leaving a live session and ending
+  navigates), **8** repeats the last message (on the teacher's class
+  screen 8 ends the class; star still says the last message). Back does not log out. Logout, leaving a live session and ending
   a session require confirmation; cancelling a dialog returns focus to the
   control that opened it.
 - Audio players share one layout around the raised 5 key: **4** back 10
@@ -974,33 +992,27 @@ version, English TTS engine, audio, and available memory.
   **9** faster. Turning app speech off is only offered in Settings.
 - A live session is one short screen showing only what is needed every
   minute. Keys mean the same on both screens where they can: **1**
-  microphone, **2** hand, **8** More (the less used actions); ending is
-  highest: **9** ends the class for everyone (teacher)
-  and **0** leaves. In class, **8** opens More instead of repeating the last
-  message; star still says it. Joining says the state ("You are in class
-  and muted. Press 1 to speak, 2 to raise your hand.") and then every key;
-  the status
-  only mentions what is not ordinary (a raised hand, playing audio, an open
-  quiz or journey, the end time, a connection problem). Star still reads
-  every key.
+  microphone, **2** hand, **7** More (the less used actions), **0** leave;
+  ending is highest: the teacher's **8** ends the class for everyone. Joining
+  says the state ("You are in class and muted. Press 1 to speak, 2 to raise
+  your hand.") and then every key; the status only mentions what is not
+  ordinary (a raised hand, playing audio, an open quiz or journey, the end
+  time, a connection problem). Star still reads every key.
   Students: **1** mute or unmute, **2** raise or lower hand, **3** what is
   playing (read only), **4** start the quiz or journey the teacher opened
-  (shown only while one is open), **8** More (**1** chat, **2** who is in
+  (shown only while one is open), **7** More (**1** chat, **2** who is in
   class, read only, **3** class status and held-back updates), **0** leave
-  (asks to confirm: 0 stays, 1 leaves).
+  (one confirmation: 0 stays, 1 leaves).
   Teachers (they have no hand to raise): **1** mute or unmute, **2** raised
   hands queue, **3** mute all students (the teacher's microphone is not
   touched; students may unmute themselves afterwards), **4** class list
   (counts first; then who is here, who joined and left, who has not joined;
-  ring everyone not yet joined; raised hands; remove someone), **5** the
-  lesson recording player (it starts the selected recording for the class;
-  inside, 4/6 seek 10 seconds, 5 play or pause, 7/9 speed, 1 choose, 2
-  upload, 3 status), **6** quiz and **7** journey (start one; while open, who
-  is left, remind, change or stop), **8** More (**1** add 15 minutes, **2**
-  chat, **3** class status and summary), **9** end class for everyone (asks
-  to confirm) and **0** leave (the class keeps running). Only the teacher's
-  player controls the class recording, for everyone at once. There is no
-  single-student mute.
+  ring everyone not yet joined; raised hands; remove someone), **5** Start
+  (quiz, journey or recording), **6** status of what is running (only while
+  something runs), **7** More (**1** add 15 minutes, **2** chat, **3** class
+  status and summary), **8** end class for everyone (asks to confirm) and
+  **0** leave (the class keeps running). Only the teacher's player controls
+  the class recording, for everyone at once. There is no single-student mute.
 - While answering or reviewing a quiz, **7** and **9** make quiz speech
   slower or faster (also the D-pad **Quiz speech speed** control: left or
   right). If options were being read, they are read again at the new speed.
@@ -1443,9 +1455,10 @@ and performance/distribution limits are not yet known; these gates remain blocke
 ### Teacher classroom controls
 
 In a live session teachers press **2** for the raised hands queue, **3** to
-mute all students, **4** for the class list, **6** for a quiz, **7** for a
-journey, **8** for **More** (**1** add 15 minutes, **2** chat, **3** class
-status and summary) and **9** to end the class (asks to confirm). The class
+mute all students, **4** for the class list, **5** to start a quiz, journey
+or recording, **6** for the status of what is running, **7** for **More**
+(**1** add 15 minutes, **2** chat, **3** class status and summary) and **8**
+to end the class (asks to confirm). The class
 keeps running
 underneath. The
 class list offers who is here, who joined and left, who has not joined,

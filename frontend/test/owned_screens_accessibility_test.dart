@@ -147,6 +147,22 @@ void main() {
     );
   });
 
+  testWidgets(
+    'sign-in starts in the number field but still reads every key and how editing works',
+    (tester) async {
+      await open(tester, const LoginScreen());
+      await tester.pump(const Duration(milliseconds: 600));
+      final opening = spoken.join(' ');
+      expect(opening, contains('Press 1 for Sign in'));
+      expect(opening, contains('Press 3 for'));
+      expect(opening, contains('Press 0'));
+      expect(opening, contains('You are in'));
+      expect(opening, contains('Press OK to finish'));
+      expect(FocusManager.instance.primaryFocus?.debugLabel, 'login-phone');
+      await tester.pumpWidget(const SizedBox.shrink());
+    },
+  );
+
   testWidgets('login error is spoken and focus moves to the number field', (
     tester,
   ) async {

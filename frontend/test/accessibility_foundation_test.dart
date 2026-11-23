@@ -8,6 +8,7 @@ import 'package:frontend/services/message_center.dart';
 import 'package:frontend/services/tts_service.dart';
 import 'package:frontend/services/undo_service.dart';
 import 'package:frontend/utils/spoken_format.dart';
+import 'package:frontend/widgets/journey_menu.dart';
 import 'package:frontend/widgets/key_instruction_wrapper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -146,7 +147,7 @@ void main() {
     );
 
     testWidgets(
-      'opening a screen reads its state and every key; coming back is short',
+      'opening reads every key; coming back reads the main ones and points to star',
       (tester) async {
         await tester.pumpWidget(
           MaterialApp(
@@ -156,7 +157,7 @@ void main() {
                 interactionPolicy: KeypadInteractionPolicy.numbered,
                 screenName: 'Home',
                 brief: 'English is live.',
-                labels: const {1: 'Open details', 2: 'Do two'},
+                labels: const {1: 'Open details', 2: 'Do two', 5: 'Do five'},
                 actions: {
                   1: () => Navigator.of(context).push<void>(
                     MaterialPageRoute(
@@ -164,6 +165,7 @@ void main() {
                     ),
                   ),
                   2: () {},
+                  5: () {},
                 },
                 child: const Scaffold(body: Text('Home')),
               ),
@@ -176,13 +178,50 @@ void main() {
         expect(opening, contains('Home. English is live.'));
         expect(opening, contains('Press 1 for Open details.'));
         expect(opening, contains('Press 2 for Do two.'));
+        expect(opening, contains('Press 5 for Do five.'));
         await tester.sendKeyEvent(LogicalKeyboardKey.digit1);
         await tester.pumpAndSettle();
         spoken.clear();
         tester.state<NavigatorState>(find.byType(Navigator)).pop();
         await tester.pump(const Duration(milliseconds: 500));
         await tester.pumpAndSettle();
-        expect(spoken.last, 'Home. English is live. Press star for all keys.');
+        expect(spoken.last, contains('Home. English is live.'));
+        expect(spoken.last, contains('Press 1 for Open details.'));
+        expect(spoken.last, contains('Press 2 for Do two.'));
+        expect(spoken.last, isNot(contains('Do five')));
+        expect(spoken.last, endsWith('Press star for all keys.'));
+      },
+    );
+
+    testWidgets(
+      'a menu that is still loading says so, and reads its choices only once loaded',
+      (tester) async {
+        var busy = true;
+        late StateSetter update;
+        await tester.pumpWidget(
+          MaterialApp(
+            navigatorObservers: [routeObserver],
+            home: StatefulBuilder(
+              builder: (context, setState) {
+                update = setState;
+                return JourneyMenu(
+                  title: 'Journeys',
+                  busy: busy,
+                  status: busy ? '0 new.' : '2 new.',
+                  choices: [JourneyChoice('Leaves', () {})],
+                );
+              },
+            ),
+          ),
+        );
+        await tester.pump(const Duration(milliseconds: 600));
+        expect(spoken.join(' '), contains('Journeys. Working, please wait.'));
+        expect(spoken.join(' '), isNot(contains('0 new')));
+        update(() => busy = false);
+        await tester.pump(const Duration(milliseconds: 600));
+        expect(spoken.last, contains('2 new.'));
+        expect(spoken.last, contains('Press 1 for Leaves'));
+        expect(spoken.join(' '), isNot(contains('0 new')));
       },
     );
 

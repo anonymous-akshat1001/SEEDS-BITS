@@ -14780,9 +14780,9 @@ class AppLocalizationsTe extends AppLocalizations {
       minutes,
       locale: localeName,
       other:
-          'The class ends automatically in $minutes minutes. To add 15 minutes, press 8 then 1.',
+          'The class ends automatically in $minutes minutes. To add 15 minutes, press 7 then 1.',
       one:
-          'The class ends automatically in 1 minute. To add 15 minutes, press 8 then 1.',
+          'The class ends automatically in 1 minute. To add 15 minutes, press 7 then 1.',
     );
     return '$_temp0';
   }
@@ -14800,11 +14800,11 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get sessionLessonReady =>
-      'Today\'s lesson is ready. Press 5 to play it for the class.';
+      'Today\'s lesson is ready. Press 5, then 3, to play it for the class.';
 
   @override
   String get sessionLessonNextReady =>
-      'The next part of today\'s lesson is ready. Press 5 to play it.';
+      'The next part of today\'s lesson is ready. Press 6 to play it.';
 
   @override
   String get sessionJoinedStudentBrief =>
@@ -14889,7 +14889,7 @@ class AppLocalizationsTe extends AppLocalizations {
   String get adminSetupNoMatchingLessons => 'No lessons match.';
 
   @override
-  String get sessionMoreButton => '8: More';
+  String get sessionMoreButton => '7: More';
 
   @override
   String get sessionMoreLabel => 'More options';
@@ -14928,7 +14928,7 @@ class AppLocalizationsTe extends AppLocalizations {
   String get sessionKeyLeave => 'Leave class';
 
   @override
-  String get sessionEndClassButton => '9: End class for everyone';
+  String get sessionEndClassButton => '8: End class for everyone';
 
   @override
   String get sessionEndClassLabel => 'End class for everyone. Asks to confirm';
@@ -14956,7 +14956,7 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String sessionActivityStartedTeacher(String title) {
-    return '$title is open for the class. Press the same key again to hear who is left.';
+    return '$title is open for the class. Press 6 for its status.';
   }
 
   @override
@@ -15614,4 +15614,52 @@ class AppLocalizationsTe extends AppLocalizations {
   String sessionStartSummary(int here, int total) {
     return '$here of $total students here.';
   }
+
+  @override
+  String uiFocusedField(String field) {
+    return 'You are in $field.';
+  }
+
+  @override
+  String get sessionStartButton => '5: Start';
+
+  @override
+  String get sessionStartLabel =>
+      'Start a quiz, journey or recording for the class';
+
+  @override
+  String get sessionStartTitle => 'Start for the class';
+
+  @override
+  String get sessionStartQuiz => 'Quiz';
+
+  @override
+  String get sessionStartJourney => 'Journey';
+
+  @override
+  String get sessionStartRecording => 'Recording';
+
+  @override
+  String sessionStatusKeyButton(String title) {
+    return '6: Status of $title';
+  }
+
+  @override
+  String sessionStatusKeyLabel(String title) {
+    return 'Status of $title';
+  }
+
+  @override
+  String get sessionKeyStart => 'Start a quiz, journey or recording';
+
+  @override
+  String get sessionKeyStatus => 'Status of what is running';
+
+  @override
+  String sessionActivityCounts(int present, int started, int finished) {
+    return '$present students in class. $started have attempted it, $finished finished.';
+  }
+
+  @override
+  String get sessionNowPlayingTitle => 'the recording';
 }

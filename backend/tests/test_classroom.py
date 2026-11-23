@@ -420,6 +420,7 @@ async def test_teacher_starts_a_published_quiz_for_the_class_and_sees_progress(s
     assert [(s["name"], s["status"], s["in_class"]) for s in left["whole_class"]] == [("Ravi", "in_progress", True)]
     assert [s["name"] for s in left["in_class"]] == ["Ravi"]
     assert (left["finished"], left["enrolled"]) == (1, 2)
+    assert (left["present"], left["started"]) == (1, 2)
     reminded = await classroom.remind_activity(session.session_id, teacher=data["teacher"], db=db)
     assert reminded["reminded"] == 1
     assert queue.get_nowait()["type"] == "activity_reminder"

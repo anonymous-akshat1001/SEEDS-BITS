@@ -3822,7 +3822,20 @@
     "sessionNamesAnd",
     "sessionHereOf",
     "sessionHereCount",
-    "sessionStartSummary"
+    "sessionStartSummary",
+    "uiFocusedField",
+    "sessionStartButton",
+    "sessionStartLabel",
+    "sessionStartTitle",
+    "sessionStartQuiz",
+    "sessionStartJourney",
+    "sessionStartRecording",
+    "sessionStatusKeyButton",
+    "sessionStatusKeyLabel",
+    "sessionKeyStart",
+    "sessionKeyStatus",
+    "sessionActivityCounts",
+    "sessionNowPlayingTitle"
   ],
 
   "hi": [
@@ -7648,7 +7661,20 @@
     "sessionNamesAnd",
     "sessionHereOf",
     "sessionHereCount",
-    "sessionStartSummary"
+    "sessionStartSummary",
+    "uiFocusedField",
+    "sessionStartButton",
+    "sessionStartLabel",
+    "sessionStartTitle",
+    "sessionStartQuiz",
+    "sessionStartJourney",
+    "sessionStartRecording",
+    "sessionStatusKeyButton",
+    "sessionStatusKeyLabel",
+    "sessionKeyStart",
+    "sessionKeyStatus",
+    "sessionActivityCounts",
+    "sessionNowPlayingTitle"
   ],
 
   "kn": [
@@ -11474,7 +11500,20 @@
     "sessionNamesAnd",
     "sessionHereOf",
     "sessionHereCount",
-    "sessionStartSummary"
+    "sessionStartSummary",
+    "uiFocusedField",
+    "sessionStartButton",
+    "sessionStartLabel",
+    "sessionStartTitle",
+    "sessionStartQuiz",
+    "sessionStartJourney",
+    "sessionStartRecording",
+    "sessionStatusKeyButton",
+    "sessionStatusKeyLabel",
+    "sessionKeyStart",
+    "sessionKeyStatus",
+    "sessionActivityCounts",
+    "sessionNowPlayingTitle"
   ],
 
   "te": [
@@ -15300,6 +15339,19 @@
     "sessionNamesAnd",
     "sessionHereOf",
     "sessionHereCount",
-    "sessionStartSummary"
+    "sessionStartSummary",
+    "uiFocusedField",
+    "sessionStartButton",
+    "sessionStartLabel",
+    "sessionStartTitle",
+    "sessionStartQuiz",
+    "sessionStartJourney",
+    "sessionStartRecording",
+    "sessionStatusKeyButton",
+    "sessionStatusKeyLabel",
+    "sessionKeyStart",
+    "sessionKeyStatus",
+    "sessionActivityCounts",
+    "sessionNowPlayingTitle"
   ]
 }

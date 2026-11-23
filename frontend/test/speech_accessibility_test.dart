@@ -358,7 +358,7 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
-  testWidgets('Essential narration keeps full help available on request', (
+  testWidgets('Essential narration still reads every key when a screen opens', (
     tester,
   ) async {
     await TtsService.configure(verbosity: SpeechVerbosity.essential);
@@ -373,8 +373,7 @@ void main() {
       ),
     );
     await tester.pump(const Duration(milliseconds: 500));
-    expect(spoken.join(' '), contains('Press star for all shortcuts'));
-    expect(spoken.join(' '), isNot(contains('Example action')));
+    expect(spoken.join(' '), contains('Press 1 for Example action'));
     await TtsService.speak(
       'An incidental update.',
       priority: SpeechPriority.incidental,

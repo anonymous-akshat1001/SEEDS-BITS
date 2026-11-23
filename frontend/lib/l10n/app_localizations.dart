@@ -22042,7 +22042,7 @@ abstract class AppLocalizations {
   /// Warning for teachers.
   ///
   /// In en, this message translates to:
-  /// **'{minutes, plural, =1{The class ends automatically in 1 minute. To add 15 minutes, press 8 then 1.} other{The class ends automatically in {minutes} minutes. To add 15 minutes, press 8 then 1.}}'**
+  /// **'{minutes, plural, =1{The class ends automatically in 1 minute. To add 15 minutes, press 7 then 1.} other{The class ends automatically in {minutes} minutes. To add 15 minutes, press 7 then 1.}}'**
   String sessionEndingSoonTeacherExtend(int minutes);
 
   /// Warning for students.
@@ -22054,13 +22054,13 @@ abstract class AppLocalizations {
   /// Spoken when a prepared lesson is selected.
   ///
   /// In en, this message translates to:
-  /// **'Today\'s lesson is ready. Press 5 to play it for the class.'**
+  /// **'Today\'s lesson is ready. Press 5, then 3, to play it for the class.'**
   String get sessionLessonReady;
 
   /// Spoken when the next lesson part is selected.
   ///
   /// In en, this message translates to:
-  /// **'The next part of today\'s lesson is ready. Press 5 to play it.'**
+  /// **'The next part of today\'s lesson is ready. Press 6 to play it.'**
   String get sessionLessonNextReady;
 
   /// Short speech on joining a class as a student.
@@ -22180,7 +22180,7 @@ abstract class AppLocalizations {
   /// Live class: visible button that opens the less used actions
   ///
   /// In en, this message translates to:
-  /// **'8: More'**
+  /// **'7: More'**
   String get sessionMoreButton;
 
   /// Live class: spoken name of the More button
@@ -22258,7 +22258,7 @@ abstract class AppLocalizations {
   /// Teacher class screen key 6
   ///
   /// In en, this message translates to:
-  /// **'9: End class for everyone'**
+  /// **'8: End class for everyone'**
   String get sessionEndClassButton;
 
   /// Teacher class screen key 6, spoken
@@ -22288,7 +22288,7 @@ abstract class AppLocalizations {
   /// Teacher confirmation
   ///
   /// In en, this message translates to:
-  /// **'{title} is open for the class. Press the same key again to hear who is left.'**
+  /// **'{title} is open for the class. Press 6 for its status.'**
   String sessionActivityStartedTeacher(String title);
 
   /// Teacher confirmation
@@ -23274,6 +23274,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{here} of {total} students here.'**
   String sessionStartSummary(int here, int total);
+
+  /// Opening speech: the text field that has focus
+  ///
+  /// In en, this message translates to:
+  /// **'You are in {field}.'**
+  String uiFocusedField(String field);
+
+  /// Teacher class screen key 5
+  ///
+  /// In en, this message translates to:
+  /// **'5: Start'**
+  String get sessionStartButton;
+
+  /// Teacher key 5 spoken
+  ///
+  /// In en, this message translates to:
+  /// **'Start a quiz, journey or recording for the class'**
+  String get sessionStartLabel;
+
+  /// Teacher: choose what to start
+  ///
+  /// In en, this message translates to:
+  /// **'Start for the class'**
+  String get sessionStartTitle;
+
+  /// Start menu choice
+  ///
+  /// In en, this message translates to:
+  /// **'Quiz'**
+  String get sessionStartQuiz;
+
+  /// Start menu choice
+  ///
+  /// In en, this message translates to:
+  /// **'Journey'**
+  String get sessionStartJourney;
+
+  /// Start menu choice
+  ///
+  /// In en, this message translates to:
+  /// **'Recording'**
+  String get sessionStartRecording;
+
+  /// Teacher key 6 while something runs
+  ///
+  /// In en, this message translates to:
+  /// **'6: Status of {title}'**
+  String sessionStatusKeyButton(String title);
+
+  /// Teacher key 6 spoken
+  ///
+  /// In en, this message translates to:
+  /// **'Status of {title}'**
+  String sessionStatusKeyLabel(String title);
+
+  /// Key help, teacher key 5
+  ///
+  /// In en, this message translates to:
+  /// **'Start a quiz, journey or recording'**
+  String get sessionKeyStart;
+
+  /// Key help, teacher key 6
+  ///
+  /// In en, this message translates to:
+  /// **'Status of what is running'**
+  String get sessionKeyStatus;
+
+  /// Teacher activity status
+  ///
+  /// In en, this message translates to:
+  /// **'{present} students in class. {started} have attempted it, {finished} finished.'**
+  String sessionActivityCounts(int present, int started, int finished);
+
+  /// Status title when the recording has no title
+  ///
+  /// In en, this message translates to:
+  /// **'the recording'**
+  String get sessionNowPlayingTitle;
 }
 
 class _AppLocalizationsDelegate

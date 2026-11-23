@@ -27,10 +27,7 @@ class JourneyEditor extends ChangeNotifier {
   String? issue;
   String? status;
 
-  Future<bool> run(
-    String done,
-    Future<JourneyDraft> Function() action,
-  ) async {
+  Future<bool> run(String done, Future<JourneyDraft> Function() action) async {
     if (busy) {
       unawaited(TtsService.speak(CommonText.pleaseWait));
       return false;
@@ -115,7 +112,9 @@ class _TeacherJourneysScreenState extends State<TeacherJourneysScreen> {
     if (!mounted) return;
     setState(() => _busy = false);
     if (announce || _issue != null) {
-      unawaited(TtsService.speak([_issue, _status].whereType<String>().join(' ')));
+      unawaited(
+        TtsService.speak([_issue, _status].whereType<String>().join(' ')),
+      );
     }
   }
 
@@ -160,9 +159,8 @@ class _TeacherJourneysScreenState extends State<TeacherJourneysScreen> {
   Future<void> _open(JourneyDraft journey) async {
     await Navigator.of(context).push<void>(
       MaterialPageRoute(
-        builder: (_) => JourneyOverviewScreen(
-          editor: JourneyEditor(widget.api, journey),
-        ),
+        builder: (_) =>
+            JourneyOverviewScreen(editor: JourneyEditor(widget.api, journey)),
       ),
     );
     if (mounted) await _load();
@@ -281,10 +279,10 @@ class JourneyOverviewScreen extends StatelessWidget {
       final (:step, :back) = await _compose(context, kind, position);
       if (back) continue;
       if (step == null || !context.mounted) return;
-      await editor.saveSteps(
-        [...editor.journey.steps, step],
-        Speech.t.journeySavedAsStep('${position + 1}', step.spokenName),
-      );
+      await editor.saveSteps([
+        ...editor.journey.steps,
+        step,
+      ], Speech.t.journeySavedAsStep('${position + 1}', step.spokenName));
       return;
     }
   }
@@ -297,8 +295,10 @@ class JourneyOverviewScreen extends StatelessWidget {
     int position,
   ) async {
     final journey = editor.journey;
-    ({JourneyStep? step, bool back}) outcome(JourneyStep? step) =>
-        (step: step, back: step == null && !JourneyStepComposer.takeExplained());
+    ({JourneyStep? step, bool back}) outcome(JourneyStep? step) => (
+      step: step,
+      back: step == null && !JourneyStepComposer.takeExplained(),
+    );
     JourneyStepComposer.takeExplained();
     switch (kind) {
       case 0:
@@ -601,8 +601,13 @@ class JourneyMoreOptionsScreen extends StatelessWidget {
         title: archive
             ? Speech.t.journeyArchiveTitle
             : Speech.t.journeyRestoreTitle,
-        message: JourneyAnnouncer.archiveMessage(journey.title, archive: archive),
-        confirmLabel: archive ? Speech.t.journeyArchive : Speech.t.journeyRestore,
+        message: JourneyAnnouncer.archiveMessage(
+          journey.title,
+          archive: archive,
+        ),
+        confirmLabel: archive
+            ? Speech.t.journeyArchive
+            : Speech.t.journeyRestore,
       );
       if (!confirmed) return;
       await editor.run(
@@ -695,7 +700,9 @@ class JourneyGradingScreen extends StatelessWidget {
   Future<void> _retries(int delta) async {
     final next = editor.journey.maxRetries + delta;
     if (next < 0 || next > 5) {
-      MessageCenter.show(next < 0 ? JourneyAnnouncer.noRetriesLeft : JourneyAnnouncer.maxRetries);
+      MessageCenter.show(
+        next < 0 ? JourneyAnnouncer.noRetriesLeft : JourneyAnnouncer.maxRetries,
+      );
       return;
     }
     await editor.run(
@@ -761,13 +768,19 @@ class _JourneyPublishScreenState extends State<JourneyPublishScreen> {
 
   Future<void> _load() async {
     try {
-      _preview = await widget.editor.api.preview(widget.editor.journey.journeyId);
+      _preview = await widget.editor.api.preview(
+        widget.editor.journey.journeyId,
+      );
     } on JourneyApiException catch (error) {
       _issue = error.message;
     }
     if (!mounted) return;
     setState(() => _loading = false);
-    unawaited(TtsService.speak(_summary()));
+    unawaited(
+      TtsService.speak(
+        '${_summary()} ${JourneyMenu.spokenKeys(_choices(), Speech.t.uiBack)}',
+      ),
+    );
   }
 
   String _summary() {
@@ -823,7 +836,6 @@ class _JourneyPublishScreenState extends State<JourneyPublishScreen> {
     listenable: widget.editor,
     builder: (context, _) {
       final t = Speech.t;
-      final ready = _preview != null && _preview!.issues.isEmpty;
       return JourneyMenu(
         title: t.journeyReviewBeforePublishing,
         introduction: _summary(),
@@ -831,30 +843,36 @@ class _JourneyPublishScreenState extends State<JourneyPublishScreen> {
         autoPlay: false,
         issue: widget.editor.issue ?? _issue,
         busy: _loading || widget.editor.busy,
-        choices: [
-          JourneyChoice(
-            t.journeyPublishNow,
-            () => unawaited(_publish()),
-            enabled: ready,
-            unavailableReason: t.journeyFixProblemsFirst,
-          ),
-          JourneyChoice(
-            t.journeyPreviewFirst,
-            () => unawaited(
-              Navigator.of(context).push<void>(
-                MaterialPageRoute(
-                  builder: (_) => JourneyPlayerScreen(
-                    snapshot: _preview!.snapshot,
-                    preview: true,
-                    api: widget.editor.api,
-                  ),
-                ),
-              ),
-            ),
-            enabled: _preview != null,
-          ),
-        ],
+        choices: _choices(),
       );
     },
   );
+
+  List<JourneyChoice> _choices() {
+    final t = Speech.t;
+    final ready = _preview != null && _preview!.issues.isEmpty;
+    return [
+      JourneyChoice(
+        t.journeyPublishNow,
+        () => unawaited(_publish()),
+        enabled: ready,
+        unavailableReason: t.journeyFixProblemsFirst,
+      ),
+      JourneyChoice(
+        t.journeyPreviewFirst,
+        () => unawaited(
+          Navigator.of(context).push<void>(
+            MaterialPageRoute(
+              builder: (_) => JourneyPlayerScreen(
+                snapshot: _preview!.snapshot,
+                preview: true,
+                api: widget.editor.api,
+              ),
+            ),
+          ),
+        ),
+        enabled: _preview != null,
+      ),
+    ];
+  }
 }

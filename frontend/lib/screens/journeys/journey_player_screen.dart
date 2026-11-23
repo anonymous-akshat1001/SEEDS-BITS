@@ -15,6 +15,7 @@ import '../../services/offline_journey_store.dart';
 import '../../services/offline_lesson_store.dart';
 import '../../services/quiz_speech_speed.dart';
 import '../../services/tts_service.dart';
+import '../../utils/keypad_actions.dart';
 import '../../utils/ui_utils.dart';
 import '../../widgets/journey_prompts.dart';
 import '../../widgets/key_instruction_wrapper.dart';
@@ -160,6 +161,15 @@ class _JourneyPlayerScreenState extends State<JourneyPlayerScreen>
 
   void _say(String text) => unawaited(TtsService.speak(text));
 
+  bool _keysSpoken = false;
+
+  /// Every key of the current step, once, when the journey opens.
+  String _firstKeys() {
+    if (_keysSpoken) return '';
+    _keysSpoken = true;
+    return ' ${buildTtsInstructions({for (final entry in _keys().entries) entry.key: entry.value.$1, 0: Speech.t.journeyLeaveJourney}, includeRepeatHint: false)}';
+  }
+
   void _fail(String message) {
     if (!mounted) return;
     setState(() => _issue = message);
@@ -185,7 +195,7 @@ class _JourneyPlayerScreenState extends State<JourneyPlayerScreen>
       await _quizSpeed.start();
       if (presentation != _presentation || !mounted) return;
       setState(() => _status = step.text);
-      _say('$lead${JourneyAnnouncer.question(_engine)}');
+      _say('$lead${JourneyAnnouncer.question(_engine)}${_firstKeys()}');
       return;
     }
     await _quizSpeed.stop();
@@ -193,14 +203,16 @@ class _JourneyPlayerScreenState extends State<JourneyPlayerScreen>
       await _audio.stop();
       if (presentation != _presentation || !mounted) return;
       setState(() => _status = step.text);
-      _say('$lead$where${JourneyAnnouncer.narration(step.text)}');
+      _say(
+        '$lead$where${JourneyAnnouncer.narration(step.text)}${_firstKeys()}',
+      );
       return;
     }
     setState(() => _status = JourneyAnnouncer.recordingStatus(step));
     try {
       await _play(step);
       if (presentation != _presentation || !mounted) return;
-      _say('$lead$where${JourneyAnnouncer.content(step)}');
+      _say('$lead$where${JourneyAnnouncer.content(step)}${_firstKeys()}');
     } on Exception catch (error) {
       debugPrint('[JOURNEY] Recording failed (${error.runtimeType}).');
       if (presentation != _presentation || !mounted) return;

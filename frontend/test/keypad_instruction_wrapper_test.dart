@@ -724,7 +724,7 @@ void main() {
         await tester.pumpAndSettle();
         await tester.pump(const Duration(milliseconds: 600));
         expect(opener.hasFocus, isTrue);
-        // Coming back is short: where you are, and that star reads every key.
+        // Coming back: the screen, its main keys, then star for all keys.
         expect(
           spoken.last,
           'Quiz publication review. Press star for all keys.',

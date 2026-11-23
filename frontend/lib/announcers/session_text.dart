@@ -32,10 +32,7 @@ abstract final class SessionText {
     required bool teacher,
     required String status,
     required String keys,
-  }) => Announce.pick(
-    brief: _t.sessionJoinedBrief(status),
-    detailed: _t.sessionJoinedDetailed(status, keys),
-  );
+  }) => _t.sessionJoinedDetailed(status, keys);
 
   static String keyHelp(Map<int, String> labels) {
     final keys = labels.entries.toList()
@@ -700,7 +697,21 @@ abstract final class SessionText {
       _t.sessionActivityProgress(title, started, finished);
   static String get whatIsPlayingButton => _t.sessionWhatIsPlayingButton;
 
-  // More (key 9)
+  // Teacher 5 Start and 6 Status.
+  static String get startButton => _t.sessionStartButton;
+  static String get startLabel => _t.sessionStartLabel;
+  static String get startTitle => _t.sessionStartTitle;
+  static String get startQuiz => _t.sessionStartQuiz;
+  static String get startJourney => _t.sessionStartJourney;
+  static String get startRecording => _t.sessionStartRecording;
+  static String statusKeyButton(String title) =>
+      _t.sessionStatusKeyButton(title);
+  static String statusKeyLabel(String title) => _t.sessionStatusKeyLabel(title);
+  static String activityCounts(int present, int started, int finished) =>
+      _t.sessionActivityCounts(present, started, finished);
+  static String get nowPlayingTitle => _t.sessionNowPlayingTitle;
+
+  // More (key 7)
   static String get moreButton => _t.sessionMoreButton;
   static String get moreLabel => _t.sessionMoreLabel;
   static String get moreTitle => _t.sessionMoreTitle;

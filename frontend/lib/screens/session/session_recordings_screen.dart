@@ -16,9 +16,17 @@ import 'live_session.dart';
 /// 4 back, 5 play or pause, 6 forward, 7 slower, 9 faster. The position
 /// control also moves with D-pad left and right.
 class SessionRecordingsScreen extends StatefulWidget {
-  const SessionRecordingsScreen({super.key, required this.session});
+  const SessionRecordingsScreen({
+    super.key,
+    required this.session,
+    this.startWhenReady = false,
+  });
 
   final LiveSession session;
+
+  /// Starts the selected recording for the class once the screen's keys
+  /// have been read, so the teacher knows the controls before it plays.
+  final bool startWhenReady;
 
   @override
   State<SessionRecordingsScreen> createState() =>
@@ -36,9 +44,50 @@ class _SessionRecordingsScreenState extends State<SessionRecordingsScreen> {
   final _back = FocusNode(debugLabel: 'recordings-back');
 
   LiveSession get _session => widget.session;
+  VoidCallback? _speechListener;
+  bool _teacherActed = false;
+  Timer? _startTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.startWhenReady) {
+      // The keys are spoken shortly after opening; start when they finish.
+      _startTimer = Timer(const Duration(milliseconds: 900), _startAfterSpeech);
+    }
+  }
+
+  void _startAfterSpeech() {
+    if (!mounted) return;
+    void start() {
+      final listener = _speechListener;
+      if (listener != null) TtsService.speaking.removeListener(listener);
+      _speechListener = null;
+      if (mounted &&
+          !_teacherActed &&
+          _session.recordingId != null &&
+          !_session.recordingPlaying) {
+        _session.toggleRecording();
+      }
+    }
+
+    if (!TtsService.speaking.value) {
+      start();
+      return;
+    }
+    void listener() {
+      if (!TtsService.speaking.value) start();
+    }
+
+    _speechListener = listener;
+    TtsService.speaking.addListener(listener);
+  }
 
   @override
   void dispose() {
+    _startTimer?.cancel();
+    final listener = _speechListener;
+    if (listener != null) TtsService.speaking.removeListener(listener);
     for (final node in [
       _status,
       _position,
@@ -167,7 +216,7 @@ class _SessionRecordingsScreenState extends State<SessionRecordingsScreen> {
       final progress = duration != null && duration > 0
           ? (_session.recordingPosition / duration).clamp(0.0, 1.0)
           : 0.0;
-      final actions = <int, VoidCallback>{
+      final controls = <int, VoidCallback>{
         1: () => unawaited(_chooseRecording()),
         2: _uploadRecording,
         3: () => _speak(_statusText()),
@@ -177,6 +226,14 @@ class _SessionRecordingsScreenState extends State<SessionRecordingsScreen> {
         playerSlowerKey: () => _speed(-0.25),
         playerFasterKey: () => _speed(0.25),
         0: () => Navigator.of(context).maybePop(),
+      };
+      // Any key means the teacher has taken control: no automatic start.
+      final actions = {
+        for (final entry in controls.entries)
+          entry.key: () {
+            _teacherActed = true;
+            entry.value();
+          },
       };
       return KeypadInstructionWrapper(
         interactionPolicy: KeypadInteractionPolicy.numbered,

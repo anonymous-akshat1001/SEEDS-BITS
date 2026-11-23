@@ -81,7 +81,14 @@ class _ClassRosterScreenState extends State<ClassRosterScreen> {
       _roster = roster ?? _roster;
       _busy = false;
     });
-    if (announce && roster != null) unawaited(TtsService.speak(_counts()));
+    if (announce && roster != null) {
+      unawaited(
+        TtsService.speak(
+          '${SessionText.classListTitle}. ${_counts()} '
+          '${JourneyMenu.spokenKeys(_choices(), SessionText.backToClass)}',
+        ),
+      );
+    }
   }
 
   String _name(Map<String, dynamic> person) => person['removed'] == true
@@ -150,30 +157,32 @@ class _ClassRosterScreenState extends State<ClassRosterScreen> {
       status: _roster == null ? null : _counts(),
       details: _roster == null ? null : _counts(),
       backLabel: SessionText.backToClass,
-      choices: [
-        JourneyChoice(
-          SessionText.hereNow(_group('connected').length),
-          () => unawaited(_read(SessionText.hereNowTitle, 'connected')),
-        ),
-        JourneyChoice(
-          SessionText.leftClass(_group('left').length),
-          () => unawaited(_read(SessionText.leftClassTitle, 'left')),
-        ),
-        JourneyChoice(
-          SessionText.notJoined(_group('not_joined').length),
-          () => unawaited(_read(SessionText.notJoinedTitle, 'not_joined')),
-        ),
-        JourneyChoice(
-          SessionText.remindNotJoined,
-          () => unawaited(_remind()),
-          enabled: _group('not_joined').isNotEmpty,
-          unavailableReason: SessionText.everyoneJoined,
-        ),
-        JourneyChoice(
-          SessionText.handQueue(_session.raisedHandCount),
-          () => unawaited(_session.openHandQueue()),
-        ),
-      ],
+      choices: _choices(),
     ),
   );
+
+  List<JourneyChoice> _choices() => [
+    JourneyChoice(
+      SessionText.hereNow(_group('connected').length),
+      () => unawaited(_read(SessionText.hereNowTitle, 'connected')),
+    ),
+    JourneyChoice(
+      SessionText.leftClass(_group('left').length),
+      () => unawaited(_read(SessionText.leftClassTitle, 'left')),
+    ),
+    JourneyChoice(
+      SessionText.notJoined(_group('not_joined').length),
+      () => unawaited(_read(SessionText.notJoinedTitle, 'not_joined')),
+    ),
+    JourneyChoice(
+      SessionText.remindNotJoined,
+      () => unawaited(_remind()),
+      enabled: _group('not_joined').isNotEmpty,
+      unavailableReason: SessionText.everyoneJoined,
+    ),
+    JourneyChoice(
+      SessionText.handQueue(_session.raisedHandCount),
+      () => unawaited(_session.openHandQueue()),
+    ),
+  ];
 }

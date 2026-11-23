@@ -209,12 +209,17 @@ class _JourneyMenuState extends State<JourneyMenu> {
         screenName: widget.title,
         introduction: widget.introduction,
         brief: widget.brief,
+        // While its data is still loading the screen says only that it is
+        // loading; the real counts and keys are read once it has loaded.
+        loadingNotice: _awaitingFirstLoad && widget.autoPlay
+            ? '${widget.title}. ${t.journeyMenuWorking}'
+            : null,
         stateSummary: () => [
           if (widget.busy) t.journeyMenuWorking,
           widget.issue,
           widget.status,
         ].whereType<String>().join(' '),
-        autoPlay: widget.autoPlay,
+        autoPlay: widget.autoPlay && !_awaitingFirstLoad,
         labels: {
           for (var index = 0; index < widget.choices.length; index++)
             index + 1: _label(index),

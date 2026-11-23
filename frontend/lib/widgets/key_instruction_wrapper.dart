@@ -100,6 +100,7 @@ class KeypadInstructionWrapper extends StatefulWidget {
     this.introduction,
     this.stateSummary,
     this.brief,
+    this.loadingNotice,
   });
 
   final Widget child;
@@ -123,10 +124,13 @@ class KeypadInstructionWrapper extends StatefulWidget {
   final String? Function()? stateSummary;
 
   /// The screen's current state in one sentence ("English is live. Press 1
-  /// to join."). Spoken first when the screen opens, followed by every key;
-  /// when coming back from a sub-screen only this sentence is spoken, with
-  /// a reminder that star reads every key.
+  /// to join."). Spoken first whenever the screen opens or is returned to,
+  /// followed by every key.
   final String? brief;
+
+  /// Spoken instead of the opening help while the screen is still loading,
+  /// so it never reads counts or choices that are not known yet.
+  final String? loadingNotice;
 
   @override
   State<KeypadInstructionWrapper> createState() =>
@@ -148,8 +152,12 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
   Timer? _instructionTimer;
   VoidCallback? _speechCompletionListener;
   bool _returnHelpPending = false;
-  // Set when a screen above this one closes; the next announcement is short.
+  // The opening speech is still to come: the field focused on opening must
+  // not cut it off.
+  bool _arrivalPending = false;
+  // Set when a screen above this one closed; the next speech is shorter.
   bool _cameBack = false;
+  // Set when a screen above this one closes; the next announcement is short.
   ModalRoute<void>? _subscribedRoute;
   static const _debounceDuration = Duration(milliseconds: 300);
   static bool _userInteracted = false;
@@ -184,7 +192,10 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
       if (!mounted) return;
       (widget.initialFocusNode ?? _scopeFocusNode).requestFocus();
       if (widget.autoPlay) {
+        _arrivalPending = true;
         _scheduleInstructions(const Duration(milliseconds: 350));
+      } else if (widget.loadingNotice != null) {
+        _speakSafely(widget.loadingNotice!);
       }
     });
   }
@@ -264,6 +275,12 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
       void listener() {
         if (target.node.hasFocus && target.enabled) {
           if (target.isTextField) _observeTextInput(target.node);
+          // The opening speech names this field; do not cut it off.
+          if (_arrivalPending &&
+              target.isTextField &&
+              identical(target.node, widget.initialFocusNode)) {
+            return;
+          }
           if (_returnHelpPending) {
             final message = _navigationController._focusAnnouncements.remove(
               target.node,
@@ -395,6 +412,7 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
     if (kIsWeb && !_userInteracted) return;
     final route = ModalRoute.of(context);
     if (route != null && !route.isCurrent) return;
+    _arrivalPending = false;
     final cameBack = _cameBack && !detailed;
     _cameBack = false;
     final arrival = detailed
@@ -404,11 +422,15 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
     if (TtsService.mode == SpeechMode.screenReader) {
       // TalkBack reads the screen itself; announce only where the user is
       // unless they asked for full help with star.
+      // Every key is still announced, so the keypad is learnable with
+      // TalkBack on too.
       final text = [
         ?opening,
         detailed
             ? _whereAmIText()
-            : Speech.t.keypadScreenReaderIntro(_screenName),
+            : cameBack
+            ? _returnText()
+            : '${_instructionText()}${_focusedFieldNote()}',
       ].join(' ');
       await TtsService.speak(text, priority: SpeechPriority.navigation);
       return;
@@ -427,7 +449,9 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
         ?opening,
         detailed
             ? _whereAmIText()
-            : _instructionText(detailed: detailed, cameBack: cameBack),
+            : cameBack
+            ? _returnText()
+            : '${_instructionText(detailed: detailed)}${_focusedFieldNote()}',
       ].where((part) => part.isNotEmpty).join(' ');
       if (instructions.isNotEmpty) await TtsService.speak(instructions);
     } catch (error) {
@@ -524,27 +548,52 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
     return labels;
   }
 
+  /// Coming back from a screen opened on top: the screen, its state, the
+  /// main keys (1 to 3 and 0), then that star reads every key.
+  String _returnText() {
+    final t = Speech.t;
+    final brief = widget.brief == null || widget.brief!.isEmpty
+        ? widget.stateSummary?.call()
+        : widget.brief;
+    final major =
+        _labels.entries
+            .where(
+              (entry) => entry.key >= 1 && entry.key <= 3 || entry.key == 0,
+            )
+            .toList()
+          ..sort(
+            (a, b) =>
+                (a.key == 0 ? 10 : a.key).compareTo(b.key == 0 ? 10 : b.key),
+          );
+    return [
+      '$_screenName.',
+      if (brief != null && brief.isNotEmpty) brief,
+      for (final entry in major)
+        '${t.keypadPressFor('${entry.key}', entry.value)}.',
+      t.sessionStarForKeys,
+    ].join(' ');
+  }
+
+  /// When a screen opens with a text field already focused (sign-in), say
+  /// so and how editing works, after the keys.
+  String _focusedFieldNote() {
+    final current = _currentTarget;
+    if (current == null || !current.isTextField || !current.node.hasFocus) {
+      return '';
+    }
+    return ' ${Speech.t.uiFocusedField(current.label)} ${Speech.t.keypadNumberedEditing}';
+  }
+
   /// Opening a screen reads its state sentence and every key, so a blind
-  /// user always knows all their options. [cameBack]: only the screen, its
-  /// state and that star reads every key.
-  String _instructionText({
-    bool detailed = false,
-    bool withName = true,
-    bool cameBack = false,
-  }) {
+  /// user always knows all their options without pressing star.
+  String _instructionText({bool detailed = false, bool withName = true}) {
     final t = Speech.t;
     final name = withName ? '$_screenName. ' : '';
     final brief = widget.brief == null || widget.brief!.isEmpty
         ? null
         : widget.brief;
-    if (cameBack) {
-      final state = brief ?? widget.stateSummary?.call();
-      return [
-        '$_screenName.',
-        if (state != null && state.isNotEmpty) state,
-        t.sessionStarForKeys,
-      ].join(' ');
-    }
+    // Every arrival, including coming back from a screen opened on top,
+    // reads the state and every key: nobody has to press star first.
     final introduction = [
       if (!detailed && brief != null) brief,
       ?widget.introduction,
@@ -565,10 +614,7 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
           '${sections.isEmpty ? '${t.keypadNumberedMove} ' : sections}$extra '
           '${t.keypadRepeatFullHelp}';
     }
-    if (!detailed && TtsService.verbosity == SpeechVerbosity.essential) {
-      return '$name'
-          '$introduction${sections.isEmpty ? '${t.keypadEssentialMove} ' : sections}${t.keypadStarForShortcuts}';
-    }
+
     if (_labels.isNotEmpty) {
       final back = _labels.containsKey(0) ? '' : '${t.keypadPressZeroBack} ';
       final keys = !detailed && brief != null
@@ -741,11 +787,20 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
         key == LogicalKeyboardKey.select;
   }
 
+  /// A key or touch before the opening speech starts: the person is already
+  /// acting, so the delayed opening help must not talk over what follows.
+  void _actedBeforeArrival() {
+    if (!_arrivalPending) return;
+    _arrivalPending = false;
+    _cancelInstructions();
+  }
+
   KeyEventResult _handleEarlyKeyEvent(KeyEvent event) {
     final primary = FocusManager.instance.primaryFocus;
     if (primary == null || !_scopeFocusNode.hasFocus) {
       return KeyEventResult.ignored;
     }
+    if (event is KeyDownEvent) _actedBeforeArrival();
     // Native sliders consume arrows before bubbling reaches the screen.
     // Only the innermost keypad scope may handle a key ahead of those controls.
     for (final node in [primary, ...primary.ancestors]) {
@@ -960,7 +1015,10 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
         // claims; browsers only allow speech after such an interaction.
         child: Listener(
           behavior: HitTestBehavior.translucent,
-          onPointerDown: (_) => _onInteraction(),
+          onPointerDown: (_) {
+            _actedBeforeArrival();
+            _onInteraction();
+          },
           child: widget.child,
         ),
       ),

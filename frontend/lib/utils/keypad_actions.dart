@@ -52,7 +52,7 @@ Map<int, String> get playerFallbackKeyLabels => {
 // ─── Welcome Screen ──────────────────────────────────────────────────────────
 // Accounts are created by the school administrator; there is no registration.
 Map<int, String> get welcomeKeyLabels => {
-    1: Speech.t.keyLogin,
+  1: Speech.t.keyLogin,
   2: Speech.t.keySettings,
 };
 
@@ -136,29 +136,28 @@ Map<int, String> get quizAttemptKeyLabels => {
 };
 
 // ─── Live session (both roles) ───────────────────────────────────────────────
-// Both screens: 1 microphone, 2 hand, 8 More, 0 leave; ending is highest
-// (teacher 9 ends the class). Teachers: 3 mute all, 4 class list, 5 lesson
-// recording, 6 quiz, 7 journey. Students: 3 what is playing, 4 start the
-// open quiz or journey (shown only while one is open).
+// Both screens: 1 microphone, 2 hand, 7 More, 0 leave. Teachers: 3 mute
+// all, 4 class list, 5 start a quiz, journey or recording, 6 status of what
+// is running (only while something runs), 8 end the class. Students: 3 what
+// is playing, 4 start the open quiz or journey (only while one is open).
 Map<int, String> sessionStudentKeyLabels({bool activityOpen = false}) => {
   1: Speech.t.keyMuteOrUnmute,
   2: Speech.t.keyRaiseOrLowerHand,
   3: Speech.t.sessionKeyWhatIsPlaying,
   if (activityOpen) 4: Speech.t.sessionKeyStartActivity,
-  8: Speech.t.sessionKeyMore,
+  7: Speech.t.sessionKeyMore,
   0: Speech.t.sessionKeyLeave,
 };
 
-Map<int, String> get sessionTeacherKeyLabels => {
+Map<int, String> sessionTeacherKeyLabels({bool running = false}) => {
   1: Speech.t.keyMuteOrUnmute,
   2: Speech.t.sessionKeyRaisedHands,
   3: Speech.t.keyMuteAllStudents,
   4: Speech.t.sessionKeyClassList,
-  5: Speech.t.sessionKeyLessonRecording,
-  6: Speech.t.sessionKeyQuiz,
-  7: Speech.t.sessionKeyJourney,
-  8: Speech.t.sessionKeyMore,
-  9: Speech.t.sessionKeyEndClass,
+  5: Speech.t.sessionKeyStart,
+  if (running) 6: Speech.t.sessionKeyStatus,
+  7: Speech.t.sessionKeyMore,
+  8: Speech.t.sessionKeyEndClass,
   0: Speech.t.sessionKeyLeave,
 };
 

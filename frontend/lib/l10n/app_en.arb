@@ -14572,7 +14572,7 @@
       }
     }
   },
-  "sessionEndingSoonTeacherExtend": "{minutes, plural, =1{The class ends automatically in 1 minute. To add 15 minutes, press 8 then 1.} other{The class ends automatically in {minutes} minutes. To add 15 minutes, press 8 then 1.}}",
+  "sessionEndingSoonTeacherExtend": "{minutes, plural, =1{The class ends automatically in 1 minute. To add 15 minutes, press 7 then 1.} other{The class ends automatically in {minutes} minutes. To add 15 minutes, press 7 then 1.}}",
   "@sessionEndingSoonTeacherExtend": {
     "description": "Warning for teachers.",
     "placeholders": {
@@ -14590,11 +14590,11 @@
       }
     }
   },
-  "sessionLessonReady": "Today's lesson is ready. Press 5 to play it for the class.",
+  "sessionLessonReady": "Today's lesson is ready. Press 5, then 3, to play it for the class.",
   "@sessionLessonReady": {
     "description": "Spoken when a prepared lesson is selected."
   },
-  "sessionLessonNextReady": "The next part of today's lesson is ready. Press 5 to play it.",
+  "sessionLessonNextReady": "The next part of today's lesson is ready. Press 6 to play it.",
   "@sessionLessonNextReady": {
     "description": "Spoken when the next lesson part is selected."
   },
@@ -14700,7 +14700,7 @@
   "@adminSetupNoMatchingLessons": {
     "description": "Admin timetable: search found nothing"
   },
-  "sessionMoreButton": "8: More",
+  "sessionMoreButton": "7: More",
   "@sessionMoreButton": {
     "description": "Live class: visible button that opens the less used actions"
   },
@@ -14752,7 +14752,7 @@
   "@sessionKeyLeave": {
     "description": "Live class key help, key 0"
   },
-  "sessionEndClassButton": "9: End class for everyone",
+  "sessionEndClassButton": "8: End class for everyone",
   "@sessionEndClassButton": {
     "description": "Teacher class screen key 6"
   },
@@ -14790,7 +14790,7 @@
       }
     }
   },
-  "sessionActivityStartedTeacher": "{title} is open for the class. Press the same key again to hear who is left.",
+  "sessionActivityStartedTeacher": "{title} is open for the class. Press 6 for its status.",
   "@sessionActivityStartedTeacher": {
     "description": "Teacher confirmation",
     "placeholders": {
@@ -15805,5 +15805,83 @@
         "type": "int"
       }
     }
+  },
+  "uiFocusedField": "You are in {field}.",
+  "@uiFocusedField": {
+    "description": "Opening speech: the text field that has focus",
+    "placeholders": {
+      "field": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionStartButton": "5: Start",
+  "@sessionStartButton": {
+    "description": "Teacher class screen key 5"
+  },
+  "sessionStartLabel": "Start a quiz, journey or recording for the class",
+  "@sessionStartLabel": {
+    "description": "Teacher key 5 spoken"
+  },
+  "sessionStartTitle": "Start for the class",
+  "@sessionStartTitle": {
+    "description": "Teacher: choose what to start"
+  },
+  "sessionStartQuiz": "Quiz",
+  "@sessionStartQuiz": {
+    "description": "Start menu choice"
+  },
+  "sessionStartJourney": "Journey",
+  "@sessionStartJourney": {
+    "description": "Start menu choice"
+  },
+  "sessionStartRecording": "Recording",
+  "@sessionStartRecording": {
+    "description": "Start menu choice"
+  },
+  "sessionStatusKeyButton": "6: Status of {title}",
+  "@sessionStatusKeyButton": {
+    "description": "Teacher key 6 while something runs",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionStatusKeyLabel": "Status of {title}",
+  "@sessionStatusKeyLabel": {
+    "description": "Teacher key 6 spoken",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionKeyStart": "Start a quiz, journey or recording",
+  "@sessionKeyStart": {
+    "description": "Key help, teacher key 5"
+  },
+  "sessionKeyStatus": "Status of what is running",
+  "@sessionKeyStatus": {
+    "description": "Key help, teacher key 6"
+  },
+  "sessionActivityCounts": "{present} students in class. {started} have attempted it, {finished} finished.",
+  "@sessionActivityCounts": {
+    "description": "Teacher activity status",
+    "placeholders": {
+      "present": {
+        "type": "int"
+      },
+      "started": {
+        "type": "int"
+      },
+      "finished": {
+        "type": "int"
+      }
+    }
+  },
+  "sessionNowPlayingTitle": "the recording",
+  "@sessionNowPlayingTitle": {
+    "description": "Status title when the recording has no title"
   }
 }

@@ -768,10 +768,17 @@ async def activity_left(db: AsyncSession, session: models.Session) -> dict:
             "in_class": present,
             "participant_id": participant.participant_id if present else None,
         })
+        present = 0
+    for student in students:
+        participant = participants.get(student.user_id)
+        if participant is not None and participant.participant_id in connected and not participant.is_kicked:
+            present += 1
     return {
         **activity,
         "whole_class": left,
         "in_class": [student for student in left if student["in_class"]],
+        "present": present,
+        "started": len(statuses),
         "finished": sum(1 for status in statuses.values() if status == "done"),
         "enrolled": len(students),
     }
