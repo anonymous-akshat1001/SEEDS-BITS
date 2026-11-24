@@ -10,63 +10,63 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get spokenDigitWords =>
-      'zero, one, two, three, four, five, six, seven, eight, nine';
+      'సున్నా, ఒకటి, రెండు, మూడు, నాలుగు, ఐదు, ఆరు, ఏడు, ఎనిమిది, తొమ్మిది';
 
   @override
   String get spokenMonths =>
-      'January, February, March, April, May, June, July, August, September, October, November, December';
+      'జనవరి, ఫిబ్రవరి, మార్చి, ఏప్రిల్, మే, జూన్, జులై, ఆగస్టు, సెప్టెంబర్, అక్టోబర్, నవంబర్, డిసెంబర్';
 
   @override
   String get spokenWeekdays =>
-      'Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday';
+      'సోమవారం, మంగళవారం, బుధవారం, గురువారం, శుక్రవారం, శనివారం, ఆదివారం';
 
   @override
-  String get spokenPlus => 'plus';
+  String get spokenPlus => 'ప్లస్';
 
   @override
   String spokenSession(String number) {
-    return 'session $number';
+    return 'సెషన్ $number';
   }
 
   @override
-  String get spokenNoon => '12 noon';
+  String get spokenNoon => 'మధ్యాహ్నం 12';
 
   @override
-  String get spokenMidnight => 'midnight';
+  String get spokenMidnight => 'అర్ధరాత్రి';
 
   @override
   String spokenOClock(String hour) {
-    return '$hour o\'clock';
+    return '$hour గంటలు';
   }
 
   @override
   String spokenMorning(String clock) {
-    return '$clock in the morning';
+    return 'ఉదయం $clock';
   }
 
   @override
   String spokenAfternoon(String clock) {
-    return '$clock in the afternoon';
+    return 'మధ్యాహ్నం $clock';
   }
 
   @override
   String spokenEvening(String clock) {
-    return '$clock in the evening';
+    return 'సాయంత్రం $clock';
   }
 
   @override
   String spokenNight(String clock) {
-    return '$clock at night';
+    return 'రాత్రి $clock';
   }
 
   @override
-  String get spokenToday => 'today';
+  String get spokenToday => 'ఈ రోజు';
 
   @override
-  String get spokenTomorrow => 'tomorrow';
+  String get spokenTomorrow => 'రేపు';
 
   @override
-  String get spokenYesterday => 'yesterday';
+  String get spokenYesterday => 'నిన్న';
 
   @override
   String spokenDate(String weekday, String day, String month) {
@@ -85,7 +85,7 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String spokenDateAtTime(String date, String time) {
-    return '$date at $time';
+    return '$date $timeకి';
   }
 
   @override
@@ -93,8 +93,8 @@ class AppLocalizationsTe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count hours',
-      one: '1 hour',
+      other: '$count గంటలు',
+      one: '1 గంట',
     );
     return '$_temp0';
   }
@@ -104,8 +104,8 @@ class AppLocalizationsTe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count minutes',
-      one: '1 minute',
+      other: '$count నిమిషాలు',
+      one: '1 నిమిషం',
     );
     return '$_temp0';
   }
@@ -115,347 +115,352 @@ class AppLocalizationsTe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count seconds',
-      one: '1 second',
+      other: '$count సెకన్లు',
+      one: '1 సెకను',
     );
     return '$_temp0';
   }
 
   @override
   String spokenPositionOf(String position, String total) {
-    return '$position of $total';
+    return '$totalలో $position';
   }
 
   @override
   String spokenPercent(String value) {
-    return '$value percent';
+    return '$value శాతం';
   }
 
   @override
-  String get spokenOn => 'on';
+  String get spokenOn => 'ఆన్';
 
   @override
-  String get spokenOff => 'off';
+  String get spokenOff => 'ఆఫ్';
 
   @override
-  String get keyBack10Seconds => 'Back 10 seconds';
+  String get keyBack10Seconds => '10 సెకన్లు వెనక్కి';
 
   @override
-  String get keyPlayOrPause => 'Play or pause';
+  String get keyPlayOrPause => 'ప్లే లేదా పాజ్';
 
   @override
-  String get keyForward10Seconds => 'Forward 10 seconds';
+  String get keyForward10Seconds => '10 సెకన్లు ముందుకు';
 
   @override
-  String get keySlower => 'Slower';
+  String get keySlower => 'నెమ్మదిగా';
 
   @override
-  String get keyFaster => 'Faster';
+  String get keyFaster => 'వేగంగా';
 
   @override
-  String get keySlowerPlaybackSpeed => 'Slower playback speed';
+  String get keySlowerPlaybackSpeed => 'ప్లేబ్యాక్ వేగం తగ్గించండి';
 
   @override
-  String get keyFasterPlaybackSpeed => 'Faster playback speed';
+  String get keyFasterPlaybackSpeed => 'ప్లేబ్యాక్ వేగం పెంచండి';
 
   @override
-  String get keyLogin => 'Login';
+  String get keyLogin => 'లాగిన్';
 
   @override
-  String get keyRegister => 'Register';
+  String get keyRegister => 'నమోదు';
 
   @override
-  String get keySettings => 'Settings';
+  String get keySettings => 'సెట్టింగ్‌లు';
 
   @override
-  String get keySelectStudentAccount => 'Select Student Account';
+  String get keySelectStudentAccount => 'విద్యార్థి ఖాతాను ఎంచుకోండి';
 
   @override
-  String get keySelectTeacherAccount => 'Select Teacher Account';
+  String get keySelectTeacherAccount => 'ఉపాధ్యాయుల ఖాతాను ఎంచుకోండి';
 
   @override
-  String get keySelectAdministratorAccount => 'Select Administrator Account';
+  String get keySelectAdministratorAccount => 'నిర్వాహకుల ఖాతాను ఎంచుకోండి';
 
   @override
-  String get keyGoToLogin => 'Go to Login';
+  String get keyGoToLogin => 'లాగిన్‌కు వెళ్ళండి';
 
   @override
-  String get keyToggleTeacherRegistration => 'Toggle Teacher Registration';
+  String get keyToggleTeacherRegistration => 'ఉపాధ్యాయుల నమోదు ఆన్ లేదా ఆఫ్';
 
   @override
-  String get keyGoBack => 'Go Back';
+  String get keyGoBack => 'వెనక్కి వెళ్ళండి';
 
   @override
-  String get keyToggleTTS => 'Toggle T T S';
+  String get keyToggleTTS => 'T T S ఆన్ లేదా ఆఫ్';
 
   @override
-  String get keyToggleVoiceCommands => 'Toggle Voice Commands';
+  String get keyToggleVoiceCommands => 'వాయిస్ కమాండ్‌లు ఆన్ లేదా ఆఫ్';
 
   @override
-  String get keyShowOrHideShortcuts => 'Show or Hide Shortcuts';
+  String get keyShowOrHideShortcuts => 'షార్ట్‌కట్‌లు చూపండి లేదా దాచండి';
 
   @override
-  String get keyToggleHighContrast => 'Toggle High Contrast';
+  String get keyToggleHighContrast => 'హై కాంట్రాస్ట్ ఆన్ లేదా ఆఫ్';
 
   @override
-  String get keyTestTTS => 'Test T T S';
+  String get keyTestTTS => 'T T S పరీక్షించండి';
 
   @override
-  String get keySaveSettings => 'Save Settings';
+  String get keySaveSettings => 'సెట్టింగ్‌లు సేవ్ చేయండి';
 
   @override
-  String get keyCheckVoice => 'Check voice';
+  String get keyCheckVoice => 'స్వరాన్ని తనిఖీ చేయండి';
 
   @override
-  String get keySoundCuesOnOrOff => 'Sound cues on or off';
+  String get keySoundCuesOnOrOff => 'సౌండ్ సూచనలు ఆన్ లేదా ఆఫ్';
 
   @override
-  String get keyVibrationOnOrOff => 'Vibration on or off';
+  String get keyVibrationOnOrOff => 'వైబ్రేషన్ ఆన్ లేదా ఆఫ్';
 
   @override
-  String get keyLogOutAsksToConfirm => 'Log out, asks to confirm';
+  String get keyLogOutAsksToConfirm => 'లాగ్ అవుట్, నిర్ధారణ అడుగుతుంది';
 
   @override
-  String get keyRefreshSessions => 'Refresh Sessions';
+  String get keyRefreshSessions => 'సెషన్‌లను రిఫ్రెష్ చేయండి';
 
   @override
-  String get keySearchSessionsByNameOrID => 'Search Sessions by Name or ID';
+  String get keySearchSessionsByNameOrID =>
+      'పేరు లేదా ID ద్వారా సెషన్‌లను వెతకండి';
 
   @override
-  String get keyRecordedAudioLibrary => 'Recorded Audio Library';
+  String get keyRecordedAudioLibrary => 'రికార్డ్ చేసిన ఆడియో లైబ్రరీ';
 
   @override
-  String get keyMyPrivatePlaylists => 'My Private Playlists';
+  String get keyMyPrivatePlaylists => 'నా ప్రైవేట్ ప్లేలిస్ట్‌లు';
 
   @override
-  String get keyQuizzes => 'Quizzes';
+  String get keyQuizzes => 'క్విజ్‌లు';
 
   @override
-  String get keyLearningJourneys => 'Learning journeys';
+  String get keyLearningJourneys => 'అభ్యాస ప్రయాణాలు';
 
   @override
-  String get keyCreateSession => 'Create Session';
+  String get keyCreateSession => 'సెషన్ సృష్టించండి';
 
   @override
-  String get keyClassPlaylists => 'Class Playlists';
+  String get keyClassPlaylists => 'తరగతి ప్లేలిస్ట్‌లు';
 
   @override
   String get keyChooseClassAndSubjectWorkspace =>
-      'Choose class and subject workspace';
+      'తరగతి మరియు సబ్జెక్టు వర్క్‌స్పేస్ ఎంచుకోండి';
 
   @override
-  String get keyRefresh => 'Refresh';
+  String get keyRefresh => 'రిఫ్రెష్';
 
   @override
-  String get keySearchUsers => 'Search Users';
+  String get keySearchUsers => 'వినియోగదారులను వెతకండి';
 
   @override
-  String get keyChangeAccountTypeFilter => 'Change Account Type Filter';
+  String get keyChangeAccountTypeFilter => 'ఖాతా రకం ఫిల్టర్ మార్చండి';
 
   @override
-  String get keyChangeAssignmentFilter => 'Change Assignment Filter';
+  String get keyChangeAssignmentFilter => 'కేటాయింపు ఫిల్టర్ మార్చండి';
 
   @override
-  String get keyCreateSubject => 'Create Subject';
+  String get keyCreateSubject => 'సబ్జెక్టు సృష్టించండి';
 
   @override
-  String get keyCreateClass => 'Create Class';
+  String get keyCreateClass => 'తరగతి సృష్టించండి';
 
   @override
   String get keyChooseAccountsClassesOrSubjectsSection =>
-      'Choose Accounts, Classes, or Subjects section';
+      'ఖాతాలు, తరగతులు లేదా సబ్జెక్టుల విభాగాన్ని ఎంచుకోండి';
 
   @override
-  String get keyGoBackAlt => 'Go back';
+  String get keyGoBackAlt => 'వెనక్కి వెళ్ళండి';
 
   @override
-  String get keyCreateBankQuestion => 'Create bank question';
+  String get keyCreateBankQuestion => 'బ్యాంక్ ప్రశ్న సృష్టించండి';
 
   @override
-  String get keyCreateQuizDraft => 'Create quiz draft';
+  String get keyCreateQuizDraft => 'క్విజ్ డ్రాఫ్ట్ సృష్టించండి';
 
   @override
   String get keyCreateUntimedUngradedPractice =>
-      'Create untimed ungraded practice';
+      'సమయ పరిమితి, మార్కులు లేని అభ్యాసం సృష్టించండి';
 
   @override
-  String get keyRefreshQuizzes => 'Refresh quizzes';
+  String get keyRefreshQuizzes => 'క్విజ్‌లను రిఫ్రెష్ చేయండి';
 
   @override
-  String get keyChooseOption1 => 'Choose option 1';
+  String get keyChooseOption1 => 'ఎంపిక 1 ఎంచుకోండి';
 
   @override
-  String get keyChooseOption2 => 'Choose option 2';
+  String get keyChooseOption2 => 'ఎంపిక 2 ఎంచుకోండి';
 
   @override
-  String get keyChooseOption3 => 'Choose option 3';
+  String get keyChooseOption3 => 'ఎంపిక 3 ఎంచుకోండి';
 
   @override
-  String get keyChooseOption4 => 'Choose option 4';
+  String get keyChooseOption4 => 'ఎంపిక 4 ఎంచుకోండి';
 
   @override
-  String get keySubmitSelectedAnswer => 'Submit selected answer';
+  String get keySubmitSelectedAnswer => 'ఎంచుకున్న సమాధానాన్ని సమర్పించండి';
 
   @override
-  String get keyRepeatQuestionAndOptions => 'Repeat question and options';
+  String get keyRepeatQuestionAndOptions =>
+      'ప్రశ్న మరియు ఎంపికలను మళ్ళీ వినండి';
 
   @override
-  String get keySlowerQuizSpeech => 'Slower quiz speech';
+  String get keySlowerQuizSpeech => 'క్విజ్ స్వరం నెమ్మదిగా';
 
   @override
-  String get keyWhereAmIIncludingTimeLeft => 'Where am I, including time left';
+  String get keyWhereAmIIncludingTimeLeft =>
+      'నేను ఎక్కడ ఉన్నాను, మిగిలిన సమయంతో సహా';
 
   @override
-  String get keyFasterQuizSpeech => 'Faster quiz speech';
+  String get keyFasterQuizSpeech => 'క్విజ్ స్వరం వేగంగా';
 
   @override
-  String get keyMuteOrUnmute => 'Mute or unmute';
+  String get keyMuteOrUnmute => 'మ్యూట్ లేదా అన్‌మ్యూట్';
 
   @override
-  String get keyRaiseOrLowerHand => 'Raise or lower hand';
+  String get keyRaiseOrLowerHand => 'చేయి ఎత్తండి లేదా దించండి';
 
   @override
-  String get keyHearClassStatus => 'Hear class status';
+  String get keyHearClassStatus => 'తరగతి స్థితి వినండి';
 
   @override
-  String get keyChat => 'Chat';
+  String get keyChat => 'చాట్';
 
   @override
   String get keyHearWhatTheTeacherIsPlaying =>
-      'Hear what the teacher is playing';
+      'ఉపాధ్యాయులు ఏమి ప్లే చేస్తున్నారో వినండి';
 
   @override
-  String get keyAnswerClassroomCheck => 'Answer classroom check';
+  String get keyAnswerClassroomCheck => 'తరగతి తనిఖీకి సమాధానం ఇవ్వండి';
 
   @override
-  String get keyWhoIsInTheClass => 'Who is in the class';
+  String get keyWhoIsInTheClass => 'తరగతిలో ఎవరు ఉన్నారు';
 
   @override
-  String get keyLeaveSessionAsksToConfirm => 'Leave session, asks to confirm';
+  String get keyLeaveSessionAsksToConfirm =>
+      'సెషన్ నుండి బయటకు వెళ్ళండి, నిర్ధారణ అడుగుతుంది';
 
   @override
   String get keyRaisedHandsAcknowledgeAndLowerThemInOrder =>
-      'Raised hands: acknowledge and lower them in order';
+      'ఎత్తిన చేతులు: క్రమంలో గుర్తించి దించండి';
 
   @override
   String get keyClassRecordingPlayerPlayAndControlTheRecording =>
-      'Class recording player: play and control the recording';
+      'తరగతి రికార్డింగ్ ప్లేయర్: రికార్డింగ్‌ను ప్లే చేసి నియంత్రించండి';
 
   @override
   String get keyClassroomCheckStartCloseAndHearResponses =>
-      'Classroom check: start, close and hear responses';
+      'తరగతి తనిఖీ: ప్రారంభించండి, మూసివేయండి, సమాధానాలు వినండి';
 
   @override
   String get keyParticipantsMuteOrRemoveSomeone =>
-      'Participants: mute or remove someone';
+      'పాల్గొనేవారు: ఎవరినైనా మ్యూట్ చేయండి లేదా తొలగించండి';
 
   @override
   String get keyTeacherToolsInviteStudentsEndClassForEveryone =>
-      'Teacher tools: invite students, end class for everyone';
+      'ఉపాధ్యాయుల సాధనాలు: విద్యార్థులను ఆహ్వానించండి, అందరికీ తరగతిని ముగించండి';
 
   @override
-  String get keyRefreshClasses => 'Refresh Classes';
+  String get keyRefreshClasses => 'తరగతులను రిఫ్రెష్ చేయండి';
 
   @override
-  String get keySearchClassByName => 'Search Class by Name';
+  String get keySearchClassByName => 'పేరుతో తరగతిని వెతకండి';
 
   @override
-  String get keyAllAudioFiles => 'All Audio Files';
+  String get keyAllAudioFiles => 'అన్ని ఆడియో ఫైల్‌లు';
 
   @override
   String get keyFocusFirstActiveClassUseDPadToBrowseClasses =>
-      'Focus first active class; use D-pad to browse classes';
+      'మొదటి యాక్టివ్ తరగతికి వెళ్ళండి; తరగతులను చూడటానికి D-pad ఉపయోగించండి';
 
   @override
-  String get keyRefreshFiles => 'Refresh files';
+  String get keyRefreshFiles => 'ఫైల్‌లను రిఫ్రెష్ చేయండి';
 
   @override
-  String get keyNextSubjectFilter => 'Next subject filter';
+  String get keyNextSubjectFilter => 'తదుపరి సబ్జెక్టు ఫిల్టర్';
 
   @override
-  String get keyStopPlayback => 'Stop playback';
+  String get keyStopPlayback => 'ప్లేబ్యాక్ ఆపండి';
 
   @override
-  String get keyAddAudioFile => 'Add audio file';
+  String get keyAddAudioFile => 'ఆడియో ఫైల్ జోడించండి';
 
   @override
-  String get keyUploadNewFile => 'Upload New File';
+  String get keyUploadNewFile => 'కొత్త ఫైల్ అప్‌లోడ్ చేయండి';
 
   @override
-  String get keySelectFromExistingLibrary => 'Select from Existing Library';
+  String get keySelectFromExistingLibrary => 'ఉన్న లైబ్రరీ నుండి ఎంచుకోండి';
 
   @override
-  String get keyRefreshList => 'Refresh List';
+  String get keyRefreshList => 'జాబితాను రిఫ్రెష్ చేయండి';
 
   @override
   String get appName => 'SEEDS';
 
   @override
-  String get languageEnglish => 'English';
+  String get languageEnglish => 'ఇంగ్లీష్';
 
   @override
-  String get languageHindi => 'Hindi';
+  String get languageHindi => 'హిందీ';
 
   @override
-  String get languageKannada => 'Kannada';
+  String get languageKannada => 'కన్నడ';
 
   @override
-  String get languageTelugu => 'Telugu';
+  String get languageTelugu => 'తెలుగు';
 
   @override
-  String get languageBengali => 'Bengali';
+  String get languageBengali => 'బెంగాలీ';
 
   @override
-  String get commonPleaseWait => 'Please wait. Still working.';
+  String get commonPleaseWait => 'దయచేసి వేచి ఉండండి. ఇంకా పని జరుగుతోంది.';
 
   @override
-  String get commonSignInFirst => 'Please sign in first.';
+  String get commonSignInFirst => 'దయచేసి ముందుగా సైన్ ఇన్ చేయండి.';
 
   @override
   String get commonAccountChanged =>
-      'Your account changed on this phone. Sign in again.';
+      'ఈ ఫోన్‌లో మీ ఖాతా మారింది. మళ్ళీ సైన్ ఇన్ చేయండి.';
 
   @override
   String get commonNoWorkspace =>
-      'No class and subject is chosen. Press 7 to choose a workspace.';
+      'తరగతి మరియు సబ్జెక్టు ఎంచుకోలేదు. వర్క్‌స్పేస్ ఎంచుకోవడానికి 7 నొక్కండి.';
 
   @override
   String get commonNoConnection =>
-      'No connection to the school server. Check your internet and try again.';
+      'పాఠశాల సర్వర్‌తో కనెక్షన్ లేదు. మీ ఇంటర్నెట్ తనిఖీ చేసి మళ్ళీ ప్రయత్నించండి.';
 
   @override
-  String get commonNotAvailable => 'This is not available right now.';
+  String get commonNotAvailable => 'ఇది ఇప్పుడు అందుబాటులో లేదు.';
 
   @override
-  String get commonNothingChanged => 'Nothing was changed.';
+  String get commonNothingChanged => 'ఏమీ మారలేదు.';
 
   @override
-  String get commonNoMessages => 'There are no messages on this screen.';
+  String get commonNoMessages => 'ఈ స్క్రీన్‌లో సందేశాలు ఏవీ లేవు.';
 
   @override
-  String get commonEndOfList => 'End of list. Back to the first item.';
+  String get commonEndOfList =>
+      'జాబితా ముగిసింది. మొదటి అంశానికి తిరిగి వెళ్ళాము.';
 
   @override
-  String get commonTopOfList => 'Top of list. Moved to the last item.';
+  String get commonTopOfList => 'జాబితా ప్రారంభం. చివరి అంశానికి వెళ్ళాము.';
 
   @override
   String commonOpening(String what) {
-    return 'Opening $what.';
+    return '$what తెరుస్తోంది.';
   }
 
   @override
   String commonOpeningNeedsInternet(String what) {
-    return 'Opening $what. Internet is required.';
+    return '$what తెరుస్తోంది. ఇంటర్నెట్ అవసరం.';
   }
 
   @override
   String commonUnavailable(String what) {
-    return '$what is not available.';
+    return '$what అందుబాటులో లేదు.';
   }
 
   @override
   String commonUnavailableBecause(String what, String reason) {
-    return '$what is not available. $reason';
+    return '$what అందుబాటులో లేదు. $reason';
   }
 
   @override
@@ -465,12 +470,12 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String commonWhereFocused(String item) {
-    return 'Focused: $item.';
+    return 'ఎంచుకున్నది: $item.';
   }
 
   @override
   String keypadPressFor(String key, String action) {
-    return 'Press $key for $action';
+    return '$action కోసం $key నొక్కండి';
   }
 
   @override
@@ -478,174 +483,176 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get keypadRepeatInstructions =>
-      'Press star to repeat these instructions.';
+      'ఈ సూచనలను మళ్ళీ వినడానికి స్టార్ నొక్కండి.';
 
   @override
-  String get keypadRepeatFullHelp => 'Press star to repeat full help.';
+  String get keypadRepeatFullHelp =>
+      'పూర్తి సహాయాన్ని మళ్ళీ వినడానికి స్టార్ నొక్కండి.';
 
   @override
-  String get keypadStarForShortcuts => 'Press star for all shortcuts.';
+  String get keypadStarForShortcuts =>
+      'అన్ని షార్ట్‌కట్‌ల కోసం స్టార్ నొక్కండి.';
 
   @override
   String keypadScreenReaderIntro(String screen) {
-    return '$screen. Press star for keypad help.';
+    return '$screen. కీప్యాడ్ సహాయం కోసం స్టార్ నొక్కండి.';
   }
 
   @override
   String keypadMoveThroughSections(String sections) {
-    return 'Use D-pad up and down to move through $sections. Press OK to activate the focused control.';
+    return '$sections మధ్య కదలడానికి D-pad పైకి, కిందకు ఉపయోగించండి. ఎంచుకున్న నియంత్రణను యాక్టివేట్ చేయడానికి ఓకే నొక్కండి.';
   }
 
   @override
   String get keypadNumberedBackAndStop =>
-      'Press 0 to go back or cancel. Press hash to stop app speech.';
+      'వెనక్కి వెళ్ళడానికి లేదా రద్దు చేయడానికి 0 నొక్కండి. యాప్ స్వరాన్ని ఆపడానికి హ్యాష్ నొక్కండి.';
 
   @override
   String get keypadNumberedEditing =>
-      'While editing, keys enter text. Press OK to finish, or use up or down to leave the field.';
+      'ఎడిట్ చేస్తున్నప్పుడు, కీలు టెక్స్ట్ టైప్ చేస్తాయి. ముగించడానికి ఓకే నొక్కండి, లేదా ఫీల్డ్ నుండి బయటకు రావడానికి పైకి లేదా కిందకు ఉపయోగించండి.';
 
   @override
   String get keypadNumberedMove =>
-      'Use D-pad up and down to move between choices and OK to select.';
+      'ఎంపికల మధ్య కదలడానికి D-pad పైకి, కిందకు ఉపయోగించండి, ఎంచుకోవడానికి ఓకే నొక్కండి.';
 
   @override
   String get keypadEssentialMove =>
-      'Use up and down to move, and OK to select.';
+      'కదలడానికి పైకి, కిందకు ఉపయోగించండి, ఎంచుకోవడానికి ఓకే నొక్కండి.';
 
   @override
-  String get keypadPressZeroBack => 'Press 0 to go back.';
+  String get keypadPressZeroBack => 'వెనక్కి వెళ్ళడానికి 0 నొక్కండి.';
 
   @override
   String get keypadHashAndStar =>
-      'Press hash to stop speech. Press star to repeat these instructions.';
+      'స్వరాన్ని ఆపడానికి హ్యాష్ నొక్కండి. ఈ సూచనలను మళ్ళీ వినడానికి స్టార్ నొక్కండి.';
 
   @override
-  String get keypadDirectionKeys => 'Use the direction keys to move.';
+  String get keypadDirectionKeys => 'కదలడానికి దిశ కీలను ఉపయోగించండి.';
 
   @override
   String get keypadDirectionKeysAndOk =>
-      'Use the direction keys to move and OK to select.';
+      'కదలడానికి దిశ కీలను, ఎంచుకోవడానికి ఓకే ఉపయోగించండి.';
 
   @override
   String get keypadActivateOrEdit =>
-      'Press OK to activate a control or edit a field.';
+      'నియంత్రణను యాక్టివేట్ చేయడానికి లేదా ఫీల్డ్‌ను ఎడిట్ చేయడానికి ఓకే నొక్కండి.';
 
   @override
   String get keypadLeaveField =>
-      'While editing, press OK or use up or down to leave the field.';
+      'ఎడిట్ చేస్తున్నప్పుడు, ఫీల్డ్ నుండి బయటకు రావడానికి ఓకే నొక్కండి లేదా పైకి లేదా కిందకు ఉపయోగించండి.';
 
   @override
   String keypadPosition(String index, String total) {
-    return ', $index of $total';
+    return ', $totalలో $index';
   }
 
   @override
   String keypadEditingPressOk(String label) {
-    return '$label. Editing. Press OK when finished.';
+    return '$label. ఎడిట్ చేస్తున్నారు. పూర్తయినప్పుడు ఓకే నొక్కండి.';
   }
 
   @override
   String keypadEditingUseUpDown(String label) {
-    return '$label. Editing. Use up or down to leave this field.';
+    return '$label. ఎడిట్ చేస్తున్నారు. ఈ ఫీల్డ్ నుండి బయటకు రావడానికి పైకి లేదా కిందకు ఉపయోగించండి.';
   }
 
   @override
-  String get keypadControlUnavailable =>
-      'This control is not available right now.';
+  String get keypadControlUnavailable => 'ఈ నియంత్రణ ఇప్పుడు అందుబాటులో లేదు.';
 
   @override
   String get keypadMainScreen =>
-      'This is the main screen. There is nothing to go back to.';
+      'ఇది ప్రధాన స్క్రీన్. వెనక్కి వెళ్ళడానికి ఏమీ లేదు.';
 
   @override
   String messageLast(String text) {
-    return 'Last message: $text';
+    return 'చివరి సందేశం: $text';
   }
 
   @override
   String messageLastProblem(String text) {
-    return 'Last problem: $text';
+    return 'చివరి సమస్య: $text';
   }
 
   @override
   String ttsSpeedDescription(String speed) {
-    return '$speed times normal speed';
+    return 'సాధారణ వేగానికి $speed రెట్లు';
   }
 
   @override
   String get ttsUnavailable =>
-      'Speech is unavailable. Enable an English Android text-to-speech voice, then use Test TTS in Settings.';
+      'స్వరం అందుబాటులో లేదు. Android లో ఇంగ్లీష్ టెక్స్ట్-టు-స్పీచ్ స్వరాన్ని ఆన్ చేయండి, తర్వాత సెట్టింగ్‌లలో \'స్వరాన్ని పరీక్షించండి\' బటన్ నొక్కండి.';
 
   @override
   String ttsLanguageFallback(String language) {
-    return 'No $language voice is available on this phone, so SEEDS will speak English. Install the $language voice in Android text-to-speech settings, then check the voice in Settings.';
+    return 'ఈ ఫోన్‌లో $language స్వరం లేదు, కాబట్టి SEEDS ఇంగ్లీష్‌లో మాట్లాడుతుంది. Android టెక్స్ట్-టు-స్పీచ్ సెట్టింగ్‌లలో $language స్వరాన్ని ఇన్‌స్టాల్ చేయండి, తర్వాత సెట్టింగ్‌లలో స్వరాన్ని తనిఖీ చేయండి.';
   }
 
   @override
   String get ttsScreenReaderDetected =>
-      'Screen reader detected. SEEDS will send its announcements to your screen reader.';
+      'స్క్రీన్ రీడర్ కనిపించింది. SEEDS తన ప్రకటనలను మీ స్క్రీన్ రీడర్‌కు పంపుతుంది.';
 
   @override
   String get ttsScreenReaderOff =>
-      'Screen reader turned off. SEEDS will speak for itself.';
+      'స్క్రీన్ రీడర్ ఆఫ్ అయింది. SEEDS స్వయంగా మాట్లాడుతుంది.';
 
   @override
   String ttsVoiceInstalled(String language) {
-    return 'Android reports installed $language voice data. Use Test TTS in Settings, then test it again in airplane mode before relying on offline speech. This check cannot prove that you can hear it.';
+    return '$language స్వర డేటా ఇన్‌స్టాల్ అయిందని Android చెబుతోంది. సెట్టింగ్‌లలో \'స్వరాన్ని పరీక్షించండి\' బటన్ నొక్కండి, తర్వాత ఆఫ్‌లైన్ స్వరంపై ఆధారపడే ముందు ఎయిర్‌ప్లేన్ మోడ్‌లో మళ్ళీ పరీక్షించండి. మీకు అది వినిపిస్తుందని ఈ తనిఖీ నిరూపించలేదు.';
   }
 
   @override
   String ttsVoiceNotOffline(String language) {
-    return '$language is available, but installed offline voice data was not confirmed. Speech may need internet.';
+    return '$language అందుబాటులో ఉంది, కానీ ఆఫ్‌లైన్ స్వర డేటా ఇన్‌స్టాల్ అయిందని నిర్ధారించబడలేదు. స్వరానికి ఇంటర్నెట్ అవసరం కావచ్చు.';
   }
 
   @override
   String ttsVoiceMissing(String language) {
-    return 'No $language voice was detected.';
+    return '$language స్వరం కనిపించలేదు.';
   }
 
   @override
   String ttsVoiceUnverified(String language) {
-    return '$language voice availability could not be verified.';
+    return '$language స్వరం అందుబాటులో ఉందో లేదో నిర్ధారించలేకపోయాము.';
   }
 
   @override
   String ttsVoiceRecovery(String language) {
-    return 'Open Android Settings, find Text-to-speech output, select the $language voice and install its voice data. Return here and check again. You can use your Android screen reader instead of app speech.';
+    return 'Android సెట్టింగ్‌లు తెరవండి, Text-to-speech output కనుగొనండి, $language స్వరాన్ని ఎంచుకుని దాని స్వర డేటాను ఇన్‌స్టాల్ చేయండి. ఇక్కడికి తిరిగి వచ్చి మళ్ళీ తనిఖీ చేయండి. యాప్ స్వరానికి బదులుగా మీ Android స్క్రీన్ రీడర్‌ను ఉపయోగించవచ్చు.';
   }
 
   @override
   String get ttsSpeedChangeFailed =>
-      'Speech speed could not be changed. Try again.';
+      'స్వర వేగాన్ని మార్చలేకపోయాము. మళ్ళీ ప్రయత్నించండి.';
 
   @override
   String get ttsSettingsFailed =>
-      'Speech settings could not be applied. Try Test TTS again.';
+      'స్వర సెట్టింగ్‌లను వర్తింపజేయలేకపోయాము. \'స్వరాన్ని పరీక్షించండి\' బటన్ మళ్ళీ నొక్కండి.';
 
   @override
   String get ttsCouldNotStart =>
-      'Speech could not start. Try Test TTS in Settings.';
+      'స్వరం ప్రారంభం కాలేదు. సెట్టింగ్‌లలో \'స్వరాన్ని పరీక్షించండి\' బటన్ నొక్కండి.';
 
   @override
   String get ttsNotAvailable =>
-      'Speech was not available. Try Test TTS in Settings.';
+      'స్వరం అందుబాటులో లేదు. సెట్టింగ్‌లలో \'స్వరాన్ని పరీక్షించండి\' బటన్ నొక్కండి.';
 
   @override
-  String get ttsFailed => 'Speech failed. Try Test TTS in Settings.';
+  String get ttsFailed =>
+      'స్వరం విఫలమైంది. సెట్టింగ్‌లలో \'స్వరాన్ని పరీక్షించండి\' బటన్ నొక్కండి.';
 
   @override
   String get ttsLessonResumeFailed =>
-      'The recorded lesson could not resume. Select Play to retry.';
+      'రికార్డ్ చేసిన పాఠం మళ్ళీ ప్రారంభం కాలేదు. మళ్ళీ ప్రయత్నించడానికి ప్లే ఎంచుకోండి.';
 
   @override
   String get ttsStopFailed =>
-      'Speech could not be stopped. Check the Android TTS engine.';
+      'స్వరాన్ని ఆపలేకపోయాము. Android TTS ఇంజిన్‌ను తనిఖీ చేయండి.';
 
   @override
-  String get ttsNoPendingUpdates => 'No pending updates.';
+  String get ttsNoPendingUpdates => 'పెండింగ్ అప్‌డేట్‌లు ఏవీ లేవు.';
 
   @override
-  String get ttsOtherUpdates => 'Other updates';
+  String get ttsOtherUpdates => 'ఇతర అప్‌డేట్‌లు';
 
   @override
   String ttsUpdateGroup(String group) {
@@ -654,7 +661,7 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String ttsUpdateGroupCount(String group, int count) {
-    return '$group, $count updates.';
+    return '$group, $count అప్‌డేట్‌లు.';
   }
 
   @override
@@ -662,126 +669,126 @@ class AppLocalizationsTe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count other update groups.',
-      one: '1 other update group.',
+      other: '$count ఇతర అప్‌డేట్ సమూహాలు.',
+      one: '1 ఇతర అప్‌డేట్ సమూహం.',
     );
     return '$_temp0';
   }
 
   @override
-  String get settingsScreenName => 'Settings';
+  String get settingsScreenName => 'సెట్టింగ్‌లు';
 
   @override
   String get settingsSections =>
-      'four sections: Speech, Display, Keys and help, then Save settings';
+      'నాలుగు విభాగాలు: స్వరం, డిస్‌ప్లే, కీలు మరియు సహాయం, తర్వాత సెట్టింగ్‌లు సేవ్ చేయండి';
 
   @override
-  String get settingsLoaded => 'Settings loaded';
+  String get settingsLoaded => 'సెట్టింగ్‌లు లోడ్ అయ్యాయి';
 
   @override
-  String get settingsSaved => 'Settings saved';
+  String get settingsSaved => 'సెట్టింగ్‌లు సేవ్ అయ్యాయి';
 
   @override
-  String get settingsResetSaved => 'Settings reset to defaults and saved';
+  String get settingsResetSaved =>
+      'సెట్టింగ్‌లు డిఫాల్ట్‌లకు రీసెట్ చేసి సేవ్ చేయబడ్డాయి';
 
   @override
   String settingsTestSpeech(String volume, String speed) {
-    return 'This is a test of the text to speech system. Volume is $volume percent. Speech speed is $speed.';
+    return 'ఇది టెక్స్ట్-టు-స్పీచ్ సిస్టమ్ పరీక్ష. వాల్యూమ్ $volume శాతం. స్వర వేగం $speed.';
   }
 
   @override
   String settingsFastestSpeed(String speed) {
-    return 'Fastest speech speed, $speed';
+    return 'అత్యధిక స్వర వేగం, $speed';
   }
 
   @override
   String settingsSlowestSpeed(String speed) {
-    return 'Slowest speech speed, $speed';
+    return 'అత్యల్ప స్వర వేగం, $speed';
   }
 
   @override
   String settingsSpeechSpeed(String speed) {
-    return 'Speech speed $speed';
+    return 'స్వర వేగం $speed';
   }
 
   @override
-  String get settingsVoiceCommandsEnabled => 'Voice commands enabled';
+  String get settingsVoiceCommandsEnabled => 'వాయిస్ కమాండ్‌లు ఆన్ అయ్యాయి';
 
   @override
-  String get settingsVoiceCommandsDisabled => 'Voice commands disabled';
+  String get settingsVoiceCommandsDisabled => 'వాయిస్ కమాండ్‌లు ఆఫ్ అయ్యాయి';
 
   @override
-  String get settingsHighContrastOn => 'High contrast on';
+  String get settingsHighContrastOn => 'హై కాంట్రాస్ట్ ఆన్';
 
   @override
-  String get settingsHighContrastOff => 'High contrast off';
+  String get settingsHighContrastOff => 'హై కాంట్రాస్ట్ ఆఫ్';
 
   @override
-  String get settingsShortcutsShown => 'Keypad shortcuts shown';
+  String get settingsShortcutsShown => 'కీప్యాడ్ షార్ట్‌కట్‌లు చూపబడుతున్నాయి';
 
   @override
-  String get settingsShortcutsHidden => 'Keypad shortcuts hidden';
+  String get settingsShortcutsHidden => 'కీప్యాడ్ షార్ట్‌కట్‌లు దాచబడ్డాయి';
 
   @override
   String get settingsVoiceHelp =>
-      'In a session, activate Listen for command, then say mute, unmute, raise hand, lower hand, leave, or repeat. Listening does not restart automatically. Unmute asks for a key or touch confirmation.';
+      'సెషన్‌లో, కమాండ్ కోసం వినండి యాక్టివేట్ చేసి, తర్వాత మ్యూట్, అన్‌మ్యూట్, చేయి ఎత్తండి, చేయి దించండి, బయటకు వెళ్ళండి, లేదా మళ్ళీ చెప్పండి అని చెప్పండి. వినడం దానంతట అదే మళ్ళీ ప్రారంభం కాదు. అన్‌మ్యూట్ కోసం కీ లేదా టచ్ ద్వారా నిర్ధారణ అడుగుతుంది.';
 
   @override
   String settingsModeAutomatic(String current) {
-    return 'Automatic: follows TalkBack unless you choose. Now $current.';
+    return 'ఆటోమేటిక్: మీరు ఎంచుకోకపోతే TalkBack ను అనుసరిస్తుంది. ఇప్పుడు $current.';
   }
 
   @override
-  String get settingsModeUsingScreenReader => 'using the screen reader';
+  String get settingsModeUsingScreenReader => 'స్క్రీన్ రీడర్ ఉపయోగిస్తోంది';
 
   @override
-  String get settingsModeUsingSelfVoicing => 'self-voicing';
+  String get settingsModeUsingSelfVoicing => 'యాప్ స్వయంగా మాట్లాడుతోంది';
 
   @override
   String get settingsModeScreenReader =>
-      'Screen reader: announcements go to TalkBack. App narration is off.';
+      'స్క్రీన్ రీడర్: ప్రకటనలు TalkBack కు వెళ్తాయి. యాప్ వ్యాఖ్యానం ఆఫ్‌లో ఉంది.';
 
   @override
-  String get settingsModeSelfVoicing =>
-      'Self-voicing: the app speaks for itself.';
+  String get settingsModeSelfVoicing => 'సొంత స్వరం: యాప్ తానే మాట్లాడుతుంది.';
 
   @override
   String settingsSoundCues(String state) {
-    return 'Sound cues $state.';
+    return 'సౌండ్ సూచనలు $state.';
   }
 
   @override
   String settingsSoundCuesOnSaved(String state) {
-    return 'Sound cues $state. This is the saved sound.';
+    return 'సౌండ్ సూచనలు $state. ఇది సేవ్ అయినప్పుడు వచ్చే శబ్దం.';
   }
 
   @override
   String settingsVibration(String state) {
-    return 'Vibration $state.';
+    return 'వైబ్రేషన్ $state.';
   }
 
   @override
   String settingsVibrationOnBuzz(String state) {
-    return 'Vibration $state. One short buzz means OK.';
+    return 'వైబ్రేషన్ $state. ఒక చిన్న వైబ్రేషన్ అంటే సరే అని అర్థం.';
   }
 
   @override
   String settingsSoundCuesLabel(String state) {
-    return 'Sound cues, $state. Short sounds for correct, wrong, saved, errors and your turn to speak';
+    return 'సౌండ్ సూచనలు, $state. సరైనది, తప్పు, సేవ్ అయింది, లోపాలు మరియు మీరు మాట్లాడే వంతు కోసం చిన్న శబ్దాలు';
   }
 
   @override
   String settingsVibrationLabel(String state) {
-    return 'Vibration, $state. One buzz for OK, two for an error, a long buzz for leaving';
+    return 'వైబ్రేషన్, $state. సరే కోసం ఒక వైబ్రేషన్, లోపం కోసం రెండు, బయటకు వెళ్లడానికి ఒక పొడవైన వైబ్రేషన్';
   }
 
   @override
   String get settingsSoundCuesHelp =>
-      'Short sounds for correct, wrong, saved, errors, end of list and your turn to speak. Saved immediately.';
+      'సరైనది, తప్పు, సేవ్ అయింది, లోపాలు, జాబితా ముగింపు మరియు మీరు మాట్లాడే వంతు కోసం చిన్న శబ్దాలు. వెంటనే సేవ్ అవుతుంది.';
 
   @override
   String get settingsVibrationHelp =>
-      'One short buzz for OK, two for an error, one long buzz for leaving or ending. Saved immediately.';
+      'సరే కోసం ఒక చిన్న వైబ్రేషన్, లోపం కోసం రెండు, బయటకు వెళ్లడానికి లేదా ముగించడానికి ఒక పొడవైన వైబ్రేషన్. వెంటనే సేవ్ అవుతుంది.';
 
   @override
   String settingsState(
@@ -794,163 +801,165 @@ class AppLocalizationsTe extends AppLocalizations {
     String vibration,
     String language,
   ) {
-    return 'App speech $speech, speed $speed, volume $volume percent. Text size $textSize percent. High contrast $highContrast. Sound cues $soundCues. Vibration $vibration. Speech language $language.';
+    return 'యాప్ స్వరం $speech, వేగం $speed, వాల్యూమ్ $volume శాతం. అక్షరాల పరిమాణం $textSize శాతం. హై కాంట్రాస్ట్ $highContrast. సౌండ్ సూచనలు $soundCues. వైబ్రేషన్ $vibration. మాట్లాడే భాష $language.';
   }
 
   @override
   String settingsVolume(String percent) {
-    return 'Volume $percent percent';
+    return 'వాల్యూమ్ $percent శాతం';
   }
 
   @override
   String settingsTextSize(String percent) {
-    return 'Text size $percent percent';
+    return 'అక్షరాల పరిమాణం $percent శాతం';
   }
 
   @override
-  String get settingsSpeechOff => 'App speech off';
+  String get settingsSpeechOff => 'యాప్ స్వరం ఆఫ్';
 
   @override
-  String get settingsSpeechOn => 'App speech on';
+  String get settingsSpeechOn => 'యాప్ స్వరం ఆన్';
 
   @override
   String settingsSpeechMode(String description) {
-    return 'Speech mode. $description';
+    return 'స్వరం మోడ్. $description';
   }
 
   @override
   String settingsNarration(String level) {
-    return 'Narration level $level.';
+    return 'వ్యాఖ్యాన స్థాయి $level.';
   }
 
   @override
-  String get settingsNarrationEssential => 'essential';
+  String get settingsNarrationEssential => 'అవసరమైనంత';
 
   @override
-  String get settingsNarrationStandard => 'standard';
+  String get settingsNarrationStandard => 'సాధారణం';
 
   @override
-  String get settingsNarrationDetailed => 'detailed';
+  String get settingsNarrationDetailed => 'వివరంగా';
 
   @override
   String settingsLanguage(String language) {
-    return 'Speech language $language.';
+    return 'మాట్లాడే భాష $language.';
   }
 
   @override
   String settingsLanguageLabel(String language) {
-    return 'Speech language, $language. Press OK to change.';
+    return 'మాట్లాడే భాష, $language. మార్చడానికి ఓకే నొక్కండి.';
   }
 
   @override
-  String get settingsBack => 'Back';
+  String get settingsBack => 'వెనుకకు';
 
   @override
   String get settingsResetLabel =>
-      'Reset settings to defaults, asks to confirm';
+      'సెట్టింగ్‌లను డిఫాల్ట్‌కు రీసెట్ చేయండి, నిర్ధారణ అడుగుతుంది';
 
   @override
   String settingsSpeechSectionLabel(String state) {
-    return 'Speech section. App speech, $state';
+    return 'స్వరం విభాగం. యాప్ స్వరం, $state';
   }
 
   @override
   String settingsVolumeLabel(String percent) {
-    return 'Volume $percent percent. Left or right to change';
+    return 'వాల్యూమ్ $percent శాతం. మార్చడానికి ఎడమ లేదా కుడి';
   }
 
   @override
   String settingsSpeedLabel(String speed) {
-    return 'Speech speed $speed. Left or right to change';
+    return 'మాట్లాడే వేగం $speed. మార్చడానికి ఎడమ లేదా కుడి';
   }
 
   @override
-  String get settingsTestLabel => 'Test speech';
+  String get settingsTestLabel => 'స్వరాన్ని పరీక్షించండి';
 
   @override
   String settingsModeLabel(String description) {
-    return 'Speech mode. $description Press OK to change.';
+    return 'స్వరం మోడ్. $description మార్చడానికి ఓకే నొక్కండి.';
   }
 
   @override
   String settingsNarrationLabel(String level) {
-    return 'Narration level $level. Press OK to change.';
+    return 'వ్యాఖ్యాన స్థాయి $level. మార్చడానికి ఓకే నొక్కండి.';
   }
 
   @override
   String settingsCheckVoiceLabel(String language) {
-    return 'Check $language voice';
+    return '$language స్వరాన్ని తనిఖీ చేయండి';
   }
 
   @override
-  String get settingsStopLabel => 'Stop speech';
+  String get settingsStopLabel => 'మాట్లాడటం ఆపండి';
 
   @override
   String settingsContrastLabel(String state) {
-    return 'Display section. High contrast, $state. On by default';
+    return 'డిస్‌ప్లే విభాగం. హై కాంట్రాస్ట్, $state. డిఫాల్ట్‌గా ఆన్';
   }
 
   @override
   String settingsTextSizeLabel(String percent) {
-    return 'Text size $percent percent. Left or right to change';
+    return 'అక్షరాల పరిమాణం $percent శాతం. మార్చడానికి ఎడమ లేదా కుడి';
   }
 
   @override
   String settingsShortcutsLabel(String state) {
-    return 'Keys and help section. Show keypad shortcuts, $state';
+    return 'కీలు మరియు సహాయం విభాగం. కీప్యాడ్ షార్ట్‌కట్‌లు చూపించు, $state';
   }
 
   @override
   String settingsVoiceCommandsLabel(String state) {
-    return 'Voice commands in sessions, $state';
+    return 'సెషన్‌లలో వాయిస్ కమాండ్‌లు, $state';
   }
 
   @override
-  String get settingsVoiceHelpLabel => 'Voice command help';
+  String get settingsVoiceHelpLabel => 'వాయిస్ కమాండ్ సహాయం';
 
   @override
-  String get settingsRepeatHelpLabel => 'Repeat Settings help';
+  String get settingsRepeatHelpLabel => 'సెట్టింగ్‌ల సహాయాన్ని మళ్లీ వినండి';
 
   @override
-  String get settingsSaveLabel => 'Save settings';
+  String get settingsSaveLabel => 'సెట్టింగ్‌లను సేవ్ చేయండి';
 
   @override
   String get settingsResetQuestion =>
-      'Reset all settings to defaults? Speech, display and key settings return to their original values.';
+      'అన్ని సెట్టింగ్‌లను డిఫాల్ట్‌కు రీసెట్ చేయాలా? స్వరం, డిస్‌ప్లే మరియు కీ సెట్టింగ్‌లు వాటి అసలు విలువలకు తిరిగి వస్తాయి.';
 
   @override
   String settingsResetScreen(String question) {
-    return 'Reset settings. $question';
+    return 'సెట్టింగ్‌లను రీసెట్ చేయండి. $question';
   }
 
   @override
-  String get settingsResetCancel => 'Cancel';
+  String get settingsResetCancel => 'రద్దు చేయండి';
 
   @override
-  String get settingsResetConfirm => 'Reset';
+  String get settingsResetConfirm => 'రీసెట్ చేయండి';
 
   @override
-  String get settingsResetCancelLabel => 'Cancel, keep my settings';
+  String get settingsResetCancelLabel =>
+      'రద్దు చేయండి, నా సెట్టింగ్‌లను ఉంచండి';
 
   @override
-  String get settingsResetConfirmLabel => 'Reset all settings to defaults';
+  String get settingsResetConfirmLabel =>
+      'అన్ని సెట్టింగ్‌లను డిఫాల్ట్‌కు రీసెట్ చేయండి';
 
   @override
-  String get quizNotSet => 'not set';
+  String get quizNotSet => 'సెట్ చేయలేదు';
 
   @override
-  String get quizNotAvailable => 'not available';
+  String get quizNotAvailable => 'అందుబాటులో లేదు';
 
   @override
-  String get quizNotAvailableCapital => 'Not available';
+  String get quizNotAvailableCapital => 'అందుబాటులో లేదు';
 
   @override
   String quizQuestionCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count questions',
-      one: '1 question',
+      other: '$count ప్రశ్నలు',
+      one: '1 ప్రశ్న',
     );
     return '$_temp0';
   }
@@ -960,8 +969,8 @@ class AppLocalizationsTe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count attempts',
-      one: '1 attempt',
+      other: '$count ప్రయత్నాలు',
+      one: '1 ప్రయత్నం',
     );
     return '$_temp0';
   }
@@ -971,275 +980,275 @@ class AppLocalizationsTe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count students',
-      one: '1 student',
+      other: '$count విద్యార్థులు',
+      one: '1 విద్యార్థి',
     );
     return '$_temp0';
   }
 
   @override
   String get quizAccountChanged =>
-      'Your account changed. Return to quizzes and sign in again.';
+      'మీ ఖాతా మారింది. క్విజ్‌లకు తిరిగి వెళ్ళి మళ్ళీ సైన్ ఇన్ చేయండి.';
 
   @override
   String get quizUnlimitedPractice =>
-      'Unlimited practice attempts. Not graded.';
+      'అపరిమిత అభ్యాస ప్రయత్నాలు. మార్కులు ఇవ్వబడవు.';
 
   @override
   String quizAttemptsRemaining(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count attempts remaining.',
-      one: '1 attempt remaining.',
+      other: '$count ప్రయత్నాలు మిగిలి ఉన్నాయి.',
+      one: '1 ప్రయత్నం మిగిలి ఉంది.',
     );
     return '$_temp0';
   }
 
   @override
   String quizTimeLimit(String duration) {
-    return 'Time limit $duration.';
+    return 'సమయ పరిమితి $duration.';
   }
 
   @override
-  String get quizNoTimeLimit => 'No time limit.';
+  String get quizNoTimeLimit => 'సమయ పరిమితి లేదు.';
 
   @override
-  String get quizNoTimeLimitShort => 'No time limit';
+  String get quizNoTimeLimitShort => 'సమయ పరిమితి లేదు';
 
   @override
   String get quizFeedbackAfterCompletion =>
-      'Answer feedback and scores are released after you finish the quiz.';
+      'మీరు క్విజ్ పూర్తి చేసిన తర్వాత జవాబుల ఫీడ్‌బ్యాక్ మరియు స్కోర్లు విడుదల అవుతాయి.';
 
   @override
   String quizFeedbackScheduled(String when) {
-    return 'Feedback and scores are released after you finish and after $when.';
+    return 'మీరు పూర్తి చేసిన తర్వాత మరియు $when తర్వాత ఫీడ్‌బ్యాక్ మరియు స్కోర్లు విడుదల అవుతాయి.';
   }
 
   @override
   String get quizFeedbackScoreOnly =>
-      'Only the score is released after you finish. Answers and explanations are not released.';
+      'మీరు పూర్తి చేసిన తర్వాత స్కోర్ మాత్రమే విడుదల అవుతుంది. జవాబులు మరియు వివరణలు విడుదల కావు.';
 
   @override
   String get quizFeedbackImmediate =>
-      'You hear whether each answer is right as soon as you submit it.';
+      'ప్రతి జవాబు సబ్మిట్ చేసిన వెంటనే అది సరైనదో కాదో మీకు వినిపిస్తుంది.';
 
   @override
-  String get quizPolicyAfterCompletion => 'after the quiz is finished';
+  String get quizPolicyAfterCompletion => 'క్విజ్ పూర్తయిన తర్వాత';
 
   @override
-  String get quizPolicyScheduled => 'at a scheduled time';
+  String get quizPolicyScheduled => 'నిర్ణయించిన సమయంలో';
 
   @override
-  String get quizPolicyScoreOnly => 'score only';
+  String get quizPolicyScoreOnly => 'స్కోర్ మాత్రమే';
 
   @override
-  String get quizPolicyLegacyImmediate => 'immediately, older setting';
+  String get quizPolicyLegacyImmediate => 'వెంటనే, పాత సెట్టింగ్';
 
   @override
-  String get quizPolicyImmediate => 'immediately after each answer';
+  String get quizPolicyImmediate => 'ప్రతి జవాబు తర్వాత వెంటనే';
 
   @override
   String quizPracticeResult(String correct, String total) {
-    return 'Practice, not an academic grade. $correct of $total correct in this practice.';
+    return 'అభ్యాసం, ఇది అకడమిక్ గ్రేడ్ కాదు. ఈ అభ్యాసంలో $totalలో $correct సరైనవి.';
   }
 
   @override
   String quizScoreNotReleased(String message) {
-    return 'Score not released. $message';
+    return 'స్కోర్ విడుదల కాలేదు. $message';
   }
 
   @override
-  String get quizCheckReleasePolicy => 'Check the release policy.';
+  String get quizCheckReleasePolicy => 'విడుదల విధానాన్ని చెక్ చేయండి.';
 
   @override
   String quizScoreResult(String correct, String total, String percent) {
-    return 'Score $correct of $total, $percent.';
+    return 'స్కోర్ $totalలో $correct, $percent.';
   }
 
   @override
-  String get quizStatusInProgress => 'in progress';
+  String get quizStatusInProgress => 'జరుగుతోంది';
 
   @override
-  String get quizStatusTimedOut => 'finished when time ran out';
+  String get quizStatusTimedOut => 'సమయం అయిపోవడంతో ముగిసింది';
 
   @override
-  String get quizStatusCompleted => 'finished';
+  String get quizStatusCompleted => 'పూర్తయింది';
 
   @override
-  String get quizStatusPublished => 'published';
+  String get quizStatusPublished => 'ప్రచురించబడింది';
 
   @override
-  String get quizStatusDraft => 'draft';
+  String get quizStatusDraft => 'డ్రాఫ్ట్';
 
   @override
-  String get quizStatusClosed => 'closed';
+  String get quizStatusClosed => 'మూసివేయబడింది';
 
   @override
-  String get quizStatusScheduled => 'scheduled';
+  String get quizStatusScheduled => 'షెడ్యూల్ చేయబడింది';
 
   @override
-  String get quizStatusOpen => 'open';
+  String get quizStatusOpen => 'తెరిచి ఉంది';
 
   @override
   String quizQuestionHeading(String number, String total) {
-    return 'Question $number of $total';
+    return '$totalలో ప్రశ్న $number';
   }
 
   @override
   String quizQuestionWithText(String number, String total, String text) {
-    return 'Question $number of $total. $text';
+    return '$totalలో ప్రశ్న $number. $text';
   }
 
   @override
   String quizOptionSpoken(String number, String text) {
-    return 'Option $number. $text.';
+    return 'ఎంపిక $number. $text.';
   }
 
   @override
   String quizOptionLabel(String number, String count, String text) {
-    return 'Option $number of $count, $text';
+    return '$countలో ఎంపిక $number, $text';
   }
 
   @override
   String quizOptionTargetSelected(String number, String text) {
-    return 'Option $number, $text, selected. Press OK or $number to choose';
+    return 'ఎంపిక $number, $text, ఎంచుకోబడింది. ఎంచుకోవడానికి ఓకే లేదా $number నొక్కండి';
   }
 
   @override
   String quizOptionTargetNotSelected(String number, String text) {
-    return 'Option $number, $text, not selected. Press OK or $number to choose';
+    return 'ఎంపిక $number, $text, ఎంచుకోబడలేదు. ఎంచుకోవడానికి ఓకే లేదా $number నొక్కండి';
   }
 
   @override
   String quizAnswerKeysBrief(String count) {
-    return 'Press 1 to $count, then 5.';
+    return '1 నుండి $count వరకు నొక్కండి, తర్వాత 5 నొక్కండి.';
   }
 
   @override
   String quizAnswerKeysDetailed(String count) {
-    return 'Press 1 to $count to choose an answer, then 5 to submit it. Press 6 to repeat the question, 8 to hear where you are.';
+    return 'సమాధానం ఎంచుకోవడానికి 1 నుండి $count వరకు నొక్కండి, తర్వాత దాన్ని సమర్పించడానికి 5 నొక్కండి. ప్రశ్నను మళ్ళీ వినడానికి 6, మీరు ఎక్కడ ఉన్నారో వినడానికి 8 నొక్కండి.';
   }
 
   @override
   String quizChosenBrief(String number, String text) {
-    return 'Option $number, $text, selected.';
+    return 'ఎంపిక $number, $text, ఎంచుకోబడింది.';
   }
 
   @override
   String quizChosenDetailed(String number, String text) {
-    return 'Option $number, $text, selected. Press 5 to submit, or choose another number.';
+    return 'ఎంపిక $number, $text, ఎంచుకోబడింది. సమర్పించడానికి 5 నొక్కండి, లేదా వేరే నంబర్ ఎంచుకోండి.';
   }
 
   @override
   String quizChooseFirst(String count) {
-    return 'Choose an answer first. Press 1 to $count, then 5 to submit.';
+    return 'ముందుగా ఒక సమాధానం ఎంచుకోండి. 1 నుండి $count వరకు నొక్కండి, తర్వాత సమర్పించడానికి 5 నొక్కండి.';
   }
 
   @override
   String quizNoSuchOption(String option, String count) {
-    return 'There is no option $option. Press 1 to $count.';
+    return 'ఎంపిక $option లేదు. 1 నుండి $count వరకు నొక్కండి.';
   }
 
   @override
-  String get quizSubmitting => 'Submitting your answer.';
+  String get quizSubmitting => 'మీ సమాధానం సమర్పిస్తోంది.';
 
   @override
   String quizCorrectFeedback(String answer) {
-    return 'Correct! $answer.';
+    return 'సరైనది! $answer.';
   }
 
   @override
   String quizWrongFeedback(String answer) {
-    return 'Not quite. The answer is $answer.';
+    return 'సరిగ్గా కాదు. సమాధానం $answer.';
   }
 
   @override
-  String get quizAnswerSavedBrief => 'Answer saved.';
+  String get quizAnswerSavedBrief => 'సమాధానం సేవ్ అయింది.';
 
   @override
-  String get quizAnswerSavedLocked => 'Answer saved and locked.';
+  String get quizAnswerSavedLocked => 'సమాధానం సేవ్ అయింది, లాక్ చేయబడింది.';
 
   @override
-  String get quizSavedHeading => 'Answer saved and locked';
+  String get quizSavedHeading => 'సమాధానం సేవ్ అయింది, లాక్ చేయబడింది';
 
   @override
-  String get quizCorrectHeading => 'Correct';
+  String get quizCorrectHeading => 'సరైనది';
 
   @override
-  String get quizWrongHeading => 'Incorrect';
+  String get quizWrongHeading => 'తప్పు';
 
   @override
   String quizYouSelected(String text) {
-    return 'You selected: $text';
+    return 'మీరు ఎంచుకున్నది: $text';
   }
 
   @override
   String quizCorrectAnswerIs(String text) {
-    return 'Correct answer: $text';
+    return 'సరైన సమాధానం: $text';
   }
 
   @override
-  String get quizNoExplanation => 'No explanation provided.';
+  String get quizNoExplanation => 'వివరణ ఇవ్వలేదు.';
 
   @override
   String quizAnswerFailed(String reason) {
-    return '$reason Your selection is preserved. Press 5 to try again.';
+    return '$reason మీ ఎంపిక అలాగే ఉంచబడింది. మళ్ళీ ప్రయత్నించడానికి 5 నొక్కండి.';
   }
 
   @override
-  String get quizAnswerUnreadable =>
-      'The answer confirmation could not be read.';
+  String get quizAnswerUnreadable => 'సమాధానం నిర్ధారణను చదవలేకపోయాము.';
 
   @override
-  String get quizNoOptionSelected => 'No option selected.';
+  String get quizNoOptionSelected => 'ఏ ఎంపికా ఎంచుకోలేదు.';
 
   @override
   String quizSelectionSaved(String number, String text) {
-    return 'Selected option $number, $text. Answer saved.';
+    return 'ఎంపిక $number, $text ఎంచుకున్నారు. సమాధానం సేవ్ అయింది.';
   }
 
   @override
   String quizSelectionNotSubmitted(String number, String text) {
-    return 'Selected option $number, $text. Not submitted yet.';
+    return 'ఎంపిక $number, $text ఎంచుకున్నారు. ఇంకా సమర్పించలేదు.';
   }
 
   @override
-  String get quizRepeatQuestion => 'Repeat question and options';
+  String get quizRepeatQuestion => 'ప్రశ్న మరియు ఎంపికలను మళ్ళీ వినండి';
 
   @override
-  String get quizAnswerConfirmed => 'Answer confirmed saved and locked.';
+  String get quizAnswerConfirmed =>
+      'సమాధానం సేవ్ అయి, లాక్ అయినట్టు నిర్ధారించబడింది.';
 
   @override
   String get quizFeedbackStaysAvailable =>
-      'Feedback for it stays available privately on the next question.';
+      'దాని ఫీడ్‌బ్యాక్ తర్వాతి ప్రశ్నలో ప్రైవేట్‌గా అందుబాటులో ఉంటుంది.';
 
   @override
   String get quizPreviousFeedback =>
-      'Hear feedback for the previous answer, privately';
+      'మునుపటి సమాధానం ఫీడ్‌బ్యాక్‌ను ప్రైవేట్‌గా వినండి';
 
   @override
   String get quizAnswerLockNotice =>
-      'Each answer is saved and locked when you press 5.';
+      'మీరు 5 నొక్కినప్పుడు ప్రతి సమాధానం సేవ్ అయి, లాక్ అవుతుంది.';
 
   @override
   String quizTimeLeft(String duration) {
-    return 'Time left: $duration.';
+    return 'మిగిలిన సమయం: $duration.';
   }
 
   @override
   String quizClockLeft(String clock) {
-    return '$clock left';
+    return '$clock మిగిలి ఉంది';
   }
 
   @override
   String quizClockRemaining(String clock) {
-    return '$clock remaining';
+    return '$clock మిగిలి ఉంది';
   }
 
   @override
   String quizTimeWarning(String duration) {
-    return '$duration left in this quiz.';
+    return 'ఈ క్విజ్‌లో $duration మిగిలి ఉంది.';
   }
 
   @override
@@ -1247,34 +1256,35 @@ class AppLocalizationsTe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Time is up. $count answers saved. Finishing the quiz.',
-      one: 'Time is up. 1 answer saved. Finishing the quiz.',
+      other:
+          'సమయం అయిపోయింది. $count సమాధానాలు సేవ్ అయ్యాయి. క్విజ్ ముగిస్తోంది.',
+      one: 'సమయం అయిపోయింది. 1 సమాధానం సేవ్ అయింది. క్విజ్ ముగిస్తోంది.',
     );
     return '$_temp0';
   }
 
   @override
   String quizWhereQuestion(String number, String total) {
-    return 'Question $number of $total.';
+    return '$totalలో ప్రశ్న $number.';
   }
 
   @override
   String quizAnsweredCount(String count) {
-    return '$count answered.';
+    return '$count సమాధానం ఇచ్చారు.';
   }
 
   @override
   String get quizAllSaved =>
-      'All answers are saved. Press 5 to finish and hear your result.';
+      'అన్ని సమాధానాలు సేవ్ అయ్యాయి. ముగించి మీ ఫలితం వినడానికి 5 నొక్కండి.';
 
   @override
-  String get quizFinishNow => 'Finish quiz now, with confirmation';
+  String get quizFinishNow => 'క్విజ్‌ను ఇప్పుడే ముగించండి, నిర్ధారణతో';
 
   @override
-  String get quizFinishNowButton => 'Finish quiz now';
+  String get quizFinishNowButton => 'క్విజ్‌ను ఇప్పుడే ముగించండి';
 
   @override
-  String get quizFinishTitle => 'Finish quiz now?';
+  String get quizFinishTitle => 'క్విజ్‌ను ఇప్పుడే ముగించాలా?';
 
   @override
   String quizFinishMessage(int count) {
@@ -1282,166 +1292,166 @@ class AppLocalizationsTe extends AppLocalizations {
       count,
       locale: localeName,
       other:
-          'The server shows $count questions not answered. Only saved answers count. A selected answer that you did not submit is not included. You cannot change answers after finishing.',
+          'సర్వర్ ప్రకారం $count ప్రశ్నలకు సమాధానం ఇవ్వలేదు. సేవ్ అయిన సమాధానాలు మాత్రమే లెక్కలోకి వస్తాయి. మీరు ఎంచుకుని సమర్పించని సమాధానం చేర్చబడదు. ముగించిన తర్వాత సమాధానాలు మార్చలేరు.',
       one:
-          'The server shows 1 question not answered. Only saved answers count. A selected answer that you did not submit is not included. You cannot change answers after finishing.',
+          'సర్వర్ ప్రకారం 1 ప్రశ్నకు సమాధానం ఇవ్వలేదు. సేవ్ అయిన సమాధానాలు మాత్రమే లెక్కలోకి వస్తాయి. మీరు ఎంచుకుని సమర్పించని సమాధానం చేర్చబడదు. ముగించిన తర్వాత సమాధానాలు మార్చలేరు.',
     );
     return '$_temp0';
   }
 
   @override
-  String get quizFinishConfirm => 'Finish quiz';
+  String get quizFinishConfirm => 'క్విజ్ ముగించండి';
 
   @override
-  String get quizFinishCancel => 'Keep working';
+  String get quizFinishCancel => 'కొనసాగించండి';
 
   @override
   String get quizFinishUnchecked =>
-      'Your saved answers could not be checked, or this attempt has ended. The quiz was not finished. Return to the quiz list to refresh it.';
+      'మీ సేవ్ అయిన సమాధానాలను తనిఖీ చేయలేకపోయాము, లేదా ఈ ప్రయత్నం ముగిసింది. క్విజ్ ముగించబడలేదు. రిఫ్రెష్ చేయడానికి క్విజ్ జాబితాకు తిరిగి వెళ్ళండి.';
 
   @override
   String get quizFinishTimedOut =>
-      'Checking your saved answers took too long. The quiz was not finished. Check your connection and try again.';
+      'మీ సేవ్ అయిన సమాధానాలను తనిఖీ చేయడానికి చాలా సమయం పట్టింది. క్విజ్ ముగించబడలేదు. మీ కనెక్షన్ తనిఖీ చేసి మళ్ళీ ప్రయత్నించండి.';
 
   @override
-  String get quizFinishing => 'Finishing the quiz';
+  String get quizFinishing => 'క్విజ్ ముగిస్తోంది';
 
   @override
-  String get quizFinishAndHear => 'Finish and hear result';
+  String get quizFinishAndHear => 'ముగించి ఫలితం వినండి';
 
   @override
-  String get quizRetryFinishing => 'Retry finishing';
+  String get quizRetryFinishing => 'ముగించడానికి మళ్ళీ ప్రయత్నించండి';
 
   @override
   String quizCompletionFailed(String reason) {
-    return '$reason Your saved answers are preserved. Press 5 to retry finishing.';
+    return '$reason మీ సేవ్ అయిన సమాధానాలు అలాగే ఉన్నాయి. ముగించడానికి మళ్ళీ ప్రయత్నించాలంటే 5 నొక్కండి.';
   }
 
   @override
-  String get quizCompletionNotConfirmed => 'Completion was not confirmed.';
+  String get quizCompletionNotConfirmed => 'ముగింపు నిర్ధారించబడలేదు.';
 
   @override
   String get quizCompleted =>
-      'Quiz finished. Your result is private. Press 8 to hear it, or 0 to return to quizzes.';
+      'క్విజ్ ముగిసింది. మీ ఫలితం ప్రైవేట్. దాన్ని వినడానికి 8 నొక్కండి, లేదా క్విజ్‌లకు తిరిగి వెళ్ళడానికి 0 నొక్కండి.';
 
   @override
   String get quizCompletedTimedOut =>
-      'Time ran out. Quiz finished. Your result is private. Press 8 to hear it, or 0 to return to quizzes.';
+      'సమయం అయిపోయింది. క్విజ్ ముగిసింది. మీ ఫలితం ప్రైవేట్. దాన్ని వినడానికి 8 నొక్కండి, లేదా క్విజ్‌లకు తిరిగి వెళ్ళడానికి 0 నొక్కండి.';
 
   @override
   String get quizResultPrivate =>
-      'Quiz finished. Result private. Use Read result privately.';
+      'క్విజ్ ముగిసింది. ఫలితం ప్రైవేట్. \'ఫలితాన్ని ప్రైవేట్‌గా చదవండి\' ఉపయోగించండి.';
 
   @override
-  String get quizResultHeading => 'Attempt complete';
+  String get quizResultHeading => 'ప్రయత్నం పూర్తయింది';
 
   @override
-  String get quizReadResult => 'Read result privately';
+  String get quizReadResult => 'ఫలితాన్ని ప్రైవేట్‌గా చదవండి';
 
   @override
-  String get quizReturnToQuizzes => 'Return to quizzes';
+  String get quizReturnToQuizzes => 'క్విజ్‌లకు తిరిగి వెళ్ళండి';
 
   @override
-  String get quizLeave => 'Leave without submitting, with confirmation';
+  String get quizLeave => 'సమర్పించకుండా వెళ్ళండి, నిర్ధారణతో';
 
   @override
-  String get quizLeaveTitle => 'Leave and resume later?';
+  String get quizLeaveTitle => 'వెళ్ళి, తర్వాత కొనసాగించాలా?';
 
   @override
   String get quizLeaveMessage =>
-      'This does not submit your attempt. Only saved answers are kept; a selected answer that you did not submit may be lost. Any time limit keeps running. You can resume while the quiz allows it.';
+      'ఇది మీ ప్రయత్నాన్ని సమర్పించదు. సేవ్ అయిన సమాధానాలు మాత్రమే ఉంచబడతాయి; మీరు ఎంచుకుని సమర్పించని సమాధానం పోవచ్చు. సమయ పరిమితి ఏదైనా ఉంటే అది నడుస్తూనే ఉంటుంది. క్విజ్ అనుమతించినంత వరకు మీరు మళ్ళీ కొనసాగించవచ్చు.';
 
   @override
-  String get quizLeaveConfirm => 'Leave without submitting';
+  String get quizLeaveConfirm => 'సమర్పించకుండా వెళ్ళండి';
 
   @override
-  String get quizLeaveCancel => 'Stay in quiz';
+  String get quizLeaveCancel => 'క్విజ్‌లోనే ఉండండి';
 
   @override
   String get quizWaitBeforeLeaving =>
-      'Please wait. Your answer is still being saved.';
+      'దయచేసి వేచి ఉండండి. మీ సమాధానం ఇంకా సేవ్ అవుతోంది.';
 
   @override
   String quizAttemptScreen(String title) {
-    return 'Quiz attempt, $title';
+    return 'క్విజ్ ప్రయత్నం, $title';
   }
 
   @override
   String get quizAttemptNavigationCompleted =>
-      'return to quizzes, read result privately and quiz speech speed';
+      'క్విజ్‌లకు తిరిగి వెళ్ళడం, ఫలితాన్ని ప్రైవేట్‌గా చదవడం మరియు క్విజ్ స్వర వేగం';
 
   @override
   String get quizAttemptNavigationTimed =>
-      'the question, each answer option, the selected answer, quiz speech speed, time left, submit, Finish quiz now and Leave. Moving focus never selects or submits';
+      'ప్రశ్న, ప్రతి సమాధాన ఎంపిక, ఎంచుకున్న సమాధానం, క్విజ్ స్వర వేగం, మిగిలిన సమయం, సమర్పించు, క్విజ్‌ను ఇప్పుడే ముగించండి మరియు వెళ్ళండి. ఫోకస్ కదిలించడం వల్ల ఏదీ ఎంచుకోబడదు లేదా సమర్పించబడదు';
 
   @override
   String get quizAttemptNavigationUntimed =>
-      'the question, each answer option, the selected answer, quiz speech speed, submit, Finish quiz now and Leave. Moving focus never selects or submits';
+      'ప్రశ్న, ప్రతి సమాధాన ఎంపిక, ఎంచుకున్న సమాధానం, క్విజ్ స్వర వేగం, సమర్పించు, క్విజ్‌ను ఇప్పుడే ముగించండి మరియు వెళ్ళండి. ఫోకస్ కదిలించడం వల్ల ఏదీ ఎంచుకోబడదు లేదా సమర్పించబడదు';
 
   @override
   String get quizSpeedHelp =>
-      'Press 7 or 9 to make quiz speech slower or faster.';
+      'క్విజ్ స్వరాన్ని నెమ్మదిగా లేదా వేగంగా చేయడానికి 7 లేదా 9 నొక్కండి.';
 
   @override
   String get quizSpeedScreenReader =>
-      'Quiz speech speed changes app speech only. Change your screen reader speed in Android settings.';
+      'క్విజ్ స్వర వేగం యాప్ స్వరాన్ని మాత్రమే మారుస్తుంది. మీ స్క్రీన్ రీడర్ వేగాన్ని Android సెట్టింగ్‌లలో మార్చండి.';
 
   @override
-  String get quizSpeedHeading => 'Quiz speech speed';
+  String get quizSpeedHeading => 'క్విజ్ స్వర వేగం';
 
   @override
   String quizSpeedTarget(String description) {
-    return 'Quiz speech speed, $description. Left or right to change, or press 7 or 9';
+    return 'క్విజ్ స్వర వేగం, $description. మార్చడానికి ఎడమ లేదా కుడి, లేదా 7 లేదా 9 నొక్కండి';
   }
 
   @override
   String quizSpeedRead(String description) {
-    return 'Quiz speech speed, $description. Press 7 for slower or 9 for faster. This speed is used only in quizzes.';
+    return 'క్విజ్ స్వర వేగం, $description. నెమ్మదిగా చేయడానికి 7 లేదా వేగంగా చేయడానికి 9 నొక్కండి. ఈ వేగం క్విజ్‌లలో మాత్రమే ఉపయోగించబడుతుంది.';
   }
 
   @override
   String quizSpeedFaster(String description) {
-    return 'Faster. $description.';
+    return 'వేగంగా. $description.';
   }
 
   @override
   String quizSpeedSlower(String description) {
-    return 'Slower. $description.';
+    return 'నెమ్మదిగా. $description.';
   }
 
   @override
   String quizSpeedFastest(String description) {
-    return 'Fastest quiz speech, $description.';
+    return 'అత్యంత వేగమైన క్విజ్ స్వరం, $description.';
   }
 
   @override
   String quizSpeedSlowest(String description) {
-    return 'Slowest quiz speech, $description.';
+    return 'అత్యంత నెమ్మదైన క్విజ్ స్వరం, $description.';
   }
 
   @override
-  String get quizStudentScreen => 'Student quizzes';
+  String get quizStudentScreen => 'విద్యార్థి క్విజ్‌లు';
 
   @override
   String get quizStudentNavigation =>
-      'refresh, quiz state and subject filters, available quizzes, and attempt history';
+      'రిఫ్రెష్, క్విజ్ స్థితి మరియు సబ్జెక్టు ఫిల్టర్‌లు, అందుబాటులో ఉన్న క్విజ్‌లు, మరియు ప్రయత్నాల చరిత్ర';
 
   @override
   String get quizStudentIntroBrief =>
-      'Use left or right on a filter to change it.';
+      'ఫిల్టర్‌ను మార్చడానికి దానిపై ఎడమ లేదా కుడి ఉపయోగించండి.';
 
   @override
   String get quizStudentIntroDetailed =>
-      'Use left or right on a filter to change it. Press OK on a quiz to hear its details and confirm starting. Moving focus never starts a quiz.';
+      'ఫిల్టర్‌ను మార్చడానికి దానిపై ఎడమ లేదా కుడి ఉపయోగించండి. క్విజ్ వివరాలు విని, ప్రారంభాన్ని నిర్ధారించడానికి దానిపై ఓకే నొక్కండి. ఫోకస్ కదిలించడం వల్ల క్విజ్ ఎప్పుడూ ప్రారంభం కాదు.';
 
   @override
   String quizAvailable(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count quizzes available.',
-      one: '1 quiz available.',
-      zero: 'No quizzes available.',
+      other: '$count క్విజ్‌లు అందుబాటులో ఉన్నాయి.',
+      one: '1 క్విజ్ అందుబాటులో ఉంది.',
+      zero: 'క్విజ్‌లు ఏవీ అందుబాటులో లేవు.',
     );
     return '$_temp0';
   }
@@ -1451,39 +1461,39 @@ class AppLocalizationsTe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count quizzes shown, $open open.',
-      one: '1 quiz shown, $open open.',
+      other: '$count క్విజ్‌లు చూపబడ్డాయి, $open తెరిచి ఉన్నాయి.',
+      one: '1 క్విజ్ చూపబడింది, $open తెరిచి ఉన్నాయి.',
     );
     return '$_temp0';
   }
 
   @override
-  String get quizStateAll => 'All states';
+  String get quizStateAll => 'అన్ని స్థితులు';
 
   @override
-  String get quizStateScheduled => 'Scheduled';
+  String get quizStateScheduled => 'షెడ్యూల్ చేయబడింది';
 
   @override
-  String get quizStateOpen => 'Open';
+  String get quizStateOpen => 'తెరిచి ఉంది';
 
   @override
-  String get quizStateClosed => 'Closed';
+  String get quizStateClosed => 'మూసివేయబడింది';
 
   @override
   String quizStateFilter(String name, String position, String count) {
-    return 'Quiz state: $name, $position of $count.';
+    return 'క్విజ్ స్థితి: $name, $countలో $position.';
   }
 
   @override
   String quizSubjectFilter(String name, String position, String count) {
-    return 'Subject: $name, $position of $count.';
+    return 'సబ్జెక్టు: $name, $countలో $position.';
   }
 
   @override
-  String get quizChangeWithArrows => 'Left or right to change';
+  String get quizChangeWithArrows => 'మార్చడానికి ఎడమ లేదా కుడి';
 
   @override
-  String get quizAllSubjects => 'All subjects';
+  String get quizAllSubjects => 'అన్ని సబ్జెక్టులు';
 
   @override
   String quizRowHead(String subject, String title, String status) {
@@ -1491,26 +1501,26 @@ class AppLocalizationsTe extends AppLocalizations {
   }
 
   @override
-  String get quizStartQuiz => 'Start quiz';
+  String get quizStartQuiz => 'క్విజ్ ప్రారంభించండి';
 
   @override
-  String get quizResumeQuiz => 'Resume quiz';
+  String get quizResumeQuiz => 'క్విజ్ కొనసాగించండి';
 
   @override
   String quizHistoryRow(String title, String score) {
-    return 'Review $title attempt history. Highest score $score';
+    return '$title ప్రయత్నాల చరిత్రను సమీక్షించండి. అత్యధిక స్కోరు $score';
   }
 
   @override
   String quizLimitReached(String title) {
-    return 'No attempts left for $title. Open attempt history to review your scores.';
+    return '$titleకి ప్రయత్నాలు ఇంకా మిగిలి లేవు. మీ స్కోర్‌లను సమీక్షించడానికి ప్రయత్నాల చరిత్ర తెరవండి.';
   }
 
   @override
-  String get quizStartTitle => 'Start quiz?';
+  String get quizStartTitle => 'క్విజ్ ప్రారంభించాలా?';
 
   @override
-  String get quizResumeTitle => 'Resume quiz?';
+  String get quizResumeTitle => 'క్విజ్ కొనసాగించాలా?';
 
   @override
   String quizTitleSentence(String title) {
@@ -1519,61 +1529,62 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String quizClosesSentence(String when) {
-    return 'Closes $when.';
+    return '$when మూసివేయబడుతుంది.';
   }
 
   @override
-  String get quizStartAttempt => 'Start attempt';
+  String get quizStartAttempt => 'ప్రయత్నం ప్రారంభించండి';
 
   @override
-  String get quizResumeAttempt => 'Resume attempt';
+  String get quizResumeAttempt => 'ప్రయత్నం కొనసాగించండి';
 
   @override
   String get quizStartFailed =>
-      'The quiz could not be started. Check that it is open.';
+      'క్విజ్‌ను ప్రారంభించలేకపోయాము. అది తెరిచి ఉందో లేదో తనిఖీ చేయండి.';
 
   @override
-  String get quizHistoryFailed => 'Attempt history could not be loaded.';
+  String get quizHistoryFailed => 'ప్రయత్నాల చరిత్రను లోడ్ చేయలేకపోయాము.';
 
   @override
   String get quizHistoryScreen =>
-      'Attempt history. Scores are private. Move to the summary or an attempt to review it.';
+      'ప్రయత్నాల చరిత్ర. స్కోర్‌లు ప్రైవేట్. సమీక్షించడానికి సారాంశానికి లేదా ఒక ప్రయత్నానికి వెళ్ళండి.';
 
   @override
-  String get quizPracticeHistory => 'Practice history. Not academic grades.';
+  String get quizPracticeHistory =>
+      'అభ్యాస చరిత్ర. ఇవి అకడమిక్ గ్రేడ్‌లు కావు.';
 
   @override
   String quizHighestScoreValue(String score) {
-    return 'Highest score: $score';
+    return 'అత్యధిక స్కోరు: $score';
   }
 
   @override
   String get quizNoScoreReleasedYet =>
-      'Completed attempts exist; no score is released yet.';
+      'పూర్తయిన ప్రయత్నాలు ఉన్నాయి; ఇంకా స్కోరు విడుదల చేయలేదు.';
 
   @override
-  String get quizNoCompletedAttempt => 'No completed attempt';
+  String get quizNoCompletedAttempt => 'పూర్తయిన ప్రయత్నం లేదు';
 
   @override
   String quizHistoryAttempt(String number, String status, String result) {
-    return 'Attempt $number. $status. $result Press OK to review.';
+    return 'ప్రయత్నం $number. $status. $result సమీక్షించడానికి ఓకే నొక్కండి.';
   }
 
   @override
   String get quizResumeFromList =>
-      'This attempt is in progress. Return to the quiz list to resume it. Leaving does not submit.';
+      'ఈ ప్రయత్నం జరుగుతోంది. దాన్ని కొనసాగించడానికి క్విజ్ జాబితాకు తిరిగి వెళ్ళండి. వెళ్ళిపోవడం వల్ల సమర్పించబడదు.';
 
   @override
   String get quizReviewFailed =>
-      'Attempt review could not be loaded. Check your connection and try again.';
+      'ప్రయత్నం సమీక్షను లోడ్ చేయలేకపోయాము. మీ కనెక్షన్ తనిఖీ చేసి మళ్ళీ ప్రయత్నించండి.';
 
   @override
   String get quizReviewTimedOut =>
-      'Attempt review took too long. Check your connection and try again.';
+      'ప్రయత్నం సమీక్షకు చాలా సమయం పట్టింది. మీ కనెక్షన్ తనిఖీ చేసి మళ్ళీ ప్రయత్నించండి.';
 
   @override
   String quizReviewScreenMessage(String message) {
-    return 'Attempt review. $message';
+    return 'ప్రయత్నం సమీక్ష. $message';
   }
 
   @override
@@ -1582,8 +1593,9 @@ class AppLocalizationsTe extends AppLocalizations {
       count,
       locale: localeName,
       other:
-          'Attempt review. $count questions. Use up and down to review each answer.',
-      one: 'Attempt review. 1 question. Use up and down to review each answer.',
+          'ప్రయత్నం సమీక్ష. $count ప్రశ్నలు. ప్రతి సమాధానాన్ని సమీక్షించడానికి పైకి, కిందికి ఉపయోగించండి.',
+      one:
+          'ప్రయత్నం సమీక్ష. 1 ప్రశ్న. ప్రతి సమాధానాన్ని సమీక్షించడానికి పైకి, కిందికి ఉపయోగించండి.',
     );
     return '$_temp0';
   }
@@ -1596,7 +1608,7 @@ class AppLocalizationsTe extends AppLocalizations {
     String answer,
     String explanation,
   ) {
-    return 'Question $number. Correct. $question. You chose $chosen. Correct answer $answer. $explanation';
+    return 'ప్రశ్న $number. సరైనది. $question. మీరు ఎంచుకున్నది $chosen. సరైన సమాధానం $answer. $explanation';
   }
 
   @override
@@ -1607,32 +1619,32 @@ class AppLocalizationsTe extends AppLocalizations {
     String answer,
     String explanation,
   ) {
-    return 'Question $number. Incorrect. $question. You chose $chosen. Correct answer $answer. $explanation';
+    return 'ప్రశ్న $number. తప్పు. $question. మీరు ఎంచుకున్నది $chosen. సరైన సమాధానం $answer. $explanation';
   }
 
   @override
-  String get quizNoAnswer => 'no answer';
+  String get quizNoAnswer => 'సమాధానం లేదు';
 
   @override
   String quizTeacherScreen(String className, String subjectName) {
-    return 'Teacher quizzes for $className, $subjectName';
+    return '$className, $subjectName కోసం ఉపాధ్యాయుల క్విజ్‌లు';
   }
 
   @override
   String get quizTeacherNavigation =>
-      'bank search and saved questions, quiz drafts, published quizzes, and their results';
+      'బ్యాంక్ శోధన మరియు సేవ్ అయిన ప్రశ్నలు, క్విజ్ డ్రాఫ్ట్‌లు, ప్రచురించిన క్విజ్‌లు, మరియు వాటి ఫలితాలు';
 
   @override
   String get quizTeacherIntroDetailed =>
-      'Use the D-pad to explore bank search and saved questions, quiz drafts, published quizzes and results.';
+      'బ్యాంక్ శోధన మరియు సేవ్ అయిన ప్రశ్నలు, క్విజ్ డ్రాఫ్ట్‌లు, ప్రచురించిన క్విజ్‌లు మరియు ఫలితాలను చూడటానికి D-pad ఉపయోగించండి.';
 
   @override
   String quizBankQuestionCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count bank questions',
-      one: '1 bank question',
+      other: '$count బ్యాంక్ ప్రశ్నలు',
+      one: '1 బ్యాంక్ ప్రశ్న',
     );
     return '$_temp0';
   }
@@ -1642,8 +1654,8 @@ class AppLocalizationsTe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count quizzes',
-      one: '1 quiz',
+      other: '$count క్విజ్‌లు',
+      one: '1 క్విజ్',
     );
     return '$_temp0';
   }
@@ -1653,15 +1665,15 @@ class AppLocalizationsTe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count drafts',
-      one: '1 draft',
+      other: '$count డ్రాఫ్ట్‌లు',
+      one: '1 డ్రాఫ్ట్',
     );
     return '$_temp0';
   }
 
   @override
   String quizTeacherLoaded(String questions, String quizzes) {
-    return '$questions and $quizzes loaded.';
+    return '$questions మరియు $quizzes లోడ్ అయ్యాయి.';
   }
 
   @override
@@ -1671,280 +1683,280 @@ class AppLocalizationsTe extends AppLocalizations {
     String closed,
     String bankQuestions,
   ) {
-    return '$drafts, $published published, $closed closed. $bankQuestions.';
+    return '$drafts, $published ప్రచురించబడ్డాయి, $closed మూసివేయబడ్డాయి. $bankQuestions.';
   }
 
   @override
   String get quizTeacherLoadFailed =>
-      'The question bank or quiz list could not be refreshed. Press 1 to try again before creating another quiz.';
+      'ప్రశ్నల బ్యాంక్ లేదా క్విజ్ జాబితాను రిఫ్రెష్ చేయలేకపోయాము. మరో క్విజ్ సృష్టించే ముందు మళ్ళీ ప్రయత్నించడానికి 1 నొక్కండి.';
 
   @override
-  String get quizRefreshQuizzes => 'Refresh quiz content';
+  String get quizRefreshQuizzes => 'క్విజ్ కంటెంట్‌ను రిఫ్రెష్ చేయండి';
 
   @override
-  String get quizSearchBank => 'Search private question bank';
+  String get quizSearchBank => 'ప్రైవేట్ ప్రశ్నల బ్యాంక్‌లో శోధించండి';
 
   @override
-  String get quizCreateQuestion => 'Create four option question';
+  String get quizCreateQuestion => 'నాలుగు ఎంపికల ప్రశ్న సృష్టించండి';
 
   @override
-  String get quizCreateQuiz => 'Create quiz draft';
+  String get quizCreateQuiz => 'క్విజ్ డ్రాఫ్ట్ సృష్టించండి';
 
   @override
   String get quizCreatePractice =>
-      'Create separate untimed ungraded practice. Unlimited retries';
+      'సమయ పరిమితి లేని, మార్కులు లేని వేరే అభ్యాసం సృష్టించండి. అపరిమిత ప్రయత్నాలు';
 
   @override
   String quizBankQuestionItem(String question, String revision) {
-    return 'Question bank item, $question. Revision $revision. Press OK for edit, revision history, duplicate, archive, or add actions';
+    return 'ప్రశ్నల బ్యాంక్ అంశం, $question. రివిజన్ $revision. ఎడిట్, రివిజన్ చరిత్ర, నకలు, ఆర్కైవ్ లేదా జోడించే చర్యల కోసం ఓకే నొక్కండి';
   }
 
   @override
-  String get quizRevisionUnknownOlder => 'unknown, older question';
+  String get quizRevisionUnknownOlder => 'తెలియదు, పాత ప్రశ్న';
 
   @override
-  String get quizRevisionUnknownLegacy => 'unknown legacy';
+  String get quizRevisionUnknownLegacy => 'తెలియదు, పాతది';
 
   @override
   String quizContinueCreating(String title, String questions) {
-    return 'Continue creating $title. $questions';
+    return '$title సృష్టించడం కొనసాగించండి. $questions';
   }
 
   @override
   String quizContinueCreatingRaw(String title, String count) {
-    return 'Continue creating $title. $count questions';
+    return '$title సృష్టించడం కొనసాగించండి. $count ప్రశ్నలు';
   }
 
   @override
   String quizCloseWithConfirmation(String title) {
-    return 'Close $title, with confirmation';
+    return '$title మూసివేయండి, నిర్ధారణతో';
   }
 
   @override
   String quizCloseNamed(String title) {
-    return 'Close $title';
+    return '$title మూసివేయండి';
   }
 
   @override
   String quizIsClosed(String title) {
-    return '$title is closed';
+    return '$title మూసివేయబడింది';
   }
 
   @override
   String quizDuplicateTarget(String title) {
-    return 'Duplicate $title into a new editable draft';
+    return '$titleను కొత్త, ఎడిట్ చేయగల డ్రాఫ్ట్‌గా నకలు చేయండి';
   }
 
   @override
   String quizResultsTarget(String title) {
-    return 'View results for $title';
+    return '$title ఫలితాలు చూడండి';
   }
 
   @override
   String quizCard(String title, String status, String questions) {
-    return '$title. Status $status. $questions.';
+    return '$title. స్థితి $status. $questions.';
   }
 
   @override
   String get quizAccountChangedBank =>
-      'Your account changed. Reopen the question bank before continuing.';
+      'మీ ఖాతా మారింది. కొనసాగించే ముందు ప్రశ్నల బ్యాంక్‌ను మళ్ళీ తెరవండి.';
 
   @override
   String quizQuestionSaveUnconfirmed(String reason) {
-    return '$reason Question save could not be confirmed. Check the bank and refresh before retrying; do not create a duplicate.';
+    return '$reason ప్రశ్న సేవ్ అయినట్టు నిర్ధారించలేకపోయాము. మళ్ళీ ప్రయత్నించే ముందు బ్యాంక్‌ను తనిఖీ చేసి రిఫ్రెష్ చేయండి; నకలు సృష్టించవద్దు.';
   }
 
   @override
   String get quizMissingRevision =>
-      'The server returned a question without a revision. Ask the administrator to update the quiz backend.';
+      'సర్వర్ రివిజన్ లేని ప్రశ్నను పంపింది. క్విజ్ బ్యాకెండ్‌ను అప్‌డేట్ చేయమని నిర్వాహకులను అడగండి.';
 
   @override
-  String get quizSavedQuestionMismatch => 'The saved question did not match.';
+  String get quizSavedQuestionMismatch => 'సేవ్ అయిన ప్రశ్న సరిపోలలేదు.';
 
   @override
   String get quizQuestionSaved =>
-      'Question saved. Editing this bank question later will not change existing quizzes.';
+      'ప్రశ్న సేవ్ అయింది. తర్వాత ఈ బ్యాంక్ ప్రశ్నను ఎడిట్ చేసినా ఇప్పటికే ఉన్న క్విజ్‌లు మారవు.';
 
   @override
   String get quizNoRevisionForEdit =>
-      'This server did not supply a question revision. Ask the administrator to update the quiz backend before editing.';
+      'ఈ సర్వర్ ప్రశ్న రివిజన్ ఇవ్వలేదు. ఎడిట్ చేసే ముందు క్విజ్ బ్యాకెండ్‌ను అప్‌డేట్ చేయమని నిర్వాహకులను అడగండి.';
 
   @override
   String quizQuestionUpdateUnconfirmed(String reason) {
-    return '$reason The bank question could not be confirmed updated. Refresh and review its current revision before retrying.';
+    return '$reason బ్యాంక్ ప్రశ్న అప్‌డేట్ అయినట్టు నిర్ధారించలేకపోయాము. మళ్ళీ ప్రయత్నించే ముందు రిఫ్రెష్ చేసి దాని ప్రస్తుత రివిజన్‌ను సమీక్షించండి.';
   }
 
   @override
-  String get quizSavedRevisionMismatch => 'The saved revision did not match.';
+  String get quizSavedRevisionMismatch => 'సేవ్ అయిన రివిజన్ సరిపోలలేదు.';
 
   @override
   String get quizQuestionUpdated =>
-      'Bank question updated. Existing quiz snapshots were not changed.';
+      'బ్యాంక్ ప్రశ్న అప్‌డేట్ అయింది. ఇప్పటికే ఉన్న క్విజ్ స్నాప్‌షాట్‌లు మారలేదు.';
 
   @override
-  String get quizArchiveTitle => 'Archive bank question?';
+  String get quizArchiveTitle => 'బ్యాంక్ ప్రశ్నను ఆర్కైవ్ చేయాలా?';
 
   @override
   String get quizArchiveMessage =>
-      'Archive this private bank question? Existing quiz snapshots and attempts are not changed.';
+      'ఈ ప్రైవేట్ బ్యాంక్ ప్రశ్నను ఆర్కైవ్ చేయాలా? ఇప్పటికే ఉన్న క్విజ్ స్నాప్‌షాట్‌లు మరియు ప్రయత్నాలు మారవు.';
 
   @override
-  String get quizArchiveConfirm => 'Archive question';
+  String get quizArchiveConfirm => 'ప్రశ్నను ఆర్కైవ్ చేయండి';
 
   @override
-  String get quizArchiveFailed => 'The bank question could not be archived.';
+  String get quizArchiveFailed => 'బ్యాంక్ ప్రశ్నను ఆర్కైవ్ చేయలేకపోయాము.';
 
   @override
-  String get quizArchived => 'Bank question archived.';
+  String get quizArchived => 'బ్యాంక్ ప్రశ్న ఆర్కైవ్ చేయబడింది.';
 
   @override
   String get quizDuplicateQuestionFailed =>
-      'The bank question could not be duplicated.';
+      'బ్యాంక్ ప్రశ్నను నకలు చేయలేకపోయాము.';
 
   @override
-  String get quizQuestionDuplicated => 'Bank question copy created.';
+  String get quizQuestionDuplicated => 'బ్యాంక్ ప్రశ్న నకలు సృష్టించబడింది.';
 
   @override
   String quizQuestionActions(String question) {
-    return 'Actions for $question';
+    return '$question కోసం చర్యలు';
   }
 
   @override
-  String get quizActionEdit => 'Edit bank question';
+  String get quizActionEdit => 'బ్యాంక్ ప్రశ్నను ఎడిట్ చేయండి';
 
   @override
-  String get quizActionDuplicate => 'Duplicate bank question';
+  String get quizActionDuplicate => 'బ్యాంక్ ప్రశ్నను నకలు చేయండి';
 
   @override
-  String get quizActionArchive => 'Archive bank question';
+  String get quizActionArchive => 'బ్యాంక్ ప్రశ్నను ఆర్కైవ్ చేయండి';
 
   @override
-  String get quizActionRevisions => 'Read question revision history';
+  String get quizActionRevisions => 'ప్రశ్న రివిజన్ చరిత్ర చదవండి';
 
   @override
   String quizActionAddTo(String title) {
-    return 'Add to $title';
+    return '$titleకి జోడించండి';
   }
 
   @override
   String get quizRefreshBeforeDraft =>
-      'Refresh and review the quiz list before creating another draft.';
+      'మరో డ్రాఫ్ట్ సృష్టించే ముందు క్విజ్ జాబితాను రిఫ్రెష్ చేసి సమీక్షించండి.';
 
   @override
   String quizDraftUnconfirmed(String reason) {
-    return '$reason Draft save could not be confirmed. Refresh the quiz list before creating another draft.';
+    return '$reason డ్రాఫ్ట్ సేవ్ అయినట్టు నిర్ధారించలేకపోయాము. మరో డ్రాఫ్ట్ సృష్టించే ముందు క్విజ్ జాబితాను రిఫ్రెష్ చేయండి.';
   }
 
   @override
-  String get quizSavedDraftMismatch => 'The saved draft did not match.';
+  String get quizSavedDraftMismatch => 'సేవ్ అయిన డ్రాఫ్ట్ సరిపోలలేదు.';
 
   @override
-  String get quizDraftSaved => 'Quiz draft saved.';
+  String get quizDraftSaved => 'క్విజ్ డ్రాఫ్ట్ సేవ్ అయింది.';
 
   @override
-  String get quizAddToQuizFailed =>
-      'The question could not be added to this quiz.';
+  String get quizAddToQuizFailed => 'ప్రశ్నను ఈ క్విజ్‌కి జోడించలేకపోయాము.';
 
   @override
-  String get quizAddedToQuiz => 'Question added to the quiz.';
+  String get quizAddedToQuiz => 'ప్రశ్న క్విజ్‌కి జోడించబడింది.';
 
   @override
-  String get quizPublishTitle => 'Publish quiz?';
+  String get quizPublishTitle => 'క్విజ్ ప్రచురించాలా?';
 
   @override
   String quizPublishMessage(String title) {
-    return 'Publish \"$title\" to eligible students? Questions become fixed for this quiz.';
+    return '\"$title\"ను అర్హత ఉన్న విద్యార్థులకు ప్రచురించాలా? ఈ క్విజ్ కోసం ప్రశ్నలు స్థిరమవుతాయి.';
   }
 
   @override
   String quizPublishMessageSnapshots(String title) {
-    return 'Publish \"$title\" to eligible students? Questions become academic snapshots.';
+    return '\"$title\"ను అర్హత ఉన్న విద్యార్థులకు ప్రచురించాలా? ప్రశ్నలు అకడమిక్ స్నాప్‌షాట్‌లుగా మారతాయి.';
   }
 
   @override
-  String get quizPublishConfirm => 'Publish quiz';
+  String get quizPublishConfirm => 'క్విజ్ ప్రచురించండి';
 
   @override
   String get quizPublishUnconfirmed =>
-      'Publishing could not be confirmed. Refresh and review the quiz status before trying again.';
+      'ప్రచురణను నిర్ధారించలేకపోయాము. మళ్ళీ ప్రయత్నించే ముందు రిఫ్రెష్ చేసి క్విజ్ స్థితిని సమీక్షించండి.';
 
   @override
   String get quizPublishedNoRecipients =>
-      'Quiz published. There are no eligible students to notify.';
+      'క్విజ్ ప్రచురించబడింది. తెలియజేయడానికి అర్హత ఉన్న విద్యార్థులు ఎవరూ లేరు.';
 
   @override
   String get quizNoEligibleToNotify =>
-      'There are no eligible students to notify.';
+      'తెలియజేయడానికి అర్హత ఉన్న విద్యార్థులు ఎవరూ లేరు.';
 
   @override
   String get quizPublishedNoneDelivered =>
-      'Quiz published, but no student device notifications were delivered. Check notification registration and server Firebase credentials.';
+      'క్విజ్ ప్రచురించబడింది, కానీ ఏ విద్యార్థి పరికరానికీ నోటిఫికేషన్‌లు అందలేదు. నోటిఫికేషన్ రిజిస్ట్రేషన్ మరియు సర్వర్ Firebase ఆధారాలను తనిఖీ చేయండి.';
 
   @override
   String quizPublishedWithFailures(String sent, String failures) {
-    return 'Quiz published. $sent device notifications sent and $failures failed.';
+    return 'క్విజ్ ప్రచురించబడింది. $sent పరికర నోటిఫికేషన్‌లు పంపబడ్డాయి, $failures విఫలమయ్యాయి.';
   }
 
   @override
   String quizPublishedSent(String sent) {
-    return 'Quiz published. $sent device notifications sent.';
+    return 'క్విజ్ ప్రచురించబడింది. $sent పరికర నోటిఫికేషన్‌లు పంపబడ్డాయి.';
   }
 
   @override
-  String get quizCloseTitle => 'Close quiz?';
+  String get quizCloseTitle => 'క్విజ్ మూసివేయాలా?';
 
   @override
   String quizCloseMessage(String title) {
-    return 'Close \"$title\"? No new attempts can start and active attempts will be finished.';
+    return '\"$title\" మూసివేయాలా? కొత్త ప్రయత్నాలు ప్రారంభం కావు, జరుగుతున్న ప్రయత్నాలు ముగించబడతాయి.';
   }
 
   @override
   String quizCloseMessageFinalized(String title) {
-    return 'Close \"$title\"? No new attempts can start and active attempts will be finalized.';
+    return '\"$title\" మూసివేయాలా? కొత్త ప్రయత్నాలు ప్రారంభం కావు, జరుగుతున్న ప్రయత్నాలు ఖరారు చేయబడతాయి.';
   }
 
   @override
-  String get quizCloseConfirm => 'Close quiz';
+  String get quizCloseConfirm => 'క్విజ్ మూసివేయండి';
 
   @override
-  String get quizCloseFailed => 'The quiz could not be closed.';
+  String get quizCloseFailed => 'క్విజ్‌ను మూసివేయడం సాధ్యం కాలేదు.';
 
   @override
-  String get quizClosed => 'Quiz closed.';
+  String get quizClosed => 'క్విజ్ మూసివేయబడింది.';
 
   @override
-  String get quizDuplicateQuizFailed => 'The quiz could not be duplicated.';
+  String get quizDuplicateQuizFailed =>
+      'క్విజ్ కాపీని తయారు చేయడం సాధ్యం కాలేదు.';
 
   @override
-  String get quizQuizDuplicated => 'Editable quiz draft created.';
+  String get quizQuizDuplicated => 'మార్చగలిగే క్విజ్ డ్రాఫ్ట్ తయారైంది.';
 
   @override
   String get quizDraftAccountChanged =>
-      'Your account changed. This draft cannot be reviewed here.';
+      'మీ ఖాతా మారింది. ఈ డ్రాఫ్ట్‌ను ఇక్కడ సమీక్షించలేరు.';
 
   @override
   String get quizDraftLoadFailed =>
-      'The draft or question bank could not be loaded. Refresh before continuing.';
+      'డ్రాఫ్ట్ లేదా ప్రశ్నల బ్యాంక్ లోడ్ కాలేదు. కొనసాగే ముందు రిఫ్రెష్ చేయండి.';
 
   @override
   String quizBankRefreshFailed(String reason) {
-    return '$reason The question bank could not be refreshed. No question was added. Try Choose a saved question again.';
+    return '$reason ప్రశ్నల బ్యాంక్‌ను రిఫ్రెష్ చేయడం సాధ్యం కాలేదు. ఏ ప్రశ్నా జోడించబడలేదు. మళ్ళీ సేవ్ చేసిన ప్రశ్నను ఎంచుకోండి ను ప్రయత్నించండి.';
   }
 
   @override
   String get quizSavedListUnreadable =>
-      'The saved question list could not be read.';
+      'సేవ్ చేసిన ప్రశ్నల జాబితాను చదవడం సాధ్యం కాలేదు.';
 
   @override
   String get quizNoUnusedQuestions =>
-      'No unused questions are available in this workspace. Choose Write a question.';
+      'ఈ వర్క్‌స్పేస్‌లో ఉపయోగించని ప్రశ్నలు ఏవీ లేవు. ప్రశ్న రాయండి ను ఎంచుకోండి.';
 
   @override
   String get quizAllSavedQuestionsUsed =>
-      'Every saved question is already in this quiz. Choose Write a question.';
+      'సేవ్ చేసిన ప్రతి ప్రశ్న ఇప్పటికే ఈ క్విజ్‌లో ఉంది. ప్రశ్న రాయండి ను ఎంచుకోండి.';
 
   @override
-  String get quizChooseSaved => 'Choose a saved question';
+  String get quizChooseSaved => 'సేవ్ చేసిన ప్రశ్నను ఎంచుకోండి';
 
   @override
   String quizSavedQuestionFrom(
@@ -1952,40 +1964,41 @@ class AppLocalizationsTe extends AppLocalizations {
     String className,
     String subjectName,
   ) {
-    return '$question. From $className, $subjectName';
+    return '$question. $className, $subjectName నుండి';
   }
 
   @override
-  String get quizAnotherClass => 'another class';
+  String get quizAnotherClass => 'మరొక తరగతి';
 
   @override
-  String get quizAnotherSubject => 'another subject';
+  String get quizAnotherSubject => 'మరొక సబ్జెక్టు';
 
   @override
   String quizAddUnconfirmed(String reason) {
-    return '$reason Adding the question could not be confirmed. Refresh and review saved questions before adding again; it may already be saved.';
+    return '$reason ప్రశ్న జోడించబడిందని నిర్ధారించడం సాధ్యం కాలేదు. మళ్ళీ జోడించే ముందు రిఫ్రెష్ చేసి సేవ్ చేసిన ప్రశ్నలను సమీక్షించండి; అది ఇప్పటికే సేవ్ అయి ఉండవచ్చు.';
   }
 
   @override
-  String get quizQuestionAddedSentence => 'Question added.';
+  String get quizQuestionAddedSentence => 'ప్రశ్న జోడించబడింది.';
 
   @override
-  String get quizAddAnotherOrReview => 'Add another or choose Review.';
+  String get quizAddAnotherOrReview =>
+      'మరొకటి జోడించండి లేదా సమీక్షించండి ను ఎంచుకోండి.';
 
   @override
   String quizQuestionsSaved(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count questions saved.',
-      one: '1 question saved.',
+      other: '$count ప్రశ్నలు సేవ్ అయ్యాయి.',
+      one: '1 ప్రశ్న సేవ్ అయింది.',
     );
     return '$_temp0';
   }
 
   @override
   String quizQuestionsSavedRaw(String count) {
-    return '$count questions saved.';
+    return '$count ప్రశ్నలు సేవ్ అయ్యాయి.';
   }
 
   @override
@@ -2003,227 +2016,232 @@ class AppLocalizationsTe extends AppLocalizations {
     String description,
     String count,
   ) {
-    return '$title. $description $count questions.';
+    return '$title. $description $count ప్రశ్నలు.';
   }
 
   @override
   String get quizUngradedPracticeSummary =>
-      'Ungraded practice. Unlimited attempts. No timer.';
+      'మార్కులు లేని అభ్యాసం. ఎన్ని ప్రయత్నాలైనా చేయవచ్చు. టైమర్ లేదు.';
 
   @override
   String quizGradedSummary(String attempts) {
-    return 'Graded quiz. $attempts.';
+    return 'మార్కులతో క్విజ్. $attempts.';
   }
 
   @override
   String quizGradedSummaryRaw(String count) {
-    return 'Graded quiz. $count attempts.';
+    return 'మార్కులతో క్విజ్. $count ప్రయత్నాలు.';
   }
 
   @override
-  String get quizNoTimer => 'No timer.';
+  String get quizNoTimer => 'టైమర్ లేదు.';
 
   @override
   String quizPerAttempt(String duration) {
-    return '$duration per attempt.';
+    return 'ఒక్కో ప్రయత్నానికి $duration.';
   }
 
   @override
   String quizMinutesPerAttemptRaw(String minutes) {
-    return '$minutes minutes per attempt.';
+    return 'ఒక్కో ప్రయత్నానికి $minutes నిమిషాలు.';
   }
 
   @override
   String quizOpensSentence(String when) {
-    return 'Opens $when.';
+    return '$when తెరుచుకుంటుంది.';
   }
 
   @override
   String quizOpensColon(String value) {
-    return 'Opens: $value.';
+    return 'తెరుచుకునే సమయం: $value.';
   }
 
   @override
   String quizClosesColon(String value) {
-    return 'Closes: $value.';
+    return 'మూసివేసే సమయం: $value.';
   }
 
   @override
-  String get quizWhenPublished => 'when published';
+  String get quizWhenPublished => 'ప్రచురించినప్పుడు';
 
   @override
-  String get quizNeverNotScheduled => 'never, not scheduled';
+  String get quizNeverNotScheduled => 'ఎప్పుడూ కాదు, షెడ్యూల్ చేయలేదు';
 
   @override
-  String get quizNotScheduled => 'not scheduled';
+  String get quizNotScheduled => 'షెడ్యూల్ చేయలేదు';
 
   @override
   String quizShuffleQuestionsState(String state) {
-    return 'Shuffle questions $state.';
+    return 'ప్రశ్నలను కలపడం $state.';
   }
 
   @override
   String quizShuffleOptionsState(String state) {
-    return 'Shuffle options $state.';
+    return 'ఎంపికలను కలపడం $state.';
   }
 
   @override
   String quizShuffleQuestionsColon(String state) {
-    return 'Shuffle questions: $state.';
+    return 'ప్రశ్నలను కలపడం: $state.';
   }
 
   @override
   String quizShuffleOptionsColon(String state) {
-    return 'Shuffle options: $state.';
+    return 'ఎంపికలను కలపడం: $state.';
   }
 
   @override
-  String get quizRemoveChoose => 'Choose a question to remove from this draft';
+  String get quizRemoveChoose =>
+      'ఈ డ్రాఫ్ట్ నుండి తొలగించడానికి ఒక ప్రశ్నను ఎంచుకోండి';
 
   @override
   String quizRemoveOption(String number, String text) {
-    return 'Question $number: $text';
+    return 'ప్రశ్న $number: $text';
   }
 
   @override
-  String get quizRemoveTitle => 'Remove selected question?';
+  String get quizRemoveTitle => 'ఎంచుకున్న ప్రశ్నను తొలగించాలా?';
 
   @override
   String get quizRemoveMessage =>
-      'Remove this question from the draft? The reusable question bank is not changed.';
+      'ఈ ప్రశ్నను డ్రాఫ్ట్ నుండి తొలగించాలా? మళ్ళీ ఉపయోగించగల ప్రశ్నల బ్యాంక్ మారదు.';
 
   @override
-  String get quizRemoveConfirm => 'Remove question';
+  String get quizRemoveConfirm => 'ప్రశ్నను తొలగించండి';
 
   @override
   String get quizRemoveUnconfirmed =>
-      'Removal could not be confirmed. Review the refreshed draft before trying again.';
+      'తొలగింపును నిర్ధారించడం సాధ్యం కాలేదు. మళ్ళీ ప్రయత్నించే ముందు రిఫ్రెష్ అయిన డ్రాఫ్ట్‌ను సమీక్షించండి.';
 
   @override
-  String get quizQuestionRemovedSentence => 'Question removed from the draft.';
+  String get quizQuestionRemovedSentence =>
+      'ప్రశ్న డ్రాఫ్ట్ నుండి తొలగించబడింది.';
 
   @override
   String get quizSettingsUnconfirmed =>
-      'Settings save could not be confirmed. Refresh and review the saved settings before publishing.';
+      'సెట్టింగ్‌లు సేవ్ అయ్యాయని నిర్ధారించడం సాధ్యం కాలేదు. ప్రచురించే ముందు రిఫ్రెష్ చేసి సేవ్ అయిన సెట్టింగ్‌లను సమీక్షించండి.';
 
   @override
   String get quizSettingsSaved =>
-      'Quiz settings saved. Review them before publishing.';
+      'క్విజ్ సెట్టింగ్‌లు సేవ్ అయ్యాయి. ప్రచురించే ముందు వాటిని సమీక్షించండి.';
 
   @override
   String quizSavedQuestion(String number, String text) {
-    return 'Saved question $number: $text. Already in this draft. Press OK to read its options';
+    return 'సేవ్ చేసిన ప్రశ్న $number: $text. ఇప్పటికే ఈ డ్రాఫ్ట్‌లో ఉంది. దాని ఎంపికలను చదవడానికి ఓకే నొక్కండి';
   }
 
   @override
   String quizQuestionNumbered(String number, String text) {
-    return 'Question $number. $text.';
+    return 'ప్రశ్న $number. $text.';
   }
 
   @override
   String quizDraftOption(String number, String text) {
-    return 'Option $number: $text.';
+    return 'ఎంపిక $number: $text.';
   }
 
   @override
   String quizDraftOptionCorrect(String number, String text) {
-    return 'Option $number: $text, correct answer.';
+    return 'ఎంపిక $number: $text, సరైన జవాబు.';
   }
 
   @override
-  String get quizReviewingBeforePublishing => 'Reviewing before publishing.';
+  String get quizReviewingBeforePublishing =>
+      'ప్రచురించే ముందు సమీక్షిస్తున్నారు.';
 
   @override
-  String get quizAddingQuestions => 'Adding questions.';
+  String get quizAddingQuestions => 'ప్రశ్నలను జోడిస్తున్నారు.';
 
   @override
-  String get quizRefreshSavedDraft => 'Refresh saved draft';
+  String get quizRefreshSavedDraft => 'సేవ్ చేసిన డ్రాఫ్ట్‌ను రిఫ్రెష్ చేయండి';
 
   @override
   String get quizWriteQuestionTarget =>
-      'Write a question and save it to this quiz and your question bank';
+      'ఒక ప్రశ్న రాసి దాన్ని ఈ క్విజ్‌లో మరియు మీ ప్రశ్నల బ్యాంక్‌లో సేవ్ చేయండి';
 
   @override
   String get quizReviewBeforePublishingTarget =>
-      'Review questions and quiz settings before publishing';
+      'ప్రచురించే ముందు ప్రశ్నలను మరియు క్విజ్ సెట్టింగ్‌లను సమీక్షించండి';
 
   @override
   String get quizRemoveQuestionTarget =>
-      'Remove a question from this draft, with confirmation';
+      'నిర్ధారణతో, ఈ డ్రాఫ్ట్ నుండి ఒక ప్రశ్నను తొలగించండి';
 
   @override
   String get quizChangeSettingsTarget =>
-      'Change title or optional quiz settings';
+      'శీర్షిక లేదా ఐచ్ఛిక క్విజ్ సెట్టింగ్‌లను మార్చండి';
 
   @override
-  String get quizBackToAdding => 'Back to adding questions';
+  String get quizBackToAdding => 'ప్రశ్నలను జోడించడానికి తిరిగి వెళ్ళండి';
 
   @override
-  String get quizPublishWithConfirmation => 'Publish quiz, with confirmation';
+  String get quizPublishWithConfirmation =>
+      'నిర్ధారణతో, క్విజ్‌ను ప్రచురించండి';
 
   @override
   String get quizSaveForLaterTarget =>
-      'Save for later and return. Confirmed changes are already saved as a draft';
+      'తర్వాత కోసం సేవ్ చేసి తిరిగి వెళ్ళండి. నిర్ధారించిన మార్పులు ఇప్పటికే డ్రాఫ్ట్‌గా సేవ్ అయ్యాయి';
 
   @override
   String get quizDraftNavigationReview =>
-      'saved questions, quiz settings, and publishing with confirmation';
+      'సేవ్ చేసిన ప్రశ్నలు, క్విజ్ సెట్టింగ్‌లు, మరియు నిర్ధారణతో ప్రచురించడం';
 
   @override
   String get quizDraftNavigationAdd =>
-      'write or choose saved questions, remove questions, and review the draft';
+      'ప్రశ్నలు రాయడం లేదా సేవ్ చేసినవి ఎంచుకోవడం, ప్రశ్నలు తొలగించడం, మరియు డ్రాఫ్ట్‌ను సమీక్షించడం';
 
   @override
-  String get quizPublishedScreen => 'Quiz published';
+  String get quizPublishedScreen => 'క్విజ్ ప్రచురించబడింది';
 
   @override
   String get quizDraftStep3 =>
-      'Step 3 of 3. Review before publishing. Nothing is published until you confirm.';
+      'దశ 3 లో 3. ప్రచురించే ముందు సమీక్షించండి. మీరు నిర్ధారించే వరకు ఏదీ ప్రచురించబడదు.';
 
   @override
   String get quizDraftStep2 =>
-      'Step 2 of 3. Add questions. Choose Write or Use saved question. Then Review.';
+      'దశ 2 లో 3. ప్రశ్నలను జోడించండి. రాయండి లేదా సేవ్ చేసిన ప్రశ్నను ఉపయోగించండి ను ఎంచుకోండి. తర్వాత సమీక్షించండి.';
 
   @override
-  String get quizSaveForLater => 'Save for later and return';
+  String get quizSaveForLater => 'తర్వాత కోసం సేవ్ చేసి తిరిగి వెళ్ళండి';
 
   @override
-  String get quizWriteQuestion => 'Write a question';
+  String get quizWriteQuestion => 'ప్రశ్న రాయండి';
 
   @override
-  String get quizUseSavedQuestion => 'Use saved question';
+  String get quizUseSavedQuestion => 'సేవ్ చేసిన ప్రశ్నను ఉపయోగించండి';
 
   @override
-  String get quizRemoveQuestion => 'Remove a question';
+  String get quizRemoveQuestion => 'ఒక ప్రశ్నను తొలగించండి';
 
   @override
-  String get quizReview => 'Review';
+  String get quizReview => 'సమీక్షించండి';
 
   @override
-  String get quizPublishConfirmLabel => 'Publish with confirmation';
+  String get quizPublishConfirmLabel => 'నిర్ధారణతో ప్రచురించండి';
 
   @override
-  String get quizChangeSettingsLabel => 'Change title or optional settings';
+  String get quizChangeSettingsLabel =>
+      'శీర్షిక లేదా ఐచ్ఛిక సెట్టింగ్‌లను మార్చండి';
 
   @override
   String quizResultsScreen(String title) {
-    return 'Results for $title';
+    return '$title ఫలితాలు';
   }
 
   @override
   String get quizResultsNavigation =>
-      'quiz summary, student results, and available result actions';
+      'క్విజ్ సారాంశం, విద్యార్థుల ఫలితాలు, మరియు అందుబాటులో ఉన్న ఫలిత చర్యలు';
 
   @override
-  String get quizResultsFailed => 'Quiz results could not be loaded.';
+  String get quizResultsFailed => 'క్విజ్ ఫలితాలు లోడ్ కాలేదు.';
 
   @override
   String quizStudentsCompleted(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count students completed.',
-      one: '1 student completed.',
+      other: '$count మంది విద్యార్థులు పూర్తి చేశారు.',
+      one: '1 విద్యార్థి పూర్తి చేశారు.',
     );
     return '$_temp0';
   }
@@ -2233,64 +2251,64 @@ class AppLocalizationsTe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count students not attempted yet.',
-      one: '1 student not attempted yet.',
+      other: '$count మంది విద్యార్థులు ఇంకా ప్రయత్నించలేదు.',
+      one: '1 విద్యార్థి ఇంకా ప్రయత్నించలేదు.',
     );
     return '$_temp0';
   }
 
   @override
   String quizResultsLoadedRaw(String completed, String notAttempted) {
-    return '$completed students completed. $notAttempted students have not attempted.';
+    return '$completed మంది విద్యార్థులు పూర్తి చేశారు. $notAttempted మంది విద్యార్థులు ప్రయత్నించలేదు.';
   }
 
   @override
   String quizStatEligible(String value) {
-    return 'Eligible: $value';
+    return 'అర్హులు: $value';
   }
 
   @override
   String quizStatStarted(String value) {
-    return 'Started: $value';
+    return 'ప్రారంభించినవారు: $value';
   }
 
   @override
   String quizStatCompleted(String value) {
-    return 'Completed: $value';
+    return 'పూర్తి చేసినవారు: $value';
   }
 
   @override
   String quizStatNotAttempted(String value) {
-    return 'Not attempted: $value';
+    return 'ప్రయత్నించనివారు: $value';
   }
 
   @override
   String quizStatCompletion(String value) {
-    return 'Completion: $value';
+    return 'పూర్తి: $value';
   }
 
   @override
   String quizStatCompletionPercent(String value) {
-    return 'Completion: $value percent';
+    return 'పూర్తి: $value శాతం';
   }
 
   @override
   String get quizPracticeParticipation =>
-      'Practice participation, not academic grades.';
+      'అభ్యాసంలో పాల్గొనడం, విద్యా మార్కులు కాదు.';
 
   @override
   String quizStatAverageHighest(String value) {
-    return 'Average highest score: $value';
+    return 'సగటు అత్యధిక స్కోరు: $value';
   }
 
   @override
   String quizStatLowest(String value) {
-    return 'Lowest completed score: $value';
+    return 'పూర్తి చేసినవారిలో అత్యల్ప స్కోరు: $value';
   }
 
   @override
   String quizStudentNotAttempted(String name) {
-    return '$name has not attempted this quiz.';
+    return '$name ఈ క్విజ్‌ను ప్రయత్నించలేదు.';
   }
 
   @override
@@ -2298,51 +2316,51 @@ class AppLocalizationsTe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$name. $count practice attempts. Not academic grades.',
-      one: '$name. 1 practice attempt. Not academic grades.',
+      other: '$name. $count అభ్యాస ప్రయత్నాలు. విద్యా మార్కులు కాదు.',
+      one: '$name. 1 అభ్యాస ప్రయత్నం. విద్యా మార్కులు కాదు.',
     );
     return '$_temp0';
   }
 
   @override
   String quizStudentPracticeRaw(String name, String count) {
-    return '$name. $count practice attempts. Not academic grades.';
+    return '$name. $count అభ్యాస ప్రయత్నాలు. విద్యా మార్కులు కాదు.';
   }
 
   @override
   String quizStudentAttemptScore(String number, String score, String status) {
-    return 'attempt $number, $score, $status';
+    return 'ప్రయత్నం $number, $score, $status';
   }
 
   @override
   String quizStudentAttemptRaw(String number, String score, String status) {
-    return 'attempt $number, $score percent, $status';
+    return 'ప్రయత్నం $number, $score శాతం, $status';
   }
 
   @override
   String quizStudentScores(String name, String highest, String scores) {
-    return '$name. Highest score $highest. $scores.';
+    return '$name. అత్యధిక స్కోరు $highest. $scores.';
   }
 
   @override
   String quizStudentScoresRaw(String name, String highest, String scores) {
-    return '$name. Highest score $highest percent. $scores.';
+    return '$name. అత్యధిక స్కోరు $highest శాతం. $scores.';
   }
 
   @override
   String get quizExtraMismatch =>
-      'The extra-time confirmation did not match. Refresh before retrying.';
+      'అదనపు సమయం నిర్ధారణ సరిపోలలేదు. మళ్ళీ ప్రయత్నించే ముందు రిఫ్రెష్ చేయండి.';
 
   @override
   String get quizExtraSaved =>
-      'Extra time confirmed for future attempts only. Existing attempt deadlines are unchanged and quiz closing time still applies.';
+      'అదనపు సమయం భవిష్యత్ ప్రయత్నాలకు మాత్రమే నిర్ధారించబడింది. ప్రస్తుత ప్రయత్నాల గడువులు మారవు, క్విజ్ మూసివేసే సమయం ఇప్పటికీ వర్తిస్తుంది.';
 
   @override
   String get quizEveryoneAttempted =>
-      'Every eligible student has attempted this quiz.';
+      'అర్హులైన ప్రతి విద్యార్థి ఈ క్విజ్‌ను ప్రయత్నించారు.';
 
   @override
-  String get quizRemindTitle => 'Remind students?';
+  String get quizRemindTitle => 'విద్యార్థులకు గుర్తు చేయాలా?';
 
   @override
   String quizRemindMessage(int count, String title) {
@@ -2350,137 +2368,139 @@ class AppLocalizationsTe extends AppLocalizations {
       count,
       locale: localeName,
       other:
-          'Send one quiz reminder to all $count students who have not attempted $title?',
-      one:
-          'Send one quiz reminder to all 1 student who have not attempted $title?',
+          '$title ను ప్రయత్నించని మొత్తం $count మంది విద్యార్థులకు ఒక క్విజ్ రిమైండర్ పంపాలా?',
+      one: '$title ను ప్రయత్నించని 1 విద్యార్థికి ఒక క్విజ్ రిమైండర్ పంపాలా?',
     );
     return '$_temp0';
   }
 
   @override
   String quizRemindMessageRaw(String count, String title) {
-    return 'Send one quiz reminder to all $count students who have not attempted $title?';
+    return '$title ను ప్రయత్నించని మొత్తం $count మంది విద్యార్థులకు ఒక క్విజ్ రిమైండర్ పంపాలా?';
   }
 
   @override
-  String get quizRemindConfirm => 'Send reminder';
+  String get quizRemindConfirm => 'రిమైండర్ పంపండి';
 
   @override
-  String get quizRemindFailed => 'Quiz reminders could not be sent.';
+  String get quizRemindFailed => 'క్విజ్ రిమైండర్‌లు పంపడం సాధ్యం కాలేదు.';
 
   @override
   String quizReminded(String notified, String queued) {
-    return 'Reminder sent to $notified students. $queued device notifications queued.';
+    return '$notified మంది విద్యార్థులకు రిమైండర్ పంపబడింది. $queued పరికర నోటిఫికేషన్‌లు వరుసలో ఉన్నాయి.';
   }
 
   @override
   String quizReminderProcessed(String notified, String queued) {
-    return 'Reminder processed for $notified students. $queued device notifications queued.';
+    return '$notified మంది విద్యార్థుల కోసం రిమైండర్ ప్రాసెస్ అయింది. $queued పరికర నోటిఫికేషన్‌లు వరుసలో ఉన్నాయి.';
   }
 
   @override
-  String get quizRefreshResults => 'Refresh quiz results';
+  String get quizRefreshResults => 'క్విజ్ ఫలితాలను రిఫ్రెష్ చేయండి';
 
   @override
-  String get quizRefreshResultsLabel => 'Refresh results';
+  String get quizRefreshResultsLabel => 'ఫలితాలను రిఫ్రెష్ చేయండి';
 
   @override
-  String get quizRemindAllLabel => 'Remind all students who have not attempted';
+  String get quizRemindAllLabel =>
+      'ప్రయత్నించని విద్యార్థులందరికీ గుర్తు చేయండి';
 
   @override
   String get quizRemindUnavailable =>
-      'All students have attempted. Reminder unavailable';
+      'విద్యార్థులందరూ ప్రయత్నించారు. రిమైండర్ అందుబాటులో లేదు';
 
   @override
   String quizRemindTarget(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Send a reminder to all $count students who have not attempted',
-      one: 'Send a reminder to all 1 student who have not attempted',
+      other: 'ప్రయత్నించని మొత్తం $count మంది విద్యార్థులకు రిమైండర్ పంపండి',
+      one: 'ప్రయత్నించని 1 విద్యార్థికి రిమైండర్ పంపండి',
     );
     return '$_temp0';
   }
 
   @override
   String quizRemindTargetRaw(String count) {
-    return 'Send a reminder to all $count students who have not attempted';
+    return 'ప్రయత్నించని మొత్తం $count మంది విద్యార్థులకు రిమైండర్ పంపండి';
   }
 
   @override
   String quizExtraTarget(String name, String duration) {
-    return 'Set extra time for $name. Future attempts only. Current extra time $duration';
+    return '$name కోసం అదనపు సమయం సెట్ చేయండి. భవిష్యత్ ప్రయత్నాలకు మాత్రమే. ప్రస్తుత అదనపు సమయం $duration';
   }
 
   @override
   String quizExtraTargetRaw(String name, String minutes) {
-    return 'Set extra minutes for $name. Future attempts only. Current extra $minutes minutes';
+    return '$name కోసం అదనపు నిమిషాలు సెట్ చేయండి. భవిష్యత్ ప్రయత్నాలకు మాత్రమే. ప్రస్తుత అదనపు సమయం $minutes నిమిషాలు';
   }
 
   @override
   String quizExtraButton(String minutes) {
-    return 'Future extra time: $minutes minutes. Set';
+    return 'భవిష్యత్ అదనపు సమయం: $minutes నిమిషాలు. సెట్ చేయండి';
   }
 
   @override
-  String get quizResultsNotLoaded => 'Results not loaded.';
+  String get quizResultsNotLoaded => 'ఫలితాలు లోడ్ కాలేదు.';
 
   @override
   String quizCompletionSentence(String percent) {
-    return 'Completion $percent.';
+    return 'పూర్తి $percent.';
   }
 
   @override
   String quizExtraScreen(String name) {
-    return 'Extra time for $name. Future attempts only; active attempt deadlines stay fixed. Quiz closing time still applies. Entering zero minutes removes extra time. Press 0 outside the field to cancel.';
+    return '$name కోసం అదనపు సమయం. భవిష్యత్ ప్రయత్నాలకు మాత్రమే; జరుగుతున్న ప్రయత్నాల గడువులు మారవు. క్విజ్ మూసివేసే సమయం ఇప్పటికీ వర్తిస్తుంది. సున్నా నిమిషాలు నమోదు చేస్తే అదనపు సమయం తొలగిపోతుంది. రద్దు చేయడానికి ఫీల్డ్ బయట 0 నొక్కండి.';
   }
 
   @override
   String quizExtraField(String value) {
-    return 'Extra minutes, currently $value. Press OK to edit';
+    return 'అదనపు నిమిషాలు, ప్రస్తుతం $value. మార్చడానికి ఓకే నొక్కండి';
   }
 
   @override
-  String get quizEmpty => 'empty';
+  String get quizEmpty => 'ఖాళీ';
 
   @override
-  String get quizExtraSave => 'Save extra time for future attempts';
+  String get quizExtraSave =>
+      'భవిష్యత్ ప్రయత్నాల కోసం అదనపు సమయాన్ని సేవ్ చేయండి';
 
   @override
-  String get quizExtraCancel => 'Cancel without changing extra time';
+  String get quizExtraCancel => 'అదనపు సమయం మార్చకుండా రద్దు చేయండి';
 
   @override
   String get quizExtraInvalid =>
-      'Enter a whole number of minutes, zero or more, within the server integer range.';
+      'నిమిషాలను పూర్ణ సంఖ్యగా, సున్నా లేదా అంతకంటే ఎక్కువగా, సర్వర్ అనుమతించే పరిధిలో నమోదు చేయండి.';
 
   @override
-  String get quizExtraCorrect => 'Move up to Extra minutes to correct it.';
+  String get quizExtraCorrect =>
+      'సరిచేయడానికి పైకి అదనపు నిమిషాలు కి వెళ్ళండి.';
 
   @override
   String get quizEditorInvalid =>
-      'Enter a question, four different non-empty options, and then choose the correct answer.';
+      'ఒక ప్రశ్న, ఖాళీ కాని నాలుగు వేర్వేరు ఎంపికలు నమోదు చేసి, తర్వాత సరైన జవాబును ఎంచుకోండి.';
 
   @override
   String get quizEditorSpokenInvalid =>
-      'Use up to 20 different topics of 80 characters each. Described notation needs a spoken question, all four spoken options, and a spoken explanation if an explanation is provided. Review and confirm every spoken alternative before saving.';
+      'ఒక్కొక్కటి 80 అక్షరాల వరకు, గరిష్టంగా 20 వేర్వేరు అంశాలను ఉపయోగించండి. వివరించిన నొటేషన్‌కు మాట్లాడే రూపంలో ప్రశ్న, నాలుగు ఎంపికలకూ మాట్లాడే రూపం, మరియు వివరణ ఇచ్చినట్లయితే దానికి మాట్లాడే రూపం అవసరం. సేవ్ చేసే ముందు ప్రతి మాట్లాడే రూపాన్ని సమీక్షించి నిర్ధారించండి.';
 
   @override
   String quizCorrectChosen(String number, String count) {
-    return 'Correct answer: option $number, $number of $count.';
+    return 'సరైన జవాబు: ఎంపిక $number, $count లో $number.';
   }
 
   @override
   String quizCorrectChosenWithText(String number, String text, String count) {
-    return 'Correct answer: option $number, $text, $number of $count.';
+    return 'సరైన జవాబు: ఎంపిక $number, $text, $count లో $number.';
   }
 
   @override
   String get quizCorrectNotSelected =>
-      'Correct answer not selected. Use left or right to choose';
+      'సరైన జవాబు ఎంచుకోలేదు. ఎంచుకోవడానికి ఎడమ లేదా కుడి ఉపయోగించండి';
 
   @override
   String quizCorrectTarget(String number, String text) {
-    return 'Correct answer: option $number, $text. Use left or right to change';
+    return 'సరైన జవాబు: ఎంపిక $number, $text. మార్చడానికి ఎడమ లేదా కుడి ఉపయోగించండి';
   }
 
   @override
@@ -2490,113 +2510,115 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get quizContentDescribed =>
-      'Content: teacher-described notation or diagram';
+      'విషయం: ఉపాధ్యాయులు వివరించిన నొటేషన్ లేదా చిత్రం';
 
   @override
-  String get quizContentPlain => 'Content: English plain text';
+  String get quizContentPlain => 'విషయం: ఇంగ్లీష్ సాధారణ టెక్స్ట్';
 
   @override
-  String get quizReviewedYes => 'Spoken alternatives reviewed by teacher: yes';
+  String get quizReviewedYes =>
+      'మాట్లాడే రూపాలను ఉపాధ్యాయులు సమీక్షించారు: అవును';
 
   @override
-  String get quizReviewedNo => 'Spoken alternatives reviewed by teacher: no';
+  String get quizReviewedNo =>
+      'మాట్లాడే రూపాలను ఉపాధ్యాయులు సమీక్షించారు: లేదు';
 
   @override
   String get quizSettingsInvalid =>
-      'Check the title, attempt limit from 1 to 20, time limit, and schedule. The closing time must be after the opening time.';
+      'శీర్షిక, 1 నుండి 20 వరకు ప్రయత్నాల పరిమితి, సమయ పరిమితి, మరియు షెడ్యూల్‌ను తనిఖీ చేయండి. మూసివేసే సమయం తెరిచే సమయం తర్వాత ఉండాలి.';
 
   @override
   String get quizSetOpening =>
-      'Set opening time using the date and time number fields.';
+      'తేదీ మరియు సమయం సంఖ్య ఫీల్డ్‌లను ఉపయోగించి తెరిచే సమయాన్ని సెట్ చేయండి.';
 
   @override
   String get quizSetClosing =>
-      'Set closing time using the date and time number fields.';
+      'తేదీ మరియు సమయం సంఖ్య ఫీల్డ్‌లను ఉపయోగించి మూసివేసే సమయాన్ని సెట్ చేయండి.';
 
   @override
   String quizOpeningSet(String when) {
-    return 'Opening time set to $when.';
+    return 'తెరిచే సమయం $when కి సెట్ అయింది.';
   }
 
   @override
   String quizClosingSet(String when) {
-    return 'Closing time set to $when.';
+    return 'మూసివేసే సమయం $when కి సెట్ అయింది.';
   }
 
   @override
   String quizReleaseSet(String when) {
-    return 'Feedback release set to $when.';
+    return 'ఫీడ్‌బ్యాక్ విడుదల $when కి సెట్ అయింది.';
   }
 
   @override
-  String get quizOpeningCleared => 'Opening time cleared.';
+  String get quizOpeningCleared => 'తెరిచే సమయం తీసివేయబడింది.';
 
   @override
-  String get quizClosingCleared => 'Closing time cleared.';
+  String get quizClosingCleared => 'మూసివేసే సమయం తీసివేయబడింది.';
 
   @override
-  String get quizNoOpeningTime => 'No opening time set';
+  String get quizNoOpeningTime => 'తెరిచే సమయం సెట్ చేయలేదు';
 
   @override
-  String get quizNoClosingTime => 'No closing time set';
+  String get quizNoClosingTime => 'మూసివేసే సమయం సెట్ చేయలేదు';
 
   @override
   String quizOpensAt(String when) {
-    return 'Opens $when';
+    return '$when తెరుచుకుంటుంది';
   }
 
   @override
   String quizClosesAt(String when) {
-    return 'Closes $when';
+    return '$when మూసుకుంటుంది';
   }
 
   @override
   String quizPolicyChoice(String name, String position, String count) {
-    return 'Feedback: $name, $position of $count.';
+    return 'ఫీడ్‌బ్యాక్: $name, $count లో $position.';
   }
 
   @override
   String quizScheduledRelease(String when) {
-    return 'Scheduled feedback release $when';
+    return 'షెడ్యూల్ చేసిన ఫీడ్‌బ్యాక్ విడుదల $when';
   }
 
   @override
   String quizAttemptLimitField(String value) {
-    return 'Attempt limit, currently $value. Press OK to edit';
+    return 'ప్రయత్నాల పరిమితి, ప్రస్తుతం $value. మార్చడానికి ఓకే నొక్కండి';
   }
 
   @override
   String quizTimeLimitField(String value) {
-    return 'Optional time limit in minutes, $value. Press OK to edit';
+    return 'నిమిషాలలో ఐచ్ఛిక సమయ పరిమితి, $value. మార్చడానికి ఓకే నొక్కండి';
   }
 
   @override
   String get quizRevisionsScreen =>
-      'Private read-only question revision history. Use older and newer revision controls, then read each section.';
+      'ప్రైవేట్, చదవడానికి మాత్రమే ఉన్న ప్రశ్న సవరణల చరిత్ర. పాత మరియు కొత్త సవరణ నియంత్రణలను ఉపయోగించి, ప్రతి విభాగాన్ని చదవండి.';
 
   @override
   String get quizRevisionsAccount =>
-      'Your account changed. Return and sign in again before viewing private question history.';
+      'మీ ఖాతా మారింది. ప్రైవేట్ ప్రశ్న చరిత్రను చూసే ముందు తిరిగి వెళ్ళి మళ్ళీ సైన్ ఇన్ చేయండి.';
 
   @override
   String get quizRevisionsCleared =>
-      'Your account changed. Private question history was cleared.';
+      'మీ ఖాతా మారింది. ప్రైవేట్ ప్రశ్న చరిత్ర తీసివేయబడింది.';
 
   @override
   String get quizRevisionsUnverified =>
-      'Question revision history could not be verified. Retry loading.';
+      'ప్రశ్న సవరణల చరిత్రను ధృవీకరించడం సాధ్యం కాలేదు. మళ్ళీ లోడ్ చేయడానికి ప్రయత్నించండి.';
 
   @override
   String get quizRevisionsContentUnverified =>
-      'Question revision content could not be verified. Retry loading.';
+      'ప్రశ్న సవరణ విషయాన్ని ధృవీకరించడం సాధ్యం కాలేదు. మళ్ళీ లోడ్ చేయడానికి ప్రయత్నించండి.';
 
   @override
   String get quizRevisionsTimedOut =>
-      'Question history took too long. Check your connection and retry.';
+      'ప్రశ్న చరిత్రకు చాలా సమయం పట్టింది. మీ కనెక్షన్‌ను తనిఖీ చేసి మళ్ళీ ప్రయత్నించండి.';
 
   @override
   String get quizNoRevisions =>
-      'No tracked revisions. Older question history is unknown, not reconstructed.';
+      'నమోదైన సవరణలు లేవు. పాత ప్రశ్న చరిత్ర తెలియదు, అది తిరిగి తయారు చేయబడలేదు.';
 
   @override
   String quizRevisionsLoaded(int count, String revision, String when) {
@@ -2604,19 +2626,19 @@ class AppLocalizationsTe extends AppLocalizations {
       count,
       locale: localeName,
       other:
-          '$count revisions loaded. Read-only question revision $revision, saved $when. Existing quiz and attempt snapshots are not changed.',
+          '$count సవరణలు లోడ్ అయ్యాయి. చదవడానికి మాత్రమే ఉన్న ప్రశ్న సవరణ $revision, $when న సేవ్ అయింది. ఇప్పటికే ఉన్న క్విజ్ మరియు ప్రయత్నాల స్నాప్‌షాట్‌లు మారవు.',
       one:
-          '1 revision loaded. Read-only question revision $revision, saved $when. Existing quiz and attempt snapshots are not changed.',
+          '1 సవరణ లోడ్ అయింది. చదవడానికి మాత్రమే ఉన్న ప్రశ్న సవరణ $revision, $when న సేవ్ అయింది. ఇప్పటికే ఉన్న క్విజ్ మరియు ప్రయత్నాల స్నాప్‌షాట్‌లు మారవు.',
     );
     return '$_temp0';
   }
 
   @override
-  String get quizDateUnknown => 'date unknown';
+  String get quizDateUnknown => 'తేదీ తెలియదు';
 
   @override
   String quizRevisionSelected(String revision) {
-    return 'Revision $revision selected. Read-only.';
+    return 'సవరణ $revision ఎంచుకోబడింది. చదవడానికి మాత్రమే.';
   }
 
   @override
@@ -2625,349 +2647,350 @@ class AppLocalizationsTe extends AppLocalizations {
     String position,
     String count,
   ) {
-    return 'Revision $revision selected, $position of $count. Read-only.';
+    return 'సవరణ $revision ఎంచుకోబడింది, $count లో $position. చదవడానికి మాత్రమే.';
   }
 
   @override
   String quizRevisionFailed(String message) {
-    return '$message Focus is on Refresh revisions.';
+    return '$message ఫోకస్ సవరణలను రిఫ్రెష్ చేయండి పై ఉంది.';
   }
 
   @override
-  String get quizNoRevisionLoaded => 'No revision loaded.';
+  String get quizNoRevisionLoaded => 'ఏ సవరణా లోడ్ కాలేదు.';
 
   @override
   String quizShowingRevision(String revision) {
-    return 'Showing revision $revision. Read-only.';
+    return 'సవరణ $revision చూపిస్తోంది. చదవడానికి మాత్రమే.';
   }
 
   @override
   String quizRevisionVersion(String revision, String when) {
-    return 'Revision $revision. Saved $when. Read-only.';
+    return 'సవరణ $revision. $when న సేవ్ అయింది. చదవడానికి మాత్రమే.';
   }
 
   @override
   String quizRevisionQuestion(String text) {
-    return 'Question: $text';
+    return 'ప్రశ్న: $text';
   }
 
   @override
   String quizRevisionTopics(String topics) {
-    return 'Topics: $topics';
+    return 'అంశాలు: $topics';
   }
 
   @override
   String quizRevisionOption(String number, String text) {
-    return 'Option $number: $text.';
+    return 'ఎంపిక $number: $text.';
   }
 
   @override
-  String get quizCorrectAnswerSentence => 'Correct answer.';
+  String get quizCorrectAnswerSentence => 'సరైన జవాబు.';
 
   @override
   String quizRevisionExplanation(String text) {
-    return 'Explanation: $text';
+    return 'వివరణ: $text';
   }
 
   @override
-  String get quizNotProvided => 'Not provided';
+  String get quizNotProvided => 'ఇవ్వలేదు';
 
   @override
   String get quizRevisionNotice =>
-      'Only revisions saved after tracking was introduced are available. Older history is unknown. Existing quiz and attempt snapshots are never rewritten.';
+      'ట్రాకింగ్ ప్రారంభించిన తర్వాత సేవ్ అయిన సవరణలు మాత్రమే అందుబాటులో ఉన్నాయి. పాత చరిత్ర తెలియదు. ఇప్పటికే ఉన్న క్విజ్ మరియు ప్రయత్నాల స్నాప్‌షాట్‌లు ఎప్పుడూ మార్చబడవు.';
 
   @override
   String quizRevisionVersionTitle(String revision, String when) {
-    return 'Revision $revision, $when';
+    return 'సవరణ $revision, $when';
   }
 
   @override
-  String get quizQuestionTextTitle => 'Question text';
+  String get quizQuestionTextTitle => 'ప్రశ్న టెక్స్ట్';
 
   @override
-  String get quizTopicsTitle => 'Topics';
+  String get quizTopicsTitle => 'అంశాలు';
 
   @override
   String quizOptionNumber(String number) {
-    return 'Option $number';
+    return 'ఎంపిక $number';
   }
 
   @override
   String quizOptionNumberCorrect(String number) {
-    return 'Option $number, correct answer';
+    return 'ఎంపిక $number, సరైన జవాబు';
   }
 
   @override
-  String get quizExplanationTitle => 'Explanation';
+  String get quizExplanationTitle => 'వివరణ';
 
   @override
-  String get quizRevisionNoticeTitle => 'About revision history';
+  String get quizRevisionNoticeTitle => 'సవరణల చరిత్ర గురించి';
 
   @override
   String quizRevisionSectionTarget(String title) {
-    return '$title. Press OK to hear it';
+    return '$title. వినడానికి ఓకే నొక్కండి';
   }
 
   @override
   String get quizAccountChangedSignIn =>
-      'Account changed. Return and sign in again.';
+      'ఖాతా మారింది. తిరిగి వెళ్ళి మళ్ళీ సైన్ ఇన్ చేయండి.';
 
   @override
-  String get quizGoBack => 'Go back';
+  String get quizGoBack => 'వెనక్కి వెళ్ళండి';
 
   @override
-  String get quizCancel => 'Cancel';
+  String get quizCancel => 'రద్దు చేయండి';
 
   @override
-  String get quizCancelAndReturn => 'Cancel and return';
+  String get quizCancelAndReturn => 'రద్దు చేసి తిరిగి వెళ్ళండి';
 
   @override
-  String get quizActionNavigation => 'the available actions and cancel';
+  String get quizActionNavigation => 'అందుబాటులో ఉన్న చర్యలు మరియు రద్దు';
 
   @override
-  String get quizRefreshRevisions => 'Refresh revisions';
+  String get quizRefreshRevisions => 'సవరణలను రిఫ్రెష్ చేయండి';
 
   @override
-  String get quizNewerRevision => 'Newer revision';
+  String get quizNewerRevision => 'కొత్త సవరణ';
 
   @override
-  String get quizOlderRevision => 'Older revision';
+  String get quizOlderRevision => 'పాత సవరణ';
 
   @override
-  String get quizBankArchived => 'Bank question archived';
+  String get quizBankArchived => 'బ్యాంక్ ప్రశ్న ఆర్కైవ్ చేయబడింది';
 
   @override
-  String get quizBankCopied => 'Bank question copy created';
+  String get quizBankCopied => 'బ్యాంక్ ప్రశ్న కాపీ తయారైంది';
 
   @override
-  String get quizSnapshotAdded => 'Question snapshot added to quiz';
+  String get quizSnapshotAdded => 'ప్రశ్న స్నాప్‌షాట్ క్విజ్‌కు జోడించబడింది';
 
   @override
-  String get quizQuizClosed => 'Quiz closed';
+  String get quizQuizClosed => 'క్విజ్ మూసివేయబడింది';
 
   @override
-  String get quizDraftCreated => 'Editable quiz draft created';
+  String get quizDraftCreated => 'మార్చగలిగే క్విజ్ డ్రాఫ్ట్ తయారైంది';
 
   @override
-  String get quizNoAnswerSelected => 'No answer selected.';
+  String get quizNoAnswerSelected => 'ఏ జవాబూ ఎంచుకోలేదు.';
 
   @override
-  String get quizSelectBeforeSubmit => 'Select one option before submitting.';
+  String get quizSelectBeforeSubmit => 'సమర్పించే ముందు ఒక ఎంపికను ఎంచుకోండి.';
 
   @override
   String get quizSubmitBeforeContinuing =>
-      'Submit your answer before continuing.';
+      'కొనసాగే ముందు మీ జవాబును సమర్పించండి.';
 
   @override
   String get quizTeacherNavigationPrivate =>
-      'private bank search and saved questions, quiz drafts, published quizzes, and their results';
+      'ప్రైవేట్ బ్యాంక్ శోధన మరియు సేవ్ చేసిన ప్రశ్నలు, క్విజ్ డ్రాఫ్ట్‌లు, ప్రచురించిన క్విజ్‌లు, మరియు వాటి ఫలితాలు';
 
   @override
   String get quizStudentNavigationHelp =>
-      'Use D-pad up and down to reach refresh, quiz state filter, subject filter, each available quiz or practice activity, and its attempt history. Use left or right on a filter to change it. Press OK on a quiz to hear its details and confirm starting or resuming; press OK on attempt history to review past attempts. Moving focus never starts an attempt.';
+      'రిఫ్రెష్, క్విజ్ స్థితి ఫిల్టర్, సబ్జెక్టు ఫిల్టర్, అందుబాటులో ఉన్న ప్రతి క్విజ్ లేదా అభ్యాస కార్యకలాపం, మరియు దాని ప్రయత్నాల చరిత్రకు చేరడానికి డి-ప్యాడ్ పైకి, కిందకి ఉపయోగించండి. ఫిల్టర్‌ను మార్చడానికి ఎడమ లేదా కుడి ఉపయోగించండి. క్విజ్ వివరాలు వినడానికి, ప్రారంభించడం లేదా కొనసాగించడం నిర్ధారించడానికి క్విజ్‌పై ఓకే నొక్కండి. గత ప్రయత్నాలను సమీక్షించడానికి ప్రయత్నాల చరిత్రపై ఓకే నొక్కండి. ఫోకస్ కదిలించడం వల్ల ఎప్పుడూ ప్రయత్నం ప్రారంభం కాదు.';
 
   @override
-  String get quizNoQuizzesAvailable => 'No quizzes available.';
+  String get quizNoQuizzesAvailable => 'క్విజ్‌లు ఏవీ అందుబాటులో లేవు.';
 
   @override
   String quizQuizzesAvailableRaw(String count) {
-    return '$count quizzes available.';
+    return '$count క్విజ్‌లు అందుబాటులో ఉన్నాయి.';
   }
 
   @override
   String get quizStudentNavigationSections =>
-      'refresh, quiz state and subject filters, available quizzes and practice activities, and previous attempts';
+      'రిఫ్రెష్, క్విజ్ స్థితి మరియు సబ్జెక్టు ఫిల్టర్‌లు, అందుబాటులో ఉన్న క్విజ్‌లు మరియు అభ్యాస కార్యకలాపాలు, మరియు గత ప్రయత్నాలు';
 
   @override
   String quizAttemptLimitReached(String title) {
-    return 'Attempt limit reached for $title. Open attempt history to review your scores.';
+    return '$title కోసం ప్రయత్నాల పరిమితి ముగిసింది. మీ మార్కులను సమీక్షించడానికి ప్రయత్నాల చరిత్రను తెరవండి.';
   }
 
   @override
-  String get quizNoPerAttemptLimit => 'No per-attempt time limit.';
+  String get quizNoPerAttemptLimit => 'ప్రతి ప్రయత్నానికి సమయ పరిమితి లేదు.';
 
   @override
   String quizTimeLimitRaw(String minutes) {
-    return 'Time limit $minutes minutes.';
+    return 'సమయ పరిమితి $minutes నిమిషాలు.';
   }
 
   @override
-  String get quizCannotGoBack => 'You cannot go back to change it.';
+  String get quizCannotGoBack => 'దీన్ని మార్చడానికి మీరు వెనక్కి వెళ్లలేరు.';
 
   @override
   String get quizStartFailedAvailability =>
-      'The quiz could not be started. Check its availability.';
+      'క్విజ్‌ను ప్రారంభించలేకపోయాము. అది అందుబాటులో ఉందో లేదో చూడండి.';
 
   @override
-  String get quizStateFieldName => 'Quiz state';
+  String get quizStateFieldName => 'క్విజ్ స్థితి';
 
   @override
-  String get quizSubjectFieldName => 'Subject';
+  String get quizSubjectFieldName => 'సబ్జెక్టు';
 
   @override
   String quizUseLeftRightToChange(String item) {
-    return '$item. Use left or right to change';
+    return '$item. మార్చడానికి ఎడమ లేదా కుడి ఉపయోగించండి';
   }
 
   @override
   String get quizAttemptCompletePrivate =>
-      'Attempt complete. Your result remains private.';
+      'ప్రయత్నం పూర్తయింది. మీ ఫలితం ప్రైవేట్‌గానే ఉంటుంది.';
 
   @override
   String get quizHelpCompleted =>
-      'Use D-pad up and down to move between return to quizzes and read result privately. Press OK to activate a button. Press 8 to read your result privately or 0 to return.';
+      'క్విజ్‌లకు తిరిగి వెళ్లడం, ఫలితాన్ని ప్రైవేట్‌గా చదవడం మధ్య కదలడానికి డి-ప్యాడ్ పైకి, కిందకి ఉపయోగించండి. బటన్‌ను ఉపయోగించడానికి ఓకే నొక్కండి. మీ ఫలితాన్ని ప్రైవేట్‌గా చదవడానికి 8 నొక్కండి, తిరిగి వెళ్లడానికి 0 నొక్కండి.';
 
   @override
   String get quizHelpRetry =>
-      'Press 5 to retry finishing, 8 to hear where you are, or 0 to leave with confirmation. Use D-pad up and down for the other controls.';
+      'ముగించడానికి మళ్లీ ప్రయత్నించడానికి 5, మీరు ఎక్కడ ఉన్నారో వినడానికి 8, లేదా నిర్ధారణతో బయటకు వెళ్లడానికి 0 నొక్కండి. ఇతర నియంత్రణల కోసం డి-ప్యాడ్ పైకి, కిందకి ఉపయోగించండి.';
 
   @override
   String get quizHelpNext =>
-      'The next question follows automatically. Press 6 to repeat, 8 to hear where you are.';
+      'తరువాతి ప్రశ్న ఆటోమేటిక్‌గా వస్తుంది. మళ్లీ వినడానికి 6, మీరు ఎక్కడ ఉన్నారో వినడానికి 8 నొక్కండి.';
 
   @override
   String quizHelpChoose(String count) {
-    return 'Press 1 to $count to choose, then 5 to submit. Press 6 to repeat the question and options, 8 to hear where you are and the time left.';
+    return 'ఎంచుకోవడానికి 1 నుండి $count వరకు నొక్కండి, తర్వాత సమర్పించడానికి 5 నొక్కండి. ప్రశ్న మరియు ఎంపికలను మళ్లీ వినడానికి 6, మీరు ఎక్కడ ఉన్నారో మరియు మిగిలిన సమయం వినడానికి 8 నొక్కండి.';
   }
 
   @override
   String get quizHelpFinishLeave =>
-      'Finish quiz now is in the D-pad list and asks to confirm. Press 0 to leave without submitting.';
+      'ఇప్పుడే క్విజ్ ముగించండి అనేది డి-ప్యాడ్ జాబితాలో ఉంది, అది నిర్ధారణ అడుగుతుంది. సమర్పించకుండా బయటకు వెళ్లడానికి 0 నొక్కండి.';
 
   @override
   String quizSelectedOptionNotSubmitted(String number, String text) {
-    return 'Selected option $number. $text. Not submitted yet.';
+    return 'ఎంపిక $number ఎంచుకున్నారు. $text. ఇంకా సమర్పించలేదు.';
   }
 
   @override
   String quizSelectedOptionConfirmed(String number, String text) {
-    return 'Selected option $number. $text. Answer confirmed.';
+    return 'ఎంపిక $number ఎంచుకున్నారు. $text. సమాధానం నిర్ధారించబడింది.';
   }
 
   @override
   String quizFeedbackCorrect(String answer, String explanation) {
-    return 'Correct. Correct answer: $answer. $explanation';
+    return 'సరైనది. సరైన సమాధానం: $answer. $explanation';
   }
 
   @override
   String quizFeedbackIncorrect(String answer, String explanation) {
-    return 'Incorrect. Correct answer: $answer. $explanation';
+    return 'తప్పు. సరైన సమాధానం: $answer. $explanation';
   }
 
   @override
   String quizOptionSelectedNotSubmitted(String number, String text) {
-    return 'Option $number. $text. Selected, not submitted. Press 5 to save your answer.';
+    return 'ఎంపిక $number. $text. ఎంచుకున్నారు, సమర్పించలేదు. మీ సమాధానాన్ని సేవ్ చేయడానికి 5 నొక్కండి.';
   }
 
   @override
   String get quizAttemptFinishedWhere =>
-      'Attempt finished. Press 8 to hear your result privately.';
+      'ప్రయత్నం ముగిసింది. మీ ఫలితాన్ని ప్రైవేట్‌గా వినడానికి 8 నొక్కండి.';
 
   @override
-  String get quizNoOptionChosenYet => 'No option chosen yet.';
+  String get quizNoOptionChosenYet => 'ఇంకా ఏ ఎంపికనూ ఎంచుకోలేదు.';
 
   @override
   String quizOptionChosen(String number) {
-    return 'Option $number chosen.';
+    return 'ఎంపిక $number ఎంచుకున్నారు.';
   }
 
   @override
   String quizCompletionFailedRetry(String reason) {
-    return '$reason Your saved answers are preserved. Select Retry completion to check the result.';
+    return '$reason మీరు సేవ్ చేసిన సమాధానాలు భద్రంగా ఉన్నాయి. ఫలితాన్ని చూడడానికి పూర్తి చేయడం మళ్లీ ప్రయత్నించండి ఎంచుకోండి.';
   }
 
   @override
   String quizAttemptStatusPrivate(String status) {
-    return 'Attempt $status. Your result is private.';
+    return 'ప్రయత్నం $status. మీ ఫలితం ప్రైవేట్.';
   }
 
   @override
   String get quizEarlyCountUnconfirmed =>
-      'The current saved-answer count could not be confirmed, or this attempt has ended. No early submission was sent. Return to the quiz list to refresh its status.';
+      'ప్రస్తుతం సేవ్ అయిన సమాధానాల సంఖ్యను నిర్ధారించలేకపోయాము, లేదా ఈ ప్రయత్నం ముగిసింది. ముందుగా సమర్పణ ఏదీ పంపలేదు. స్థితిని రిఫ్రెష్ చేయడానికి క్విజ్ జాబితాకు తిరిగి వెళ్లండి.';
 
   @override
-  String get quizEarlyTitle => 'Submit this attempt early?';
+  String get quizEarlyTitle => 'ఈ ప్రయత్నాన్ని ముందుగానే సమర్పించాలా?';
 
   @override
   String quizEarlyMessage(String count) {
-    return 'The server check confirms $count unanswered questions. Only answers saved on the server when finalized are included. A selected but unsaved answer is not included. Final submission cannot be undone or edited. Back never submits.';
+    return '$count ప్రశ్నలకు సమాధానం ఇవ్వలేదని సర్వర్ తనిఖీ నిర్ధారిస్తోంది. ముగించే సమయానికి సర్వర్‌లో సేవ్ అయిన సమాధానాలు మాత్రమే లెక్కలోకి వస్తాయి. ఎంచుకున్నా సేవ్ కాని సమాధానం లెక్కలోకి రాదు. చివరి సమర్పణను రద్దు చేయలేరు, మార్చలేరు. వెనక్కి వెళ్తే ఎప్పుడూ సమర్పించబడదు.';
   }
 
   @override
-  String get quizEarlyConfirm => 'Finalize saved answers';
+  String get quizEarlyConfirm => 'సేవ్ అయిన సమాధానాలను ముగించండి';
 
   @override
   String get quizEarlyTimedOut =>
-      'Checking saved answers timed out. No early submission was sent. Check your connection and retry.';
+      'సేవ్ అయిన సమాధానాల తనిఖీకి సమయం ముగిసింది. ముందుగా సమర్పణ ఏదీ పంపలేదు. మీ కనెక్షన్ చూసి మళ్లీ ప్రయత్నించండి.';
 
   @override
   String get quizWaitPending =>
-      'Wait for the pending answer or completion confirmation before leaving.';
+      'బయటకు వెళ్లే ముందు పెండింగ్‌లో ఉన్న సమాధానం లేదా పూర్తి నిర్ధారణ కోసం వేచి ఉండండి.';
 
   @override
   String get quizLeaveMessageServer =>
-      'This does not submit your attempt. Only server-confirmed answers are saved; an unsaved selection may be lost. Any timer keeps running. Resume is allowed only while the server permits this attempt.';
+      'దీనివల్ల మీ ప్రయత్నం సమర్పించబడదు. సర్వర్ నిర్ధారించిన సమాధానాలు మాత్రమే సేవ్ అవుతాయి; సేవ్ కాని ఎంపిక పోవచ్చు. టైమర్ ఉంటే అది నడుస్తూనే ఉంటుంది. సర్వర్ ఈ ప్రయత్నాన్ని అనుమతించినంత వరకు మాత్రమే కొనసాగించవచ్చు.';
 
   @override
-  String get quizStayInAttempt => 'Stay in attempt';
+  String get quizStayInAttempt => 'ప్రయత్నంలోనే ఉండండి';
 
   @override
-  String get quizNextQuestionNow => 'Next question now';
+  String get quizNextQuestionNow => 'ఇప్పుడే తరువాతి ప్రశ్న';
 
   @override
-  String get quizReadAllOptions => 'Read all answer options';
+  String get quizReadAllOptions => 'అన్ని సమాధాన ఎంపికలను చదవండి';
 
   @override
   String quizOptionTargetSelectedSubmit(String number, String text) {
-    return 'Option $number, $text, selected. Press OK or $number to select. Press 5 to submit only when ready';
+    return 'ఎంపిక $number, $text, ఎంచుకోబడింది. ఎంచుకోవడానికి ఓకే లేదా $number నొక్కండి. సిద్ధంగా ఉన్నప్పుడు మాత్రమే సమర్పించడానికి 5 నొక్కండి';
   }
 
   @override
   String quizOptionTargetNotSelectedSubmit(String number, String text) {
-    return 'Option $number, $text, not selected. Press OK or $number to select. Press 5 to submit only when ready';
+    return 'ఎంపిక $number, $text, ఎంచుకోలేదు. ఎంచుకోవడానికి ఓకే లేదా $number నొక్కండి. సిద్ధంగా ఉన్నప్పుడు మాత్రమే సమర్పించడానికి 5 నొక్కండి';
   }
 
   @override
-  String get quizReadSelectionTarget => 'Read selected answer and saved status';
+  String get quizReadSelectionTarget =>
+      'ఎంచుకున్న సమాధానం మరియు సేవ్ స్థితిని చదవండి';
 
   @override
-  String get quizStopSpeech => 'Stop speech';
+  String get quizStopSpeech => 'మాటలు ఆపండి';
 
   @override
-  String get quizAnswerFeedback => 'Answer feedback';
+  String get quizAnswerFeedback => 'సమాధాన ఫీడ్‌బ్యాక్';
 
   @override
   String get quizAnswerConfirmedReadFeedback =>
-      'Answer confirmed saved and locked. Press OK to read feedback privately.';
+      'సమాధానం సేవ్ అయి లాక్ అయినట్లు నిర్ధారించబడింది. ఫీడ్‌బ్యాక్‌ను ప్రైవేట్‌గా చదవడానికి ఓకే నొక్కండి.';
 
   @override
-  String get quizRetryCompletion => 'Retry completion';
+  String get quizRetryCompletion => 'పూర్తి చేయడం మళ్లీ ప్రయత్నించండి';
 
   @override
-  String get quizViewResult => 'View result';
+  String get quizViewResult => 'ఫలితం చూడండి';
 
   @override
-  String get quizNextQuestion => 'Next question';
+  String get quizNextQuestion => 'తరువాతి ప్రశ్న';
 
   @override
   String get quizAttemptInProgressResume =>
-      'Attempt in progress. Return to the quiz list to resume it. Leaving does not submit.';
+      'ప్రయత్నం కొనసాగుతోంది. దాన్ని కొనసాగించడానికి క్విజ్ జాబితాకు తిరిగి వెళ్లండి. బయటకు వెళ్తే సమర్పించబడదు.';
 
   @override
   String get quizReviewTimedOutShort =>
-      'Attempt review timed out. Check your connection and try again.';
+      'ప్రయత్న సమీక్షకు సమయం ముగిసింది. మీ కనెక్షన్ చూసి మళ్లీ ప్రయత్నించండి.';
 
   @override
   String get quizNoScoreCurrentlyReleased =>
-      'Completed attempts exist; no score is currently released.';
+      'పూర్తయిన ప్రయత్నాలు ఉన్నాయి; ప్రస్తుతం ఏ మార్కులూ విడుదల చేయలేదు.';
 
   @override
   String get quizHistoryScreenNavigate =>
-      'Attempt history. Scores are private. Navigate to the summary or an attempt to review.';
+      'ప్రయత్నాల చరిత్ర. మార్కులు ప్రైవేట్. సమీక్షించడానికి సారాంశం లేదా ఒక ప్రయత్నానికి వెళ్లండి.';
 
   @override
   String quizHistoryAttemptRaw(String number, String status, String result) {
-    return 'Attempt $number. $status. $result. Press OK to review.';
+    return 'ప్రయత్నం $number. $status. $result. సమీక్షించడానికి ఓకే నొక్కండి.';
   }
 
   @override
@@ -2978,7 +3001,7 @@ class AppLocalizationsTe extends AppLocalizations {
     String answer,
     String explanation,
   ) {
-    return 'Question $number. Correct. $question. Selected $selected. Correct answer $answer. $explanation';
+    return 'ప్రశ్న $number. సరైనది. $question. ఎంచుకున్నది $selected. సరైన సమాధానం $answer. $explanation';
   }
 
   @override
@@ -2989,82 +3012,83 @@ class AppLocalizationsTe extends AppLocalizations {
     String answer,
     String explanation,
   ) {
-    return 'Question $number. Incorrect. $question. Selected $selected. Correct answer $answer. $explanation';
+    return 'ప్రశ్న $number. తప్పు. $question. ఎంచుకున్నది $selected. సరైన సమాధానం $answer. $explanation';
   }
 
   @override
-  String get quizNoAnswerCapital => 'No answer';
+  String get quizNoAnswerCapital => 'సమాధానం లేదు';
 
   @override
   String quizReviewScreenRaw(String count) {
-    return 'Attempt review. $count questions. Use up and down to review each answer.';
+    return 'ప్రయత్న సమీక్ష. $count ప్రశ్నలు. ప్రతి సమాధానాన్ని సమీక్షించడానికి పైకి, కిందకి ఉపయోగించండి.';
   }
 
   @override
-  String get quizMetaTopics => 'Topics or concepts, one per line (optional)';
+  String get quizMetaTopics =>
+      'అంశాలు లేదా భావనలు, ఒక్కో లైన్‌కు ఒకటి (ఐచ్ఛికం)';
 
   @override
-  String get quizMetaSpokenQuestion => 'Teacher-written spoken question';
+  String get quizMetaSpokenQuestion => 'ఉపాధ్యాయులు రాసిన మాట్లాడే ప్రశ్న';
 
   @override
   String quizMetaSpokenOption(String number) {
-    return 'Spoken option $number';
+    return 'మాట్లాడే ఎంపిక $number';
   }
 
   @override
-  String get quizMetaSpokenExplanation => 'Teacher-written spoken explanation';
+  String get quizMetaSpokenExplanation => 'ఉపాధ్యాయులు రాసిన మాట్లాడే వివరణ';
 
   @override
   String quizCorrectSelected(String number) {
-    return 'Option $number selected as correct answer';
+    return 'ఎంపిక $number సరైన సమాధానంగా ఎంచుకోబడింది';
   }
 
   @override
   String quizCorrectSelectedWithText(String number, String text) {
-    return 'Option $number selected as correct answer, $text';
+    return 'ఎంపిక $number సరైన సమాధానంగా ఎంచుకోబడింది, $text';
   }
 
   @override
-  String get quizEditBankQuestion => 'Edit bank question';
+  String get quizEditBankQuestion => 'బ్యాంక్ ప్రశ్నను మార్చండి';
 
   @override
-  String get quizCreateBankQuestion => 'Create bank question';
+  String get quizCreateBankQuestion => 'బ్యాంక్ ప్రశ్నను సృష్టించండి';
 
   @override
   String get quizEditorNavigation =>
-      'question text, four answer fields, correct-answer selection, optional spoken descriptions, and save or cancel';
+      'ప్రశ్న పాఠ్యం, నాలుగు సమాధాన ఫీల్డ్‌లు, సరైన సమాధానం ఎంపిక, ఐచ్ఛిక మాట్లాడే వివరణలు, మరియు సేవ్ లేదా రద్దు';
 
   @override
-  String get quizSaveQuestion => 'Save question';
+  String get quizSaveQuestion => 'ప్రశ్నను సేవ్ చేయండి';
 
   @override
-  String get quizCancelQuestion => 'Cancel question';
+  String get quizCancelQuestion => 'ప్రశ్నను రద్దు చేయండి';
 
   @override
   String quizPressOkToEdit(String item) {
-    return '$item. Press OK to edit';
+    return '$item. మార్చడానికి ఓకే నొక్కండి';
   }
 
   @override
   String quizPressOkToChange(String item) {
-    return '$item. Press OK to change';
+    return '$item. మార్చడానికి ఓకే నొక్కండి';
   }
 
   @override
   String quizCorrectIsOption(String number, String text) {
-    return 'Option $number, $text, is the correct answer. Use left or right to change';
+    return 'ఎంపిక $number, $text, సరైన సమాధానం. మార్చడానికి ఎడమ లేదా కుడి ఉపయోగించండి';
   }
 
   @override
   String get quizHideOptionalExplanation =>
-      'Hide optional explanation, topics and spoken notation';
+      'ఐచ్ఛిక వివరణ, అంశాలు మరియు మాట్లాడే సంకేతాలను దాచండి';
 
   @override
   String get quizShowOptionalExplanation =>
-      'Show optional explanation, topics and spoken notation';
+      'ఐచ్ఛిక వివరణ, అంశాలు మరియు మాట్లాడే సంకేతాలను చూపండి';
 
   @override
-  String get quizOptionalExplanation => 'Optional answer explanation';
+  String get quizOptionalExplanation => 'ఐచ్ఛిక సమాధాన వివరణ';
 
   @override
   String quizNumericDateTime(
@@ -3074,314 +3098,318 @@ class AppLocalizationsTe extends AppLocalizations {
     String hour,
     String minute,
   ) {
-    return '$day/$month/$year at $hour:$minute';
+    return '$day/$month/$year న $hour:$minute కి';
   }
 
   @override
-  String get quizCheckTitleLimits => 'Check the title, limits, and schedule.';
+  String get quizCheckTitleLimits =>
+      'శీర్షిక, పరిమితులు మరియు షెడ్యూల్‌ను తనిఖీ చేయండి.';
 
   @override
   String get quizSettingsNavigation =>
-      'title, optional description, timing and attempt settings, feedback and shuffle choices, and continue or cancel';
+      'శీర్షిక, ఐచ్ఛిక వివరణ, సమయం మరియు ప్రయత్న సెట్టింగ్‌లు, ఫీడ్‌బ్యాక్ మరియు షఫుల్ ఎంపికలు, మరియు కొనసాగించండి లేదా రద్దు';
 
   @override
   String get quizChangeSettingsScreen =>
-      'Change quiz title and optional settings. Saving does not publish.';
+      'క్విజ్ శీర్షిక మరియు ఐచ్ఛిక సెట్టింగ్‌లను మార్చండి. సేవ్ చేస్తే ప్రచురించబడదు.';
 
   @override
   String get quizCreatePracticeScreen =>
-      'Create untimed ungraded practice. Unlimited retries and immediate feedback.';
+      'సమయ పరిమితి, మార్కులు లేని అభ్యాసాన్ని సృష్టించండి. అపరిమిత ప్రయత్నాలు, వెంటనే ఫీడ్‌బ్యాక్.';
 
   @override
-  String get quizContinueToQuestions => 'Continue to questions';
+  String get quizContinueToQuestions => 'ప్రశ్నలకు కొనసాగండి';
 
   @override
-  String get quizSaveSettingsReturn => 'Save settings and return to review';
+  String get quizSaveSettingsReturn =>
+      'సెట్టింగ్‌లు సేవ్ చేసి సమీక్షకు తిరిగి వెళ్లండి';
 
   @override
-  String get quizQuizTitle => 'Quiz title';
+  String get quizQuizTitle => 'క్విజ్ శీర్షిక';
 
   @override
   String get quizHideOptionalSettings =>
-      'Hide optional settings: description, attempts, timing, feedback and shuffle';
+      'ఐచ్ఛిక సెట్టింగ్‌లను దాచండి: వివరణ, ప్రయత్నాలు, సమయం, ఫీడ్‌బ్యాక్ మరియు షఫుల్';
 
   @override
   String get quizShowOptionalSettings =>
-      'Show optional settings: description, attempts, timing, feedback and shuffle';
+      'ఐచ్ఛిక సెట్టింగ్‌లను చూపండి: వివరణ, ప్రయత్నాలు, సమయం, ఫీడ్‌బ్యాక్ మరియు షఫుల్';
 
   @override
-  String get quizOptionalDescription => 'Optional quiz description';
+  String get quizOptionalDescription => 'ఐచ్ఛిక క్విజ్ వివరణ';
 
   @override
   String quizSetOrClear(String item) {
-    return '$item. Press OK to set it. Use left to clear it';
+    return '$item. సెట్ చేయడానికి ఓకే నొక్కండి. తీసివేయడానికి ఎడమ ఉపయోగించండి';
   }
 
   @override
   String quizShuffleQuestionsToggle(String state) {
-    return 'Shuffle questions $state. Press OK or left or right to toggle';
+    return 'ప్రశ్నలను షఫుల్ చేయడం $state. మార్చడానికి ఓకే లేదా ఎడమ లేదా కుడి నొక్కండి';
   }
 
   @override
   String quizShuffleOptionsToggle(String state) {
-    return 'Shuffle answer options $state. Press OK or left or right to toggle';
+    return 'సమాధాన ఎంపికలను షఫుల్ చేయడం $state. మార్చడానికి ఓకే లేదా ఎడమ లేదా కుడి నొక్కండి';
   }
 
   @override
-  String get quizCancelQuizCreation => 'Cancel quiz creation';
+  String get quizCancelQuizCreation => 'క్విజ్ సృష్టించడం రద్దు చేయండి';
 
   @override
   String quizFeedbackPolicyTarget(String policy) {
-    return 'Feedback policy $policy. Left or right changes it';
+    return 'ఫీడ్‌బ్యాక్ విధానం $policy. ఎడమ లేదా కుడి దాన్ని మారుస్తుంది';
   }
 
   @override
-  String get quizSaveDraftContinue => 'Save draft and continue to questions';
+  String get quizSaveDraftContinue => 'డ్రాఫ్ట్ సేవ్ చేసి ప్రశ్నలకు కొనసాగండి';
 
   @override
-  String get sessionScreenTeacherClass => 'Teacher class';
+  String get sessionScreenTeacherClass => 'ఉపాధ్యాయుల తరగతి';
 
   @override
-  String get sessionScreenClass => 'Class';
+  String get sessionScreenClass => 'తరగతి';
 
   @override
-  String get sessionDefaultTitle => 'Session';
+  String get sessionDefaultTitle => 'సెషన్';
 
   @override
-  String get sessionJoining => 'Joining the class. Please wait.';
+  String get sessionJoining => 'తరగతిలో చేరుతున్నాము. దయచేసి వేచి ఉండండి.';
 
   @override
-  String get sessionConnecting => 'Connecting to the class.';
+  String get sessionConnecting => 'తరగతికి కనెక్ట్ అవుతోంది.';
 
   @override
   String get sessionJoinFailed =>
-      'The class could not be joined. Press 0 to leave, then try again.';
+      'తరగతిలో చేరలేకపోయాము. బయటకు వెళ్లడానికి 0 నొక్కి, మళ్లీ ప్రయత్నించండి.';
 
   @override
   String get sessionLeaveKeyHint =>
-      'Press 0 to leave the class. It asks to confirm.';
+      'తరగతి నుండి బయటకు వెళ్లడానికి 0 నొక్కండి. అది నిర్ధారణ అడుగుతుంది.';
 
   @override
-  String get sessionKeyLine => '*: Help and last message. #: Stop speech.';
+  String get sessionKeyLine => '*: సహాయం మరియు చివరి సందేశం. #: మాటలు ఆపండి.';
 
   @override
   String sessionJoinedBrief(String status) {
-    return 'In class. $status Press star for help.';
+    return 'తరగతిలో ఉన్నారు. $status సహాయం కోసం స్టార్ నొక్కండి.';
   }
 
   @override
   String sessionJoinedDetailed(String status, String keys) {
-    return 'You are in the class. $status $keys Use up and down to move between controls and OK to select. Press star for where you are and help. Press hash to stop speech.';
+    return 'మీరు తరగతిలో ఉన్నారు. $status $keys నియంత్రణల మధ్య కదలడానికి పైకి, కిందకి ఉపయోగించండి, ఎంచుకోవడానికి ఓకే నొక్కండి. మీరు ఎక్కడ ఉన్నారో మరియు సహాయం కోసం స్టార్ నొక్కండి. మాటలు ఆపడానికి హ్యాష్ నొక్కండి.';
   }
 
   @override
   String sessionPressKeyFor(String key, String action) {
-    return 'Press $key for $action.';
+    return '$action కోసం $key నొక్కండి.';
   }
 
   @override
-  String get sessionMicWaitingLabel => 'Microphone waiting for confirmation';
+  String get sessionMicWaitingLabel => 'మైక్రోఫోన్ నిర్ధారణ కోసం వేచి ఉంది';
 
   @override
-  String get sessionUnmuteMicrophone => 'Unmute microphone';
+  String get sessionUnmuteMicrophone => 'మైక్రోఫోన్ అన్‌మ్యూట్ చేయండి';
 
   @override
-  String get sessionMuteMicrophone => 'Mute microphone';
+  String get sessionMuteMicrophone => 'మైక్రోఫోన్ మ్యూట్ చేయండి';
 
   @override
-  String get sessionMuteButtonWaiting => '1: Waiting';
+  String get sessionMuteButtonWaiting => '1: వేచి ఉంది';
 
   @override
-  String get sessionMuteButtonUnmute => '1: Unmute';
+  String get sessionMuteButtonUnmute => '1: అన్‌మ్యూట్';
 
   @override
-  String get sessionMuteButtonMute => '1: Mute';
+  String get sessionMuteButtonMute => '1: మ్యూట్';
 
   @override
-  String get sessionHandWaitingLabel => 'Hand waiting for confirmation';
+  String get sessionHandWaitingLabel => 'చేయి నిర్ధారణ కోసం వేచి ఉంది';
 
   @override
-  String get sessionLowerHand => 'Lower hand';
+  String get sessionLowerHand => 'చేయి దించండి';
 
   @override
-  String get sessionRaiseHand => 'Raise hand';
+  String get sessionRaiseHand => 'చేయి ఎత్తండి';
 
   @override
-  String get sessionHandButtonWaiting => '2: Waiting';
+  String get sessionHandButtonWaiting => '2: వేచి ఉంది';
 
   @override
-  String get sessionHandButtonLower => '2: Lower hand';
+  String get sessionHandButtonLower => '2: చేయి దించండి';
 
   @override
-  String get sessionHandButtonRaise => '2: Raise hand';
+  String get sessionHandButtonRaise => '2: చేయి ఎత్తండి';
 
   @override
-  String get sessionStatusLabel => 'Hear class status';
+  String get sessionStatusLabel => 'తరగతి స్థితిని వినండి';
 
   @override
-  String get sessionStatusButton => '3: Class status';
+  String get sessionStatusButton => '3: తరగతి స్థితి';
 
   @override
   String sessionChatLabel(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Chat. $count messages',
-      one: 'Chat. 1 message',
-      zero: 'Chat. No messages yet',
+      other: 'చాట్. $count సందేశాలు',
+      one: 'చాట్. 1 సందేశం',
+      zero: 'చాట్. ఇంకా సందేశాలు లేవు',
     );
     return '$_temp0';
   }
 
   @override
-  String get sessionChatButton => '4: Chat';
+  String get sessionChatButton => '4: చాట్';
 
   @override
-  String get sessionRecordingPlayerNone => 'Lesson recording. None chosen yet';
+  String get sessionRecordingPlayerNone =>
+      'పాఠం రికార్డింగ్. ఇంకా ఏదీ ఎంచుకోలేదు';
 
   @override
   String sessionRecordingPlayerPlaying(String title) {
-    return 'Lesson recording. $title, playing';
+    return 'పాఠం రికార్డింగ్. $title, ప్లే అవుతోంది';
   }
 
   @override
   String sessionRecordingPlayerPaused(String title) {
-    return 'Lesson recording. $title, paused';
+    return 'పాఠం రికార్డింగ్. $title, ఆపివేయబడింది';
   }
 
   @override
   String get sessionRecordingStudentNone =>
-      'Class recording. Nothing playing. Only the teacher controls it';
+      'తరగతి రికార్డింగ్. ఏదీ ప్లే కావడం లేదు. ఉపాధ్యాయులు మాత్రమే దీన్ని నియంత్రిస్తారు';
 
   @override
   String sessionRecordingStudentPlaying(String title) {
-    return 'Class recording, $title, playing by the teacher. Hear where it is';
+    return 'తరగతి రికార్డింగ్, $title, ఉపాధ్యాయులు ప్లే చేస్తున్నారు. అది ఎక్కడ ఉందో వినండి';
   }
 
   @override
   String sessionRecordingStudentPaused(String title) {
-    return 'Class recording, $title, paused by the teacher. Hear where it is';
+    return 'తరగతి రికార్డింగ్, $title, ఉపాధ్యాయులు ఆపారు. అది ఎక్కడ ఉందో వినండి';
   }
 
   @override
-  String get sessionRecordingStatusButton => '5: Recording status';
+  String get sessionRecordingStatusButton => '5: రికార్డింగ్ స్థితి';
 
   @override
   String get sessionStudentRecordingNone =>
-      'No class recording is playing. Only the teacher can play one.';
+      'తరగతి రికార్డింగ్ ఏదీ ప్లే కావడం లేదు. ఉపాధ్యాయులు మాత్రమే దాన్ని ప్లే చేయగలరు.';
 
   @override
   String sessionStudentRecordingPlaying(String title, String position) {
-    return '$title, playing, at $position. Only the teacher can play, pause or move the class recording.';
+    return '$title, ప్లే అవుతోంది, $position వద్ద ఉంది. తరగతి రికార్డింగ్‌ను ఉపాధ్యాయులు మాత్రమే ప్లే చేయగలరు, ఆపగలరు లేదా ముందుకు వెనక్కి కదిలించగలరు.';
   }
 
   @override
   String sessionStudentRecordingPaused(String title, String position) {
-    return '$title, paused, at $position. Only the teacher can play, pause or move the class recording.';
+    return '$title, ఆపివేయబడింది, $position వద్ద ఉంది. తరగతి రికార్డింగ్‌ను ఉపాధ్యాయులు మాత్రమే ప్లే చేయగలరు, ఆపగలరు లేదా ముందుకు వెనక్కి కదిలించగలరు.';
   }
 
   @override
-  String get sessionRecordingPlayerButton => '5: Lesson recording';
+  String get sessionRecordingPlayerButton => '5: పాఠం రికార్డింగ్';
 
   @override
   String get sessionOpeningPlayerToChoose =>
-      'No recording is selected yet. Press 1 to choose one.';
+      'ఇంకా ఏ రికార్డింగ్‌నూ ఎంచుకోలేదు. ఒకదాన్ని ఎంచుకోవడానికి 1 నొక్కండి.';
 
   @override
-  String get sessionCheckLabel => 'Answer the teacher\'s question';
+  String get sessionCheckLabel => 'ఉపాధ్యాయుల ప్రశ్నకు సమాధానం ఇవ్వండి';
 
   @override
-  String get sessionCheckButton => '3: Answer the question';
+  String get sessionCheckButton => '3: ప్రశ్నకు సమాధానం ఇవ్వండి';
 
   @override
   String sessionHandsLabel(String waiting) {
-    return 'Raised hands. $waiting';
+    return 'ఎత్తిన చేతులు. $waiting';
   }
 
   @override
-  String get sessionHandsButton => '2: Raised hands';
+  String get sessionHandsButton => '2: ఎత్తిన చేతులు';
 
   @override
   String sessionHandsButtonCount(int count) {
-    return '2: Raised hands ($count)';
+    return '2: ఎత్తిన చేతులు ($count)';
   }
 
   @override
   String get sessionTeacherCheckLabel =>
-      'Classroom check. Start a private check, close it and hear responses';
+      'తరగతి తనిఖీ. ప్రైవేట్ తనిఖీని ప్రారంభించండి, ముగించండి మరియు సమాధానాలను వినండి';
 
   @override
   String sessionParticipantsLabel(String people) {
-    return 'Participants. $people Mute or remove someone, or hear a summary';
+    return 'పాల్గొనేవారు. $people ఎవరినైనా మ్యూట్ చేయండి లేదా తీసివేయండి, లేదా సారాంశం వినండి';
   }
 
   @override
-  String get sessionParticipantsButton => '7: Participants';
+  String get sessionParticipantsButton => '7: పాల్గొనేవారు';
 
   @override
   String get sessionToolsLabel =>
-      'Teacher tools. Add time or end the class for everyone';
+      'ఉపాధ్యాయుల సాధనాలు. సమయం పెంచండి లేదా అందరికీ తరగతిని ముగించండి';
 
   @override
-  String get sessionToolsButton => '9: Teacher tools';
+  String get sessionToolsButton => '9: ఉపాధ్యాయుల సాధనాలు';
 
   @override
   String get sessionVoiceStartLabel =>
-      'Listen for one voice command, up to 12 seconds. Starts only when you press OK';
+      'ఒక వాయిస్ కమాండ్ కోసం 12 సెకన్ల వరకు వినండి. మీరు ఓకే నొక్కినప్పుడు మాత్రమే ప్రారంభమవుతుంది';
 
   @override
-  String get sessionVoiceStopLabel => 'Stop listening for a voice command';
+  String get sessionVoiceStopLabel => 'వాయిస్ కమాండ్ కోసం వినడం ఆపండి';
 
   @override
-  String get sessionVoiceStartButton => 'Listen for command';
+  String get sessionVoiceStartButton => 'కమాండ్ కోసం వినండి';
 
   @override
-  String get sessionVoiceStopButton => 'Stop listening';
+  String get sessionVoiceStopButton => 'వినడం ఆపండి';
 
   @override
-  String get sessionUpdatesLabel => 'Read class updates';
+  String get sessionUpdatesLabel => 'తరగతి అప్‌డేట్‌లను చదవండి';
 
   @override
-  String get sessionUpdatesButton => 'Class updates';
+  String get sessionUpdatesButton => 'తరగతి అప్‌డేట్‌లు';
 
   @override
-  String get sessionRetryLabel => 'Retry class connection';
+  String get sessionRetryLabel => 'తరగతి కనెక్షన్ మళ్లీ ప్రయత్నించండి';
 
   @override
-  String get sessionRetryButton => 'Retry connection';
+  String get sessionRetryButton => 'కనెక్షన్ మళ్లీ ప్రయత్నించండి';
 
   @override
-  String get sessionLeaveLabel => 'Leave class';
+  String get sessionLeaveLabel => 'తరగతి నుండి బయటకు వెళ్లండి';
 
   @override
-  String get sessionLeaveButton => '0: Leave class';
+  String get sessionLeaveButton => '0: తరగతి నుండి బయటకు వెళ్లండి';
 
   @override
-  String get sessionMicWaiting => 'Microphone waiting for confirmation.';
+  String get sessionMicWaiting => 'మైక్రోఫోన్ నిర్ధారణ కోసం వేచి ఉంది.';
 
   @override
-  String get sessionMicMuted => 'Muted.';
+  String get sessionMicMuted => 'మ్యూట్ చేయబడింది.';
 
   @override
-  String get sessionMicUnmutedHeard => 'Unmuted. Others can hear you.';
+  String get sessionMicUnmutedHeard =>
+      'అన్‌మ్యూట్ చేయబడింది. ఇతరులు మీ మాట వినగలరు.';
 
   @override
-  String get sessionHandWaiting => 'Hand waiting for confirmation.';
+  String get sessionHandWaiting => 'చేయి నిర్ధారణ కోసం వేచి ఉంది.';
 
   @override
-  String get sessionHandRaisedState => 'Hand raised.';
+  String get sessionHandRaisedState => 'చేయి ఎత్తారు.';
 
   @override
-  String get sessionHandDown => 'Hand down.';
+  String get sessionHandDown => 'చేయి దించారు.';
 
   @override
   String sessionHandsWaiting(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count hands waiting.',
-      one: '1 hand waiting.',
-      zero: 'No hands waiting.',
+      other: '$count చేతులు వేచి ఉన్నాయి.',
+      one: '1 చేయి వేచి ఉంది.',
+      zero: 'ఏ చేతులూ వేచి లేవు.',
     );
     return '$_temp0';
   }
@@ -3391,27 +3419,27 @@ class AppLocalizationsTe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count people in the class.',
-      one: '1 person in the class.',
+      other: 'తరగతిలో $count మంది ఉన్నారు.',
+      one: 'తరగతిలో 1 వ్యక్తి ఉన్నారు.',
     );
     return '$_temp0';
   }
 
   @override
-  String get sessionNoRecordingSelected => 'No recording selected.';
+  String get sessionNoRecordingSelected => 'ఏ రికార్డింగ్‌నూ ఎంచుకోలేదు.';
 
   @override
   String sessionRecordingStatePlaying(String title) {
-    return 'Recording playing: $title.';
+    return 'రికార్డింగ్ ప్లే అవుతోంది: $title.';
   }
 
   @override
   String sessionRecordingStatePaused(String title) {
-    return 'Recording paused: $title.';
+    return 'రికార్డింగ్ ఆపివేయబడింది: $title.';
   }
 
   @override
-  String get sessionCheckOpen => 'Classroom check open.';
+  String get sessionCheckOpen => 'తరగతి తనిఖీ తెరిచి ఉంది.';
 
   @override
   String sessionConnectionLabel(String label) {
@@ -3423,249 +3451,250 @@ class AppLocalizationsTe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count chat messages.',
-      one: '1 chat message.',
+      other: '$count చాట్ సందేశాలు.',
+      one: '1 చాట్ సందేశం.',
     );
     return '$_temp0';
   }
 
   @override
-  String get sessionRecordingFallback => 'Class recording';
+  String get sessionRecordingFallback => 'తరగతి రికార్డింగ్';
 
   @override
-  String get sessionRecordingFallbackLower => 'class recording';
+  String get sessionRecordingFallbackLower => 'తరగతి రికార్డింగ్';
 
   @override
   String sessionUserFallback(String id) {
-    return 'User $id';
+    return 'వినియోగదారు $id';
   }
 
   @override
   String sessionConnectionRestored(String message) {
-    return 'Connection restored. $message';
+    return 'కనెక్షన్ తిరిగి వచ్చింది. $message';
   }
 
   @override
   String sessionConnectionLost(String message) {
-    return 'Connection lost. $message';
+    return 'కనెక్షన్ పోయింది. $message';
   }
 
   @override
   String sessionCouldNotConnect(String message) {
-    return 'Could not connect. $message';
+    return 'కనెక్ట్ కాలేకపోయింది. $message';
   }
 
   @override
-  String get sessionMicDialogTitle => 'Microphone access';
+  String get sessionMicDialogTitle => 'మైక్రోఫోన్ యాక్సెస్';
 
   @override
   String get sessionMicDialogMessage =>
-      'In this class SEEDS uses the microphone for live audio and explicitly activated voice commands. You can stay without microphone access, but others will not hear you. Separate private-note recording requires its own explicit start outside live classes.';
+      'ఈ తరగతిలో SEEDS లైవ్ ఆడియో కోసం మరియు మీరు స్పష్టంగా ఆన్ చేసిన వాయిస్ కమాండ్‌ల కోసం మైక్రోఫోన్‌ను ఉపయోగిస్తుంది. మైక్రోఫోన్ యాక్సెస్ లేకుండా కూడా మీరు ఉండవచ్చు, కానీ ఇతరులు మీ మాట వినలేరు. వేరుగా ప్రైవేట్ నోట్ రికార్డింగ్‌కు లైవ్ తరగతుల బయట దానికంటూ స్పష్టమైన ప్రారంభం అవసరం.';
 
   @override
-  String get sessionMicDialogConfirm => 'Continue to class';
+  String get sessionMicDialogConfirm => 'తరగతికి కొనసాగండి';
 
   @override
   String get sessionMicSkipped =>
-      'Microphone access was skipped. You joined the class muted.';
+      'మైక్రోఫోన్ యాక్సెస్ దాటవేయబడింది. మీరు మ్యూట్‌లో తరగతిలో చేరారు.';
 
   @override
   String get sessionMicUnavailable =>
-      'Microphone access is unavailable. You joined the class muted.';
+      'మైక్రోఫోన్ యాక్సెస్ అందుబాటులో లేదు. మీరు మ్యూట్‌లో తరగతిలో చేరారు.';
 
   @override
-  String get sessionWaitingMic => 'Waiting for microphone confirmation.';
+  String get sessionWaitingMic => 'మైక్రోఫోన్ నిర్ధారణ కోసం వేచి ఉంది.';
 
   @override
-  String get sessionMuted => 'Muted';
+  String get sessionMuted => 'మ్యూట్ చేయబడింది';
 
   @override
-  String get sessionUnmuted => 'Unmuted';
+  String get sessionUnmuted => 'అన్‌మ్యూట్ చేయబడింది';
 
   @override
   String get sessionMutedLocallyOnly =>
-      'Microphone muted on this phone. The class confirmation was not received.';
+      'ఈ ఫోన్‌లో మైక్రోఫోన్ మ్యూట్ చేయబడింది. తరగతి నుండి నిర్ధారణ అందలేదు.';
 
   @override
-  String get sessionMutedByTeacher => 'The teacher muted your microphone.';
+  String get sessionMutedByTeacher =>
+      'ఉపాధ్యాయులు మీ మైక్రోఫోన్‌ను మ్యూట్ చేశారు.';
 
   @override
   String get sessionMicClassClosed =>
-      'The class has closed. No microphone action was sent.';
+      'తరగతి ముగిసింది. మైక్రోఫోన్ చర్య ఏదీ పంపలేదు.';
 
   @override
   String get sessionMicUnavailableRejoin =>
-      'Microphone access is unavailable. Check microphone permission and rejoin the class before trying to speak.';
+      'మైక్రోఫోన్ యాక్సెస్ అందుబాటులో లేదు. మాట్లాడే ముందు మైక్రోఫోన్ అనుమతిని చూసి, తరగతిలో మళ్లీ చేరండి.';
 
   @override
   String get sessionMicClosedBeforeConfirm =>
-      'The class closed before microphone confirmation.';
+      'మైక్రోఫోన్ నిర్ధారణకు ముందే తరగతి ముగిసింది.';
 
   @override
   String get sessionMicNoLongerAvailable =>
-      'Microphone access is no longer available. Rejoin the class before trying to speak.';
+      'మైక్రోఫోన్ యాక్సెస్ ఇక అందుబాటులో లేదు. మాట్లాడే ముందు తరగతిలో మళ్లీ చేరండి.';
 
   @override
   String get sessionMicStayedMuted =>
-      'Your microphone stayed muted because the class mute state changed. Select Unmute when you are ready to speak.';
+      'తరగతి మ్యూట్ స్థితి మారినందున మీ మైక్రోఫోన్ మ్యూట్‌లోనే ఉంది. మాట్లాడడానికి సిద్ధంగా ఉన్నప్పుడు అన్‌మ్యూట్ ఎంచుకోండి.';
 
   @override
-  String get sessionWaitingHand => 'Waiting for hand status confirmation.';
+  String get sessionWaitingHand => 'చేయి స్థితి నిర్ధారణ కోసం వేచి ఉంది.';
 
   @override
-  String get sessionHandRaised => 'Hand raised';
+  String get sessionHandRaised => 'చేయి ఎత్తారు';
 
   @override
-  String get sessionHandLowered => 'Hand lowered';
+  String get sessionHandLowered => 'చేయి దించారు';
 
   @override
   String get sessionHandNotConfirmed =>
-      'Your hand change was not confirmed. Press 2 to try again.';
+      'మీ చేయి మార్పు నిర్ధారించబడలేదు. మళ్లీ ప్రయత్నించడానికి 2 నొక్కండి.';
 
   @override
   String sessionRaisedHandBy(String name) {
-    return '$name raised hand. Press 2 for raised hands.';
+    return '$name చేయి ఎత్తారు. ఎత్తిన చేతుల కోసం 2 నొక్కండి.';
   }
 
   @override
   String get sessionRaisedHandUnknown =>
-      'A participant raised hand. Press 2 for raised hands.';
+      'ఒక పాల్గొనేవారు చేయి ఎత్తారు. ఎత్తిన చేతుల కోసం 2 నొక్కండి.';
 
   @override
-  String get sessionParticipantJoined => 'A participant joined.';
+  String get sessionParticipantJoined => 'ఒక పాల్గొనేవారు చేరారు.';
 
   @override
-  String get sessionParticipantsJoinedGroup => 'Participants joined';
+  String get sessionParticipantsJoinedGroup => 'చేరిన పాల్గొనేవారు';
 
   @override
-  String get sessionParticipantLeft => 'A participant left.';
+  String get sessionParticipantLeft => 'ఒక పాల్గొనేవారు వెళ్లిపోయారు.';
 
   @override
-  String get sessionParticipantsLeftGroup => 'Participants left';
+  String get sessionParticipantsLeftGroup => 'వెళ్లిపోయిన పాల్గొనేవారు';
 
   @override
-  String get sessionParticipantFallback => 'Participant';
+  String get sessionParticipantFallback => 'పాల్గొనేవారు';
 
   @override
-  String get sessionThisParticipant => 'This participant';
+  String get sessionThisParticipant => 'ఈ పాల్గొనేవారు';
 
   @override
   String sessionParticipantSelf(String name) {
-    return '$name, you';
+    return '$name, మీరు';
   }
 
   @override
-  String get sessionRoleTeacher => 'teacher';
+  String get sessionRoleTeacher => 'ఉపాధ్యాయులు';
 
   @override
-  String get sessionRoleStudent => 'student';
+  String get sessionRoleStudent => 'విద్యార్థి';
 
   @override
-  String get sessionStateHandRaised => 'hand raised';
+  String get sessionStateHandRaised => 'చేయి ఎత్తారు';
 
   @override
-  String get sessionStateMuted => 'muted';
+  String get sessionStateMuted => 'మ్యూట్ చేయబడింది';
 
   @override
-  String get sessionStateUnmuted => 'unmuted';
+  String get sessionStateUnmuted => 'అన్‌మ్యూట్ చేయబడింది';
 
   @override
-  String get sessionStateSpeaking => 'speaking';
+  String get sessionStateSpeaking => 'మాట్లాడుతున్నారు';
 
   @override
   String sessionAlreadyMuted(String name) {
-    return '$name is muted. Only $name can unmute.';
+    return '$name మ్యూట్‌లో ఉన్నారు. $name మాత్రమే అన్‌మ్యూట్ చేయగలరు.';
   }
 
   @override
   String sessionParticipantMuted(String name) {
-    return '$name muted.';
+    return '$name మ్యూట్ చేయబడ్డారు.';
   }
 
   @override
   String sessionRemoveTitle(String name) {
-    return 'Remove $name?';
+    return '$nameను తొలగించాలా?';
   }
 
   @override
   String sessionRemoveMessage(String name) {
-    return '$name will be removed from this class and returned to their dashboard. They can be invited again later.';
+    return '$nameను ఈ తరగతి నుండి తొలగించి, వారి డాష్‌బోర్డ్‌కు పంపుతాము. వారిని తర్వాత మళ్లీ ఆహ్వానించవచ్చు.';
   }
 
   @override
   String sessionKeep(String name) {
-    return 'Keep $name';
+    return '$nameను ఉంచండి';
   }
 
   @override
   String sessionRemove(String name) {
-    return 'Remove $name';
+    return '$nameను తొలగించండి';
   }
 
   @override
   String sessionRemoved(String name) {
-    return '$name removed from the class.';
+    return '$nameను తరగతి నుండి తొలగించారు.';
   }
 
   @override
   String chatMessageFrom(String sender, String text) {
-    return 'Message from $sender: $text';
+    return '$sender నుండి సందేశం: $text';
   }
 
   @override
-  String get chatSenderUnknown => 'Unknown';
+  String get chatSenderUnknown => 'తెలియదు';
 
   @override
-  String get chatSenderUnknownLower => 'unknown';
+  String get chatSenderUnknownLower => 'తెలియదు';
 
   @override
-  String get chatWaitingConfirmation => 'Waiting for message confirmation.';
+  String get chatWaitingConfirmation => 'సందేశం నిర్ధారణ కోసం వేచి ఉంది.';
 
   @override
-  String get chatEmptyMessage => 'Enter a message before selecting Send.';
+  String get chatEmptyMessage => 'పంపు ఎంచుకునే ముందు ఒక సందేశం రాయండి.';
 
   @override
-  String get chatMessageSent => 'Message sent.';
+  String get chatMessageSent => 'సందేశం పంపబడింది.';
 
   @override
-  String get chatSending => 'Sending';
+  String get chatSending => 'పంపుతోంది';
 
   @override
-  String get chatSent => 'Sent';
+  String get chatSent => 'పంపబడింది';
 
   @override
-  String get chatNotConfirmed => 'Not confirmed';
+  String get chatNotConfirmed => 'నిర్ధారించబడలేదు';
 
   @override
-  String get chatNoMessages => 'No messages yet.';
+  String get chatNoMessages => 'ఇంకా సందేశాలు లేవు.';
 
   @override
-  String get chatTitle => 'Chat';
+  String get chatTitle => 'చాట్';
 
   @override
-  String get chatReadMessages => 'Read messages, newest first';
+  String get chatReadMessages => 'సందేశాలు చదవండి, కొత్తవి ముందు';
 
   @override
-  String get chatWriteMessage => 'Write a message';
+  String get chatWriteMessage => 'సందేశం రాయండి';
 
   @override
-  String get chatMessageField => 'Your message to the class';
+  String get chatMessageField => 'తరగతికి మీ సందేశం';
 
   @override
-  String get chatMessagesTitle => 'Chat messages';
+  String get chatMessagesTitle => 'చాట్ సందేశాలు';
 
   @override
-  String get chatPhraseUnderstood => 'I understood';
+  String get chatPhraseUnderstood => 'నాకు అర్థమైంది';
 
   @override
-  String get chatPhraseRepeat => 'Please repeat';
+  String get chatPhraseRepeat => 'దయచేసి మళ్లీ చెప్పండి';
 
   @override
-  String get chatPhraseQuestion => 'I have a question';
+  String get chatPhraseQuestion => 'నాకు ఒక ప్రశ్న ఉంది';
 
   @override
   String chatSendPhrase(String phrase) {
-    return 'Send: $phrase';
+    return 'పంపండి: $phrase';
   }
 
   @override
@@ -3673,21 +3702,21 @@ class AppLocalizationsTe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count messages.',
-      one: '1 message.',
+      other: '$count సందేశాలు.',
+      one: '1 సందేశం.',
     );
     return '$_temp0';
   }
 
   @override
-  String get chatHelpBrief => 'Read, write or send a quick phrase.';
+  String get chatHelpBrief => 'చదవండి, రాయండి లేదా చిన్న వాక్యం పంపండి.';
 
   @override
   String get chatHelpDetailed =>
-      'Press 1 to read messages, 2 to write one, or 3 to 5 to send a quick phrase. Press 8 to hear the newest message.';
+      'సందేశాలు చదవడానికి 1, ఒకటి రాయడానికి 2, లేదా చిన్న వాక్యం పంపడానికి 3 నుండి 5 నొక్కండి. కొత్త సందేశం వినడానికి 8 నొక్కండి.';
 
   @override
-  String get chatYou => 'You';
+  String get chatYou => 'మీరు';
 
   @override
   String chatMessageLine(String sender, String text) {
@@ -3706,270 +3735,270 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String chatMessageDetailSent(String line, String time) {
-    return '$line. Sent $time.';
+    return '$line. $timeకు పంపబడింది.';
   }
 
   @override
   String chatNewestMessage(String detail) {
-    return 'Newest message. $detail';
+    return 'కొత్త సందేశం. $detail';
   }
 
   @override
-  String get chatReadLatest => 'Read latest message';
+  String get chatReadLatest => 'తాజా సందేశం చదవండి';
 
   @override
-  String get chatMessageLabel => 'Chat message';
+  String get chatMessageLabel => 'చాట్ సందేశం';
 
   @override
-  String get chatSendMessage => 'Send message';
+  String get chatSendMessage => 'సందేశం పంపండి';
 
   @override
   String chatSaid(String sender, String text) {
-    return '$sender said: $text';
+    return '$sender చెప్పారు: $text';
   }
 
   @override
   String chatSaidDelivery(String sender, String text, String delivery) {
-    return '$sender said: $text. $delivery';
+    return '$sender చెప్పారు: $text. $delivery';
   }
 
   @override
   String chatLatestLineDelivery(String sender, String text, String delivery) {
-    return '$sender: $text\nDelivery status: $delivery.';
+    return '$sender: $text\nపంపిన స్థితి: $delivery.';
   }
 
   @override
-  String get sessionLeaveTitle => 'Leave class?';
+  String get sessionLeaveTitle => 'తరగతి నుండి వెళ్లాలా?';
 
   @override
   String get sessionLeaveMessage =>
-      'You will leave this class and return to your dashboard. You will remain logged in.';
+      'మీరు ఈ తరగతి నుండి వెళ్లి మీ డాష్‌బోర్డ్‌కు తిరిగి వెళ్తారు. మీరు సైన్ ఇన్ అయ్యే ఉంటారు.';
 
   @override
   String get sessionTeacherLeaveMessage =>
-      'You will leave and return to your dashboard. The class keeps running for students. To end it for everyone, use 9, Teacher tools.';
+      'మీరు వెళ్లి మీ డాష్‌బోర్డ్‌కు తిరిగి వెళ్తారు. విద్యార్థుల కోసం తరగతి కొనసాగుతుంది. అందరికీ ముగించడానికి, 9, ఉపాధ్యాయుల సాధనాలు ఉపయోగించండి.';
 
   @override
-  String get sessionStay => 'Stay in class';
+  String get sessionStay => 'తరగతిలో ఉండండి';
 
   @override
-  String get sessionLeave => 'Leave class';
+  String get sessionLeave => 'తరగతి నుండి వెళ్లండి';
 
   @override
-  String get sessionLeaveLocallyTitle => 'Leave without server confirmation?';
+  String get sessionLeaveLocallyTitle => 'సర్వర్ నిర్ధారణ లేకుండా వెళ్లాలా?';
 
   @override
   String get sessionLeaveLocallyMessage =>
-      'This phone is muted. The server did not confirm clearing your raised hand. Leave locally now, or stay and retry? A fresh join resets your hand.';
+      'ఈ ఫోన్ మ్యూట్‌లో ఉంది. మీ ఎత్తిన చేయి దించినట్లు సర్వర్ నిర్ధారించలేదు. ఇప్పుడు ఈ ఫోన్‌లో మాత్రమే వెళ్లాలా, లేదా ఉండి మళ్లీ ప్రయత్నించాలా? మళ్లీ కొత్తగా చేరితే మీ చేయి రీసెట్ అవుతుంది.';
 
   @override
-  String get sessionStayAndRetry => 'Stay and retry';
+  String get sessionStayAndRetry => 'ఉండి మళ్లీ ప్రయత్నించండి';
 
   @override
-  String get sessionLeaveLocally => 'Leave locally';
+  String get sessionLeaveLocally => 'ఈ ఫోన్‌లో మాత్రమే వెళ్లండి';
 
   @override
-  String get sessionEndTitle => 'End class for everyone?';
+  String get sessionEndTitle => 'అందరికీ తరగతి ముగించాలా?';
 
   @override
   String get sessionEndMessage =>
-      'This stops the class for every participant and returns everyone to their dashboard. Nobody will be logged out.';
+      'ఇది ప్రతి పాల్గొనేవారికి తరగతిని ఆపి, అందరినీ వారి డాష్‌బోర్డ్‌కు పంపుతుంది. ఎవరూ లాగ్ అవుట్ కారు.';
 
   @override
-  String get sessionEndCancel => 'Keep the class going';
+  String get sessionEndCancel => 'తరగతిని కొనసాగించండి';
 
   @override
-  String get sessionEndConfirm => 'End for everyone';
+  String get sessionEndConfirm => 'అందరికీ ముగించండి';
 
   @override
-  String get sessionWaitingEnd => 'Waiting for end-class confirmation.';
+  String get sessionWaitingEnd => 'తరగతి ముగింపు నిర్ధారణ కోసం వేచి ఉంది.';
 
   @override
   String get sessionEndNotConfirmed =>
-      'Ending the class was not confirmed. The class is still running.';
+      'తరగతి ముగింపు నిర్ధారించబడలేదు. తరగతి ఇంకా కొనసాగుతోంది.';
 
   @override
-  String get sessionEndingForEveryone => 'Ending the class for everyone.';
+  String get sessionEndingForEveryone => 'అందరికీ తరగతి ముగిస్తోంది.';
 
   @override
-  String get sessionYouLeft => 'You left the class.';
+  String get sessionYouLeft => 'మీరు తరగతి నుండి వెళ్లిపోయారు.';
 
   @override
-  String get sessionClassEnded => 'The class has ended.';
+  String get sessionClassEnded => 'తరగతి ముగిసింది.';
 
   @override
-  String get sessionYouWereRemoved => 'You were removed from the class.';
+  String get sessionYouWereRemoved => 'మిమ్మల్ని తరగతి నుండి తొలగించారు.';
 
   @override
   String get sessionSignInChanged =>
-      'Your sign-in changed. Sign in again or contact your school administrator.';
+      'మీ సైన్ ఇన్ మారింది. మళ్లీ సైన్ ఇన్ చేయండి లేదా మీ పాఠశాల నిర్వాహకులను సంప్రదించండి.';
 
   @override
   String get sessionCleanupFailed =>
-      'Sign-in ended. Native audio cleanup could not be confirmed. Close SEEDS if audio continues.';
+      'సైన్ ఇన్ ముగిసింది. ఫోన్ ఆడియో ఆపడం నిర్ధారించబడలేదు. ఆడియో ఇంకా వస్తుంటే SEEDS మూసివేయండి.';
 
   @override
   String get sessionCleanupTimedOut =>
-      'Sign-in ended. Audio cleanup timed out. Close SEEDS if audio continues.';
+      'సైన్ ఇన్ ముగిసింది. ఆడియో ఆపడానికి సమయం మించిపోయింది. ఆడియో ఇంకా వస్తుంటే SEEDS మూసివేయండి.';
 
   @override
   String get sessionRequestFailed =>
-      'We could not complete that request. Please try again.';
+      'ఆ అభ్యర్థనను పూర్తి చేయలేకపోయాము. దయచేసి మళ్లీ ప్రయత్నించండి.';
 
   @override
-  String get sessionVoiceStopped => 'Voice listening stopped.';
+  String get sessionVoiceStopped => 'స్వర ఆదేశాలు వినడం ఆగింది.';
 
   @override
-  String get sessionVoiceUnmuteTitle => 'Unmute your microphone?';
+  String get sessionVoiceUnmuteTitle => 'మీ మైక్రోఫోన్‌ను అన్‌మ్యూట్ చేయాలా?';
 
   @override
   String get sessionVoiceUnmuteMessage =>
-      'A voice command requested unmute. Confirm with a key or touch. Other class members will be able to hear you.';
+      'ఒక స్వర ఆదేశం అన్‌మ్యూట్ కోరింది. కీ లేదా టచ్‌తో నిర్ధారించండి. తరగతిలోని ఇతరులు మీ మాట వినగలరు.';
 
   @override
-  String get sessionVoiceUnmuteConfirm => 'Unmute';
+  String get sessionVoiceUnmuteConfirm => 'అన్‌మ్యూట్';
 
   @override
-  String get sessionVoiceUnmuteCancel => 'Stay muted';
+  String get sessionVoiceUnmuteCancel => 'మ్యూట్‌లోనే ఉండండి';
 
   @override
-  String get sessionAlreadyUnmuted => 'Already unmuted';
+  String get sessionAlreadyUnmuted => 'ఇప్పటికే అన్‌మ్యూట్‌లో ఉంది';
 
   @override
-  String get sessionAlreadyMutedSelf => 'Already muted';
+  String get sessionAlreadyMutedSelf => 'ఇప్పటికే మ్యూట్‌లో ఉంది';
 
   @override
-  String get sessionHandAlreadyLowered => 'Hand is already lowered';
+  String get sessionHandAlreadyLowered => 'చేయి ఇప్పటికే దించబడింది';
 
   @override
-  String get sessionHandAlreadyRaised => 'Hand is already raised';
+  String get sessionHandAlreadyRaised => 'చేయి ఇప్పటికే ఎత్తబడింది';
 
   @override
-  String get sessionCommandNotRecognized => 'Command not recognized';
+  String get sessionCommandNotRecognized => 'ఆదేశం అర్థం కాలేదు';
 
   @override
   String get sessionVoiceStopUnconfirmed =>
-      'Voice listening stop not confirmed. Retry stopping.';
+      'స్వర ఆదేశాలు వినడం ఆగినట్లు నిర్ధారించబడలేదు. మళ్లీ ఆపడానికి ప్రయత్నించండి.';
 
   @override
-  String get sessionVoiceStopping => 'Stopping voice listening.';
+  String get sessionVoiceStopping => 'స్వర ఆదేశాలు వినడం ఆపుతోంది.';
 
   @override
-  String get sessionVoiceStarting => 'Starting voice commands.';
+  String get sessionVoiceStarting => 'స్వర ఆదేశాలు ప్రారంభిస్తోంది.';
 
   @override
-  String get sessionVoiceFinishing => 'Finishing voice recognition.';
+  String get sessionVoiceFinishing => 'స్వర గుర్తింపు పూర్తి చేస్తోంది.';
 
   @override
-  String get sessionVoiceListening =>
-      'Listening for one command, up to 12 seconds.';
+  String get sessionVoiceListening => 'ఒక ఆదేశం కోసం వింటోంది, 12 సెకన్ల వరకు.';
 
   @override
   String get sessionVoiceIdle =>
-      'Not listening. Activate Listen for command to start.';
+      'వినడం లేదు. ప్రారంభించడానికి ఆదేశం కోసం వినండి ఎంచుకోండి.';
 
   @override
   String get sessionVoiceSpeechNotStopped =>
-      'App speech could not be stopped. Try Stop speech before listening.';
+      'యాప్ స్వరం ఆపలేకపోయాము. వినే ముందు స్వరం ఆపండి ప్రయత్నించండి.';
 
   @override
   String get sessionVoiceUnavailable =>
-      'Voice commands are unavailable. Check microphone permission and Android English speech services.';
+      'స్వర ఆదేశాలు అందుబాటులో లేవు. మైక్రోఫోన్ అనుమతి మరియు Android ఇంగ్లీష్ స్పీచ్ సేవలను తనిఖీ చేయండి.';
 
   @override
   String get sessionVoiceCouldNotStart =>
-      'Voice commands could not start. Check microphone permission and English speech services, then try again.';
+      'స్వర ఆదేశాలు ప్రారంభం కాలేదు. మైక్రోఫోన్ అనుమతి మరియు ఇంగ్లీష్ స్పీచ్ సేవలను తనిఖీ చేసి, మళ్లీ ప్రయత్నించండి.';
 
   @override
   String get sessionVoiceCouldNotFinish =>
-      'Voice recognition could not finish. Check permission and English speech services, then activate Listen to retry.';
+      'స్వర గుర్తింపు పూర్తి కాలేదు. అనుమతి మరియు ఇంగ్లీష్ స్పీచ్ సేవలను తనిఖీ చేసి, మళ్లీ ప్రయత్నించడానికి వినండి ఎంచుకోండి.';
 
   @override
   String get sessionVoiceNoCommand =>
-      'No command heard. Activate Listen for command to try again.';
+      'ఏ ఆదేశం వినిపించలేదు. మళ్లీ ప్రయత్నించడానికి ఆదేశం కోసం వినండి ఎంచుకోండి.';
 
   @override
   String get sessionVoiceCommandFailed =>
-      'The voice command could not be completed. Use its keypad control or try again.';
+      'స్వర ఆదేశం పూర్తి కాలేదు. దాని కీప్యాడ్ కీ ఉపయోగించండి లేదా మళ్లీ ప్రయత్నించండి.';
 
   @override
   String get sessionVoiceCannotStop =>
-      'Voice listening could not be stopped. Retry Stop listening or leave the class and check the Android microphone indicator.';
+      'స్వర ఆదేశాలు వినడం ఆపలేకపోయాము. వినడం ఆపండి మళ్లీ ప్రయత్నించండి, లేదా తరగతి నుండి వెళ్లి Android మైక్రోఫోన్ సూచికను తనిఖీ చేయండి.';
 
   @override
   String get sessionRecordingSelectionChanged =>
-      'The class recording selection changed. Use Read class updates for details.';
+      'తరగతి రికార్డింగ్ ఎంపిక మారింది. వివరాల కోసం తరగతి అప్‌డేట్‌లు చదవండి ఉపయోగించండి.';
 
   @override
-  String get sessionRecordingSelectionGroup => 'Class recording selection';
+  String get sessionRecordingSelectionGroup => 'తరగతి రికార్డింగ్ ఎంపిక';
 
   @override
-  String get sessionPlaybackFinished => 'Recording finished.';
+  String get sessionPlaybackFinished => 'రికార్డింగ్ పూర్తయింది.';
 
   @override
-  String get sessionNoRecording => 'No class recording is selected.';
+  String get sessionNoRecording => 'ఏ తరగతి రికార్డింగ్ ఎంచుకోబడలేదు.';
 
   @override
   String get sessionNoRecordingTeacher =>
-      'No class recording is selected. In the recording player, press 1 to choose one.';
+      'ఏ తరగతి రికార్డింగ్ ఎంచుకోబడలేదు. రికార్డింగ్ ప్లేయర్‌లో, ఒకటి ఎంచుకోవడానికి 1 నొక్కండి.';
 
   @override
   String get sessionPreviewFailed =>
-      'The private preview could not start. Check the connection and try again.';
+      'ప్రైవేట్ ప్రివ్యూ ప్రారంభం కాలేదు. కనెక్షన్ తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.';
 
   @override
   String sessionClassPauseUnconfirmed(String reason) {
-    return 'Your local audio is paused. The class pause was not confirmed. $reason';
+    return 'మీ ఫోన్‌లో ఆడియో పాజ్ అయింది. తరగతి పాజ్ నిర్ధారించబడలేదు. $reason';
   }
 
   @override
   String sessionSpeed(String speed) {
-    return '$speed times speed';
+    return '$speed రెట్లు వేగం';
   }
 
   @override
   String sessionPlaybackAccepted(String title) {
-    return 'Class playback request accepted for $title.';
+    return '$title కోసం తరగతి ప్లేబ్యాక్ అభ్యర్థన అంగీకరించబడింది.';
   }
 
   @override
   String sessionSelected(String title) {
-    return '$title selected for the class. Press 5 to play it.';
+    return '$title తరగతి కోసం ఎంచుకోబడింది. ప్లే చేయడానికి 5 నొక్కండి.';
   }
 
   @override
   String sessionPreviewing(String title) {
-    return 'Previewing $title on this phone only.';
+    return '$titleను ఈ ఫోన్‌లో మాత్రమే ప్రివ్యూ చేస్తోంది.';
   }
 
   @override
-  String get sessionPreviewStopped => 'Preview stopped.';
+  String get sessionPreviewStopped => 'ప్రివ్యూ ఆగింది.';
 
   @override
-  String get sessionRecordingsTitle => 'Class recording player';
+  String get sessionRecordingsTitle => 'తరగతి రికార్డింగ్ ప్లేయర్';
 
   @override
-  String get sessionChooseRecording => 'Choose a recording from the library';
+  String get sessionChooseRecording => 'లైబ్రరీ నుండి ఒక రికార్డింగ్ ఎంచుకోండి';
 
   @override
-  String get sessionUploadRecording => 'Upload a new recording';
+  String get sessionUploadRecording => 'కొత్త రికార్డింగ్ అప్‌లోడ్ చేయండి';
 
   @override
-  String get sessionHearRecording => 'Hear recording status';
+  String get sessionHearRecording => 'రికార్డింగ్ స్థితి వినండి';
 
   @override
-  String get sessionPlayPauseClass => 'Play or pause for the class';
+  String get sessionPlayPauseClass => 'తరగతి కోసం ప్లే లేదా పాజ్ చేయండి';
 
   @override
   String get sessionLibraryLoading =>
-      'The recording library is still loading. Try again shortly.';
+      'రికార్డింగ్ లైబ్రరీ ఇంకా లోడ్ అవుతోంది. కొద్దిసేపట్లో మళ్లీ ప్రయత్నించండి.';
 
   @override
   String get sessionLibraryEmpty =>
-      'No recordings for this class yet. Press 2 to upload one.';
+      'ఈ తరగతికి ఇంకా రికార్డింగ్‌లు లేవు. ఒకటి అప్‌లోడ్ చేయడానికి 2 నొక్కండి.';
 
   @override
-  String get sessionPositionHint => 'Use left and right to move 10 seconds';
+  String get sessionPositionHint =>
+      '10 సెకన్లు కదలడానికి ఎడమ మరియు కుడి ఉపయోగించండి';
 
   @override
   String sessionRecordingStatusPlaying(
@@ -3977,7 +4006,7 @@ class AppLocalizationsTe extends AppLocalizations {
     String position,
     String speed,
   ) {
-    return '$title. Playing for the class. $position. $speed.';
+    return '$title. తరగతి కోసం ప్లే అవుతోంది. $position. $speed.';
   }
 
   @override
@@ -3986,248 +4015,249 @@ class AppLocalizationsTe extends AppLocalizations {
     String position,
     String speed,
   ) {
-    return '$title. Paused. $position. $speed.';
+    return '$title. పాజ్ అయింది. $position. $speed.';
   }
 
   @override
   String sessionPositionLabel(String position) {
-    return 'Position $position. Use left and right to move 10 seconds';
+    return 'స్థానం $position. 10 సెకన్లు కదలడానికి ఎడమ మరియు కుడి ఉపయోగించండి';
   }
 
   @override
-  String get sessionUntitled => 'Untitled';
+  String get sessionUntitled => 'పేరు లేదు';
 
   @override
-  String get sessionFileSelectedForClass => 'selected for the class';
+  String get sessionFileSelectedForClass => 'తరగతి కోసం ఎంచుకోబడింది';
 
   @override
-  String get sessionFilePreviewing => 'previewing';
+  String get sessionFilePreviewing => 'ప్రివ్యూ అవుతోంది';
 
   @override
-  String get sessionPlayForClass => 'Select and play for the class now';
+  String get sessionPlayForClass => 'ఎంచుకుని ఇప్పుడే తరగతి కోసం ప్లే చేయండి';
 
   @override
-  String get sessionSelectOnly => 'Select only, play later with 5';
+  String get sessionSelectOnly => 'ఎంచుకోండి మాత్రమే, తర్వాత 5తో ప్లే చేయండి';
 
   @override
-  String get sessionPreviewPrivately => 'Preview privately on this phone';
+  String get sessionPreviewPrivately => 'ఈ ఫోన్‌లో ప్రైవేట్‌గా ప్రివ్యూ చేయండి';
 
   @override
-  String get sessionStopPreview => 'Stop the private preview';
+  String get sessionStopPreview => 'ప్రైవేట్ ప్రివ్యూ ఆపండి';
 
   @override
-  String get sessionUploadDetailsTitle => 'Upload audio details';
+  String get sessionUploadDetailsTitle => 'ఆడియో అప్‌లోడ్ వివరాలు';
 
   @override
-  String get sessionUploadTitle => 'Upload Audio';
+  String get sessionUploadTitle => 'ఆడియో అప్‌లోడ్';
 
   @override
   String sessionUploadFile(String name) {
-    return 'File: $name';
+    return 'ఫైల్: $name';
   }
 
   @override
-  String get sessionTitleField => 'Audio title, required';
+  String get sessionTitleField => 'ఆడియో శీర్షిక, తప్పనిసరి';
 
   @override
-  String get sessionDescriptionField => 'Audio description, optional';
+  String get sessionDescriptionField => 'ఆడియో వివరణ, ఐచ్ఛికం';
 
   @override
-  String get sessionCancelUpload => 'Cancel upload';
+  String get sessionCancelUpload => 'అప్‌లోడ్ రద్దు చేయండి';
 
   @override
-  String get sessionConfirmUpload => 'Upload audio';
+  String get sessionConfirmUpload => 'ఆడియో అప్‌లోడ్ చేయండి';
 
   @override
-  String get sessionTitleRequired => 'Title is required';
+  String get sessionTitleRequired => 'శీర్షిక తప్పనిసరి';
 
   @override
-  String get sessionChooseSessionsTitle => 'Choose classes for this audio';
+  String get sessionChooseSessionsTitle => 'ఈ ఆడియో కోసం తరగతులు ఎంచుకోండి';
 
   @override
-  String get sessionAddToSessions => 'Add audio to classes';
+  String get sessionAddToSessions => 'తరగతులకు ఆడియో జోడించండి';
 
   @override
-  String get sessionConfirmSessions => 'Confirm selected classes';
+  String get sessionConfirmSessions => 'ఎంచుకున్న తరగతులను నిర్ధారించండి';
 
   @override
-  String get sessionSelectAtLeastOne => 'Select at least one class';
+  String get sessionSelectAtLeastOne => 'కనీసం ఒక తరగతి ఎంచుకోండి';
 
   @override
-  String get sessionSessionSelected => 'Class selected';
+  String get sessionSessionSelected => 'తరగతి ఎంచుకోబడింది';
 
   @override
-  String get sessionSessionUnselected => 'Class unselected';
+  String get sessionSessionUnselected => 'తరగతి ఎంపిక తీసివేయబడింది';
 
   @override
   String sessionChoiceSelected(String title) {
-    return 'Selected, $title';
+    return 'ఎంచుకోబడింది, $title';
   }
 
   @override
   String sessionChoiceNotSelected(String title) {
-    return 'Not selected, $title';
+    return 'ఎంచుకోబడలేదు, $title';
   }
 
   @override
   String sessionClassNumbered(String number) {
-    return 'Class $number';
+    return 'తరగతి $number';
   }
 
   @override
   String get sessionUploadContextMissing =>
-      'The class and subject of this class could not be determined.';
+      'ఈ తరగతి యొక్క తరగతి మరియు సబ్జెక్టు గుర్తించలేకపోయాము.';
 
   @override
-  String get sessionUploadSuccess => 'Upload successful.';
+  String get sessionUploadSuccess => 'అప్‌లోడ్ విజయవంతమైంది.';
 
   @override
-  String get sessionUploadInProgress => 'Audio upload in progress';
+  String get sessionUploadInProgress => 'ఆడియో అప్‌లోడ్ జరుగుతోంది';
 
   @override
-  String get sessionPlayNowTitle => 'Play for everyone now?';
+  String get sessionPlayNowTitle => 'ఇప్పుడే అందరికీ ప్లే చేయాలా?';
 
   @override
   String sessionPlayNowMessage(String title) {
-    return '$title is selected. Play it for all participants now?';
+    return '$title ఎంచుకోబడింది. ఇప్పుడే పాల్గొనే అందరికీ ప్లే చేయాలా?';
   }
 
   @override
-  String get sessionPlayNow => 'Play now';
+  String get sessionPlayNow => 'ఇప్పుడే ప్లే చేయండి';
 
   @override
-  String get sessionNotYet => 'Not yet';
+  String get sessionNotYet => 'ఇప్పుడు కాదు';
 
   @override
-  String get sessionUploadEditTitle => 'Edit Title';
+  String get sessionUploadEditTitle => 'శీర్షిక మార్చండి';
 
   @override
-  String get sessionUploadEditDescription => 'Edit Description';
+  String get sessionUploadEditDescription => 'వివరణ మార్చండి';
 
   @override
-  String get sessionUploadKey => 'Upload';
+  String get sessionUploadKey => 'అప్‌లోడ్';
 
   @override
-  String get sessionCancel => 'Cancel';
+  String get sessionCancel => 'రద్దు';
 
   @override
   String get classroomCheckUnreadable =>
-      'Classroom check state could not be read. Refresh before responding.';
+      'తరగతి తనిఖీ స్థితిని చదవలేకపోయాము. జవాబిచ్చే ముందు రిఫ్రెష్ చేయండి.';
 
   @override
   String get classroomCheckUnconfirmed =>
-      'The classroom check action was not confirmed. Refresh before trying again.';
+      'తరగతి తనిఖీ చర్య నిర్ధారించబడలేదు. మళ్లీ ప్రయత్నించే ముందు రిఫ్రెష్ చేయండి.';
 
   @override
   String get classroomCheckConfirmationUnreadable =>
-      'The classroom check confirmation was unreadable. Refresh before trying again.';
+      'తరగతి తనిఖీ నిర్ధారణను చదవలేకపోయాము. మళ్లీ ప్రయత్నించే ముందు రిఫ్రెష్ చేయండి.';
 
   @override
   String get classroomCheckOpenedForYou =>
-      'Your teacher asked a question. Press 3 to answer.';
+      'మీ ఉపాధ్యాయులు ఒక ప్రశ్న అడిగారు. జవాబివ్వడానికి 3 నొక్కండి.';
 
   @override
   String get classroomCheckHelp =>
-      'Private classroom check. Understood, Please repeat or Need help. Only the responding student and session teacher can read a response. It is not graded. Responses clear on the next check, session end or server restart. Use Read or Refresh for confirmed state. Stop speech and Back are available.';
+      'ప్రైవేట్ తరగతి తనిఖీ. అర్థమైంది, దయచేసి మళ్లీ చెప్పండి లేదా సహాయం కావాలి. జవాబిచ్చిన విద్యార్థి మరియు సెషన్ ఉపాధ్యాయులు మాత్రమే జవాబును చదవగలరు. దీనికి మార్కులు ఉండవు. తదుపరి తనిఖీ, సెషన్ ముగింపు లేదా సర్వర్ రీస్టార్ట్ అయినప్పుడు జవాబులు తొలగిపోతాయి. నిర్ధారించబడిన స్థితి కోసం చదవండి లేదా రిఫ్రెష్ ఉపయోగించండి. స్వరం ఆపండి మరియు వెనుకకు అందుబాటులో ఉన్నాయి.';
 
   @override
-  String get classroomCheckTitle => 'Classroom check';
+  String get classroomCheckTitle => 'తరగతి తనిఖీ';
 
   @override
-  String get classroomCheckNewTitle => 'Open a new classroom check?';
+  String get classroomCheckNewTitle => 'కొత్త తరగతి తనిఖీ తెరవాలా?';
 
   @override
   String get classroomCheckNewMessage =>
-      'This clears all responses from the previous check. Students choose Understood, Please repeat or Need help. Only you and each responding student can read their response. It is not graded or retained as an academic record.';
+      'ఇది మునుపటి తనిఖీ జవాబులన్నింటినీ తొలగిస్తుంది. విద్యార్థులు అర్థమైంది, దయచేసి మళ్లీ చెప్పండి లేదా సహాయం కావాలి ఎంచుకుంటారు. మీరు మరియు జవాబిచ్చిన ప్రతి విద్యార్థి మాత్రమే వారి జవాబును చదవగలరు. దీనికి మార్కులు ఉండవు, మరియు ఇది విద్యా రికార్డుగా ఉంచబడదు.';
 
   @override
-  String get classroomCheckNewConfirm => 'Clear previous and open';
+  String get classroomCheckNewConfirm => 'మునుపటిది తొలగించి తెరవండి';
 
   @override
-  String get classroomCheckNewCancel => 'Keep current check';
+  String get classroomCheckNewCancel => 'ప్రస్తుత తనిఖీ ఉంచండి';
 
   @override
-  String get classroomCheckSending => 'Sending. Waiting for confirmation.';
+  String get classroomCheckSending => 'పంపుతోంది. నిర్ధారణ కోసం వేచి ఉంది.';
 
   @override
   String get classroomCheckWaiting =>
-      'Waiting for confirmation. Do not resend.';
+      'నిర్ధారణ కోసం వేచి ఉంది. మళ్లీ పంపవద్దు.';
 
   @override
-  String get sessionBackToClass => 'Back to class';
+  String get sessionBackToClass => 'తరగతికి తిరిగి వెళ్లండి';
 
   @override
-  String get classroomBackToSession => 'Back to session';
+  String get classroomBackToSession => 'సెషన్‌కు తిరిగి వెళ్లండి';
 
   @override
-  String get classroomBack => 'Back';
+  String get classroomBack => 'వెనుకకు';
 
   @override
-  String get classroomCheckRead => 'Read check status and confirmed responses';
+  String get classroomCheckRead =>
+      'తనిఖీ స్థితి మరియు నిర్ధారించబడిన జవాబులు చదవండి';
 
   @override
-  String get classroomCheckReadButton => 'Read status and responses';
+  String get classroomCheckReadButton => 'స్థితి మరియు జవాబులు చదవండి';
 
   @override
   String get classroomCheckRefresh =>
-      'Refresh private check state. Requires class connection';
+      'ప్రైవేట్ తనిఖీ స్థితిని రిఫ్రెష్ చేయండి. తరగతి కనెక్షన్ అవసరం';
 
   @override
-  String get classroomCheckRefreshButton => 'Refresh from server';
+  String get classroomCheckRefreshButton => 'సర్వర్ నుండి రిఫ్రెష్ చేయండి';
 
   @override
   String get classroomCheckOpenLabel =>
-      'Open a new check. Confirm clearing previous responses';
+      'కొత్త తనిఖీ తెరవండి. మునుపటి జవాబులు తొలగించడాన్ని నిర్ధారించండి';
 
   @override
-  String get classroomCheckOpenButton => 'Open new check';
+  String get classroomCheckOpenButton => 'కొత్త తనిఖీ తెరవండి';
 
   @override
   String get classroomCheckCloseLabel =>
-      'Close this check. Keep current results until next check or session end';
+      'ఈ తనిఖీ మూసివేయండి. తదుపరి తనిఖీ లేదా సెషన్ ముగింపు వరకు ప్రస్తుత ఫలితాలు ఉంటాయి';
 
   @override
-  String get classroomCheckCloseButton => 'Close check';
+  String get classroomCheckCloseButton => 'తనిఖీ మూసివేయండి';
 
   @override
   String classroomCheckAnswer(String choice) {
-    return '$choice. Send or change your private, ungraded response';
+    return '$choice. మీ ప్రైవేట్, మార్కులు లేని జవాబును పంపండి లేదా మార్చండి';
   }
 
   @override
-  String get sessionStopSpeech => 'Stop speech';
+  String get sessionStopSpeech => 'స్వరం ఆపండి';
 
   @override
-  String get classroomChoiceUnderstood => 'Understood';
+  String get classroomChoiceUnderstood => 'అర్థమైంది';
 
   @override
-  String get classroomChoiceRepeat => 'Please repeat';
+  String get classroomChoiceRepeat => 'దయచేసి మళ్లీ చెప్పండి';
 
   @override
-  String get classroomChoiceHelp => 'Need help';
+  String get classroomChoiceHelp => 'సహాయం కావాలి';
 
   @override
   String get classroomCheckNone =>
-      'No current check in the last received classroom state. Refresh to check.';
+      'చివరగా అందిన తరగతి స్థితిలో ప్రస్తుత తనిఖీ లేదు. తనిఖీ చేయడానికి రిఫ్రెష్ చేయండి.';
 
   @override
-  String get classroomCheckStatusOpen => 'Check open.';
+  String get classroomCheckStatusOpen => 'తనిఖీ తెరిచి ఉంది.';
 
   @override
   String get classroomCheckStatusClosed =>
-      'Check closed. Responses cannot be changed.';
+      'తనిఖీ మూసివేయబడింది. జవాబులు మార్చలేరు.';
 
   @override
-  String get classroomCheckNoResponseYet => 'No response confirmed yet.';
+  String get classroomCheckNoResponseYet => 'ఇంకా ఏ జవాబు నిర్ధారించబడలేదు.';
 
   @override
   String classroomCheckYourResponse(String choice) {
-    return 'Your confirmed response: $choice.';
+    return 'మీ నిర్ధారించబడిన జవాబు: $choice.';
   }
 
   @override
   String classroomCheckStudentSummary(String status, String response) {
-    return '$status $response Only you and the session teacher can read your response. This is not graded.';
+    return '$status $response మీరు మరియు సెషన్ ఉపాధ్యాయులు మాత్రమే మీ జవాబును చదవగలరు. దీనికి మార్కులు ఉండవు.';
   }
 
   @override
@@ -4236,7 +4266,7 @@ class AppLocalizationsTe extends AppLocalizations {
   }
 
   @override
-  String get classroomCheckNoResponses => 'No responses yet.';
+  String get classroomCheckNoResponses => 'ఇంకా జవాబులు లేవు.';
 
   @override
   String classroomCheckTeacherSummary(
@@ -4249,51 +4279,51 @@ class AppLocalizationsTe extends AppLocalizations {
       count,
       locale: localeName,
       other:
-          '$status $count students responded. $counts. $named Responses are private to you and each responding student, and are not grades.',
+          '$status $count విద్యార్థులు జవాబిచ్చారు. $counts. $named జవాబులు మీకు మరియు జవాబిచ్చిన ప్రతి విద్యార్థికి మాత్రమే కనిపిస్తాయి, ఇవి మార్కులు కావు.',
     );
     return '$_temp0';
   }
 
   @override
   String get classroomOnlyTeacherAcknowledges =>
-      'Only the session teacher may acknowledge a hand.';
+      'సెషన్ ఉపాధ్యాయులు మాత్రమే ఎత్తిన చేతిని గుర్తించగలరు.';
 
   @override
   String get classroomHandChanged =>
-      'The selected hand changed. Read the queue again.';
+      'ఎంచుకున్న చేయి మారింది. వరుసను మళ్లీ చదవండి.';
 
   @override
   String get classroomAckUnconfirmed =>
-      'The hand acknowledgment was not confirmed. Read the queue before retrying.';
+      'చేయి గుర్తింపు నిర్ధారించబడలేదు. మళ్లీ ప్రయత్నించే ముందు వరుసను చదవండి.';
 
   @override
   String get classroomAckUnreadable =>
-      'Hand acknowledgment was not readable. Check the queue before trying again.';
+      'చేయి గుర్తింపును చదవలేకపోయాము. మళ్లీ ప్రయత్నించే ముందు వరుసను తనిఖీ చేయండి.';
 
   @override
   String classroomAcknowledgedChanged(String name) {
-    return '$name acknowledged earlier. Their hand has since changed; read the queue again. Their microphone was not changed.';
+    return '$nameను ఇంతకు ముందే గుర్తించారు. ఆ తర్వాత వారి చేయి మారింది; వరుసను మళ్లీ చదవండి. వారి మైక్రోఫోన్ మార్చబడలేదు.';
   }
 
   @override
   String classroomAcknowledged(String name) {
-    return '$name acknowledged. The selected hand was lowered. Their microphone was not changed.';
+    return '$nameను గుర్తించారు. ఎంచుకున్న చేయి దించబడింది. వారి మైక్రోఫోన్ మార్చబడలేదు.';
   }
 
   @override
   String get classroomHandsHelp =>
-      'Raised hands. Read summary for the last received classroom state. Previous and Next select a raised hand without changing it. Acknowledge lowers only the selected hand after server confirmation. It never unmutes anyone. Older hands with unknown order are labelled separately.';
+      'ఎత్తిన చేతులు. చివరగా అందిన తరగతి స్థితి కోసం సారాంశం చదవండి. మునుపటి మరియు తదుపరి ఎత్తిన చేతిని మార్చకుండా ఎంచుకుంటాయి. గుర్తించండి సర్వర్ నిర్ధారణ తర్వాత ఎంచుకున్న చేతిని మాత్రమే దించుతుంది. ఇది ఎప్పుడూ ఎవరినీ అన్‌మ్యూట్ చేయదు. క్రమం తెలియని పాత చేతులు వేరుగా చూపబడతాయి.';
 
   @override
   String get classroomConsoleHelp =>
-      'Classroom console. Read summary for the last received classroom state. Previous and Next select a raised hand without changing it. Acknowledge lowers only the selected hand after server confirmation. It never unmutes anyone. Older hands with unknown order are labelled separately.';
+      'తరగతి కన్సోల్. చివరగా అందిన తరగతి స్థితి కోసం సారాంశం చదవండి. మునుపటి మరియు తదుపరి ఎత్తిన చేతిని మార్చకుండా ఎంచుకుంటాయి. గుర్తించండి సర్వర్ నిర్ధారణ తర్వాత ఎంచుకున్న చేతిని మాత్రమే దించుతుంది. ఇది ఎప్పుడూ ఎవరినీ అన్‌మ్యూట్ చేయదు. క్రమం తెలియని పాత చేతులు వేరుగా చూపబడతాయి.';
 
   @override
-  String get classroomHandsTitle => 'Raised hands';
+  String get classroomHandsTitle => 'ఎత్తిన చేతులు';
 
   @override
   String get classroomNoHands =>
-      'No raised hands in the last received classroom state.';
+      'చివరగా అందిన తరగతి స్థితిలో ఎత్తిన చేతులు లేవు.';
 
   @override
   String classroomSelectedGone(int count) {
@@ -4301,9 +4331,9 @@ class AppLocalizationsTe extends AppLocalizations {
       count,
       locale: localeName,
       other:
-          'The selected hand is no longer in the queue. $count raised hands remain. Use Next or Previous to select a hand.',
+          'ఎంచుకున్న చేయి ఇప్పుడు వరుసలో లేదు. $count ఎత్తిన చేతులు మిగిలి ఉన్నాయి. చేయి ఎంచుకోవడానికి తదుపరి లేదా మునుపటి ఉపయోగించండి.',
       one:
-          'The selected hand is no longer in the queue. 1 raised hand remain. Use Next or Previous to select a hand.',
+          'ఎంచుకున్న చేయి ఇప్పుడు వరుసలో లేదు. 1 ఎత్తిన చేయి మిగిలి ఉంది. చేయి ఎంచుకోవడానికి తదుపరి లేదా మునుపటి ఉపయోగించండి.',
     );
     return '$_temp0';
   }
@@ -4314,116 +4344,118 @@ class AppLocalizationsTe extends AppLocalizations {
       count,
       locale: localeName,
       other:
-          'The selected hand is no longer in the queue. $count raised hands remain. Use Next or Previous to select a hand.',
+          'ఎంచుకున్న చేయి ఇప్పుడు వరుసలో లేదు. $count ఎత్తిన చేతులు మిగిలి ఉన్నాయి. చేయి ఎంచుకోవడానికి తదుపరి లేదా మునుపటి ఉపయోగించండి.',
     );
     return '$_temp0';
   }
 
   @override
   String classroomHandTitle(String position, String total, String name) {
-    return 'Hand $position of $total, $name, waiting';
+    return 'చేయి $position / $total, $name, వేచి ఉన్నారు';
   }
 
   @override
   String classroomParticipantNumbered(String id) {
-    return 'Participant $id';
+    return 'పాల్గొనేవారు $id';
   }
 
   @override
-  String get classroomKnownOrder => 'Server-recorded queue order.';
+  String get classroomKnownOrder => 'సర్వర్ నమోదు చేసిన వరుస క్రమం.';
 
   @override
   String get classroomUnknownOrder =>
-      'Original raise order unknown; shown before known-order hands.';
+      'చేయి ఎత్తిన అసలు క్రమం తెలియదు; క్రమం తెలిసిన చేతుల కంటే ముందు చూపబడింది.';
 
   @override
-  String get classroomReportedMuted => 'Microphone reported muted.';
+  String get classroomReportedMuted =>
+      'మైక్రోఫోన్ మ్యూట్‌లో ఉన్నట్లు తెలిసింది.';
 
   @override
   String get classroomReportedUnmuted =>
-      'Microphone reported unmuted; this is not proof of speech.';
+      'మైక్రోఫోన్ అన్‌మ్యూట్‌లో ఉన్నట్లు తెలిసింది; దీని అర్థం వారు మాట్లాడుతున్నారని కాదు.';
 
   @override
-  String get classroomNoHandsShort => 'No raised hands';
+  String get classroomNoHandsShort => 'ఎత్తిన చేతులు లేవు';
 
   @override
-  String get classroomNoHandSelected => 'No hand selected';
+  String get classroomNoHandSelected => 'ఏ చేయి ఎంచుకోబడలేదు';
 
   @override
   String classroomLowering(String name) {
-    return 'Lowering hand for $name. Waiting for the server.';
+    return '$name చేయి దించుతోంది. సర్వర్ కోసం వేచి ఉంది.';
   }
 
   @override
   String classroomLoweredLast(String name) {
-    return 'Hand lowered for $name. The hand queue is now empty.';
+    return '$name చేయి దించబడింది. చేతుల వరుస ఇప్పుడు ఖాళీగా ఉంది.';
   }
 
   @override
   String classroomLoweredNext(String name, String next) {
-    return 'Hand lowered for $name. Next: $next.';
+    return '$name చేయి దించబడింది. తదుపరి: $next.';
   }
 
   @override
-  String get classroomNoSummary => 'No classroom summary is available yet.';
+  String get classroomNoSummary => 'ఇంకా తరగతి సారాంశం అందుబాటులో లేదు.';
 
   @override
-  String get classroomReadSummary => 'Read classroom summary';
+  String get classroomReadSummary => 'తరగతి సారాంశం చదవండి';
 
   @override
-  String get classroomPreviousHand => 'Previous raised hand';
+  String get classroomPreviousHand => 'మునుపటి ఎత్తిన చేయి';
 
   @override
-  String get classroomReadHand => 'Read selected hand';
+  String get classroomReadHand => 'ఎంచుకున్న చేయి చదవండి';
 
   @override
   String classroomReadHandLabel(String hand) {
-    return 'Read selected hand. $hand';
+    return 'ఎంచుకున్న చేయి చదవండి. $hand';
   }
 
   @override
-  String get classroomNextHand => 'Next raised hand';
+  String get classroomNextHand => 'తదుపరి ఎత్తిన చేయి';
 
   @override
-  String get classroomWaitingAck => 'Waiting for hand acknowledgment';
+  String get classroomWaitingAck => 'చేయి గుర్తింపు కోసం వేచి ఉంది';
 
   @override
   String get classroomAckNoneSelected =>
-      'Acknowledge and lower selected hand. No hand selected';
+      'ఎంచుకున్న చేతిని గుర్తించి దించండి. ఏ చేయి ఎంచుకోబడలేదు';
 
   @override
   String classroomAckLabel(String name) {
-    return 'Lower $name. Never unmutes';
+    return '$name చేయి దించండి. ఎప్పుడూ అన్‌మ్యూట్ చేయదు';
   }
 
   @override
-  String get classroomAckSelectedLabel => 'Lower selected hand. Never unmutes';
+  String get classroomAckSelectedLabel =>
+      'ఎంచుకున్న చేయి దించండి. ఎప్పుడూ అన్‌మ్యూట్ చేయదు';
 
   @override
-  String get classroomAckButton => 'Acknowledge and lower hand';
+  String get classroomAckButton => 'గుర్తించి చేయి దించండి';
 
   @override
-  String get classroomRepeatConsoleHelp => 'Repeat console help';
+  String get classroomRepeatConsoleHelp => 'కన్సోల్ సహాయం మళ్ళీ వినండి';
 
   @override
   String get classroomConsoleSections =>
-      'read classroom summary, previous hand, read selected hand, next hand, acknowledge hand, stop speech, help and back. If no hands or summary are available, selecting their controls reads that status';
+      'తరగతి సారాంశం చదవడం, మునుపటి చేయి, ఎంచుకున్న చేయి చదవడం, తదుపరి చేయి, చేయిని గుర్తించడం, మాట ఆపడం, సహాయం మరియు వెనక్కి. చేతులు లేదా సారాంశం అందుబాటులో లేకపోతే, వాటి నియంత్రణలను ఎంచుకుంటే ఆ స్థితి చదవబడుతుంది';
 
   @override
   String get classroomSnapshotNote =>
-      'Counts reflect the last received snapshot, not guaranteed audio delivery. Active speaker identification is unavailable.';
+      'లెక్కలు చివరిగా అందిన స్థితిని చూపుతాయి, ఆడియో చేరిందని హామీ కాదు. ఎవరు మాట్లాడుతున్నారో గుర్తించడం అందుబాటులో లేదు.';
 
   @override
   String get classroomWaitingAckNote =>
-      'Waiting for server acknowledgment. No microphone is changed.';
+      'సర్వర్ నిర్ధారణ కోసం వేచి ఉంది. ఏ మైక్రోఫోన్ మార్చబడలేదు.';
 
   @override
   String classroomSummaryParticipants(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count participants',
-      one: '1 participant',
+      other: '$count మంది పాల్గొనేవారు',
+      one: '1 పాల్గొనేవారు',
     );
     return '$_temp0';
   }
@@ -4433,8 +4465,8 @@ class AppLocalizationsTe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count raised hands',
-      one: '1 raised hand',
+      other: '$count ఎత్తిన చేతులు',
+      one: '1 ఎత్తిన చేయి',
     );
     return '$_temp0';
   }
@@ -4444,39 +4476,40 @@ class AppLocalizationsTe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count microphones',
-      one: '1 microphone',
+      other: '$count మైక్రోఫోన్‌లు',
+      one: '1 మైక్రోఫోన్',
     );
     return '$_temp0';
   }
 
   @override
-  String get classroomSummaryNobodySpeaking => 'Nobody detected speaking.';
+  String get classroomSummaryNobodySpeaking =>
+      'ఎవరూ మాట్లాడుతున్నట్లు గుర్తించబడలేదు.';
 
   @override
   String classroomSummarySpeaking(String names) {
-    return 'Detected speaking: $names.';
+    return 'మాట్లాడుతున్నట్లు గుర్తించబడినవారు: $names.';
   }
 
   @override
-  String get classroomSummaryNoRecording => 'No class recording selected.';
+  String get classroomSummaryNoRecording => 'తరగతి రికార్డింగ్ ఏదీ ఎంచుకోలేదు.';
 
   @override
   String classroomSummaryRecordingPlaying(String title) {
-    return 'Class recording $title. Playing requested.';
+    return 'తరగతి రికార్డింగ్ $title. ప్లే చేయమని అభ్యర్థించబడింది.';
   }
 
   @override
   String classroomSummaryRecordingPaused(String title) {
-    return 'Class recording $title. Paused.';
+    return 'తరగతి రికార్డింగ్ $title. పాజ్ చేయబడింది.';
   }
 
   @override
   String get classroomSummaryPreviewActive =>
-      'Private preview active on this phone only.';
+      'ప్రైవేట్ ప్రివ్యూ ఈ ఫోన్‌లో మాత్రమే నడుస్తోంది.';
 
   @override
-  String get classroomSummaryPreviewStopped => 'Private preview stopped.';
+  String get classroomSummaryPreviewStopped => 'ప్రైవేట్ ప్రివ్యూ ఆగిపోయింది.';
 
   @override
   String classroomSummary(
@@ -4488,29 +4521,29 @@ class AppLocalizationsTe extends AppLocalizations {
     String recording,
     String preview,
   ) {
-    return 'Local connection: $connection. Last received classroom state: $people, $hands, $muted reported muted. Remote reconnecting counts are unavailable. $speaking $recording $preview Microphone flags and accepted playback requests do not prove that anyone spoke or heard audio.';
+    return 'స్థానిక కనెక్షన్: $connection. చివరిగా అందిన తరగతి స్థితి: $people, $hands, $muted మ్యూట్‌లో ఉన్నట్లు తెలిసింది. రిమోట్‌గా మళ్ళీ కనెక్ట్ అవుతున్నవారి లెక్కలు అందుబాటులో లేవు. $speaking $recording $preview మైక్రోఫోన్ గుర్తులు మరియు అంగీకరించిన ప్లేబ్యాక్ అభ్యర్థనలు ఎవరైనా మాట్లాడారని లేదా ఆడియో విన్నారని నిరూపించవు.';
   }
 
   @override
-  String get sessionToolsTitle => 'Teacher tools';
+  String get sessionToolsTitle => 'ఉపాధ్యాయుల సాధనాలు';
 
   @override
-  String get sessionInvite => 'Invite students';
+  String get sessionInvite => 'విద్యార్థులను ఆహ్వానించండి';
 
   @override
-  String get sessionEndClass => 'End class for everyone, asks to confirm';
+  String get sessionEndClass => 'అందరికీ తరగతి ముగించండి, నిర్ధారణ అడుగుతుంది';
 
   @override
-  String get sessionPeopleTitle => 'Participants and raised hands';
+  String get sessionPeopleTitle => 'పాల్గొనేవారు మరియు ఎత్తిన చేతులు';
 
   @override
   String sessionHandQueue(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Raised hands queue, $count hands waiting',
-      one: 'Raised hands queue, 1 hand waiting',
-      zero: 'Raised hands queue, No hands waiting',
+      other: 'ఎత్తిన చేతుల వరుస, $count చేతులు వేచి ఉన్నాయి',
+      one: 'ఎత్తిన చేతుల వరుస, 1 చేయి వేచి ఉంది',
+      zero: 'ఎత్తిన చేతుల వరుస, ఏ చేయీ వేచి లేదు',
     );
     return '$_temp0';
   }
@@ -4520,253 +4553,251 @@ class AppLocalizationsTe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Participants list, $count people',
-      one: 'Participants list, 1 person',
+      other: 'పాల్గొనేవారి జాబితా, $count మంది',
+      one: 'పాల్గొనేవారి జాబితా, 1 వ్యక్తి',
     );
     return '$_temp0';
   }
 
   @override
-  String get sessionSummaryChoice => 'Hear classroom summary';
+  String get sessionSummaryChoice => 'తరగతి సారాంశం వినండి';
 
   @override
-  String get sessionParticipantsTitle => 'Participants';
+  String get sessionParticipantsTitle => 'పాల్గొనేవారు';
 
   @override
-  String get sessionMembersTitle => 'People in the class';
+  String get sessionMembersTitle => 'తరగతిలోని వ్యక్తులు';
 
   @override
-  String get sessionMembersButton => '7: Who is in class';
+  String get sessionMembersButton => '7: తరగతిలో ఎవరు ఉన్నారు';
 
   @override
   String sessionMembersLabel(String people) {
-    return 'Who is in the class. $people Select a person to hear details';
+    return 'తరగతిలో ఎవరు ఉన్నారు. $people వివరాలు వినడానికి ఒక వ్యక్తిని ఎంచుకోండి';
   }
 
   @override
-  String get sessionHearDetails => 'Hear details';
+  String get sessionHearDetails => 'వివరాలు వినండి';
 
   @override
   String sessionMuteParticipant(String name) {
-    return 'Mute $name';
+    return '$nameను మ్యూట్ చేయండి';
   }
 
   @override
   String sessionRemoveParticipant(String name) {
-    return 'Remove $name from the class, asks to confirm';
+    return '$nameను తరగతి నుండి తొలగించండి, నిర్ధారణ అడుగుతుంది';
   }
 
   @override
-  String get sessionParticipantGone => 'That participant has left the class.';
+  String get sessionParticipantGone =>
+      'ఆ పాల్గొనేవారు తరగతి నుండి వెళ్ళిపోయారు.';
 
   @override
-  String get sessionNoOtherParticipants => 'Nobody else is in the class yet.';
+  String get sessionNoOtherParticipants => 'ఇంకా తరగతిలో వేరే ఎవరూ లేరు.';
 
   @override
   String sessionTileRemoveMessage(String name) {
-    return '$name will be removed from this class and returned to their dashboard.';
+    return '$name ఈ తరగతి నుండి తొలగించబడి, వారి డాష్‌బోర్డ్‌కు తిరిగి పంపబడతారు.';
   }
 
   @override
   String sessionTileRemoveFromSessionMessage(String name) {
-    return '$name will be removed from this session and returned to their dashboard.';
+    return '$name ఈ సెషన్ నుండి తొలగించబడి, వారి డాష్‌బోర్డ్‌కు తిరిగి పంపబడతారు.';
   }
 
   @override
   String sessionUnmuteParticipant(String name) {
-    return 'Unmute $name';
+    return '$nameను అన్‌మ్యూట్ చేయండి';
   }
 
   @override
   String sessionRemoveFromClass(String name) {
-    return 'Remove $name from class';
+    return '$nameను తరగతి నుండి తొలగించండి';
   }
 
   @override
-  String get sessionConnStateConnecting => 'Connecting';
+  String get sessionConnStateConnecting => 'కనెక్ట్ అవుతోంది';
 
   @override
-  String get sessionConnStateConnected => 'Connected';
+  String get sessionConnStateConnected => 'కనెక్ట్ అయింది';
 
   @override
-  String get sessionConnStateInterrupted => 'Connection interrupted';
+  String get sessionConnStateInterrupted => 'కనెక్షన్‌కు అంతరాయం కలిగింది';
 
   @override
-  String get sessionConnStateReconnecting => 'Reconnecting';
+  String get sessionConnStateReconnecting => 'మళ్ళీ కనెక్ట్ అవుతోంది';
 
   @override
-  String get sessionConnStateSignInRequired => 'Sign-in required';
+  String get sessionConnStateSignInRequired => 'సైన్ ఇన్ అవసరం';
 
   @override
-  String get sessionConnStateUnavailable => 'Class unavailable';
+  String get sessionConnStateUnavailable => 'తరగతి అందుబాటులో లేదు';
 
   @override
-  String get sessionConnStateEnded => 'Class ended';
+  String get sessionConnStateEnded => 'తరగతి ముగిసింది';
 
   @override
-  String get sessionConnStateDisconnected => 'Disconnected';
+  String get sessionConnStateDisconnected => 'కనెక్షన్ తెగిపోయింది';
 
   @override
-  String get sessionReconnectingToClass => 'Reconnecting to the class.';
+  String get sessionReconnectingToClass => 'తరగతికి మళ్ళీ కనెక్ట్ అవుతోంది.';
 
   @override
   String get sessionSignInRequiredLeave =>
-      'Sign-in is required. Leave the session and sign in again.';
+      'సైన్ ఇన్ అవసరం. సెషన్ నుండి బయటకు వెళ్ళి మళ్ళీ సైన్ ఇన్ చేయండి.';
 
   @override
   String get sessionSignInExpiredLeave =>
-      'Sign-in expired. Leave the session and sign in again.';
+      'సైన్ ఇన్ గడువు ముగిసింది. సెషన్ నుండి బయటకు వెళ్ళి మళ్ళీ సైన్ ఇన్ చేయండి.';
 
   @override
   String get sessionClassNoLongerAvailable =>
-      'This class is no longer available to your account. You can go back.';
+      'ఈ తరగతి ఇకపై మీ ఖాతాకు అందుబాటులో లేదు. మీరు వెనక్కి వెళ్ళవచ్చు.';
 
   @override
-  String get sessionServiceUnavailable => 'The class service is unavailable.';
+  String get sessionServiceUnavailable => 'తరగతి సేవ అందుబాటులో లేదు.';
 
   @override
   String get sessionConnectionUnreadable =>
-      'The class connection response could not be read.';
+      'తరగతి కనెక్షన్ స్పందనను చదవలేకపోయాము.';
 
   @override
   String get sessionConnectionNotConfirmed =>
-      'The class did not confirm the connection.';
+      'తరగతి కనెక్షన్‌ను నిర్ధారించలేదు.';
 
   @override
   String get sessionConnectionInterrupted =>
-      'The class connection was interrupted.';
+      'తరగతి కనెక్షన్‌కు అంతరాయం కలిగింది.';
 
   @override
-  String get sessionConnectionClosed => 'The class connection closed.';
+  String get sessionConnectionClosed => 'తరగతి కనెక్షన్ మూసివేయబడింది.';
 
   @override
   String get sessionConnectionCouldNotConfirm =>
-      'The class connection could not be confirmed.';
+      'తరగతి కనెక్షన్‌ను నిర్ధారించలేకపోయాము.';
 
   @override
-  String get sessionNoUpdates => 'No updates were received from the class.';
+  String get sessionNoUpdates => 'తరగతి నుండి ఎలాంటి అప్‌డేట్‌లు అందలేదు.';
 
   @override
-  String get sessionUpdateUnreadable => 'A class update could not be read.';
+  String get sessionUpdateUnreadable => 'ఒక తరగతి అప్‌డేట్‌ను చదవలేకపోయాము.';
 
   @override
   String get sessionUpdateUnexpectedFormat =>
-      'A class update had an unexpected format.';
+      'ఒక తరగతి అప్‌డేట్ ఊహించని రూపంలో ఉంది.';
 
   @override
   String get sessionUpdateTypeUnreadable =>
-      'A class update type could not be read.';
+      'ఒక తరగతి అప్‌డేట్ రకాన్ని చదవలేకపోయాము.';
 
   @override
   String get sessionParticipationNotConfirmed =>
-      'Your class participation was not confirmed.';
+      'తరగతిలో మీ పాల్గొనడం నిర్ధారించబడలేదు.';
 
   @override
-  String get sessionConnectedToClass => 'Connected to the class.';
+  String get sessionConnectedToClass => 'తరగతికి కనెక్ట్ అయింది.';
 
   @override
   String get sessionSignInChangedShort =>
-      'Your sign-in changed. Sign in again.';
+      'మీ సైన్ ఇన్ మారింది. మళ్ళీ సైన్ ఇన్ చేయండి.';
 
   @override
   String get sessionRemovedGoBack =>
-      'You have been removed from the class. You can go back.';
+      'మిమ్మల్ని తరగతి నుండి తొలగించారు. మీరు వెనక్కి వెళ్ళవచ్చు.';
 
   @override
   String sessionConnectionLostReconnecting(String reason) {
-    return '$reason Reconnecting. Previous actions will not be sent again automatically.';
+    return '$reason మళ్ళీ కనెక్ట్ అవుతోంది. మునుపటి చర్యలు ఆటోమేటిక్‌గా మళ్ళీ పంపబడవు.';
   }
 
   @override
   String get sessionActionClassUnavailable =>
-      'The class is not available. This action was not sent.';
+      'తరగతి అందుబాటులో లేదు. ఈ చర్య పంపబడలేదు.';
 
   @override
-  String get sessionActionSessionChanged =>
-      'The session changed. This action was not sent.';
+  String get sessionActionSessionChanged => 'సెషన్ మారింది. ఈ చర్య పంపబడలేదు.';
 
   @override
-  String get sessionActionSignInRequired =>
-      'Sign-in is required. This action was not sent.';
+  String get sessionActionSignInRequired => 'సైన్ ఇన్ అవసరం. ఈ చర్య పంపబడలేదు.';
 
   @override
   String get sessionActionConnectionChanged =>
-      'The connection changed before confirmation. The action may have been received; check its status before retrying.';
+      'నిర్ధారణకు ముందే కనెక్షన్ మారింది. చర్య అంది ఉండవచ్చు; మళ్ళీ ప్రయత్నించే ముందు దాని స్థితిని తనిఖీ చేయండి.';
 
   @override
   String get sessionAccountChangedLeave =>
-      'Your account changed. Leave the session and sign in again.';
+      'మీ ఖాతా మారింది. సెషన్ నుండి బయటకు వెళ్ళి మళ్ళీ సైన్ ఇన్ చేయండి.';
 
   @override
   String get sessionActionAccountChanged =>
-      'Your account changed before the action could be confirmed.';
+      'చర్య నిర్ధారించబడక ముందే మీ ఖాతా మారింది.';
 
   @override
   String get sessionActionNotConfirmedByClass =>
-      'The class did not confirm the action. Check its status before trying again.';
+      'తరగతి చర్యను నిర్ధారించలేదు. మళ్ళీ ప్రయత్నించే ముందు దాని స్థితిని తనిఖీ చేయండి.';
 
   @override
   String get sessionActionMayHaveReached =>
-      'The action was not confirmed. It may have reached the class. Check its status before trying again.';
+      'చర్య నిర్ధారించబడలేదు. అది తరగతికి చేరి ఉండవచ్చు. మళ్ళీ ప్రయత్నించే ముందు దాని స్థితిని తనిఖీ చేయండి.';
 
   @override
-  String get sessionRtcConnectionClosed => 'Connection closed.';
+  String get sessionRtcConnectionClosed => 'కనెక్షన్ మూసివేయబడింది.';
 
   @override
-  String get sessionRtcNetworkError => 'Network error';
+  String get sessionRtcNetworkError => 'నెట్‌వర్క్ లోపం';
 
   @override
   String sessionRtcConnected(String id) {
-    return 'Connected to session $id';
+    return 'సెషన్ $idకు కనెక్ట్ అయింది';
   }
 
   @override
   String sessionRtcParticipantJoined(String id) {
-    return 'Participant $id joined.';
+    return 'పాల్గొనేవారు $id చేరారు.';
   }
 
   @override
   String sessionRtcParticipantLeft(String id) {
-    return 'Participant $id left.';
+    return 'పాల్గొనేవారు $id వెళ్ళిపోయారు.';
   }
 
   @override
   String sessionRtcParticipantMuted(String id) {
-    return 'Participant $id is now muted';
+    return 'పాల్గొనేవారు $id ఇప్పుడు మ్యూట్‌లో ఉన్నారు';
   }
 
   @override
   String sessionRtcParticipantUnmuted(String id) {
-    return 'Participant $id is now unmuted';
+    return 'పాల్గొనేవారు $id ఇప్పుడు అన్‌మ్యూట్‌లో ఉన్నారు';
   }
 
   @override
   String sessionRtcMessage(String text) {
-    return 'Message: $text';
+    return 'సందేశం: $text';
   }
 
   @override
   String sessionRtcTeacherPlaying(String id) {
-    return 'Teacher started playing audio $id';
+    return 'ఉపాధ్యాయులు ఆడియో $id ప్లే చేయడం ప్రారంభించారు';
   }
 
   @override
   String sessionRtcAudioStarted(String id) {
-    return 'Audio stream started for participant $id';
+    return 'పాల్గొనేవారు $id కోసం ఆడియో స్ట్రీమ్ ప్రారంభమైంది';
   }
 
   @override
   String librarySpeedTimes(String speed) {
-    return '$speed times';
+    return '$speed రెట్లు';
   }
 
   @override
-  String get libraryNoClassForSession =>
-      'No class found with this session name.';
+  String get libraryNoClassForSession => 'ఈ సెషన్ పేరుతో తరగతి ఏదీ కనబడలేదు.';
 
   @override
   String librarySubjectFilterLabel(String name) {
-    return 'Subject filter: $name. Key 2, or left or right to change';
+    return 'సబ్జెక్టు ఫిల్టర్: $name. మార్చడానికి కీ 2 లేదా ఎడమ, కుడి నొక్కండి';
   }
 
   @override
@@ -4775,34 +4806,34 @@ class AppLocalizationsTe extends AppLocalizations {
     String index,
     String total,
   ) {
-    return 'Subject filter: $name, $index of $total. Key 2, or left or right to change';
+    return 'సబ్జెక్టు ఫిల్టర్: $name, $totalలో $index. మార్చడానికి కీ 2 లేదా ఎడమ, కుడి నొక్కండి';
   }
 
   @override
-  String get libraryAllSubjects => 'All subjects';
+  String get libraryAllSubjects => 'అన్ని సబ్జెక్టులు';
 
   @override
   String libraryRestoredToPlaylist(String title) {
-    return '$title is back in the playlist.';
+    return '$title మళ్ళీ ప్లేలిస్ట్‌లో ఉంది.';
   }
 
   @override
-  String get librarySizeZero => '0 megabytes';
+  String get librarySizeZero => '0 మెగాబైట్‌లు';
 
   @override
-  String get librarySizeTiny => 'less than 0.1 megabytes';
+  String get librarySizeTiny => '0.1 మెగాబైట్‌ల కంటే తక్కువ';
 
   @override
-  String get librarySizeOne => '1 megabyte';
+  String get librarySizeOne => '1 మెగాబైట్';
 
   @override
   String librarySizeMegabytes(String value) {
-    return '$value megabytes';
+    return '$value మెగాబైట్‌లు';
   }
 
   @override
   String libraryStorageUsed(String size, String limit) {
-    return '$size used of $limit.';
+    return '$limitలో $size వాడబడింది.';
   }
 
   @override
@@ -4810,29 +4841,29 @@ class AppLocalizationsTe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count recordings',
-      one: '1 recording',
+      other: '$count రికార్డింగ్‌లు',
+      one: '1 రికార్డింగ్',
     );
     return '$_temp0';
   }
 
   @override
   String libraryPlayingBrief(String title, String position) {
-    return '$title, playing from $position.';
+    return '$title, $position నుండి ప్లే అవుతోంది.';
   }
 
   @override
   String libraryPlayingDetailed(String title, String position, String speed) {
-    return '$title, playing from $position, speed $speed.';
+    return '$title, $position నుండి ప్లే అవుతోంది, వేగం $speed.';
   }
 
   @override
   String libraryPausedAt(String position) {
-    return 'Paused at $position.';
+    return '$position వద్ద పాజ్ చేయబడింది.';
   }
 
   @override
-  String get libraryPlayerStateNothing => 'Nothing playing.';
+  String get libraryPlayerStateNothing => 'ఏదీ ప్లే కావడం లేదు.';
 
   @override
   String libraryPlayerStatePlaying(
@@ -4840,118 +4871,118 @@ class AppLocalizationsTe extends AppLocalizations {
     String position,
     String speed,
   ) {
-    return 'Playing $title, $position, speed $speed.';
+    return '$title ప్లే అవుతోంది, $position, వేగం $speed.';
   }
 
   @override
   String libraryPlayerStatePaused(String title, String position, String speed) {
-    return 'Paused $title, $position, speed $speed.';
+    return '$title పాజ్ చేయబడింది, $position, వేగం $speed.';
   }
 
   @override
   String librarySpeedChanged(String speed) {
-    return 'Speed $speed.';
+    return 'వేగం $speed.';
   }
 
   @override
-  String get librarySlowest => 'Already at the slowest speed.';
+  String get librarySlowest => 'ఇప్పటికే అతి తక్కువ వేగంలో ఉంది.';
 
   @override
-  String get libraryFastest => 'Already at the fastest speed.';
+  String get libraryFastest => 'ఇప్పటికే అతి ఎక్కువ వేగంలో ఉంది.';
 
   @override
   String get libraryNoLessonLoaded =>
-      'No lesson is loaded. Choose a lesson to play first.';
+      'ఏ పాఠం లోడ్ కాలేదు. ముందుగా ప్లే చేయడానికి ఒక పాఠాన్ని ఎంచుకోండి.';
 
   @override
   String libraryNoLessonPlayingPress(String key) {
-    return 'No lesson is playing. Press $key to play the first lesson.';
+    return 'ఏ పాఠం ప్లే కావడం లేదు. మొదటి పాఠాన్ని ప్లే చేయడానికి $key నొక్కండి.';
   }
 
   @override
-  String get libraryNothingIsPlaying => 'Nothing is playing.';
+  String get libraryNothingIsPlaying => 'ఏదీ ప్లే కావడం లేదు.';
 
   @override
   String get libraryNothingPlayingHint =>
-      'Nothing playing. Select a lesson or press 5.';
+      'ఏదీ ప్లే కావడం లేదు. ఒక పాఠాన్ని ఎంచుకోండి లేదా 5 నొక్కండి.';
 
   @override
   String libraryStopped(String title) {
-    return '$title stopped.';
+    return '$title ఆపివేయబడింది.';
   }
 
   @override
   String libraryFinished(String title) {
-    return '$title finished.';
+    return '$title పూర్తయింది.';
   }
 
   @override
-  String get libraryWaitForPlayer => 'Please wait for the lesson player.';
+  String get libraryWaitForPlayer => 'దయచేసి పాఠం ప్లేయర్ కోసం వేచి ఉండండి.';
 
   @override
   String get librarySeekFailed =>
-      'Could not move to that lesson position. Try again.';
+      'పాఠంలో ఆ స్థానానికి వెళ్ళలేకపోయాము. మళ్ళీ ప్రయత్నించండి.';
 
   @override
   String get librarySpeedFailed =>
-      'Could not change playback speed. Try again.';
+      'ప్లేబ్యాక్ వేగాన్ని మార్చలేకపోయాము. మళ్ళీ ప్రయత్నించండి.';
 
   @override
   String libraryPlayFailed(String title) {
-    return 'Could not play $title. Check your connection, then select it again.';
+    return '$title ప్లే చేయలేకపోయాము. మీ కనెక్షన్‌ను తనిఖీ చేసి, మళ్ళీ ఎంచుకోండి.';
   }
 
   @override
   String get libraryCheckingOfflineAccess =>
-      'Internet unavailable. Checking your saved offline access.';
+      'ఇంటర్నెట్ అందుబాటులో లేదు. మీరు సేవ్ చేసిన ఆఫ్‌లైన్ యాక్సెస్‌ను తనిఖీ చేస్తోంది.';
 
   @override
   String get libraryLessonGone =>
-      'This lesson is no longer available. Your saved progress and bookmarks are kept.';
+      'ఈ పాఠం ఇకపై అందుబాటులో లేదు. మీరు సేవ్ చేసిన పురోగతి మరియు బుక్‌మార్క్‌లు అలాగే ఉంటాయి.';
 
   @override
   String librarySeekLabel(String position) {
-    return 'Lesson position $position. Use left or right to move 10 seconds.';
+    return 'పాఠం స్థానం $position. 10 సెకన్లు కదలడానికి ఎడమ లేదా కుడి వాడండి.';
   }
 
   @override
   String libraryRewindLabel(String key) {
-    return 'Back 10 seconds, key $key';
+    return '10 సెకన్లు వెనక్కి, కీ $key';
   }
 
   @override
   String libraryForwardLabel(String key) {
-    return 'Forward 10 seconds, key $key';
+    return '10 సెకన్లు ముందుకు, కీ $key';
   }
 
   @override
   String librarySlowerLabel(String key, String speed) {
-    return 'Slower, key $key. Now $speed';
+    return 'నెమ్మదిగా, కీ $key. ఇప్పుడు $speed';
   }
 
   @override
   String libraryFasterLabel(String key, String speed) {
-    return 'Faster, key $key. Now $speed';
+    return 'వేగంగా, కీ $key. ఇప్పుడు $speed';
   }
 
   @override
   String libraryPauseLabel(String title, String key) {
-    return 'Pause $title, key $key';
+    return '$title పాజ్ చేయండి, కీ $key';
   }
 
   @override
   String libraryPlayLabel(String title, String key) {
-    return 'Play $title, key $key';
+    return '$title ప్లే చేయండి, కీ $key';
   }
 
   @override
   String libraryResumeLabel(String title, String key) {
-    return 'Resume $title, key $key';
+    return '$title కొనసాగించండి, కీ $key';
   }
 
   @override
   String libraryStopLabel(String title, String key) {
-    return 'Stop $title, key $key';
+    return '$title ఆపండి, కీ $key';
   }
 
   @override
@@ -4962,7 +4993,7 @@ class AppLocalizationsTe extends AppLocalizations {
     String slower,
     String faster,
   ) {
-    return 'Press $rewind to go back 10 seconds, $playPause to play or pause, $forward to go forward 10 seconds, $slower for slower and $faster for faster.';
+    return '10 సెకన్లు వెనక్కి వెళ్ళడానికి $rewind, ప్లే లేదా పాజ్ చేయడానికి $playPause, 10 సెకన్లు ముందుకు వెళ్ళడానికి $forward, నెమ్మదిగా చేయడానికి $slower, వేగంగా చేయడానికి $faster నొక్కండి.';
   }
 
   @override
@@ -4970,8 +5001,8 @@ class AppLocalizationsTe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count bookmarks',
-      one: '1 bookmark',
+      other: '$count బుక్‌మార్క్‌లు',
+      one: '1 బుక్‌మార్క్',
     );
     return '$_temp0';
   }
@@ -4985,17 +5016,17 @@ class AppLocalizationsTe extends AppLocalizations {
     String repeat,
     String saving,
   ) {
-    return '$title. Position $position. Speed $speed. $bookmarks. A-B repeat $repeat. Progress saving $saving.';
+    return '$title. స్థానం $position. వేగం $speed. $bookmarks. A-B రిపీట్ $repeat. పురోగతి సేవ్ చేయడం $saving.';
   }
 
   @override
   String libraryReadStatusLabel(String status) {
-    return 'Read learning status. $status';
+    return 'అభ్యాస స్థితిని చదవండి. $status';
   }
 
   @override
   String libraryAddBookmarkLabel(String time) {
-    return 'Add bookmark at $time';
+    return '$time వద్ద బుక్‌మార్క్ జోడించండి';
   }
 
   @override
@@ -5003,251 +5034,258 @@ class AppLocalizationsTe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Bookmarks. $count saved points',
-      one: 'Bookmarks. 1 saved point',
+      other: 'బుక్‌మార్క్‌లు. $count సేవ్ చేసిన స్థానాలు',
+      one: 'బుక్‌మార్క్‌లు. 1 సేవ్ చేసిన స్థానం',
     );
     return '$_temp0';
   }
 
   @override
   String libraryNotesLabel(String time) {
-    return 'Private study notes at $time. Pauses the lesson before opening';
+    return '$time వద్ద ప్రైవేట్ చదువు నోట్స్. తెరిచే ముందు పాఠాన్ని పాజ్ చేస్తుంది';
   }
 
   @override
   String get libraryRepeatStartLabel =>
-      'Set repeat start A at the current position';
+      'ప్రస్తుత స్థానంలో రిపీట్ ప్రారంభం A సెట్ చేయండి';
 
   @override
-  String get libraryRepeatEndLabel => 'Set repeat end B after start A';
+  String get libraryRepeatEndLabel =>
+      'ప్రారంభం A తర్వాత రిపీట్ ముగింపు B సెట్ చేయండి';
 
   @override
-  String get libraryRepeatTurnOffLabel => 'Turn A-B repeat off';
+  String get libraryRepeatTurnOffLabel => 'A-B రిపీట్ ఆఫ్ చేయండి';
 
   @override
-  String get libraryRepeatTurnOnLabel => 'Turn A-B repeat on';
+  String get libraryRepeatTurnOnLabel => 'A-B రిపీట్ ఆన్ చేయండి';
 
   @override
-  String get libraryRepeatClearLabel => 'Clear saved A-B repeat points';
+  String get libraryRepeatClearLabel =>
+      'సేవ్ చేసిన A-B రిపీట్ స్థానాలను తొలగించండి';
 
   @override
   String libraryRetryLabel(String issue) {
-    return 'Retry saving learning progress. $issue';
+    return 'అభ్యాస పురోగతిని సేవ్ చేయడానికి మళ్ళీ ప్రయత్నించండి. $issue';
   }
 
   @override
   String libraryBookmarkSaved(String time) {
-    return 'Bookmark saved at $time.';
+    return '$time వద్ద బుక్‌మార్క్ సేవ్ చేయబడింది.';
   }
 
   @override
   String libraryRepeatStartSet(String time) {
-    return 'Repeat start set at $time.';
+    return 'రిపీట్ ప్రారంభం $time వద్ద సెట్ చేయబడింది.';
   }
 
   @override
   String libraryRepeatEndSetBrief(String time) {
-    return 'Repeat end set at $time.';
+    return 'రిపీట్ ముగింపు $time వద్ద సెట్ చేయబడింది.';
   }
 
   @override
   String libraryRepeatEndSetDetailed(String time) {
-    return 'Repeat end set at $time. Select Repeat on to start looping.';
+    return 'రిపీట్ ముగింపు $time వద్ద సెట్ చేయబడింది. మళ్ళీ మళ్ళీ ప్లే చేయడానికి రిపీట్ ఆన్ ఎంచుకోండి.';
   }
 
   @override
   String libraryRepeatState(String state) {
-    return 'A-B repeat $state.';
+    return 'A-B రిపీట్ $state.';
   }
 
   @override
-  String get libraryRepeatCleared => 'A-B repeat points cleared.';
+  String get libraryRepeatCleared => 'A-B రిపీట్ స్థానాలు తొలగించబడ్డాయి.';
 
   @override
-  String get libraryProgressSaved => 'Learning progress saved.';
+  String get libraryProgressSaved => 'అభ్యాస పురోగతి సేవ్ చేయబడింది.';
 
   @override
   String get libraryActionFailed =>
-      'The player could not complete this action. Check playback and try again.';
+      'ప్లేయర్ ఈ చర్యను పూర్తి చేయలేకపోయింది. ప్లేబ్యాక్‌ను తనిఖీ చేసి మళ్ళీ ప్రయత్నించండి.';
 
   @override
-  String get libraryCheckPosition => 'Check the lesson position and try again.';
+  String get libraryCheckPosition =>
+      'పాఠం స్థానాన్ని తనిఖీ చేసి మళ్ళీ ప్రయత్నించండి.';
 
   @override
-  String get libraryProgressUnavailableTitle => 'Saved progress unavailable';
+  String get libraryProgressUnavailableTitle =>
+      'సేవ్ చేసిన పురోగతి అందుబాటులో లేదు';
 
   @override
   String libraryProgressUnavailable(String reason) {
-    return '$reason Listen from the beginning without changing saved data? Saving stays off until you retry successfully.';
+    return '$reason సేవ్ చేసిన డేటాను మార్చకుండా మొదటి నుండి వినాలా? మీరు మళ్ళీ విజయవంతంగా ప్రయత్నించే వరకు సేవ్ చేయడం ఆఫ్‌లోనే ఉంటుంది.';
   }
 
   @override
-  String get libraryListenFromBeginning => 'Listen from beginning';
+  String get libraryListenFromBeginning => 'మొదటి నుండి వినండి';
 
   @override
   String get libraryBookmarkNameScreen =>
-      'Name bookmark. Press OK to edit. Up or down leaves editing.';
+      'బుక్‌మార్క్‌కు పేరు పెట్టండి. మార్చడానికి ఓకే నొక్కండి. పైకి లేదా కిందికి నొక్కితే ఎడిటింగ్ నుండి బయటకు వస్తారు.';
 
   @override
-  String get libraryEnterBookmarkName => 'Enter a bookmark name.';
+  String get libraryEnterBookmarkName => 'బుక్‌మార్క్ పేరు నమోదు చేయండి.';
 
   @override
   String libraryBookmarkLabel(String label, String time) {
-    return '$label. $time. Jump to bookmark';
+    return '$label. $time. బుక్‌మార్క్‌కు వెళ్ళండి';
   }
 
   @override
   String libraryBookmarkJumped(String label, String time) {
-    return '$label. Position $time.';
+    return '$label. స్థానం $time.';
   }
 
   @override
   String libraryRemoveBookmarkLabel(String label) {
-    return 'Remove $label';
+    return '$label తొలగించండి';
   }
 
   @override
   String libraryRemoveBookmarkQuestion(String label) {
-    return 'Remove $label? This does not remove the lesson or any other bookmarks.';
+    return '$label తొలగించాలా? ఇది పాఠాన్ని లేదా ఇతర బుక్‌మార్క్‌లను తొలగించదు.';
   }
 
   @override
   String libraryBookmarkRemoved(String label) {
-    return '$label removed.';
+    return '$label తొలగించబడింది.';
   }
 
   @override
   String get libraryBookmarksScreen =>
-      'Bookmarks. Select a point to jump. This does not start paused playback. Remove asks for confirmation.';
+      'బుక్‌మార్క్‌లు. వెళ్ళడానికి ఒక స్థానాన్ని ఎంచుకోండి. ఇది పాజ్ చేసిన ప్లేబ్యాక్‌ను ప్రారంభించదు. తొలగించే ముందు నిర్ధారణ అడుగుతుంది.';
 
   @override
   String get libraryNoRecordingsUpload =>
-      'No recordings yet. Press 2 to upload audio.';
+      'ఇంకా రికార్డింగ్‌లు లేవు. ఆడియో అప్‌లోడ్ చేయడానికి 2 నొక్కండి.';
 
   @override
   String libraryRecordingsLoaded(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count recordings loaded.',
-      one: '1 recording loaded.',
+      other: '$count రికార్డింగ్‌లు లోడ్ అయ్యాయి.',
+      one: '1 రికార్డింగ్ లోడ్ అయింది.',
     );
     return '$_temp0';
   }
 
   @override
   String get libraryLoadFailed =>
-      'Could not load recordings. Check your internet connection, then press 1 to retry.';
+      'రికార్డింగ్‌లను లోడ్ చేయలేకపోయాము. మీ ఇంటర్నెట్ కనెక్షన్‌ను తనిఖీ చేసి, మళ్ళీ ప్రయత్నించడానికి 1 నొక్కండి.';
 
   @override
-  String get libraryTitleRequired => 'Title is required.';
+  String get libraryTitleRequired => 'శీర్షిక అవసరం.';
 
   @override
   String get libraryPickFailed =>
-      'Could not open the file. Try choosing it again.';
+      'ఫైల్‌ను తెరవలేకపోయాము. దాన్ని మళ్ళీ ఎంచుకుని చూడండి.';
 
   @override
   String get libraryChooseWorkspaceFirst =>
-      'Choose a class and subject workspace on the Teacher Dashboard before uploading audio.';
+      'ఆడియో అప్‌లోడ్ చేసే ముందు ఉపాధ్యాయుల డాష్‌బోర్డ్‌లో ఒక తరగతి మరియు సబ్జెక్టు వర్క్‌స్పేస్ ఎంచుకోండి.';
 
   @override
   String libraryUploadingBrief(String title) {
-    return 'Uploading $title.';
+    return '$title అప్‌లోడ్ అవుతోంది.';
   }
 
   @override
   String libraryUploadingDetailed(String title) {
-    return 'Uploading $title. You will hear progress every 25 percent.';
+    return '$title అప్‌లోడ్ అవుతోంది. ప్రతి 25 శాతానికి మీకు పురోగతి వినిపిస్తుంది.';
   }
 
   @override
   String libraryUploadingOnceDetailed(String title) {
-    return 'Uploading $title. Please wait; you will hear when it finishes.';
+    return '$title అప్‌లోడ్ అవుతోంది. దయచేసి వేచి ఉండండి; పూర్తయినప్పుడు మీకు వినిపిస్తుంది.';
   }
 
   @override
   String libraryUploadProgress(String title, String percent) {
-    return '$title: $percent uploaded.';
+    return '$title: $percent అప్‌లోడ్ అయింది.';
   }
 
   @override
   String libraryUploaded(String title) {
-    return '$title uploaded.';
+    return '$title అప్‌లోడ్ అయింది.';
   }
 
   @override
   String libraryUploadFailed(String title) {
-    return '$title could not be uploaded. Check your connection, then press 3 to try again.';
+    return '$title అప్‌లోడ్ కాలేదు. మీ కనెక్షన్‌ను తనిఖీ చేసి, మళ్ళీ ప్రయత్నించడానికి 3 నొక్కండి.';
   }
 
   @override
   String get libraryUploadNoSession =>
-      'Upload cancelled. Select at least one session, then press 3 to add audio again.';
+      'అప్‌లోడ్ రద్దు చేయబడింది. కనీసం ఒక సెషన్ ఎంచుకుని, మళ్ళీ ఆడియో జోడించడానికి 3 నొక్కండి.';
 
   @override
   String get libraryUploadNoClass =>
-      'The session class and subject could not be determined.';
+      'సెషన్ తరగతి మరియు సబ్జెక్టును నిర్ణయించలేకపోయాము.';
 
   @override
   String get libraryFileUnreadable =>
-      'Could not read the file. Choose it again.';
+      'ఫైల్‌ను చదవలేకపోయాము. దాన్ని మళ్ళీ ఎంచుకోండి.';
 
   @override
   String libraryPreviewStopped(String title) {
-    return 'Preview of $title stopped.';
+    return '$title ప్రివ్యూ ఆపివేయబడింది.';
   }
 
   @override
   String libraryPreviewing(String title) {
-    return 'Previewing $title privately.';
+    return '$title ప్రైవేట్‌గా ప్రివ్యూ అవుతోంది.';
   }
 
   @override
-  String get libraryPreviewFinished => 'Preview finished.';
+  String get libraryPreviewFinished => 'ప్రివ్యూ పూర్తయింది.';
 
   @override
   String libraryPreviewFailed(String title) {
-    return 'Could not play $title. Check your connection and try again.';
+    return '$title ప్లే చేయలేకపోయాము. మీ కనెక్షన్‌ను తనిఖీ చేసి మళ్ళీ ప్రయత్నించండి.';
   }
 
   @override
-  String get libraryNoActiveSession => 'No active session.';
+  String get libraryNoActiveSession => 'యాక్టివ్ సెషన్ ఏదీ లేదు.';
 
   @override
   String librarySelectedForSession(String title) {
-    return 'Selected $title for the session.';
+    return 'సెషన్ కోసం $title ఎంచుకోబడింది.';
   }
 
   @override
-  String get librarySelectFailed => 'Could not select the audio. Try again.';
+  String get librarySelectFailed =>
+      'ఆడియోను ఎంచుకోలేకపోయాము. మళ్ళీ ప్రయత్నించండి.';
 
   @override
-  String get libraryClassPlayAccepted => 'Class playback request accepted.';
+  String get libraryClassPlayAccepted =>
+      'తరగతి ప్లేబ్యాక్ అభ్యర్థన అంగీకరించబడింది.';
 
   @override
   String get libraryClassPlayFailed =>
-      'Could not start class playback. Try again.';
+      'తరగతి ప్లేబ్యాక్ ప్రారంభించలేకపోయాము. మళ్ళీ ప్రయత్నించండి.';
 
   @override
-  String get libraryClassPauseAccepted => 'Class pause request accepted.';
+  String get libraryClassPauseAccepted =>
+      'తరగతి పాజ్ అభ్యర్థన అంగీకరించబడింది.';
 
   @override
   String get libraryClassPauseFailed =>
-      'Could not pause class audio. Try again.';
+      'తరగతి ఆడియోను పాజ్ చేయలేకపోయాము. మళ్ళీ ప్రయత్నించండి.';
 
   @override
   String libraryStopPreviewLabel(String title) {
-    return 'Stop preview of $title privately. Only you can hear this.';
+    return '$title ప్రైవేట్ ప్రివ్యూ ఆపండి. ఇది మీకు మాత్రమే వినిపిస్తుంది.';
   }
 
   @override
   String libraryPreviewLabel(String title) {
-    return 'Preview $title privately. Only you can hear this.';
+    return '$title ప్రైవేట్‌గా ప్రివ్యూ చేయండి. ఇది మీకు మాత్రమే వినిపిస్తుంది.';
   }
 
   @override
   String libraryBroadcastLabel(String title) {
-    return 'Play $title for everyone in the session';
+    return 'సెషన్‌లోని అందరి కోసం $title ప్లే చేయండి';
   }
 
   @override
@@ -5255,103 +5293,104 @@ class AppLocalizationsTe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count recordings.',
-      one: '1 recording.',
+      other: '$count రికార్డింగ్‌లు.',
+      one: '1 రికార్డింగ్.',
     );
     return '$_temp0';
   }
 
   @override
   String libraryPreviewingState(String title) {
-    return 'Previewing $title.';
+    return '$title ప్రివ్యూ అవుతోంది.';
   }
 
   @override
-  String get libraryUploadInProgress => 'Upload in progress.';
+  String get libraryUploadInProgress => 'అప్‌లోడ్ జరుగుతోంది.';
 
   @override
   String get libraryAccountChanged =>
-      'Your account changed. Open the library again.';
+      'మీ ఖాతా మారింది. లైబ్రరీని మళ్ళీ తెరవండి.';
 
   @override
   String get libraryNoUnfinished =>
-      'No unfinished lesson is saved for this account. Choose a recorded lesson to start learning.';
+      'ఈ ఖాతాకు పూర్తి కాని పాఠం ఏదీ సేవ్ కాలేదు. నేర్చుకోవడం ప్రారంభించడానికి ఒక రికార్డ్ చేసిన పాఠాన్ని ఎంచుకోండి.';
 
   @override
   String get libraryCannotCheckAccess =>
-      'Could not check lesson access. Connect to the internet and retry. Your saved progress is kept.';
+      'పాఠం యాక్సెస్‌ను తనిఖీ చేయలేకపోయాము. ఇంటర్నెట్‌కు కనెక్ట్ అయి మళ్ళీ ప్రయత్నించండి. మీరు సేవ్ చేసిన పురోగతి అలాగే ఉంటుంది.';
 
   @override
   String get libraryUnfinishedUnavailable =>
-      'Your unfinished lessons are not currently available in this library. Your saved progress and bookmarks are kept.';
+      'మీ పూర్తి కాని పాఠాలు ప్రస్తుతం ఈ లైబ్రరీలో అందుబాటులో లేవు. మీరు సేవ్ చేసిన పురోగతి మరియు బుక్‌మార్క్‌లు అలాగే ఉంటాయి.';
 
   @override
   String get libraryOpeningNextUnfinished =>
-      'The most recent lesson is unavailable here. Opening your next most recent available unfinished lesson. Saved progress is kept.';
+      'ఇటీవలి పాఠం ఇక్కడ అందుబాటులో లేదు. అందుబాటులో ఉన్న తదుపరి ఇటీవలి పూర్తి కాని పాఠాన్ని తెరుస్తోంది. సేవ్ చేసిన పురోగతి అలాగే ఉంటుంది.';
 
   @override
   String get libraryContinueFailed =>
-      'Could not open saved learning progress. Check storage, your connection, and sign-in, then retry.';
+      'సేవ్ చేసిన అభ్యాస పురోగతిని తెరవలేకపోయాము. స్టోరేజ్, మీ కనెక్షన్ మరియు సైన్ ఇన్‌ను తనిఖీ చేసి, మళ్ళీ ప్రయత్నించండి.';
 
   @override
   String get libraryNoActiveClassesNow =>
-      'No active classes right now. Press 3 for all audio files.';
+      'ప్రస్తుతం యాక్టివ్ తరగతులు లేవు. అన్ని ఆడియో ఫైల్‌ల కోసం 3 నొక్కండి.';
 
   @override
   String libraryClassesLoaded(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count active classes loaded.',
-      one: '1 active class loaded.',
+      other: '$count యాక్టివ్ తరగతులు లోడ్ అయ్యాయి.',
+      one: '1 యాక్టివ్ తరగతి లోడ్ అయింది.',
     );
     return '$_temp0';
   }
 
   @override
   String libraryClassesFailed(String reason) {
-    return '$reason Active classes could not be refreshed. Press 1 to retry. Saved downloads remain available.';
+    return '$reason యాక్టివ్ తరగతులను రిఫ్రెష్ చేయలేకపోయాము. మళ్ళీ ప్రయత్నించడానికి 1 నొక్కండి. సేవ్ చేసిన డౌన్‌లోడ్‌లు అందుబాటులోనే ఉంటాయి.';
   }
 
   @override
   String get libraryClassesLoading =>
-      'Classes are still loading. Try key 5 again shortly.';
+      'తరగతులు ఇంకా లోడ్ అవుతున్నాయి. కొద్దిసేపటిలో మళ్ళీ కీ 5 నొక్కండి.';
 
   @override
   String get libraryNoActiveClassesStaying =>
-      'There are no active classes. Staying in the audio library.';
+      'యాక్టివ్ తరగతులు ఏవీ లేవు. ఆడియో లైబ్రరీలోనే ఉంటున్నాము.';
 
   @override
   String libraryFirstActiveClass(String title) {
-    return '$title. First active class. Use D-pad up and down to browse active class sessions. Press OK to open the selected class recordings.';
+    return '$title. మొదటి యాక్టివ్ తరగతి. యాక్టివ్ తరగతి సెషన్‌లను చూడటానికి D-pad పైకి, కిందికి ఉపయోగించండి. ఎంచుకున్న తరగతి రికార్డింగ్‌లను తెరవడానికి ఓకే నొక్కండి.';
   }
 
   @override
   String get libraryOpeningPlaylists =>
-      'Opening My Playlists. Playlist contents are private.';
+      'నా ప్లేలిస్ట్‌లు తెరుస్తోంది. ప్లేలిస్ట్‌లలోని విషయాలు ప్రైవేట్‌గా ఉంటాయి.';
 
   @override
   String libraryClassLabel(String title, String index, String count) {
-    return '$title. Class $index of $count';
+    return '$title. $count లో తరగతి $index';
   }
 
   @override
-  String get libraryLoadingActiveClasses => 'Loading active classes.';
+  String get libraryLoadingActiveClasses =>
+      'యాక్టివ్ తరగతులు లోడ్ అవుతున్నాయి.';
 
   @override
   String libraryActiveClassesSentence(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count active classes.',
-      one: '1 active class.',
+      other: '$count యాక్టివ్ తరగతులు.',
+      one: '1 యాక్టివ్ తరగతి.',
     );
     return '$_temp0';
   }
 
   @override
   String libraryNoRecordingsFor(String where) {
-    return 'No recordings yet for $where.';
+    return '$where కోసం ఇంకా రికార్డింగ్‌లు లేవు.';
   }
 
   @override
@@ -5359,54 +5398,54 @@ class AppLocalizationsTe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count recordings loaded for $where.',
-      one: '1 recording loaded for $where.',
+      other: '$where కోసం $count రికార్డింగ్‌లు లోడ్ అయ్యాయి.',
+      one: '$where కోసం 1 రికార్డింగ్ లోడ్ అయింది.',
     );
     return '$_temp0';
   }
 
   @override
   String get libraryDownloadsReadFailed =>
-      'Could not read downloaded lessons. Press 1 to retry.';
+      'డౌన్‌లోడ్ చేసిన పాఠాలను చదవలేకపోయాము. మళ్ళీ ప్రయత్నించడానికి 1 నొక్కండి.';
 
   @override
   String get libraryClassLoadFailed =>
-      'Could not load recordings. Check your internet connection and sign-in, then press 1 to retry.';
+      'రికార్డింగ్‌లను లోడ్ చేయలేకపోయాము. మీ ఇంటర్నెట్ కనెక్షన్, సైన్ ఇన్ చూసుకుని, మళ్ళీ ప్రయత్నించడానికి 1 నొక్కండి.';
 
   @override
   String libraryRetryAfter(String reason) {
-    return '$reason Press 1 to retry.';
+    return '$reason మళ్ళీ ప్రయత్నించడానికి 1 నొక్కండి.';
   }
 
   @override
   String get libraryDownloadedDescription =>
-      'Downloaded recording. Access renewal required after 30 days.';
+      'డౌన్‌లోడ్ చేసిన రికార్డింగ్. 30 రోజుల తర్వాత యాక్సెస్‌ను రెన్యూ చేయాలి.';
 
   @override
   String get libraryDownloadedHelp =>
-      'Downloaded lessons. Existing offline access is checked before playing.';
+      'డౌన్‌లోడ్ చేసిన పాఠాలు. ప్లే చేసే ముందు ఉన్న ఆఫ్‌లైన్ యాక్సెస్ తనిఖీ చేయబడుతుంది.';
 
   @override
   String get libraryOnlineHelp =>
-      'Audio Library. Online recordings require internet. Download lessons for offline playback.';
+      'ఆడియో లైబ్రరీ. ఆన్‌లైన్ రికార్డింగ్‌లకు ఇంటర్నెట్ కావాలి. ఆఫ్‌లైన్‌లో వినడానికి పాఠాలను డౌన్‌లోడ్ చేయండి.';
 
   @override
   String librarySubjectChoice(String name, String index, String count) {
-    return 'Subject: $name, $index of $count';
+    return 'సబ్జెక్టు: $name, $count లో $index';
   }
 
   @override
   String librarySubjectLabel(String choice) {
-    return '$choice. Press 2, or left and right, to change';
+    return '$choice. మార్చడానికి 2 నొక్కండి, లేదా ఎడమ, కుడి నొక్కండి';
   }
 
   @override
   String get librarySubjectFixed =>
-      'This library is already limited to one subject.';
+      'ఈ లైబ్రరీ ఇప్పటికే ఒక సబ్జెక్టుకు మాత్రమే పరిమితం చేయబడింది.';
 
   @override
   String libraryLength(String time) {
-    return 'Length $time';
+    return 'నిడివి $time';
   }
 
   @override
@@ -5414,15 +5453,15 @@ class AppLocalizationsTe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count recordings in $subject.',
-      one: '1 recording in $subject.',
+      other: '$subject లో $count రికార్డింగ్‌లు.',
+      one: '$subject లో 1 రికార్డింగ్.',
     );
     return '$_temp0';
   }
 
   @override
   String libraryNoTeacherPlaylists(String className, String subject) {
-    return 'No playlists yet for $className, $subject. Press 2 to create one.';
+    return '$className, $subject కోసం ఇంకా ప్లేలిస్ట్‌లు లేవు. ఒకటి సృష్టించడానికి 2 నొక్కండి.';
   }
 
   @override
@@ -5434,26 +5473,26 @@ class AppLocalizationsTe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count playlists loaded for $className, $subject.',
-      one: '1 playlist loaded for $className, $subject.',
+      other: '$className, $subject కోసం $count ప్లేలిస్ట్‌లు లోడ్ అయ్యాయి.',
+      one: '$className, $subject కోసం 1 ప్లేలిస్ట్ లోడ్ అయింది.',
     );
     return '$_temp0';
   }
 
   @override
-  String get libraryPlaylistCreateFailed => 'Playlist could not be created.';
+  String get libraryPlaylistCreateFailed => 'ప్లేలిస్ట్ సృష్టించలేకపోయాము.';
 
   @override
   String get libraryNoMyPlaylists =>
-      'No playlists yet. Press 2 to create a private playlist.';
+      'ఇంకా ప్లేలిస్ట్‌లు లేవు. ప్రైవేట్ ప్లేలిస్ట్ సృష్టించడానికి 2 నొక్కండి.';
 
   @override
   String libraryPrivatePlaylistCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count private playlists',
-      one: '1 private playlist',
+      other: '$count ప్రైవేట్ ప్లేలిస్ట్‌లు',
+      one: '1 ప్రైవేట్ ప్లేలిస్ట్',
     );
     return '$_temp0';
   }
@@ -5463,8 +5502,8 @@ class AppLocalizationsTe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count class playlists',
-      one: '1 class playlist',
+      other: '$count తరగతి ప్లేలిస్ట్‌లు',
+      one: '1 తరగతి ప్లేలిస్ట్',
     );
     return '$_temp0';
   }
@@ -5474,20 +5513,20 @@ class AppLocalizationsTe extends AppLocalizations {
     String privatePlaylists,
     String classPlaylists,
   ) {
-    return '$privatePlaylists and $classPlaylists loaded.';
+    return '$privatePlaylists, $classPlaylists లోడ్ అయ్యాయి.';
   }
 
   @override
   String get libraryPrivatePlaylistCreateFailed =>
-      'Private playlist could not be created.';
+      'ప్రైవేట్ ప్లేలిస్ట్ సృష్టించలేకపోయాము.';
 
   @override
   String libraryPlaylistsSentence(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count playlists.',
-      one: '1 playlist.',
+      other: '$count ప్లేలిస్ట్‌లు.',
+      one: '1 ప్లేలిస్ట్.',
     );
     return '$_temp0';
   }
@@ -5497,8 +5536,8 @@ class AppLocalizationsTe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count items',
-      one: '1 item',
+      other: '$count అంశాలు',
+      one: '1 అంశం',
     );
     return '$_temp0';
   }
@@ -5520,130 +5559,132 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get libraryPlaylistRefreshFailed =>
-      'Could not refresh this playlist. Check your connection and try again. Existing playback and saved progress have not been changed.';
+      'ఈ ప్లేలిస్ట్‌ను రిఫ్రెష్ చేయలేకపోయాము. మీ కనెక్షన్ చూసుకుని మళ్ళీ ప్రయత్నించండి. ప్రస్తుతం ప్లే అవుతున్నది, సేవ్ చేసిన ప్రోగ్రెస్ మార్చబడలేదు.';
 
   @override
   String get libraryPlaylistLessonGone =>
-      'The current lesson is no longer available in this playlist. Playback stopped. Your saved progress and bookmarks are kept.';
+      'ప్రస్తుత పాఠం ఇప్పుడు ఈ ప్లేలిస్ట్‌లో అందుబాటులో లేదు. ప్లేబ్యాక్ ఆగిపోయింది. మీ సేవ్ చేసిన ప్రోగ్రెస్, బుక్‌మార్క్‌లు ఉంచబడ్డాయి.';
 
   @override
-  String get libraryNothingToAdd => 'No eligible audio is available to add.';
+  String get libraryNothingToAdd =>
+      'జోడించడానికి తగిన ఆడియో ఏదీ అందుబాటులో లేదు.';
 
   @override
   String libraryAddedToPlaylist(String title) {
-    return '$title added to the playlist.';
+    return '$title ప్లేలిస్ట్‌కు జోడించబడింది.';
   }
 
   @override
   String get libraryAddFailed =>
-      'Could not add the audio. Check your connection and try again.';
+      'ఆడియోను జోడించలేకపోయాము. మీ కనెక్షన్ చూసుకుని మళ్ళీ ప్రయత్నించండి.';
 
   @override
   String libraryItemUnavailable(String title) {
-    return '$title is no longer available in your current class. You can remove it from this playlist.';
+    return '$title ఇప్పుడు మీ ప్రస్తుత తరగతిలో అందుబాటులో లేదు. మీరు దీన్ని ఈ ప్లేలిస్ట్ నుండి తీసివేయవచ్చు.';
   }
 
   @override
   String libraryItemCannotPlay(String title) {
-    return '$title is unavailable.';
+    return '$title అందుబాటులో లేదు.';
   }
 
   @override
   String libraryPlayingItem(String announcement, String index, String count) {
-    return '$announcement Item $index of $count.';
+    return '$announcement $count లో అంశం $index.';
   }
 
   @override
   String get libraryPlaylistPlayFailed =>
-      'Could not play this lesson. Check your connection and try again.';
+      'ఈ పాఠాన్ని ప్లే చేయలేకపోయాము. మీ కనెక్షన్ చూసుకుని మళ్ళీ ప్రయత్నించండి.';
 
   @override
-  String get libraryPlaylistEmpty => 'Playlist is empty.';
+  String get libraryPlaylistEmpty => 'ప్లేలిస్ట్ ఖాళీగా ఉంది.';
 
   @override
-  String get libraryPlaylistEnded => 'End of playlist. Playback stopped.';
+  String get libraryPlaylistEnded =>
+      'ప్లేలిస్ట్ ముగిసింది. ప్లేబ్యాక్ ఆగిపోయింది.';
 
   @override
   String libraryRenamed(String title) {
-    return 'Playlist renamed to $title.';
+    return 'ప్లేలిస్ట్ పేరు $title గా మార్చబడింది.';
   }
 
   @override
   String get libraryRenameFailed =>
-      'Could not rename the playlist. Check your connection and try again.';
+      'ప్లేలిస్ట్ పేరు మార్చలేకపోయాము. మీ కనెక్షన్ చూసుకుని మళ్ళీ ప్రయత్నించండి.';
 
   @override
-  String get libraryAlreadyFirst => 'The selected item is already first.';
+  String get libraryAlreadyFirst => 'ఎంచుకున్న అంశం ఇప్పటికే మొదటిది.';
 
   @override
-  String get libraryAlreadyLast => 'The selected item is already last.';
+  String get libraryAlreadyLast => 'ఎంచుకున్న అంశం ఇప్పటికే చివరిది.';
 
   @override
   String libraryMoved(String title, String position, String count) {
-    return '$title moved to position $position of $count.';
+    return '$title ను $count లో $position స్థానానికి జరిపాము.';
   }
 
   @override
   String libraryMoveFailed(String title) {
-    return 'Could not move $title. Check your connection and try again.';
+    return '$title ను జరపలేకపోయాము. మీ కనెక్షన్ చూసుకుని మళ్ళీ ప్రయత్నించండి.';
   }
 
   @override
   String libraryRemovedFromPlaylist(String title, String playlist) {
-    return 'Removed $title from $playlist.';
+    return '$playlist నుండి $title తీసివేయబడింది.';
   }
 
   @override
   String libraryRemoveFailed(String title) {
-    return 'Could not remove $title. Check your connection and try again.';
+    return '$title ను తీసివేయలేకపోయాము. మీ కనెక్షన్ చూసుకుని మళ్ళీ ప్రయత్నించండి.';
   }
 
   @override
   String libraryRemoveItemQuestion(String title, String playlist) {
-    return 'Remove $title from $playlist? The recording itself is kept in the library.';
+    return '$playlist నుండి $title ను తీసివేయాలా? రికార్డింగ్ మాత్రం లైబ్రరీలో ఉంచబడుతుంది.';
   }
 
   @override
   String libraryRemoveItemLabel(String title) {
-    return 'Remove $title from playlist, asks to confirm';
+    return '$title ను ప్లేలిస్ట్ నుండి తీసివేయండి, నిర్ధారణ అడుగుతుంది';
   }
 
   @override
   String libraryPublished(String title) {
-    return '$title published to the class.';
+    return '$title తరగతికి ప్రచురించబడింది.';
   }
 
   @override
   String libraryReturnedToDraft(String title) {
-    return '$title returned to draft.';
+    return '$title మళ్ళీ డ్రాఫ్ట్‌గా మార్చబడింది.';
   }
 
   @override
   String libraryChangeFailed(String title) {
-    return 'Could not change $title. Check your connection and try again.';
+    return '$title ను మార్చలేకపోయాము. మీ కనెక్షన్ చూసుకుని మళ్ళీ ప్రయత్నించండి.';
   }
 
   @override
   String libraryDeleted(String title) {
-    return '$title deleted.';
+    return '$title తొలగించబడింది.';
   }
 
   @override
   String libraryRestoredAsDraft(String title) {
-    return '$title restored as a draft.';
+    return '$title డ్రాఫ్ట్‌గా పునరుద్ధరించబడింది.';
   }
 
   @override
   String libraryArchived(String title) {
-    return '$title archived.';
+    return '$title ఆర్కైవ్ చేయబడింది.';
   }
 
   @override
-  String get libraryPlaylistIsEmpty => 'The playlist is empty.';
+  String get libraryPlaylistIsEmpty => 'ప్లేలిస్ట్ ఖాళీగా ఉంది.';
 
   @override
   String librarySelectedItem(String selected, String items) {
-    return 'Selected item $selected of $items.';
+    return '$items లో ఎంచుకున్న అంశం $selected.';
   }
 
   @override
@@ -5652,63 +5693,64 @@ class AppLocalizationsTe extends AppLocalizations {
     String items,
     String title,
   ) {
-    return 'Selected item $selected of $items, $title.';
+    return '$items లో ఎంచుకున్న అంశం $selected, $title.';
   }
 
   @override
   String get libraryAlreadyOneSubject =>
-      'This library is already limited to one subject';
+      'ఈ లైబ్రరీ ఇప్పటికే ఒక సబ్జెక్టుకు మాత్రమే పరిమితం చేయబడింది';
 
   @override
-  String get libraryNoLessonIsPlaying => 'No lesson is playing.';
+  String get libraryNoLessonIsPlaying => 'ఏ పాఠమూ ప్లే అవ్వడం లేదు.';
 
   @override
   String libraryAddedToSession(String title) {
-    return '$title added to this session.';
+    return '$title ఈ సెషన్‌కు జోడించబడింది.';
   }
 
   @override
-  String get libraryPlaylistNotCreated => 'Playlist could not be created';
+  String get libraryPlaylistNotCreated => 'ప్లేలిస్ట్ సృష్టించలేకపోయాము';
 
   @override
   String get libraryPrivatePlaylistNotCreated =>
-      'Private playlist could not be created';
+      'ప్రైవేట్ ప్లేలిస్ట్ సృష్టించలేకపోయాము';
 
   @override
-  String get libraryNoEligibleAudio => 'No eligible audio is available to add';
+  String get libraryNoEligibleAudio =>
+      'జోడించడానికి తగిన ఆడియో ఏదీ అందుబాటులో లేదు';
 
   @override
-  String get libraryAudioAddedToPlaylist => 'Audio added to playlist';
+  String get libraryAudioAddedToPlaylist => 'ఆడియో ప్లేలిస్ట్‌కు జోడించబడింది';
 
   @override
   String libraryUnavailable(String title) {
-    return '$title is unavailable';
+    return '$title అందుబాటులో లేదు';
   }
 
   @override
   String libraryPlaylistRenamed(String title) {
-    return 'Playlist renamed to $title';
+    return 'ప్లేలిస్ట్ పేరు $title గా మార్చబడింది';
   }
 
   @override
   String libraryMovedTo(String title, String position) {
-    return '$title moved to position $position';
+    return '$title ను $position స్థానానికి జరిపాము';
   }
 
   @override
-  String get libraryNoteRenamed => 'Private note renamed.';
+  String get libraryNoteRenamed => 'ప్రైవేట్ నోట్ పేరు మార్చబడింది.';
 
   @override
   String get downloadNoneYet =>
-      'No downloads yet. Press 2 to find recordings online.';
+      'ఇంకా డౌన్‌లోడ్‌లు లేవు. ఆన్‌లైన్‌లో రికార్డింగ్‌లు వెతకడానికి 2 నొక్కండి.';
 
   @override
   String downloadLessonCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count downloaded lessons',
-      one: '1 downloaded lesson',
+      other: '$count డౌన్‌లోడ్ చేసిన పాఠాలు',
+      one: '1 డౌన్‌లోడ్ చేసిన పాఠం',
     );
     return '$_temp0';
   }
@@ -5718,29 +5760,29 @@ class AppLocalizationsTe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count partial downloads',
-      one: '1 partial download',
+      other: '$count అసంపూర్ణ డౌన్‌లోడ్‌లు',
+      one: '1 అసంపూర్ణ డౌన్‌లోడ్',
     );
     return '$_temp0';
   }
 
   @override
   String downloadReadyToPlay(String lessons) {
-    return '$lessons ready to play.';
+    return '$lessons ప్లే చేయడానికి సిద్ధంగా ఉన్నాయి.';
   }
 
   @override
   String downloadReadyToPlayWithPartial(String lessons, String partial) {
-    return '$lessons ready to play, $partial.';
+    return '$lessons ప్లే చేయడానికి సిద్ధంగా ఉన్నాయి, $partial.';
   }
 
   @override
   String get downloadActionFailed =>
-      'Could not complete this download action. Check storage, your connection and sign-in, then retry.';
+      'ఈ డౌన్‌లోడ్ పనిని పూర్తి చేయలేకపోయాము. స్టోరేజ్, మీ కనెక్షన్, సైన్ ఇన్ చూసుకుని మళ్ళీ ప్రయత్నించండి.';
 
   @override
   String get downloadOnlineListFailed =>
-      'Could not load available recordings. Existing downloads still work until their access expires.';
+      'అందుబాటులో ఉన్న రికార్డింగ్‌లను లోడ్ చేయలేకపోయాము. ఇప్పటికే ఉన్న డౌన్‌లోడ్‌లు వాటి యాక్సెస్ గడువు ముగిసే వరకు పనిచేస్తాయి.';
 
   @override
   String downloadAvailable(int count) {
@@ -5748,875 +5790,885 @@ class AppLocalizationsTe extends AppLocalizations {
       count,
       locale: localeName,
       other:
-          '$count recordings are available to download. Select the recordings you want.',
+          'డౌన్‌లోడ్ చేయడానికి $count రికార్డింగ్‌లు అందుబాటులో ఉన్నాయి. మీకు కావలసిన రికార్డింగ్‌లను ఎంచుకోండి.',
       one:
-          '1 recording is available to download. Select the recordings you want.',
+          'డౌన్‌లోడ్ చేయడానికి 1 రికార్డింగ్ అందుబాటులో ఉంది. మీకు కావలసిన రికార్డింగ్‌లను ఎంచుకోండి.',
     );
     return '$_temp0';
   }
 
   @override
   String downloadStarting(String title) {
-    return 'Downloading $title. You will hear progress every 25 percent.';
+    return '$title డౌన్‌లోడ్ అవుతోంది. ప్రతి 25 శాతానికి ప్రోగ్రెస్ వినిపిస్తుంది.';
   }
 
   @override
   String downloadProgress(String title, String percent) {
-    return '$title $percent downloaded.';
+    return '$title $percent డౌన్‌లోడ్ అయింది.';
   }
 
   @override
   String get downloadVerified =>
-      'Download verified and saved for offline playback.';
+      'డౌన్‌లోడ్ ధృవీకరించబడింది, ఆఫ్‌లైన్‌లో వినడానికి సేవ్ చేయబడింది.';
 
   @override
   String downloadDone(String title) {
-    return '$title downloaded, verified and saved for offline playback.';
+    return '$title డౌన్‌లోడ్ అయింది, ధృవీకరించబడింది, ఆఫ్‌లైన్‌లో వినడానికి సేవ్ చేయబడింది.';
   }
 
   @override
   String downloadPackQuestion(String recordings) {
-    return 'Download $recordings one at a time? This uses internet data and your account’s 50 MB allowance. On failure or cancellation, verified downloads and partial data are kept. No existing lesson is deleted.';
+    return '$recordings ఒక్కొక్కటిగా డౌన్‌లోడ్ చేయాలా? దీనికి ఇంటర్నెట్ డేటా, మీ ఖాతాకు ఉన్న 50 MB పరిమితి ఉపయోగించబడుతుంది. విఫలమైనా లేదా రద్దు చేసినా, ధృవీకరించిన డౌన్‌లోడ్‌లు, అసంపూర్ణ డేటా ఉంచబడతాయి. ఇప్పటికే ఉన్న ఏ పాఠమూ తొలగించబడదు.';
   }
 
   @override
   String downloadPackStarting(String recordings) {
-    return 'Downloading $recordings, one at a time.';
+    return '$recordings ఒక్కొక్కటిగా డౌన్‌లోడ్ అవుతున్నాయి.';
   }
 
   @override
   String downloadPackProgress(String done, String total) {
-    return '$done of $total recordings verified.';
+    return '$total లో $done రికార్డింగ్‌లు ధృవీకరించబడ్డాయి.';
   }
 
   @override
   String downloadPackDone(String done, String total) {
-    return '$done of $total recordings verified and saved.';
+    return '$total లో $done రికార్డింగ్‌లు ధృవీకరించబడి సేవ్ చేయబడ్డాయి.';
   }
 
   @override
   String downloadRenewed(String title) {
-    return 'Access renewed for $title. Up to 30 days of offline playback.';
+    return '$title కోసం యాక్సెస్ రెన్యూ చేయబడింది. 30 రోజుల వరకు ఆఫ్‌లైన్‌లో వినవచ్చు.';
   }
 
   @override
   String downloadRemoveTitle(String title) {
-    return 'Remove download of $title?';
+    return '$title డౌన్‌లోడ్‌ను తీసివేయాలా?';
   }
 
   @override
   String downloadRemoveQuestion(String title) {
-    return 'Remove the downloaded or partial audio for $title? Learning progress and bookmarks are kept. Other recordings and accounts are not affected.';
+    return '$title కోసం డౌన్‌లోడ్ చేసిన లేదా అసంపూర్ణ ఆడియోను తీసివేయాలా? అభ్యాస ప్రోగ్రెస్, బుక్‌మార్క్‌లు ఉంచబడతాయి. ఇతర రికార్డింగ్‌లు, ఖాతాలపై ప్రభావం ఉండదు.';
   }
 
   @override
   String downloadRemoved(String title) {
-    return 'Removed the download of $title. Progress and bookmarks kept.';
+    return '$title డౌన్‌లోడ్ తీసివేయబడింది. ప్రోగ్రెస్, బుక్‌మార్క్‌లు ఉంచబడ్డాయి.';
   }
 
   @override
   String downloadUnreadableTitle(String id) {
-    return 'unreadable recording $id';
+    return 'చదవలేని రికార్డింగ్ $id';
   }
 
   @override
-  String get downloadRenewalRequired => 'Access renewal required.';
+  String get downloadRenewalRequired => 'యాక్సెస్ రెన్యూ చేయాలి.';
 
   @override
   String downloadAccessExpires(String date) {
-    return 'Access expires $date.';
+    return 'యాక్సెస్ గడువు $date ముగుస్తుంది.';
   }
 
   @override
   String downloadPlayLabelComplete(String title, String size, String expiry) {
-    return 'Play $title. Downloaded. $size. $expiry';
+    return '$title ప్లే చేయండి. డౌన్‌లోడ్ అయింది. $size. $expiry';
   }
 
   @override
   String downloadPlayLabelPartial(String title, String size, String expiry) {
-    return 'Play $title. Partial download, cannot play yet. $size. $expiry';
+    return '$title ప్లే చేయండి. అసంపూర్ణ డౌన్‌లోడ్, ఇంకా ప్లే చేయలేరు. $size. $expiry';
   }
 
   @override
   String downloadRenewLabel(String title) {
-    return 'Renew access for $title. Requires internet';
+    return '$title కోసం యాక్సెస్ రెన్యూ చేయండి. ఇంటర్నెట్ కావాలి';
   }
 
   @override
   String downloadRemoveLabel(String title) {
-    return 'Remove download of $title, asks to confirm';
+    return '$title డౌన్‌లోడ్‌ను తీసివేయండి, నిర్ధారణ అడుగుతుంది';
   }
 
   @override
   String downloadUnreadableLabel(String id) {
-    return 'Unreadable download record $id. Remove only this download, asks to confirm';
+    return 'చదవలేని డౌన్‌లోడ్ రికార్డ్ $id. ఈ డౌన్‌లోడ్‌ను మాత్రమే తీసివేయండి, నిర్ధారణ అడుగుతుంది';
   }
 
   @override
   String downloadOrResumeLabel(String title) {
-    return 'Download or resume $title';
+    return '$title డౌన్‌లోడ్ చేయండి లేదా కొనసాగించండి';
   }
 
   @override
   String downloadCancelLabel(String title) {
-    return 'Cancel download of $title, key 4. Keep partial data for retry';
+    return '$title డౌన్‌లోడ్‌ను రద్దు చేయండి, కీ 4. మళ్ళీ ప్రయత్నించడానికి అసంపూర్ణ డేటాను ఉంచుతుంది';
   }
 
   @override
   String downloadUnavailableWhileBusy(String label) {
-    return '$label is unavailable while downloads are busy.';
+    return 'డౌన్‌లోడ్‌లు జరుగుతున్నప్పుడు $label అందుబాటులో ఉండదు.';
   }
 
   @override
   String get downloadStorageUnknown =>
-      'Storage reservation unavailable. Refresh downloads or remove the selected unreadable records before downloading.';
+      'స్టోరేజ్ కేటాయింపు అందుబాటులో లేదు. డౌన్‌లోడ్ చేసే ముందు డౌన్‌లోడ్‌లను రిఫ్రెష్ చేయండి లేదా ఎంచుకున్న చదవలేని రికార్డ్‌లను తీసివేయండి.';
 
   @override
   String downloadCountComma(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count downloads,',
-      one: '1 download,',
+      other: '$count డౌన్‌లోడ్‌లు,',
+      one: '1 డౌన్‌లోడ్,',
     );
     return '$_temp0';
   }
 
   @override
-  String get downloadStorageUseUnknown => 'storage use unknown.';
+  String get downloadStorageUseUnknown => 'స్టోరేజ్ వినియోగం తెలియదు.';
 
   @override
   String downloadDownloadingStarting(String title) {
-    return 'Downloading $title, starting.';
+    return '$title డౌన్‌లోడ్ అవుతోంది, మొదలవుతోంది.';
   }
 
   @override
   String downloadDownloadingPercent(String title, String percent) {
-    return 'Downloading $title, $percent.';
+    return '$title డౌన్‌లోడ్ అవుతోంది, $percent.';
   }
 
   @override
   String downloadScreenLoaded(String complete) {
-    return '$complete downloaded lessons ready to play.';
+    return '$complete డౌన్‌లోడ్ చేసిన పాఠాలు ప్లే చేయడానికి సిద్ధంగా ఉన్నాయి.';
   }
 
   @override
   String downloadScreenLoadedWithPartial(String complete, String partial) {
-    return '$complete downloaded lessons ready to play, $partial partial downloads.';
+    return '$complete డౌన్‌లోడ్ చేసిన పాఠాలు ప్లే చేయడానికి సిద్ధంగా ఉన్నాయి, $partial అసంపూర్ణ డౌన్‌లోడ్‌లు.';
   }
 
   @override
   String downloadAvailableCount(String count) {
-    return '$count recordings are available to download. Select the recordings you want.';
+    return 'డౌన్‌లోడ్ చేయడానికి $count రికార్డింగ్‌లు అందుబాటులో ఉన్నాయి. మీకు కావలసిన రికార్డింగ్‌లను ఎంచుకోండి.';
   }
 
   @override
   String downloadRecordingFallback(String id) {
-    return 'Recording $id';
+    return 'రికార్డింగ్ $id';
   }
 
   @override
-  String get downloadPackDialogTitle => 'Download listed recordings?';
+  String get downloadPackDialogTitle =>
+      'జాబితాలోని రికార్డింగ్‌లను డౌన్‌లోడ్ చేయాలా?';
 
   @override
   String downloadPackDialogMessage(String count) {
-    return 'Download $count listed recordings one at a time? This uses internet data and your account’s 50 MB allowance. On failure or cancellation, verified downloads and partial data are kept. No existing lesson is deleted.';
+    return 'జాబితాలోని $count రికార్డింగ్‌లను ఒక్కొక్కటిగా డౌన్‌లోడ్ చేయాలా? దీనికి ఇంటర్నెట్ డేటా, మీ ఖాతాకు ఉన్న 50 MB పరిమితి ఉపయోగించబడుతుంది. విఫలమైనా లేదా రద్దు చేసినా, ధృవీకరించిన డౌన్‌లోడ్‌లు, అసంపూర్ణ డేటా ఉంచబడతాయి. ఇప్పటికే ఉన్న ఏ పాఠమూ తొలగించబడదు.';
   }
 
   @override
-  String get downloadPackConfirm => 'Download listed';
+  String get downloadPackConfirm => 'జాబితాలోనివి డౌన్‌లోడ్ చేయండి';
 
   @override
-  String get downloadPackCancel => 'Choose individually';
+  String get downloadPackCancel => 'ఒక్కొక్కటిగా ఎంచుకోండి';
 
   @override
-  String get downloadRemoveConfirm => 'Remove download';
+  String get downloadRemoveConfirm => 'డౌన్‌లోడ్ తీసివేయండి';
 
   @override
-  String get downloadKeep => 'Keep download';
+  String get downloadKeep => 'డౌన్‌లోడ్ ఉంచండి';
 
   @override
-  String get downloadScreenName => 'Downloaded Lessons';
+  String get downloadScreenName => 'డౌన్‌లోడ్ చేసిన పాఠాలు';
 
   @override
-  String get downloadCancelBackTitle => 'Cancel download and go back?';
+  String get downloadCancelBackTitle =>
+      'డౌన్‌లోడ్ రద్దు చేసి వెనక్కి వెళ్ళాలా?';
 
   @override
   String get downloadCancelBackMessage =>
-      'Stop this download? Verified recordings and partial data are kept for an explicit retry.';
+      'ఈ డౌన్‌లోడ్‌ను ఆపాలా? మీరు మళ్ళీ ప్రయత్నించడానికి ధృవీకరించిన రికార్డింగ్‌లు, అసంపూర్ణ డేటా ఉంచబడతాయి.';
 
   @override
-  String get downloadCancelBackConfirm => 'Cancel and go back';
+  String get downloadCancelBackConfirm => 'రద్దు చేసి వెనక్కి వెళ్ళండి';
 
   @override
-  String get downloadKeepDownloading => 'Keep downloading';
+  String get downloadKeepDownloading => 'డౌన్‌లోడ్ కొనసాగించండి';
 
   @override
   String downloadReserved(String megabytes) {
-    return '$megabytes of 50 MB reserved for this account.';
+    return 'ఈ ఖాతా కోసం 50 MB లో $megabytes కేటాయించబడింది.';
   }
 
   @override
-  String get downloadBack => 'Back';
+  String get downloadBack => 'వెనక్కి';
 
   @override
-  String get downloadRefreshLabel => 'Refresh saved downloads, key 1';
+  String get downloadRefreshLabel =>
+      'సేవ్ చేసిన డౌన్‌లోడ్‌లను రిఫ్రెష్ చేయండి, కీ 1';
 
   @override
   String get downloadFindOnlineLabel =>
-      'Find recordings to download, key 2. Requires internet';
+      'డౌన్‌లోడ్ చేయడానికి రికార్డింగ్‌లు వెతకండి, కీ 2. ఇంటర్నెట్ కావాలి';
 
   @override
-  String get downloadReadStatusLabel => 'Read download status, key 3';
+  String get downloadReadStatusLabel => 'డౌన్‌లోడ్ స్థితిని చదవండి, కీ 3';
 
   @override
   String downloadPlayDownloadedLabel(String title) {
-    return 'Play $title. Downloaded';
+    return '$title ప్లే చేయండి. డౌన్‌లోడ్ అయింది';
   }
 
   @override
   String downloadPlayPartialLabel(String title) {
-    return 'Play $title. Partial download, cannot play yet';
+    return '$title ప్లే చేయండి. అసంపూర్ణ డౌన్‌లోడ్, ఇంకా ప్లే చేయలేరు';
   }
 
   @override
   String get downloadPackLabel =>
-      'Download all listed recordings, key 5, asks to confirm';
+      'జాబితాలోని అన్ని రికార్డింగ్‌లను డౌన్‌లోడ్ చేయండి, కీ 5, నిర్ధారణ అడుగుతుంది';
 
   @override
   String get downloadIntroduction =>
-      '50 MB per account. Up to 30 days offline before online access renewal. Files and progress stay separate.';
+      'ప్రతి ఖాతాకు 50 MB. ఆన్‌లైన్‌లో యాక్సెస్ రెన్యూ చేసే ముందు 30 రోజుల వరకు ఆఫ్‌లైన్‌లో వినవచ్చు. ఫైళ్ళు, ప్రోగ్రెస్ వేర్వేరుగా ఉంటాయి.';
 
   @override
   String get downloadNavigationSections =>
-      'saved files to play, renew or remove, and online recordings to download or resume';
+      'ప్లే చేయడానికి, రెన్యూ చేయడానికి లేదా తీసివేయడానికి సేవ్ చేసిన ఫైళ్ళు, డౌన్‌లోడ్ చేయడానికి లేదా కొనసాగించడానికి ఆన్‌లైన్ రికార్డింగ్‌లు';
 
   @override
-  String get downloadKeyRefresh => 'Refresh downloads';
+  String get downloadKeyRefresh => 'డౌన్‌లోడ్‌లను రిఫ్రెష్ చేయండి';
 
   @override
-  String get downloadKeyFindOnline => 'Find recordings online';
+  String get downloadKeyFindOnline => 'ఆన్‌లైన్‌లో రికార్డింగ్‌లు వెతకండి';
 
   @override
-  String get downloadKeyReadStatus => 'Read status';
+  String get downloadKeyReadStatus => 'స్థితిని చదవండి';
 
   @override
-  String get downloadKeyCancel => 'Cancel download';
+  String get downloadKeyCancel => 'డౌన్‌లోడ్ రద్దు చేయండి';
 
   @override
-  String get downloadKeyPack => 'Download listed recordings';
+  String get downloadKeyPack => 'జాబితాలోని రికార్డింగ్‌లను డౌన్‌లోడ్ చేయండి';
 
   @override
   String get downloadErrInvalidInfo =>
-      'Download information is invalid or belongs to a different account. Existing files are kept.';
+      'డౌన్‌లోడ్ సమాచారం చెల్లదు లేదా వేరే ఖాతాకు చెందినది. ఇప్పటికే ఉన్న ఫైళ్ళు ఉంచబడ్డాయి.';
 
   @override
   String get downloadErrSignInToOpen =>
-      'Sign in before opening downloaded lessons.';
+      'డౌన్‌లోడ్ చేసిన పాఠాలను తెరిచే ముందు సైన్ ఇన్ చేయండి.';
 
   @override
   String get downloadErrAccountChanged =>
-      'Your account changed. Open Downloads again.';
+      'మీ ఖాతా మారింది. డౌన్‌లోడ్‌లను మళ్ళీ తెరవండి.';
 
   @override
   String get downloadErrNoStorage =>
-      'Download storage is unavailable on this device.';
+      'ఈ పరికరంలో డౌన్‌లోడ్ స్టోరేజ్ అందుబాటులో లేదు.';
 
   @override
   String get downloadErrStorageUnavailable =>
-      'Download storage is unavailable. Check free space and retry. Existing files have not been intentionally removed.';
+      'డౌన్‌లోడ్ స్టోరేజ్ అందుబాటులో లేదు. ఖాళీ స్థలం చూసుకుని మళ్ళీ ప్రయత్నించండి. ఇప్పటికే ఉన్న ఫైళ్ళను కావాలని తీసివేయలేదు.';
 
   @override
   String get downloadErrRecordsUnreadable =>
-      'Download records could not be read. Existing files are kept.';
+      'డౌన్‌లోడ్ రికార్డ్‌లను చదవలేకపోయాము. ఇప్పటికే ఉన్న ఫైళ్ళు ఉంచబడ్డాయి.';
 
   @override
   String get downloadErrRecordUnreadable =>
-      'A download record could not be read. Existing files are kept.';
+      'ఒక డౌన్‌లోడ్ రికార్డ్‌ను చదవలేకపోయాము. ఇప్పటికే ఉన్న ఫైళ్ళు ఉంచబడ్డాయి.';
 
   @override
   String get downloadErrIdentityMismatch =>
-      'Download identity does not match its record.';
+      'డౌన్‌లోడ్ గుర్తింపు దాని రికార్డ్‌తో సరిపోలడం లేదు.';
 
   @override
   String get downloadErrSignInToRenew =>
-      'Sign in online before renewing download access.';
+      'డౌన్‌లోడ్ యాక్సెస్ రెన్యూ చేసే ముందు ఆన్‌లైన్‌లో సైన్ ఇన్ చేయండి.';
 
   @override
   String get downloadErrSignInChanged =>
-      'Your sign-in changed. Open Downloads again.';
+      'మీ సైన్ ఇన్ మారింది. డౌన్‌లోడ్‌లను మళ్ళీ తెరవండి.';
 
   @override
   String get downloadErrAccessNotConfirmed =>
-      'Recording access is no longer confirmed for this account. Reconnect and sign in to renew. The saved file is kept.';
+      'ఈ ఖాతాకు రికార్డింగ్ యాక్సెస్ ఇప్పుడు నిర్ధారించబడలేదు. రెన్యూ చేయడానికి మళ్ళీ కనెక్ట్ అయి సైన్ ఇన్ చేయండి. సేవ్ చేసిన ఫైల్ ఉంచబడింది.';
 
   @override
   String get downloadErrTooLarge =>
-      'This recording is larger than the 50 MB download limit.';
+      'ఈ రికార్డింగ్ 50 MB డౌన్‌లోడ్ పరిమితి కంటే పెద్దది.';
 
   @override
   String get downloadErrRenewServer =>
-      'The server could not renew this recording. Try again later.';
+      'సర్వర్ ఈ రికార్డింగ్‌ను రెన్యూ చేయలేకపోయింది. తర్వాత మళ్ళీ ప్రయత్నించండి.';
 
   @override
   String get downloadErrInvalidServerInfo =>
-      'The server returned invalid download information.';
+      'సర్వర్ చెల్లని డౌన్‌లోడ్ సమాచారం ఇచ్చింది.';
 
   @override
   String get downloadErrDifferentRecording =>
-      'The server returned a different recording.';
+      'సర్వర్ వేరే రికార్డింగ్ ఇచ్చింది.';
 
   @override
   String get downloadErrTimedOut =>
-      'The connection timed out. Reconnect and retry.';
+      'కనెక్షన్ సమయం ముగిసింది. మళ్ళీ కనెక్ట్ అయి ప్రయత్నించండి.';
 
   @override
   String get downloadErrRenewConnect =>
-      'Could not connect to renew this recording. Check your internet connection.';
+      'ఈ రికార్డింగ్‌ను రెన్యూ చేయడానికి కనెక్ట్ కాలేకపోయాము. మీ ఇంటర్నెట్ కనెక్షన్ చూసుకోండి.';
 
   @override
   String get downloadErrClockUnreadable =>
-      'The offline time record could not be read. Connect and renew access.';
+      'ఆఫ్‌లైన్ సమయ రికార్డ్‌ను చదవలేకపోయాము. కనెక్ట్ అయి యాక్సెస్ రెన్యూ చేయండి.';
 
   @override
   String get downloadErrClockBackwards =>
-      'The phone clock moved backwards. Correct its date and reconnect to renew access.';
+      'ఫోన్ గడియారం వెనక్కి వెళ్ళింది. తేదీని సరిచేసి, యాక్సెస్ రెన్యూ చేయడానికి మళ్ళీ కనెక్ట్ అవ్వండి.';
 
   @override
   String get downloadErrExpired =>
-      'Offline access expired after 30 days. Connect to the internet and renew this lesson. Your progress and downloaded file are kept.';
+      '30 రోజుల తర్వాత ఆఫ్‌లైన్ యాక్సెస్ గడువు ముగిసింది. ఇంటర్నెట్‌కు కనెక్ట్ అయి ఈ పాఠాన్ని రెన్యూ చేయండి. మీ ప్రోగ్రెస్, డౌన్‌లోడ్ చేసిన ఫైల్ ఉంచబడ్డాయి.';
 
   @override
   String get downloadErrIncompleteForPlayback =>
-      'Download this lesson completely before offline playback.';
+      'ఆఫ్‌లైన్‌లో వినే ముందు ఈ పాఠాన్ని పూర్తిగా డౌన్‌లోడ్ చేయండి.';
 
   @override
   String get downloadErrRenewalRequired =>
-      'Access renewal is required. Connect and renew before playing this download.';
+      'యాక్సెస్ రెన్యూ చేయాలి. ఈ డౌన్‌లోడ్‌ను ప్లే చేసే ముందు కనెక్ట్ అయి రెన్యూ చేయండి.';
 
   @override
   String get downloadErrDamaged =>
-      'The downloaded recording is incomplete or damaged. Remove this download and download it again. Progress and bookmarks are separate.';
+      'డౌన్‌లోడ్ చేసిన రికార్డింగ్ అసంపూర్ణంగా ఉంది లేదా పాడైంది. ఈ డౌన్‌లోడ్‌ను తీసివేసి మళ్ళీ డౌన్‌లోడ్ చేయండి. ప్రోగ్రెస్, బుక్‌మార్క్‌లు వేరుగా ఉంటాయి.';
 
   @override
-  String get downloadErrDownloadFirst => 'Download this lesson first.';
+  String get downloadErrDownloadFirst => 'ముందుగా ఈ పాఠాన్ని డౌన్‌లోడ్ చేయండి.';
 
   @override
   String get downloadErrRecordingChangedRenew =>
-      'This recording has changed. Remove its download and download the current recording. Progress and bookmarks are kept.';
+      'ఈ రికార్డింగ్ మారింది. దాని డౌన్‌లోడ్‌ను తీసివేసి, ప్రస్తుత రికార్డింగ్‌ను డౌన్‌లోడ్ చేయండి. ప్రోగ్రెస్, బుక్‌మార్క్‌లు ఉంచబడతాయి.';
 
   @override
   String get downloadErrCancelledAnyPartial =>
-      'Download cancelled. Any partial file is kept for an explicit retry.';
+      'డౌన్‌లోడ్ రద్దు చేయబడింది. మీరు మళ్ళీ ప్రయత్నించడానికి అసంపూర్ణ ఫైల్ ఏదైనా ఉంటే ఉంచబడుతుంది.';
 
   @override
   String get downloadErrRecordingChanged =>
-      'The recording changed. Remove its old download before downloading the current version. Progress is kept.';
+      'రికార్డింగ్ మారింది. ప్రస్తుత వెర్షన్‌ను డౌన్‌లోడ్ చేసే ముందు దాని పాత డౌన్‌లోడ్‌ను తీసివేయండి. ప్రోగ్రెస్ ఉంచబడుతుంది.';
 
   @override
   String get downloadErrSavedDamaged =>
-      'The saved recording is damaged. Remove its download before retrying.';
+      'సేవ్ చేసిన రికార్డింగ్ పాడైంది. మళ్ళీ ప్రయత్నించే ముందు దాని డౌన్‌లోడ్‌ను తీసివేయండి.';
 
   @override
   String get downloadErrQuota =>
-      'Your account has reached its 50 MB download limit. Choose which of your downloads to remove, then retry. Nothing was deleted.';
+      'మీ ఖాతా 50 MB డౌన్‌లోడ్ పరిమితిని చేరుకుంది. మీ డౌన్‌లోడ్‌లలో వేటిని తీసివేయాలో ఎంచుకుని, మళ్ళీ ప్రయత్నించండి. ఏదీ తొలగించబడలేదు.';
 
   @override
   String get downloadErrPartialInvalid =>
-      'The partial download is invalid. Remove it before retrying.';
+      'పాక్షిక డౌన్‌లోడ్ చెల్లదు. మళ్లీ ప్రయత్నించే ముందు దాన్ని తీసివేయండి.';
 
   @override
   String get downloadErrIntegrityPartial =>
-      'Download integrity check failed. Remove this partial download before retrying.';
+      'డౌన్‌లోడ్ సమగ్రత తనిఖీ విఫలమైంది. మళ్లీ ప్రయత్నించే ముందు ఈ పాక్షిక డౌన్‌లోడ్‌ను తీసివేయండి.';
 
   @override
-  String get downloadErrSignInToDownload => 'Sign in before downloading.';
+  String get downloadErrSignInToDownload =>
+      'డౌన్‌లోడ్ చేసే ముందు సైన్ ఇన్ చేయండి.';
 
   @override
   String get downloadErrCancelledExplicit =>
-      'Download cancelled. Partial data is kept for an explicit retry.';
+      'డౌన్‌లోడ్ రద్దు చేయబడింది. మీరు స్వయంగా మళ్లీ ప్రయత్నించడం కోసం పాక్షిక డేటా ఉంచబడింది.';
 
   @override
   String get downloadErrAccessDenied =>
-      'Download access was denied. Reconnect and renew access.';
+      'డౌన్‌లోడ్ యాక్సెస్ నిరాకరించబడింది. మళ్లీ కనెక్ట్ అయి యాక్సెస్‌ను పునరుద్ధరించండి.';
 
   @override
   String get downloadErrUnexpectedPartial =>
-      'The server returned an unexpected partial recording. Retry without deleting existing data.';
+      'సర్వర్ ఊహించని పాక్షిక రికార్డింగ్‌ను పంపింది. ఉన్న డేటాను తొలగించకుండా మళ్లీ ప్రయత్నించండి.';
 
   @override
   String get downloadErrCouldNotDownload =>
-      'The recording could not be downloaded. Check your connection and retry.';
+      'రికార్డింగ్‌ను డౌన్‌లోడ్ చేయలేకపోయాము. మీ కనెక్షన్‌ను తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.';
 
   @override
   String get downloadErrSizeChanged =>
-      'The recording size changed. Retry downloading.';
+      'రికార్డింగ్ పరిమాణం మారింది. మళ్లీ డౌన్‌లోడ్ చేయడానికి ప్రయత్నించండి.';
 
   @override
   String get downloadErrAccountChangedStopped =>
-      'Your account changed. The download was stopped.';
+      'మీ ఖాతా మారింది. డౌన్‌లోడ్ ఆపివేయబడింది.';
 
   @override
   String get downloadErrExceededSize =>
-      'The recording exceeded its declared size. Download stopped.';
+      'రికార్డింగ్ తెలిపిన పరిమాణాన్ని మించిపోయింది. డౌన్‌లోడ్ ఆపివేయబడింది.';
 
   @override
   String get downloadErrIntegrity =>
-      'Download integrity check failed. Retry an incomplete download, or remove damaged partial data before retrying.';
+      'డౌన్‌లోడ్ సమగ్రత తనిఖీ విఫలమైంది. అసంపూర్ణ డౌన్‌లోడ్‌ను మళ్లీ ప్రయత్నించండి, లేదా మళ్లీ ప్రయత్నించే ముందు పాడైన పాక్షిక డేటాను తీసివేయండి.';
 
   @override
   String get downloadErrSignInChangedStopped =>
-      'Your sign-in changed. Download stopped before installation.';
+      'మీ సైన్ ఇన్ మారింది. ఇన్‌స్టాల్ చేయడానికి ముందే డౌన్‌లోడ్ ఆపివేయబడింది.';
 
   @override
   String get downloadErrTimedOutPartial =>
-      'Download timed out. Partial data is kept; activate Download to retry.';
+      'డౌన్‌లోడ్ సమయం ముగిసింది. పాక్షిక డేటా ఉంచబడింది; మళ్లీ ప్రయత్నించడానికి డౌన్‌లోడ్‌ను ఎంచుకోండి.';
 
   @override
   String get downloadErrCancelledRetry =>
-      'Download cancelled. Partial data is kept for retry.';
+      'డౌన్‌లోడ్ రద్దు చేయబడింది. మళ్లీ ప్రయత్నించడం కోసం పాక్షిక డేటా ఉంచబడింది.';
 
   @override
   String get downloadErrInterrupted =>
-      'Download interrupted. Partial data is kept; activate Download to retry.';
+      'డౌన్‌లోడ్ మధ్యలో ఆగిపోయింది. పాక్షిక డేటా ఉంచబడింది; మళ్లీ ప్రయత్నించడానికి డౌన్‌లోడ్‌ను ఎంచుకోండి.';
 
   @override
   String get libraryErrStorageUnavailable =>
-      'Learning storage is unavailable on this device. Your existing data has not been changed.';
+      'ఈ పరికరంలో అభ్యాస నిల్వ అందుబాటులో లేదు. మీ ప్రస్తుత డేటా మార్చబడలేదు.';
 
   @override
   String get libraryErrStorageNotOpened =>
-      'Learning storage could not be opened. Check free space and retry.';
+      'అభ్యాస నిల్వను తెరవలేకపోయాము. ఖాళీ స్థలాన్ని తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.';
 
   @override
   String get libraryErrNoStorageLocation =>
-      'This device did not provide a learning storage location. Your existing data has not been changed.';
+      'ఈ పరికరం అభ్యాస నిల్వ స్థానాన్ని అందించలేదు. మీ ప్రస్తుత డేటా మార్చబడలేదు.';
 
   @override
   String get libraryErrStartLessonFirst =>
-      'Start a lesson before retrying progress saving.';
+      'ప్రోగ్రెస్ సేవ్ చేయడాన్ని మళ్లీ ప్రయత్నించే ముందు ఒక పాఠాన్ని ప్రారంభించండి.';
 
   @override
   String get libraryErrProgressNotSaved =>
-      'Learning progress was not saved. Retry when storage is available.';
+      'అభ్యాస ప్రోగ్రెస్ సేవ్ కాలేదు. నిల్వ అందుబాటులో ఉన్నప్పుడు మళ్లీ ప్రయత్నించండి.';
 
   @override
-  String get libraryErrChoosePosition => 'Choose a position within the lesson';
+  String get libraryErrChoosePosition => 'పాఠంలోని ఒక స్థానాన్ని ఎంచుకోండి';
 
   @override
-  String get libraryErrChooseSpeed => 'Choose a playback speed from 0.25 to 3';
+  String get libraryErrChooseSpeed =>
+      '0.25 నుండి 3 వరకు ఒక ప్లేబ్యాక్ వేగాన్ని ఎంచుకోండి';
 
   @override
   String get libraryErrChooseBookmarkPosition =>
-      'Choose a bookmark position within the lesson';
+      'పాఠంలో బుక్‌మార్క్ స్థానాన్ని ఎంచుకోండి';
 
   @override
   String get libraryErrBookmarkNotSaved =>
-      'Progress saving is unavailable. The bookmark was not saved.';
+      'ప్రోగ్రెస్ సేవ్ చేయడం అందుబాటులో లేదు. బుక్‌మార్క్ సేవ్ కాలేదు.';
 
   @override
   String get libraryErrBookmarkChangesUnavailable =>
-      'Bookmark changes are unavailable until progress saving is restored.';
+      'ప్రోగ్రెస్ సేవ్ చేయడం మళ్లీ పని చేసే వరకు బుక్‌మార్క్ మార్పులు అందుబాటులో ఉండవు.';
 
   @override
   String get libraryErrRepeatNotSaved =>
-      'Progress saving is unavailable. Repeat points were not saved.';
+      'ప్రోగ్రెస్ సేవ్ చేయడం అందుబాటులో లేదు. రిపీట్ పాయింట్‌లు సేవ్ కాలేదు.';
 
   @override
   String get libraryErrSetRepeatFirst =>
-      'Set a start point and a later end point within this lesson first';
+      'ముందుగా ఈ పాఠంలో ఒక ప్రారంభ పాయింట్‌ను, దాని తర్వాత ఒక ముగింపు పాయింట్‌ను సెట్ చేయండి';
 
   @override
   String get libraryErrRepeatFailed =>
-      'Repeat playback failed. Pause and try again.';
+      'రిపీట్ ప్లేబ్యాక్ విఫలమైంది. పాజ్ చేసి మళ్లీ ప్రయత్నించండి.';
 
   @override
-  String get libraryScreenBack => 'Back';
+  String get libraryScreenBack => 'వెనుకకు';
 
   @override
-  String get libraryScreenRefreshTarget => 'Refresh audio files, key 1';
+  String get libraryScreenRefreshTarget =>
+      'ఆడియో ఫైల్‌లను రిఫ్రెష్ చేయండి, కీ 1';
 
   @override
   String get libraryScreenPauseSessionTarget =>
-      'Pause audio for the whole session, key 3';
+      'మొత్తం సెషన్‌కు ఆడియోను పాజ్ చేయండి, కీ 3';
 
   @override
-  String get libraryScreenUploadTarget => 'Upload audio, key 2';
+  String get libraryScreenUploadTarget => 'ఆడియోను అప్‌లోడ్ చేయండి, కీ 2';
 
   @override
   String libraryScreenStopPreviewTarget(String title) {
-    return 'Stop preview of $title privately. Only you can hear this.';
+    return '$title ప్రైవేట్ ప్రివ్యూను ఆపండి. ఇది మీకు మాత్రమే వినిపిస్తుంది.';
   }
 
   @override
   String libraryScreenPreviewTarget(String title) {
-    return 'Preview $title privately. Only you can hear this.';
+    return '$titleను ప్రైవేట్‌గా ప్రివ్యూ చేయండి. ఇది మీకు మాత్రమే వినిపిస్తుంది.';
   }
 
   @override
   String libraryScreenBroadcastTarget(String title) {
-    return 'Play $title for everyone in the session';
+    return 'సెషన్‌లోని అందరి కోసం $title ప్లే చేయండి';
   }
 
   @override
-  String get libraryScreenPreviewFinished => 'Preview finished';
+  String get libraryScreenPreviewFinished => 'ప్రివ్యూ ముగిసింది';
 
   @override
   String get libraryScreenNoRecordings =>
-      'No recordings yet. Press 2 to upload audio.';
+      'ఇంకా రికార్డింగ్‌లు లేవు. ఆడియోను అప్‌లోడ్ చేయడానికి 2 నొక్కండి.';
 
   @override
   String libraryScreenRecordingsLoaded(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count recordings loaded.',
+      other: '$count రికార్డింగ్‌లు లోడ్ అయ్యాయి.',
     );
     return '$_temp0';
   }
 
   @override
   String get libraryScreenLoadFailed =>
-      'Could not load recordings. Check your internet connection, then press 1 to retry.';
+      'రికార్డింగ్‌లను లోడ్ చేయలేకపోయాము. మీ ఇంటర్నెట్ కనెక్షన్‌ను తనిఖీ చేసి, మళ్లీ ప్రయత్నించడానికి 1 నొక్కండి.';
 
   @override
-  String get libraryScreenTitleRequired => 'Title is required';
+  String get libraryScreenTitleRequired => 'శీర్షిక తప్పనిసరి';
 
   @override
-  String get libraryScreenUploadDialogName => 'Upload audio';
+  String get libraryScreenUploadDialogName => 'ఆడియోను అప్‌లోడ్ చేయండి';
 
   @override
-  String get libraryScreenEditTitleKey => 'Edit Title';
+  String get libraryScreenEditTitleKey => 'శీర్షికను మార్చండి';
 
   @override
-  String get libraryScreenEditDescriptionKey => 'Edit Description';
+  String get libraryScreenEditDescriptionKey => 'వివరణను మార్చండి';
 
   @override
-  String get libraryScreenUploadKey => 'Upload';
+  String get libraryScreenUploadKey => 'అప్‌లోడ్';
 
   @override
-  String get libraryScreenCancelKey => 'Cancel';
+  String get libraryScreenCancelKey => 'రద్దు చేయండి';
 
   @override
-  String get libraryScreenTitleField => 'Audio title, required';
+  String get libraryScreenTitleField => 'ఆడియో శీర్షిక, తప్పనిసరి';
 
   @override
-  String get libraryScreenDescriptionField => 'Audio description, optional';
+  String get libraryScreenDescriptionField => 'ఆడియో వివరణ, ఐచ్ఛికం';
 
   @override
-  String get libraryScreenCancelUpload => 'Cancel upload';
+  String get libraryScreenCancelUpload => 'అప్‌లోడ్‌ను రద్దు చేయండి';
 
   @override
-  String get libraryScreenPickFailed => 'Failed to pick file';
+  String get libraryScreenPickFailed => 'ఫైల్‌ను ఎంచుకోవడం విఫలమైంది';
 
   @override
   String get libraryScreenChooseWorkspace =>
-      'Choose a class and subject workspace on the Teacher Dashboard before uploading audio.';
+      'ఆడియోను అప్‌లోడ్ చేసే ముందు ఉపాధ్యాయుల డాష్‌బోర్డ్‌లో ఒక తరగతి మరియు సబ్జెక్టు వర్క్‌స్పేస్‌ను ఎంచుకోండి.';
 
   @override
   String libraryScreenUploading(String title) {
-    return 'Uploading $title. You will hear progress every 25 percent.';
+    return '$title అప్‌లోడ్ అవుతోంది. ప్రతి 25 శాతానికి మీకు ప్రోగ్రెస్ వినిపిస్తుంది.';
   }
 
   @override
   String libraryScreenUploaded(String title) {
-    return '$title uploaded.';
+    return '$title అప్‌లోడ్ అయింది.';
   }
 
   @override
   String libraryScreenUploadProgress(String title, String percent) {
-    return '$title: $percent percent uploaded.';
+    return '$title: $percent శాతం అప్‌లోడ్ అయింది.';
   }
 
   @override
   String libraryScreenPreviewStopped(String title) {
-    return 'Preview of $title stopped';
+    return '$title ప్రివ్యూ ఆపివేయబడింది';
   }
 
   @override
   String libraryScreenPreviewing(String title) {
-    return 'Previewing $title privately';
+    return '$titleను ప్రైవేట్‌గా ప్రివ్యూ చేస్తున్నాము';
   }
 
   @override
   String libraryScreenPlayFailed(String title) {
-    return 'Could not play $title. Check your connection and try again.';
+    return '$titleను ప్లే చేయలేకపోయాము. మీ కనెక్షన్‌ను తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.';
   }
 
   @override
-  String get libraryScreenNoActiveSession => 'No active session';
+  String get libraryScreenNoActiveSession => 'యాక్టివ్ సెషన్ లేదు';
 
   @override
   String libraryScreenSelectedForSession(String title) {
-    return 'Selected $title for session';
+    return 'సెషన్ కోసం $title ఎంచుకోబడింది';
   }
 
   @override
-  String get libraryScreenAudioSelectedTitle => 'Audio Selected';
+  String get libraryScreenAudioSelectedTitle => 'ఆడియో ఎంచుకోబడింది';
 
   @override
   String libraryScreenPlayForEveryoneNow(String title) {
-    return 'Play \"$title\" for everyone in the session now?';
+    return '\"$title\"ను ఇప్పుడు సెషన్‌లోని అందరి కోసం ప్లే చేయాలా?';
   }
 
   @override
-  String get libraryScreenNotYet => 'Not Yet';
+  String get libraryScreenNotYet => 'ఇప్పుడు కాదు';
 
   @override
-  String get libraryScreenPlayNow => 'Play Now';
+  String get libraryScreenPlayNow => 'ఇప్పుడే ప్లే చేయండి';
 
   @override
-  String get libraryScreenSelectFailed => 'Failed to select audio';
+  String get libraryScreenSelectFailed => 'ఆడియోను ఎంచుకోవడం విఫలమైంది';
 
   @override
-  String get libraryScreenPlaybackAccepted => 'Class playback request accepted';
+  String get libraryScreenPlaybackAccepted =>
+      'తరగతి ప్లేబ్యాక్ అభ్యర్థన అంగీకరించబడింది';
 
   @override
-  String get libraryScreenPlaybackFailed => 'Failed to start playback';
+  String get libraryScreenPlaybackFailed =>
+      'ప్లేబ్యాక్‌ను ప్రారంభించడం విఫలమైంది';
 
   @override
-  String get libraryScreenPauseAccepted => 'Class pause request accepted';
+  String get libraryScreenPauseAccepted =>
+      'తరగతి పాజ్ అభ్యర్థన అంగీకరించబడింది';
 
   @override
-  String get libraryScreenPauseFailed => 'Failed to pause audio';
+  String get libraryScreenPauseFailed => 'ఆడియోను పాజ్ చేయడం విఫలమైంది';
 
   @override
-  String get libraryScreenAudioLibraryName => 'Audio library';
+  String get libraryScreenAudioLibraryName => 'ఆడియో లైబ్రరీ';
 
   @override
   String get libraryScreenAudioLibrarySections =>
-      'recordings, playback and speech controls, recording sharing, and upload tools when available';
+      'రికార్డింగ్‌లు, ప్లేబ్యాక్ మరియు స్వర నియంత్రణలు, రికార్డింగ్ షేరింగ్, మరియు అందుబాటులో ఉన్నప్పుడు అప్‌లోడ్ సాధనాలు';
 
   @override
-  String get libraryScreenRefreshKey => 'Refresh Audio Files';
+  String get libraryScreenRefreshKey => 'ఆడియో ఫైల్‌లను రిఫ్రెష్ చేయండి';
 
   @override
-  String get libraryScreenUploadAudioKey => 'Upload Audio';
+  String get libraryScreenUploadAudioKey => 'ఆడియోను అప్‌లోడ్ చేయండి';
 
   @override
-  String get libraryScreenPauseSessionKey => 'Pause Session Audio';
+  String get libraryScreenPauseSessionKey => 'సెషన్ ఆడియోను పాజ్ చేయండి';
 
   @override
   String get libraryScreenBrowseTarget =>
-      'Focus first active class. Use D-pad to browse active sessions';
+      'మొదటి యాక్టివ్ తరగతికి వెళ్లండి. యాక్టివ్ సెషన్‌లను చూడటానికి D-pad ఉపయోగించండి';
 
   @override
-  String get libraryScreenRefreshClassesTarget => 'Refresh classes';
+  String get libraryScreenRefreshClassesTarget => 'తరగతులను రిఫ్రెష్ చేయండి';
 
   @override
-  String get libraryScreenSearchClassField => 'Search class by name';
+  String get libraryScreenSearchClassField => 'పేరుతో తరగతిని వెతకండి';
 
   @override
-  String get libraryScreenSearchTarget => 'Search';
+  String get libraryScreenSearchTarget => 'వెతకండి';
 
   @override
-  String get libraryScreenAllRecordedTarget => 'All recorded audio files';
+  String get libraryScreenAllRecordedTarget =>
+      'అన్ని రికార్డ్ చేసిన ఆడియో ఫైల్‌లు';
 
   @override
   String get libraryScreenContinueTarget =>
-      'Continue learning. Find your last unfinished recorded lesson';
+      'అభ్యాసాన్ని కొనసాగించండి. మీరు చివరిగా పూర్తి చేయని రికార్డ్ చేసిన పాఠాన్ని కనుగొనండి';
 
   @override
   String get libraryScreenDownloadsTarget =>
-      'Downloaded lessons. Open saved recordings without loading online lists';
+      'డౌన్‌లోడ్ చేసిన పాఠాలు. ఆన్‌లైన్ జాబితాలను లోడ్ చేయకుండా సేవ్ చేసిన రికార్డింగ్‌లను తెరవండి';
 
   @override
   String get libraryScreenNotesTarget =>
-      'Private notes and teacher recording drafts. Works from local storage';
+      'ప్రైవేట్ నోట్‌లు మరియు ఉపాధ్యాయుల రికార్డింగ్ డ్రాఫ్ట్‌లు. పరికరంలోని నిల్వ నుండి పనిచేస్తుంది';
 
   @override
-  String get libraryScreenMyPlaylistsTarget => 'My private playlists';
+  String get libraryScreenMyPlaylistsTarget => 'నా ప్రైవేట్ ప్లేలిస్ట్‌లు';
 
   @override
   String libraryScreenClassTarget(String title, String position, String total) {
-    return '$title. Class $position of $total';
+    return '$title. $totalలో తరగతి $position';
   }
 
   @override
   String get libraryScreenAccountChanged =>
-      'Your account changed. Open the library again.';
+      'మీ ఖాతా మారింది. లైబ్రరీని మళ్లీ తెరవండి.';
 
   @override
   String get libraryScreenNoUnfinishedLesson =>
-      'No unfinished lesson is saved for this account. Choose a recorded lesson to start learning.';
+      'ఈ ఖాతాకు పూర్తి కాని పాఠం ఏదీ సేవ్ కాలేదు. నేర్చుకోవడం ప్రారంభించడానికి ఒక రికార్డ్ చేసిన పాఠాన్ని ఎంచుకోండి.';
 
   @override
   String get libraryScreenAccessCheckFailed =>
-      'Could not check lesson access. Connect to the internet and retry. Your saved progress is kept.';
+      'పాఠం యాక్సెస్‌ను తనిఖీ చేయలేకపోయాము. ఇంటర్నెట్‌కు కనెక్ట్ అయి మళ్లీ ప్రయత్నించండి. మీ సేవ్ చేసిన ప్రోగ్రెస్ ఉంచబడింది.';
 
   @override
   String get libraryScreenUnfinishedUnavailable =>
-      'Your unfinished lessons are not currently available in this library. Your saved progress and bookmarks are kept.';
+      'మీ పూర్తి కాని పాఠాలు ప్రస్తుతం ఈ లైబ్రరీలో అందుబాటులో లేవు. మీ సేవ్ చేసిన ప్రోగ్రెస్ మరియు బుక్‌మార్క్‌లు ఉంచబడ్డాయి.';
 
   @override
   String get libraryScreenOpeningNextUnfinished =>
-      'The most recent lesson is unavailable here. Opening your next most recent available unfinished lesson. Saved progress is kept.';
+      'అత్యంత ఇటీవలి పాఠం ఇక్కడ అందుబాటులో లేదు. అందుబాటులో ఉన్న తదుపరి ఇటీవలి పూర్తి కాని పాఠాన్ని తెరుస్తున్నాము. సేవ్ చేసిన ప్రోగ్రెస్ ఉంచబడింది.';
 
   @override
   String get libraryScreenProgressOpenFailed =>
-      'Could not open saved learning progress. Check storage, your connection, and sign-in, then retry.';
+      'సేవ్ చేసిన అభ్యాస ప్రోగ్రెస్‌ను తెరవలేకపోయాము. నిల్వ, మీ కనెక్షన్ మరియు సైన్ ఇన్‌ను తనిఖీ చేసి, మళ్లీ ప్రయత్నించండి.';
 
   @override
-  String get libraryScreenContinueLearningTitle => 'Continue Learning';
+  String get libraryScreenContinueLearningTitle => 'అభ్యాసాన్ని కొనసాగించండి';
 
   @override
   String get libraryScreenNoActiveClasses =>
-      'No active classes right now. Press 3 for all audio files.';
+      'ప్రస్తుతం యాక్టివ్ తరగతులు లేవు. అన్ని ఆడియో ఫైల్‌ల కోసం 3 నొక్కండి.';
 
   @override
   String libraryScreenActiveClassesLoaded(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count active classes loaded.',
+      other: '$count యాక్టివ్ తరగతులు లోడ్ అయ్యాయి.',
     );
     return '$_temp0';
   }
 
   @override
   String libraryScreenClassesRefreshFailed(String reason) {
-    return '$reason Active classes could not be refreshed. Press 1 to retry. Saved downloads remain available.';
+    return '$reason యాక్టివ్ తరగతులను రిఫ్రెష్ చేయలేకపోయాము. మళ్లీ ప్రయత్నించడానికి 1 నొక్కండి. సేవ్ చేసిన డౌన్‌లోడ్‌లు అందుబాటులోనే ఉన్నాయి.';
   }
 
   @override
-  String get libraryScreenClassListUnreadable =>
-      'The class list could not be read.';
+  String get libraryScreenClassListUnreadable => 'తరగతి జాబితాను చదవలేకపోయాము.';
 
   @override
-  String get libraryScreenSessionFallback => 'Session';
+  String get libraryScreenSessionFallback => 'సెషన్';
 
   @override
-  String get libraryScreenMyAudioLibraryTitle => 'My Audio Library';
+  String get libraryScreenMyAudioLibraryTitle => 'నా ఆడియో లైబ్రరీ';
 
   @override
-  String get libraryScreenAllAudioFilesTitle => 'All Audio Files';
+  String get libraryScreenAllAudioFilesTitle => 'అన్ని ఆడియో ఫైల్‌లు';
 
   @override
   String get libraryScreenNoActiveClassesStaying =>
-      'There are no active classes. Staying in the audio library.';
+      'యాక్టివ్ తరగతులు లేవు. ఆడియో లైబ్రరీలోనే ఉంటున్నాము.';
 
   @override
   String libraryScreenFirstActiveClass(String title) {
-    return '$title. First active class. Use D-pad up and down to browse active class sessions. Press OK to open the selected class recordings.';
+    return '$title. మొదటి యాక్టివ్ తరగతి. యాక్టివ్ తరగతి సెషన్‌లను చూడటానికి D-pad పైకి, కిందికి ఉపయోగించండి. ఎంచుకున్న తరగతి రికార్డింగ్‌లను తెరవడానికి ఓకే నొక్కండి.';
   }
 
   @override
   String get libraryScreenRecordedLibraryName =>
-      'Recorded Audio Library. Online lists require internet. Downloaded lessons open separately for offline playback.';
+      'రికార్డ్ చేసిన ఆడియో లైబ్రరీ. ఆన్‌లైన్ జాబితాలకు ఇంటర్నెట్ అవసరం. డౌన్‌లోడ్ చేసిన పాఠాలు ఆఫ్‌లైన్ ప్లేబ్యాక్ కోసం విడిగా తెరుచుకుంటాయి.';
 
   @override
   String get libraryScreenRecordedLibrarySections =>
-      'continue learning, saved downloads and private notes, class search, and active class sessions';
+      'అభ్యాసాన్ని కొనసాగించడం, సేవ్ చేసిన డౌన్‌లోడ్‌లు మరియు ప్రైవేట్ నోట్‌లు, తరగతి శోధన, మరియు యాక్టివ్ తరగతి సెషన్‌లు';
 
   @override
-  String get libraryScreenMyPlaylistsKey => 'My Private Playlists';
+  String get libraryScreenMyPlaylistsKey => 'నా ప్రైవేట్ ప్లేలిస్ట్‌లు';
 
   @override
   String get libraryScreenWaitForPlayerNotes =>
-      'Wait for the recording player before opening study notes.';
+      'స్టడీ నోట్‌లను తెరిచే ముందు రికార్డింగ్ ప్లేయర్ కోసం వేచి ఉండండి.';
 
   @override
-  String get libraryScreenStatusPlaying => 'Playing';
+  String get libraryScreenStatusPlaying => 'ప్లే అవుతోంది';
 
   @override
-  String get libraryScreenStatusPaused => 'Paused';
+  String get libraryScreenStatusPaused => 'పాజ్ చేయబడింది';
 
   @override
-  String get libraryScreenUntitled => 'Untitled';
+  String get libraryScreenUntitled => 'శీర్షిక లేదు';
 
   @override
-  String get libraryScreenSubjectFallback => 'Subject';
+  String get libraryScreenSubjectFallback => 'సబ్జెక్టు';
 
   @override
   String get libraryScreenDownloadedLessonsName =>
-      'Downloaded lessons. Existing offline access is checked before playing.';
+      'డౌన్‌లోడ్ చేసిన పాఠాలు. ప్లే చేసే ముందు ఉన్న ఆఫ్‌లైన్ యాక్సెస్ తనిఖీ చేయబడుతుంది.';
 
   @override
   String get libraryScreenClassAudioName =>
-      'Audio Library. Online recordings require internet. Download lessons for offline playback.';
+      'ఆడియో లైబ్రరీ. ఆన్‌లైన్ రికార్డింగ్‌లకు ఇంటర్నెట్ అవసరం. ఆఫ్‌లైన్ ప్లేబ్యాక్ కోసం పాఠాలను డౌన్‌లోడ్ చేయండి.';
 
   @override
   String libraryScreenLessonPositionTarget(String position) {
-    return 'Lesson position $position. Use left or right to move 10 seconds.';
+    return 'పాఠం స్థానం $position. 10 సెకన్లు జరపడానికి ఎడమ లేదా కుడి ఉపయోగించండి.';
   }
 
   @override
   String libraryScreenBack10Target(String key) {
-    return 'Back 10 seconds, key $key';
+    return '10 సెకన్లు వెనుకకు, కీ $key';
   }
 
   @override
   String libraryScreenPauseTarget(String title, String key) {
-    return 'Pause $title, key $key';
+    return '$title పాజ్ చేయండి, కీ $key';
   }
 
   @override
   String libraryScreenResumeTarget(String title, String key) {
-    return 'Resume $title, key $key';
+    return '$title మళ్లీ ప్రారంభించండి, కీ $key';
   }
 
   @override
-  String get libraryScreenLessonFallback => 'lesson';
+  String get libraryScreenLessonFallback => 'పాఠం';
 
   @override
   String libraryScreenForward10Target(String key) {
-    return 'Forward 10 seconds, key $key';
+    return '10 సెకన్లు ముందుకు, కీ $key';
   }
 
   @override
   String libraryScreenSlowerTarget(String key, String speed) {
-    return 'Slower, key $key. Now $speed times';
+    return 'నెమ్మదిగా, కీ $key. ఇప్పుడు $speed రెట్లు';
   }
 
   @override
   String libraryScreenStopTarget(String title) {
-    return 'Stop $title, key 8';
+    return '$title ఆపండి, కీ 8';
   }
 
   @override
   String libraryScreenFasterTarget(String key, String speed) {
-    return 'Faster, key $key. Now $speed times';
+    return 'వేగంగా, కీ $key. ఇప్పుడు $speed రెట్లు';
   }
 
   @override
   String get libraryScreenDownloadsManageTarget =>
-      'Download lessons or manage saved recordings';
+      'పాఠాలను డౌన్‌లోడ్ చేయండి లేదా సేవ్ చేసిన రికార్డింగ్‌లను నిర్వహించండి';
 
   @override
-  String get libraryScreenStopSpeechTarget => 'Stop speech';
+  String get libraryScreenStopSpeechTarget => 'మాటలను ఆపండి';
 
   @override
-  String get libraryScreenUploadFirstTarget => 'Upload first audio';
+  String get libraryScreenUploadFirstTarget => 'మొదటి ఆడియోను అప్‌లోడ్ చేయండి';
 
   @override
-  String get libraryScreenRefreshEmptyTarget => 'Refresh empty audio library';
+  String get libraryScreenRefreshEmptyTarget =>
+      'ఖాళీ ఆడియో లైబ్రరీని రిఫ్రెష్ చేయండి';
 
   @override
-  String get libraryScreenAddAudioTarget => 'Add audio, key 3';
+  String get libraryScreenAddAudioTarget => 'ఆడియోను జోడించండి, కీ 3';
 
   @override
-  String get libraryScreenLessonTitleFallback => 'Lesson';
+  String get libraryScreenLessonTitleFallback => 'పాఠం';
 
   @override
   String get libraryScreenDownloadedDescription =>
-      'Downloaded recording. Access renewal required after 30 days.';
+      'డౌన్‌లోడ్ చేసిన రికార్డింగ్. 30 రోజుల తర్వాత యాక్సెస్‌ను పునరుద్ధరించాలి.';
 
   @override
   String libraryScreenSavedSubject(String id) {
-    return 'Saved subject $id';
+    return 'సేవ్ చేసిన సబ్జెక్టు $id';
   }
 
   @override
   String get libraryScreenDownloadsReadFailed =>
-      'Could not read downloaded lessons. Press 1 to retry.';
+      'డౌన్‌లోడ్ చేసిన పాఠాలను చదవలేకపోయాము. మళ్లీ ప్రయత్నించడానికి 1 నొక్కండి.';
 
   @override
   String get libraryScreenLoadFailedSignIn =>
-      'Could not load recordings. Check your internet connection and sign-in, then press 1 to retry.';
+      'రికార్డింగ్‌లను లోడ్ చేయలేకపోయాము. మీ ఇంటర్నెట్ కనెక్షన్ మరియు సైన్ ఇన్‌ను తనిఖీ చేసి, మళ్లీ ప్రయత్నించడానికి 1 నొక్కండి.';
 
   @override
   String libraryScreenNoRecordingsFor(String name) {
-    return 'No recordings yet for $name.';
+    return '$name కోసం ఇంకా రికార్డింగ్‌లు లేవు.';
   }
 
   @override
@@ -6624,101 +6676,104 @@ class AppLocalizationsTe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count recordings loaded for $name.',
+      other: '$name కోసం $count రికార్డింగ్‌లు లోడ్ అయ్యాయి.',
     );
     return '$_temp0';
   }
 
   @override
   String get libraryScreenLessonNoLongerAvailable =>
-      'This lesson is no longer available. Your saved progress and bookmarks are kept.';
+      'ఈ పాఠం ఇకపై అందుబాటులో లేదు. మీ సేవ్ చేసిన ప్రోగ్రెస్ మరియు బుక్‌మార్క్‌లు ఉంచబడ్డాయి.';
 
   @override
   String libraryScreenFailurePressRetry(String reason) {
-    return '$reason Press 1 to retry.';
+    return '$reason మళ్లీ ప్రయత్నించడానికి 1 నొక్కండి.';
   }
 
   @override
   String libraryScreenSubjectNumber(String id) {
-    return 'Subject $id';
+    return 'సబ్జెక్టు $id';
   }
 
   @override
   String get libraryScreenShowingAllSubjects =>
-      'Showing audio from all subjects';
+      'అన్ని సబ్జెక్టుల ఆడియోను చూపిస్తున్నాము';
 
   @override
   String libraryScreenShowingSubject(String subject, String count) {
-    return 'Showing $subject audio. $count files';
+    return '$subject ఆడియోను చూపిస్తున్నాము. $count ఫైల్‌లు';
   }
 
   @override
   String libraryScreenPausedAt(String position) {
-    return 'Paused at $position.';
+    return '$position వద్ద పాజ్ చేయబడింది.';
   }
 
   @override
   String get libraryScreenCheckingOfflineAccess =>
-      'Internet unavailable. Checking your saved offline access.';
+      'ఇంటర్నెట్ అందుబాటులో లేదు. మీ సేవ్ చేసిన ఆఫ్‌లైన్ యాక్సెస్‌ను తనిఖీ చేస్తున్నాము.';
 
   @override
   String libraryScreenPlayFailedSelectAgain(String title) {
-    return 'Could not play $title. Check your connection, then select it again.';
+    return '$titleను ప్లే చేయలేకపోయాము. మీ కనెక్షన్‌ను తనిఖీ చేసి, దాన్ని మళ్లీ ఎంచుకోండి.';
   }
 
   @override
-  String get libraryScreenNothingPlaying => 'Nothing is playing.';
+  String get libraryScreenNothingPlaying => 'ఏదీ ప్లే కావడం లేదు.';
 
   @override
   String libraryScreenTitleStopped(String title) {
-    return '$title stopped.';
+    return '$title ఆపివేయబడింది.';
   }
 
   @override
   String libraryScreenNoLessonPlayingPress(String key) {
-    return 'No lesson is playing. Press $key to play the first lesson.';
+    return 'ఏ పాఠమూ ప్లే కావడం లేదు. మొదటి పాఠాన్ని ప్లే చేయడానికి $key నొక్కండి.';
   }
 
   @override
   String get libraryScreenSeekFailed =>
-      'Could not move to that lesson position. Try again.';
+      'పాఠంలోని ఆ స్థానానికి వెళ్లలేకపోయాము. మళ్లీ ప్రయత్నించండి.';
 
   @override
-  String get libraryScreenSlowestSpeed => 'Already at the slowest speed.';
+  String get libraryScreenSlowestSpeed =>
+      'ఇప్పటికే అత్యంత నెమ్మదైన వేగంలో ఉంది.';
 
   @override
-  String get libraryScreenFastestSpeed => 'Already at the fastest speed.';
+  String get libraryScreenFastestSpeed =>
+      'ఇప్పటికే అత్యంత వేగవంతమైన వేగంలో ఉంది.';
 
   @override
   String get libraryScreenSpeedFailed =>
-      'Could not change playback speed. Try again.';
+      'ప్లేబ్యాక్ వేగాన్ని మార్చలేకపోయాము. మళ్లీ ప్రయత్నించండి.';
 
   @override
-  String get libraryScreenReadFileFailed => 'Failed to read file data.';
+  String get libraryScreenReadFileFailed => 'ఫైల్ డేటాను చదవడం విఫలమైంది.';
 
   @override
-  String get libraryScreenTitleFieldPlain => 'Audio title';
+  String get libraryScreenTitleFieldPlain => 'ఆడియో శీర్షిక';
 
   @override
   String get libraryScreenChooseSessionsName =>
-      'Choose sessions for this audio';
+      'ఈ ఆడియో కోసం సెషన్‌లను ఎంచుకోండి';
 
   @override
-  String get libraryScreenConfirmSessionsKey => 'Confirm Selected Sessions';
+  String get libraryScreenConfirmSessionsKey =>
+      'ఎంచుకున్న సెషన్‌లను నిర్ధారించండి';
 
   @override
   String libraryScreenSessionNumber(String id) {
-    return 'Session $id';
+    return 'సెషన్ $id';
   }
 
   @override
   String libraryScreenSessionSelected(String name) {
-    return '$name, selected';
+    return '$name, ఎంచుకోబడింది';
   }
 
   @override
   String libraryScreenSessionNotSelected(String name) {
-    return '$name, not selected';
+    return '$name, ఎంచుకోబడలేదు';
   }
 
   @override
@@ -6726,71 +6781,73 @@ class AppLocalizationsTe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Confirm $count selected sessions',
+      other: 'ఎంచుకున్న $count సెషన్‌లను నిర్ధారించండి',
     );
     return '$_temp0';
   }
 
   @override
   String get libraryScreenUploadCancelledNoSession =>
-      'Upload cancelled. Select at least one session, then press 3 to add audio again.';
+      'అప్‌లోడ్ రద్దు చేయబడింది. కనీసం ఒక సెషన్‌ను ఎంచుకుని, ఆడియోను మళ్లీ జోడించడానికి 3 నొక్కండి.';
 
   @override
   String libraryScreenUploadingWait(String title) {
-    return 'Uploading $title. Please wait; you will hear when it finishes.';
+    return '$title అప్‌లోడ్ అవుతోంది. దయచేసి వేచి ఉండండి; ఇది పూర్తయినప్పుడు మీకు వినిపిస్తుంది.';
   }
 
   @override
   String get libraryScreenClassSubjectUnknown =>
-      'The session class and subject could not be determined';
+      'సెషన్ తరగతి మరియు సబ్జెక్టును గుర్తించలేకపోయాము';
 
   @override
   String libraryScreenUploadFailedRetry(String title) {
-    return '$title could not be uploaded. Check your connection, then press 3 to try again.';
+    return '$titleను అప్‌లోడ్ చేయలేకపోయాము. మీ కనెక్షన్‌ను తనిఖీ చేసి, మళ్లీ ప్రయత్నించడానికి 3 నొక్కండి.';
   }
 
   @override
-  String get libraryScreenAudioFallback => 'Audio';
+  String get libraryScreenAudioFallback => 'ఆడియో';
 
   @override
-  String get libraryScreenClassLibraryName => 'Class Audio Library';
+  String get libraryScreenClassLibraryName => 'తరగతి ఆడియో లైబ్రరీ';
 
   @override
   String get libraryScreenClassLibrarySections =>
-      'playback controls, bookmarks and learning progress, subject filter, downloads, recordings, and teacher upload tools when available';
+      'ప్లేబ్యాక్ నియంత్రణలు, బుక్‌మార్క్‌లు మరియు అభ్యాస ప్రోగ్రెస్, సబ్జెక్టు ఫిల్టర్, డౌన్‌లోడ్‌లు, రికార్డింగ్‌లు, మరియు అందుబాటులో ఉన్నప్పుడు ఉపాధ్యాయుల అప్‌లోడ్ సాధనాలు';
 
   @override
-  String get libraryScreenSubjectFilterField => 'Subject filter (key 2)';
+  String get libraryScreenSubjectFilterField => 'సబ్జెక్టు ఫిల్టర్ (కీ 2)';
 
   @override
-  String get libraryScreenAllSubjects => 'All subjects';
+  String get libraryScreenAllSubjects => 'అన్ని సబ్జెక్టులు';
 
   @override
-  String get libraryScreenAddAudioOptionsName => 'Add Audio Options';
+  String get libraryScreenAddAudioOptionsName => 'ఆడియోను జోడించే ఎంపికలు';
 
   @override
-  String get libraryScreenCloseAddAudioTarget => 'Close add audio options';
+  String get libraryScreenCloseAddAudioTarget =>
+      'ఆడియోను జోడించే ఎంపికలను మూసివేయండి';
 
   @override
-  String get libraryScreenUploadNewTarget => 'Upload new file, key 1';
+  String get libraryScreenUploadNewTarget =>
+      'కొత్త ఫైల్‌ను అప్‌లోడ్ చేయండి, కీ 1';
 
   @override
   String get libraryScreenSelectExistingTarget =>
-      'Select from existing library, key 2';
+      'ఇప్పటికే ఉన్న లైబ్రరీ నుండి ఎంచుకోండి, కీ 2';
 
   @override
   String libraryScreenRecordingsAvailable(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count recordings available.',
+      other: '$count రికార్డింగ్‌లు అందుబాటులో ఉన్నాయి.',
     );
     return '$_temp0';
   }
 
   @override
   String libraryScreenNoRecordingsMatch(String query) {
-    return 'No recordings match $query.';
+    return '$queryకు సరిపోయే రికార్డింగ్‌లు లేవు.';
   }
 
   @override
@@ -6798,14 +6855,14 @@ class AppLocalizationsTe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count recordings match $query.',
+      other: '$queryకు $count రికార్డింగ్‌లు సరిపోతున్నాయి.',
     );
     return '$_temp0';
   }
 
   @override
   String get libraryScreenNoUnlinkedRecordings =>
-      'No unlinked recordings available for this class.';
+      'ఈ తరగతికి లింక్ చేయని రికార్డింగ్‌లు ఏవీ అందుబాటులో లేవు.';
 
   @override
   String libraryScreenRecordingsAvailableChoose(int count) {
@@ -6813,64 +6870,66 @@ class AppLocalizationsTe extends AppLocalizations {
       count,
       locale: localeName,
       other:
-          '$count recordings available. Use up and down to choose, or search by title.',
+          '$count రికార్డింగ్‌లు అందుబాటులో ఉన్నాయి. ఎంచుకోవడానికి పైకి, కిందికి ఉపయోగించండి, లేదా శీర్షికతో వెతకండి.',
     );
     return '$_temp0';
   }
 
   @override
   String libraryScreenAddFailed(String title) {
-    return 'Could not add $title. Check your connection and try again.';
+    return '$titleను జోడించలేకపోయాము. మీ కనెక్షన్‌ను తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.';
   }
 
   @override
-  String get libraryScreenSelectExistingName => 'Select Existing Audio';
+  String get libraryScreenSelectExistingName =>
+      'ఇప్పటికే ఉన్న ఆడియోను ఎంచుకోండి';
 
   @override
   String get libraryScreenSelectExistingSections =>
-      'search and every available recording';
+      'శోధన మరియు అందుబాటులో ఉన్న ప్రతి రికార్డింగ్';
 
   @override
   String get libraryScreenRefreshAvailableTarget =>
-      'Refresh available audio, key 1';
+      'అందుబాటులో ఉన్న ఆడియోను రిఫ్రెష్ చేయండి, కీ 1';
 
   @override
   String get libraryScreenSearchRecordingsField =>
-      'Search recordings by title. Press OK to type';
+      'శీర్షికతో రికార్డింగ్‌లను వెతకండి. టైప్ చేయడానికి ఓకే నొక్కండి';
 
   @override
   String libraryScreenSearchRecordingsWithQuery(String query, int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Search recordings, $query. $count matches',
+      other: 'రికార్డింగ్‌లను వెతకండి, $query. $count సరిపోలికలు',
     );
     return '$_temp0';
   }
 
   @override
   String libraryScreenAddToSessionTarget(String title) {
-    return 'Add $title to this session';
+    return '$titleను ఈ సెషన్‌కు జోడించండి';
   }
 
   @override
-  String get libraryScreenRepeatHelpTarget => 'Repeat audio library help';
+  String get libraryScreenRepeatHelpTarget =>
+      'ఆడియో లైబ్రరీ సహాయాన్ని మళ్లీ వినండి';
 
   @override
-  String get playlistBack => 'Back';
+  String get playlistBack => 'వెనుకకు';
 
   @override
-  String get playlistCancel => 'Cancel';
+  String get playlistCancel => 'రద్దు చేయండి';
 
   @override
-  String get playlistCreate => 'Create';
+  String get playlistCreate => 'సృష్టించండి';
 
   @override
-  String get playlistRefresh => 'Refresh';
+  String get playlistRefresh => 'రిఫ్రెష్ చేయండి';
 
   @override
   String playlistTeacherNone(String className, String subject) {
-    return 'No playlists yet for $className, $subject. Press 2 to create one.';
+    return '$className, $subject కోసం ఇంకా ప్లేలిస్ట్‌లు లేవు. ఒకటి సృష్టించడానికి 2 నొక్కండి.';
   }
 
   @override
@@ -6878,113 +6937,113 @@ class AppLocalizationsTe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count playlists',
+      other: '$count ప్లేలిస్ట్‌లు',
     );
-    return '$_temp0 loaded for $className, $subject';
+    return '$className, $subject కోసం $_temp0 లోడ్ అయ్యాయి';
   }
 
   @override
-  String get playlistCreateClassTitle => 'Create class playlist';
+  String get playlistCreateClassTitle => 'తరగతి ప్లేలిస్ట్‌ను సృష్టించండి';
 
   @override
-  String get playlistTitleField => 'Playlist title';
+  String get playlistTitleField => 'ప్లేలిస్ట్ శీర్షిక';
 
   @override
-  String get playlistCancelCreation => 'Cancel playlist creation';
+  String get playlistCancelCreation => 'ప్లేలిస్ట్ సృష్టించడాన్ని రద్దు చేయండి';
 
   @override
-  String get playlistCreatePlaylist => 'Create playlist';
+  String get playlistCreatePlaylist => 'ప్లేలిస్ట్‌ను సృష్టించండి';
 
   @override
-  String get playlistCreatePlaylistKey => 'Create Playlist';
+  String get playlistCreatePlaylistKey => 'ప్లేలిస్ట్‌ను సృష్టించండి';
 
   @override
-  String get playlistRefreshPlaylists => 'Refresh playlists';
+  String get playlistRefreshPlaylists => 'ప్లేలిస్ట్‌లను రిఫ్రెష్ చేయండి';
 
   @override
   String playlistTeacherItemLabel(String title, String status, String count) {
-    return '$title. $status. $count items';
+    return '$title. $status. $count అంశాలు';
   }
 
   @override
   String playlistTeacherScreen(String className, String subject) {
-    return 'Class Playlists, $className, $subject';
+    return 'తరగతి ప్లేలిస్ట్‌లు, $className, $subject';
   }
 
   @override
-  String get playlistStatusArchived => 'Archived';
+  String get playlistStatusArchived => 'ఆర్కైవ్ చేయబడింది';
 
   @override
-  String get playlistStatusPublished => 'Published';
+  String get playlistStatusPublished => 'ప్రచురించబడింది';
 
   @override
-  String get playlistStatusDraft => 'Draft';
+  String get playlistStatusDraft => 'డ్రాఫ్ట్';
 
   @override
   String get playlistStudentNone =>
-      'No playlists yet. Press 2 to create a private playlist.';
+      'ఇంకా ప్లేలిస్ట్‌లు లేవు. ప్రైవేట్ ప్లేలిస్ట్‌ను సృష్టించడానికి 2 నొక్కండి.';
 
   @override
   String playlistStudentLoaded(int privateCount, int classCount) {
     String _temp0 = intl.Intl.pluralLogic(
       privateCount,
       locale: localeName,
-      other: '$privateCount private playlists',
+      other: '$privateCount ప్రైవేట్ ప్లేలిస్ట్‌లు',
     );
     String _temp1 = intl.Intl.pluralLogic(
       classCount,
       locale: localeName,
-      other: '$classCount class playlists',
+      other: '$classCount తరగతి ప్లేలిస్ట్‌లు',
     );
-    return '$_temp0 and $_temp1 loaded';
+    return '$_temp0 మరియు $_temp1 లోడ్ అయ్యాయి';
   }
 
   @override
-  String get playlistCreatePrivate => 'Create private playlist';
+  String get playlistCreatePrivate => 'ప్రైవేట్ ప్లేలిస్ట్‌ను సృష్టించండి';
 
   @override
-  String get playlistCreatePrivateKey => 'Create Private Playlist';
+  String get playlistCreatePrivateKey => 'ప్రైవేట్ ప్లేలిస్ట్‌ను సృష్టించండి';
 
   @override
   String playlistPrivateItemLabel(String title, String count) {
-    return '$title, private, $count items';
+    return '$title, ప్రైవేట్, $count అంశాలు';
   }
 
   @override
   String playlistClassItemLabel(String title, String subject, String count) {
-    return '$title, class playlist, $subject, $count items';
+    return '$title, తరగతి ప్లేలిస్ట్, $subject, $count అంశాలు';
   }
 
   @override
   String get playlistStudentScreen =>
-      'My Playlists. Private playlists are visible only to you.';
+      'నా ప్లేలిస్ట్‌లు. ప్రైవేట్ ప్లేలిస్ట్‌లు మీకు మాత్రమే కనిపిస్తాయి.';
 
   @override
   String get playlistWaitBeforeNotes =>
-      'Wait for the playlist player before opening study notes.';
+      'స్టడీ నోట్‌లను తెరిచే ముందు ప్లేలిస్ట్ ప్లేయర్ కోసం వేచి ఉండండి.';
 
   @override
   String get playlistRefreshFailed =>
-      'Could not refresh this playlist. Check your connection and try again. Existing playback and saved progress have not been changed.';
+      'ఈ ప్లేలిస్ట్‌ను రిఫ్రెష్ చేయలేకపోయాము. మీ కనెక్షన్‌ను తనిఖీ చేసి మళ్లీ ప్రయత్నించండి. ప్రస్తుత ప్లేబ్యాక్ మరియు సేవ్ చేసిన ప్రోగ్రెస్ మార్చబడలేదు.';
 
   @override
   String get playlistLessonGone =>
-      'The current lesson is no longer available in this playlist. Playback stopped. Your saved progress and bookmarks are kept.';
+      'ప్రస్తుత పాఠం ఇకపై ఈ ప్లేలిస్ట్‌లో అందుబాటులో లేదు. ప్లేబ్యాక్ ఆపివేయబడింది. మీ సేవ్ చేసిన ప్రోగ్రెస్ మరియు బుక్‌మార్క్‌లు ఉంచబడ్డాయి.';
 
   @override
-  String get playlistStateArchived => 'archived';
+  String get playlistStateArchived => 'ఆర్కైవ్ చేయబడింది';
 
   @override
-  String get playlistStatePublished => 'published';
+  String get playlistStatePublished => 'ప్రచురించబడింది';
 
   @override
-  String get playlistStateDraft => 'draft';
+  String get playlistStateDraft => 'డ్రాఫ్ట్';
 
   @override
-  String get playlistStatePrivate => 'private';
+  String get playlistStatePrivate => 'ప్రైవేట్';
 
   @override
-  String get playlistStatePublishedClass => 'published class playlist';
+  String get playlistStatePublishedClass => 'ప్రచురించబడిన తరగతి ప్లేలిస్ట్';
 
   @override
   String playlistLoaded(
@@ -6997,552 +7056,554 @@ class AppLocalizationsTe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count items',
+      other: '$count అంశాలు',
     );
     return '$title. $className $subject. $_temp0. $state.';
   }
 
   @override
-  String get playlistAddAudioScreen => 'Add audio to playlist';
+  String get playlistAddAudioScreen => 'ప్లేలిస్ట్‌కు ఆడియోను జోడించండి';
 
   @override
   String playlistItemNoLongerAvailable(String title) {
-    return '$title is no longer available in your current class. You can remove it from this playlist.';
+    return '$title మీ ప్రస్తుత తరగతిలో ఇకపై అందుబాటులో లేదు. మీరు దీన్ని ఈ ప్లేలిస్ట్ నుండి తీసివేయవచ్చు.';
   }
 
   @override
   String playlistItemPosition(String index, String total) {
-    return 'Item $index of $total.';
+    return '$totalలో అంశం $index.';
   }
 
   @override
   String get playlistPlayFailed =>
-      'Could not play this lesson. Check your connection and try again.';
+      'ఈ పాఠాన్ని ప్లే చేయలేకపోయాము. మీ కనెక్షన్‌ను తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.';
 
   @override
   String playlistPausedAt(String position) {
-    return 'Paused at $position.';
+    return '$position వద్ద పాజ్ చేయబడింది.';
   }
 
   @override
-  String get playlistLessonDefault => 'Lesson';
+  String get playlistLessonDefault => 'పాఠం';
 
   @override
-  String get playlistSave => 'Save';
+  String get playlistSave => 'సేవ్ చేయండి';
 
   @override
-  String get playlistRenameScreen => 'Rename playlist';
+  String get playlistRenameScreen => 'ప్లేలిస్ట్ పేరు మార్చండి';
 
   @override
-  String get playlistCancelRename => 'Cancel rename';
+  String get playlistCancelRename => 'పేరు మార్చడాన్ని రద్దు చేయండి';
 
   @override
-  String get playlistSaveTitle => 'Save playlist title';
+  String get playlistSaveTitle => 'ప్లేలిస్ట్ శీర్షికను సేవ్ చేయండి';
 
   @override
-  String get playlistAlreadyFirst => 'The selected item is already first.';
+  String get playlistAlreadyFirst => 'ఎంచుకున్న అంశం ఇప్పటికే మొదటిది.';
 
   @override
-  String get playlistAlreadyLast => 'The selected item is already last.';
+  String get playlistAlreadyLast => 'ఎంచుకున్న అంశం ఇప్పటికే చివరిది.';
 
   @override
   String playlistMoveFailed(String title) {
-    return 'Could not move $title. Check your connection and try again.';
+    return '$titleను జరపలేకపోయాం. మీ కనెక్షన్‌ను తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.';
   }
 
   @override
-  String get playlistThisPlaylist => 'this playlist';
+  String get playlistThisPlaylist => 'ఈ ప్లేలిస్ట్';
 
   @override
   String playlistRemoveItemTitle(String title) {
-    return 'Remove $title?';
+    return '$titleను తీసివేయాలా?';
   }
 
   @override
   String playlistRemoveItemMessage(String title, String playlist) {
-    return 'Remove $title from $playlist? The recording itself is kept in the library.';
+    return '$playlist నుండి $titleను తీసివేయాలా? రికార్డింగ్ మాత్రం లైబ్రరీలోనే ఉంటుంది.';
   }
 
   @override
   String playlistKeepItem(String title) {
-    return 'Keep $title';
+    return '$titleను ఉంచండి';
   }
 
   @override
   String playlistRemoveItem(String title) {
-    return 'Remove $title';
+    return '$titleను తీసివేయండి';
   }
 
   @override
   String playlistRemoveFailed(String title) {
-    return 'Could not remove $title. Check your connection and try again.';
+    return '$titleను తీసివేయలేకపోయాం. మీ కనెక్షన్‌ను తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.';
   }
 
   @override
   String playlistPublishedToClass(String title) {
-    return '$title published to the class';
+    return '$title తరగతికి ప్రచురించబడింది';
   }
 
   @override
   String playlistReturnedToDraft(String title) {
-    return '$title returned to draft';
+    return '$title డ్రాఫ్ట్‌కు తిరిగి మార్చబడింది';
   }
 
   @override
   String playlistChangeFailed(String title) {
-    return 'Could not change $title. Check your connection and try again.';
+    return '$titleను మార్చలేకపోయాం. మీ కనెక్షన్‌ను తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.';
   }
 
   @override
   String playlistDeleteTitle(String title) {
-    return 'Delete $title?';
+    return '$titleను తొలగించాలా?';
   }
 
   @override
   String playlistRestoreTitle(String title) {
-    return 'Restore $title?';
+    return '$titleను పునరుద్ధరించాలా?';
   }
 
   @override
   String playlistArchiveTitle(String title) {
-    return 'Archive $title?';
+    return '$titleను ఆర్కైవ్ చేయాలా?';
   }
 
   @override
   String playlistDeleteMessage(String title) {
-    return 'This removes the private playlist $title and its ordered items. Recordings stay in the library.';
+    return 'ఇది ప్రైవేట్ ప్లేలిస్ట్ $titleను, దానిలోని వరుస అంశాలను తీసివేస్తుంది. రికార్డింగ్‌లు లైబ్రరీలోనే ఉంటాయి.';
   }
 
   @override
   String playlistRestoreMessage(String title) {
-    return 'This returns $title to draft so it can be edited and published again.';
+    return 'ఇది $titleను డ్రాఫ్ట్‌కు తిరిగి మారుస్తుంది, కాబట్టి దాన్ని మళ్లీ సవరించి ప్రచురించవచ్చు.';
   }
 
   @override
   String playlistArchiveMessage(String title) {
-    return 'Students will no longer see $title. Teacher history is retained.';
+    return 'విద్యార్థులకు ఇకపై $title కనిపించదు. ఉపాధ్యాయుల చరిత్ర అలాగే ఉంటుంది.';
   }
 
   @override
   String playlistDeleteConfirm(String title) {
-    return 'Delete $title';
+    return '$titleను తొలగించండి';
   }
 
   @override
   String playlistRestoreConfirm(String title) {
-    return 'Restore $title';
+    return '$titleను పునరుద్ధరించండి';
   }
 
   @override
   String playlistArchiveConfirm(String title) {
-    return 'Archive $title';
+    return '$titleను ఆర్కైవ్ చేయండి';
   }
 
   @override
   String playlistDeleted(String title) {
-    return '$title deleted';
+    return '$title తొలగించబడింది';
   }
 
   @override
   String playlistRestoredDraft(String title) {
-    return '$title restored as a draft';
+    return '$title డ్రాఫ్ట్‌గా పునరుద్ధరించబడింది';
   }
 
   @override
   String playlistArchived(String title) {
-    return '$title archived';
+    return '$title ఆర్కైవ్ చేయబడింది';
   }
 
   @override
-  String get playlistSelectedItem => 'selected item';
+  String get playlistSelectedItem => 'ఎంచుకున్న అంశం';
 
   @override
   String get playlistSeekFailed =>
-      'Could not move to that lesson position. Try again.';
+      'పాఠంలో ఆ స్థానానికి వెళ్లలేకపోయాం. మళ్లీ ప్రయత్నించండి.';
 
   @override
-  String get playlistRefreshPlaylist => 'Refresh playlist';
+  String get playlistRefreshPlaylist => 'ప్లేలిస్ట్‌ను రిఫ్రెష్ చేయండి';
 
   @override
-  String get playlistWordPlaylist => 'playlist';
+  String get playlistWordPlaylist => 'ప్లేలిస్ట్';
 
   @override
   String playlistRenameLabel(String title) {
-    return 'Rename $title';
+    return '$title పేరు మార్చండి';
   }
 
   @override
-  String get playlistAddAudioLabel => 'Add audio, key 2';
+  String get playlistAddAudioLabel => 'ఆడియో జోడించండి, కీ 2';
 
   @override
   String playlistPauseLabel(String title, String key) {
-    return 'Pause $title, key $key';
+    return '$titleను పాజ్ చేయండి, కీ $key';
   }
 
   @override
   String playlistPlayLabel(String title, String key) {
-    return 'Play $title, key $key';
+    return '$titleను ప్లే చేయండి, కీ $key';
   }
 
   @override
-  String get playlistPreviousLabel => 'Previous item, key 3';
+  String get playlistPreviousLabel => 'మునుపటి అంశం, కీ 3';
 
   @override
-  String get playlistNextLabel => 'Next item, key 8';
+  String get playlistNextLabel => 'తదుపరి అంశం, కీ 8';
 
   @override
   String playlistReturnToDraftLabel(String title) {
-    return 'Return $title to draft';
+    return '$titleను డ్రాఫ్ట్‌కు తిరిగి మార్చండి';
   }
 
   @override
   String playlistPublishLabel(String title) {
-    return 'Publish $title to the class';
+    return '$titleను తరగతికి ప్రచురించండి';
   }
 
   @override
   String playlistRestoreLabel(String title) {
-    return 'Restore $title';
+    return '$titleను పునరుద్ధరించండి';
   }
 
   @override
   String playlistArchiveLabel(String title) {
-    return 'Archive $title, asks to confirm';
+    return '$titleను ఆర్కైవ్ చేయండి, నిర్ధారణ అడుగుతుంది';
   }
 
   @override
   String playlistDeleteLabel(String title) {
-    return 'Delete $title, asks to confirm';
+    return '$titleను తొలగించండి, నిర్ధారణ అడుగుతుంది';
   }
 
   @override
   String playlistSeekLabel(String position) {
-    return 'Lesson position $position. Use left or right to move 10 seconds';
+    return 'పాఠం స్థానం $position. 10 సెకన్లు జరపడానికి ఎడమ లేదా కుడి ఉపయోగించండి';
   }
 
   @override
   String get playlistDownloadsLabel =>
-      'Download playlist recordings. Select individually or confirm all listed recordings';
+      'ప్లేలిస్ట్ రికార్డింగ్‌లను డౌన్‌లోడ్ చేయండి. ఒక్కొక్కటిగా ఎంచుకోండి లేదా జాబితాలోని అన్ని రికార్డింగ్‌లను నిర్ధారించండి';
 
   @override
   String playlistMoveUpLabel(String title) {
-    return 'Move $title up';
+    return '$titleను పైకి జరపండి';
   }
 
   @override
   String playlistMoveDownLabel(String title) {
-    return 'Move $title down';
+    return '$titleను కిందికి జరపండి';
   }
 
   @override
   String playlistRemoveItemLabel(String title) {
-    return 'Remove $title from playlist, asks to confirm';
+    return '$titleను ప్లేలిస్ట్ నుండి తీసివేయండి, నిర్ధారణ అడుగుతుంది';
   }
 
   @override
   String get playlistItemUnavailableInClass =>
-      'Unavailable in your current class';
+      'మీ ప్రస్తుత తరగతిలో అందుబాటులో లేదు';
 
   @override
-  String get playlistItemSelected => 'Selected';
+  String get playlistItemSelected => 'ఎంచుకోబడింది';
 
   @override
-  String get playlistItemPlaying => 'Playing';
+  String get playlistItemPlaying => 'ప్లే అవుతోంది';
 
   @override
-  String get playlistItemSelectedPaused => 'Selected, paused';
+  String get playlistItemSelectedPaused => 'ఎంచుకోబడింది, పాజ్ చేయబడింది';
 
   @override
-  String get playlistAddAudioKey => 'Add Audio';
+  String get playlistAddAudioKey => 'ఆడియో జోడించు';
 
   @override
-  String get playlistPreviousItem => 'Previous item';
+  String get playlistPreviousItem => 'మునుపటి అంశం';
 
   @override
-  String get playlistNextItem => 'Next item';
+  String get playlistNextItem => 'తదుపరి అంశం';
 
   @override
-  String get playlistScreenDefault => 'Playlist';
+  String get playlistScreenDefault => 'ప్లేలిస్ట్';
 
   @override
   String playlistScreen(String title) {
-    return '$title playlist';
+    return '$title ప్లేలిస్ట్';
   }
 
   @override
   String playlistItemUnavailable(String title) {
-    return '$title is unavailable in your current class';
+    return '$title మీ ప్రస్తుత తరగతిలో అందుబాటులో లేదు';
   }
 
   @override
-  String get notesNoRecordingActive => 'No recording active.';
+  String get notesNoRecordingActive => 'ఏ రికార్డింగ్ జరగడం లేదు.';
 
   @override
   String get notesMicCouldNotRecord =>
-      'The microphone could not record this note.';
+      'మైక్రోఫోన్ ఈ నోట్‌ను రికార్డ్ చేయలేకపోయింది.';
 
   @override
   String get notesRecordingNotConfirmed =>
-      'Recording could not be confirmed. Its partial files are kept. Check microphone permission and storage.';
+      'రికార్డింగ్ నిర్ధారించబడలేదు. దాని అసంపూర్ణ ఫైల్‌లు ఉంచబడ్డాయి. మైక్రోఫోన్ అనుమతిని, స్టోరేజ్‌ను తనిఖీ చేయండి.';
 
   @override
   String get notesLeaveLiveSession =>
-      'Leave the live session and open private notes before recording.';
+      'రికార్డ్ చేసే ముందు లైవ్ సెషన్ నుండి బయటకు వచ్చి ప్రైవేట్ నోట్‌లను తెరవండి.';
 
   @override
   String get notesMicPermissionDenied =>
-      'Microphone permission was not granted. No recording started. Enable it in Android settings and retry.';
+      'మైక్రోఫోన్ అనుమతి ఇవ్వలేదు. రికార్డింగ్ ప్రారంభం కాలేదు. Android సెట్టింగ్‌లలో దాన్ని ఆన్ చేసి మళ్లీ ప్రయత్నించండి.';
 
   @override
   String get notesRecordingCancelledChanged =>
-      'Recording was cancelled because the screen or app changed. Start again when ready.';
+      'స్క్రీన్ లేదా యాప్ మారినందున రికార్డింగ్ రద్దు చేయబడింది. సిద్ధంగా ఉన్నప్పుడు మళ్లీ ప్రారంభించండి.';
 
   @override
   String get notesSpeechDidNotStop =>
-      'App speech did not stop. Check the TTS engine before recording.';
+      'యాప్ స్వరం ఆగలేదు. రికార్డ్ చేసే ముందు TTS ఇంజిన్‌ను తనిఖీ చేయండి.';
 
   @override
   String get notesRecordingDidNotStart =>
-      'Recording did not start because the app changed. Its empty draft is kept for selected removal.';
+      'యాప్ మారినందున రికార్డింగ్ ప్రారంభం కాలేదు. దాని ఖాళీ డ్రాఫ్ట్ ఎంచుకుని తీసివేయడం కోసం ఉంచబడింది.';
 
   @override
   String get notesAnotherRecorderStopping =>
-      'Another private recorder is still stopping. Return to it or background the app before recording.';
+      'మరో ప్రైవేట్ రికార్డర్ ఇంకా ఆగుతోంది. రికార్డ్ చేసే ముందు దానికి తిరిగి వెళ్లండి లేదా యాప్‌ను బ్యాక్‌గ్రౌండ్‌కు పంపండి.';
 
   @override
   String get notesNativeStartNotConfirmed =>
-      'The native recorder did not confirm starting. The draft is kept.';
+      'ఫోన్ రికార్డర్ ప్రారంభమైనట్లు నిర్ధారించలేదు. డ్రాఫ్ట్ ఉంచబడింది.';
 
   @override
   String get notesNativeStopNotConfirmed =>
-      'Native recording stop was not confirmed. Background the app to stop capture before retrying.';
+      'ఫోన్ రికార్డింగ్ ఆగినట్లు నిర్ధారించబడలేదు. మళ్లీ ప్రయత్నించే ముందు రికార్డింగ్ ఆపడానికి యాప్‌ను బ్యాక్‌గ్రౌండ్‌కు పంపండి.';
 
   @override
   String get notesDurationUnreadable =>
-      'The recorder duration was unreadable. Its incomplete file is kept.';
+      'రికార్డర్ నిడివిని చదవలేకపోయాం. దాని అసంపూర్ణ ఫైల్ ఉంచబడింది.';
 
   @override
   String get notesRecordingInProgress =>
-      'Recording. Stop before speaking to app controls. Maximum five minutes; stops on app narration or interruption.';
+      'రికార్డ్ అవుతోంది. యాప్ నియంత్రణలకు మాట్లాడే ముందు ఆపండి. గరిష్టంగా ఐదు నిమిషాలు; యాప్ మాట్లాడినా లేదా అంతరాయం కలిగినా ఆగిపోతుంది.';
 
   @override
   String get notesNativeCaptureStopped =>
-      'Native capture is stopped. Any unfinished draft is kept for selected removal.';
+      'ఫోన్ రికార్డింగ్ ఆగిపోయింది. పూర్తికాని డ్రాఫ్ట్ ఏదైనా ఎంచుకుని తీసివేయడం కోసం ఉంచబడింది.';
 
   @override
   String get notesRecorderStopNotConfirmed =>
-      'Recorder stop was not confirmed. Leave this screen or background the app to stop native capture before retrying.';
+      'రికార్డర్ ఆగినట్లు నిర్ధారించబడలేదు. మళ్లీ ప్రయత్నించే ముందు ఫోన్ రికార్డింగ్ ఆపడానికి ఈ స్క్రీన్ నుండి బయటకు వెళ్లండి లేదా యాప్‌ను బ్యాక్‌గ్రౌండ్‌కు పంపండి.';
 
   @override
   String get notesRecorderFailed =>
-      'The recorder failed. Its incomplete file is retained for selected removal.';
+      'రికార్డర్ విఫలమైంది. దాని అసంపూర్ణ ఫైల్ ఎంచుకుని తీసివేయడం కోసం ఉంచబడింది.';
 
   @override
   String get notesNotFinalized =>
-      'Recording stopped, but the note could not be finalized. Files are kept for selected removal.';
+      'రికార్డింగ్ ఆగింది, కానీ నోట్‌ను పూర్తి చేయలేకపోయాం. ఫైల్‌లు ఎంచుకుని తీసివేయడం కోసం ఉంచబడ్డాయి.';
 
   @override
-  String get notesRecordingLimitReached => 'Recording limit reached.';
+  String get notesRecordingLimitReached => 'రికార్డింగ్ పరిమితి చేరుకుంది.';
 
   @override
-  String get notesRecordingInterrupted => 'Recording interrupted.';
+  String get notesRecordingInterrupted => 'రికార్డింగ్‌కు అంతరాయం కలిగింది.';
 
   @override
-  String get notesRecordingStopped => 'Recording stopped.';
+  String get notesRecordingStopped => 'రికార్డింగ్ ఆగింది.';
 
   @override
   String get notesSavedOnPhone =>
-      'Private note saved on this phone. Review before publishing or sharing.';
+      'ప్రైవేట్ నోట్ ఈ ఫోన్‌లో సేవ్ చేయబడింది. ప్రచురించే లేదా షేర్ చేసే ముందు సమీక్షించండి.';
 
   @override
-  String get notesSignInFirst => 'Sign in before opening private notes.';
+  String get notesSignInFirst =>
+      'ప్రైవేట్ నోట్‌లను తెరవడానికి ముందు సైన్ ఇన్ చేయండి.';
 
   @override
-  String get notesInvalidIdentity => 'Invalid note identity.';
+  String get notesInvalidIdentity => 'నోట్ గుర్తింపు చెల్లదు.';
 
   @override
   String get notesAccountChanged =>
-      'Your account changed. Open private notes again.';
+      'మీ ఖాతా మారింది. ప్రైవేట్ నోట్‌లను మళ్లీ తెరవండి.';
 
   @override
   String get notesStorageUnavailable =>
-      'Private note storage is unavailable. Check free space and retry. Existing files are kept.';
+      'ప్రైవేట్ నోట్ స్టోరేజ్ అందుబాటులో లేదు. ఖాళీ స్థలాన్ని తనిఖీ చేసి మళ్లీ ప్రయత్నించండి. ఇప్పటికే ఉన్న ఫైల్‌లు ఉంచబడ్డాయి.';
 
   @override
   String get notesInvalidNameOrPosition =>
-      'Enter a note name of up to 160 characters and a valid lesson position.';
+      '160 అక్షరాల వరకు ఉండే నోట్ పేరును, సరైన పాఠం స్థానాన్ని నమోదు చేయండి.';
 
   @override
   String get notesAllowanceFull =>
-      'Your private note allowance is full. Remove a chosen note before recording. No note was deleted.';
+      'మీ ప్రైవేట్ నోట్ పరిమితి నిండిపోయింది. రికార్డ్ చేసే ముందు మీరు ఎంచుకున్న ఒక నోట్‌ను తీసివేయండి. ఏ నోట్ తొలగించబడలేదు.';
 
   @override
   String get notesInterruptedOrInvalid =>
-      'The note was interrupted or its duration is invalid. Its files are retained for selected removal.';
+      'నోట్‌కు అంతరాయం కలిగింది లేదా దాని నిడివి చెల్లదు. దాని ఫైల్‌లు ఎంచుకుని తీసివేయడం కోసం ఉంచబడ్డాయి.';
 
   @override
   String get notesEmptyOrTooLarge =>
-      'This recording is empty or exceeds the private-note allowance. Its partial file is kept; review storage and remove the selected recording.';
+      'ఈ రికార్డింగ్ ఖాళీగా ఉంది లేదా ప్రైవేట్ నోట్ పరిమితిని మించిపోయింది. దాని అసంపూర్ణ ఫైల్ ఉంచబడింది; స్టోరేజ్‌ను సమీక్షించి ఎంచుకున్న రికార్డింగ్‌ను తీసివేయండి.';
 
   @override
   String get notesIncompleteUnavailable =>
-      'This note is incomplete or unavailable. It has not been deleted.';
+      'ఈ నోట్ అసంపూర్ణంగా ఉంది లేదా అందుబాటులో లేదు. ఇది తొలగించబడలేదు.';
 
   @override
-  String get notesInvalidName => 'Enter a note name of up to 160 characters.';
+  String get notesInvalidName =>
+      '160 అక్షరాల వరకు ఉండే నోట్ పేరును నమోదు చేయండి.';
 
   @override
   String notesUnreadableTitle(String id) {
-    return 'Unreadable note $id';
+    return 'చదవలేని నోట్ $id';
   }
 
   @override
   String get notesRecordUnreadable =>
-      'This note record cannot be read. Its files are kept; only explicit selected removal changes them.';
+      'ఈ నోట్ రికార్డ్‌ను చదవలేము. దాని ఫైల్‌లు ఉంచబడ్డాయి; మీరు స్పష్టంగా ఎంచుకుని తీసివేస్తేనే అవి మారుతాయి.';
 
   @override
   String notesInterruptedTitle(String id) {
-    return 'Interrupted recording $id';
+    return 'అంతరాయం కలిగిన రికార్డింగ్ $id';
   }
 
   @override
   String get notesMetadataMissing =>
-      'Recording metadata is missing. The file is retained for selected removal.';
+      'రికార్డింగ్ వివరాలు లేవు. ఫైల్ ఎంచుకుని తీసివేయడం కోసం ఉంచబడింది.';
 
   @override
   String get learningSavedLessonInvalid =>
-      'Saved lesson information is invalid. Your saved data has not been changed.';
+      'సేవ్ చేసిన పాఠం సమాచారం చెల్లదు. మీ సేవ్ చేసిన డేటా మార్చబడలేదు.';
 
   @override
   String get learningSavedBookmarkUnreadable =>
-      'A saved bookmark could not be read. Your saved data has not been changed.';
+      'సేవ్ చేసిన ఒక బుక్‌మార్క్‌ను చదవలేకపోయాం. మీ సేవ్ చేసిన డేటా మార్చబడలేదు.';
 
   @override
   String get learningSavedBookmarkIdsInvalid =>
-      'Saved bookmark identifiers are invalid. Your saved data has not been changed.';
+      'సేవ్ చేసిన బుక్‌మార్క్ గుర్తింపులు చెల్లవు. మీ సేవ్ చేసిన డేటా మార్చబడలేదు.';
 
   @override
   String get learningSavedRepeatInvalid =>
-      'Saved repeat bounds are invalid. Your saved data has not been changed.';
+      'సేవ్ చేసిన రిపీట్ హద్దులు చెల్లవు. మీ సేవ్ చేసిన డేటా మార్చబడలేదు.';
 
   @override
   String get learningSignInFirst =>
-      'Sign in before using saved learning progress.';
+      'సేవ్ చేసిన అభ్యాస పురోగతిని ఉపయోగించే ముందు సైన్ ఇన్ చేయండి.';
 
   @override
   String get learningAccountChanged =>
-      'Your account changed. Open the learning library again.';
+      'మీ ఖాతా మారింది. అభ్యాస లైబ్రరీని మళ్లీ తెరవండి.';
 
   @override
   String get learningUnsupportedFormat =>
-      'Saved learning data has an unsupported format or account. Your saved data has not been changed.';
+      'సేవ్ చేసిన అభ్యాస డేటా మద్దతు లేని ఫార్మాట్ లేదా ఖాతాకు చెందినది. మీ సేవ్ చేసిన డేటా మార్చబడలేదు.';
 
   @override
   String get learningIdentityMismatch =>
-      'Saved lesson identity does not match. Your saved data has not been changed.';
+      'సేవ్ చేసిన పాఠం గుర్తింపు సరిపోలడం లేదు. మీ సేవ్ చేసిన డేటా మార్చబడలేదు.';
 
   @override
   String get learningDataUnreadable =>
-      'Saved learning data could not be read. Your saved data has not been changed.';
+      'సేవ్ చేసిన అభ్యాస డేటాను చదవలేకపోయాం. మీ సేవ్ చేసిన డేటా మార్చబడలేదు.';
 
   @override
   String get learningStorageUnavailableFreeSpace =>
-      'Learning storage is unavailable. Check free space and retry. Your saved data has not been intentionally removed.';
+      'అభ్యాస స్టోరేజ్ అందుబాటులో లేదు. ఖాళీ స్థలాన్ని తనిఖీ చేసి మళ్లీ ప్రయత్నించండి. మీ సేవ్ చేసిన డేటా ఉద్దేశపూర్వకంగా తీసివేయబడలేదు.';
 
   @override
   String get learningStorageUnavailable =>
-      'Learning storage is unavailable. Check storage and retry.';
+      'అభ్యాస స్టోరేజ్ అందుబాటులో లేదు. స్టోరేజ్‌ను తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.';
 
   @override
   String get learningSaveFailed =>
-      'Learning progress could not be saved. Check free space and retry.';
+      'అభ్యాస పురోగతిని సేవ్ చేయలేకపోయాం. ఖాళీ స్థలాన్ని తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.';
 
   @override
   String get learningProgressUnavailable =>
-      'Saved learning progress is unavailable. Check storage and retry.';
+      'సేవ్ చేసిన అభ్యాస పురోగతి అందుబాటులో లేదు. స్టోరేజ్‌ను తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.';
 
   @override
   String get learningStartLessonFirst =>
-      'Start this lesson before adding bookmarks or repeat points.';
+      'బుక్‌మార్క్‌లు లేదా రిపీట్ పాయింట్‌లు జోడించే ముందు ఈ పాఠాన్ని ప్రారంభించండి.';
 
   @override
   String learningSavedFieldUnreadable(String field) {
-    return 'The saved $field could not be read. Your saved data has not been changed.';
+    return 'సేవ్ చేసిన $fieldను చదవలేకపోయాం. మీ సేవ్ చేసిన డేటా మార్చబడలేదు.';
   }
 
   @override
-  String get learningFieldBookmarkId => 'bookmark id';
+  String get learningFieldBookmarkId => 'బుక్‌మార్క్ ఐడి';
 
   @override
-  String get learningFieldBookmarkLabel => 'bookmark label';
+  String get learningFieldBookmarkLabel => 'బుక్‌మార్క్ పేరు';
 
   @override
-  String get learningFieldBookmarkPosition => 'bookmark position';
+  String get learningFieldBookmarkPosition => 'బుక్‌మార్క్ స్థానం';
 
   @override
-  String get learningFieldUpdateTime => 'update time';
+  String get learningFieldUpdateTime => 'అప్‌డేట్ సమయం';
 
   @override
-  String get learningFieldNextBookmarkId => 'next bookmark id';
+  String get learningFieldNextBookmarkId => 'తదుపరి బుక్‌మార్క్ ఐడి';
 
   @override
-  String get learningFieldLessonId => 'lesson id';
+  String get learningFieldLessonId => 'పాఠం ఐడి';
 
   @override
-  String get learningFieldLessonTitle => 'lesson title';
+  String get learningFieldLessonTitle => 'పాఠం పేరు';
 
   @override
-  String get learningFieldPosition => 'position';
+  String get learningFieldPosition => 'స్థానం';
 
   @override
-  String get learningInvalidProgress => 'Invalid lesson progress';
+  String get learningInvalidProgress => 'పాఠం పురోగతి చెల్లదు';
 
   @override
   String get learningBookmarkNeedsPositionLabel =>
-      'A bookmark needs a valid position and label';
+      'బుక్‌మార్క్‌కు సరైన స్థానం, పేరు అవసరం';
 
   @override
   String get learningBookmarkExceedsDuration =>
-      'Bookmark position exceeds lesson duration';
+      'బుక్‌మార్క్ స్థానం పాఠం నిడివిని మించిపోయింది';
 
   @override
   String learningDefaultBookmarkLabel(String number) {
-    return 'Bookmark $number';
+    return 'బుక్‌మార్క్ $number';
   }
 
   @override
-  String get learningBookmarkNotFound => 'Bookmark not found';
+  String get learningBookmarkNotFound => 'బుక్‌మార్క్ కనుగొనబడలేదు';
 
   @override
   String get learningRepeatEndAfterStart =>
-      'Set the end point after the start point';
+      'ముగింపు పాయింట్‌ను ప్రారంభ పాయింట్ తర్వాత సెట్ చేయండి';
 
   @override
   String get learningRepeatExceedsDuration =>
-      'Repeat points exceed lesson duration';
+      'రిపీట్ పాయింట్‌లు పాఠం నిడివిని మించిపోయాయి';
 
   @override
   String get learningSavedProgressUnavailableTitle =>
-      'Saved progress unavailable';
+      'సేవ్ చేసిన పురోగతి అందుబాటులో లేదు';
 
   @override
   String get learningListenWithoutSavedPrompt =>
-      'Listen from the beginning without changing saved data? Saving stays off until you retry successfully.';
+      'సేవ్ చేసిన డేటాను మార్చకుండా మొదటి నుండి వినాలా? మీరు మళ్లీ ప్రయత్నించి విజయవంతమయ్యే వరకు సేవ్ చేయడం ఆఫ్‌లో ఉంటుంది.';
 
   @override
-  String get learningListenFromBeginning => 'Listen from beginning';
+  String get learningListenFromBeginning => 'మొదటి నుండి వినండి';
 
   @override
-  String get learningRecordedLesson => 'Recorded lesson';
+  String get learningRecordedLesson => 'రికార్డ్ చేసిన పాఠం';
 
   @override
   String learningStatusPosition(String position) {
-    return 'Position $position.';
+    return 'స్థానం $position.';
   }
 
   @override
   String learningSpeedTimes(String speed) {
-    return 'Speed $speed times.';
+    return 'వేగం $speed రెట్లు.';
   }
 
   @override
@@ -7550,52 +7611,52 @@ class AppLocalizationsTe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count bookmarks',
+      other: '$count బుక్‌మార్క్‌లు',
     );
     return '$_temp0';
   }
 
   @override
   String learningStatusRepeat(String state) {
-    return 'A-B repeat $state.';
+    return 'A-B రిపీట్ $state.';
   }
 
   @override
   String learningStatusSaving(String state) {
-    return 'Progress saving $state.';
+    return 'పురోగతి సేవ్ చేయడం $state.';
   }
 
   @override
   String get learningNoLessonLoaded =>
-      'No lesson is loaded. Choose a lesson to play first.';
+      'ఏ పాఠం లోడ్ కాలేదు. ముందుగా ప్లే చేయడానికి ఒక పాఠాన్ని ఎంచుకోండి.';
 
   @override
-  String get learningSlowestSpeed => 'Already at the slowest speed.';
+  String get learningSlowestSpeed => 'ఇప్పటికే అత్యంత నెమ్మది వేగంలో ఉంది.';
 
   @override
-  String get learningFastestSpeed => 'Already at the fastest speed.';
+  String get learningFastestSpeed => 'ఇప్పటికే అత్యంత వేగంలో ఉంది.';
 
   @override
   String get learningCheckPosition =>
-      'Check the lesson position and try again.';
+      'పాఠం స్థానాన్ని తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.';
 
   @override
   String get learningPlayerActionFailed =>
-      'The player could not complete this action. Check playback and try again.';
+      'ప్లేయర్ ఈ చర్యను పూర్తి చేయలేకపోయింది. ప్లేబ్యాక్‌ను తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.';
 
   @override
   String learningBookmarkSavedAt(String time) {
-    return 'Bookmark saved at $time.';
+    return 'బుక్‌మార్క్ $time వద్ద సేవ్ చేయబడింది.';
   }
 
   @override
   String learningReadStatusLabel(String status) {
-    return 'Read learning status. $status';
+    return 'అభ్యాస స్థితిని చదవండి. $status';
   }
 
   @override
   String learningAddBookmarkAt(String time) {
-    return 'Add bookmark at $time';
+    return '$time వద్ద బుక్‌మార్క్ జోడించండి';
   }
 
   @override
@@ -7603,192 +7664,196 @@ class AppLocalizationsTe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Bookmarks. $count saved points',
+      other: 'బుక్‌మార్క్‌లు. $count సేవ్ చేసిన పాయింట్‌లు',
     );
     return '$_temp0';
   }
 
   @override
   String learningPrivateNotesAt(String time) {
-    return 'Private study notes at $time. Pause lesson before opening';
+    return '$time వద్ద ప్రైవేట్ స్టడీ నోట్‌లు. తెరిచే ముందు పాఠాన్ని పాజ్ చేయండి';
   }
 
   @override
   String get learningSetRepeatStartLabel =>
-      'Set repeat start A at the current position';
+      'ప్రస్తుత స్థానంలో రిపీట్ ప్రారంభం A సెట్ చేయండి';
 
   @override
   String learningRepeatStartSet(String time) {
-    return 'Repeat start set at $time.';
+    return 'రిపీట్ ప్రారంభం $time వద్ద సెట్ చేయబడింది.';
   }
 
   @override
-  String get learningSetRepeatEndLabel => 'Set repeat end B after start A';
+  String get learningSetRepeatEndLabel =>
+      'ప్రారంభం A తర్వాత రిపీట్ ముగింపు B సెట్ చేయండి';
 
   @override
   String learningRepeatEndSet(String time) {
-    return 'Repeat end set at $time. Select Repeat on to start looping.';
+    return 'రిపీట్ ముగింపు $time వద్ద సెట్ చేయబడింది. మళ్లీ మళ్లీ ప్లే చేయడానికి రిపీట్ ఆన్ ఎంచుకోండి.';
   }
 
   @override
-  String get learningTurnRepeatOff => 'Turn A-B repeat off';
+  String get learningTurnRepeatOff => 'A-B రిపీట్ ఆఫ్ చేయండి';
 
   @override
-  String get learningTurnRepeatOn => 'Turn A-B repeat on';
+  String get learningTurnRepeatOn => 'A-B రిపీట్ ఆన్ చేయండి';
 
   @override
-  String get learningClearRepeatLabel => 'Clear saved A-B repeat points';
+  String get learningClearRepeatLabel =>
+      'సేవ్ చేసిన A-B రిపీట్ పాయింట్‌లను తీసివేయండి';
 
   @override
-  String get learningRepeatCleared => 'A-B repeat points cleared.';
+  String get learningRepeatCleared => 'A-B రిపీట్ పాయింట్‌లు తీసివేయబడ్డాయి.';
 
   @override
   String learningBackTenLabel(String key) {
-    return 'Back 10 seconds, key $key';
+    return '10 సెకన్లు వెనక్కి, కీ $key';
   }
 
   @override
   String learningForwardTenLabel(String key) {
-    return 'Forward 10 seconds, key $key';
+    return '10 సెకన్లు ముందుకు, కీ $key';
   }
 
   @override
   String learningSlowerLabel(String key, String speed) {
-    return 'Slower, key $key. Now $speed times';
+    return 'నెమ్మదిగా, కీ $key. ఇప్పుడు $speed రెట్లు';
   }
 
   @override
   String learningFasterLabel(String key, String speed) {
-    return 'Faster, key $key. Now $speed times';
+    return 'వేగంగా, కీ $key. ఇప్పుడు $speed రెట్లు';
   }
 
   @override
   String learningRetrySavingLabel(String issue) {
-    return 'Retry saving learning progress. $issue';
+    return 'అభ్యాస పురోగతిని సేవ్ చేయడానికి మళ్లీ ప్రయత్నించండి. $issue';
   }
 
   @override
-  String get learningProgressSaved => 'Learning progress saved.';
+  String get learningProgressSaved => 'అభ్యాస పురోగతి సేవ్ చేయబడింది.';
 
   @override
-  String get learningEnterBookmarkName => 'Enter a bookmark name.';
+  String get learningEnterBookmarkName => 'బుక్‌మార్క్ పేరును నమోదు చేయండి.';
 
   @override
   String get learningNameBookmarkScreen =>
-      'Name bookmark. Press OK to edit. Up or down leaves editing.';
+      'బుక్‌మార్క్‌కు పేరు పెట్టండి. సవరించడానికి ఓకే నొక్కండి. పైకి లేదా కిందికి నొక్కితే సవరణ నుండి బయటకు వస్తారు.';
 
   @override
-  String get learningEditName => 'Edit name';
+  String get learningEditName => 'పేరు సవరించండి';
 
   @override
-  String get learningSaveBookmark => 'Save bookmark';
+  String get learningSaveBookmark => 'బుక్‌మార్క్ సేవ్ చేయండి';
 
   @override
-  String get learningBookmarkNameField => 'Bookmark name';
+  String get learningBookmarkNameField => 'బుక్‌మార్క్ పేరు';
 
   @override
   String learningBookmarkJumped(String label, String position) {
-    return '$label. Position $position.';
+    return '$label. స్థానం $position.';
   }
 
   @override
-  String get learningRemoveBookmarkTitle => 'Remove bookmark?';
+  String get learningRemoveBookmarkTitle => 'బుక్‌మార్క్‌ను తీసివేయాలా?';
 
   @override
   String learningRemoveBookmarkMessage(String label) {
-    return 'Remove $label? This does not remove the lesson or any other bookmarks.';
+    return '$labelను తీసివేయాలా? దీనివల్ల పాఠం గానీ ఇతర బుక్‌మార్క్‌లు గానీ తీసివేయబడవు.';
   }
 
   @override
-  String get learningKeepBookmark => 'Keep bookmark';
+  String get learningKeepBookmark => 'బుక్‌మార్క్ ఉంచండి';
 
   @override
-  String get learningRemoveBookmark => 'Remove bookmark';
+  String get learningRemoveBookmark => 'బుక్‌మార్క్ తీసివేయండి';
 
   @override
   String learningBookmarkRemoved(String label) {
-    return '$label removed.';
+    return '$label తీసివేయబడింది.';
   }
 
   @override
   String get learningBookmarksScreen =>
-      'Bookmarks. Select a point to jump. This does not start paused playback. Remove asks for confirmation.';
+      'బుక్‌మార్క్‌లు. వెళ్లడానికి ఒక పాయింట్‌ను ఎంచుకోండి. ఇది పాజ్ చేసిన ప్లేబ్యాక్‌ను ప్రారంభించదు. తీసివేయడానికి నిర్ధారణ అడుగుతుంది.';
 
   @override
-  String get learningCloseBookmarks => 'Close bookmarks';
+  String get learningCloseBookmarks => 'బుక్‌మార్క్‌లను మూసివేయండి';
 
   @override
   String learningJumpToBookmarkLabel(String label, String time) {
-    return '$label. $time. Jump to bookmark';
+    return '$label. $time. బుక్‌మార్క్‌కు వెళ్లండి';
   }
 
   @override
   String learningRemoveBookmarkLabel(String label) {
-    return 'Remove $label';
+    return '$labelను తీసివేయండి';
   }
 
   @override
-  String get dashboardRefreshing => 'Refreshing sessions.';
+  String get dashboardRefreshing => 'సెషన్‌లను రిఫ్రెష్ చేస్తోంది.';
 
   @override
-  String get dashboardShowMatching => 'Show matching sessions';
+  String get dashboardShowMatching => 'సరిపోలే సెషన్‌లను చూపించండి';
 
   @override
-  String get dashboardLogout => 'Log out, asks to confirm';
+  String get dashboardLogout => 'లాగ్ అవుట్, నిర్ధారణ అడుగుతుంది';
 
   @override
-  String get dashboardRefresh => 'Refresh sessions';
+  String get dashboardRefresh => 'సెషన్‌లను రిఫ్రెష్ చేయండి';
 
   @override
-  String get dashboardLibraryWhat => 'recorded audio library';
+  String get dashboardLibraryWhat => 'రికార్డ్ చేసిన ఆడియో లైబ్రరీ';
 
   @override
-  String get dashboardQuizzesWhat => 'quizzes';
+  String get dashboardQuizzesWhat => 'క్విజ్‌లు';
 
   @override
   String dashboardSessions(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count sessions',
-      one: '1 session',
+      other: '$count సెషన్‌లు',
+      one: '1 సెషన్',
     );
     return '$_temp0';
   }
 
   @override
   String dashboardPosition(String index, String total) {
-    return '$index of $total';
+    return '$total లో $index';
   }
 
   @override
-  String get dashboardStudentScreen => 'Student Dashboard';
+  String get dashboardStudentScreen => 'విద్యార్థి డ్యాష్‌బోర్డ్';
 
   @override
-  String get dashboardStudentLoading => 'Student dashboard is loading';
+  String get dashboardStudentLoading =>
+      'విద్యార్థి డ్యాష్‌బోర్డ్ లోడ్ అవుతోంది';
 
   @override
   String get dashboardStudentSections =>
-      'refresh, session search, live sessions, recorded lessons, playlists, quizzes, learning journeys, and log out';
+      'రిఫ్రెష్, సెషన్ వెతుకులాట, లైవ్ సెషన్‌లు, రికార్డ్ చేసిన పాఠాలు, ప్లేలిస్ట్‌లు, క్విజ్‌లు, అభ్యాస ప్రయాణాలు, మరియు లాగ్ అవుట్';
 
   @override
   String get dashboardNoLiveSessions =>
-      'No live sessions right now. Press 1 to refresh.';
+      'ఇప్పుడు లైవ్ సెషన్‌లు ఏవీ లేవు. రిఫ్రెష్ చేయడానికి 1 నొక్కండి.';
 
   @override
-  String get dashboardNoFilterMatch => 'No sessions match your filter.';
+  String get dashboardNoFilterMatch =>
+      'మీ ఫిల్టర్‌కు సరిపోయే సెషన్‌లు ఏవీ లేవు.';
 
   @override
   String get dashboardNoMatchVisible =>
-      'No matching sessions. Clear the search or change the subject filter.';
+      'సరిపోయే సెషన్‌లు లేవు. వెతుకులాటను క్లియర్ చేయండి లేదా సబ్జెక్టు ఫిల్టర్‌ను మార్చండి.';
 
   @override
   String dashboardAvailable(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count sessions available.',
-      one: '1 session available.',
+      other: '$count సెషన్‌లు అందుబాటులో ఉన్నాయి.',
+      one: '1 సెషన్ అందుబాటులో ఉంది.',
     );
     return '$_temp0';
   }
@@ -7798,58 +7863,58 @@ class AppLocalizationsTe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count sessions available. Use down to browse.',
-      one: '1 session available. Use down to browse.',
+      other: '$count సెషన్‌లు అందుబాటులో ఉన్నాయి. చూడటానికి కిందికి వెళ్ళండి.',
+      one: '1 సెషన్ అందుబాటులో ఉంది. చూడటానికి కిందికి వెళ్ళండి.',
     );
     return '$_temp0';
   }
 
   @override
   String dashboardRefreshFailed(String reason) {
-    return '$reason Press 1 to try again.';
+    return '$reason మళ్ళీ ప్రయత్నించడానికి 1 నొక్కండి.';
   }
 
   @override
-  String get dashboardJoining => 'Joining session.';
+  String get dashboardJoining => 'సెషన్‌లో చేరుతోంది.';
 
   @override
   String dashboardJoined(String session) {
-    return 'Joined $session.';
+    return '$sessionలో చేరారు.';
   }
 
   @override
   String get dashboardOpeningPlaylists =>
-      'Opening My Playlists. These playlists are private.';
+      'నా ప్లేలిస్ట్‌లు తెరుస్తోంది. ఈ ప్లేలిస్ట్‌లు ప్రైవేట్.';
 
   @override
   String get dashboardSessionSearchHelp =>
-      'Session search. Press OK to type a session number, then go down to Show matching sessions and press OK. You can also search by name.';
+      'సెషన్ వెతుకులాట. సెషన్ నంబర్ టైప్ చేయడానికి ఓకే నొక్కండి, తర్వాత కిందికి వెళ్ళి సరిపోయే సెషన్‌లను చూపించు వద్ద ఓకే నొక్కండి. మీరు పేరుతో కూడా వెతకవచ్చు.';
 
   @override
   String get dashboardSessionNumberFieldEmpty =>
-      'Session number field. Type a number, then choose Show matching sessions';
+      'సెషన్ నంబర్ ఫీల్డ్. ఒక నంబర్ టైప్ చేసి, తర్వాత సరిపోయే సెషన్‌లను చూపించు ఎంచుకోండి';
 
   @override
   String dashboardSessionNumberField(String digits) {
-    return 'Session number field, $digits';
+    return 'సెషన్ నంబర్ ఫీల్డ్, $digits';
   }
 
   @override
-  String get dashboardNameField => 'Search sessions by name';
+  String get dashboardNameField => 'పేరుతో సెషన్‌లను వెతకండి';
 
   @override
   String dashboardNoSessionNumber(String digits) {
-    return 'No live session number $digits.';
+    return '$digits నంబర్ గల లైవ్ సెషన్ లేదు.';
   }
 
   @override
   String dashboardFound(String label) {
-    return 'Found: $label. Press OK to join.';
+    return 'దొరికింది: $label. చేరడానికి ఓకే నొక్కండి.';
   }
 
   @override
   String dashboardNoNameMatch(String query) {
-    return 'No sessions match $query.';
+    return '$queryకు సరిపోయే సెషన్‌లు ఏవీ లేవు.';
   }
 
   @override
@@ -7857,8 +7922,8 @@ class AppLocalizationsTe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Showing all $count sessions.',
-      one: 'Showing all 1 session.',
+      other: 'మొత్తం $count సెషన్‌లు చూపిస్తోంది.',
+      one: 'మొత్తం 1 సెషన్ చూపిస్తోంది.',
     );
     return '$_temp0';
   }
@@ -7868,8 +7933,8 @@ class AppLocalizationsTe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Showing all $count sessions. Use down to browse.',
-      one: 'Showing all 1 session. Use down to browse.',
+      other: 'మొత్తం $count సెషన్‌లు చూపిస్తోంది. చూడటానికి కిందికి వెళ్ళండి.',
+      one: 'మొత్తం 1 సెషన్ చూపిస్తోంది. చూడటానికి కిందికి వెళ్ళండి.',
     );
     return '$_temp0';
   }
@@ -7879,18 +7944,19 @@ class AppLocalizationsTe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count sessions match $query. Use down to browse.',
-      one: '1 session match $query. Use down to browse.',
+      other:
+          '$queryకు $count సెషన్‌లు సరిపోతున్నాయి. చూడటానికి కిందికి వెళ్ళండి.',
+      one: '$queryకు 1 సెషన్ సరిపోతుంది. చూడటానికి కిందికి వెళ్ళండి.',
     );
     return '$_temp0';
   }
 
   @override
-  String get dashboardAllSubjects => 'all subjects';
+  String get dashboardAllSubjects => 'అన్ని సబ్జెక్టులు';
 
   @override
   String dashboardSubjectFilterLabel(String subject, String position) {
-    return 'Subject filter: $subject, $position. Use left or right to change';
+    return 'సబ్జెక్టు ఫిల్టర్: $subject, $position. మార్చడానికి ఎడమ లేదా కుడి నొక్కండి';
   }
 
   @override
@@ -7899,57 +7965,57 @@ class AppLocalizationsTe extends AppLocalizations {
     String position,
     String summary,
   ) {
-    return 'Subject filter: $subject, $position. $summary';
+    return 'సబ్జెక్టు ఫిల్టర్: $subject, $position. $summary';
   }
 
   @override
-  String get dashboardLibrary => 'Recorded audio library';
+  String get dashboardLibrary => 'రికార్డ్ చేసిన ఆడియో లైబ్రరీ';
 
   @override
-  String get dashboardPlaylists => 'My private playlists';
+  String get dashboardPlaylists => 'నా ప్రైవేట్ ప్లేలిస్ట్‌లు';
 
   @override
-  String get dashboardQuizzes => 'Quizzes';
+  String get dashboardQuizzes => 'క్విజ్‌లు';
 
   @override
   String get dashboardStudentJourneys =>
-      'Learning journeys: listen, answer and repeat, works offline';
+      'అభ్యాస ప్రయాణాలు: వినండి, జవాబు ఇవ్వండి, మళ్ళీ చేయండి, ఆఫ్‌లైన్‌లో కూడా పనిచేస్తుంది';
 
   @override
   String dashboardTeacherName(String name) {
-    return 'Teacher $name';
+    return 'ఉపాధ్యాయులు $name';
   }
 
   @override
-  String get dashboardLiveNow => 'live now';
+  String get dashboardLiveNow => 'ఇప్పుడు లైవ్‌లో ఉంది';
 
   @override
-  String get dashboardStateRefreshing => 'Refreshing.';
+  String get dashboardStateRefreshing => 'రిఫ్రెష్ చేస్తోంది.';
 
   @override
   String dashboardStateLiveSessions(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count live sessions.',
-      one: '1 live session.',
+      other: '$count లైవ్ సెషన్‌లు.',
+      one: '1 లైవ్ సెషన్.',
     );
     return '$_temp0';
   }
 
   @override
   String dashboardStateSubjectFilter(String subject) {
-    return 'Subject filter: $subject.';
+    return 'సబ్జెక్టు ఫిల్టర్: $subject.';
   }
 
   @override
   String dashboardStateSessionNumber(String digits) {
-    return 'Session number typed: $digits.';
+    return 'టైప్ చేసిన సెషన్ నంబర్: $digits.';
   }
 
   @override
   String dashboardStateNameSearch(String query) {
-    return 'Name search: $query.';
+    return 'పేరు వెతుకులాట: $query.';
   }
 
   @override
@@ -7957,37 +8023,37 @@ class AppLocalizationsTe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count sessions shown.',
-      one: '1 session shown.',
+      other: '$count సెషన్‌లు చూపబడ్డాయి.',
+      one: '1 సెషన్ చూపబడింది.',
     );
     return '$_temp0';
   }
 
   @override
-  String get dashboardTeacherScreen => 'Teacher Dashboard';
+  String get dashboardTeacherScreen => 'ఉపాధ్యాయుల డాష్‌బోర్డ్';
 
   @override
-  String get dashboardTeacherLoading => 'Teacher dashboard is loading';
+  String get dashboardTeacherLoading => 'ఉపాధ్యాయుల డాష్‌బోర్డ్ లోడ్ అవుతోంది';
 
   @override
   String get dashboardTeacherSections =>
-      'class and subject selection, teaching tools, session search, and active or ended sessions';
+      'తరగతి మరియు సబ్జెక్టు ఎంపిక, బోధన సాధనాలు, సెషన్ వెతుకులాట, మరియు యాక్టివ్ లేదా ముగిసిన సెషన్‌లు';
 
   @override
   String get dashboardNoSessionsYet =>
-      'No sessions yet. Press 2 to create one.';
+      'ఇంకా సెషన్‌లు లేవు. ఒకటి సృష్టించడానికి 2 నొక్కండి.';
 
   @override
   String get dashboardNoTeacherMatch =>
-      'No matching sessions. Clear the search to list all sessions.';
+      'సరిపోయే సెషన్‌లు లేవు. అన్ని సెషన్‌లను చూడటానికి వెతుకులాటను క్లియర్ చేయండి.';
 
   @override
   String dashboardTeacherCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count sessions.',
-      one: '1 session.',
+      other: '$count సెషన్‌లు.',
+      one: '1 సెషన్.',
     );
     return '$_temp0';
   }
@@ -7997,43 +8063,43 @@ class AppLocalizationsTe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count sessions, $live live now.',
-      one: '1 session, $live live now.',
+      other: '$count సెషన్‌లు, $live ఇప్పుడు లైవ్‌లో ఉన్నాయి.',
+      one: '1 సెషన్, $live ఇప్పుడు లైవ్‌లో ఉంది.',
     );
     return '$_temp0';
   }
 
   @override
   String dashboardNotRefreshed(String reason) {
-    return '$reason Sessions were not refreshed. Press 1 to try again.';
+    return '$reason సెషన్‌లు రిఫ్రెష్ కాలేదు. మళ్ళీ ప్రయత్నించడానికి 1 నొక్కండి.';
   }
 
   @override
   String get dashboardNoAssignment =>
-      'No class and subject is assigned to you. Ask an administrator to assign one.';
+      'మీకు ఏ తరగతి, సబ్జెక్టు కేటాయించబడలేదు. ఒకటి కేటాయించమని నిర్వాహకులను అడగండి.';
 
   @override
-  String get dashboardCreatingSession => 'Creating session';
+  String get dashboardCreatingSession => 'సెషన్ సృష్టిస్తోంది';
 
   @override
   String dashboardCreated(String title) {
-    return 'Session $title created.';
+    return '$title సెషన్ సృష్టించబడింది.';
   }
 
   @override
-  String get dashboardCreatedTitle => 'Session created';
+  String get dashboardCreatedTitle => 'సెషన్ సృష్టించబడింది';
 
   @override
   String dashboardStartNow(String title) {
-    return 'Do you want to start \"$title\" now?';
+    return '\"$title\"ను ఇప్పుడే ప్రారంభించాలా?';
   }
 
   @override
   String get dashboardRequestFailed =>
-      'We could not complete that request. Check your connection and try again.';
+      'ఆ అభ్యర్థనను పూర్తి చేయలేకపోయాము. మీ కనెక్షన్ చెక్ చేసి మళ్ళీ ప్రయత్నించండి.';
 
   @override
-  String get dashboardOpeningSession => 'Opening session.';
+  String get dashboardOpeningSession => 'సెషన్ తెరుస్తోంది.';
 
   @override
   String dashboardWorkspace(String className, String subject) {
@@ -8046,138 +8112,141 @@ class AppLocalizationsTe extends AppLocalizations {
     String position,
     String status,
   ) {
-    return 'Workspace: $name, $position. $status';
+    return 'వర్క్‌స్పేస్: $name, $position. $status';
   }
 
   @override
   String dashboardWorkspaceChosen(String name, String status) {
-    return '$name selected. $status Press 7 to choose another workspace.';
+    return '$name ఎంచుకోబడింది. $status వేరే వర్క్‌స్పేస్ ఎంచుకోవడానికి 7 నొక్కండి.';
   }
 
   @override
-  String get dashboardChooseWorkspaceTitle => 'Choose class and subject';
+  String get dashboardChooseWorkspaceTitle => 'తరగతి మరియు సబ్జెక్టు ఎంచుకోండి';
 
   @override
-  String get dashboardNoWorkspace => 'No class and subject workspace assigned';
+  String get dashboardNoWorkspace =>
+      'తరగతి మరియు సబ్జెక్టు వర్క్‌స్పేస్ ఏదీ కేటాయించబడలేదు';
 
   @override
   String dashboardWorkspaceLabel(String name, String position) {
-    return 'Workspace: $name, $position. Left or right to change, OK or 7 for a numbered list';
+    return 'వర్క్‌స్పేస్: $name, $position. మార్చడానికి ఎడమ లేదా కుడి, నంబర్ల జాబితా కోసం ఓకే లేదా 7';
   }
 
   @override
-  String get dashboardCreate => 'Create new session';
+  String get dashboardCreate => 'కొత్త సెషన్ సృష్టించండి';
 
   @override
-  String get dashboardClassPlaylists => 'Class playlists';
+  String get dashboardClassPlaylists => 'తరగతి ప్లేలిస్ట్‌లు';
 
   @override
   String get dashboardTeacherJourneys =>
-      'Learning journeys: recordings, questions and polls in one flow';
+      'అభ్యాస ప్రయాణాలు: రికార్డింగ్‌లు, ప్రశ్నలు మరియు పోల్‌లు ఒకే వరుసలో';
 
   @override
-  String get dashboardTeacherQuizzes => 'Quizzes and private question bank';
+  String get dashboardTeacherQuizzes =>
+      'క్విజ్‌లు మరియు ప్రైవేట్ ప్రశ్నల బ్యాంక్';
 
   @override
-  String get dashboardOfflineLibrary => 'Offline audio library';
+  String get dashboardOfflineLibrary => 'ఆఫ్‌లైన్ ఆడియో లైబ్రరీ';
 
   @override
   String get dashboardSearchField =>
-      'Search sessions. Press OK, then type a name or the session number';
+      'సెషన్‌లను వెతకండి. ఓకే నొక్కి, తర్వాత పేరు లేదా సెషన్ నంబర్ టైప్ చేయండి';
 
   @override
   String get dashboardTeacherSearchHelp =>
-      'Session search. Press OK to edit, then type a session name, or the session number using the number keys. Use up or down to leave the field and browse results.';
+      'సెషన్ వెతుకులాట. మార్చడానికి ఓకే నొక్కండి, తర్వాత సెషన్ పేరు టైప్ చేయండి, లేదా నంబర్ కీలతో సెషన్ నంబర్ టైప్ చేయండి. ఫీల్డ్ నుండి బయటకు వచ్చి ఫలితాలు చూడటానికి పైకి లేదా కిందికి వెళ్ళండి.';
 
   @override
   String dashboardTeacherNoMatch(String query) {
-    return 'No sessions match $query. Clear the search to list all sessions.';
+    return '$queryకు సరిపోయే సెషన్‌లు ఏవీ లేవు. అన్ని సెషన్‌లను చూడటానికి వెతుకులాటను క్లియర్ చేయండి.';
   }
 
   @override
-  String get dashboardEnded => 'ended';
+  String get dashboardEnded => 'ముగిసింది';
 
   @override
   String dashboardJoinedCount(String count) {
-    return '$count joined';
+    return '$count మంది చేరారు';
   }
 
   @override
-  String get dashboardPressOkToOpen => 'Press OK to open';
+  String get dashboardPressOkToOpen => 'తెరవడానికి ఓకే నొక్కండి';
 
   @override
-  String get dashboardPressOkToReactivate => 'Press OK to reactivate';
+  String get dashboardPressOkToReactivate =>
+      'మళ్ళీ యాక్టివ్ చేయడానికి ఓకే నొక్కండి';
 
   @override
   String dashboardEndLabel(String title) {
-    return 'End $title for everyone, asks to confirm';
+    return 'అందరికీ $titleను ముగించండి, నిర్ధారణ అడుగుతుంది';
   }
 
   @override
   String dashboardDeleteLabel(String title) {
-    return 'Delete ended session $title permanently, asks to confirm';
+    return 'ముగిసిన సెషన్ $titleను శాశ్వతంగా తొలగించండి, నిర్ధారణ అడుగుతుంది';
   }
 
   @override
-  String get dashboardEndTitle => 'End session for everyone?';
+  String get dashboardEndTitle => 'అందరికీ సెషన్ ముగించాలా?';
 
   @override
   String dashboardEndMessage(String title) {
-    return 'End \"$title\" and close it for every participant? The session will remain in your dashboard history.';
+    return '\"$title\"ను ముగించి, పాల్గొనే అందరికీ మూసివేయాలా? సెషన్ మీ డాష్‌బోర్డ్ చరిత్రలో ఉంటుంది.';
   }
 
   @override
   String get dashboardEndedForEveryone =>
-      'Session ended for everyone and kept in session history.';
+      'సెషన్ అందరికీ ముగిసింది మరియు సెషన్ చరిత్రలో ఉంచబడింది.';
 
   @override
   String get dashboardEndFailed =>
-      'The session could not be ended. Please try again.';
+      'సెషన్‌ను ముగించలేకపోయాము. దయచేసి మళ్ళీ ప్రయత్నించండి.';
 
   @override
-  String get dashboardReactivateTitle => 'Reactivate session?';
+  String get dashboardReactivateTitle => 'సెషన్‌ను మళ్ళీ యాక్టివ్ చేయాలా?';
 
   @override
   String dashboardReactivateMessage(String title) {
-    return 'Reactivate \"$title\" so participants can join it again?';
+    return 'పాల్గొనేవారు మళ్ళీ చేరేలా \"$title\"ను మళ్ళీ యాక్టివ్ చేయాలా?';
   }
 
   @override
-  String get dashboardReactivated => 'Session reactivated.';
+  String get dashboardReactivated => 'సెషన్ మళ్ళీ యాక్టివ్ చేయబడింది.';
 
   @override
   String get dashboardReactivateFailed =>
-      'The session could not be reactivated. Please try again.';
+      'సెషన్‌ను మళ్ళీ యాక్టివ్ చేయలేకపోయాము. దయచేసి మళ్ళీ ప్రయత్నించండి.';
 
   @override
-  String get dashboardOpenNowTitle => 'Open session now?';
+  String get dashboardOpenNowTitle => 'సెషన్‌ను ఇప్పుడే తెరవాలా?';
 
   @override
   String dashboardOpenNowMessage(String title) {
-    return '\"$title\" is active again. Open it now, or return to it later from the dashboard.';
+    return '\"$title\" మళ్ళీ యాక్టివ్‌గా ఉంది. ఇప్పుడే తెరవండి, లేదా తర్వాత డాష్‌బోర్డ్ నుండి దానికి తిరిగి రండి.';
   }
 
   @override
-  String get dashboardDeleteTitle => 'Permanently delete session?';
+  String get dashboardDeleteTitle => 'సెషన్‌ను శాశ్వతంగా తొలగించాలా?';
 
   @override
   String dashboardDeleteMessage(String title) {
-    return 'Permanently delete \"$title\", including its participants, chat, and logs? This cannot be undone.';
+    return '\"$title\"ను, దాని పాల్గొనేవారు, చాట్ మరియు లాగ్‌లతో సహా శాశ్వతంగా తొలగించాలా? దీన్ని తిరిగి తీసుకురాలేము.';
   }
 
   @override
-  String get dashboardDeleted => 'Session permanently deleted.';
+  String get dashboardDeleted => 'సెషన్ శాశ్వతంగా తొలగించబడింది.';
 
   @override
   String get dashboardDeleteFailed =>
-      'The session could not be deleted. Please try again.';
+      'సెషన్‌ను తొలగించలేకపోయాము. దయచేసి మళ్ళీ ప్రయత్నించండి.';
 
   @override
-  String get dashboardStateNoWorkspace => 'No workspace chosen.';
+  String get dashboardStateNoWorkspace => 'వర్క్‌స్పేస్ ఏదీ ఎంచుకోలేదు.';
 
   @override
   String dashboardStateWorkspace(String name) {
-    return 'Workspace: $name.';
+    return 'వర్క్‌స్పేస్: $name.';
   }
 
   @override
@@ -8185,34 +8254,34 @@ class AppLocalizationsTe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count active sessions',
-      one: '1 active session',
+      other: '$count యాక్టివ్ సెషన్‌లు',
+      one: '1 యాక్టివ్ సెషన్',
     );
     return '$_temp0';
   }
 
   @override
   String dashboardStateTotals(String active, String total) {
-    return '$active, $total in total.';
+    return '$active, మొత్తం $total.';
   }
 
   @override
   String dashboardStateSearch(String query) {
-    return 'Search: $query.';
+    return 'వెతుకులాట: $query.';
   }
 
   @override
   String get adminSaveFailed =>
-      'The change could not be saved. Press 1 to refresh, then try again.';
+      'మార్పును సేవ్ చేయలేకపోయాం. రిఫ్రెష్ చేయడానికి 1 నొక్కండి, తర్వాత మళ్లీ ప్రయత్నించండి.';
 
   @override
   String adminChoiceLabel(String what, String name, String position) {
-    return '$what: $name, $position. Use left or right to change';
+    return '$what: $name, $position. మార్చడానికి ఎడమ లేదా కుడి ఉపయోగించండి';
   }
 
   @override
   String adminChoiceLabelSingle(String what, String name) {
-    return '$what: $name. Use left or right to change';
+    return '$what: $name. మార్చడానికి ఎడమ లేదా కుడి ఉపయోగించండి';
   }
 
   @override
@@ -8227,15 +8296,15 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String adminClassAndSubject(String className, String subject) {
-    return '$className selected. $subject subject selected.';
+    return '$className ఎంచుకోబడింది. $subject సబ్జెక్టు ఎంచుకోబడింది.';
   }
 
   @override
-  String get adminNoSubjects => 'The selected class has no active subjects.';
+  String get adminNoSubjects => 'ఎంచుకున్న తరగతిలో యాక్టివ్ సబ్జెక్టులు లేవు.';
 
   @override
   String adminStateSection(String section) {
-    return 'Section: $section.';
+    return 'విభాగం: $section.';
   }
 
   @override
@@ -8243,67 +8312,67 @@ class AppLocalizationsTe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count items shown.',
-      one: '1 item shown.',
+      other: '$count అంశాలు చూపబడ్డాయి.',
+      one: '1 అంశం చూపబడింది.',
     );
     return '$_temp0';
   }
 
   @override
   String adminStateFilter(String filter) {
-    return 'Filter: $filter.';
+    return 'ఫిల్టర్: $filter.';
   }
 
   @override
   String adminStateSearch(String query) {
-    return 'Search: $query.';
+    return 'శోధన: $query.';
   }
 
   @override
   String get adminNoSubjectName =>
-      'No subject name entered. Nothing was created.';
+      'సబ్జెక్టు పేరు నమోదు చేయలేదు. ఏదీ సృష్టించబడలేదు.';
 
   @override
-  String get adminNoClassName => 'No class name entered. Nothing was created.';
+  String get adminNoClassName =>
+      'తరగతి పేరు నమోదు చేయలేదు. ఏదీ సృష్టించబడలేదు.';
 
   @override
-  String get adminNoActiveSubjects => 'This class has no active subjects.';
+  String get adminNoActiveSubjects => 'ఈ తరగతిలో యాక్టివ్ సబ్జెక్టులు లేవు.';
 
   @override
-  String get adminListReadFailed =>
-      'The administration list could not be read.';
+  String get adminListReadFailed => 'నిర్వహణ జాబితాను చదవలేకపోయాం.';
 
   @override
   String adminNotRefreshed(String reason) {
-    return '$reason Administration data was not refreshed. Press 1 to retry.';
+    return '$reason నిర్వహణ డేటా రిఫ్రెష్ కాలేదు. మళ్లీ ప్రయత్నించడానికి 1 నొక్కండి.';
   }
 
   @override
   String adminExploreIntro(String sections) {
-    return 'Use D-pad up and down to explore $sections. Press OK to select.';
+    return '$sectionsను చూడటానికి D-pad పైకి, కిందికి ఉపయోగించండి. ఎంచుకోవడానికి ఓకే నొక్కండి.';
   }
 
   @override
   String adminSectionTitle(String section) {
-    return 'Administration. $section section';
+    return 'నిర్వహణ. $section విభాగం';
   }
 
   @override
-  String get adminSectionNameAccounts => 'accounts';
+  String get adminSectionNameAccounts => 'ఖాతాలు';
 
   @override
-  String get adminSectionNameClasses => 'classes';
+  String get adminSectionNameClasses => 'తరగతులు';
 
   @override
-  String get adminSectionNameSubjects => 'subjects';
+  String get adminSectionNameSubjects => 'సబ్జెక్టులు';
 
   @override
   String get adminNoMatchingAccounts =>
-      'No matching accounts. Change the search or filters.';
+      'సరిపోలే ఖాతాలు లేవు. శోధన లేదా ఫిల్టర్‌లను మార్చండి.';
 
   @override
   String adminNoMatchingAccountsFor(String search) {
-    return 'No matching accounts for $search. Change the search or filters.';
+    return '$searchకు సరిపోలే ఖాతాలు లేవు. శోధన లేదా ఫిల్టర్‌లను మార్చండి.';
   }
 
   @override
@@ -8311,8 +8380,8 @@ class AppLocalizationsTe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count classes',
-      one: '1 class',
+      other: '$count తరగతులు',
+      one: '1 తరగతి',
     );
     return '$_temp0';
   }
@@ -8322,8 +8391,8 @@ class AppLocalizationsTe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count subjects',
-      one: '1 subject',
+      other: '$count సబ్జెక్టులు',
+      one: '1 సబ్జెక్టు',
     );
     return '$_temp0';
   }
@@ -8333,8 +8402,8 @@ class AppLocalizationsTe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count accounts. $classes and $subjects.',
-      one: '1 account. $classes and $subjects.',
+      other: '$count ఖాతాలు. $classes, $subjects.',
+      one: '1 ఖాతా. $classes, $subjects.',
     );
     return '$_temp0';
   }
@@ -8349,8 +8418,8 @@ class AppLocalizationsTe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count accounts match $search. $classes and $subjects.',
-      one: '1 account match $search. $classes and $subjects.',
+      other: '$count ఖాతాలు $searchకు సరిపోలాయి. $classes, $subjects.',
+      one: '1 ఖాతా $searchకు సరిపోలింది. $classes, $subjects.',
     );
     return '$_temp0';
   }
@@ -8360,8 +8429,8 @@ class AppLocalizationsTe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count classes.',
-      one: '1 class.',
+      other: '$count తరగతులు.',
+      one: '1 తరగతి.',
     );
     return '$_temp0';
   }
@@ -8371,281 +8440,281 @@ class AppLocalizationsTe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count subjects.',
-      one: '1 subject.',
+      other: '$count సబ్జెక్టులు.',
+      one: '1 సబ్జెక్టు.',
     );
     return '$_temp0';
   }
 
   @override
   String get adminNavigationAccounts =>
-      'account search, account type and enrollment filters, and account management. Use left or right on a filter to change it';
+      'ఖాతా శోధన, ఖాతా రకం మరియు నమోదు ఫిల్టర్‌లు, ఖాతా నిర్వహణ. ఫిల్టర్‌ను మార్చడానికి దానిపై ఎడమ లేదా కుడి ఉపయోగించండి';
 
   @override
   String get adminNavigationClasses =>
-      'create class and the list of active or archived classes. Press OK on a class for its subject assignments and archive or restore actions';
+      'తరగతి సృష్టించడం, యాక్టివ్ లేదా ఆర్కైవ్ చేసిన తరగతుల జాబితా. ఒక తరగతి సబ్జెక్టు కేటాయింపులు, ఆర్కైవ్ లేదా పునరుద్ధరణ చర్యల కోసం దానిపై ఓకే నొక్కండి';
 
   @override
   String get adminNavigationSubjects =>
-      'create subject and the list of active or archived subjects. Press OK on a subject to archive or restore it';
+      'సబ్జెక్టు సృష్టించడం, యాక్టివ్ లేదా ఆర్కైవ్ చేసిన సబ్జెక్టుల జాబితా. ఒక సబ్జెక్టును ఆర్కైవ్ లేదా పునరుద్ధరించడానికి దానిపై ఓకే నొక్కండి';
 
   @override
-  String get adminSectionsTitle => 'Administration sections';
+  String get adminSectionsTitle => 'నిర్వహణ విభాగాలు';
 
   @override
-  String get adminSectionAccounts => 'Accounts and enrollment';
+  String get adminSectionAccounts => 'ఖాతాలు మరియు నమోదు';
 
   @override
-  String get adminSectionClasses => 'Classes and their subjects';
+  String get adminSectionClasses => 'తరగతులు మరియు వాటి సబ్జెక్టులు';
 
   @override
-  String get adminSectionSubjects => 'Subjects';
+  String get adminSectionSubjects => 'సబ్జెక్టులు';
 
   @override
   String adminSectionChosen(String section) {
-    return '$section section.';
+    return '$section విభాగం.';
   }
 
   @override
   String adminSectionExplore(String what) {
-    return 'Use the D-pad to explore $what. Press 7 to change section.';
+    return '$whatను చూడటానికి D-pad ఉపయోగించండి. విభాగం మార్చడానికి 7 నొక్కండి.';
   }
 
   @override
-  String get adminExploreAccounts =>
-      'account filters, search and account management';
+  String get adminExploreAccounts => 'ఖాతా ఫిల్టర్‌లు, శోధన మరియు ఖాతా నిర్వహణ';
 
   @override
   String get adminExploreClasses =>
-      'class creation, subject assignments, and archive or restore actions';
+      'తరగతి సృష్టించడం, సబ్జెక్టు కేటాయింపులు, ఆర్కైవ్ లేదా పునరుద్ధరణ చర్యలు';
 
   @override
   String get adminExploreSubjects =>
-      'subject creation and archive or restore actions';
+      'సబ్జెక్టు సృష్టించడం, ఆర్కైవ్ లేదా పునరుద్ధరణ చర్యలు';
 
   @override
   String adminRoleFilterSelected(String label) {
-    return 'Account type filter: $label, selected.';
+    return 'ఖాతా రకం ఫిల్టర్: $label, ఎంచుకోబడింది.';
   }
 
   @override
   String adminAssignmentFilterSelected(String label) {
-    return 'Assignment filter: $label, selected.';
+    return 'కేటాయింపు ఫిల్టర్: $label, ఎంచుకోబడింది.';
   }
 
   @override
-  String get adminRoleFilterStudents => 'Students only';
+  String get adminRoleFilterStudents => 'విద్యార్థులు మాత్రమే';
 
   @override
-  String get adminRoleFilterTeachers => 'Teachers only';
+  String get adminRoleFilterTeachers => 'ఉపాధ్యాయులు మాత్రమే';
 
   @override
-  String get adminRoleFilterAll => 'All registered accounts';
+  String get adminRoleFilterAll => 'నమోదైన అన్ని ఖాతాలు';
 
   @override
-  String get adminAssignmentEnrolled => 'Enrolled';
+  String get adminAssignmentEnrolled => 'నమోదు చేయబడింది';
 
   @override
-  String get adminAssignmentAssigned => 'Assigned';
+  String get adminAssignmentAssigned => 'కేటాయించబడింది';
 
   @override
-  String get adminAssignmentEnrolledOrAssigned => 'Enrolled or assigned';
+  String get adminAssignmentEnrolledOrAssigned =>
+      'నమోదు చేయబడింది లేదా కేటాయించబడింది';
 
   @override
-  String get adminAssignmentUnassigned => 'Unassigned';
+  String get adminAssignmentUnassigned => 'కేటాయించబడలేదు';
 
   @override
-  String get adminAssignmentAll => 'All assignment states';
+  String get adminAssignmentAll => 'అన్ని కేటాయింపు స్థితులు';
 
   @override
-  String get adminRoleStudent => 'student';
+  String get adminRoleStudent => 'విద్యార్థి';
 
   @override
-  String get adminRoleTeacher => 'teacher';
+  String get adminRoleTeacher => 'ఉపాధ్యాయులు';
 
   @override
-  String get adminNoClassAssigned => 'No class assigned';
+  String get adminNoClassAssigned => 'ఏ తరగతి కేటాయించబడలేదు';
 
   @override
   String adminAssignmentCount(String count) {
-    return '$count assignments';
+    return '$count కేటాయింపులు';
   }
 
   @override
   String adminAccountLabel(String name, String role, String access) {
-    return '$name, $role. $access. Press OK to manage';
+    return '$name, $role. $access. నిర్వహించడానికి ఓకే నొక్కండి';
   }
 
   @override
-  String get adminCancel => 'Cancel';
+  String get adminCancel => 'రద్దు చేయండి';
 
   @override
-  String get adminSave => 'Save';
+  String get adminSave => 'సేవ్ చేయండి';
 
   @override
-  String get adminCreateSubjectTitle => 'Create subject';
+  String get adminCreateSubjectTitle => 'సబ్జెక్టు సృష్టించండి';
 
   @override
-  String get adminSubjectNameField => 'Subject name';
+  String get adminSubjectNameField => 'సబ్జెక్టు పేరు';
 
   @override
   String adminSubjectCreated(String name) {
-    return 'Subject $name created';
+    return '$name సబ్జెక్టు సృష్టించబడింది';
   }
 
   @override
-  String get adminCreateClassTitle => 'Create class';
+  String get adminCreateClassTitle => 'తరగతి సృష్టించండి';
 
   @override
-  String get adminClassNameField => 'Class name';
+  String get adminClassNameField => 'తరగతి పేరు';
 
   @override
   String adminClassCreated(String name) {
-    return 'Class $name created';
+    return '$name తరగతి సృష్టించబడింది';
   }
 
   @override
-  String get adminArchiveClassTitle => 'Archive class?';
+  String get adminArchiveClassTitle => 'తరగతిని ఆర్కైవ్ చేయాలా?';
 
   @override
-  String get adminRestoreClassTitle => 'Restore class?';
+  String get adminRestoreClassTitle => 'తరగతిని తిరిగి తీసుకురావాలా?';
 
   @override
   String adminArchiveItemMessage(String name) {
-    return 'New sessions, audio, and assignments cannot use $name while it is archived.';
+    return '$name ఆర్కైవ్‌లో ఉన్నంత వరకు కొత్త సెషన్లు, ఆడియో మరియు కేటాయింపులు దాన్ని ఉపయోగించలేవు.';
   }
 
   @override
   String adminRestoreItemMessage(String name) {
-    return '$name will become available for assignments again.';
+    return '$name మళ్ళీ కేటాయింపులకు అందుబాటులోకి వస్తుంది.';
   }
 
   @override
-  String get adminArchive => 'Archive';
+  String get adminArchive => 'ఆర్కైవ్ చేయండి';
 
   @override
-  String get adminRestore => 'Restore';
+  String get adminRestore => 'తిరిగి తీసుకురండి';
 
   @override
-  String get adminClassArchived => 'Class archived';
+  String get adminClassArchived => 'తరగతి ఆర్కైవ్ చేయబడింది';
 
   @override
-  String get adminClassRestored => 'Class restored';
+  String get adminClassRestored => 'తరగతి తిరిగి తీసుకురాబడింది';
 
   @override
   String adminManageTitle(String name) {
-    return 'Manage $name';
+    return '$name ను నిర్వహించండి';
   }
 
   @override
-  String get adminManageClassSubjects => 'Manage class subjects';
+  String get adminManageClassSubjects => 'తరగతి సబ్జెక్టులను నిర్వహించండి';
 
   @override
-  String get adminArchiveClassChoice => 'Archive class with confirmation';
+  String get adminArchiveClassChoice => 'నిర్ధారణతో తరగతిని ఆర్కైవ్ చేయండి';
 
   @override
-  String get adminRestoreClassChoice => 'Restore class with confirmation';
+  String get adminRestoreClassChoice => 'నిర్ధారణతో తరగతిని తిరిగి తీసుకురండి';
 
   @override
   String adminSubjectsForClass(String name) {
-    return 'Subjects for $name';
+    return '$name కోసం సబ్జెక్టులు';
   }
 
   @override
   String adminSubjectRemovedFrom(String name) {
-    return 'Subject removed from $name';
+    return '$name నుండి సబ్జెక్టు తొలగించబడింది';
   }
 
   @override
   String adminSubjectAddedTo(String name) {
-    return 'Subject added to $name';
+    return '$name కు సబ్జెక్టు జోడించబడింది';
   }
 
   @override
-  String get adminArchiveSubjectTitle => 'Archive subject?';
+  String get adminArchiveSubjectTitle => 'సబ్జెక్టును ఆర్కైవ్ చేయాలా?';
 
   @override
-  String get adminRestoreSubjectTitle => 'Restore subject?';
+  String get adminRestoreSubjectTitle => 'సబ్జెక్టును తిరిగి తీసుకురావాలా?';
 
   @override
-  String get adminSubjectArchived => 'Subject archived';
+  String get adminSubjectArchived => 'సబ్జెక్టు ఆర్కైవ్ చేయబడింది';
 
   @override
-  String get adminSubjectRestored => 'Subject restored';
+  String get adminSubjectRestored => 'సబ్జెక్టు తిరిగి తీసుకురాబడింది';
 
   @override
-  String get adminManageAssignments => 'Manage assignments';
+  String get adminManageAssignments => 'కేటాయింపులను నిర్వహించండి';
 
   @override
-  String get adminPasswordRecovery => 'Password recovery';
+  String get adminPasswordRecovery => 'పాస్‌వర్డ్ పునరుద్ధరణ';
 
   @override
   String adminManageUserScreen(String name) {
-    return 'Manage $name. Choose assignments, password recovery, or Cancel.';
+    return '$name ను నిర్వహించండి. కేటాయింపులు, పాస్‌వర్డ్ పునరుద్ధరణ లేదా రద్దు ఎంచుకోండి.';
   }
 
   @override
   String get adminRecoveryNeedsVersion =>
-      'Account recovery requires a current server version. Refresh the account.';
+      'ఖాతా పునరుద్ధరణకు ప్రస్తుత సర్వర్ వెర్షన్ అవసరం. ఖాతాను రిఫ్రెష్ చేయండి.';
 
   @override
   String get adminNoActiveClasses =>
-      'No active classes. Create or restore a class in the classes section first.';
+      'యాక్టివ్ తరగతులు లేవు. ముందుగా తరగతుల విభాగంలో ఒక తరగతిని సృష్టించండి లేదా తిరిగి తీసుకురండి.';
 
   @override
-  String get adminTheCurrentClass => 'the current class';
+  String get adminTheCurrentClass => 'ప్రస్తుత తరగతి';
 
   @override
   String adminAssignClassTo(String name) {
-    return 'Assign class to $name';
+    return '$name కు తరగతిని కేటాయించండి';
   }
 
   @override
-  String get adminAssign => 'Assign';
+  String get adminAssign => 'కేటాయించండి';
 
   @override
-  String get adminRemoveClass => 'Remove class';
+  String get adminRemoveClass => 'తరగతిని తొలగించండి';
 
   @override
-  String get adminClassField => 'Class';
+  String get adminClassField => 'తరగతి';
 
   @override
   String adminRemoveStudentLabel(String name, String className) {
-    return 'Remove $name from $className, asks to confirm';
+    return '$className నుండి $name ను తొలగించండి, నిర్ధారణ అడుగుతుంది';
   }
 
   @override
   String adminAssignStudentLabel(String name) {
-    return 'Assign $name to the selected class';
+    return 'ఎంచుకున్న తరగతికి $name ను కేటాయించండి';
   }
 
   @override
-  String get adminRemoveFromClassTitle => 'Remove from class?';
+  String get adminRemoveFromClassTitle => 'తరగతి నుండి తొలగించాలా?';
 
   @override
   String adminRemoveFromClassMessage(String name, String className) {
-    return 'Remove $name from $className? They will no longer see that class until assigned again.';
+    return '$className నుండి $name ను తొలగించాలా? మళ్ళీ కేటాయించే వరకు వారికి ఆ తరగతి కనిపించదు.';
   }
 
   @override
-  String get adminKeepInClass => 'Keep in class';
+  String get adminKeepInClass => 'తరగతిలో ఉంచండి';
 
   @override
-  String get adminRemoveFromClass => 'Remove from class';
+  String get adminRemoveFromClass => 'తరగతి నుండి తొలగించండి';
 
   @override
   String adminStudentRemovedFromClass(String name) {
-    return '$name removed from class';
+    return '$name తరగతి నుండి తొలగించబడ్డారు';
   }
 
   @override
   String adminStudentAssignedTo(String name, String className) {
-    return '$name assigned to $className';
+    return '$name $className కు కేటాయించబడ్డారు';
   }
 
   @override
   String adminAssignTeacherScreen(String name) {
-    return 'Assign $name to a class and subject';
+    return '$name ను ఒక తరగతికి మరియు సబ్జెక్టుకు కేటాయించండి';
   }
 
   @override
@@ -8654,20 +8723,21 @@ class AppLocalizationsTe extends AppLocalizations {
     String className,
     String subject,
   ) {
-    return 'Remove $name from $className, $subject, asks to confirm';
+    return '$className, $subject నుండి $name ను తొలగించండి, నిర్ధారణ అడుగుతుంది';
   }
 
   @override
-  String get adminSubjectField => 'Subject';
+  String get adminSubjectField => 'సబ్జెక్టు';
 
   @override
-  String get adminSaveAssignment => 'Save assignment';
+  String get adminSaveAssignment => 'కేటాయింపును సేవ్ చేయండి';
 
   @override
-  String get adminTeacherAssignmentSaved => 'Teacher assignment saved';
+  String get adminTeacherAssignmentSaved =>
+      'ఉపాధ్యాయుల కేటాయింపు సేవ్ చేయబడింది';
 
   @override
-  String get adminRemoveAssignmentTitle => 'Remove assignment?';
+  String get adminRemoveAssignmentTitle => 'కేటాయింపును తొలగించాలా?';
 
   @override
   String adminRemoveAssignmentMessage(
@@ -8675,81 +8745,83 @@ class AppLocalizationsTe extends AppLocalizations {
     String className,
     String subject,
   ) {
-    return 'Remove $name from $className, $subject?';
+    return '$className, $subject నుండి $name ను తొలగించాలా?';
   }
 
   @override
-  String get adminKeep => 'Keep';
+  String get adminKeep => 'ఉంచండి';
 
   @override
-  String get adminRemove => 'Remove';
+  String get adminRemove => 'తొలగించండి';
 
   @override
-  String get adminTeacherAssignmentRemoved => 'Teacher assignment removed';
+  String get adminTeacherAssignmentRemoved =>
+      'ఉపాధ్యాయుల కేటాయింపు తొలగించబడింది';
 
   @override
-  String get adminRefreshData => 'Refresh admin data';
+  String get adminRefreshData => 'నిర్వాహకుల డేటాను రిఫ్రెష్ చేయండి';
 
   @override
-  String get adminLogout => 'Log out, asks to confirm';
+  String get adminLogout => 'లాగ్ అవుట్, నిర్ధారణ అడుగుతుంది';
 
   @override
   String adminSectionButton(String section) {
-    return '$section section. Change administration section';
+    return '$section విభాగం. నిర్వహణ విభాగాన్ని మార్చండి';
   }
 
   @override
   String get adminSearchAccounts =>
-      'Search accounts by name or phone number. Press OK to type';
+      'పేరు లేదా ఫోన్ నంబర్‌తో ఖాతాలను వెతకండి. టైప్ చేయడానికి ఓకే నొక్కండి';
 
   @override
   String adminRoleFilterLabel(String label) {
-    return 'Account type filter: $label, selected. Use left or right to change';
+    return 'ఖాతా రకం ఫిల్టర్: $label, ఎంచుకోబడింది. మార్చడానికి ఎడమ లేదా కుడి ఉపయోగించండి';
   }
 
   @override
   String adminAssignmentFilterLabel(String label) {
-    return 'Assignment filter: $label, selected. Use left or right to change';
+    return 'కేటాయింపు ఫిల్టర్: $label, ఎంచుకోబడింది. మార్చడానికి ఎడమ లేదా కుడి ఉపయోగించండి';
   }
 
   @override
   String adminClassActiveLabel(String name) {
-    return '$name, active. Press OK for class subjects and archive or restore actions';
+    return '$name, యాక్టివ్. తరగతి సబ్జెక్టులు మరియు ఆర్కైవ్ లేదా తిరిగి తీసుకురావడం కోసం ఓకే నొక్కండి';
   }
 
   @override
   String adminClassArchivedLabel(String name) {
-    return '$name, archived. Press OK for class subjects and archive or restore actions';
+    return '$name, ఆర్కైవ్ చేయబడింది. తరగతి సబ్జెక్టులు మరియు ఆర్కైవ్ లేదా తిరిగి తీసుకురావడం కోసం ఓకే నొక్కండి';
   }
 
   @override
   String adminSubjectActiveLabel(String name) {
-    return '$name, active. Press OK to archive';
+    return '$name, యాక్టివ్. ఆర్కైవ్ చేయడానికి ఓకే నొక్కండి';
   }
 
   @override
   String adminSubjectArchivedLabel(String name) {
-    return '$name, archived. Press OK to restore';
+    return '$name, ఆర్కైవ్ చేయబడింది. తిరిగి తీసుకురావడానికి ఓకే నొక్కండి';
   }
 
   @override
   String adminSubjectInClass(String name) {
-    return '$name. Available in this class. Select to remove';
+    return '$name. ఈ తరగతిలో అందుబాటులో ఉంది. తొలగించడానికి ఎంచుకోండి';
   }
 
   @override
   String adminSubjectNotInClass(String name) {
-    return '$name. Not available in this class. Select to add';
+    return '$name. ఈ తరగతిలో అందుబాటులో లేదు. జోడించడానికి ఎంచుకోండి';
   }
 
   @override
-  String get teacherHomeLater => 'Later';
+  String get teacherHomeLater => 'తర్వాత';
 
   @override
-  String get teacherHomeStartNow => 'Start now';
+  String get teacherHomeStartNow => 'ఇప్పుడే ప్రారంభించండి';
 
   @override
-  String get teacherHomeChooseWorkspaceTitle => 'Choose class and subject';
+  String get teacherHomeChooseWorkspaceTitle =>
+      'తరగతి మరియు సబ్జెక్టు ఎంచుకోండి';
 
   @override
   String teacherHomeWorkspaceItem(String className, String subjectName) {
@@ -8762,149 +8834,152 @@ class AppLocalizationsTe extends AppLocalizations {
     String subjectName,
     String status,
   ) {
-    return '$className, $subjectName selected. $status. Press 7 to choose another workspace.';
+    return '$className, $subjectName ఎంచుకోబడింది. $status. వేరే వర్క్‌స్పేస్ ఎంచుకోవడానికి 7 నొక్కండి.';
   }
 
   @override
-  String get teacherHomeUntitledSession => 'Untitled session';
+  String get teacherHomeUntitledSession => 'పేరు లేని సెషన్';
 
   @override
-  String get teacherHomeUntitledSessionTitle => 'Untitled Session';
+  String get teacherHomeUntitledSessionTitle => 'పేరు లేని సెషన్';
 
   @override
-  String get teacherHomeSessionFallback => 'session';
+  String get teacherHomeSessionFallback => 'సెషన్';
 
   @override
   String get teacherHomeSearchLabel =>
-      'Search sessions. Press OK, then type a name or the session number';
+      'సెషన్‌లను వెతకండి. ఓకే నొక్కి, తర్వాత పేరు లేదా సెషన్ నంబర్ టైప్ చేయండి';
 
   @override
-  String get teacherHomeKeepSessionOpen => 'Keep session open';
+  String get teacherHomeKeepSessionOpen => 'సెషన్‌ను తెరిచే ఉంచండి';
 
   @override
-  String get teacherHomeEndForEveryone => 'End for everyone';
+  String get teacherHomeEndForEveryone => 'అందరికీ ముగించండి';
 
   @override
-  String get teacherHomeKeepEnded => 'Keep ended';
+  String get teacherHomeKeepEnded => 'ముగిసినట్లే ఉంచండి';
 
   @override
-  String get teacherHomeReactivate => 'Reactivate';
+  String get teacherHomeReactivate => 'మళ్ళీ యాక్టివ్ చేయండి';
 
   @override
-  String get teacherHomeOpenLater => 'Open later';
+  String get teacherHomeOpenLater => 'తర్వాత తెరవండి';
 
   @override
-  String get teacherHomeOpenNow => 'Open now';
+  String get teacherHomeOpenNow => 'ఇప్పుడే తెరవండి';
 
   @override
-  String get teacherHomeKeepSession => 'Keep session';
+  String get teacherHomeKeepSession => 'సెషన్‌ను ఉంచండి';
 
   @override
-  String get teacherHomeDeletePermanently => 'Delete permanently';
+  String get teacherHomeDeletePermanently => 'శాశ్వతంగా తొలగించండి';
 
   @override
-  String get teacherHomeNewSessionTitle => 'New Session';
+  String get teacherHomeNewSessionTitle => 'కొత్త సెషన్';
 
   @override
-  String get teacherHomeCreateScreen => 'Create new session';
+  String get teacherHomeCreateScreen => 'కొత్త సెషన్ సృష్టించండి';
 
   @override
-  String get teacherHomeCreateSessionKey => 'Create session';
+  String get teacherHomeCreateSessionKey => 'సెషన్ సృష్టించండి';
 
   @override
-  String get teacherHomeTitleField => 'Session title field';
+  String get teacherHomeTitleField => 'సెషన్ శీర్షిక ఫీల్డ్';
 
   @override
-  String get teacherHomeCancelCreate => 'Cancel session creation';
+  String get teacherHomeCancelCreate => 'సెషన్ సృష్టించడం రద్దు చేయండి';
 
   @override
   String get studentHomeSearchHelp =>
-      'Session search. Type a session number with the keypad, or move down to search by name. Press OK to edit. Use down to browse results.';
+      'సెషన్ వెతుకులాట. కీప్యాడ్‌తో సెషన్ నంబర్ టైప్ చేయండి, లేదా పేరుతో వెతకడానికి కిందికి వెళ్ళండి. మార్చడానికి ఓకే నొక్కండి. ఫలితాలు చూడటానికి కిందికి వెళ్ళండి.';
 
   @override
   String studentHomeSubjectFallback(String id) {
-    return 'Subject $id';
+    return 'సబ్జెక్టు $id';
   }
 
   @override
-  String get studentHomeUntitledSession => 'Untitled session';
+  String get studentHomeUntitledSession => 'పేరు లేని సెషన్';
 
   @override
   String studentHomeSessionJoinLabel(String session) {
-    return '$session. Press OK to join';
+    return '$session. చేరడానికి ఓకే నొక్కండి';
   }
 
   @override
   String get inviteNoStudentsEnrolled =>
-      'No students are enrolled in this class. Press 1 to refresh.';
+      'ఈ తరగతిలో విద్యార్థులు ఎవరూ నమోదు కాలేదు. రిఫ్రెష్ చేయడానికి 1 నొక్కండి.';
 
   @override
   String inviteLoadedSummary(int count, String invited) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count students, $invited invited.',
-      one: '1 student, $invited invited.',
+      other: '$count మంది విద్యార్థులు, $invited మందిని ఆహ్వానించారు.',
+      one: '1 విద్యార్థి, $invited మందిని ఆహ్వానించారు.',
     );
     return '$_temp0';
   }
 
   @override
-  String get inviteUseSearch => 'Use the search field to find a name.';
+  String get inviteUseSearch =>
+      'పేరు కనుగొనడానికి వెతుకు ఫీల్డ్‌ను ఉపయోగించండి.';
 
   @override
   String get inviteLoadFailed =>
-      'Could not load students. Check your connection and press 1 to try again.';
+      'విద్యార్థులను లోడ్ చేయలేకపోయాము. మీ కనెక్షన్‌ను తనిఖీ చేసి, మళ్ళీ ప్రయత్నించడానికి 1 నొక్కండి.';
 
   @override
   String inviteAlreadyInvited(String name) {
-    return '$name is already invited.';
+    return '$name ను ఇప్పటికే ఆహ్వానించారు.';
   }
 
   @override
   String inviteInvitedOne(String name) {
-    return 'Invited $name.';
+    return '$name ను ఆహ్వానించారు.';
   }
 
   @override
   String inviteOneFailed(String name) {
-    return 'Could not invite $name. Check your connection and press OK to try again.';
+    return '$name ను ఆహ్వానించలేకపోయాము. మీ కనెక్షన్‌ను తనిఖీ చేసి, మళ్ళీ ప్రయత్నించడానికి ఓకే నొక్కండి.';
   }
 
   @override
-  String get inviteNoStudentsToInvite => 'There are no students to invite.';
+  String get inviteNoStudentsToInvite =>
+      'ఆహ్వానించడానికి విద్యార్థులు ఎవరూ లేరు.';
 
   @override
-  String get inviteAllAlreadyInvited => 'All students are already invited.';
+  String get inviteAllAlreadyInvited =>
+      'విద్యార్థులందరినీ ఇప్పటికే ఆహ్వానించారు.';
 
   @override
   String inviteInvitingAll(String count) {
-    return 'Inviting $count students. Please wait.';
+    return '$count మంది విద్యార్థులను ఆహ్వానిస్తున్నాము. దయచేసి వేచి ఉండండి.';
   }
 
   @override
   String inviteProgress(String done, String total) {
-    return 'Inviting students: $done of $total done.';
+    return 'విద్యార్థులను ఆహ్వానిస్తున్నాము: $total లో $done పూర్తయ్యాయి.';
   }
 
   @override
   String inviteAllDone(String count) {
-    return 'Invited all $count students.';
+    return 'మొత్తం $count మంది విద్యార్థులను ఆహ్వానించారు.';
   }
 
   @override
   String invitePartialFailed(String invited, String total, String names) {
-    return 'Invited $invited of $total students. Could not invite $names. Press 2 to try again.';
+    return '$total మంది విద్యార్థులలో $invited మందిని ఆహ్వానించారు. $names ను ఆహ్వానించలేకపోయాము. మళ్ళీ ప్రయత్నించడానికి 2 నొక్కండి.';
   }
 
   @override
   String inviteShowingAll(String count) {
-    return 'Showing all $count students.';
+    return 'మొత్తం $count మంది విద్యార్థులను చూపిస్తున్నాము.';
   }
 
   @override
   String inviteNoMatch(String query) {
-    return 'No students match $query. Clear the search to list everyone.';
+    return '$query కు సరిపోయే విద్యార్థులు ఎవరూ లేరు. అందరినీ చూడటానికి వెతుకును క్లియర్ చేయండి.';
   }
 
   @override
@@ -8912,160 +8987,162 @@ class AppLocalizationsTe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count students match $query. Use down to browse.',
-      one: '1 student matches $query. Use down to browse.',
+      other:
+          '$query కు $count మంది విద్యార్థులు సరిపోతున్నారు. చూడటానికి కిందికి ఉపయోగించండి.',
+      one:
+          '$query కు 1 విద్యార్థి సరిపోతున్నారు. చూడటానికి కిందికి ఉపయోగించండి.',
     );
     return '$_temp0';
   }
 
   @override
   String inviteStudentInvited(String name) {
-    return '$name, invited';
+    return '$name, ఆహ్వానించారు';
   }
 
   @override
   String inviteStudentNotInvited(String name) {
-    return '$name, not invited. Press OK to invite';
+    return '$name, ఆహ్వానించలేదు. ఆహ్వానించడానికి ఓకే నొక్కండి';
   }
 
   @override
-  String get inviteBackToSession => 'Back to session';
+  String get inviteBackToSession => 'సెషన్‌కు తిరిగి వెళ్ళండి';
 
   @override
-  String get inviteRefreshList => 'Refresh student list';
+  String get inviteRefreshList => 'విద్యార్థుల జాబితాను రిఫ్రెష్ చేయండి';
 
   @override
-  String get inviteAllStudents => 'Invite all students';
+  String get inviteAllStudents => 'విద్యార్థులందరినీ ఆహ్వానించండి';
 
   @override
   String get inviteSearchLabel =>
-      'Search students by name or phone number. Press OK to type';
+      'పేరు లేదా ఫోన్ నంబర్‌తో విద్యార్థులను వెతకండి. టైప్ చేయడానికి ఓకే నొక్కండి';
 
   @override
   String inviteScreenName(String title) {
-    return 'Invite students to $title';
+    return '$title కు విద్యార్థులను ఆహ్వానించండి';
   }
 
   @override
-  String get inviteKeyBack => 'Back to Session';
+  String get inviteKeyBack => 'సెషన్‌కు తిరిగి';
 
   @override
-  String get inviteKeyRefresh => 'Refresh Students';
+  String get inviteKeyRefresh => 'విద్యార్థులను రిఫ్రెష్ చేయండి';
 
   @override
-  String get inviteKeyInviteAll => 'Invite All';
+  String get inviteKeyInviteAll => 'అందరినీ ఆహ్వానించండి';
 
   @override
-  String get notificationTitleSessionInvitation => 'Live class';
+  String get notificationTitleSessionInvitation => 'లైవ్ తరగతి';
 
   @override
-  String get notificationTitleJourneyPublished => 'New learning journey';
+  String get notificationTitleJourneyPublished => 'కొత్త అభ్యాస ప్రయాణం';
 
   @override
-  String get notificationTitleQuizPublished => 'New quiz';
+  String get notificationTitleQuizPublished => 'కొత్త క్విజ్';
 
   @override
-  String get notificationTitleQuizReminder => 'Quiz reminder';
+  String get notificationTitleQuizReminder => 'క్విజ్ రిమైండర్';
 
   @override
-  String get notificationTitleDefault => 'SEEDS update';
+  String get notificationTitleDefault => 'SEEDS అప్‌డేట్';
 
   @override
   String get notificationArrivedSessionInvitation =>
-      'Your teacher started a class. Press 1 to join, or 0 for not now.';
+      'మీ ఉపాధ్యాయులు తరగతి ప్రారంభించారు. చేరడానికి 1 నొక్కండి, లేదా ఇప్పుడు వద్దు అంటే 0 నొక్కండి.';
 
   @override
   String get notificationArrivedJourneyPublished =>
-      'Your teacher shared a new learning journey. Press 1 to open it, or 0 for not now.';
+      'మీ ఉపాధ్యాయులు కొత్త అభ్యాస ప్రయాణాన్ని పంచుకున్నారు. తెరవడానికి 1 నొక్కండి, లేదా ఇప్పుడు వద్దు అంటే 0 నొక్కండి.';
 
   @override
   String get notificationArrivedQuizPublished =>
-      'Your teacher published a new quiz. Press 1 to open your quizzes, or 0 for not now.';
+      'మీ ఉపాధ్యాయులు కొత్త క్విజ్ ప్రచురించారు. మీ క్విజ్‌లు తెరవడానికి 1 నొక్కండి, లేదా ఇప్పుడు వద్దు అంటే 0 నొక్కండి.';
 
   @override
   String get notificationArrivedQuizReminder =>
-      'Reminder: you have a quiz to take. Press 1 to open your quizzes, or 0 for not now.';
+      'రిమైండర్: మీరు రాయాల్సిన క్విజ్ ఒకటి ఉంది. మీ క్విజ్‌లు తెరవడానికి 1 నొక్కండి, లేదా ఇప్పుడు వద్దు అంటే 0 నొక్కండి.';
 
   @override
   String get notificationArrivedDefault =>
-      'You have a new update. Press 0 to go back.';
+      'మీకు కొత్త అప్‌డేట్ ఉంది. వెనక్కి వెళ్ళడానికి 0 నొక్కండి.';
 
   @override
   String get notificationForegroundSessionInvitation =>
-      'Your teacher started a class. Join it from Live sessions on your dashboard.';
+      'మీ ఉపాధ్యాయులు తరగతి ప్రారంభించారు. మీ డాష్‌బోర్డ్‌లోని లైవ్ సెషన్‌ల నుండి చేరండి.';
 
   @override
   String get notificationForegroundJourneyPublished =>
-      'Your teacher shared a new learning journey. Find it under Learning journeys.';
+      'మీ ఉపాధ్యాయులు కొత్త అభ్యాస ప్రయాణాన్ని పంచుకున్నారు. అభ్యాస ప్రయాణాలలో చూడండి.';
 
   @override
   String get notificationForegroundQuizPublished =>
-      'Your teacher published a new quiz.';
+      'మీ ఉపాధ్యాయులు కొత్త క్విజ్ ప్రచురించారు.';
 
   @override
   String get notificationForegroundQuizReminder =>
-      'Reminder: you have a quiz to take.';
+      'రిమైండర్: మీరు రాయాల్సిన క్విజ్ ఒకటి ఉంది.';
 
   @override
-  String get notificationForegroundDefault => 'You have a new update.';
+  String get notificationForegroundDefault => 'మీకు కొత్త అప్‌డేట్ ఉంది.';
 
   @override
-  String get notificationOpenJoinClass => 'Join class';
+  String get notificationOpenJoinClass => 'తరగతిలో చేరండి';
 
   @override
-  String get notificationOpenJourney => 'Open journey';
+  String get notificationOpenJourney => 'ప్రయాణం తెరవండి';
 
   @override
-  String get notificationOpenQuizzes => 'Open quizzes';
+  String get notificationOpenQuizzes => 'క్విజ్‌లు తెరవండి';
 
   @override
-  String get notificationOpenBack => 'Back';
+  String get notificationOpenBack => 'వెనక్కి';
 
   @override
   String get notificationCannotOpen =>
-      'This could not be opened. Sign in again, then open it from your dashboard.';
+      'దీన్ని తెరవలేకపోయాము. మళ్ళీ సైన్ ఇన్ చేసి, తర్వాత మీ డాష్‌బోర్డ్ నుండి తెరవండి.';
 
   @override
-  String get authLoginSuccessful => 'Login successful';
+  String get authLoginSuccessful => 'లాగిన్ విజయవంతమైంది';
 
   @override
   String authRoleAlreadySelected(String role) {
-    return '$role account already selected';
+    return '$role ఖాతా ఇప్పటికే ఎంచుకోబడింది';
   }
 
   @override
   String authRoleSelected(String role) {
-    return '$role account selected';
+    return '$role ఖాతా ఎంచుకోబడింది';
   }
 
   @override
   String authRecoveryStep(String number, String step) {
-    return 'Step $number. $step';
+    return 'దశ $number. $step';
   }
 
   @override
-  String get authEnterPhone => 'Enter phone number';
+  String get authEnterPhone => 'ఫోన్ నంబర్ నమోదు చేయండి';
 
   @override
-  String get authEnterPassword => 'Enter password';
+  String get authEnterPassword => 'పాస్‌వర్డ్ నమోదు చేయండి';
 
   @override
-  String get authEnterName => 'Enter name';
+  String get authEnterName => 'పేరు నమోదు చేయండి';
 
   @override
-  String get authRegistering => 'Registering, please wait.';
+  String get authRegistering => 'నమోదు చేస్తోంది, దయచేసి వేచి ఉండండి.';
 
   @override
-  String get authPasswordChanged => 'Password changed. Signed in.';
+  String get authPasswordChanged => 'పాస్‌వర్డ్ మార్చబడింది. సైన్ ఇన్ అయ్యారు.';
 
   @override
   String journeyWhereFinished(String title) {
-    return 'Journey finished. $title.';
+    return 'ప్రయాణం పూర్తయింది. $title.';
   }
 
   @override
   String journeyWhere(String number, String total, String kind, String title) {
-    return 'Step $number of $total. $kind. $title.';
+    return '$total లో దశ $number. $kind. $title.';
   }
 
   @override
@@ -9075,39 +9152,39 @@ class AppLocalizationsTe extends AppLocalizations {
     String kind,
     String title,
   ) {
-    return 'Step $number of $total. $kind. $title. Listening again before the question.';
+    return '$total లో దశ $number. $kind. $title. ప్రశ్నకు ముందు మళ్ళీ వింటున్నాము.';
   }
 
   @override
-  String get journeyKindRecording => 'Recording';
+  String get journeyKindRecording => 'రికార్డింగ్';
 
   @override
-  String get journeyKindNarration => 'Narration';
+  String get journeyKindNarration => 'వివరణ';
 
   @override
-  String get journeyKindQuestion => 'Question';
+  String get journeyKindQuestion => 'ప్రశ్న';
 
   @override
-  String get journeyKindPoll => 'Poll';
+  String get journeyKindPoll => 'పోల్';
 
   @override
   String journeyOption(String number, String text) {
-    return 'Option $number: $text.';
+    return 'ఎంపిక $number: $text.';
   }
 
   @override
   String journeyChooseKeys(String count) {
-    return 'Press 1 to $count to choose, then 5 to submit.';
+    return 'ఎంచుకోవడానికి 1 నుండి $count వరకు నొక్కండి, తర్వాత సమర్పించడానికి 5 నొక్కండి.';
   }
 
   @override
   String journeyPollQuestion(String question, String options, String keys) {
-    return 'Poll. There is no wrong answer. $question $options $keys';
+    return 'పోల్. ఇందులో తప్పు జవాబు లేదు. $question $options $keys';
   }
 
   @override
   String journeyQuestion(String question, String options, String keys) {
-    return 'Question. $question $options $keys';
+    return 'ప్రశ్న. $question $options $keys';
   }
 
   @override
@@ -9117,7 +9194,7 @@ class AppLocalizationsTe extends AppLocalizations {
     String options,
     String keys,
   ) {
-    return 'Question. Try again. $triesLeft $question $options $keys';
+    return 'ప్రశ్న. మళ్ళీ ప్రయత్నించండి. $triesLeft $question $options $keys';
   }
 
   @override
@@ -9125,53 +9202,53 @@ class AppLocalizationsTe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count tries left.',
-      one: '1 try left.',
+      other: '$count ప్రయత్నాలు మిగిలి ఉన్నాయి.',
+      one: '1 ప్రయత్నం మిగిలి ఉంది.',
     );
     return '$_temp0';
   }
 
   @override
   String journeyChosen(String number, String option) {
-    return 'Option $number, $option, selected. Press 5 to submit, or choose another number.';
+    return 'ఎంపిక $number, $option, ఎంచుకోబడింది. సమర్పించడానికి 5 నొక్కండి, లేదా మరో నంబర్ ఎంచుకోండి.';
   }
 
   @override
   String journeyRecordingContent(String title) {
-    return 'Recording: $title. Press 5 to pause or play. Press 2 when you are ready to move on.';
+    return 'రికార్డింగ్: $title. ఆపడానికి లేదా ప్లే చేయడానికి 5 నొక్కండి. ముందుకు వెళ్ళడానికి సిద్ధంగా ఉన్నప్పుడు 2 నొక్కండి.';
   }
 
   @override
-  String get journeyUntitled => 'Untitled';
+  String get journeyUntitled => 'పేరు లేదు';
 
   @override
   String get journeyContentKeys =>
-      'Press 2 for the next step, 3 to repeat this step, 1 to hear where you are, 8 to go back to the previous recording or narration.';
+      'తర్వాతి దశకు 2, ఈ దశను మళ్ళీ వినడానికి 3, మీరు ఎక్కడ ఉన్నారో వినడానికి 1, మునుపటి రికార్డింగ్ లేదా వివరణకు తిరిగి వెళ్ళడానికి 8 నొక్కండి.';
 
   @override
   String journeyCorrect(String answer) {
-    return 'Correct! $answer.';
+    return 'సరైనది! $answer.';
   }
 
   @override
-  String get journeyPollSaved => 'Thank you. Your answer is saved.';
+  String get journeyPollSaved => 'ధన్యవాదాలు. మీ జవాబు సేవ్ చేయబడింది.';
 
   @override
   String get journeyReplayOutcome =>
-      'Not quite. Let us listen to that part again, then try once more.';
+      'సరిగ్గా కాదు. ఆ భాగాన్ని మళ్ళీ విని, ఇంకోసారి ప్రయత్నిద్దాం.';
 
   @override
   String get journeyTryAgainOutcome =>
-      'Not quite. Think again and choose another answer.';
+      'సరిగ్గా కాదు. మళ్ళీ ఆలోచించి మరో జవాబు ఎంచుకోండి.';
 
   @override
   String journeyRevealed(String number, String answer, String explanation) {
-    return 'Not quite. The answer is option $number, $answer. $explanation';
+    return 'సరిగ్గా కాదు. సరైన జవాబు ఎంపిక $number, $answer. $explanation';
   }
 
   @override
   String journeyWellDone(String title) {
-    return 'Well done! You finished $title.';
+    return 'చాలా బాగుంది! మీరు $title పూర్తి చేశారు.';
   }
 
   @override
@@ -9180,32 +9257,32 @@ class AppLocalizationsTe extends AppLocalizations {
       questions,
       locale: localeName,
       other:
-          'You answered $correct of $questions questions correctly on the first try.',
-      one: 'You answered $correct of 1 question correctly on the first try.',
+          'మొదటి ప్రయత్నంలో $questions ప్రశ్నలలో $correct కు సరిగ్గా జవాబు ఇచ్చారు.',
+      one: 'మొదటి ప్రయత్నంలో 1 ప్రశ్నలో $correct కు సరిగ్గా జవాబు ఇచ్చారు.',
     );
     return '$_temp0';
   }
 
   @override
   String get journeyPlayAgainHelp =>
-      'Press 1 to play again, or 0 to go back to your journeys.';
+      'మళ్ళీ ప్లే చేయడానికి 1 నొక్కండి, లేదా మీ ప్రయాణాలకు తిరిగి వెళ్ళడానికి 0 నొక్కండి.';
 
   @override
-  String get journeyStatusCompleted => 'Completed';
+  String get journeyStatusCompleted => 'పూర్తయింది';
 
   @override
-  String get journeyStatusInProgress => 'In progress';
+  String get journeyStatusInProgress => 'జరుగుతోంది';
 
   @override
-  String get journeyStatusNew => 'New';
+  String get journeyStatusNew => 'కొత్తది';
 
   @override
   String journeyRowScore(String percent) {
-    return 'Score $percent percent.';
+    return 'స్కోరు $percent శాతం.';
   }
 
   @override
-  String get journeyRowDownloaded => 'Downloaded.';
+  String get journeyRowDownloaded => 'డౌన్‌లోడ్ చేయబడింది.';
 
   @override
   String journeyStudentRow(
@@ -9215,7 +9292,7 @@ class AppLocalizationsTe extends AppLocalizations {
     String questions,
     String status,
   ) {
-    return '$title. $subject. $steps steps, $questions questions. $status.';
+    return '$title. $subject. $steps దశలు, $questions ప్రశ్నలు. $status.';
   }
 
   @override
@@ -9225,286 +9302,288 @@ class AppLocalizationsTe extends AppLocalizations {
     String steps,
     String questions,
   ) {
-    return '$title. $status. $steps steps, $questions questions.';
+    return '$title. $status. $steps దశలు, $questions ప్రశ్నలు.';
   }
 
   @override
-  String get journeyRowGraded => 'Graded.';
+  String get journeyRowGraded => 'మార్కులతో.';
 
   @override
   String journeyStepRow(String number, String total, String name) {
-    return 'Step $number of $total. $name.';
+    return '$total లో దశ $number. $name.';
   }
 
   @override
-  String get journeyReplaysAutomatically => 'Replays automatically.';
+  String get journeyReplaysAutomatically => 'ఆటోమేటిక్‌గా మళ్ళీ ప్లే అవుతుంది.';
 
   @override
   String journeyReplaysFrom(String number) {
-    return 'Replays from step $number.';
+    return 'దశ $number నుండి మళ్ళీ ప్లే అవుతుంది.';
   }
 
   @override
-  String get journeyFinishedStatus => 'Journey finished.';
+  String get journeyFinishedStatus => 'ప్రయాణం పూర్తయింది.';
 
   @override
-  String get journeyRecordingPlaying => 'Recording playing.';
+  String get journeyRecordingPlaying => 'రికార్డింగ్ ప్లే అవుతోంది.';
 
   @override
-  String get journeyRecordingPaused => 'Recording paused.';
+  String get journeyRecordingPaused => 'రికార్డింగ్ ఆపబడింది.';
 
   @override
-  String get journeyNoOptionChosen => 'No option chosen yet.';
+  String get journeyNoOptionChosen => 'ఇంకా ఏ ఎంపికనూ ఎంచుకోలేదు.';
 
   @override
   String journeyOptionSelected(String number, String option) {
-    return 'Option $number, $option, selected.';
+    return 'ఎంపిక $number, $option, ఎంచుకోబడింది.';
   }
 
   @override
   String journeyPreviewStart(String title) {
-    return 'Preview of $title. Nothing is saved.';
+    return '$title ప్రివ్యూ. ఏదీ సేవ్ చేయబడదు.';
   }
 
   @override
   String journeyWelcomeBack(String title) {
-    return 'Welcome back to $title. Continuing where you left off.';
+    return '$title కు తిరిగి స్వాగతం. మీరు ఆపిన చోటు నుండి కొనసాగిస్తున్నాము.';
   }
 
   @override
   String journeyStartingBrief(String title) {
-    return 'Starting $title.';
+    return '$title ప్రారంభిస్తున్నాము.';
   }
 
   @override
   String journeyStartingDetailed(String title, String steps) {
-    return 'Starting $title. $steps steps. Press star at any time for help.';
+    return '$title ప్రారంభిస్తున్నాము. $steps దశలు. సహాయం కోసం ఎప్పుడైనా స్టార్ నొక్కండి.';
   }
 
   @override
   String journeyNotSaved(String reason) {
-    return 'Your place could not be saved. $reason';
+    return 'మీరు ఉన్న చోటును సేవ్ చేయలేకపోయాము. $reason';
   }
 
   @override
-  String get journeyListeningAgain => 'Listening again.';
+  String get journeyListeningAgain => 'మళ్ళీ వింటున్నాము.';
 
   @override
   String journeyNarration(String text) {
-    return '$text Press 2 to continue.';
+    return '$text కొనసాగించడానికి 2 నొక్కండి.';
   }
 
   @override
   String journeyRecordingStatus(String title) {
-    return 'Recording: $title';
+    return 'రికార్డింగ్: $title';
   }
 
   @override
   String get journeyRecordingFailed =>
-      'This recording could not be played. Check your internet.';
+      'ఈ రికార్డింగ్‌ను ప్లే చేయలేకపోయాము. మీ ఇంటర్నెట్‌ను తనిఖీ చేయండి.';
 
   @override
   String get journeyRecordingRetry =>
-      'Press 3 to try again, or 2 to skip to the next step.';
+      'మళ్ళీ ప్రయత్నించడానికి 3 నొక్కండి, లేదా తర్వాతి దశకు వెళ్ళడానికి 2 నొక్కండి.';
 
   @override
   String get journeyNotDownloaded =>
-      'This recording is not downloaded on this phone.';
+      'ఈ రికార్డింగ్ ఈ ఫోన్‌లో డౌన్‌లోడ్ కాలేదు.';
 
   @override
-  String get journeyRecordingFinished => 'Recording finished.';
+  String get journeyRecordingFinished => 'రికార్డింగ్ పూర్తయింది.';
 
   @override
   String journeyAnswerFirst(String count) {
-    return 'Answer first. Press 1 to $count to choose, then 5.';
+    return 'ముందు జవాబు ఇవ్వండి. ఎంచుకోవడానికి 1 నుండి $count వరకు నొక్కండి, తర్వాత 5 నొక్కండి.';
   }
 
   @override
   String get journeyNoEarlierContent =>
-      'There is no earlier recording or narration.';
+      'ఇంతకు ముందు రికార్డింగ్ లేదా వివరణ లేదు.';
 
   @override
-  String get journeyGoingBack => 'Going back.';
+  String get journeyGoingBack => 'వెనక్కి వెళ్తున్నాము.';
 
   @override
   String journeyNoSuchOption(String option, String count) {
-    return 'There is no option $option. Choose 1 to $count.';
+    return 'ఎంపిక $option లేదు. 1 నుండి $count వరకు ఎంచుకోండి.';
   }
 
   @override
   String journeyChooseFirst(String count) {
-    return 'Choose an answer first with 1 to $count.';
+    return 'ముందు 1 నుండి $count వరకు ఒక జవాబు ఎంచుకోండి.';
   }
 
   @override
   String get journeySendLater =>
-      'Journey finished. Your answers will be sent when you are online.';
+      'ప్రయాణం పూర్తయింది. మీరు ఆన్‌లైన్‌లో ఉన్నప్పుడు మీ జవాబులు పంపబడతాయి.';
 
   @override
-  String get journeyStartingAgain => 'Starting again.';
+  String get journeyStartingAgain => 'మళ్ళీ ప్రారంభిస్తున్నాము.';
 
   @override
-  String get journeyPaused => 'Paused.';
+  String get journeyPaused => 'ఆపబడింది.';
 
   @override
-  String get journeySeekRecordingsOnly => 'Seeking works on recordings only.';
+  String get journeySeekRecordingsOnly =>
+      'ముందుకు వెనక్కి జరపడం రికార్డింగ్‌లలో మాత్రమే పనిచేస్తుంది.';
 
   @override
   String get journeySpeedRecordingsOnly =>
-      'Recording speed changes on recordings only.';
+      'రికార్డింగ్ వేగం రికార్డింగ్‌లలో మాత్రమే మారుతుంది.';
 
   @override
-  String get journeyFastest => 'Fastest speed.';
+  String get journeyFastest => 'అత్యధిక వేగం.';
 
   @override
-  String get journeySlowest => 'Slowest speed.';
+  String get journeySlowest => 'అత్యల్ప వేగం.';
 
   @override
   String journeySpeed(String rate) {
-    return 'Recording speed $rate times.';
+    return 'రికార్డింగ్ వేగం $rate రెట్లు.';
   }
 
   @override
-  String get journeyLeaveTitle => 'Leave this journey?';
+  String get journeyLeaveTitle => 'ఈ ప్రయాణం నుండి బయటకు వెళ్ళాలా?';
 
   @override
   String journeyLeaveMessage(String step) {
-    return 'Your place is saved on this phone. Next time you can continue from step $step.';
+    return 'మీరు ఉన్న చోటు ఈ ఫోన్‌లో సేవ్ చేయబడింది. తర్వాతిసారి మీరు దశ $step నుండి కొనసాగించవచ్చు.';
   }
 
   @override
   String get journeyAnswerHelp =>
-      'Press a number to choose, 5 to submit, 6 to repeat the question.';
+      'ఎంచుకోవడానికి ఒక నంబర్, సమర్పించడానికి 5, ప్రశ్నను మళ్ళీ వినడానికి 6 నొక్కండి.';
 
   @override
   String journeyStepRemoved(String remaining) {
-    return 'Step removed. The journey now has $remaining steps.';
+    return 'దశ తొలగించబడింది. ఇప్పుడు ప్రయాణంలో $remaining దశలు ఉన్నాయి.';
   }
 
   @override
   String journeyStepRemovedUndo(String name) {
-    return 'Removed $name.';
+    return '$name తొలగించబడింది.';
   }
 
   @override
-  String get journeyStepRestored => 'Step restored.';
+  String get journeyStepRestored => 'దశ తిరిగి తీసుకురాబడింది.';
 
   @override
   String journeyCreated(String title) {
-    return 'Created $title. Now add its first step.';
+    return '$title సృష్టించబడింది. ఇప్పుడు దాని మొదటి దశను జోడించండి.';
   }
 
   @override
-  String get journeyNoStepAdded => 'No step was added.';
+  String get journeyNoStepAdded => 'ఏ దశా జోడించబడలేదు.';
 
   @override
   String journeyPreviewSkips(String issues) {
-    return 'Some steps are skipped in this preview. $issues';
+    return 'ఈ ప్రివ్యూలో కొన్ని దశలు వదిలివేయబడ్డాయి. $issues';
   }
 
   @override
   String journeyDuplicated(String title) {
-    return 'Created $title as a new draft. Find it under Drafts.';
+    return '$title ను కొత్త డ్రాఫ్ట్‌గా సృష్టించాము. దాన్ని డ్రాఫ్ట్‌లలో కనుగొనండి.';
   }
 
   @override
   String journeyArchiveMessage(String title) {
-    return 'Students will no longer see $title. Results are kept. You can restore it later.';
+    return 'విద్యార్థులకు ఇకపై $title కనిపించదు. ఫలితాలు ఉంచబడతాయి. మీరు దాన్ని తర్వాత తిరిగి తీసుకురావచ్చు.';
   }
 
   @override
   String journeyRestoreMessage(String title) {
-    return 'Students will see $title again.';
+    return 'విద్యార్థులకు $title మళ్ళీ కనిపిస్తుంది.';
   }
 
   @override
-  String get journeyArchived => 'Archived. Students no longer see it.';
+  String get journeyArchived =>
+      'ఆర్కైవ్ చేయబడింది. విద్యార్థులకు ఇకపై కనిపించదు.';
 
   @override
-  String get journeyRestored => 'Restored for students.';
+  String get journeyRestored => 'విద్యార్థుల కోసం తిరిగి తీసుకురాబడింది.';
 
   @override
   String journeyDeleteDraftMessage(String title) {
-    return 'Delete $title permanently? Recordings stay in your library.';
+    return '$title ను శాశ్వతంగా తొలగించాలా? రికార్డింగ్‌లు మీ లైబ్రరీలోనే ఉంటాయి.';
   }
 
   @override
-  String get journeyDraftDeleted => 'Draft deleted.';
+  String get journeyDraftDeleted => 'డ్రాఫ్ట్ తొలగించబడింది.';
 
   @override
-  String get journeyNoRetriesLeft => 'Already no retries.';
+  String get journeyNoRetriesLeft => 'ఇప్పటికే మళ్ళీ ప్రయత్నాలు లేవు.';
 
   @override
-  String get journeyMaxRetries => 'Five retries is the most.';
+  String get journeyMaxRetries => 'గరిష్ఠంగా ఐదు సార్లు మళ్ళీ ప్రయత్నించవచ్చు.';
 
   @override
   String journeyPublished(String count) {
-    return 'Published. Students can play it now. Notifications reached $count phones.';
+    return 'ప్రచురించబడింది. విద్యార్థులు ఇప్పుడు దీన్ని ప్లే చేయవచ్చు. నోటిఫికేషన్లు $count ఫోన్లకు చేరాయి.';
   }
 
   @override
   String get journeyOptionUsed =>
-      'That option is already used. Type a different option.';
+      'ఆ ఎంపిక ఇప్పటికే ఉపయోగించబడింది. వేరే ఎంపికను టైప్ చేయండి.';
 
   @override
   String get journeyNothingToReplay =>
-      'There is no recording or narration before this question yet, so a wrong answer asks again. You can add content earlier and edit this later.';
+      'ఈ ప్రశ్నకు ముందు ఇంకా రికార్డింగ్ లేదా వివరణ లేదు, కాబట్టి తప్పు జవాబు ఇస్తే ప్రశ్న మళ్ళీ అడగబడుతుంది. మీరు ముందు కంటెంట్ జోడించి, దీన్ని తర్వాత సవరించవచ్చు.';
 
   @override
   String get journeyBankEmpty =>
-      'Your question bank for this class and subject is empty. Choose Write a new question instead.';
+      'ఈ తరగతి మరియు సబ్జెక్టు కోసం మీ ప్రశ్నల బ్యాంక్ ఖాళీగా ఉంది. బదులుగా కొత్త ప్రశ్న రాయండి ఎంచుకోండి.';
 
   @override
   String get journeyRecordViaNotes =>
-      'Opening private notes. Record, review, then choose Publish to this class and subject. Come back with 0, and choose your new recording.';
+      'ప్రైవేట్ నోట్స్ తెరుస్తున్నాము. రికార్డ్ చేసి, సమీక్షించి, తర్వాత ఈ తరగతి మరియు సబ్జెక్టుకు ప్రచురించండి ఎంచుకోండి. 0 తో తిరిగి వచ్చి, మీ కొత్త రికార్డింగ్‌ను ఎంచుకోండి.';
 
   @override
   String get journeyNoRecordings =>
-      'There are no audio files in this class and subject yet, so nothing was added. You are back on the previous screen. To add one, choose Recording again, then 2 to upload a recording file or 3 to record a new one.';
+      'ఈ తరగతి మరియు సబ్జెక్టులో ఇంకా ఆడియో ఫైళ్ళు లేవు, కాబట్టి ఏదీ జోడించబడలేదు. మీరు మునుపటి స్క్రీన్‌కు తిరిగి వచ్చారు. ఒకటి జోడించడానికి, మళ్ళీ రికార్డింగ్ ఎంచుకుని, రికార్డింగ్ ఫైల్ అప్‌లోడ్ చేయడానికి 2 లేదా కొత్తది రికార్డ్ చేయడానికి 3 నొక్కండి.';
 
   @override
   String get journeyOpeningFiles =>
-      'Opening the file chooser for an audio file.';
+      'ఆడియో ఫైల్ కోసం ఫైల్ ఎంపికను తెరుస్తున్నాము.';
 
   @override
-  String get journeyNoFile => 'No file chosen.';
+  String get journeyNoFile => 'ఏ ఫైల్‌నూ ఎంచుకోలేదు.';
 
   @override
-  String get journeyUploading => 'Uploading. Please wait.';
+  String get journeyUploading => 'అప్‌లోడ్ అవుతోంది. దయచేసి వేచి ఉండండి.';
 
   @override
   String get journeyUploadUnconfirmed =>
-      'The upload was not confirmed. Check My recordings before trying again, to avoid a duplicate.';
+      'అప్‌లోడ్ నిర్ధారించబడలేదు. రెండుసార్లు రాకుండా ఉండటానికి, మళ్ళీ ప్రయత్నించే ముందు నా రికార్డింగ్‌లను తనిఖీ చేయండి.';
 
   @override
   String journeyUploaded(String title) {
-    return 'Uploaded $title.';
+    return '$title అప్‌లోడ్ చేయబడింది.';
   }
 
   @override
-  String get journeyStorageUnavailable => 'Journey storage is unavailable.';
+  String get journeyStorageUnavailable => 'ప్రయాణం నిల్వ అందుబాటులో లేదు.';
 
   @override
   String get journeyNothingInProgress =>
-      'There is no journey in progress. Press 2 for new journeys.';
+      'జరుగుతున్న ప్రయాణం ఏదీ లేదు. కొత్త ప్రయాణాల కోసం 2 నొక్కండి.';
 
   @override
   String get journeyTeacherUpdated =>
-      'Your teacher updated this journey. Download it again to play the new version offline.';
+      'మీ ఉపాధ్యాయులు ఈ ప్రయాణాన్ని అప్‌డేట్ చేశారు. కొత్త వెర్షన్‌ను ఆఫ్‌లైన్‌లో ప్లే చేయడానికి దీన్ని మళ్ళీ డౌన్‌లోడ్ చేయండి.';
 
   @override
   String journeyStartOverMessage(String title) {
-    return 'Start $title again from step 1? Answers you already gave are still sent to your teacher.';
+    return '$title ను దశ 1 నుండి మళ్ళీ ప్రారంభించాలా? మీరు ఇప్పటికే ఇచ్చిన జవాబులు మీ ఉపాధ్యాయులకు పంపబడతాయి.';
   }
 
   @override
   String journeyRemoveDownloadMessage(String title) {
-    return 'Remove $title from this phone? Your place in the journey is kept. You can download it again with internet.';
+    return 'ఈ ఫోన్ నుండి $title ను తొలగించాలా? ప్రయాణంలో మీరు ఉన్న చోటు ఉంచబడుతుంది. ఇంటర్నెట్‌తో దీన్ని మళ్ళీ డౌన్‌లోడ్ చేయవచ్చు.';
   }
 
   @override
   String journeyDownloadRemoved(String title) {
-    return 'Removed the download of $title.';
+    return '$title డౌన్‌లోడ్ తొలగించబడింది.';
   }
 
   @override
@@ -9512,20 +9591,21 @@ class AppLocalizationsTe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Downloading $count recordings. Press 0 to cancel.',
-      one: 'Downloading 1 recording. Press 0 to cancel.',
+      other:
+          '$count రికార్డింగ్‌లు డౌన్‌లోడ్ అవుతున్నాయి. రద్దు చేయడానికి 0 నొక్కండి.',
+      one: '1 రికార్డింగ్ డౌన్‌లోడ్ అవుతోంది. రద్దు చేయడానికి 0 నొక్కండి.',
     );
     return '$_temp0';
   }
 
   @override
   String journeyDownloaded(String title) {
-    return 'Downloaded. You can play $title without internet.';
+    return 'డౌన్‌లోడ్ అయింది. మీరు ఇంటర్నెట్ లేకుండా $title ప్లే చేయవచ్చు.';
   }
 
   @override
   String get journeyCancellingDownload =>
-      'Cancelling download. Saved recordings are kept.';
+      'డౌన్‌లోడ్ రద్దు చేస్తున్నాము. సేవ్ అయిన రికార్డింగ్‌లు ఉంచబడతాయి.';
 
   @override
   String journeyStepDetailsQuestion(
@@ -9534,191 +9614,191 @@ class AppLocalizationsTe extends AppLocalizations {
     String number,
     String explanation,
   ) {
-    return '$name $options Correct answer: option $number. $explanation';
+    return '$name $options సరైన జవాబు: ఎంపిక $number. $explanation';
   }
 
   @override
-  String get journeyNoExplanation => 'No explanation.';
+  String get journeyNoExplanation => 'వివరణ లేదు.';
 
   @override
   String journeyExplanation(String text) {
-    return 'Explanation: $text';
+    return 'వివరణ: $text';
   }
 
   @override
   String journeyStepNameRecording(String title) {
-    return 'Recording. $title';
+    return 'రికార్డింగ్. $title';
   }
 
   @override
-  String get journeyUntitledRecording => 'Untitled recording';
+  String get journeyUntitledRecording => 'పేరు లేని రికార్డింగ్';
 
   @override
   String journeyStepNameNarration(String text) {
-    return 'Narration. $text';
+    return 'వివరణ. $text';
   }
 
   @override
   String journeyStepNameQuestion(String text) {
-    return 'Question. $text';
+    return 'ప్రశ్న. $text';
   }
 
   @override
   String journeyStepNamePoll(String text) {
-    return 'Poll. $text';
+    return 'పోల్. $text';
   }
 
   @override
-  String get journeyStatusPublished => 'Published';
+  String get journeyStatusPublished => 'ప్రచురించబడింది';
 
   @override
-  String get journeyStatusArchived => 'Archived';
+  String get journeyStatusArchived => 'ఆర్కైవ్ చేయబడింది';
 
   @override
-  String get journeyStatusDraft => 'Draft, not yet published';
+  String get journeyStatusDraft => 'డ్రాఫ్ట్, ఇంకా ప్రచురించబడలేదు';
 
   @override
   String journeyStatusWithChanges(String status) {
-    return '$status, with unpublished changes';
+    return '$status, ప్రచురించని మార్పులతో';
   }
 
   @override
   String get journeyErrorChanged =>
-      'This journey changed. Refresh and try again.';
+      'ఈ ప్రయాణం మారింది. రిఫ్రెష్ చేసి మళ్ళీ ప్రయత్నించండి.';
 
   @override
   String get journeyErrorSignInExpired =>
-      'Your sign-in expired. Sign in again.';
+      'మీ సైన్ ఇన్ గడువు ముగిసింది. మళ్ళీ సైన్ ఇన్ చేయండి.';
 
   @override
-  String get journeyErrorPermission => 'You do not have permission to do that.';
+  String get journeyErrorPermission => 'దీన్ని చేయడానికి మీకు అనుమతి లేదు.';
 
   @override
-  String get journeyErrorNotAvailable => 'This journey is no longer available.';
+  String get journeyErrorNotAvailable => 'ఈ ప్రయాణం ఇకపై అందుబాటులో లేదు.';
 
   @override
   String get journeyErrorInvalid =>
-      'Some of the information could not be accepted. Check it and try again.';
+      'కొంత సమాచారాన్ని అంగీకరించలేకపోయాము. దాన్ని తనిఖీ చేసి మళ్ళీ ప్రయత్నించండి.';
 
   @override
   String get journeyErrorServer =>
-      'The school server had a problem. Try again later.';
+      'పాఠశాల సర్వర్‌లో సమస్య వచ్చింది. తర్వాత మళ్ళీ ప్రయత్నించండి.';
 
   @override
   String get journeyErrorRequestFailed =>
-      'The request did not succeed. Try again.';
+      'అభ్యర్థన విజయవంతం కాలేదు. మళ్ళీ ప్రయత్నించండి.';
 
   @override
   String get journeyErrorResponseUnreadable =>
-      'The server response could not be read. Refresh before trying again.';
+      'సర్వర్ జవాబును చదవలేకపోయాము. మళ్ళీ ప్రయత్నించే ముందు రిఫ్రెష్ చేయండి.';
 
   @override
   String get journeyErrorSavedUnreadable =>
-      'The saved journey could not be read. Refresh before trying again.';
+      'సేవ్ అయిన ప్రయాణాన్ని చదవలేకపోయాము. మళ్ళీ ప్రయత్నించే ముందు రిఫ్రెష్ చేయండి.';
 
   @override
-  String get journeyErrorListUnreadable =>
-      'The journey list could not be read.';
+  String get journeyErrorListUnreadable => 'ప్రయాణాల జాబితాను చదవలేకపోయాము.';
 
   @override
   String get journeyErrorMismatch =>
-      'The saved journey did not match. Refresh before trying again.';
+      'సేవ్ అయిన ప్రయాణం సరిపోలలేదు. మళ్ళీ ప్రయత్నించే ముందు రిఫ్రెష్ చేయండి.';
 
   @override
   String get journeyErrorPreviewUnreadable =>
-      'The journey preview could not be read.';
+      'ప్రయాణం ప్రివ్యూను చదవలేకపోయాము.';
 
   @override
   String get journeyErrorRecordingsUnreadable =>
-      'The recording list could not be read.';
+      'రికార్డింగ్‌ల జాబితాను చదవలేకపోయాము.';
 
   @override
-  String get journeyErrorBankUnreadable =>
-      'The question bank could not be read.';
+  String get journeyErrorBankUnreadable => 'ప్రశ్నల బ్యాంక్‌ను చదవలేకపోయాము.';
 
   @override
-  String get journeyErrorJourneyUnreadable => 'This journey could not be read.';
+  String get journeyErrorJourneyUnreadable => 'ఈ ప్రయాణాన్ని చదవలేకపోయాము.';
 
   @override
   String get journeyDownloadNeedsApp =>
-      'Downloading for offline use needs the SEEDS Android app. In the browser, journeys play while you are online.';
+      'ఆఫ్‌లైన్ ఉపయోగం కోసం డౌన్‌లోడ్ చేయడానికి SEEDS Android యాప్ అవసరం. బ్రౌజర్‌లో, మీరు ఆన్‌లైన్‌లో ఉన్నప్పుడు ప్రయాణాలు ప్లే అవుతాయి.';
 
   @override
-  String get journeySignInFirst => 'Sign in before opening learning journeys.';
+  String get journeySignInFirst =>
+      'అభ్యాస ప్రయాణాలను తెరిచే ముందు సైన్ ఇన్ చేయండి.';
 
   @override
   String get journeyStorageUnavailableDevice =>
-      'Journey storage is unavailable on this device.';
+      'ఈ పరికరంలో ప్రయాణం స్టోరేజ్ అందుబాటులో లేదు.';
 
   @override
   String get journeyStorageFull =>
-      'Journey storage is unavailable. Check free space and try again. Nothing was deleted.';
+      'ప్రయాణం స్టోరేజ్ అందుబాటులో లేదు. ఖాళీ స్థలం చూసి మళ్ళీ ప్రయత్నించండి. ఏదీ తొలగించబడలేదు.';
 
   @override
   String get journeyDownloadCancelled =>
-      'Download cancelled. Recordings already saved are kept.';
+      'డౌన్‌లోడ్ రద్దు చేయబడింది. ఇప్పటికే సేవ్ చేసిన రికార్డింగ్‌లు ఉంచబడ్డాయి.';
 
   @override
   String journeyRecordingsSaved(String done, String total) {
-    return '$done of $total recordings are saved.';
+    return '$total రికార్డింగ్‌లలో $done సేవ్ అయ్యాయి.';
   }
 
   @override
-  String get journeyLeaveJourney => 'Leave journey';
+  String get journeyLeaveJourney => 'ప్రయాణం నుండి బయటకు వెళ్ళండి';
 
   @override
-  String get journeyLeaveSaved => 'Leave journey. Your place is saved';
+  String get journeyLeaveSaved =>
+      'ప్రయాణం నుండి బయటకు వెళ్ళండి. మీ స్థానం సేవ్ చేయబడింది';
 
   @override
-  String get journeyKeyPlayAgain => 'Play again';
+  String get journeyKeyPlayAgain => 'మళ్ళీ ప్లే చేయండి';
 
   @override
-  String get journeyKeySubmitAnswer => 'Submit answer';
+  String get journeyKeySubmitAnswer => 'సమాధానం సమర్పించండి';
 
   @override
-  String get journeyKeyRepeatQuestion => 'Repeat question';
+  String get journeyKeyRepeatQuestion => 'ప్రశ్నను మళ్ళీ వినండి';
 
   @override
-  String get journeyKeySlowerSpeech => 'Slower speech';
+  String get journeyKeySlowerSpeech => 'నెమ్మదిగా మాట్లాడు';
 
   @override
-  String get journeyKeyWhereAmI => 'Where am I';
+  String get journeyKeyWhereAmI => 'నేను ఎక్కడ ఉన్నాను';
 
   @override
-  String get journeyKeyFasterSpeech => 'Faster speech';
+  String get journeyKeyFasterSpeech => 'వేగంగా మాట్లాడు';
 
   @override
-  String get journeyKeyNextStep => 'Next step';
+  String get journeyKeyNextStep => 'తదుపరి దశ';
 
   @override
-  String get journeyKeyRepeatStep => 'Repeat this step';
+  String get journeyKeyRepeatStep => 'ఈ దశను మళ్ళీ వినండి';
 
   @override
-  String get journeyKeyReadAgain => 'Read again';
+  String get journeyKeyReadAgain => 'మళ్ళీ చదవండి';
 
   @override
-  String get journeyKeyPreviousContent => 'Previous recording or narration';
+  String get journeyKeyPreviousContent => 'మునుపటి రికార్డింగ్ లేదా వివరణ';
 
   @override
   String journeyPreviewTitle(String title) {
-    return 'Preview: $title';
+    return 'ప్రివ్యూ: $title';
   }
 
   @override
-  String get journeyPositionFinished => 'Finished';
+  String get journeyPositionFinished => 'పూర్తయింది';
 
   @override
   String journeyStepPosition(String number, String total) {
-    return 'Step $number of $total';
+    return '$total లో దశ $number';
   }
 
   @override
   String journeySelectedLabel(String label) {
-    return '$label, selected';
+    return '$label, ఎంచుకోబడింది';
   }
 
   @override
-  String get journeyResultsLoading => 'Results are loading.';
+  String get journeyResultsLoading => 'ఫలితాలు లోడ్ అవుతున్నాయి.';
 
   @override
   String journeyResultsSummary(
@@ -9727,19 +9807,19 @@ class AppLocalizationsTe extends AppLocalizations {
     String inProgress,
     String notStarted,
   ) {
-    return '$completed of $eligible students finished. $inProgress in progress, $notStarted not started.';
+    return '$eligible విద్యార్థులలో $completed మంది పూర్తి చేశారు. $inProgress మంది కొనసాగిస్తున్నారు, $notStarted మంది ప్రారంభించలేదు.';
   }
 
   @override
   String journeyResultsAverage(String percent) {
-    return 'Average first-try score $percent percent.';
+    return 'మొదటి ప్రయత్నంలో సగటు స్కోరు $percent శాతం.';
   }
 
   @override
-  String get journeyResultFinished => 'Finished';
+  String get journeyResultFinished => 'పూర్తయింది';
 
   @override
-  String get journeyResultNotStarted => 'Not started';
+  String get journeyResultNotStarted => 'ప్రారంభించలేదు';
 
   @override
   String journeyResultStudent(String name, String status) {
@@ -9748,30 +9828,30 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String journeyResultFirstTime(String correct, String total) {
-    return '$correct of $total right first time.';
+    return '$total లో $correct మొదటిసారే సరైనవి.';
   }
 
   @override
   String journeyResultWrongAnswers(String count) {
-    return '$count wrong answers.';
+    return '$count తప్పు సమాధానాలు.';
   }
 
   @override
   String journeyResultQuestion(String number, String text, String answered) {
-    return 'Step $number. $text. $answered answered.';
+    return 'దశ $number. $text. $answered మంది సమాధానం ఇచ్చారు.';
   }
 
   @override
   String journeyResultRate(String percent) {
-    return '$percent percent right first time.';
+    return '$percent శాతం మొదటిసారే సరైనవి.';
   }
 
   @override
-  String get journeyResultNoAnswers => 'No answers yet.';
+  String get journeyResultNoAnswers => 'ఇంకా సమాధానాలు లేవు.';
 
   @override
   String journeyResultAverageTries(String attempts) {
-    return 'Average $attempts tries.';
+    return 'సగటున $attempts ప్రయత్నాలు.';
   }
 
   @override
@@ -9781,252 +9861,255 @@ class AppLocalizationsTe extends AppLocalizations {
     String answered,
     String options,
   ) {
-    return 'Step $number. $text. $answered answered. $options.';
+    return 'దశ $number. $text. $answered మంది సమాధానం ఇచ్చారు. $options.';
   }
 
   @override
-  String get journeyResultsStudentsTitle => 'Students';
+  String get journeyResultsStudentsTitle => 'విద్యార్థులు';
 
   @override
-  String get journeyResultsQuestionsTitle => 'Questions';
+  String get journeyResultsQuestionsTitle => 'ప్రశ్నలు';
 
   @override
-  String get journeyResultsPollsTitle => 'Poll answers';
+  String get journeyResultsPollsTitle => 'పోల్ సమాధానాలు';
 
   @override
   String journeyResultsTitle(String title) {
-    return 'Results: $title';
+    return 'ఫలితాలు: $title';
   }
 
   @override
-  String get journeyResultsHearSummary => 'Hear class summary';
+  String get journeyResultsHearSummary => 'తరగతి సారాంశం వినండి';
 
   @override
   String journeyResultsStudents(String count) {
-    return 'Students, $count';
+    return 'విద్యార్థులు, $count';
   }
 
   @override
   String journeyResultsQuestions(String count) {
-    return 'Questions, $count. Shows which parts need teaching again';
+    return 'ప్రశ్నలు, $count. ఏ భాగాలు మళ్ళీ బోధించాలో చూపిస్తుంది';
   }
 
   @override
   String journeyResultsPolls(String count) {
-    return 'Poll answers, $count';
+    return 'పోల్ సమాధానాలు, $count';
   }
 
   @override
-  String get journeyResultsRefresh => 'Refresh results';
+  String get journeyResultsRefresh => 'ఫలితాలను రిఫ్రెష్ చేయండి';
 
   @override
-  String get journeyResultsNoStudents => 'No students are in this class.';
+  String get journeyResultsNoStudents => 'ఈ తరగతిలో విద్యార్థులు ఎవరూ లేరు.';
 
   @override
-  String get journeyResultsNoQuestions => 'This journey has no questions.';
+  String get journeyResultsNoQuestions => 'ఈ ప్రయాణంలో ప్రశ్నలు లేవు.';
 
   @override
-  String get journeyResultsNoPolls => 'This journey has no polls.';
+  String get journeyResultsNoPolls => 'ఈ ప్రయాణంలో పోల్స్ లేవు.';
 
   @override
   String get journeyNarrationLabel =>
-      'Words the phone reads aloud, for example: Let us hear about some food today';
+      'ఫోన్ బిగ్గరగా చదివే మాటలు, ఉదాహరణకు: ఈ రోజు కొన్ని ఆహారాల గురించి విందాం';
 
   @override
   String journeyAddOptionTitle(String number) {
-    return 'Add option $number?';
+    return 'ఎంపిక $number జోడించాలా?';
   }
 
   @override
   String journeyQuestionOptionsSoFar(String count) {
-    return 'The question has $count options so far.';
+    return 'ఇప్పటివరకు ప్రశ్నకు $count ఎంపికలు ఉన్నాయి.';
   }
 
   @override
   String journeyPollOptionsSoFar(String count) {
-    return 'The poll has $count options so far.';
+    return 'ఇప్పటివరకు పోల్‌కు $count ఎంపికలు ఉన్నాయి.';
   }
 
   @override
   String journeyAddOption(String number) {
-    return 'Add option $number';
+    return 'ఎంపిక $number జోడించండి';
   }
 
   @override
-  String get journeyNoMoreOptions => 'No more options, continue';
+  String get journeyNoMoreOptions => 'ఇంకా ఎంపికలు లేవు, కొనసాగించండి';
 
   @override
   String journeyOptionTitle(String number) {
-    return 'Option $number';
+    return 'ఎంపిక $number';
   }
 
   @override
   String journeyTypeOption(String number) {
-    return 'Type option $number';
+    return 'ఎంపిక $number టైప్ చేయండి';
   }
 
   @override
-  String get journeyReplayAutoNone => 'Automatic: ask again without replaying';
+  String get journeyReplayAutoNone =>
+      'ఆటోమేటిక్: మళ్ళీ ప్లే చేయకుండా మళ్ళీ అడగండి';
 
   @override
   String journeyReplayAutoFrom(String number, String name) {
-    return 'Automatic: replay from step $number, $name';
+    return 'ఆటోమేటిక్: దశ $number, $name నుండి మళ్ళీ ప్లే చేయండి';
   }
 
   @override
-  String get journeyAfterWrongTitle => 'After a wrong answer';
+  String get journeyAfterWrongTitle => 'తప్పు సమాధానం తర్వాత';
 
   @override
   String get journeyAfterWrongIntro =>
-      'When a student answers wrongly, which part should play again before they try once more?';
+      'విద్యార్థి తప్పు సమాధానం ఇచ్చినప్పుడు, వారు మళ్ళీ ప్రయత్నించే ముందు ఏ భాగం మళ్ళీ ప్లే కావాలి?';
 
   @override
-  String get journeyReplayChooseStep => 'Choose a different step to replay';
+  String get journeyReplayChooseStep =>
+      'మళ్ళీ ప్లే చేయడానికి వేరే దశను ఎంచుకోండి';
 
   @override
-  String get journeyReplayWhichStep => 'Replay from which step?';
+  String get journeyReplayWhichStep => 'ఏ దశ నుండి మళ్ళీ ప్లే చేయాలి?';
 
   @override
   String journeyStepLabel(String number, String name) {
-    return 'Step $number. $name';
+    return 'దశ $number. $name';
   }
 
   @override
   String journeyReviewReplayFrom(String number) {
-    return 'After a wrong answer, step $number plays again.';
+    return 'తప్పు సమాధానం తర్వాత, దశ $number మళ్ళీ ప్లే అవుతుంది.';
   }
 
   @override
   String get journeyReviewReplayAuto =>
-      'After a wrong answer, it replays automatically.';
+      'తప్పు సమాధానం తర్వాత, ఆటోమేటిక్‌గా మళ్ళీ ప్లే అవుతుంది.';
 
   @override
-  String get journeyCheckBeforeSaving => 'Check before saving';
+  String get journeyCheckBeforeSaving => 'సేవ్ చేసే ముందు తనిఖీ చేయండి';
 
   @override
-  String get journeySaveStep => 'Save this step';
+  String get journeySaveStep => 'ఈ దశను సేవ్ చేయండి';
 
   @override
-  String get journeyRestartStep => 'Start this step again';
+  String get journeyRestartStep => 'ఈ దశను మళ్ళీ ప్రారంభించండి';
 
   @override
-  String get journeyQuestionLabel => 'Type the question students will hear';
+  String get journeyQuestionLabel => 'విద్యార్థులు వినే ప్రశ్నను టైప్ చేయండి';
 
   @override
-  String get journeyWhichCorrect => 'Which option is correct?';
+  String get journeyWhichCorrect => 'ఏ ఎంపిక సరైనది?';
 
   @override
   String journeyCurrentlyCorrect(String number) {
-    return 'Currently option $number is correct.';
+    return 'ప్రస్తుతం ఎంపిక $number సరైనది.';
   }
 
   @override
   String journeyOptionChoice(String number, String text) {
-    return 'Option $number: $text';
+    return 'ఎంపిక $number: $text';
   }
 
   @override
-  String get journeyExplanationTitle => 'Explanation';
+  String get journeyExplanationTitle => 'వివరణ';
 
   @override
   String get journeyExplanationLabel =>
-      'What students hear after the right answer is revealed';
+      'సరైన సమాధానం చెప్పిన తర్వాత విద్యార్థులు వినేది';
 
   @override
-  String get journeyPollQuestionTitle => 'Poll question';
+  String get journeyPollQuestionTitle => 'పోల్ ప్రశ్న';
 
   @override
   String get journeyPollQuestionLabel =>
-      'A question with no wrong answer, for example: Have you eaten rice this week?';
+      'తప్పు సమాధానం లేని ప్రశ్న, ఉదాహరణకు: ఈ వారం మీరు అన్నం తిన్నారా?';
 
   @override
-  String get journeyQuestionBank => 'Question bank';
+  String get journeyQuestionBank => 'ప్రశ్నల బ్యాంక్';
 
   @override
   String journeyBankQuestionLabel(String text, String count) {
-    return '$text. $count options.';
+    return '$text. $count ఎంపికలు.';
   }
 
   @override
-  String get journeyAddRecording => 'Add a recording';
+  String get journeyAddRecording => 'రికార్డింగ్ జోడించండి';
 
   @override
-  String get journeyChooseMyRecordings => 'Choose from my recordings';
+  String get journeyChooseMyRecordings => 'నా రికార్డింగ్‌ల నుండి ఎంచుకోండి';
 
   @override
-  String get journeyUploadRecordingFile => 'Upload a recording file';
+  String get journeyUploadRecordingFile => 'రికార్డింగ్ ఫైల్ అప్‌లోడ్ చేయండి';
 
   @override
-  String get journeyRecordNew => 'Record a new recording';
+  String get journeyRecordNew => 'కొత్త రికార్డింగ్ చేయండి';
 
   @override
-  String get journeyMyRecordings => 'My recordings';
+  String get journeyMyRecordings => 'నా రికార్డింగ్‌లు';
 
   @override
-  String get journeyRecordingName => 'Recording name';
+  String get journeyRecordingName => 'రికార్డింగ్ పేరు';
 
   @override
-  String get journeyRecordingNameLabel => 'Name for this recording';
+  String get journeyRecordingNameLabel => 'ఈ రికార్డింగ్‌కు పేరు';
 
   @override
   String journeyOptionalLabel(String label) {
-    return '$label. Optional, leave empty to skip';
+    return '$label. ఐచ్ఛికం, వదిలేయడానికి ఖాళీగా ఉంచండి';
   }
 
   @override
   String get journeyNothingEntered =>
-      'Nothing entered. Press OK on the field and type, or press 0 to go back.';
+      'ఏమీ నమోదు చేయలేదు. ఫీల్డ్‌పై ఓకే నొక్కి టైప్ చేయండి, లేదా వెనక్కి వెళ్ళడానికి 0 నొక్కండి.';
 
   @override
   String journeyTooLong(String max) {
-    return 'Too long. Use at most $max characters.';
+    return 'చాలా పొడవుగా ఉంది. గరిష్టంగా $max అక్షరాలు వాడండి.';
   }
 
   @override
-  String get journeySkipped => 'Skipped.';
+  String get journeySkipped => 'వదిలేయబడింది.';
 
   @override
   String journeyYouEntered(String text) {
-    return 'You entered: $text';
+    return 'మీరు నమోదు చేసినది: $text';
   }
 
   @override
-  String get journeyMenuReady => 'Ready.';
+  String get journeyMenuReady => 'సిద్ధంగా ఉంది.';
 
   @override
-  String get journeyMenuReadDetailsHelp => 'Press 8 to read details again.';
+  String get journeyMenuReadDetailsHelp =>
+      'వివరాలు మళ్ళీ చదవడానికి 8 నొక్కండి.';
 
   @override
   String journeyMenuBackHelp(String back) {
-    return 'Press 0 for $back. Press star for help.';
+    return '$back కోసం 0 నొక్కండి. సహాయం కోసం స్టార్ నొక్కండి.';
   }
 
   @override
   String journeyMenuNothingAssigned(String number) {
-    return 'Nothing is assigned to $number.';
+    return '$number కు ఏదీ కేటాయించబడలేదు.';
   }
 
   @override
   String get journeyMenuPleaseWait =>
-      'Please wait. Still working. Press 0 to go back.';
+      'దయచేసి వేచి ఉండండి. ఇంకా పని జరుగుతోంది. వెనక్కి వెళ్ళడానికి 0 నొక్కండి.';
 
   @override
-  String get journeyMenuWorking => 'Working, please wait.';
+  String get journeyMenuWorking => 'పని జరుగుతోంది, దయచేసి వేచి ఉండండి.';
 
   @override
-  String get journeyMenuReadDetails => 'Read details again';
+  String get journeyMenuReadDetails => 'వివరాలు మళ్ళీ చదవండి';
 
   @override
   String get journeyNoInternetDownloaded =>
-      'No internet. Downloaded journeys still work. Press 5 for downloaded journeys.';
+      'ఇంటర్నెట్ లేదు. డౌన్‌లోడ్ చేసిన ప్రయాణాలు ఇంకా పనిచేస్తాయి. డౌన్‌లోడ్ చేసిన ప్రయాణాల కోసం 5 నొక్కండి.';
 
   @override
   String journeyWaitingToSend(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count finished journeys are waiting to be sent.',
-      one: '1 finished journey is waiting to be sent.',
+      other: 'పూర్తయిన $count ప్రయాణాలు పంపడానికి వేచి ఉన్నాయి.',
+      one: 'పూర్తయిన 1 ప్రయాణం పంపడానికి వేచి ఉంది.',
     );
     return '$_temp0';
   }
@@ -10038,131 +10121,133 @@ class AppLocalizationsTe extends AppLocalizations {
     String completed,
     String downloaded,
   ) {
-    return '$newCount new, $inProgress in progress, $completed completed, $downloaded downloaded.';
+    return '$newCount కొత్తవి, $inProgress కొనసాగుతున్నవి, $completed పూర్తయినవి, $downloaded డౌన్‌లోడ్ చేసినవి.';
   }
 
   @override
-  String get journeyDownloadedJourneys => 'Downloaded journeys';
+  String get journeyDownloadedJourneys => 'డౌన్‌లోడ్ చేసిన ప్రయాణాలు';
 
   @override
   String journeyDownloadedRow(String title, String steps) {
-    return '$title. $steps steps. Downloaded.';
+    return '$title. $steps దశలు. డౌన్‌లోడ్ చేయబడింది.';
   }
 
   @override
   String get journeyOfflineReason =>
-      'This needs internet. Press 5 for downloaded journeys.';
+      'దీనికి ఇంటర్నెట్ అవసరం. డౌన్‌లోడ్ చేసిన ప్రయాణాల కోసం 5 నొక్కండి.';
 
   @override
-  String get journeyLearningJourneys => 'Learning journeys';
+  String get journeyLearningJourneys => 'అభ్యాస ప్రయాణాలు';
 
   @override
   String get journeyStudentIntro =>
-      'Listen to stories and lessons, answer questions as you go, and repeat parts you need.';
+      'కథలు, పాఠాలు వినండి, మధ్యలో ప్రశ్నలకు సమాధానం ఇవ్వండి, అవసరమైన భాగాలను మళ్ళీ వినండి.';
 
   @override
-  String get journeyContinueLast => 'Continue my last journey';
+  String get journeyContinueLast => 'నా చివరి ప్రయాణాన్ని కొనసాగించు';
 
   @override
   String journeyNewJourneys(String count) {
-    return 'New journeys, $count';
+    return 'కొత్త ప్రయాణాలు, $count';
   }
 
   @override
-  String get journeyNewJourneysTitle => 'New journeys';
+  String get journeyNewJourneysTitle => 'కొత్త ప్రయాణాలు';
 
   @override
-  String get journeyNoNewJourneys => 'There are no new journeys.';
+  String get journeyNoNewJourneys => 'కొత్త ప్రయాణాలు లేవు.';
 
   @override
   String journeyInProgressCount(String count) {
-    return 'In progress, $count';
+    return 'కొనసాగుతున్నవి, $count';
   }
 
   @override
-  String get journeyInProgressTitle => 'Journeys in progress';
+  String get journeyInProgressTitle => 'కొనసాగుతున్న ప్రయాణాలు';
 
   @override
-  String get journeyNothingInProgressShort => 'Nothing is in progress.';
+  String get journeyNothingInProgressShort => 'ఏదీ కొనసాగడం లేదు.';
 
   @override
   String journeyCompletedCount(String count) {
-    return 'Completed, $count';
+    return 'పూర్తయినవి, $count';
   }
 
   @override
-  String get journeyCompletedTitle => 'Completed journeys';
+  String get journeyCompletedTitle => 'పూర్తయిన ప్రయాణాలు';
 
   @override
-  String get journeyNoneCompleted => 'No journeys completed yet.';
+  String get journeyNoneCompleted => 'ఇంకా ఏ ప్రయాణమూ పూర్తి కాలేదు.';
 
   @override
   String journeyDownloadedCount(String count) {
-    return 'Downloaded, $count';
+    return 'డౌన్‌లోడ్ చేసినవి, $count';
   }
 
   @override
   String get journeyNothingDownloaded =>
-      'Nothing is downloaded. Open a journey and choose Download.';
+      'ఏదీ డౌన్‌లోడ్ చేయలేదు. ఒక ప్రయాణాన్ని తెరిచి డౌన్‌లోడ్ ఎంచుకోండి.';
 
   @override
   String get journeyNoInternetNotDownloaded =>
-      'No internet, and this journey is not downloaded.';
+      'ఇంటర్నెట్ లేదు, ఈ ప్రయాణం డౌన్‌లోడ్ కూడా చేయలేదు.';
 
   @override
-  String get journeyStartOverTitle => 'Start over?';
+  String get journeyStartOverTitle => 'మొదటి నుండి ప్రారంభించాలా?';
 
   @override
-  String get journeyStartOver => 'Start over';
+  String get journeyStartOver => 'మొదటి నుండి ప్రారంభించండి';
 
   @override
-  String get journeyRemoveDownloadTitle => 'Remove download?';
+  String get journeyRemoveDownloadTitle => 'డౌన్‌లోడ్ తొలగించాలా?';
 
   @override
-  String get journeyRemoveDownload => 'Remove download';
+  String get journeyRemoveDownload => 'డౌన్‌లోడ్ తొలగించండి';
 
   @override
   String journeySavedRecordings(String done, String total) {
-    return 'Saved $done of $total recordings.';
+    return '$total రికార్డింగ్‌లలో $done సేవ్ చేయబడ్డాయి.';
   }
 
   @override
-  String get journeyDownloadedOnPhone => 'Downloaded on this phone.';
+  String get journeyDownloadedOnPhone => 'ఈ ఫోన్‌లో డౌన్‌లోడ్ చేయబడింది.';
 
   @override
-  String get journeyNotDownloadedShort => 'Not downloaded.';
+  String get journeyNotDownloadedShort => 'డౌన్‌లోడ్ చేయలేదు.';
 
   @override
-  String get journeyStartedThis => 'You have started this journey.';
+  String get journeyStartedThis => 'మీరు ఈ ప్రయాణం ప్రారంభించారు.';
 
   @override
-  String get journeyWorksOffline => 'Downloaded. Works without internet.';
+  String get journeyWorksOffline =>
+      'డౌన్‌లోడ్ చేయబడింది. ఇంటర్నెట్ లేకుండా పనిచేస్తుంది.';
 
   @override
-  String get journeyContinueJourney => 'Continue journey';
+  String get journeyContinueJourney => 'ప్రయాణం కొనసాగించండి';
 
   @override
-  String get journeyStartJourney => 'Start journey';
+  String get journeyStartJourney => 'ప్రయాణం ప్రారంభించండి';
 
   @override
-  String get journeyHearAbout => 'Hear about this journey';
+  String get journeyHearAbout => 'ఈ ప్రయాణం గురించి వినండి';
 
   @override
-  String get journeyDownloadOffline => 'Download to play without internet';
+  String get journeyDownloadOffline =>
+      'ఇంటర్నెట్ లేకుండా ప్లే చేయడానికి డౌన్‌లోడ్ చేయండి';
 
   @override
   String get journeyDownloadInProgress =>
-      'A download is in progress. Press 0 to cancel it.';
+      'డౌన్‌లోడ్ జరుగుతోంది. దాన్ని రద్దు చేయడానికి 0 నొక్కండి.';
 
   @override
-  String get journeyStartFromBeginning => 'Start over from the beginning';
+  String get journeyStartFromBeginning => 'మళ్ళీ మొదటి నుండి ప్రారంభించండి';
 
   @override
-  String get journeyNotStartedYet => 'You have not started this journey yet.';
+  String get journeyNotStartedYet => 'మీరు ఇంకా ఈ ప్రయాణం ప్రారంభించలేదు.';
 
   @override
   String journeyLatestLoaded(String message) {
-    return '$message The latest version is now loaded.';
+    return '$message తాజా వెర్షన్ ఇప్పుడు లోడ్ చేయబడింది.';
   }
 
   @override
@@ -10171,61 +10256,63 @@ class AppLocalizationsTe extends AppLocalizations {
     String published,
     String archived,
   ) {
-    return '$drafts drafts, $published published, $archived archived.';
+    return '$drafts డ్రాఫ్ట్‌లు, $published ప్రచురించబడినవి, $archived ఆర్కైవ్ చేయబడినవి.';
   }
 
   @override
-  String get journeyNewJourneyTitle => 'New learning journey';
+  String get journeyNewJourneyTitle => 'కొత్త అభ్యాస ప్రయాణం';
 
   @override
-  String get journeyNameExample => 'Journey name, for example: Food around us';
+  String get journeyNameExample =>
+      'ప్రయాణం పేరు, ఉదాహరణకు: మన చుట్టూ ఉన్న ఆహారం';
 
   @override
-  String get journeyRefreshFirst => 'Press 5 to refresh the list first.';
+  String get journeyRefreshFirst =>
+      'ముందుగా జాబితాను రిఫ్రెష్ చేయడానికి 5 నొక్కండి.';
 
   @override
   String journeyTeacherIntro(String workspace) {
-    return '$workspace. Build one flow of recordings, narration, questions and polls for students.';
+    return '$workspace. విద్యార్థుల కోసం రికార్డింగ్‌లు, వివరణ, ప్రశ్నలు మరియు పోల్స్‌తో ఒక క్రమాన్ని తయారు చేయండి.';
   }
 
   @override
-  String get journeyCreateNew => 'Create a new journey';
+  String get journeyCreateNew => 'కొత్త ప్రయాణం సృష్టించండి';
 
   @override
   String journeyDraftsCount(String count) {
-    return 'Drafts, $count';
+    return 'డ్రాఫ్ట్‌లు, $count';
   }
 
   @override
-  String get journeyDraftJourneys => 'Draft journeys';
+  String get journeyDraftJourneys => 'డ్రాఫ్ట్ ప్రయాణాలు';
 
   @override
-  String get journeyNoDrafts => 'There are no drafts.';
+  String get journeyNoDrafts => 'డ్రాఫ్ట్‌లు లేవు.';
 
   @override
   String journeyPublishedCount(String count) {
-    return 'Published, $count';
+    return 'ప్రచురించబడినవి, $count';
   }
 
   @override
-  String get journeyPublishedJourneys => 'Published journeys';
+  String get journeyPublishedJourneys => 'ప్రచురించబడిన ప్రయాణాలు';
 
   @override
-  String get journeyNothingPublished => 'Nothing is published yet.';
+  String get journeyNothingPublished => 'ఇంకా ఏదీ ప్రచురించబడలేదు.';
 
   @override
   String journeyArchivedCount(String count) {
-    return 'Archived, $count';
+    return 'ఆర్కైవ్ చేయబడినవి, $count';
   }
 
   @override
-  String get journeyArchivedJourneys => 'Archived journeys';
+  String get journeyArchivedJourneys => 'ఆర్కైవ్ చేయబడిన ప్రయాణాలు';
 
   @override
-  String get journeyNothingArchived => 'Nothing is archived.';
+  String get journeyNothingArchived => 'ఏదీ ఆర్కైవ్ చేయబడలేదు.';
 
   @override
-  String get journeyRefreshList => 'Refresh list';
+  String get journeyRefreshList => 'జాబితాను రిఫ్రెష్ చేయండి';
 
   @override
   String journeyOverviewSummary(
@@ -10235,202 +10322,205 @@ class AppLocalizationsTe extends AppLocalizations {
     String graded,
     String retries,
   ) {
-    return '$status. $steps steps, $questions questions. $graded. $retries';
+    return '$status. $steps దశలు, $questions ప్రశ్నలు. $graded. $retries';
   }
 
   @override
-  String get journeyGraded => 'Graded';
+  String get journeyGraded => 'మార్కులతో';
 
   @override
-  String get journeyNotGraded => 'Not graded';
+  String get journeyNotGraded => 'మార్కులు లేవు';
 
   @override
   String journeyRetriesPerQuestion(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count retries per question.',
-      one: '1 retry per question.',
+      other: 'ప్రతి ప్రశ్నకు $count మళ్ళీ ప్రయత్నాలు.',
+      one: 'ప్రతి ప్రశ్నకు 1 మళ్ళీ ప్రయత్నం.',
     );
     return '$_temp0';
   }
 
   @override
-  String get journeySteps => 'Steps';
+  String get journeySteps => 'దశలు';
 
   @override
   String journeyAddStepTitle(String number) {
-    return 'Add step $number';
+    return 'దశ $number జోడించండి';
   }
 
   @override
   String get journeyAddStepIntro =>
-      'The new step goes at the end. You can move it later.';
+      'కొత్త దశ చివరలో చేరుతుంది. తర్వాత దాన్ని జరపవచ్చు.';
 
   @override
-  String get journeyChoiceRecording => 'Recording';
+  String get journeyChoiceRecording => 'రికార్డింగ్';
 
   @override
-  String get journeyChoiceNarration => 'Narration read by the phone';
+  String get journeyChoiceNarration => 'ఫోన్ చదివే వివరణ';
 
   @override
-  String get journeyChoiceQuestion => 'Question';
+  String get journeyChoiceQuestion => 'ప్రశ్న';
 
   @override
-  String get journeyChoicePoll => 'Poll, no wrong answer';
+  String get journeyChoicePoll => 'పోల్, తప్పు సమాధానం లేదు';
 
   @override
   String journeySavedAsStep(String number, String name) {
-    return 'Saved as step $number. $name';
+    return 'దశ $number గా సేవ్ చేయబడింది. $name';
   }
 
   @override
-  String get journeyAddQuestion => 'Add a question';
+  String get journeyAddQuestion => 'ప్రశ్న జోడించండి';
 
   @override
-  String get journeyWriteNewQuestion => 'Write a new question';
+  String get journeyWriteNewQuestion => 'కొత్త ప్రశ్న రాయండి';
 
   @override
-  String get journeyChooseFromBank => 'Choose from my question bank';
+  String get journeyChooseFromBank => 'నా ప్రశ్నల బ్యాంక్ నుండి ఎంచుకోండి';
 
   @override
-  String get journeyHearAndEdit => 'Hear and edit steps';
+  String get journeyHearAndEdit => 'దశలను విని సవరించండి';
 
   @override
-  String get journeyNoStepsYet => 'There are no steps yet. Press 2 to add one.';
+  String get journeyNoStepsYet =>
+      'ఇంకా దశలు లేవు. ఒకటి జోడించడానికి 2 నొక్కండి.';
 
   @override
-  String get journeyAddStep => 'Add a step';
+  String get journeyAddStep => 'దశ జోడించండి';
 
   @override
-  String get journeyPreviewAsStudent => 'Preview as a student';
+  String get journeyPreviewAsStudent => 'విద్యార్థిగా ప్రివ్యూ చూడండి';
 
   @override
-  String get journeyAddStepFirst => 'Add a step first.';
+  String get journeyAddStepFirst => 'ముందుగా ఒక దశ జోడించండి.';
 
   @override
-  String get journeyPublishToStudents => 'Publish to students';
+  String get journeyPublishToStudents => 'విద్యార్థులకు ప్రచురించండి';
 
   @override
-  String get journeyPublishChanges => 'Publish changes';
+  String get journeyPublishChanges => 'మార్పులను ప్రచురించండి';
 
   @override
-  String get journeyStudentResults => 'Student results';
+  String get journeyStudentResults => 'విద్యార్థుల ఫలితాలు';
 
   @override
-  String get journeyMoreOptions => 'More options';
+  String get journeyMoreOptions => 'మరిన్ని ఎంపికలు';
 
   @override
   String journeyStepSaved(String number) {
-    return 'Step $number saved.';
+    return 'దశ $number సేవ్ చేయబడింది.';
   }
 
   @override
   String journeyMoved(String number, String total) {
-    return 'Moved. This is now step $number of $total.';
+    return 'జరపబడింది. ఇది ఇప్పుడు $total లో దశ $number.';
   }
 
   @override
   String journeyRemoveStepTitle(String number) {
-    return 'Remove step $number?';
+    return 'దశ $number తొలగించాలా?';
   }
 
   @override
   String journeyRemoveStepMessage(String name) {
-    return 'Remove $name? Recordings stay in your library. Questions that replayed this step will replay automatically instead.';
+    return '$name తొలగించాలా? రికార్డింగ్‌లు మీ లైబ్రరీలోనే ఉంటాయి. ఈ దశను మళ్ళీ ప్లే చేసే ప్రశ్నలు బదులుగా ఆటోమేటిక్‌గా మళ్ళీ ప్లే చేస్తాయి.';
   }
 
   @override
-  String get journeyRemoveStep => 'Remove step';
+  String get journeyRemoveStep => 'దశ తొలగించండి';
 
   @override
-  String get journeyStepNotFound => 'Step not found';
+  String get journeyStepNotFound => 'దశ కనబడలేదు';
 
   @override
   String get journeyStepWasRemoved =>
-      'This step was removed. Press 0 to go back.';
+      'ఈ దశ తొలగించబడింది. వెనక్కి వెళ్ళడానికి 0 నొక్కండి.';
 
   @override
-  String get journeyHearStepInFull => 'Hear this step in full';
+  String get journeyHearStepInFull => 'ఈ దశను పూర్తిగా వినండి';
 
   @override
-  String get journeyEditStep => 'Edit this step';
+  String get journeyEditStep => 'ఈ దశను సవరించండి';
 
   @override
-  String get journeyMoveEarlier => 'Move earlier';
+  String get journeyMoveEarlier => 'ముందుకు జరపండి';
 
   @override
-  String get journeyAlreadyFirst => 'This is already the first step.';
+  String get journeyAlreadyFirst => 'ఇది ఇప్పటికే మొదటి దశ.';
 
   @override
-  String get journeyMoveLater => 'Move later';
+  String get journeyMoveLater => 'వెనక్కి జరపండి';
 
   @override
-  String get journeyAlreadyLast => 'This is already the last step.';
+  String get journeyAlreadyLast => 'ఇది ఇప్పటికే చివరి దశ.';
 
   @override
-  String get journeyRemoveThisStep => 'Remove this step';
+  String get journeyRemoveThisStep => 'ఈ దశను తొలగించండి';
 
   @override
-  String get journeyRenameTitle => 'Rename journey';
+  String get journeyRenameTitle => 'ప్రయాణం పేరు మార్చండి';
 
   @override
-  String get journeyNameLabel => 'Journey name';
+  String get journeyNameLabel => 'ప్రయాణం పేరు';
 
   @override
   String journeyRenamed(String title) {
-    return 'Renamed to $title.';
+    return 'పేరు $title గా మార్చబడింది.';
   }
 
   @override
-  String get journeyArchiveTitle => 'Archive this journey?';
+  String get journeyArchiveTitle => 'ఈ ప్రయాణాన్ని ఆర్కైవ్ చేయాలా?';
 
   @override
-  String get journeyRestoreTitle => 'Restore this journey?';
+  String get journeyRestoreTitle => 'ఈ ప్రయాణాన్ని పునరుద్ధరించాలా?';
 
   @override
-  String get journeyArchive => 'Archive';
+  String get journeyArchive => 'ఆర్కైవ్ చేయండి';
 
   @override
-  String get journeyRestore => 'Restore';
+  String get journeyRestore => 'పునరుద్ధరించండి';
 
   @override
-  String get journeyDeleteDraftTitle => 'Delete this draft?';
+  String get journeyDeleteDraftTitle => 'ఈ డ్రాఫ్ట్ తొలగించాలా?';
 
   @override
-  String get journeyDeleteDraft => 'Delete draft';
+  String get journeyDeleteDraft => 'డ్రాఫ్ట్ తొలగించండి';
 
   @override
-  String get journeyPublishFirst => 'Publish the journey first.';
+  String get journeyPublishFirst => 'ముందుగా ప్రయాణాన్ని ప్రచురించండి.';
 
   @override
-  String get journeyRename => 'Rename';
+  String get journeyRename => 'పేరు మార్చండి';
 
   @override
-  String get journeyGradingNowGraded => 'Grading and tries, now graded';
+  String get journeyGradingNowGraded =>
+      'మార్కులు మరియు ప్రయత్నాలు, ఇప్పుడు మార్కులతో';
 
   @override
-  String get journeyGradingNowNotGraded => 'Grading and tries, now not graded';
+  String get journeyGradingNowNotGraded =>
+      'మార్కులు మరియు ప్రయత్నాలు, ఇప్పుడు మార్కులు లేవు';
 
   @override
-  String get journeyDuplicate => 'Duplicate as a new draft';
+  String get journeyDuplicate => 'కొత్త డ్రాఫ్ట్‌గా కాపీ చేయండి';
 
   @override
-  String get journeyArchiveHide => 'Archive, hide from students';
+  String get journeyArchiveHide => 'ఆర్కైవ్ చేయండి, విద్యార్థుల నుండి దాచండి';
 
   @override
-  String get journeyRestoreForStudents => 'Restore for students';
+  String get journeyRestoreForStudents => 'విద్యార్థుల కోసం పునరుద్ధరించండి';
 
   @override
-  String get journeyDeleteThisDraft => 'Delete this draft';
+  String get journeyDeleteThisDraft => 'ఈ డ్రాఫ్ట్ తొలగించండి';
 
   @override
   String get journeyGradedSummary =>
-      'Graded: the first try at each question counts towards a score.';
+      'మార్కులతో: ప్రతి ప్రశ్నకు మొదటి ప్రయత్నం స్కోరులో లెక్కించబడుతుంది.';
 
   @override
   String get journeyNotGradedSummary =>
-      'Not graded: questions are for practice only.';
+      'మార్కులు లేవు: ప్రశ్నలు అభ్యాసం కోసం మాత్రమే.';
 
   @override
   String journeyMoreTriesSummary(int count) {
@@ -10438,48 +10528,48 @@ class AppLocalizationsTe extends AppLocalizations {
       count,
       locale: localeName,
       other:
-          'After a wrong answer, a student gets $count more tries, with the content replayed first.',
+          'తప్పు సమాధానం తర్వాత, విద్యార్థికి మరో $count ప్రయత్నాలు లభిస్తాయి, ముందుగా విషయం మళ్ళీ ప్లే అవుతుంది.',
       one:
-          'After a wrong answer, a student gets 1 more try, with the content replayed first.',
+          'తప్పు సమాధానం తర్వాత, విద్యార్థికి మరో 1 ప్రయత్నం లభిస్తుంది, ముందుగా విషయం మళ్ళీ ప్లే అవుతుంది.',
     );
     return '$_temp0';
   }
 
   @override
-  String get journeyGradingTitle => 'Grading and tries';
+  String get journeyGradingTitle => 'మార్కులు మరియు ప్రయత్నాలు';
 
   @override
-  String get journeyTurnGradingOff => 'Turn grading off';
+  String get journeyTurnGradingOff => 'మార్కులు ఆపివేయండి';
 
   @override
-  String get journeyTurnGradingOn => 'Turn grading on';
+  String get journeyTurnGradingOn => 'మార్కులు ఆన్ చేయండి';
 
   @override
-  String get journeyGradingIsOff => 'Grading is off.';
+  String get journeyGradingIsOff => 'మార్కులు ఆఫ్‌లో ఉన్నాయి.';
 
   @override
-  String get journeyGradingIsOn => 'Grading is on.';
+  String get journeyGradingIsOn => 'మార్కులు ఆన్‌లో ఉన్నాయి.';
 
   @override
-  String get journeyFewerTries => 'Fewer tries';
+  String get journeyFewerTries => 'తక్కువ ప్రయత్నాలు';
 
   @override
-  String get journeyMoreTries => 'More tries';
+  String get journeyMoreTries => 'ఎక్కువ ప్రయత్నాలు';
 
   @override
-  String get journeyLoadingSummary => 'Loading the summary.';
+  String get journeyLoadingSummary => 'సారాంశం లోడ్ అవుతోంది.';
 
   @override
-  String get journeyNoProblems => 'No problems.';
+  String get journeyNoProblems => 'సమస్యలు లేవు.';
 
   @override
   String journeyProblems(String issues) {
-    return 'Problems to fix before publishing: $issues';
+    return 'ప్రచురించే ముందు సరిచేయాల్సిన సమస్యలు: $issues';
   }
 
   @override
   String journeyThingsToCheck(String warnings) {
-    return 'Things to check: $warnings';
+    return 'తనిఖీ చేయాల్సినవి: $warnings';
   }
 
   @override
@@ -10492,240 +10582,243 @@ class AppLocalizationsTe extends AppLocalizations {
     String polls,
     String graded,
   ) {
-    return '$title. $steps steps: $recordings recordings, $narrations narrations, $questions questions, $polls polls. $graded.';
+    return '$title. $steps దశలు: $recordings రికార్డింగ్‌లు, $narrations వివరణలు, $questions ప్రశ్నలు, $polls పోల్స్. $graded.';
   }
 
   @override
   String journeyPublishTitle(String title) {
-    return 'Publish $title?';
+    return '$title ప్రచురించాలా?';
   }
 
   @override
   String get journeyPublishMessage =>
-      'All students in this class will be able to play and download it, and they will get a notification.';
+      'ఈ తరగతిలోని విద్యార్థులందరూ దీన్ని ప్లే చేయగలరు, డౌన్‌లోడ్ చేయగలరు, వారికి నోటిఫికేషన్ వస్తుంది.';
 
   @override
-  String get journeyPublishNow => 'Publish now';
+  String get journeyPublishNow => 'ఇప్పుడే ప్రచురించండి';
 
   @override
-  String get journeyPublishedShort => 'Published.';
+  String get journeyPublishedShort => 'ప్రచురించబడింది.';
 
   @override
-  String get journeyReviewBeforePublishing => 'Review before publishing';
+  String get journeyReviewBeforePublishing => 'ప్రచురించే ముందు సమీక్షించండి';
 
   @override
   String get journeyFixProblemsFirst =>
-      'Fix the problems first. Press 8 to hear them.';
+      'ముందుగా సమస్యలను సరిచేయండి. వాటిని వినడానికి 8 నొక్కండి.';
 
   @override
-  String get journeyPreviewFirst => 'Preview as a student first';
+  String get journeyPreviewFirst => 'ముందుగా విద్యార్థిగా ప్రివ్యూ చూడండి';
 
   @override
   String undoOffer(String seconds) {
-    return 'Press 1 within $seconds seconds to undo.';
+    return 'రద్దు చేయడానికి $seconds సెకన్లలోపు 1 నొక్కండి.';
   }
 
   @override
   String undoDone(String action) {
-    return 'Undone. $action was reversed.';
+    return 'రద్దు చేయబడింది. $action వెనక్కి తీసుకోబడింది.';
   }
 
   @override
   String get undoFailed =>
-      'Undo did not work. Check the item and add it again if needed.';
+      'రద్దు చేయడం పని చేయలేదు. అంశాన్ని చెక్ చేసి, అవసరమైతే మళ్ళీ జోడించండి.';
 
   @override
-  String get uiBack => 'Back';
+  String get uiBack => 'వెనక్కి';
 
   @override
-  String get uiCancel => 'Cancel';
+  String get uiCancel => 'రద్దు చేయండి';
 
   @override
-  String get uiContinue => 'Continue';
+  String get uiContinue => 'కొనసాగించండి';
 
   @override
-  String get uiNotNow => 'Not now';
+  String get uiNotNow => 'ఇప్పుడు కాదు';
 
   @override
   String uiPressFor(String key, String action) {
-    return 'Press $key for $action.';
+    return '$action కోసం $key నొక్కండి.';
   }
 
   @override
   String uiLabelUnavailable(String label) {
-    return '$label, unavailable';
+    return '$label, అందుబాటులో లేదు';
   }
 
   @override
-  String get uiAlreadyHome => 'You are already home.';
+  String get uiAlreadyHome => 'మీరు ఇప్పటికే హోమ్‌లో ఉన్నారు.';
 
   @override
   String uiNotAvailableNow(String label) {
-    return '$label is not available right now.';
+    return '$label ఇప్పుడు అందుబాటులో లేదు.';
   }
 
   @override
   String uiListLoading(String title) {
-    return 'Loading $title. Press 0 to go back.';
+    return '$title లోడ్ అవుతోంది. వెనక్కి వెళ్ళడానికి 0 నొక్కండి.';
   }
 
   @override
   String uiListPage(String title, String number) {
-    return '$title. Page $number.';
+    return '$title. పేజీ $number.';
   }
 
   @override
   String uiListScreenName(String title, String number) {
-    return '$title. Page $number';
+    return '$title. పేజీ $number';
   }
 
   @override
-  String get uiListNoMatches => 'No matching items.';
+  String get uiListNoMatches => 'సరిపోయే అంశాలు ఏవీ లేవు.';
 
   @override
   String get uiListHelp =>
-      'Press 6 for list options, including refresh. Press 7 for the previous page. Press 8 to search all items. Press 9 for the next page. Press 0 to go back. Use D-pad up and down to move between items and page controls, and OK to select. Press star to repeat help. Press hash to stop speech.';
+      'రిఫ్రెష్‌తో సహా జాబితా ఎంపికల కోసం 6 నొక్కండి. మునుపటి పేజీ కోసం 7 నొక్కండి. అన్ని అంశాలను వెతకడానికి 8 నొక్కండి. తదుపరి పేజీ కోసం 9 నొక్కండి. వెనక్కి వెళ్ళడానికి 0 నొక్కండి. అంశాలు మరియు పేజీ నియంత్రణల మధ్య కదలడానికి D-pad పైకి, కిందకు ఉపయోగించండి, ఎంచుకోవడానికి ఓకే నొక్కండి. సహాయాన్ని మళ్ళీ వినడానికి స్టార్ నొక్కండి. స్వరాన్ని ఆపడానికి హ్యాష్ నొక్కండి.';
 
   @override
   String get uiListLoadFailed =>
-      'This page could not be loaded. Press 6 for retry options. Your previous page is kept.';
+      'ఈ పేజీ లోడ్ కాలేదు. మళ్ళీ ప్రయత్నించే ఎంపికల కోసం 6 నొక్కండి. మీ మునుపటి పేజీ అలాగే ఉంది.';
 
   @override
   String get uiListLoadingWait =>
-      'Loading. Please wait, or press 0 to go back.';
+      'లోడ్ అవుతోంది. దయచేసి వేచి ఉండండి, లేదా వెనక్కి వెళ్ళడానికి 0 నొక్కండి.';
 
   @override
   String uiListNoItem(String number) {
-    return 'No item is assigned to $number on this page.';
+    return 'ఈ పేజీలో $numberకు ఏ అంశమూ కేటాయించబడలేదు.';
   }
 
   @override
-  String get uiListFirstPage => 'This is the first page.';
+  String get uiListFirstPage => 'ఇది మొదటి పేజీ.';
 
   @override
-  String get uiListLastPage => 'This is the last page.';
+  String get uiListLastPage => 'ఇది చివరి పేజీ.';
 
   @override
   String uiListSearchTitle(String title) {
-    return 'Search $title';
+    return '$title వెతకండి';
   }
 
   @override
-  String get uiListSearchLabel => 'Search all available items';
+  String get uiListSearchLabel => 'అందుబాటులో ఉన్న అన్ని అంశాలను వెతకండి';
 
   @override
-  String get uiListSearchTooLong => 'Use at most 200 characters for search.';
+  String get uiListSearchTooLong =>
+      'వెతకడానికి గరిష్ఠంగా 200 అక్షరాలు ఉపయోగించండి.';
 
   @override
-  String get uiListOptions => 'List options';
+  String get uiListOptions => 'జాబితా ఎంపికలు';
 
   @override
-  String get uiListSearch => 'Search';
+  String get uiListSearch => 'వెతకండి';
 
   @override
-  String get uiListClearSearch => 'Clear search';
+  String get uiListClearSearch => 'వెతుకులాట తొలగించండి';
 
   @override
-  String get uiListRefreshPage => 'Refresh this page';
+  String get uiListRefreshPage => 'ఈ పేజీని రిఫ్రెష్ చేయండి';
 
   @override
-  String get uiListRetry => 'Retry';
+  String get uiListRetry => 'మళ్ళీ ప్రయత్నించండి';
 
   @override
-  String get uiListFilters => 'Filters';
+  String get uiListFilters => 'ఫిల్టర్‌లు';
 
   @override
-  String get uiListPreviousPage => 'Previous page';
+  String get uiListPreviousPage => 'మునుపటి పేజీ';
 
   @override
-  String get uiListSearchAll => 'Search all items';
+  String get uiListSearchAll => 'అన్ని అంశాలను వెతకండి';
 
   @override
-  String get uiListNextPage => 'Next page';
+  String get uiListNextPage => 'తదుపరి పేజీ';
 
   @override
   String get uiListSections =>
-      'items, list options, previous page, search, next page and back';
+      'అంశాలు, జాబితా ఎంపికలు, మునుపటి పేజీ, వెతకండి, తదుపరి పేజీ మరియు వెనక్కి';
 
   @override
-  String get uiWaitingConfirmation => 'Waiting for confirmation. Please wait.';
+  String get uiWaitingConfirmation =>
+      'నిర్ధారణ కోసం వేచి ఉంది. దయచేసి వేచి ఉండండి.';
 
   @override
-  String get uiFinishWord => 'Finish entering the current word, then press OK.';
+  String get uiFinishWord =>
+      'ప్రస్తుత పదాన్ని టైప్ చేయడం పూర్తి చేసి, తర్వాత ఓకే నొక్కండి.';
 
   @override
   String get uiStepFailed =>
-      'This step could not be completed. Your entry is kept. Try again.';
+      'ఈ దశ పూర్తి కాలేదు. మీరు నమోదు చేసినది అలాగే ఉంది. మళ్ళీ ప్రయత్నించండి.';
 
   @override
-  String get uiPasswordVisible => 'Password is visible.';
+  String get uiPasswordVisible => 'పాస్‌వర్డ్ కనిపిస్తోంది.';
 
   @override
-  String get uiPasswordHidden => 'Password is hidden.';
+  String get uiPasswordHidden => 'పాస్‌వర్డ్ దాచబడింది.';
 
   @override
   String uiTextStepScreen(String title, String label) {
-    return '$title. $label. Editing. Press OK to finish, or use up or down to leave the field.';
+    return '$title. $label. ఎడిట్ చేస్తున్నారు. ముగించడానికి ఓకే నొక్కండి, లేదా ఫీల్డ్ నుండి బయటకు రావడానికి పైకి లేదా కిందకు ఉపయోగించండి.';
   }
 
   @override
-  String get uiShowOrHidePassword => 'Show or hide password';
+  String get uiShowOrHidePassword => 'పాస్‌వర్డ్ చూపండి లేదా దాచండి';
 
   @override
   String get uiDateEnterNumbers =>
-      'Enter a number in every date and time field.';
+      'ప్రతి తేదీ మరియు సమయ ఫీల్డ్‌లో ఒక సంఖ్యను నమోదు చేయండి.';
 
   @override
   String uiDateChooseValid(String from, String to) {
-    return 'Choose a valid date from $from to $to.';
+    return '$from నుండి $to వరకు సరైన తేదీని ఎంచుకోండి.';
   }
 
   @override
   String get uiDateInvalid =>
-      'Enter a valid date, an hour from 0 to 23, and a minute from 0 to 59.';
+      'సరైన తేదీ, 0 నుండి 23 వరకు గంట, మరియు 0 నుండి 59 వరకు నిమిషం నమోదు చేయండి.';
 
   @override
   String uiDateChoose(String from, String to) {
-    return 'Choose a date from $from to $to.';
+    return '$from నుండి $to వరకు ఒక తేదీని ఎంచుకోండి.';
   }
 
   @override
   String uiRange(String from, String to) {
-    return '$from to $to';
+    return '$from నుండి $to';
   }
 
   @override
-  String get uiYear => 'Year';
+  String get uiYear => 'సంవత్సరం';
 
   @override
-  String get uiMonth => 'Month';
+  String get uiMonth => 'నెల';
 
   @override
-  String get uiDay => 'Day';
+  String get uiDay => 'రోజు';
 
   @override
-  String get uiHour => 'Hour';
+  String get uiHour => 'గంట';
 
   @override
-  String get uiMinute => 'Minute';
+  String get uiMinute => 'నిమిషం';
 
   @override
   String uiDateFieldEmpty(String name, String range) {
-    return '$name, $range, currently empty';
+    return '$name, $range, ప్రస్తుతం ఖాళీగా ఉంది';
   }
 
   @override
   String uiDateFieldValue(String name, String range, String value) {
-    return '$name, $range, currently $value';
+    return '$name, $range, ప్రస్తుతం $value';
   }
 
   @override
   String uiDateScreen(String from, String to) {
-    return 'Set date and time in the phone\'s local time. Choose a date from $from to $to.';
+    return 'ఫోన్ యొక్క స్థానిక సమయంలో తేదీ మరియు సమయం సెట్ చేయండి. $from నుండి $to వరకు ఒక తేదీని ఎంచుకోండి.';
   }
 
   @override
-  String get uiSaveDateTime => 'Save date and time';
+  String get uiSaveDateTime => 'తేదీ మరియు సమయం సేవ్ చేయండి';
 
   @override
   String uiChoiceValue(String label, String value) {
@@ -10739,90 +10832,90 @@ class AppLocalizationsTe extends AppLocalizations {
     String position,
     String total,
   ) {
-    return '$label: $value, $position of $total';
+    return '$label: $value, $totalలో $position';
   }
 
   @override
   String uiChoiceChange(String description) {
-    return '$description. Use left or right to change';
+    return '$description. మార్చడానికి ఎడమ లేదా కుడి ఉపయోగించండి';
   }
 
   @override
   String get startupPreferencesFailed =>
-      'Some preferences could not be loaded. Defaults are being used.';
+      'కొన్ని ప్రాధాన్యతలు లోడ్ కాలేదు. డిఫాల్ట్‌లు ఉపయోగించబడుతున్నాయి.';
 
   @override
-  String get startupNotificationsTitle => 'Session notifications';
+  String get startupNotificationsTitle => 'సెషన్ నోటిఫికేషన్‌లు';
 
   @override
   String get startupNotificationsMessage =>
-      'SEEDS uses notifications to tell you about session invitations and updates. You can continue using the app if you choose Not now.';
+      'సెషన్ ఆహ్వానాలు మరియు అప్‌డేట్‌ల గురించి చెప్పడానికి SEEDS నోటిఫికేషన్‌లను ఉపయోగిస్తుంది. మీరు ఇప్పుడు కాదు ఎంచుకున్నా యాప్‌ను ఉపయోగించడం కొనసాగించవచ్చు.';
 
   @override
-  String get startupEnableNotifications => 'Enable notifications';
+  String get startupEnableNotifications => 'నోటిఫికేషన్‌లు ఆన్ చేయండి';
 
   @override
-  String get startupLoading => 'SEEDS is loading';
+  String get startupLoading => 'SEEDS లోడ్ అవుతోంది';
 
   @override
-  String get startupWelcomeScreenName => 'Welcome to SEEDS';
+  String get startupWelcomeScreenName => 'SEEDS కు స్వాగతం';
 
   @override
-  String get startupLoginButton => 'Login, button';
+  String get startupLoginButton => 'లాగిన్, బటన్';
 
   @override
-  String get startupRegisterButton => 'Register, button';
+  String get startupRegisterButton => 'నమోదు, బటన్';
 
   @override
-  String get startupSettingsButton => 'Settings, button';
+  String get startupSettingsButton => 'సెట్టింగ్‌లు, బటన్';
 
   @override
-  String get startupRepeatInstructionsButton => 'Repeat instructions, button';
+  String get startupRepeatInstructionsButton => 'సూచనలు మళ్ళీ వినండి, బటన్';
 
   @override
-  String get authSimAutofillOptional => 'SIM phone-number autofill is optional';
+  String get authSimAutofillOptional => 'SIM నుండి ఫోన్ నంబర్ ఆటోఫిల్ ఐచ్ఛికం';
 
   @override
   String get authRegisteredNowLogIn =>
-      'Registered. Now log in. Phone number field. Press star for help.';
+      'నమోదు అయింది. ఇప్పుడు లాగిన్ చేయండి. ఫోన్ నంబర్ ఫీల్డ్. సహాయం కోసం స్టార్ నొక్కండి.';
 
   @override
   String get authSimUnavailableOnDevice =>
-      'SIM suggestions are unavailable on this device. Enter the phone number manually.';
+      'ఈ ఫోన్‌లో SIM సూచనలు అందుబాటులో లేవు. ఫోన్ నంబర్‌ను మీరే నమోదు చేయండి.';
 
   @override
-  String get authSimDialogTitle => 'Optional SIM autofill';
+  String get authSimDialogTitle => 'ఐచ్ఛిక SIM ఆటోఫిల్';
 
   @override
   String get authSimDialogMessage =>
-      'Read optional phone-number suggestions from this device? You will choose a suggestion before it replaces the phone field. This does not verify who owns an account. SIM access is never required for login, registration, Wi-Fi, or joining a session.';
+      'ఈ ఫోన్ నుండి ఐచ్ఛిక ఫోన్ నంబర్ సూచనలను చదవాలా? ఫోన్ ఫీల్డ్‌లో పెట్టే ముందు మీరు ఒక సూచనను ఎంచుకుంటారు. ఇది ఖాతా ఎవరిదో ధృవీకరించదు. లాగిన్, నమోదు, Wi-Fi లేదా సెషన్‌లో చేరడానికి SIM యాక్సెస్ ఎప్పుడూ అవసరం లేదు.';
 
   @override
-  String get authSimDialogConfirm => 'Read SIM suggestions';
+  String get authSimDialogConfirm => 'SIM సూచనలను చదవండి';
 
   @override
   String get authSimAutofillSkipped =>
-      'SIM autofill skipped. Enter the phone number manually.';
+      'SIM ఆటోఫిల్ దాటవేయబడింది. ఫోన్ నంబర్‌ను మీరే నమోదు చేయండి.';
 
   @override
-  String get authSimDetecting => 'Detecting SIM card...';
+  String get authSimDetecting => 'SIM కార్డ్‌ను గుర్తిస్తోంది...';
 
   @override
   String get authSimAutofillUnavailable =>
-      'SIM autofill unavailable. Enter the phone number manually.';
+      'SIM ఆటోఫిల్ అందుబాటులో లేదు. ఫోన్ నంబర్‌ను మీరే నమోదు చేయండి.';
 
   @override
   String get authSimNoneFound =>
-      'No SIM card found. Enter the phone number manually.';
+      'SIM కార్డ్ కనబడలేదు. ఫోన్ నంబర్‌ను మీరే నమోదు చేయండి.';
 
   @override
   String authSimCardsDetected(String count) {
-    return '$count SIM cards detected. Please choose one.';
+    return '$count SIM కార్డ్‌లు కనబడ్డాయి. దయచేసి ఒకటి ఎంచుకోండి.';
   }
 
   @override
   String get authSimSuggestionUnavailable =>
-      'SIM suggestion unavailable. Enter the phone number manually.';
+      'SIM సూచన అందుబాటులో లేదు. ఫోన్ నంబర్‌ను మీరే నమోదు చేయండి.';
 
   @override
   String authSimOptionLabel(String number, String carrier) {
@@ -10830,200 +10923,200 @@ class AppLocalizationsTe extends AppLocalizations {
   }
 
   @override
-  String get authSimUnknownCarrier => 'Unknown carrier';
+  String get authSimUnknownCarrier => 'తెలియని నెట్‌వర్క్';
 
   @override
   String get authSimSelectedFilled =>
-      'Selected suggestion filled. This is not proof of account ownership.';
+      'ఎంచుకున్న సూచన నింపబడింది. ఇది ఖాతా మీదే అని రుజువు కాదు.';
 
   @override
   String get authSimSuggestionFilledSpoken =>
-      'Phone-number suggestion filled. Enter your password to sign in. No sign-in was sent.';
+      'ఫోన్ నంబర్ సూచన నింపబడింది. సైన్ ఇన్ చేయడానికి మీ పాస్‌వర్డ్ నమోదు చేయండి. సైన్ ఇన్ పంపబడలేదు.';
 
   @override
-  String get authErrorEnterPhone => 'Enter your phone number.';
+  String get authErrorEnterPhone => 'మీ ఫోన్ నంబర్ నమోదు చేయండి.';
 
   @override
-  String get authErrorInvalidPhone => 'Enter a valid 10-digit phone number.';
+  String get authErrorInvalidPhone => 'సరైన 10 అంకెల ఫోన్ నంబర్ నమోదు చేయండి.';
 
   @override
-  String get authErrorEnterPassword => 'Enter your password.';
+  String get authErrorEnterPassword => 'మీ పాస్‌వర్డ్ నమోదు చేయండి.';
 
   @override
   String get authErrorPasswordTooShort =>
-      'Password must be at least 6 characters.';
+      'పాస్‌వర్డ్‌లో కనీసం 6 అక్షరాలు ఉండాలి.';
 
   @override
-  String get authErrorInvalidServerResponse => 'Invalid response from server';
+  String get authErrorInvalidServerResponse => 'సర్వర్ నుండి సరికాని స్పందన';
 
   @override
   String get authErrorNotRegisteredAdmin =>
-      'This phone number is not registered as an admin account. Press 1, 2 or 3 to choose the account type.';
+      'ఈ ఫోన్ నంబర్ నిర్వాహకుల ఖాతాగా నమోదు కాలేదు. ఖాతా రకాన్ని ఎంచుకోవడానికి 1, 2 లేదా 3 నొక్కండి.';
 
   @override
   String get authErrorNotRegisteredTeacher =>
-      'This phone number is not registered as a teacher account. Press 1, 2 or 3 to choose the account type.';
+      'ఈ ఫోన్ నంబర్ ఉపాధ్యాయుల ఖాతాగా నమోదు కాలేదు. ఖాతా రకాన్ని ఎంచుకోవడానికి 1, 2 లేదా 3 నొక్కండి.';
 
   @override
   String get authErrorNotRegisteredStudent =>
-      'This phone number is not registered as a student account. Press 1, 2 or 3 to choose the account type.';
+      'ఈ ఫోన్ నంబర్ విద్యార్థి ఖాతాగా నమోదు కాలేదు. ఖాతా రకాన్ని ఎంచుకోవడానికి 1, 2 లేదా 3 నొక్కండి.';
 
   @override
   String get authErrorResponseNotVerified =>
-      'The sign-in response could not be verified. Please try again.';
+      'సైన్ ఇన్ స్పందనను ధృవీకరించలేకపోయాము. దయచేసి మళ్లీ ప్రయత్నించండి.';
 
   @override
   String authErrorMovedToPhone(String message) {
-    return '$message Moved to phone number field.';
+    return '$message ఫోన్ నంబర్ ఫీల్డ్‌కు వెళ్లింది.';
   }
 
   @override
   String authErrorMovedToAccountType(String message) {
-    return '$message Moved to account type.';
+    return '$message ఖాతా రకానికి వెళ్లింది.';
   }
 
   @override
   String authErrorMovedToPassword(String message) {
-    return '$message Moved to password field.';
+    return '$message పాస్‌వర్డ్ ఫీల్డ్‌కు వెళ్లింది.';
   }
 
   @override
-  String get authRoleAdministrator => 'Administrator';
+  String get authRoleAdministrator => 'నిర్వాహకులు';
 
   @override
-  String get authRoleTeacher => 'Teacher';
+  String get authRoleTeacher => 'ఉపాధ్యాయులు';
 
   @override
-  String get authRoleStudent => 'Student';
+  String get authRoleStudent => 'విద్యార్థి';
 
   @override
   String get authRecoveryStep1 =>
-      'Ask your school administrator to reset your password. They must check who you are in person. A phone number or SIM alone does not prove it. Never send anyone your permanent password.';
+      'మీ పాస్‌వర్డ్‌ను రీసెట్ చేయమని మీ పాఠశాల నిర్వాహకులను అడగండి. వారు మీరు ఎవరో నేరుగా కలిసి తనిఖీ చేయాలి. ఫోన్ నంబర్ లేదా SIM మాత్రమే దానిని రుజువు చేయదు. మీ శాశ్వత పాస్‌వర్డ్‌ను ఎవరికీ ఎప్పుడూ పంపకండి.';
 
   @override
   String get authRecoveryStep2 =>
-      'The administrator gives you a private 12-digit temporary password. It works for 24 hours. Ask for a new one if it expires.';
+      'నిర్వాహకులు మీకు 12 అంకెల ప్రైవేట్ తాత్కాలిక పాస్‌వర్డ్ ఇస్తారు. ఇది 24 గంటలు పనిచేస్తుంది. గడువు ముగిస్తే కొత్తది అడగండి.';
 
   @override
   String get authRecoveryStep3 =>
-      'Sign in with your phone number and the temporary password, then choose a new password.';
+      'మీ ఫోన్ నంబర్ మరియు తాత్కాలిక పాస్‌వర్డ్‌తో సైన్ ఇన్ చేసి, తర్వాత కొత్త పాస్‌వర్డ్ ఎంచుకోండి.';
 
   @override
   String get authRecoveryStep4 =>
-      'After 10 wrong tries, sign-in pauses for 15 minutes. Recovery needs internet. Files already on other phones are not removed instantly.';
+      '10 తప్పు ప్రయత్నాల తర్వాత, సైన్ ఇన్ 15 నిమిషాలు ఆగిపోతుంది. రికవరీకి ఇంటర్నెట్ అవసరం. ఇతర ఫోన్‌లలో ఇప్పటికే ఉన్న ఫైల్‌లు వెంటనే తొలగించబడవు.';
 
   @override
-  String get authRecoveryHelpTitle => 'Password recovery help';
+  String get authRecoveryHelpTitle => 'పాస్‌వర్డ్ రికవరీ సహాయం';
 
   @override
   String authRecoveryHelpIntro(String count) {
-    return '$count short steps. Press down to hear each step.';
+    return '$count చిన్న దశలు. ప్రతి దశను వినడానికి కిందికి నొక్కండి.';
   }
 
   @override
-  String get authBackToLogin => 'Back to login';
+  String get authBackToLogin => 'లాగిన్‌కు తిరిగి వెళ్లండి';
 
   @override
-  String get authBackToLoginButton => 'Back to login, button';
+  String get authBackToLoginButton => 'లాగిన్‌కు తిరిగి వెళ్లండి, బటన్';
 
   @override
   String get notesRecordingStarted =>
-      'Recording started. Select Stop recording when finished.';
+      'రికార్డింగ్ ప్రారంభమైంది. పూర్తయినప్పుడు రికార్డింగ్ ఆపండి ఎంచుకోండి.';
 
   @override
   String get notesActionNotConfirmed =>
-      'This note action could not be confirmed. Check storage, microphone permission or connection. Your drafts are kept.';
+      'ఈ నోట్ చర్య నిర్ధారించబడలేదు. స్టోరేజ్, మైక్రోఫోన్ అనుమతి లేదా కనెక్షన్ తనిఖీ చేయండి. మీ డ్రాఫ్ట్‌లు ఉంచబడ్డాయి.';
 
   @override
-  String get notesNoneYet => 'No private notes yet.';
+  String get notesNoneYet => 'ఇంకా ప్రైవేట్ నోట్స్ లేవు.';
 
   @override
   String notesLoaded(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count private notes loaded.',
-      one: '1 private note loaded.',
+      other: '$count ప్రైవేట్ నోట్స్ లోడ్ అయ్యాయి.',
+      one: '1 ప్రైవేట్ నోట్ లోడ్ అయింది.',
     );
     return '$_temp0';
   }
 
   @override
-  String get notesNameDialogTitle => 'Name private note';
+  String get notesNameDialogTitle => 'ప్రైవేట్ నోట్‌కు పేరు పెట్టండి';
 
   @override
-  String get notesDefaultTitle => 'Private note';
+  String get notesDefaultTitle => 'ప్రైవేట్ నోట్';
 
   @override
   String notesDefaultLessonTitle(String lesson) {
-    return 'Note for $lesson';
+    return '$lesson కోసం నోట్';
   }
 
   @override
-  String get notesRecordConfirmTitle => 'Record private note?';
+  String get notesRecordConfirmTitle => 'ప్రైవేట్ నోట్ రికార్డ్ చేయాలా?';
 
   @override
   String notesRecordConfirmMessage(String lessonPoint) {
-    return 'Record microphone audio on this phone only, for up to five minutes or the remaining separate 10 MB note allowance. Stop recording before using spoken controls. App speech, leaving this screen or app interruption stops recording. Live-session recording is blocked. $lessonPoint No automatic upload or sharing. Microphone permission may be requested.';
+    return 'మైక్రోఫోన్ ఆడియోను ఈ ఫోన్‌లో మాత్రమే రికార్డ్ చేయండి, గరిష్టంగా ఐదు నిమిషాలు లేదా నోట్స్ కోసం ప్రత్యేకంగా మిగిలిన 10 MB వరకు. మాట ఆదేశాలు వాడే ముందు రికార్డింగ్ ఆపండి. యాప్ స్వరం, ఈ స్క్రీన్ నుండి వెళ్ళడం లేదా యాప్‌కు అంతరాయం రికార్డింగ్‌ను ఆపుతాయి. లైవ్ సెషన్ రికార్డింగ్ నిరోధించబడింది. $lessonPoint ఆటోమేటిక్ అప్‌లోడ్ లేదా షేరింగ్ ఉండదు. మైక్రోఫోన్ అనుమతి అడగవచ్చు.';
   }
 
   @override
   String notesLessonPointSeconds(String seconds) {
-    return 'Lesson point: $seconds seconds.';
+    return 'పాఠం స్థానం: $seconds సెకన్లు.';
   }
 
   @override
-  String get notesStartRecording => 'Start recording';
+  String get notesStartRecording => 'రికార్డింగ్ ప్రారంభించండి';
 
   @override
-  String get notesDoNotRecord => 'Do not record';
+  String get notesDoNotRecord => 'రికార్డ్ చేయవద్దు';
 
   @override
   String get notesReviewStoppedChanged =>
-      'Review stopped because the screen or app changed. Open this note again to review.';
+      'స్క్రీన్ లేదా యాప్ మారినందున సమీక్ష ఆగింది. సమీక్షించడానికి ఈ నోట్‌ను మళ్ళీ తెరవండి.';
 
   @override
   String get notesReviewStoppedAccount =>
-      'Review stopped because your account changed. Open private notes again.';
+      'మీ ఖాతా మారినందున సమీక్ష ఆగింది. ప్రైవేట్ నోట్స్ మళ్ళీ తెరవండి.';
 
   @override
-  String get notesRenameDialogTitle => 'Rename private note';
+  String get notesRenameDialogTitle => 'ప్రైవేట్ నోట్ పేరు మార్చండి';
 
   @override
   String notesRemoveTitle(String title) {
-    return 'Remove $title?';
+    return '$title తొలగించాలా?';
   }
 
   @override
   String notesRemoveMessage(String title) {
-    return 'Remove only $title from this account on this phone? Other notes, learning progress and bookmarks are kept. If previously published, the online recording and downloaded copies are not removed.';
+    return 'ఈ ఫోన్‌లో ఈ ఖాతా నుండి $title మాత్రమే తొలగించాలా? ఇతర నోట్స్, అభ్యాస పురోగతి మరియు బుక్‌మార్క్‌లు ఉంచబడతాయి. ఇంతకు ముందు ప్రచురించి ఉంటే, ఆన్‌లైన్ రికార్డింగ్ మరియు డౌన్‌లోడ్ చేసిన కాపీలు తొలగించబడవు.';
   }
 
   @override
-  String get notesRemoveSelected => 'Remove selected note';
+  String get notesRemoveSelected => 'ఎంచుకున్న నోట్ తొలగించండి';
 
   @override
-  String get notesKeepNote => 'Keep note';
+  String get notesKeepNote => 'నోట్ ఉంచండి';
 
   @override
   String notesRemoved(String title) {
-    return '$title removed. Other notes and learning progress kept.';
+    return '$title తొలగించబడింది. ఇతర నోట్స్ మరియు అభ్యాస పురోగతి ఉంచబడ్డాయి.';
   }
 
   @override
   String get notesReviewBeforePublish =>
-      'Play and review this note privately before publishing.';
+      'ప్రచురించే ముందు ఈ నోట్‌ను ప్రైవేట్‌గా ప్లే చేసి సమీక్షించండి.';
 
   @override
   String get notesSignInAsTeacher =>
-      'Sign in as the teacher before publishing.';
+      'ప్రచురించే ముందు ఉపాధ్యాయులుగా సైన్ ఇన్ చేయండి.';
 
   @override
   String get notesNoWorkspace =>
-      'No authorized class/subject workspace was confirmed. Your draft is kept.';
+      'అనుమతి ఉన్న తరగతి/సబ్జెక్టు వర్క్‌స్పేస్ ఏదీ నిర్ధారించబడలేదు. మీ డ్రాఫ్ట్ ఉంచబడింది.';
 
   @override
-  String get notesPublishTitle => 'Publish reviewed note to class?';
+  String get notesPublishTitle => 'సమీక్షించిన నోట్‌ను తరగతికి ప్రచురించాలా?';
 
   @override
   String notesPublishMessage(
@@ -11031,55 +11124,55 @@ class AppLocalizationsTe extends AppLocalizations {
     String className,
     String subjectName,
   ) {
-    return 'Confirm you reviewed $title and want to publish it to $className, $subjectName. Authorized class members can stream or download it for up to 30 days offline. Disconnected copies cannot be instantly revoked. Your local draft stays. An unconfirmed upload may already have published; check the library before retrying to avoid duplicates.';
+    return 'మీరు $title సమీక్షించారని, దాన్ని $className, $subjectName కు ప్రచురించాలనుకుంటున్నారని నిర్ధారించండి. అనుమతి ఉన్న తరగతి సభ్యులు దీన్ని స్ట్రీమ్ చేయవచ్చు లేదా గరిష్టంగా 30 రోజులు ఆఫ్‌లైన్ కోసం డౌన్‌లోడ్ చేయవచ్చు. కనెక్షన్ లేని కాపీలను వెంటనే వెనక్కి తీసుకోలేము. మీ స్థానిక డ్రాఫ్ట్ ఉంటుంది. నిర్ధారించని అప్‌లోడ్ ఇప్పటికే ప్రచురించబడి ఉండవచ్చు; నకిలీలు రాకుండా మళ్ళీ ప్రయత్నించే ముందు లైబ్రరీ తనిఖీ చేయండి.';
   }
 
   @override
-  String get notesPublishConfirm => 'Publish to selected class';
+  String get notesPublishConfirm => 'ఎంచుకున్న తరగతికి ప్రచురించండి';
 
   @override
-  String get notesKeepDraftPrivate => 'Keep draft private';
+  String get notesKeepDraftPrivate => 'డ్రాఫ్ట్‌ను ప్రైవేట్‌గా ఉంచండి';
 
   @override
-  String get notesSignInChanged => 'Sign-in changed. The draft was not sent.';
+  String get notesSignInChanged => 'సైన్ ఇన్ మారింది. డ్రాఫ్ట్ పంపబడలేదు.';
 
   @override
   String get notesAccountChangedBeforePublish =>
-      'Your account changed before publication was confirmed. Check the original teacher library before retrying.';
+      'ప్రచురణ నిర్ధారించబడక ముందే మీ ఖాతా మారింది. మళ్ళీ ప్రయత్నించే ముందు అసలు ఉపాధ్యాయుల లైబ్రరీ తనిఖీ చేయండి.';
 
   @override
   String get notesPublishNotConfirmed =>
-      'Publication was not confirmed. Check the class library before retrying; your private draft is kept.';
+      'ప్రచురణ నిర్ధారించబడలేదు. మళ్ళీ ప్రయత్నించే ముందు తరగతి లైబ్రరీ తనిఖీ చేయండి; మీ ప్రైవేట్ డ్రాఫ్ట్ ఉంచబడింది.';
 
   @override
   String get notesPublishUnreadable =>
-      'Publication confirmation was unreadable. Check the library before retrying; your draft is kept.';
+      'ప్రచురణ నిర్ధారణ చదవలేకపోయాము. మళ్ళీ ప్రయత్నించే ముందు లైబ్రరీ తనిఖీ చేయండి; మీ డ్రాఫ్ట్ ఉంచబడింది.';
 
   @override
   String get notesPublishIdentityMismatch =>
-      'Publication identity did not match. Check the library before retrying; your draft is kept.';
+      'ప్రచురణ గుర్తింపు సరిపోలలేదు. మళ్ళీ ప్రయత్నించే ముందు లైబ్రరీ తనిఖీ చేయండి; మీ డ్రాఫ్ట్ ఉంచబడింది.';
 
   @override
   String notesPublished(String audioId) {
-    return 'Published as recording $audioId. Your local draft is kept. Do not publish again unless you intend another recording.';
+    return 'రికార్డింగ్ $audioId గా ప్రచురించబడింది. మీ స్థానిక డ్రాఫ్ట్ ఉంచబడింది. మరో రికార్డింగ్ కావాలనుకుంటే తప్ప మళ్ళీ ప్రచురించవద్దు.';
   }
 
   @override
   String get notesStopBeforeLeaving =>
-      'Recording stop was not confirmed. Stop again or background the app before leaving.';
+      'రికార్డింగ్ ఆగినట్లు నిర్ధారించబడలేదు. బయటకు వెళ్ళే ముందు మళ్ళీ ఆపండి లేదా యాప్‌ను బ్యాక్‌గ్రౌండ్‌కు పంపండి.';
 
   @override
   String get notesRules =>
-      'Private note rules. Each note can be up to five minutes. Notes use a separate 10 megabyte allowance for each account. Recording only starts when you confirm it, and never inside a live session. App speech, leaving this screen or an interruption stops recording, so stop recording before using spoken controls. Student notes stay private on this phone. Teacher drafts must be reviewed and confirmed before publishing. Notes are kept after you log out.';
+      'ప్రైవేట్ నోట్ నియమాలు. ప్రతి నోట్ గరిష్టంగా ఐదు నిమిషాలు ఉండవచ్చు. నోట్‌లకు ప్రతి ఖాతాకు వేరుగా 10 మెగాబైట్ల స్థలం ఉంటుంది. మీరు నిర్ధారించినప్పుడు మాత్రమే రికార్డింగ్ మొదలవుతుంది, లైవ్ సెషన్ లోపల ఎప్పుడూ మొదలవదు. యాప్ స్వరం, ఈ స్క్రీన్ నుండి బయటకు వెళ్లడం లేదా అంతరాయం రికార్డింగ్‌ను ఆపుతుంది, కాబట్టి మాట్లాడే నియంత్రణలు ఉపయోగించే ముందు రికార్డింగ్ ఆపండి. విద్యార్థి నోట్‌లు ఈ ఫోన్‌లోనే ప్రైవేట్‌గా ఉంటాయి. ఉపాధ్యాయుల డ్రాఫ్ట్‌లను ప్రచురించే ముందు సమీక్షించి నిర్ధారించాలి. మీరు లాగ్ అవుట్ చేసిన తర్వాత కూడా నోట్‌లు ఉంటాయి.';
 
   @override
   String notesRecordingFor(String duration) {
-    return 'Recording for $duration.';
+    return '$duration నుండి రికార్డింగ్ జరుగుతోంది.';
   }
 
   @override
   String notesUsage(String megabytes) {
-    return '$megabytes of 10 MB private notes used.';
+    return '10 MB ప్రైవేట్ నోట్‌లలో $megabytes ఉపయోగించబడింది.';
   }
 
   @override
@@ -11088,540 +11181,542 @@ class AppLocalizationsTe extends AppLocalizations {
   }
 
   @override
-  String get authBackToLoginKey => '0: Back to login';
+  String get authBackToLoginKey => '0: లాగిన్‌కు తిరిగి వెళ్లండి';
 
   @override
-  String get authRoleRowSelected => 'Selected';
+  String get authRoleRowSelected => 'ఎంచుకోబడింది';
 
   @override
-  String get authLoginScreenName => 'Login Screen';
+  String get authLoginScreenName => 'లాగిన్ స్క్రీన్';
 
   @override
   String get authLoginNavigationSections =>
-      'phone number, password, account type, login, registration, SIM suggestions and recovery help';
+      'ఫోన్ నంబర్, పాస్‌వర్డ్, ఖాతా రకం, లాగిన్, నమోదు, SIM సూచనలు మరియు రికవరీ సహాయం';
 
   @override
-  String get authLoginKeySimLabel =>
-      'Read optional SIM phone-number suggestions';
+  String get authLoginKeySimLabel => 'ఐచ్ఛిక SIM ఫోన్ నంబర్ సూచనలను చదవండి';
 
   @override
-  String get authLoginKeyRecoveryLabel => 'School-admin password recovery help';
+  String get authLoginKeyRecoveryLabel =>
+      'పాఠశాల నిర్వాహకుల ద్వారా పాస్‌వర్డ్ రికవరీ సహాయం';
 
   @override
-  String get authPhoneNumberField => 'Phone number field';
+  String get authPhoneNumberField => 'ఫోన్ నంబర్ ఫీల్డ్';
 
   @override
-  String get authPasswordField => 'Password field';
+  String get authPasswordField => 'పాస్‌వర్డ్ ఫీల్డ్';
 
   @override
-  String get authHidePassword => 'Hide password';
+  String get authHidePassword => 'పాస్‌వర్డ్ దాచండి';
 
   @override
-  String get authShowPassword => 'Show password';
+  String get authShowPassword => 'పాస్‌వర్డ్ చూపించండి';
 
   @override
   String authRoleFieldNavLabel(String role) {
-    return 'Account type: $role, selected. Press 1, 2 or 3 to change, or use left and right';
+    return 'ఖాతా రకం: $role, ఎంచుకోబడింది. మార్చడానికి 1, 2 లేదా 3 నొక్కండి, లేదా ఎడమ మరియు కుడి ఉపయోగించండి';
   }
 
   @override
   String authLoginAsButton(String role) {
-    return 'Login as $role, button';
+    return '$role గా లాగిన్ చేయండి, బటన్';
   }
 
   @override
-  String get authRegisterNewAccountButton => 'Register a new account, button';
+  String get authRegisterNewAccountButton => 'కొత్త ఖాతాను నమోదు చేయండి, బటన్';
 
   @override
   String get authSimSuggestionsTargetLabel =>
-      'Read optional SIM phone-number suggestions. Manual entry always works.';
+      'ఐచ్ఛిక SIM ఫోన్ నంబర్ సూచనలను చదవండి. మీరే నమోదు చేయడం ఎప్పుడూ పనిచేస్తుంది.';
 
   @override
   String get authForgotPasswordTargetLabel =>
-      'Forgot password? School-admin recovery help';
+      'పాస్‌వర్డ్ మర్చిపోయారా? పాఠశాల నిర్వాహకుల రికవరీ సహాయం';
 
   @override
-  String get authWelcomeBack => 'Welcome Back';
+  String get authWelcomeBack => 'మళ్లీ స్వాగతం';
 
   @override
-  String get authRegisteredBanner => 'Registered. Now log in.';
+  String get authRegisteredBanner => 'నమోదు అయింది. ఇప్పుడు లాగిన్ చేయండి.';
 
   @override
-  String get authPhoneNumber => 'Phone number';
+  String get authPhoneNumber => 'ఫోన్ నంబర్';
 
   @override
-  String get authPassword => 'Password';
+  String get authPassword => 'పాస్‌వర్డ్';
 
   @override
-  String get authAccountType => 'Account type';
+  String get authAccountType => 'ఖాతా రకం';
 
   @override
   String authRoleFieldValue(String role) {
-    return '$role, selected. Press 1, 2 or 3 to change';
+    return '$role, ఎంచుకోబడింది. మార్చడానికి 1, 2 లేదా 3 నొక్కండి';
   }
 
   @override
-  String get authRoleOptionStudent => '1 Student';
+  String get authRoleOptionStudent => '1 విద్యార్థి';
 
   @override
-  String get authRoleOptionTeacher => '2 Teacher';
+  String get authRoleOptionTeacher => '2 ఉపాధ్యాయులు';
 
   @override
-  String get authRoleOptionAdmin => '3 Admin';
+  String get authRoleOptionAdmin => '3 నిర్వాహకులు';
 
   @override
-  String get authSigningIn => 'Signing in, please wait';
+  String get authSigningIn => 'సైన్ ఇన్ చేస్తోంది, దయచేసి వేచి ఉండండి';
 
   @override
   String authLoginAsKey(String role) {
-    return '4: Login as $role';
+    return '4: $role గా లాగిన్ చేయండి';
   }
 
   @override
-  String get authNoAccountRegisterKey => '5: Don\'t have an account? Register';
+  String get authNoAccountRegisterKey => '5: ఖాతా లేదా? నమోదు చేయండి';
 
   @override
-  String get authReadSimSuggestionsKey => '6: Read optional SIM suggestions';
+  String get authReadSimSuggestionsKey => '6: ఐచ్ఛిక SIM సూచనలను చదవండి';
 
   @override
-  String get authForgotPasswordKey => '7: Forgot password? Recovery help';
+  String get authForgotPasswordKey => '7: పాస్‌వర్డ్ మర్చిపోయారా? రికవరీ సహాయం';
 
   @override
   String authErrorMovedToName(String message) {
-    return '$message Moved to name field.';
+    return '$message పేరు ఫీల్డ్‌కు వెళ్లింది.';
   }
 
   @override
-  String get authErrorEnterName => 'Enter your name.';
+  String get authErrorEnterName => 'మీ పేరు నమోదు చేయండి.';
 
   @override
-  String get authErrorEnterAPassword => 'Enter a password.';
+  String get authErrorEnterAPassword => 'ఒక పాస్‌వర్డ్ నమోదు చేయండి.';
 
   @override
-  String get authRegisteringAsTeacher => 'Registering as teacher';
+  String get authRegisteringAsTeacher => 'ఉపాధ్యాయులుగా నమోదు చేస్తోంది';
 
   @override
-  String get authRegisteringAsStudent => 'Registering as student';
+  String get authRegisteringAsStudent => 'విద్యార్థిగా నమోదు చేస్తోంది';
 
   @override
-  String get authRegistrationScreenName => 'Registration Screen';
+  String get authRegistrationScreenName => 'నమోదు స్క్రీన్';
 
   @override
   String get authRegisterNavigationSections =>
-      'name, phone number, password, student or teacher account type, register, and login';
+      'పేరు, ఫోన్ నంబర్, పాస్‌వర్డ్, విద్యార్థి లేదా ఉపాధ్యాయుల ఖాతా రకం, నమోదు మరియు లాగిన్';
 
   @override
-  String get authNameField => 'Name field';
+  String get authNameField => 'పేరు ఫీల్డ్';
 
   @override
   String get authRegisterRoleTeacherLabel =>
-      'Account type: Teacher. Press OK or 3 to switch to student';
+      'ఖాతా రకం: ఉపాధ్యాయులు. విద్యార్థికి మార్చడానికి ఓకే లేదా 3 నొక్కండి';
 
   @override
   String get authRegisterRoleStudentLabel =>
-      'Account type: Student. Press OK or 3 to switch to teacher';
+      'ఖాతా రకం: విద్యార్థి. ఉపాధ్యాయులకు మార్చడానికి ఓకే లేదా 3 నొక్కండి';
 
   @override
-  String get authRegisterAsTeacherButton => 'Register as teacher, button';
+  String get authRegisterAsTeacherButton => 'ఉపాధ్యాయులుగా నమోదు చేయండి, బటన్';
 
   @override
-  String get authRegisterAsStudentButton => 'Register as student, button';
+  String get authRegisterAsStudentButton => 'విద్యార్థిగా నమోదు చేయండి, బటన్';
 
   @override
-  String get authGoToLoginLabel => 'Already have an account? Go to login';
+  String get authGoToLoginLabel => 'ఇప్పటికే ఖాతా ఉందా? లాగిన్‌కు వెళ్లండి';
 
   @override
-  String get authRegisterTitle => 'Register';
+  String get authRegisterTitle => 'నమోదు';
 
   @override
-  String get authName => 'Name';
+  String get authName => 'పేరు';
 
   @override
   String get authRegisterAsTeacherKey =>
-      '3: Register as Teacher. Change account type';
+      '3: ఉపాధ్యాయులుగా నమోదు చేయండి. ఖాతా రకాన్ని మార్చండి';
 
   @override
   String get authRegisterAsStudentKey =>
-      '3: Register as Student. Change account type';
+      '3: విద్యార్థిగా నమోదు చేయండి. ఖాతా రకాన్ని మార్చండి';
 
   @override
-  String get authRegisteringPleaseWait => 'Registering, please wait';
+  String get authRegisteringPleaseWait => 'నమోదు చేస్తోంది, దయచేసి వేచి ఉండండి';
 
   @override
-  String get authRegisterKey => '1: Register';
+  String get authRegisterKey => '1: నమోదు చేయండి';
 
   @override
-  String get authHaveAccountLoginKey => '2: Already have an account? Login';
+  String get authHaveAccountLoginKey => '2: ఇప్పటికే ఖాతా ఉందా? లాగిన్ చేయండి';
 
   @override
   String get authChangePasswordBusy =>
-      'Saving. Waiting for password-change confirmation.';
+      'సేవ్ చేస్తోంది. పాస్‌వర్డ్ మార్పు నిర్ధారణ కోసం వేచి ఉంది.';
 
   @override
   String get authChangePasswordErrorEnterTemporary =>
-      'Enter your temporary credential. Moved to that field.';
+      'మీ తాత్కాలిక కోడ్ నమోదు చేయండి. ఆ ఫీల్డ్‌కు వెళ్లింది.';
 
   @override
   String get authChangePasswordErrorTooShort =>
-      'Enter a new password of at least 6 characters. Moved to new password.';
+      'కనీసం 6 అక్షరాల కొత్త పాస్‌వర్డ్ నమోదు చేయండి. కొత్త పాస్‌వర్డ్‌కు వెళ్లింది.';
 
   @override
   String get authChangePasswordErrorMismatch =>
-      'The new passwords do not match. Moved to repeat new password.';
+      'కొత్త పాస్‌వర్డ్‌లు సరిపోలడం లేదు. కొత్త పాస్‌వర్డ్ మళ్లీ నమోదు చేసే ఫీల్డ్‌కు వెళ్లింది.';
 
   @override
   String get authChangePasswordErrorSameAsTemporary =>
-      'Choose a password different from the temporary credential. Moved to new password.';
+      'తాత్కాలిక కోడ్ కంటే వేరే పాస్‌వర్డ్ ఎంచుకోండి. కొత్త పాస్‌వర్డ్‌కు వెళ్లింది.';
 
   @override
   String get authChangePasswordSessionInactive =>
-      'This recovery session is no longer active. Sign in again.';
+      'ఈ రికవరీ సెషన్ ఇప్పుడు సక్రియంగా లేదు. మళ్లీ సైన్ ఇన్ చేయండి.';
 
   @override
   String get authChangePasswordAccountChanged =>
-      'Your account changed. No replacement sign-in was saved.';
+      'మీ ఖాతా మారింది. బదులుగా ఎలాంటి సైన్ ఇన్ సేవ్ చేయబడలేదు.';
 
   @override
   String authChangePasswordNotConfirmed(String message) {
-    return '$message Password change is not confirmed. If the connection failed, try signing in with your new password before requesting another reset.';
+    return '$message పాస్‌వర్డ్ మార్పు నిర్ధారించబడలేదు. కనెక్షన్ విఫలమైతే, మరో రీసెట్ అడిగే ముందు మీ కొత్త పాస్‌వర్డ్‌తో సైన్ ఇన్ చేసి చూడండి.';
   }
 
   @override
   String get authChangePasswordResponseNotVerified =>
-      'The password-change response could not be verified. Try signing in again with your new password.';
+      'పాస్‌వర్డ్ మార్పు స్పందనను ధృవీకరించలేకపోయాము. మీ కొత్త పాస్‌వర్డ్‌తో మళ్లీ సైన్ ఇన్ చేసి చూడండి.';
 
   @override
   String get authChangePasswordReplacementNotVerified =>
-      'The replacement sign-in could not be verified. Sign in again with your new password.';
+      'కొత్త సైన్ ఇన్‌ను ధృవీకరించలేకపోయాము. మీ కొత్త పాస్‌వర్డ్‌తో మళ్లీ సైన్ ఇన్ చేయండి.';
 
   @override
   String get authChangePasswordSignInNotSaved =>
-      'Your sign-in could not be saved. Sign in again with your new password.';
+      'మీ సైన్ ఇన్‌ను సేవ్ చేయలేకపోయాము. మీ కొత్త పాస్‌వర్డ్‌తో మళ్లీ సైన్ ఇన్ చేయండి.';
 
   @override
   String get authChangePasswordSignInNotSavedOnPhone =>
-      'Your sign-in could not be saved on this phone. Sign in again with your new password.';
+      'మీ సైన్ ఇన్‌ను ఈ ఫోన్‌లో సేవ్ చేయలేకపోయాము. మీ కొత్త పాస్‌వర్డ్‌తో మళ్లీ సైన్ ఇన్ చేయండి.';
 
   @override
-  String get authTemporaryCredential => 'Temporary credential';
+  String get authTemporaryCredential => 'తాత్కాలిక కోడ్';
 
   @override
-  String get authNewPassword => 'New password';
+  String get authNewPassword => 'కొత్త పాస్‌వర్డ్';
 
   @override
-  String get authRepeatNewPassword => 'Repeat new password';
+  String get authRepeatNewPassword => 'కొత్త పాస్‌వర్డ్ మళ్లీ నమోదు చేయండి';
 
   @override
-  String get authChangePasswordScreenName => 'Change temporary password';
+  String get authChangePasswordScreenName => 'తాత్కాలిక పాస్‌వర్డ్‌ను మార్చండి';
 
   @override
   String get authChangePasswordIntro =>
-      'Enter the temporary credential from your administrator, then a new password of at least 6 characters, twice. Internet is required. The dashboard opens after the new password is confirmed.';
+      'మీ నిర్వాహకులు ఇచ్చిన తాత్కాలిక కోడ్ నమోదు చేయండి, తర్వాత కనీసం 6 అక్షరాల కొత్త పాస్‌వర్డ్‌ను రెండుసార్లు నమోదు చేయండి. ఇంటర్నెట్ అవసరం. కొత్త పాస్‌వర్డ్ నిర్ధారించబడిన తర్వాత డ్యాష్‌బోర్డ్ తెరుచుకుంటుంది.';
 
   @override
-  String get authSaveNewPassword => 'Save new password';
+  String get authSaveNewPassword => 'కొత్త పాస్‌వర్డ్ సేవ్ చేయండి';
 
   @override
-  String get authSignOut => 'Sign out';
+  String get authSignOut => 'సైన్ అవుట్';
 
   @override
-  String get authTemporaryCredentialField =>
-      'Temporary credential. Hidden input.';
+  String get authTemporaryCredentialField => 'తాత్కాలిక కోడ్. దాచిన ఇన్‌పుట్.';
 
   @override
   String get authNewPasswordField =>
-      'New password. At least 6 characters. Hidden input.';
+      'కొత్త పాస్‌వర్డ్. కనీసం 6 అక్షరాలు. దాచిన ఇన్‌పుట్.';
 
   @override
-  String get authRepeatNewPasswordField => 'Repeat new password. Hidden input.';
+  String get authRepeatNewPasswordField =>
+      'కొత్త పాస్‌వర్డ్ మళ్లీ నమోదు చేయండి. దాచిన ఇన్‌పుట్.';
 
   @override
-  String get authSaveNewPasswordButton => 'Save new password, button';
+  String get authSaveNewPasswordButton => 'కొత్త పాస్‌వర్డ్ సేవ్ చేయండి, బటన్';
 
   @override
-  String get authSignOutConfirmButton => 'Sign out, asks to confirm';
+  String get authSignOutConfirmButton => 'సైన్ అవుట్, నిర్ధారణ అడుగుతుంది';
 
   @override
-  String get authChangePasswordTitle => 'Change password';
+  String get authChangePasswordTitle => 'పాస్‌వర్డ్ మార్చండి';
 
   @override
   String get authChangePasswordInfo =>
-      'Your school administrator issued a temporary credential. It lasts 24 hours. After 10 wrong attempts, sign-in pauses for 15 minutes. Choose a different password of at least 6 characters. This requires internet.';
+      'మీ పాఠశాల నిర్వాహకులు తాత్కాలిక కోడ్ ఇచ్చారు. ఇది 24 గంటలు ఉంటుంది. 10 తప్పు ప్రయత్నాల తర్వాత, సైన్ ఇన్ 15 నిమిషాలు ఆగిపోతుంది. కనీసం 6 అక్షరాల వేరే పాస్‌వర్డ్ ఎంచుకోండి. దీనికి ఇంటర్నెట్ అవసరం.';
 
   @override
-  String get authSignOutKey => '0: Sign out';
+  String get authSignOutKey => '0: సైన్ అవుట్';
 
   @override
   String authSimOptionValid(String label, String digits) {
-    return '$label. Phone number $digits. Press OK to fill the phone field.';
+    return '$label. ఫోన్ నంబర్ $digits. ఫోన్ ఫీల్డ్ నింపడానికి ఓకే నొక్కండి.';
   }
 
   @override
   String authSimOptionInvalid(String label) {
-    return '$label. Number unavailable. Enter the phone number manually.';
+    return '$label. నంబర్ అందుబాటులో లేదు. ఫోన్ నంబర్‌ను మీరే నమోదు చేయండి.';
   }
 
   @override
   String get authSimInvalidSuggestion =>
-      'This SIM does not provide a valid phone-number suggestion. Manual entry still works.';
+      'ఈ SIM సరైన ఫోన్ నంబర్ సూచనను ఇవ్వడం లేదు. మీరే నమోదు చేయడం ఇప్పటికీ పనిచేస్తుంది.';
 
   @override
   String get authSimChooseScreenName =>
-      'Choose an optional SIM suggestion. Use up and down to review each SIM, then OK to select. This is not account verification.';
+      'ఒక ఐచ్ఛిక SIM సూచనను ఎంచుకోండి. ప్రతి SIM ను వినడానికి పైకి మరియు కిందికి ఉపయోగించండి, తర్వాత ఎంచుకోవడానికి ఓకే నొక్కండి. ఇది ఖాతా ధృవీకరణ కాదు.';
 
   @override
-  String get authSimCancelLabel => 'Cancel without changing the phone number';
+  String get authSimCancelLabel => 'ఫోన్ నంబర్ మార్చకుండా రద్దు చేయండి';
 
   @override
-  String get authSimChooseTitle => 'Choose SIM suggestion';
+  String get authSimChooseTitle => 'SIM సూచనను ఎంచుకోండి';
 
   @override
   String get authSimChooseInfo =>
-      'Selecting fills the phone field only. Your password is still required. Cancel keeps manual entry unchanged.';
+      'ఎంచుకుంటే ఫోన్ ఫీల్డ్ మాత్రమే నిండుతుంది. మీ పాస్‌వర్డ్ ఇంకా అవసరం. రద్దు చేస్తే మీరు నమోదు చేసినది మారదు.';
 
   @override
-  String get authSimCancelKey => '0: Cancel';
+  String get authSimCancelKey => '0: రద్దు చేయండి';
 
   @override
-  String get inviteStatusInvited => 'Invited';
+  String get inviteStatusInvited => 'ఆహ్వానించబడింది';
 
   @override
-  String get inviteStatusNotInvited => 'Not invited. OK to invite';
+  String get inviteStatusNotInvited => 'ఆహ్వానించలేదు. ఆహ్వానించడానికి ఓకే';
 
   @override
-  String get inviteTitle => 'Invite Students';
+  String get inviteTitle => 'విద్యార్థులను ఆహ్వానించండి';
 
   @override
-  String get inviteTooltipBack => '0: Back to session';
+  String get inviteTooltipBack => '0: సెషన్‌కు తిరిగి వెళ్లండి';
 
   @override
-  String get inviteTooltipRefresh => '1: Refresh student list';
+  String get inviteTooltipRefresh => '1: విద్యార్థుల జాబితాను రిఫ్రెష్ చేయండి';
 
   @override
-  String get inviteInvitingTo => 'Inviting students to:';
+  String get inviteInvitingTo => 'విద్యార్థులను దీనికి ఆహ్వానిస్తోంది:';
 
   @override
   String inviteInvitedCount(String invited, String total) {
-    return '$invited of $total invited';
+    return '$total లో $invited మంది ఆహ్వానించబడ్డారు';
   }
 
   @override
-  String get inviteAllButton => '2: Invite All Students';
+  String get inviteAllButton => '2: విద్యార్థులందరినీ ఆహ్వానించండి';
 
   @override
-  String get inviteSearchField => 'Search by name or phone number';
+  String get inviteSearchField => 'పేరు లేదా ఫోన్ నంబర్‌తో వెతకండి';
 
   @override
-  String get inviteSearchHelper => 'Leave empty to list every student';
+  String get inviteSearchHelper => 'ప్రతి విద్యార్థిని చూపడానికి ఖాళీగా వదలండి';
 
   @override
-  String get inviteLoadingStudents => 'Loading students';
+  String get inviteLoadingStudents => 'విద్యార్థులను లోడ్ చేస్తోంది';
 
   @override
   String get inviteNoMatchShort =>
-      'No students match. Clear the search to list everyone.';
+      'ఏ విద్యార్థులూ సరిపోలలేదు. అందరినీ చూపడానికి వెతుకుడును క్లియర్ చేయండి.';
 
   @override
-  String get libraryUploadTitleField => 'Title *';
+  String get libraryUploadTitleField => 'శీర్షిక *';
 
   @override
-  String get libraryUploadDescriptionField => 'Description';
+  String get libraryUploadDescriptionField => 'వివరణ';
 
   @override
-  String get libraryCancelKey0Button => 'Cancel (0)';
+  String get libraryCancelKey0Button => 'రద్దు చేయండి (0)';
 
   @override
-  String get libraryUploadKey3Button => 'Upload (3)';
+  String get libraryUploadKey3Button => 'అప్‌లోడ్ చేయండి (3)';
 
   @override
-  String get libraryConfirmKey1Button => 'Confirm (1)';
+  String get libraryConfirmKey1Button => 'నిర్ధారించండి (1)';
 
   @override
   String librarySessionNumber(String id) {
-    return 'Session #$id';
+    return 'సెషన్ #$id';
   }
 
   @override
-  String get libraryKey5PauseForClass => '5: Pause for class';
+  String get libraryKey5PauseForClass => '5: తరగతి కోసం పాజ్ చేయండి';
 
   @override
-  String get libraryKey5PlayForClass => '5: Play for class';
+  String get libraryKey5PlayForClass => '5: తరగతి కోసం ప్లే చేయండి';
 
   @override
-  String get libraryRecordingsSeekKeysHint => '4: Back 10 s. 6: Forward 10 s.';
+  String get libraryRecordingsSeekKeysHint =>
+      '4: 10 సెకన్లు వెనక్కి. 6: 10 సెకన్లు ముందుకు.';
 
   @override
-  String get libraryKey1ChooseRecording => '1: Choose recording';
+  String get libraryKey1ChooseRecording => '1: రికార్డింగ్ ఎంచుకోండి';
 
   @override
-  String get libraryUploadingButton => 'Uploading';
+  String get libraryUploadingButton => 'అప్‌లోడ్ చేస్తోంది';
 
   @override
-  String get libraryKey2Upload => '2: Upload';
+  String get libraryKey2Upload => '2: అప్‌లోడ్ చేయండి';
 
   @override
   String get libraryRecordingsFooterKeysHint =>
-      '3: Status. *: Help. #: Stop speech.';
+      '3: స్థితి. *: సహాయం. #: మాటలు ఆపండి.';
 
   @override
-  String get notesBackStopsRecording => 'Back. Stops any recording first';
+  String get notesBackStopsRecording =>
+      'వెనక్కి. ముందుగా ఏదైనా రికార్డింగ్‌ను ఆపుతుంది';
 
   @override
-  String get notesReadRules => 'Read note rules';
+  String get notesReadRules => 'నోట్ నియమాలు చదవండి';
 
   @override
-  String get notesRefreshPrivate => 'Refresh private notes';
+  String get notesRefreshPrivate => 'ప్రైవేట్ నోట్‌లను రిఫ్రెష్ చేయండి';
 
   @override
   String get notesRecordAsksFirst =>
-      'Record a private note. Asks for a name and confirmation first';
+      'ప్రైవేట్ నోట్ రికార్డ్ చేయండి. ముందుగా పేరు మరియు నిర్ధారణ అడుగుతుంది';
 
   @override
-  String get notesStopRecordingNow => 'Stop recording now';
+  String get notesStopRecordingNow => 'ఇప్పుడే రికార్డింగ్ ఆపండి';
 
   @override
   String get notesReadRecordingTimeStops =>
-      'Read recording time. Reading aloud stops recording';
+      'రికార్డింగ్ సమయం చదవండి. గట్టిగా చదవడం రికార్డింగ్‌ను ఆపుతుంది';
 
   @override
-  String get notesReadPrivateStatus => 'Read private note status';
+  String get notesReadPrivateStatus => 'ప్రైవేట్ నోట్ స్థితి చదవండి';
 
   @override
-  String get notesStopPrivateReview => 'Stop private review';
+  String get notesStopPrivateReview => 'ప్రైవేట్ సమీక్ష ఆపండి';
 
   @override
   String notesStopReviewingTitle(String title) {
-    return 'Stop reviewing $title';
+    return '$title సమీక్షించడం ఆపండి';
   }
 
   @override
-  String get notesStopReviewingNote => 'Stop reviewing note';
+  String get notesStopReviewingNote => 'నోట్ సమీక్షించడం ఆపండి';
 
   @override
   String notesReviewTitlePrivately(String title, String duration) {
-    return 'Review $title privately. $duration.';
+    return '$title ను ప్రైవేట్‌గా సమీక్షించండి. $duration.';
   }
 
   @override
   String notesReviewTitleIncomplete(String title) {
-    return 'Review $title privately. Incomplete recording; cannot play.';
+    return '$title ను ప్రైవేట్‌గా సమీక్షించండి. అసంపూర్ణ రికార్డింగ్; ప్లే చేయలేము.';
   }
 
   @override
   String notesRenameTitle(String title) {
-    return 'Rename $title';
+    return '$title పేరు మార్చండి';
   }
 
   @override
   String notesPublishTitleAsks(String title) {
-    return 'Publish reviewed $title to a class and subject, asks to confirm';
+    return 'సమీక్షించిన $title ను ఒక తరగతి మరియు సబ్జెక్టుకు ప్రచురించండి, నిర్ధారణ అడుగుతుంది';
   }
 
   @override
   String notesRemoveTitleAsks(String title) {
-    return 'Remove $title, asks to confirm';
+    return '$title ను తీసివేయండి, నిర్ధారణ అడుగుతుంది';
   }
 
   @override
-  String get notesScreenName => 'Private notes';
+  String get notesScreenName => 'ప్రైవేట్ నోట్‌లు';
 
   @override
   String get notesIntroduction =>
-      'Use Read note rules to hear how notes are kept.';
+      'నోట్‌లు ఎలా ఉంచబడతాయో వినడానికి నోట్ నియమాలు చదవండి ఉపయోగించండి.';
 
   @override
-  String get notesBack => 'Back';
+  String get notesBack => 'వెనక్కి';
 
   @override
   String notesStorageSummary(String megabytes) {
-    return '$megabytes / 10 MB private notes. Separate from lesson downloads. No automatic deletion.';
+    return '$megabytes / 10 MB ప్రైవేట్ నోట్‌లు. పాఠం డౌన్‌లోడ్‌ల నుండి వేరు. ఆటోమేటిక్‌గా తొలగించబడవు.';
   }
 
   @override
   String notesLessonContext(String title, String seconds) {
-    return '$title. Captured lesson point: $seconds seconds.';
+    return '$title. పాఠంలో నమోదు చేసిన స్థానం: $seconds సెకన్లు.';
   }
 
   @override
   String notesRecordingTime(String time) {
-    return 'Recording time $time';
+    return 'రికార్డింగ్ సమయం $time';
   }
 
   @override
-  String get notesRefreshNotes => 'Refresh notes';
+  String get notesRefreshNotes => 'నోట్‌లను రిఫ్రెష్ చేయండి';
 
   @override
-  String get notesRecordPrivateNote => 'Record a private note';
+  String get notesRecordPrivateNote => 'ప్రైవేట్ నోట్ రికార్డ్ చేయండి';
 
   @override
-  String get notesStopRecording => 'Stop recording';
+  String get notesStopRecording => 'రికార్డింగ్ ఆపండి';
 
   @override
-  String get notesReadRecordingTime => 'Read recording time';
+  String get notesReadRecordingTime => 'రికార్డింగ్ సమయం చదవండి';
 
   @override
-  String get notesReadNoteStatus => 'Read note status';
+  String get notesReadNoteStatus => 'నోట్ స్థితి చదవండి';
 
   @override
-  String get notesStatusNeedsAttention => 'Needs attention';
+  String get notesStatusNeedsAttention => 'శ్రద్ధ అవసరం';
 
   @override
-  String get notesStatusIncomplete => 'Incomplete';
+  String get notesStatusIncomplete => 'అసంపూర్ణం';
 
   @override
-  String get notesStatusPlaying => 'Playing';
+  String get notesStatusPlaying => 'ప్లే అవుతోంది';
 
   @override
-  String get notesStatusReviewed => 'Reviewed';
+  String get notesStatusReviewed => 'సమీక్షించబడింది';
 
   @override
-  String get notesStatusSaved => 'Saved';
+  String get notesStatusSaved => 'సేవ్ చేయబడింది';
 
   @override
   String notesNoteSeconds(String seconds) {
-    return '$seconds seconds. Private local note.';
+    return '$seconds సెకన్లు. ఈ ఫోన్‌లోని ప్రైవేట్ నోట్.';
   }
 
   @override
   String get notesNoteIncomplete =>
-      'Interrupted or incomplete note. Cannot play or publish.';
+      'అంతరాయం కలిగిన లేదా అసంపూర్ణ నోట్. ప్లే చేయలేము లేదా ప్రచురించలేము.';
 
   @override
   String notesNoteLessonPoint(String lesson, String seconds) {
-    return 'Lesson $lesson, point $seconds seconds.';
+    return 'పాఠం $lesson, స్థానం $seconds సెకన్లు.';
   }
 
   @override
-  String get notesReviewPlaying => 'Review playing';
+  String get notesReviewPlaying => 'సమీక్ష ప్లే అవుతోంది';
 
   @override
-  String get notesReviewPrivately => 'Review privately';
+  String get notesReviewPrivately => 'ప్రైవేట్‌గా సమీక్షించండి';
 
   @override
-  String get notesRename => 'Rename';
+  String get notesRename => 'పేరు మార్చండి';
 
   @override
-  String get notesPublishReviewedNote => 'Publish reviewed note';
+  String get notesPublishReviewedNote => 'సమీక్షించిన నోట్‌ను ప్రచురించండి';
 
   @override
-  String get notesEnterNameBeforeSaving => 'Enter a name before saving.';
+  String get notesEnterNameBeforeSaving => 'సేవ్ చేసే ముందు పేరు నమోదు చేయండి.';
 
   @override
   String notesNameDialogInstructions(String title) {
-    return '$title. OK enters editing. Up or Down leaves editing, then choose Save or Cancel.';
+    return '$title. ఓకే ఎడిటింగ్‌లోకి వెళ్తుంది. పైకి లేదా కిందికి ఎడిటింగ్ నుండి బయటకు వస్తుంది, ఆపై సేవ్ లేదా రద్దు ఎంచుకోండి.';
   }
 
   @override
-  String get notesNoteName => 'Note name';
+  String get notesNoteName => 'నోట్ పేరు';
 
   @override
-  String get notesSaveNoteName => 'Save note name';
+  String get notesSaveNoteName => 'నోట్ పేరు సేవ్ చేయండి';
 
   @override
-  String get notesCancel => 'Cancel';
+  String get notesCancel => 'రద్దు చేయండి';
 
   @override
-  String get notesSaveName => 'Save name';
+  String get notesSaveName => 'పేరు సేవ్ చేయండి';
 
   @override
   String notesWorkspaceLabel(String className, String subjectName) {
@@ -11630,233 +11725,233 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get notesChooseWorkspaceInstructions =>
-      'Choose an authorized class and subject before publishing. Nothing is uploaded until the next confirmation.';
+      'ప్రచురించే ముందు అనుమతి ఉన్న తరగతి మరియు సబ్జెక్టు ఎంచుకోండి. తదుపరి నిర్ధారణ వరకు ఏదీ అప్‌లోడ్ చేయబడదు.';
 
   @override
-  String get notesCancelPublication => 'Cancel publication';
+  String get notesCancelPublication => 'ప్రచురణ రద్దు చేయండి';
 
   @override
-  String get notesPublishWhichWorkspace => 'Publish to which workspace?';
+  String get notesPublishWhichWorkspace => 'ఏ వర్క్‌స్పేస్‌కు ప్రచురించాలి?';
 
   @override
   String settingsDecrease(String setting) {
-    return 'Decrease $setting';
+    return '$setting తగ్గించండి';
   }
 
   @override
   String settingsIncrease(String setting) {
-    return 'Increase $setting';
+    return '$setting పెంచండి';
   }
 
   @override
-  String get settingsResetTooltip => 'Reset to Defaults';
+  String get settingsResetTooltip => 'డిఫాల్ట్‌కు రీసెట్ చేయండి';
 
   @override
-  String get settingsSectionSpeech => 'Speech';
+  String get settingsSectionSpeech => 'స్వరం';
 
   @override
-  String get settingsAppSpeechTitle => 'App speech';
+  String get settingsAppSpeechTitle => 'యాప్ స్వరం';
 
   @override
   String get settingsAppSpeechSubtitle =>
-      'The app reads out screens and messages';
+      'యాప్ స్క్రీన్‌లను మరియు సందేశాలను చదివి వినిపిస్తుంది';
 
   @override
   String settingsLanguageButton(String language) {
-    return 'Speech language: $language';
+    return 'మాట్లాడే భాష: $language';
   }
 
   @override
-  String get settingsVolumeTitle => 'Volume';
+  String get settingsVolumeTitle => 'వాల్యూమ్';
 
   @override
-  String get settingsVolumeSubtitle => 'How loud app speech is';
+  String get settingsVolumeSubtitle => 'యాప్ స్వరం ఎంత గట్టిగా ఉండాలి';
 
   @override
   String settingsPercentValue(String percent) {
-    return '$percent percent';
+    return '$percent శాతం';
   }
 
   @override
-  String get settingsSpeedTitle => 'Speech speed';
+  String get settingsSpeedTitle => 'మాట్లాడే వేగం';
 
   @override
   String get settingsSpeedSubtitle =>
-      'How fast app speech is. Quizzes can use their own speed';
+      'యాప్ స్వరం ఎంత వేగంగా ఉండాలి. క్విజ్‌లు వాటి సొంత వేగాన్ని ఉపయోగించవచ్చు';
 
   @override
   String settingsTimesNormal(String speed) {
-    return '$speed times normal';
+    return 'సాధారణం కంటే $speed రెట్లు';
   }
 
   @override
-  String get settingsTestButton => '5: Test speech';
+  String get settingsTestButton => '5: స్వరాన్ని పరీక్షించండి';
 
   @override
   String settingsNarrationButton(String level) {
-    return 'Narration level: $level';
+    return 'వ్యాఖ్యాన స్థాయి: $level';
   }
 
   @override
   String settingsCheckingVoice(String language) {
-    return 'Checking $language voice...';
+    return '$language స్వరాన్ని తనిఖీ చేస్తోంది...';
   }
 
   @override
   String settingsCheckVoiceButton(String language) {
-    return '7: Check $language voice';
+    return '7: $language స్వరాన్ని తనిఖీ చేయండి';
   }
 
   @override
-  String get settingsStopButton => '#: Stop speech';
+  String get settingsStopButton => '#: మాట్లాడటం ఆపండి';
 
   @override
-  String get settingsSectionDisplay => 'Display';
+  String get settingsSectionDisplay => 'డిస్‌ప్లే';
 
   @override
-  String get settingsHighContrastTitle => 'High Contrast';
+  String get settingsHighContrastTitle => 'హై కాంట్రాస్ట్';
 
   @override
   String get settingsHighContrastSubtitle =>
-      'On by default: white and yellow on black for low vision';
+      'డిఫాల్ట్‌గా ఆన్: తక్కువ చూపు ఉన్నవారి కోసం నలుపుపై తెలుపు మరియు పసుపు';
 
   @override
-  String get settingsTextSizeTitle => 'Text size';
+  String get settingsTextSizeTitle => 'అక్షరాల పరిమాణం';
 
   @override
   String get settingsTextSizeSubtitle =>
-      'App text size; system font scaling is also respected';
+      'యాప్ అక్షరాల పరిమాణం; ఫోన్ ఫాంట్ పరిమాణాన్ని కూడా పాటిస్తుంది';
 
   @override
-  String get settingsSectionKeys => 'Keys and help';
+  String get settingsSectionKeys => 'కీలు మరియు సహాయం';
 
   @override
-  String get settingsShortcutsTitle => 'Show keypad shortcuts';
+  String get settingsShortcutsTitle => 'కీప్యాడ్ షార్ట్‌కట్‌లు చూపించు';
 
   @override
-  String get settingsShortcutsSubtitle => 'Show key numbers on buttons';
+  String get settingsShortcutsSubtitle => 'బటన్‌లపై కీ నంబర్‌లను చూపించు';
 
   @override
   String get settingsGlobalKeysHint =>
-      'On every screen: 0 back, star help, hash stop speech.';
+      'ప్రతి స్క్రీన్‌లో: 0 వెనుకకు, స్టార్ సహాయం, హ్యాష్ మాట్లాడటం ఆపుతుంది.';
 
   @override
-  String get settingsVoiceCommandsTitle => 'Voice commands';
+  String get settingsVoiceCommandsTitle => 'వాయిస్ కమాండ్‌లు';
 
   @override
   String get settingsVoiceCommandsSubtitle =>
-      'Enable Listen for command in sessions. No automatic listening.';
+      'సెషన్‌లలో కమాండ్ కోసం వినండి ఆన్ చేయండి. ఆటోమేటిక్‌గా వినడం ఉండదు.';
 
   @override
-  String get settingsSoundCuesTitle => '8: Sound cues';
+  String get settingsSoundCuesTitle => '8: సౌండ్ సూచనలు';
 
   @override
-  String get settingsVibrationTitle => '9: Vibration';
+  String get settingsVibrationTitle => '9: వైబ్రేషన్';
 
   @override
   String get settingsVoiceHelpButton =>
-      'Voice command help: say mute, unmute, raise hand, lower hand, leave or repeat.';
+      'వాయిస్ కమాండ్ సహాయం: మ్యూట్, అన్‌మ్యూట్, చేయి ఎత్తండి, చేయి దించండి, బయటకు వెళ్లండి లేదా మళ్లీ చెప్పండి అని చెప్పండి.';
 
   @override
-  String get uiSave => 'Save';
+  String get uiSave => 'సేవ్ చేయండి';
 
   @override
-  String get uiClose => 'Close';
+  String get uiClose => 'మూసివేయండి';
 
   @override
-  String get learningLessonPositionLabel => 'Lesson position';
+  String get learningLessonPositionLabel => 'పాఠంలో స్థానం';
 
   @override
-  String get learningReadStatusButton => 'Read learning status';
+  String get learningReadStatusButton => 'అభ్యాస స్థితి చదవండి';
 
   @override
-  String get learningAddBookmarkButton => 'Add bookmark';
+  String get learningAddBookmarkButton => 'బుక్‌మార్క్ జోడించండి';
 
   @override
   String learningBookmarksButton(String count) {
-    return 'Bookmarks ($count)';
+    return 'బుక్‌మార్క్‌లు ($count)';
   }
 
   @override
-  String get learningPrivateNotesButton => 'Private study notes';
+  String get learningPrivateNotesButton => 'ప్రైవేట్ అధ్యయన నోట్‌లు';
 
   @override
-  String get learningSetAButton => 'Set A';
+  String get learningSetAButton => 'A సెట్ చేయండి';
 
   @override
   String learningSetAAtButton(String time) {
-    return 'Set A $time';
+    return 'A సెట్ చేయండి $time';
   }
 
   @override
-  String get learningSetBButton => 'Set B';
+  String get learningSetBButton => 'B సెట్ చేయండి';
 
   @override
   String learningSetBAtButton(String time) {
-    return 'Set B $time';
+    return 'B సెట్ చేయండి $time';
   }
 
   @override
-  String get learningRepeatOffButton => 'Repeat off';
+  String get learningRepeatOffButton => 'రిపీట్ ఆఫ్';
 
   @override
-  String get learningRepeatOnButton => 'Repeat on';
+  String get learningRepeatOnButton => 'రిపీట్ ఆన్';
 
   @override
-  String get learningClearABButton => 'Clear A-B';
+  String get learningClearABButton => 'A-B క్లియర్ చేయండి';
 
   @override
   String learningBackTenButton(String key) {
-    return '$key: Back 10 seconds';
+    return '$key: 10 సెకన్లు వెనక్కి';
   }
 
   @override
   String learningForwardTenButton(String key) {
-    return '$key: Forward 10 seconds';
+    return '$key: 10 సెకన్లు ముందుకు';
   }
 
   @override
   String learningSlowerButton(String key) {
-    return '$key: Slower';
+    return '$key: నెమ్మదిగా';
   }
 
   @override
   String learningFasterButton(String key) {
-    return '$key: Faster';
+    return '$key: వేగంగా';
   }
 
   @override
-  String get learningRetrySavingButton => 'Retry saving';
+  String get learningRetrySavingButton => 'మళ్లీ సేవ్ చేయడానికి ప్రయత్నించండి';
 
   @override
-  String get learningNameBookmarkTitle => 'Name bookmark';
+  String get learningNameBookmarkTitle => 'బుక్‌మార్క్‌కు పేరు పెట్టండి';
 
   @override
-  String get learningBookmarkNameFieldLabel => 'Name';
+  String get learningBookmarkNameFieldLabel => 'పేరు';
 
   @override
-  String get learningBookmarksTitle => 'Bookmarks';
+  String get learningBookmarksTitle => 'బుక్‌మార్క్‌లు';
 
   @override
   String get learningBookmarksLessonChanged =>
-      'The lesson changed. Close this list and open bookmarks for the current lesson.';
+      'పాఠం మారింది. ఈ జాబితాను మూసివేసి, ప్రస్తుత పాఠం యొక్క బుక్‌మార్క్‌లను తెరవండి.';
 
   @override
   String get learningBookmarksEmpty =>
-      'No bookmarks yet. Use Add bookmark at a position you want to remember.';
+      'ఇంకా బుక్‌మార్క్‌లు లేవు. మీరు గుర్తుంచుకోవాలనుకునే స్థానంలో బుక్‌మార్క్ జోడించండి ఉపయోగించండి.';
 
   @override
   String get learningBookmarksUnavailable =>
-      'Saved bookmarks are unavailable. Retry saving to restore access to saved progress.';
+      'సేవ్ చేసిన బుక్‌మార్క్‌లు అందుబాటులో లేవు. సేవ్ చేసిన పురోగతిని మళ్లీ పొందడానికి మళ్లీ సేవ్ చేయడానికి ప్రయత్నించండి.';
 
   @override
   String learningBookmarkAtButton(String label, String time) {
-    return '$label at $time';
+    return '$time వద్ద $label';
   }
 
   @override
   String learningRemoveBookmarkSemantics(String label) {
-    return 'Remove bookmark $label';
+    return 'బుక్‌మార్క్ $label తీసివేయండి';
   }
 
   @override
@@ -11865,108 +11960,109 @@ class AppLocalizationsTe extends AppLocalizations {
   }
 
   @override
-  String get uiKeypadFooter => '*: Help. #: Stop app speech.';
+  String get uiKeypadFooter => '*: సహాయం. #: యాప్ స్వరం ఆపండి.';
 
   @override
   String uiListSearchValue(String query) {
-    return 'Search: $query';
+    return 'వెతుకులాట: $query';
   }
 
   @override
-  String get uiListLoadingShort => 'Loading. Press 0 to go back.';
+  String get uiListLoadingShort =>
+      'లోడ్ అవుతోంది. వెనక్కి వెళ్ళడానికి 0 నొక్కండి.';
 
   @override
   String get keypadTextEditingHint =>
-      'While editing, keys enter text. Press OK to finish. Use up or down if OK does not finish editing.';
+      'ఎడిట్ చేస్తున్నప్పుడు, కీలు టెక్స్ట్ టైప్ చేస్తాయి. ముగించడానికి ఓకే నొక్కండి. ఓకేతో ఎడిటింగ్ ముగియకపోతే పైకి లేదా కిందకు ఉపయోగించండి.';
 
   @override
-  String get keypadWaitingConfirmation => 'Waiting for confirmation.';
+  String get keypadWaitingConfirmation => 'నిర్ధారణ కోసం వేచి ఉంది.';
 
   @override
-  String get keypadContinueKey1 => '1: Continue';
+  String get keypadContinueKey1 => '1: కొనసాగించండి';
 
   @override
-  String get keypadHidePasswordKey2 => '2: Hide password';
+  String get keypadHidePasswordKey2 => '2: పాస్‌వర్డ్ దాచండి';
 
   @override
-  String get keypadShowPasswordKey2 => '2: Show password';
+  String get keypadShowPasswordKey2 => '2: పాస్‌వర్డ్ చూపండి';
 
   @override
-  String get keypadBackKey0 => '0: Back';
+  String get keypadBackKey0 => '0: వెనక్కి';
 
   @override
   String uiKeyedLabelUnavailable(String number, String label) {
-    return '$number: $label (unavailable)';
+    return '$number: $label (అందుబాటులో లేదు)';
   }
 
   @override
-  String get journeyMenuReadDetailsKey8 => '8: Read details again';
+  String get journeyMenuReadDetailsKey8 => '8: వివరాలను మళ్లీ చదవండి';
 
   @override
-  String get sessionTileHandRaised => 'Hand raised';
+  String get sessionTileHandRaised => 'చేయి ఎత్తారు';
 
   @override
-  String get sessionTileSpeaking => 'Speaking';
+  String get sessionTileSpeaking => 'మాట్లాడుతున్నారు';
 
   @override
   String sessionRemoveFromSession(String name) {
-    return 'Remove $name from session';
+    return '$name ను సెషన్ నుండి తీసివేయండి';
   }
 
   @override
-  String get classroomConsoleTitle => 'Classroom console';
+  String get classroomConsoleTitle => 'తరగతి గది కన్సోల్';
 
   @override
-  String get uiHourRange => 'Hour (0 to 23)';
+  String get uiHourRange => 'గంట (0 నుండి 23)';
 
   @override
-  String get uiSetDateTimeTitle => 'Set date and time';
+  String get uiSetDateTimeTitle => 'తేదీ మరియు సమయం సెట్ చేయండి';
 
   @override
   String get uiSetDateTimeHint =>
-      'Use local time. Press OK to edit each number.';
+      'స్థానిక సమయం ఉపయోగించండి. ప్రతి సంఖ్యను ఎడిట్ చేయడానికి ఓకే నొక్కండి.';
 
   @override
   String quizExtraTitle(String name) {
-    return 'Extra time: $name';
+    return 'అదనపు సమయం: $name';
   }
 
   @override
   String get quizExtraInfo =>
-      'Future attempts only. Existing deadlines do not change. Quiz closing time still applies; extend availability separately if needed. Zero removes extra minutes.';
+      'భవిష్యత్ ప్రయత్నాలకు మాత్రమే. ఇప్పటికే ఉన్న గడువులు మారవు. క్విజ్ ముగింపు సమయం ఇప్పటికీ వర్తిస్తుంది; అవసరమైతే అందుబాటు సమయాన్ని వేరుగా పొడిగించండి. సున్నా అదనపు నిమిషాలను తీసివేస్తుంది.';
 
   @override
-  String get quizExtraMinutesField => 'Extra minutes';
+  String get quizExtraMinutesField => 'అదనపు నిమిషాలు';
 
   @override
-  String get quizExtraSaveButton => 'Save future extra time';
+  String get quizExtraSaveButton => 'భవిష్యత్ అదనపు సమయాన్ని సేవ్ చేయండి';
 
   @override
   String quizSpeedValue(String speed) {
-    return 'Quiz speech speed: $speed×';
+    return 'క్విజ్ మాటల వేగం: $speed×';
   }
 
   @override
-  String get uiCancelKey0 => '0: Cancel';
+  String get uiCancelKey0 => '0: రద్దు చేయండి';
 
   @override
-  String get uiSaveKey1 => '1: Save';
+  String get uiSaveKey1 => '1: సేవ్ చేయండి';
 
   @override
-  String get uiNone => 'none';
+  String get uiNone => 'ఏదీ లేదు';
 
   @override
   String uiPreviousOf(String label) {
-    return 'Previous $label';
+    return 'మునుపటి $label';
   }
 
   @override
   String uiNextOf(String label) {
-    return 'Next $label';
+    return 'తదుపరి $label';
   }
 
   @override
-  String get journeyOpening => 'Opening journey';
+  String get journeyOpening => 'ప్రయాణం తెరుస్తోంది';
 
   @override
   String journeyStepHeading(String position, String kind) {
@@ -11975,527 +12071,532 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String journeyStepHeadingReplay(String position, String kind) {
-    return '$position. $kind. Listening again';
+    return '$position. $kind. మళ్లీ వింటున్నారు';
   }
 
   @override
   String journeyFirstTryShort(String correct, String total) {
-    return '$correct of $total correct on the first try.';
+    return 'మొదటి ప్రయత్నంలో $total లో $correct సరైనవి.';
   }
 
   @override
-  String get journeyLeaveKey0 => '0: Leave journey';
+  String get journeyLeaveKey0 => '0: ప్రయాణం నుండి బయటకు వెళ్లండి';
 
   @override
-  String get quizRevisionsTitle => 'Question revisions';
+  String get quizRevisionsTitle => 'ప్రశ్న సవరణలు';
 
   @override
-  String get quizRevisionsBackTooltip => 'Go back from question revisions';
+  String get quizRevisionsBackTooltip => 'ప్రశ్న సవరణల నుండి వెనక్కి వెళ్లండి';
 
   @override
   String quizRevisionSectionHear(String section) {
-    return '$section. Double tap to hear it';
+    return '$section. వినడానికి రెండుసార్లు నొక్కండి';
   }
 
   @override
-  String get adminResetAttested => 'Identity verification attested.';
+  String get adminResetAttested => 'గుర్తింపు ధృవీకరణ నిర్ధారించబడింది.';
 
   @override
-  String get adminResetNotAttested => 'Identity verification not attested.';
+  String get adminResetNotAttested => 'గుర్తింపు ధృవీకరణ నిర్ధారించబడలేదు.';
 
   @override
-  String get adminResetConfirmTitle => 'Reset this password?';
+  String get adminResetConfirmTitle => 'ఈ పాస్‌వర్డ్‌ను రీసెట్ చేయాలా?';
 
   @override
   String adminResetConfirmMessage(String name, String phone) {
-    return 'Reset $name, phone $phone? This replaces the old password and ends online sessions. Disconnected downloaded lessons cannot be instantly revoked. Existing lessons, notes and learning records are retained. A 12-digit temporary credential lasts 24 hours and requires password change. After 10 wrong attempts, temporary-credential sign-in pauses for 15 minutes.';
+    return '$name, ఫోన్ $phone ను రీసెట్ చేయాలా? ఇది పాత పాస్‌వర్డ్‌ను మారుస్తుంది మరియు ఆన్‌లైన్ సెషన్‌లను ముగిస్తుంది. ఇంటర్నెట్ లేని ఫోన్‌లోని డౌన్‌లోడ్ చేసిన పాఠాలను వెంటనే రద్దు చేయలేము. ఇప్పటికే ఉన్న పాఠాలు, నోట్‌లు మరియు అభ్యాస రికార్డులు ఉంచబడతాయి. 12 అంకెల తాత్కాలిక కోడ్ 24 గంటలు పనిచేస్తుంది మరియు పాస్‌వర్డ్ మార్చడం తప్పనిసరి. 10 తప్పు ప్రయత్నాల తర్వాత, తాత్కాలిక కోడ్‌తో సైన్ ఇన్ 15 నిమిషాలు ఆగిపోతుంది.';
   }
 
   @override
-  String get adminResetKeepPassword => 'Keep password';
+  String get adminResetKeepPassword => 'పాస్‌వర్డ్ ఉంచండి';
 
   @override
-  String get adminResetResetPassword => 'Reset password';
+  String get adminResetResetPassword => 'పాస్‌వర్డ్ రీసెట్ చేయండి';
 
   @override
   String get adminResetSignInChanged =>
-      'Administrator sign-in changed. No reset was sent.';
+      'నిర్వాహకుల సైన్ ఇన్ మారింది. ఏ రీసెట్ పంపబడలేదు.';
 
   @override
   String get adminResetSending =>
-      'Sending reset. Waiting for server confirmation.';
+      'రీసెట్ పంపుతోంది. సర్వర్ నిర్ధారణ కోసం వేచి ఉంది.';
 
   @override
   String adminResetNotConfirmed(String reason) {
-    return 'Reset not confirmed. $reason It may already have taken effect. Close and refresh this account before considering another reset.';
+    return 'రీసెట్ నిర్ధారించబడలేదు. $reason ఇది ఇప్పటికే అమలులోకి వచ్చి ఉండవచ్చు. మరో రీసెట్ గురించి ఆలోచించే ముందు ఈ ఖాతాను మూసివేసి రిఫ్రెష్ చేయండి.';
   }
 
   @override
   String get adminResetResponseNotVerified =>
-      'The reset response could not be verified. The password may already have changed. Close and refresh before considering another reset.';
+      'రీసెట్ ప్రతిస్పందనను ధృవీకరించలేకపోయాము. పాస్‌వర్డ్ ఇప్పటికే మారి ఉండవచ్చు. మరో రీసెట్ గురించి ఆలోచించే ముందు మూసివేసి రిఫ్రెష్ చేయండి.';
 
   @override
   String get adminResetConfirmedSpoken =>
-      'Password reset confirmed. The credential is hidden. Use Read credential only when it is private. Closing discards this copy.';
+      'పాస్‌వర్డ్ రీసెట్ నిర్ధారించబడింది. కోడ్ దాచబడింది. మీరు ఒంటరిగా ఉన్నప్పుడు మాత్రమే కోడ్ చదవండి ఉపయోగించండి. మూసివేస్తే ఈ కాపీ తొలగిపోతుంది.';
 
   @override
   String get adminResetPhoneNotConfirmed =>
-      'Reset could not be confirmed on this phone. Close and refresh the account before considering another reset.';
+      'ఈ ఫోన్‌లో రీసెట్‌ను నిర్ధారించలేకపోయాము. మరో రీసెట్ గురించి ఆలోచించే ముందు ఖాతాను మూసివేసి రిఫ్రెష్ చేయండి.';
 
   @override
   String get adminResetStorageUnavailable =>
-      'Account storage is unavailable. Close recovery and restart SEEDS before considering a reset.';
+      'ఖాతా స్టోరేజ్ అందుబాటులో లేదు. రీసెట్ గురించి ఆలోచించే ముందు రికవరీని మూసివేసి SEEDS ను మళ్లీ ప్రారంభించండి.';
 
   @override
   String adminResetCredentialSpoken(String digits, String expires) {
-    return 'Temporary credential: $digits. Expires at $expires, UTC. Deliver privately to the verified person. It must be replaced at sign-in.';
+    return 'తాత్కాలిక కోడ్: $digits. గడువు $expires, UTC. ధృవీకరించిన వ్యక్తికి మాత్రమే ప్రైవేట్‌గా అందించండి. సైన్ ఇన్ సమయంలో దీన్ని తప్పనిసరిగా మార్చాలి.';
   }
 
   @override
-  String get adminResetDiscardTitle => 'Discard this credential copy?';
+  String get adminResetDiscardTitle => 'ఈ కోడ్ కాపీని తొలగించాలా?';
 
   @override
   String get adminResetDiscardMessage =>
-      'Confirm that you delivered the temporary credential privately, or accept that another verified administrator reset will be needed. SEEDS will not show this copy again. This does not cancel the completed reset.';
+      'మీరు తాత్కాలిక కోడ్‌ను ప్రైవేట్‌గా అందించారని నిర్ధారించండి, లేదా నిర్వాహకులు మళ్లీ ధృవీకరించి రీసెట్ చేయాల్సి ఉంటుందని అంగీకరించండి. SEEDS ఈ కాపీని మళ్లీ చూపదు. ఇది పూర్తయిన రీసెట్‌ను రద్దు చేయదు.';
 
   @override
-  String get adminResetKeepReviewing => 'Keep reviewing';
+  String get adminResetKeepReviewing => 'సమీక్షించడం కొనసాగించండి';
 
   @override
-  String get adminResetCloseDiscard => 'Close and discard';
+  String get adminResetCloseDiscard => 'మూసివేసి తొలగించండి';
 
   @override
   String get adminResetScreenName =>
-      'Administrator password recovery. Verify identity outside SEEDS before resetting. Credentials are hidden until explicitly requested.';
+      'నిర్వాహకుల పాస్‌వర్డ్ రికవరీ. రీసెట్ చేసే ముందు SEEDS బయట గుర్తింపును ధృవీకరించండి. స్పష్టంగా అడిగే వరకు కోడ్‌లు దాచబడి ఉంటాయి.';
 
   @override
-  String get adminResetCloseRecovery => 'Close recovery';
+  String get adminResetCloseRecovery => 'రికవరీ మూసివేయండి';
 
   @override
-  String get adminResetReadAccount => 'Read selected account details';
+  String get adminResetReadAccount => 'ఎంచుకున్న ఖాతా వివరాలు చదవండి';
 
   @override
   String adminResetAccountDetails(String name, String phone) {
-    return '$name. Phone $phone.';
+    return '$name. ఫోన్ $phone.';
   }
 
   @override
   String get adminResetIdentityChecked =>
-      'Identity verified outside SEEDS. Checked. Press OK to change.';
+      'SEEDS బయట గుర్తింపు ధృవీకరించబడింది. ఎంచుకోబడింది. మార్చడానికి ఓకే నొక్కండి.';
 
   @override
   String get adminResetIdentityNotChecked =>
-      'Identity verified outside SEEDS. Not checked. Press OK to change.';
+      'SEEDS బయట గుర్తింపు ధృవీకరించబడింది. ఎంచుకోలేదు. మార్చడానికి ఓకే నొక్కండి.';
 
   @override
-  String get adminResetResetAndEnd => 'Reset password and end online sessions';
+  String get adminResetResetAndEnd =>
+      'పాస్‌వర్డ్ రీసెట్ చేసి ఆన్‌లైన్ సెషన్‌లను ముగించండి';
 
   @override
   String get adminResetReadCredentialLabel =>
-      'Read and reveal temporary credential. Only use privately.';
+      'తాత్కాలిక కోడ్‌ను చదివి చూపించండి. ప్రైవేట్‌గా మాత్రమే ఉపయోగించండి.';
 
   @override
-  String get adminResetCloseRefresh => 'Close and refresh account';
+  String get adminResetCloseRefresh => 'మూసివేసి ఖాతాను రిఫ్రెష్ చేయండి';
 
   @override
-  String get adminResetTitle => 'Password recovery';
+  String get adminResetTitle => 'పాస్‌వర్డ్ రికవరీ';
 
   @override
   String get adminResetVerifyInfo =>
-      'Verify the person outside SEEDS. A phone number or SIM suggestion is not identity verification. Never reset based only on a message or a claimed name.';
+      'SEEDS బయట వ్యక్తిని ధృవీకరించండి. ఫోన్ నంబర్ లేదా SIM సూచన గుర్తింపు ధృవీకరణ కాదు. కేవలం ఒక సందేశం లేదా చెప్పిన పేరు ఆధారంగా ఎప్పుడూ రీసెట్ చేయవద్దు.';
 
   @override
   String get adminResetVerifiedCheckbox =>
-      'I verified this person outside SEEDS';
+      'నేను ఈ వ్యక్తిని SEEDS బయట ధృవీకరించాను';
 
   @override
-  String get adminResetWaiting => 'Waiting for reset confirmation.';
+  String get adminResetWaiting => 'రీసెట్ నిర్ధారణ కోసం వేచి ఉంది.';
 
   @override
   String get adminResetConfirmedInfo =>
-      'Reset confirmed. Credential hidden until requested. It is valid for 24 hours. Closing discards this copy. Deliver privately; never post it in a class.';
+      'రీసెట్ నిర్ధారించబడింది. అడిగే వరకు కోడ్ దాచబడి ఉంటుంది. ఇది 24 గంటలు చెల్లుతుంది. మూసివేస్తే ఈ కాపీ తొలగిపోతుంది. ప్రైవేట్‌గా అందించండి; తరగతిలో ఎప్పుడూ పోస్ట్ చేయవద్దు.';
 
   @override
-  String get adminResetRevealButton => 'Read and reveal credential privately';
+  String get adminResetRevealButton => 'కోడ్‌ను ప్రైవేట్‌గా చదివి చూపించండి';
 
   @override
   String adminResetCredentialShown(String digits, String expires) {
-    return 'Temporary credential: $digits\nExpires: $expires UTC';
+    return 'తాత్కాలిక కోడ్: $digits\nగడువు: $expires UTC';
   }
 
   @override
-  String get adminResetCloseRefreshKey0 => '0: Close and refresh account';
+  String get adminResetCloseRefreshKey0 => '0: మూసివేసి ఖాతాను రిఫ్రెష్ చేయండి';
 
   @override
   String get apiTemporarySignInPaused =>
-      'Temporary-credential sign-in is paused for 15 minutes. Try later or contact your school administrator.';
+      'తాత్కాలిక కోడ్‌తో సైన్ ఇన్ 15 నిమిషాలు ఆపబడింది. తర్వాత ప్రయత్నించండి లేదా మీ పాఠశాల నిర్వాహకులను సంప్రదించండి.';
 
   @override
   String get apiTemporaryCredentialExpired =>
-      'Your temporary credential expired. Contact your school administrator for a replacement.';
+      'మీ తాత్కాలిక కోడ్ గడువు ముగిసింది. కొత్తది కోసం మీ పాఠశాల నిర్వాహకులను సంప్రదించండి.';
 
   @override
   String get apiPasswordMustDiffer =>
-      'Choose a password different from the temporary credential.';
+      'తాత్కాలిక కోడ్‌కు భిన్నమైన పాస్‌వర్డ్‌ను ఎంచుకోండి.';
 
   @override
   String get apiTemporaryCredentialRejected =>
-      'The temporary credential was not accepted. Check it and try again.';
+      'తాత్కాలిక కోడ్ అంగీకరించబడలేదు. దాన్ని తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.';
 
   @override
   String get apiRecoverySignInExpired =>
-      'Your recovery sign-in expired or changed. Sign in again.';
+      'మీ రికవరీ సైన్ ఇన్ గడువు ముగిసింది లేదా మారింది. మళ్లీ సైన్ ఇన్ చేయండి.';
 
   @override
   String get apiCheckInformation =>
-      'Please check the information and try again.';
+      'దయచేసి సమాచారాన్ని తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.';
 
   @override
-  String get apiInvalidLogin => 'Invalid phone number or password.';
+  String get apiInvalidLogin => 'ఫోన్ నంబర్ లేదా పాస్‌వర్డ్ తప్పు.';
 
   @override
-  String get apiNoPermission => 'You do not have permission to do that.';
+  String get apiNoPermission => 'దీన్ని చేయడానికి మీకు అనుమతి లేదు.';
 
   @override
   String get apiSessionNotFound =>
-      'Session not found. Check the session ID and try again.';
+      'సెషన్ కనుగొనబడలేదు. సెషన్ ID ని తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.';
 
   @override
-  String get apiItemNotFound => 'The requested item was not found.';
+  String get apiItemNotFound => 'అడిగిన అంశం కనుగొనబడలేదు.';
 
   @override
   String get apiServiceUnavailable =>
-      'The service is temporarily unavailable. Please try again.';
+      'సేవ తాత్కాలికంగా అందుబాటులో లేదు. దయచేసి మళ్లీ ప్రయత్నించండి.';
 
   @override
   String get apiNetworkFailure =>
-      'We could not complete that request. Check your connection and try again.';
+      'ఆ అభ్యర్థనను పూర్తి చేయలేకపోయాము. మీ కనెక్షన్‌ను తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.';
 
   @override
   String get apiUnknownFailure =>
-      'We could not complete that request. Please try again.';
+      'ఆ అభ్యర్థనను పూర్తి చేయలేకపోయాము. దయచేసి మళ్లీ ప్రయత్నించండి.';
 
   @override
   String get apiAccountChangedRequestNotSent =>
-      'Your account changed. This request was not sent.';
+      'మీ ఖాతా మారింది. ఈ అభ్యర్థన పంపబడలేదు.';
 
   @override
   String get apiAccountOrSessionChanged =>
-      'Your account or session changed. This action was not sent.';
+      'మీ ఖాతా లేదా సెషన్ మారింది. ఈ చర్య పంపబడలేదు.';
 
   @override
   String get apiResponseUnreadable =>
-      'The service response could not be read. The action may have been received; check its status before trying again.';
+      'సేవ ప్రతిస్పందనను చదవలేకపోయాము. చర్య అందుకోబడి ఉండవచ్చు; మళ్లీ ప్రయత్నించే ముందు దాని స్థితిని తనిఖీ చేయండి.';
 
   @override
   String get apiSignInBeforeAction =>
-      'Sign in again before sending this action.';
+      'ఈ చర్యను పంపే ముందు మళ్లీ సైన్ ఇన్ చేయండి.';
 
   @override
   String get apiAccountChangedNotConfirmed =>
-      'Your account changed. This action could not be confirmed.';
+      'మీ ఖాతా మారింది. ఈ చర్యను నిర్ధారించలేకపోయాము.';
 
   @override
   String get apiActionNotConfirmed =>
-      'The action was not confirmed. It may have reached the class. Check its status before trying again.';
+      'చర్య నిర్ధారించబడలేదు. ఇది తరగతికి చేరి ఉండవచ్చు. మళ్లీ ప్రయత్నించే ముందు దాని స్థితిని తనిఖీ చేయండి.';
 
   @override
   String get apiAccountChangedActionNotSent =>
-      'Your account changed. This action was not sent.';
+      'మీ ఖాతా మారింది. ఈ చర్య పంపబడలేదు.';
 
   @override
-  String get apiRequestFailed => 'Request failed';
+  String get apiRequestFailed => 'అభ్యర్థన విఫలమైంది';
 
   @override
-  String get notificationPrivateTitle => 'SEEDS update';
+  String get notificationPrivateTitle => 'SEEDS అప్‌డేట్';
 
   @override
-  String get notificationPrivateBody => 'Open SEEDS to review your updates.';
+  String get notificationPrivateBody =>
+      'మీ అప్‌డేట్‌లు చూడటానికి SEEDS తెరవండి.';
 
   @override
   String get notificationRegistrationFailed =>
-      'Notifications could not be registered. Refresh SEEDS to check class invitations.';
+      'నోటిఫికేషన్‌లు నమోదు కాలేదు. తరగతి ఆహ్వానాలు చూడటానికి SEEDS రిఫ్రెష్ చేయండి.';
 
   @override
-  String get notificationChannelName => 'Session Notifications';
+  String get notificationChannelName => 'సెషన్ నోటిఫికేషన్‌లు';
 
   @override
   String get notificationChannelDescription =>
-      'Notifications for session invitations and updates';
+      'సెషన్ ఆహ్వానాలు మరియు అప్‌డేట్‌ల కోసం నోటిఫికేషన్‌లు';
 
   @override
   String get notificationDisplayFailed =>
-      'An update arrived, but the phone notification could not be displayed. Open SEEDS to check updates.';
+      'ఒక అప్‌డేట్ వచ్చింది, కానీ ఫోన్ నోటిఫికేషన్ చూపించలేకపోయాము. అప్‌డేట్‌లు చూడటానికి SEEDS తెరవండి.';
 
   @override
   String get activityCleanupFailed =>
-      'Expired activity could not be cleaned. Check device storage.';
+      'గడువు ముగిసిన కార్యకలాపాన్ని తొలగించలేకపోయాము. పరికరం స్టోరేజ్‌ను తనిఖీ చేయండి.';
 
   @override
   String get activitySyncUnavailable =>
-      'Activity sync is unavailable. Learning is still available.';
+      'కార్యకలాపం సింక్ అందుబాటులో లేదు. అభ్యాసం ఇప్పటికీ అందుబాటులో ఉంది.';
 
   @override
-  String get activitySignInToSync => 'Sign in to sync activity.';
+  String get activitySignInToSync =>
+      'కార్యకలాపాన్ని సింక్ చేయడానికి సైన్ ఇన్ చేయండి.';
 
   @override
   String get activityQueueFull =>
-      'Activity queue is full. Some older actions cannot be reported.';
+      'కార్యకలాపాల వరుస నిండిపోయింది. కొన్ని పాత చర్యలను నివేదించలేము.';
 
   @override
-  String get activityWaitingToSync => 'Some activity is waiting to sync.';
+  String get activityWaitingToSync => 'కొంత కార్యకలాపం సింక్ కోసం వేచి ఉంది.';
 
   @override
   String get activityRejected =>
-      'Some activity was expired or no longer permitted and was not synced.';
+      'కొంత కార్యకలాపం గడువు ముగిసింది లేదా ఇకపై అనుమతి లేదు, కాబట్టి సింక్ చేయబడలేదు.';
 
   @override
-  String get authLogoutTitle => 'Log out of SEEDS?';
+  String get authLogoutTitle => 'SEEDS నుండి లాగ్ అవుట్ చేయాలా?';
 
   @override
   String get authLogoutMessage =>
-      'You will need to enter your phone number and password again.';
+      'మీరు మళ్లీ మీ ఫోన్ నంబర్ మరియు పాస్‌వర్డ్ నమోదు చేయాల్సి ఉంటుంది.';
 
   @override
-  String get authLogoutCancel => 'Cancel';
+  String get authLogoutCancel => 'రద్దు చేయండి';
 
   @override
-  String get authLogoutConfirm => 'Log out';
+  String get authLogoutConfirm => 'లాగ్ అవుట్';
 
   @override
-  String get authLoggedOut => 'Logged out.';
+  String get authLoggedOut => 'లాగ్ అవుట్ అయ్యారు.';
 
   @override
-  String get startupLoadingTools => 'Loading accessible learning tools…';
+  String get startupLoadingTools =>
+      'అందరికీ అందుబాటులో ఉండే అభ్యాస సాధనాలు లోడ్ అవుతున్నాయి…';
 
   @override
-  String get startupTagline => 'Connecting everyone, everywhere';
+  String get startupTagline => 'అందరినీ, అన్ని చోట్లా కలుపుతోంది';
 
   @override
-  String get startupLoginKey1 => '1. Login';
+  String get startupLoginKey1 => '1. లాగిన్';
 
   @override
-  String get startupLogin => 'Login';
+  String get startupLogin => 'లాగిన్';
 
   @override
-  String get startupRegisterKey2 => '2. Register';
+  String get startupRegisterKey2 => '2. నమోదు';
 
   @override
-  String get startupRegister => 'Register';
+  String get startupRegister => 'నమోదు';
 
   @override
-  String get startupSettings => 'Settings';
+  String get startupSettings => 'సెట్టింగ్‌లు';
 
   @override
-  String get startupRepeatInstructions => 'Repeat instructions';
+  String get startupRepeatInstructions => 'సూచనలు మళ్ళీ వినండి';
 
   @override
-  String get startupFeatureAudioTitle => 'Real-time Audio';
+  String get startupFeatureAudioTitle => 'రియల్-టైమ్ ఆడియో';
 
   @override
-  String get startupFeatureAudioText => 'Crystal clear voice communication';
+  String get startupFeatureAudioText => 'చాలా స్పష్టమైన స్వర సంభాషణ';
 
   @override
-  String get startupFeatureAccessibleTitle => 'Fully Accessible';
+  String get startupFeatureAccessibleTitle => 'పూర్తిగా అందుబాటులో';
 
   @override
   String get startupFeatureAccessibleText =>
-      'Speech, large buttons and keypad control';
+      'స్వరం, పెద్ద బటన్‌లు మరియు కీప్యాడ్ నియంత్రణ';
 
   @override
-  String get startupFeatureCollaborationTitle => 'Collaboration';
+  String get startupFeatureCollaborationTitle => 'సహకారం';
 
   @override
-  String get startupFeatureCollaborationText => 'Raise hands and interact';
+  String get startupFeatureCollaborationText => 'చేయి ఎత్తి పాల్గొనండి';
 
   @override
-  String get settingsResetTitle => 'Reset Settings';
+  String get settingsResetTitle => 'సెట్టింగ్‌లను రీసెట్ చేయండి';
 
   @override
-  String get settingsResetCancelButton => '1: Cancel';
+  String get settingsResetCancelButton => '1: రద్దు చేయండి';
 
   @override
-  String get settingsResetConfirmButton => '2: Reset';
+  String get settingsResetConfirmButton => '2: రీసెట్ చేయండి';
 
   @override
   String teacherHomeFallbackName(String id) {
-    return 'Teacher $id';
+    return 'ఉపాధ్యాయులు $id';
   }
 
   @override
   String dashboardSignedInAs(String name) {
-    return 'Signed in as $name';
+    return '$nameగా సైన్ ఇన్ అయ్యారు';
   }
 
   @override
-  String get dashboardRefreshSessionsKey1 => '1: Refresh sessions';
+  String get dashboardRefreshSessionsKey1 => '1: సెషన్‌లను రిఫ్రెష్ చేయండి';
 
   @override
-  String get dashboardLogOutKey0 => '0: Log out';
+  String get dashboardLogOutKey0 => '0: లాగ్ అవుట్';
 
   @override
-  String get dashboardRefreshingSessions => 'Refreshing sessions';
+  String get dashboardRefreshingSessions => 'సెషన్‌లను రిఫ్రెష్ చేస్తోంది';
 
   @override
   String teacherHomeWelcome(String name) {
-    return 'Welcome, $name!';
+    return 'స్వాగతం, $name!';
   }
 
   @override
   String get teacherHomeTagline =>
-      'Manage your sessions and connect with students';
+      'మీ సెషన్‌లను నిర్వహించండి, విద్యార్థులతో కనెక్ట్ అవ్వండి';
 
   @override
   String get teacherHomeChooseWorkspaceKey7 =>
-      '7: Choose class and subject workspace';
+      '7: తరగతి మరియు సబ్జెక్టు వర్క్‌స్పేస్ ఎంచుకోండి';
 
   @override
   String teacherHomeChangeWorkspaceKey7(String className, String subjectName) {
-    return '7: $className, $subjectName. Change workspace';
+    return '7: $className, $subjectName. వర్క్‌స్పేస్ మార్చండి';
   }
 
   @override
-  String get teacherHomePlaylistsKey5 => '5: Class Playlists';
+  String get teacherHomePlaylistsKey5 => '5: తరగతి ప్లేలిస్ట్‌లు';
 
   @override
-  String get teacherHomeJourneysKey8 => '8: Learning Journeys';
+  String get teacherHomeJourneysKey8 => '8: అభ్యాస ప్రయాణాలు';
 
   @override
-  String get teacherHomeQuizzesKey6 => '6: Quizzes & Question Bank';
+  String get teacherHomeQuizzesKey6 => '6: క్విజ్‌లు & ప్రశ్నల బ్యాంక్';
 
   @override
-  String get teacherHomeCreateSessionKey2 => '2: Create New Session';
+  String get teacherHomeCreateSessionKey2 => '2: కొత్త సెషన్ సృష్టించండి';
 
   @override
-  String get dashboardAudioLibraryKey3 => '3: Recorded Audio Library';
+  String get dashboardAudioLibraryKey3 => '3: రికార్డ్ చేసిన ఆడియో లైబ్రరీ';
 
   @override
-  String get teacherHomeSearchKey4 => '4: Search by name or number';
+  String get teacherHomeSearchKey4 => '4: పేరు లేదా నంబర్‌తో వెతకండి';
 
   @override
   String get teacherHomeSearchHint =>
-      'Type a session name, or the session number with the number keys. Leave empty to list all.';
+      'సెషన్ పేరు టైప్ చేయండి, లేదా నంబర్ కీలతో సెషన్ నంబర్ టైప్ చేయండి. అన్నీ చూడటానికి ఖాళీగా ఉంచండి.';
 
   @override
-  String get teacherHomeYourSessions => 'Your sessions';
+  String get teacherHomeYourSessions => 'మీ సెషన్‌లు';
 
   @override
   String teacherHomeYourSessionsCount(String count) {
-    return 'Your sessions, $count';
+    return 'మీ సెషన్‌లు, $count';
   }
 
   @override
-  String get teacherHomeYourSessionsHeading => 'Your Sessions';
+  String get teacherHomeYourSessionsHeading => 'మీ సెషన్‌లు';
 
   @override
-  String get teacherHomeNoSessions => 'No sessions yet. Press 2 to create one.';
+  String get teacherHomeNoSessions =>
+      'ఇంకా సెషన్‌లు లేవు. ఒకటి సృష్టించడానికి 2 నొక్కండి.';
 
   @override
   String get teacherHomeNoMatches =>
-      'No matching sessions. Clear the search to list all sessions.';
+      'సరిపోయే సెషన్‌లు లేవు. అన్ని సెషన్‌లను చూడటానికి వెతుకులాటను క్లియర్ చేయండి.';
 
   @override
   String teacherHomeEndTitleForEveryone(String title) {
-    return 'End $title for everyone';
+    return 'అందరికీ $titleను ముగించండి';
   }
 
   @override
   String teacherHomeDeleteTitlePermanently(String title) {
-    return 'Delete $title permanently';
+    return '$titleను శాశ్వతంగా తొలగించండి';
   }
 
   @override
   String teacherHomeLiveJoined(String count) {
-    return 'Live now, $count joined';
+    return 'ఇప్పుడు లైవ్‌లో ఉంది, $count మంది చేరారు';
   }
 
   @override
   String teacherHomeSessionNumber(String number) {
-    return 'Session number $number';
+    return 'సెషన్ నంబర్ $number';
   }
 
   @override
   String teacherHomePlaceSessionNumber(String place, String number) {
-    return '$place. Session number $number';
+    return '$place. సెషన్ నంబర్ $number';
   }
 
   @override
-  String get teacherHomeDelete => 'Delete';
+  String get teacherHomeDelete => 'తొలగించండి';
 
   @override
-  String get teacherHomeSessionTitleField => 'Session Title';
+  String get teacherHomeSessionTitleField => 'సెషన్ శీర్షిక';
 
   @override
-  String get teacherHomeSessionTitleHint => 'e.g., English Class - Unit 5';
+  String get teacherHomeSessionTitleHint => 'ఉదా., ఇంగ్లీష్ తరగతి - యూనిట్ 5';
 
   @override
-  String get teacherHomeCreateKey1 => 'Create (1)';
+  String get teacherHomeCreateKey1 => 'సృష్టించండి (1)';
 
   @override
   String studentHomeFallbackName(String id) {
-    return 'Student $id';
+    return 'విద్యార్థి $id';
   }
 
   @override
-  String get studentHomeLoading => 'Student dashboard is loading';
+  String get studentHomeLoading => 'విద్యార్థి డాష్‌బోర్డ్ లోడ్ అవుతోంది';
 
   @override
   String studentHomeWelcome(String name) {
-    return 'Welcome, $name';
+    return 'స్వాగతం, $name';
   }
 
   @override
   String studentHomeClass(String name) {
-    return 'Class: $name';
+    return 'తరగతి: $name';
   }
 
   @override
-  String get studentHomeAssignmentPending => 'assignment pending';
+  String get studentHomeAssignmentPending => 'కేటాయింపు పెండింగ్‌లో ఉంది';
 
   @override
-  String get studentHomeLiveSessionsNone => 'Live sessions: none';
+  String get studentHomeLiveSessionsNone => 'లైవ్ సెషన్‌లు: ఏవీ లేవు';
 
   @override
   String studentHomeLiveSessionsCount(String count) {
-    return 'Live sessions: $count';
+    return 'లైవ్ సెషన్‌లు: $count';
   }
 
   @override
-  String get studentHomeSessionNumberKey2 => '2: Session number';
+  String get studentHomeSessionNumberKey2 => '2: సెషన్ నంబర్';
 
   @override
-  String get studentHomeSessionName => 'Session name';
+  String get studentHomeSessionName => 'సెషన్ పేరు';
 
   @override
-  String get studentHomeSubjectFilter => 'Subject filter';
+  String get studentHomeSubjectFilter => 'సబ్జెక్టు ఫిల్టర్';
 
   @override
-  String get studentHomePlaylistsKey4 => '4: My Playlists · Private';
+  String get studentHomePlaylistsKey4 => '4: నా ప్లేలిస్ట్‌లు · ప్రైవేట్';
 
   @override
-  String get studentHomeQuizzesKey5 => '5: Quizzes';
+  String get studentHomeQuizzesKey5 => '5: క్విజ్‌లు';
 
   @override
-  String get studentHomeJourneysKey6 => '6: Learning Journeys';
+  String get studentHomeJourneysKey6 => '6: అభ్యాస ప్రయాణాలు';
 
   @override
   String studentHomeTeacher(String name) {
-    return 'Teacher: $name';
+    return 'ఉపాధ్యాయులు: $name';
   }
 
   @override
   String studentHomeSessionOkToJoin(String number) {
-    return 'Session $number. OK to join';
+    return 'సెషన్ $number. చేరడానికి ఓకే';
   }
 
   @override
   String studentHomeJoinSessionLabel(String session) {
-    return '$session. Join session';
+    return '$session. సెషన్‌లో చేరండి';
   }
 
   @override
   String adminActiveAssignmentCount(String count) {
-    return '$count active assignments';
+    return '$count క్రియాశీల కేటాయింపులు';
   }
 
   @override
@@ -12505,40 +12606,40 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get adminTextDialogHelper =>
-      'Press OK to type, then 1 to save or 0 to cancel';
+      'టైప్ చేయడానికి ఓకే నొక్కండి, ఆపై సేవ్ చేయడానికి 1 లేదా రద్దు చేయడానికి 0 నొక్కండి';
 
   @override
-  String get adminSaveKey1 => 'Save (1)';
+  String get adminSaveKey1 => 'సేవ్ చేయండి (1)';
 
   @override
   String adminManageUser(String name) {
-    return 'Manage $name';
+    return '$name ను నిర్వహించండి';
   }
 
   @override
-  String get adminManageAssignmentsKey1 => '1: Manage assignments';
+  String get adminManageAssignmentsKey1 => '1: కేటాయింపులను నిర్వహించండి';
 
   @override
-  String get adminPasswordRecoveryKey2 => '2: Password recovery';
+  String get adminPasswordRecoveryKey2 => '2: పాస్‌వర్డ్ రికవరీ';
 
   @override
   String adminRemoveStudentFromClass(String name, String className) {
-    return 'Remove $name from $className (2)';
+    return '$name ను $className నుండి తీసివేయండి (2)';
   }
 
   @override
-  String get adminRemoveClassKey2 => 'Remove class (2)';
+  String get adminRemoveClassKey2 => 'తరగతిని తీసివేయండి (2)';
 
   @override
-  String get adminAssignKey1 => 'Assign (1)';
+  String get adminAssignKey1 => 'కేటాయించండి (1)';
 
   @override
   String adminAssignTeacher(String name) {
-    return 'Assign $name';
+    return '$name ను కేటాయించండి';
   }
 
   @override
-  String get adminCurrentAssignments => 'Current assignments';
+  String get adminCurrentAssignments => 'ప్రస్తుత కేటాయింపులు';
 
   @override
   String adminRemoveTeacherAssignment(
@@ -12546,304 +12647,312 @@ class AppLocalizationsTe extends AppLocalizations {
     String className,
     String subjectName,
   ) {
-    return 'Remove $name from $className, $subjectName';
+    return '$name ను $className, $subjectName నుండి తీసివేయండి';
   }
 
   @override
-  String get adminAddAssignment => 'Add an assignment';
+  String get adminAddAssignment => 'కేటాయింపు జోడించండి';
 
   @override
-  String get adminAppBarTitle => 'SEEDS Administration';
+  String get adminAppBarTitle => 'SEEDS నిర్వహణ';
 
   @override
-  String get adminRefreshKey1 => '1: Refresh administration data';
+  String get adminRefreshKey1 => '1: నిర్వహణ డేటాను రిఫ్రెష్ చేయండి';
 
   @override
-  String get adminLoading => 'Loading administration data';
+  String get adminLoading => 'నిర్వహణ డేటాను లోడ్ చేస్తోంది';
 
   @override
   String adminChangeSectionKey7(String section) {
-    return '7: Change section. Now: $section';
+    return '7: విభాగం మార్చండి. ఇప్పుడు: $section';
   }
 
   @override
-  String get adminSearchKey2 => '2: Search by name or phone number';
+  String get adminSearchKey2 => '2: పేరు లేదా ఫోన్ నంబర్‌తో వెతకండి';
 
   @override
-  String get adminSearchHelper => 'Press OK when done to show matches';
+  String get adminSearchHelper =>
+      'సరిపోలినవి చూపడానికి పూర్తయ్యాక ఓకే నొక్కండి';
 
   @override
   String adminRoleFilterChipsLabel(String label) {
-    return 'Account type filter: $label, selected. Use left and right arrows to change.';
+    return 'ఖాతా రకం ఫిల్టర్: $label, ఎంచుకోబడింది. మార్చడానికి ఎడమ మరియు కుడి బాణాలను ఉపయోగించండి.';
   }
 
   @override
-  String get adminAccountTypeKey3 => '3: Account type';
+  String get adminAccountTypeKey3 => '3: ఖాతా రకం';
 
   @override
-  String get adminChipAllAccounts => 'All accounts';
+  String get adminChipAllAccounts => 'అన్ని ఖాతాలు';
 
   @override
-  String get adminChipStudents => 'Students';
+  String get adminChipStudents => 'విద్యార్థులు';
 
   @override
-  String get adminChipTeachers => 'Teachers';
+  String get adminChipTeachers => 'ఉపాధ్యాయులు';
 
   @override
   String adminAssignmentFilterChipsLabel(String label) {
-    return 'Assignment filter: $label, selected. Use left and right arrows to change.';
+    return 'కేటాయింపు ఫిల్టర్: $label, ఎంచుకోబడింది. మార్చడానికి ఎడమ మరియు కుడి బాణాలను ఉపయోగించండి.';
   }
 
   @override
-  String get adminAssignmentKey4 => '4: Assignment';
+  String get adminAssignmentKey4 => '4: కేటాయింపు';
 
   @override
-  String get adminChipAll => 'All';
+  String get adminChipAll => 'అన్నీ';
 
   @override
-  String get adminCreateSubjectKey5 => '5: Create subject';
+  String get adminCreateSubjectKey5 => '5: సబ్జెక్టు సృష్టించండి';
 
   @override
-  String get adminCreateClassKey6 => '6: Create class';
+  String get adminCreateClassKey6 => '6: తరగతి సృష్టించండి';
 
   @override
-  String get adminStatusActive => 'Active';
+  String get adminStatusActive => 'క్రియాశీలం';
 
   @override
-  String get adminClassTileHint => 'Press OK for subjects, or to archive';
+  String get adminClassTileHint =>
+      'సబ్జెక్టుల కోసం లేదా ఆర్కైవ్ చేయడానికి ఓకే నొక్కండి';
 
   @override
-  String get adminPressOkRestore => 'Press OK to restore';
+  String get adminPressOkRestore => 'పునరుద్ధరించడానికి ఓకే నొక్కండి';
 
   @override
-  String get adminPressOkArchive => 'Press OK to archive';
+  String get adminPressOkArchive => 'ఆర్కైవ్ చేయడానికి ఓకే నొక్కండి';
 
   @override
   String sessionTitleTeacher(String title) {
-    return '$title (Teacher)';
+    return '$title (ఉపాధ్యాయులు)';
   }
 
   @override
-  String get libraryStatusStopped => 'Stopped';
+  String get libraryStatusStopped => 'ఆపబడింది';
 
   @override
   String libraryUploadFileName(String name) {
-    return 'File: $name';
+    return 'ఫైల్: $name';
   }
 
   @override
   String libraryAudioSessionTitle(String number) {
-    return 'Audio - Session $number';
+    return 'ఆడియో - సెషన్ $number';
   }
 
   @override
   String libraryRecordingsCount(String count) {
-    return '$count recordings';
+    return '$count రికార్డింగ్‌లు';
   }
 
   @override
   String libraryUploadedAt(String date) {
-    return 'Uploaded: $date';
+    return 'అప్‌లోడ్ చేసినది: $date';
   }
 
   @override
   String libraryStopPreviewOf(String title) {
-    return 'Stop preview of $title';
+    return '$title ప్రివ్యూ ఆపండి';
   }
 
   @override
   String libraryPreviewPrivately(String title) {
-    return 'Preview $title privately';
+    return '$title ను ప్రైవేట్‌గా ప్రివ్యూ చేయండి';
   }
 
   @override
   String libraryPlayForEveryone(String title) {
-    return 'Play $title for everyone in the session';
+    return 'సెషన్‌లోని అందరికీ $title ప్లే చేయండి';
   }
 
   @override
   String get librarySelectClassHint =>
-      'Select a class to play recorded lessons. Online lessons require internet. Use Downloaded lessons for saved audio.';
+      'రికార్డ్ చేసిన పాఠాలను ప్లే చేయడానికి తరగతిని ఎంచుకోండి. ఆన్‌లైన్ పాఠాలకు ఇంటర్నెట్ అవసరం. సేవ్ చేసిన ఆడియో కోసం డౌన్‌లోడ్ చేసిన పాఠాలు ఉపయోగించండి.';
 
   @override
   String libraryFoundCount(String count) {
-    return '$count found';
+    return '$count దొరికాయి';
   }
 
   @override
   String get librarySearchSessionHint =>
-      'Use \"Search by Session Name\" above to access a class quickly.';
+      'తరగతిని త్వరగా తెరవడానికి పైన ఉన్న \"సెషన్ పేరుతో వెతకండి\" ఉపయోగించండి.';
 
   @override
   String librarySessionHash(String number) {
-    return 'Session #$number';
+    return 'సెషన్ #$number';
   }
 
   @override
   String libraryStatusFinished(String title) {
-    return 'Finished $title';
+    return '$title పూర్తయింది';
   }
 
   @override
   String libraryStatusPaused(String title) {
-    return 'Paused $title';
+    return '$title పాజ్ చేయబడింది';
   }
 
   @override
   String libraryStatusPlaying(String title) {
-    return 'Playing $title';
+    return '$title ప్లే అవుతోంది';
   }
 
   @override
-  String get libraryTitleField => 'Title';
+  String get libraryTitleField => 'శీర్షిక';
 
   @override
-  String get libraryDescriptionOptional => 'Description (optional)';
+  String get libraryDescriptionOptional => 'వివరణ (ఐచ్ఛికం)';
 
   @override
   String libraryAudioLibrarySession(String number) {
-    return 'Audio Library, session $number';
+    return 'ఆడియో లైబ్రరీ, సెషన్ $number';
   }
 
   @override
-  String get libraryUploadingAudio => 'Uploading audio';
+  String get libraryUploadingAudio => 'ఆడియో అప్‌లోడ్ చేస్తోంది';
 
   @override
-  String get libraryAddAudioKey3Tooltip => 'Add audio, key 3';
+  String get libraryAddAudioKey3Tooltip => 'ఆడియో జోడించండి, కీ 3';
 
   @override
-  String get libraryAddAudioKey3 => '3: Add audio';
+  String get libraryAddAudioKey3 => '3: ఆడియో జోడించండి';
 
   @override
-  String get libraryNoRecordingsForClass => 'No recordings for this class yet.';
+  String get libraryNoRecordingsForClass =>
+      'ఈ తరగతికి ఇంకా రికార్డింగ్‌లు లేవు.';
 
   @override
   String get libraryNoRecordingsAskTeacher =>
-      'No recordings available yet. Ask your teacher to upload some.';
+      'ఇంకా రికార్డింగ్‌లు అందుబాటులో లేవు. కొన్ని అప్‌లోడ్ చేయమని మీ ఉపాధ్యాయులను అడగండి.';
 
   @override
   String libraryPositionSpeed(String position, String total, String speed) {
-    return '$position of $total. Speed ${speed}x';
+    return '$total లో $position. వేగం ${speed}x';
   }
 
   @override
   String libraryNowPlaying(String title) {
-    return 'Now playing: $title';
+    return 'ఇప్పుడు ప్లే అవుతోంది: $title';
   }
 
   @override
   String libraryRecordingsMatch(String count, String total) {
-    return '$count of $total recordings match';
+    return '$total లో $count రికార్డింగ్‌లు సరిపోలాయి';
   }
 
   @override
-  String get libraryNoUnlinkedAudio => 'No unlinked audio available.';
+  String get libraryNoUnlinkedAudio => 'లింక్ చేయని ఆడియో ఏదీ అందుబాటులో లేదు.';
 
   @override
-  String get libraryNoSearchMatches => 'No recordings match your search.';
+  String get libraryNoSearchMatches =>
+      'మీ శోధనకు సరిపోయే రికార్డింగ్‌లు ఏవీ లేవు.';
 
   @override
-  String get libraryFindingLesson => 'Finding your lesson';
+  String get libraryFindingLesson => 'మీ పాఠం కోసం వెతుకుతోంది';
 
   @override
-  String get libraryTitleRequiredField => 'Title *';
+  String get libraryTitleRequiredField => 'శీర్షిక *';
 
   @override
-  String get libraryUploadNewAudio => 'Upload New Audio';
+  String get libraryUploadNewAudio => 'కొత్త ఆడియో అప్‌లోడ్ చేయండి';
 
   @override
-  String get libraryStopPreview => 'Stop Preview';
+  String get libraryStopPreview => 'ప్రివ్యూ ఆపండి';
 
   @override
-  String get libraryPreviewOnlyMe => 'Preview (Only Me)';
+  String get libraryPreviewOnlyMe => 'ప్రివ్యూ (నాకు మాత్రమే)';
 
   @override
-  String get libraryPreview => 'Preview';
+  String get libraryPreview => 'ప్రివ్యూ';
 
   @override
-  String get libraryStop => 'Stop';
+  String get libraryStop => 'ఆపండి';
 
   @override
-  String get libraryPlayInSession => 'Play in Session';
+  String get libraryPlayInSession => 'సెషన్‌లో ప్లే చేయండి';
 
   @override
-  String get librarySessionShort => 'Session';
+  String get librarySessionShort => 'సెషన్';
 
   @override
-  String get libraryNotesTooltip => 'Private notes and recording drafts';
+  String get libraryNotesTooltip =>
+      'ప్రైవేట్ నోట్‌లు మరియు రికార్డింగ్ డ్రాఫ్ట్‌లు';
 
   @override
-  String get libraryBrowseClassesKey5 => '5: Browse active classes';
+  String get libraryBrowseClassesKey5 => '5: యాక్టివ్ తరగతులను చూడండి';
 
   @override
-  String get librarySearchClassByName => 'Search Class by Name';
+  String get librarySearchClassByName => 'పేరుతో తరగతిని వెతకండి';
 
   @override
-  String get librarySearchClassHint => 'Enter Session/Class Name';
+  String get librarySearchClassHint => 'సెషన్/తరగతి పేరు నమోదు చేయండి';
 
   @override
-  String get libraryMyAudioLibrary => 'My Audio Library';
+  String get libraryMyAudioLibrary => 'నా ఆడియో లైబ్రరీ';
 
   @override
-  String get libraryAllAudioFiles => 'All Audio Files';
+  String get libraryAllAudioFiles => 'అన్ని ఆడియో ఫైల్‌లు';
 
   @override
-  String get libraryManageAudioFiles => 'Manage and upload your audio files';
+  String get libraryManageAudioFiles =>
+      'మీ ఆడియో ఫైల్‌లను నిర్వహించండి మరియు అప్‌లోడ్ చేయండి';
 
   @override
-  String get libraryBrowseAudioFiles => 'Browse all uploaded audio files';
+  String get libraryBrowseAudioFiles =>
+      'అప్‌లోడ్ చేసిన అన్ని ఆడియో ఫైల్‌లను చూడండి';
 
   @override
-  String get libraryActiveClasses => 'Active Classes';
+  String get libraryActiveClasses => 'యాక్టివ్ తరగతులు';
 
   @override
-  String get libraryNoActiveClasses => 'No active classes found.';
+  String get libraryNoActiveClasses => 'యాక్టివ్ తరగతులు ఏవీ కనబడలేదు.';
 
   @override
-  String get libraryAddAudioToSessions => 'Add audio to sessions';
+  String get libraryAddAudioToSessions => 'సెషన్‌లకు ఆడియో జోడించండి';
 
   @override
-  String get libraryConfirmKey1 => '1: Confirm';
+  String get libraryConfirmKey1 => '1: నిర్ధారించండి';
 
   @override
-  String get libraryDownloadLessons => 'Download lessons';
+  String get libraryDownloadLessons => 'పాఠాలను డౌన్‌లోడ్ చేయండి';
 
   @override
-  String get libraryRepeatHelp => 'Repeat help';
+  String get libraryRepeatHelp => 'సహాయం మళ్ళీ వినండి';
 
   @override
-  String get libraryBack10s => 'Back 10 s';
+  String get libraryBack10s => '10 సెకన్లు వెనక్కి';
 
   @override
-  String get libraryPause => 'Pause';
+  String get libraryPause => 'పాజ్';
 
   @override
-  String get libraryPlay => 'Play';
+  String get libraryPlay => 'ప్లే';
 
   @override
-  String get libraryForward10s => 'Forward 10 s';
+  String get libraryForward10s => '10 సెకన్లు ముందుకు';
 
   @override
-  String get libraryCloseAddAudio => 'Close add audio options';
+  String get libraryCloseAddAudio => 'ఆడియో జోడించే ఎంపికలను మూసివేయండి';
 
   @override
-  String get libraryUploadNewFileKey1 => '1: Upload New File';
+  String get libraryUploadNewFileKey1 => '1: కొత్త ఫైల్ అప్‌లోడ్ చేయండి';
 
   @override
-  String get librarySelectExistingKey2 => '2: Select from Existing Library';
+  String get librarySelectExistingKey2 => '2: ఉన్న లైబ్రరీ నుండి ఎంచుకోండి';
 
   @override
-  String get librarySelectAudio => 'Select Audio';
+  String get librarySelectAudio => 'ఆడియో ఎంచుకోండి';
 
   @override
-  String get libraryRefreshAvailable => 'Refresh available audio';
+  String get libraryRefreshAvailable =>
+      'అందుబాటులో ఉన్న ఆడియోను రిఫ్రెష్ చేయండి';
 
   @override
-  String get librarySearchByTitle => 'Search by title';
+  String get librarySearchByTitle => 'శీర్షికతో వెతకండి';
 
   @override
   String get libraryNothingPlaying =>
-      'Nothing playing. Select a lesson or press 5.';
+      'ఏదీ ప్లే కావడం లేదు. ఒక పాఠాన్ని ఎంచుకోండి లేదా 5 నొక్కండి.';
 
   @override
   String spokenDayMonthYear(String day, String month, String year) {
@@ -12852,97 +12961,98 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get downloadPartialReserve =>
-      'Partial files reserve their complete size.';
+      'సగం డౌన్‌లోడ్ అయిన ఫైల్‌లు వాటి పూర్తి సైజు స్థలాన్ని తీసుకుంటాయి.';
 
   @override
   String downloadProgressStarting(String title) {
-    return '$title: starting downloaded';
+    return '$title: డౌన్‌లోడ్ ప్రారంభమవుతోంది';
   }
 
   @override
   String downloadPercentDone(String title, String percent) {
-    return '$title: $percent percent downloaded';
+    return '$title: $percent శాతం డౌన్‌లోడ్ అయింది';
   }
 
   @override
   String downloadRecordUnreadable(String id) {
-    return 'Download record $id could not be read. Files are kept. Remove only this download to recover; progress and bookmarks are kept.';
+    return 'డౌన్‌లోడ్ రికార్డ్ $id చదవలేకపోయాము. ఫైల్‌లు అలాగే ఉంచబడ్డాయి. సరిచేయడానికి ఈ డౌన్‌లోడ్‌ను మాత్రమే తీసివేయండి; పురోగతి మరియు బుక్‌మార్క్‌లు అలాగే ఉంటాయి.';
   }
 
   @override
   String downloadRemoveUnreadable(String id) {
-    return 'Remove unreadable download $id';
+    return 'చదవలేని డౌన్‌లోడ్ $id తీసివేయండి';
   }
 
   @override
-  String get downloadStatusDownloaded => 'Downloaded';
+  String get downloadStatusDownloaded => 'డౌన్‌లోడ్ అయింది';
 
   @override
-  String get downloadStatusPartial => 'Partial download';
+  String get downloadStatusPartial => 'పాక్షిక డౌన్‌లోడ్';
 
   @override
   String downloadSizeRenewal(String megabytes) {
-    return '$megabytes MB. Access renewal required.';
+    return '$megabytes MB. యాక్సెస్‌ను పునరుద్ధరించాలి.';
   }
 
   @override
   String downloadSizeExpires(String megabytes, String date) {
-    return '$megabytes MB. Access expires on $date.';
+    return '$megabytes MB. యాక్సెస్ $date న ముగుస్తుంది.';
   }
 
   @override
-  String get downloadTitle => 'Downloads';
+  String get downloadTitle => 'డౌన్‌లోడ్‌లు';
 
   @override
   String get downloadAccessInfo =>
-      '30-day offline access. Other accounts have separate allowances. No automatic deletion.';
+      '30 రోజుల ఆఫ్‌లైన్ యాక్సెస్. ఇతర ఖాతాలకు వేరే పరిమితులు ఉంటాయి. ఏదీ ఆటోమేటిక్‌గా తొలగించబడదు.';
 
   @override
-  String get downloadRefreshKey1 => '1: Refresh downloads';
+  String get downloadRefreshKey1 => '1: డౌన్‌లోడ్‌లను రిఫ్రెష్ చేయండి';
 
   @override
-  String get downloadFindOnlineKey2 => '2: Find recordings online';
+  String get downloadFindOnlineKey2 => '2: ఆన్‌లైన్‌లో రికార్డింగ్‌లను వెతకండి';
 
   @override
-  String get downloadReadStatusKey3 => '3: Read status';
+  String get downloadReadStatusKey3 => '3: స్థితి వినండి';
 
   @override
-  String get downloadCancelKey4 => '4: Cancel download';
+  String get downloadCancelKey4 => '4: డౌన్‌లోడ్ రద్దు చేయండి';
 
   @override
   String get downloadNoneYetFindOnline =>
-      'No downloads yet. Find recordings online or open Downloads from a class or playlist.';
+      'ఇంకా డౌన్‌లోడ్‌లు లేవు. ఆన్‌లైన్‌లో రికార్డింగ్‌లను వెతకండి లేదా తరగతి లేదా ప్లేలిస్ట్ నుండి డౌన్‌లోడ్‌లను తెరవండి.';
 
   @override
-  String get downloadPlayLesson => 'Play downloaded lesson';
+  String get downloadPlayLesson => 'డౌన్‌లోడ్ చేసిన పాఠాన్ని ప్లే చేయండి';
 
   @override
-  String get downloadRenewOnline => 'Renew access online';
+  String get downloadRenewOnline => 'ఆన్‌లైన్‌లో యాక్సెస్ పునరుద్ధరించండి';
 
   @override
-  String get downloadRemove => 'Remove download';
+  String get downloadRemove => 'డౌన్‌లోడ్ తీసివేయండి';
 
   @override
-  String get downloadListedKey5 => '5: Download listed recordings';
+  String get downloadListedKey5 =>
+      '5: జాబితాలోని రికార్డింగ్‌లను డౌన్‌లోడ్ చేయండి';
 
   @override
   String get downloadAvailableInfo =>
-      'Available recordings. Downloads use internet data.';
+      'అందుబాటులో ఉన్న రికార్డింగ్‌లు. డౌన్‌లోడ్‌లు ఇంటర్నెట్ డేటాను వాడతాయి.';
 
   @override
   String playlistClassSubjectTitle(String className, String subjectName) {
-    return '$className · $subjectName Playlists';
+    return '$className · $subjectName ప్లేలిస్ట్‌లు';
   }
 
   @override
-  String get playlistStatusPrivate => 'Private';
+  String get playlistStatusPrivate => 'ప్రైవేట్';
 
   @override
-  String get playlistClassPlaylist => 'Class playlist';
+  String get playlistClassPlaylist => 'తరగతి ప్లేలిస్ట్';
 
   @override
   String playlistItemCount(String count) {
-    return '$count items';
+    return '$count అంశాలు';
   }
 
   @override
@@ -12951,128 +13061,130 @@ class AppLocalizationsTe extends AppLocalizations {
     String subjectName,
     String count,
   ) {
-    return '$className, $subjectName, $count items';
+    return '$className, $subjectName, $count అంశాలు';
   }
 
   @override
-  String get playlistFinished => 'Finished. End of playlist';
+  String get playlistFinished => 'పూర్తయింది. ప్లేలిస్ట్ ముగిసింది';
 
   @override
-  String get playlistAddKey2 => '2 Add';
+  String get playlistAddKey2 => '2 జోడించండి';
 
   @override
-  String get playlistAddAudioKey2Label => 'Add audio, key 2';
+  String get playlistAddAudioKey2Label => 'ఆడియో జోడించండి, కీ 2';
 
   @override
-  String get playlistPauseKey5 => '5 Pause';
+  String get playlistPauseKey5 => '5 పాజ్';
 
   @override
-  String get playlistPlayKey5 => '5 Play';
+  String get playlistPlayKey5 => '5 ప్లే';
 
   @override
   String playlistPauseTitleKey5(String title) {
-    return 'Pause $title, key 5';
+    return '$title పాజ్ చేయండి, కీ 5';
   }
 
   @override
   String playlistPlayTitleKey5(String title) {
-    return 'Play $title, key 5';
+    return '$title ప్లే చేయండి, కీ 5';
   }
 
   @override
-  String get playlistPreviousKey3 => '3 Previous';
+  String get playlistPreviousKey3 => '3 మునుపటిది';
 
   @override
-  String get playlistPreviousItemKey3 => 'Previous item, key 3';
+  String get playlistPreviousItemKey3 => 'మునుపటి అంశం, కీ 3';
 
   @override
-  String get playlistNextKey8 => '8 Next';
+  String get playlistNextKey8 => '8 తర్వాతిది';
 
   @override
-  String get playlistNextItemKey8 => 'Next item, key 8';
+  String get playlistNextItemKey8 => 'తర్వాతి అంశం, కీ 8';
 
   @override
-  String get playlistRestore => 'Restore';
+  String get playlistRestore => 'పునరుద్ధరించండి';
 
   @override
-  String get playlistArchive => 'Archive';
+  String get playlistArchive => 'ఆర్కైవ్ చేయండి';
 
   @override
-  String get playlistDeletePlaylist => 'Delete playlist';
+  String get playlistDeletePlaylist => 'ప్లేలిస్ట్ తొలగించండి';
 
   @override
   String playlistRestoreNamedButton(String title) {
-    return 'Restore $title';
+    return '$title పునరుద్ధరించండి';
   }
 
   @override
   String playlistArchiveNamedButton(String title) {
-    return 'Archive $title';
+    return '$title ఆర్కైవ్ చేయండి';
   }
 
   @override
   String playlistDeleteNamedButton(String title) {
-    return 'Delete $title';
+    return '$title తొలగించండి';
   }
 
   @override
   String playlistMoveUp(String title) {
-    return 'Move $title up';
+    return '$title ను పైకి జరపండి';
   }
 
   @override
   String playlistMoveDown(String title) {
-    return 'Move $title down';
+    return '$title ను కిందికి జరపండి';
   }
 
   @override
-  String get playlistCreateKey2 => '2: Create playlist';
+  String get playlistCreateKey2 => '2: ప్లేలిస్ట్ సృష్టించండి';
 
   @override
   String get playlistNoneInClass =>
-      'No playlists in this class and subject. Press 2 to create one.';
+      'ఈ తరగతి మరియు సబ్జెక్టులో ప్లేలిస్ట్‌లు లేవు. ఒకటి సృష్టించడానికి 2 నొక్కండి.';
 
   @override
-  String get playlistMyPlaylists => 'My Playlists';
+  String get playlistMyPlaylists => 'నా ప్లేలిస్ట్‌లు';
 
   @override
-  String get playlistPrivateNoticeTitle => 'Your playlists are private';
+  String get playlistPrivateNoticeTitle => 'మీ ప్లేలిస్ట్‌లు ప్రైవేట్';
 
   @override
   String get playlistPrivateNoticeText =>
-      'Teachers, administrators, and other students cannot view them.';
+      'ఉపాధ్యాయులు, నిర్వాహకులు మరియు ఇతర విద్యార్థులు వాటిని చూడలేరు.';
 
   @override
-  String get playlistCreatePrivateKey2 => '2: Create private playlist';
+  String get playlistCreatePrivateKey2 => '2: ప్రైవేట్ ప్లేలిస్ట్ సృష్టించండి';
 
   @override
-  String get playlistMyPrivateHeading => 'My private playlists';
+  String get playlistMyPrivateHeading => 'నా ప్రైవేట్ ప్లేలిస్ట్‌లు';
 
   @override
-  String get playlistNoPrivate => 'No private playlists yet.';
+  String get playlistNoPrivate => 'ఇంకా ప్రైవేట్ ప్లేలిస్ట్‌లు లేవు.';
 
   @override
-  String get playlistClassHeading => 'Class playlists';
+  String get playlistClassHeading => 'తరగతి ప్లేలిస్ట్‌లు';
 
   @override
-  String get playlistNoClassPublished => 'No class playlists published yet.';
+  String get playlistNoClassPublished =>
+      'ఇంకా తరగతి ప్లేలిస్ట్‌లు ఏవీ ప్రచురించబడలేదు.';
 
   @override
-  String get playlistAddAudioTitle => 'Add audio';
+  String get playlistAddAudioTitle => 'ఆడియో జోడించండి';
 
   @override
   String get playlistUnavailableRetry =>
-      'Playlist is unavailable. Press 1 to try again.';
+      'ప్లేలిస్ట్ అందుబాటులో లేదు. మళ్ళీ ప్రయత్నించడానికి 1 నొక్కండి.';
 
   @override
-  String get playlistDownloadRecordings => 'Download playlist recordings';
+  String get playlistDownloadRecordings =>
+      'ప్లేలిస్ట్ రికార్డింగ్‌లను డౌన్‌లోడ్ చేయండి';
 
   @override
   String get playlistMoveHint =>
-      'Play or select an item, then move it up or down.';
+      'ఒక అంశాన్ని ప్లే చేయండి లేదా ఎంచుకోండి, తర్వాత దాన్ని పైకి లేదా కిందికి జరపండి.';
 
   @override
-  String get playlistNoAudio => 'This playlist has no audio yet.';
+  String get playlistNoAudio => 'ఈ ప్లేలిస్ట్‌లో ఇంకా ఆడియో లేదు.';
 
   @override
   String quizClassSubjectHeading(String className, String subjectName) {
@@ -13081,403 +13193,407 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get quizBankEditNote =>
-      'Editing a bank question never changes an existing quiz snapshot.';
+      'బ్యాంక్‌లోని ప్రశ్నను మార్చినా, ఇప్పటికే ఉన్న క్విజ్ కాపీ ఎప్పుడూ మారదు.';
 
   @override
-  String get quizNoBankQuestions => 'No bank questions yet';
+  String get quizNoBankQuestions => 'బ్యాంక్‌లో ఇంకా ప్రశ్నలు లేవు';
 
   @override
   String quizOptionsCount(String count) {
-    return '$count options';
+    return '$count ఎంపికలు';
   }
 
   @override
-  String get quizNoQuizzesYet => 'No quizzes yet';
+  String get quizNoQuizzesYet => 'ఇంకా క్విజ్‌లు లేవు';
 
   @override
-  String get quizStepReviewPublish => 'Step 3: Review and publish';
+  String get quizStepReviewPublish => 'దశ 3: సమీక్షించి ప్రచురించండి';
 
   @override
-  String get quizStepAddQuestions => 'Step 2: Add questions';
+  String get quizStepAddQuestions => 'దశ 2: ప్రశ్నలు జోడించండి';
 
   @override
   String quizResultsTitle(String title) {
-    return '$title results';
+    return '$title ఫలితాలు';
   }
 
   @override
-  String get quizAllAttempted => 'All students have attempted';
+  String get quizAllAttempted => 'విద్యార్థులందరూ ప్రయత్నించారు';
 
   @override
-  String get quizRemindAllKey2 => '2: Remind all not attempted';
+  String get quizRemindAllKey2 => '2: ప్రయత్నించని అందరికీ గుర్తు చేయండి';
 
   @override
-  String get uiNoneCapital => 'None';
+  String get uiNoneCapital => 'ఏదీ లేదు';
 
   @override
   String get quizPracticeParticipationHeading =>
-      'Practice participation, not academic grades';
+      'అభ్యాసంలో పాల్గొనడం, విద్యా మార్కులు కాదు';
 
   @override
-  String get quizIndividualScores => 'Individual student scores';
+  String get quizIndividualScores => 'ఒక్కో విద్యార్థి స్కోర్‌లు';
 
   @override
-  String get quizNotAttempted => 'Not attempted';
+  String get quizNotAttempted => 'ప్రయత్నించలేదు';
 
   @override
-  String get quizPracticeNotGraded => 'Practice, not graded';
+  String get quizPracticeNotGraded => 'అభ్యాసం, మార్కులు లేవు';
 
   @override
   String quizHighestScore(String score) {
-    return 'Highest score: $score';
+    return 'అత్యధిక స్కోర్: $score';
   }
 
   @override
-  String get quizAttemptInProgress => 'Attempt in progress';
+  String get quizAttemptInProgress => 'ప్రయత్నం జరుగుతోంది';
 
   @override
-  String get quizQuizzesTitle => 'Quizzes';
+  String get quizQuizzesTitle => 'క్విజ్‌లు';
 
   @override
-  String get quizRefreshQuizzesTooltip => 'Refresh quizzes';
+  String get quizRefreshQuizzesTooltip => 'క్విజ్‌లను రిఫ్రెష్ చేయండి';
 
   @override
-  String get quizLoadingQuizzes => 'Loading quizzes';
+  String get quizLoadingQuizzes => 'క్విజ్‌లు లోడ్ అవుతున్నాయి';
 
   @override
-  String get quizNewBankQuestionKey2 => '2: New bank question';
+  String get quizNewBankQuestionKey2 => '2: కొత్త బ్యాంక్ ప్రశ్న';
 
   @override
-  String get quizNewDraftKey3 => '3: New quiz draft';
+  String get quizNewDraftKey3 => '3: కొత్త క్విజ్ డ్రాఫ్ట్';
 
   @override
-  String get quizCreatePracticeKey4 => '4: Create untimed practice';
+  String get quizCreatePracticeKey4 =>
+      '4: సమయ పరిమితి లేని అభ్యాసం సృష్టించండి';
 
   @override
-  String get quizPrivateBankHeading => 'Private question bank';
+  String get quizPrivateBankHeading => 'ప్రైవేట్ ప్రశ్నల బ్యాంక్';
 
   @override
-  String get quizOptionsButton => 'Options';
+  String get quizOptionsButton => 'ఎంపికలు';
 
   @override
-  String get quizManagementHeading => 'Quiz management';
+  String get quizManagementHeading => 'క్విజ్ నిర్వహణ';
 
   @override
-  String get quizContinueCreation => 'Continue creation';
+  String get quizContinueCreation => 'సృష్టించడం కొనసాగించండి';
 
   @override
-  String get quizCloseButton => 'Close';
+  String get quizCloseButton => 'మూసివేయండి';
 
   @override
-  String get quizDuplicateButton => 'Duplicate';
+  String get quizDuplicateButton => 'నకలు చేయండి';
 
   @override
-  String get quizResultsButton => 'Results';
+  String get quizResultsButton => 'ఫలితాలు';
 
   @override
-  String get quizRefreshResultsTooltip => 'Refresh results';
+  String get quizRefreshResultsTooltip => 'ఫలితాలను రిఫ్రెష్ చేయండి';
 
   @override
-  String get quizClassStatistics => 'Class statistics';
+  String get quizClassStatistics => 'తరగతి గణాంకాలు';
 
   @override
-  String get quizStudentsYetToAttempt => 'Students yet to attempt';
+  String get quizStudentsYetToAttempt => 'ఇంకా ప్రయత్నించని విద్యార్థులు';
 
   @override
-  String get quizNoQuizzesAvailableLabel => 'No quizzes available';
+  String get quizNoQuizzesAvailableLabel => 'క్విజ్‌లు ఏవీ అందుబాటులో లేవు';
 
   @override
-  String get quizAttemptLimitReachedLabel => 'Attempt limit reached';
+  String get quizAttemptLimitReachedLabel => 'ప్రయత్నాల పరిమితి ముగిసింది';
 
   @override
-  String get quizAnswerSavedLockedTitle => 'Answer saved and locked';
+  String get quizAnswerSavedLockedTitle =>
+      'జవాబు సేవ్ చేయబడింది మరియు లాక్ చేయబడింది';
 
   @override
   String get quizAllSavedViewResult =>
-      'All answers are saved. Select View result to confirm completion.';
+      'అన్ని జవాబులు సేవ్ అయ్యాయి. పూర్తి చేసినట్టు నిర్ధారించడానికి ఫలితం చూడండి ఎంచుకోండి.';
 
   @override
   String quizAsksToConfirm(String label) {
-    return '$label, asks to confirm';
+    return '$label, నిర్ధారించమని అడుగుతుంది';
   }
 
   @override
-  String get quizConfirmingCompletion => 'Confirming completion';
+  String get quizConfirmingCompletion => 'పూర్తి చేసినట్టు నిర్ధారిస్తోంది';
 
   @override
-  String get quizRetryCompletionKey5 => '5: Retry completion';
+  String get quizRetryCompletionKey5 => '5: పూర్తి చేయడం మళ్ళీ ప్రయత్నించండి';
 
   @override
-  String get quizViewResultKey5 => '5: View result';
+  String get quizViewResultKey5 => '5: ఫలితం చూడండి';
 
   @override
   String quizHistoryTitle(String title) {
-    return '$title history';
+    return '$title చరిత్ర';
   }
 
   @override
-  String get quizNoAttemptsYet => 'No attempts yet';
+  String get quizNoAttemptsYet => 'ఇంకా ప్రయత్నాలు లేవు';
 
   @override
-  String get quizHistoryTooltip => 'Attempt history and review';
+  String get quizHistoryTooltip => 'ప్రయత్నాల చరిత్ర మరియు సమీక్ష';
 
   @override
-  String get quizLeaveWithoutSubmitting => 'Leave without submitting';
+  String get quizLeaveWithoutSubmitting => 'సమర్పించకుండా వెళ్ళండి';
 
   @override
   String get quizAttemptCompletePrivateLabel =>
-      'Attempt complete. Result private. Use Read result privately.';
+      'ప్రయత్నం పూర్తయింది. ఫలితం ప్రైవేట్. ఫలితాన్ని ప్రైవేట్‌గా వినండి ఉపయోగించండి.';
 
   @override
-  String get quizReadResultKey8 => '8: Read result privately';
+  String get quizReadResultKey8 => '8: ఫలితాన్ని ప్రైవేట్‌గా వినండి';
 
   @override
-  String get quizReturnKey0 => '0: Return to quizzes';
+  String get quizReturnKey0 => '0: క్విజ్‌లకు తిరిగి వెళ్ళండి';
 
   @override
-  String get quizReadAllOptionsLabel => 'Read all options';
+  String get quizReadAllOptionsLabel => 'అన్ని ఎంపికలు వినండి';
 
   @override
-  String get quizSubmitAnswerKey5 => '5: Submit answer';
+  String get quizSubmitAnswerKey5 => '5: జవాబు సమర్పించండి';
 
   @override
   String get quizAnswerLockedActivate =>
-      'Answer saved and locked. Activate to read feedback privately.';
+      'జవాబు సేవ్ చేయబడింది మరియు లాక్ చేయబడింది. ఫీడ్‌బ్యాక్‌ను ప్రైవేట్‌గా వినడానికి దీన్ని ఎంచుకోండి.';
 
   @override
-  String get quizReadSelectedAnswer => 'Read selected answer';
+  String get quizReadSelectedAnswer => 'ఎంచుకున్న జవాబు వినండి';
 
   @override
-  String get quizReadRemainingTime => 'Read remaining time';
+  String get quizReadRemainingTime => 'మిగిలిన సమయం వినండి';
 
   @override
-  String get quizAttemptReviewTitle => 'Attempt review';
+  String get quizAttemptReviewTitle => 'ప్రయత్నం సమీక్ష';
 
   @override
   String get quizEditorIntro =>
-      'Complete the question and all four options, then choose the correct answer. For equations or diagrams, expand optional spoken notation and review the alternatives.';
+      'ప్రశ్నను మరియు నాలుగు ఎంపికలను పూర్తి చేసి, సరైన జవాబును ఎంచుకోండి. సమీకరణాలు లేదా చిత్రాల కోసం, ఐచ్ఛిక మాట్లాడే రూపాన్ని తెరిచి, ప్రత్యామ్నాయాలను సమీక్షించండి.';
 
   @override
-  String get quizWhichCorrect => 'Which answer is correct?';
+  String get quizWhichCorrect => 'ఏ జవాబు సరైనది?';
 
   @override
-  String get quizChooseCorrectOption => 'Choose the correct option';
+  String get quizChooseCorrectOption => 'సరైన ఎంపికను ఎంచుకోండి';
 
   @override
   String quizOptionWithText(String number, String text) {
-    return 'Option $number: $text';
+    return 'ఎంపిక $number: $text';
   }
 
   @override
   String get quizCorrectChoiceHint =>
-      'Use Left or Right to change. OK or tap selects the next option.';
+      'మార్చడానికి ఎడమ లేదా కుడి ఉపయోగించండి. ఓకే లేదా ట్యాప్ తర్వాతి ఎంపికను ఎంచుకుంటుంది.';
 
   @override
-  String get quizExplanationOptional => 'Explanation (optional)';
+  String get quizExplanationOptional => 'వివరణ (ఐచ్ఛికం)';
 
   @override
   String get quizContentDescribedText =>
-      'Content: Teacher-described notation or diagram';
+      'విషయం: ఉపాధ్యాయులు వివరించిన గుర్తులు లేదా చిత్రం';
 
   @override
   String get quizNotationNote =>
-      'No automatic equation or diagram interpretation is provided. Teachers must write and review English spoken alternatives. For described notation, include the question, all options, and any explanation.';
+      'సమీకరణాలు లేదా చిత్రాలను ఆటోమేటిక్‌గా అర్థం చేసుకోవడం అందుబాటులో లేదు. ఉపాధ్యాయులు ఇంగ్లీష్ మాట్లాడే ప్రత్యామ్నాయాలను రాసి సమీక్షించాలి. వివరించిన గుర్తుల కోసం, ప్రశ్న, అన్ని ఎంపికలు మరియు ఏదైనా వివరణను చేర్చండి.';
 
   @override
   String get quizReviewedAlternatives =>
-      'I have reviewed the spoken alternatives for accuracy';
+      'మాట్లాడే ప్రత్యామ్నాయాలు సరైనవో కాదో నేను సమీక్షించాను';
 
   @override
-  String get quizChangeSettings => 'Change quiz settings';
+  String get quizChangeSettings => 'క్విజ్ సెట్టింగ్‌లను మార్చండి';
 
   @override
-  String get quizCreatePracticeText => 'Create untimed practice';
+  String get quizCreatePracticeText => 'సమయ పరిమితి లేని అభ్యాసం సృష్టించండి';
 
   @override
-  String get quizStepName => 'Step 1: Name your quiz';
+  String get quizStepName => 'దశ 1: మీ క్విజ్‌కు పేరు పెట్టండి';
 
   @override
   String get quizPracticeInfo =>
-      'Practice has no per-attempt timer or retry cap. An optional closing time still ends availability.';
+      'అభ్యాసంలో ఒక్కో ప్రయత్నానికి టైమర్ లేదా ప్రయత్నాల పరిమితి ఉండదు. ఐచ్ఛిక ముగింపు సమయం ఉంటే, అప్పుడు అది అందుబాటులో ఉండదు.';
 
   @override
   String get quizSettingsNavLabel =>
-      'Use up and down to move through quiz settings. Press OK to edit text fields. Opening and closing times are optional.';
+      'క్విజ్ సెట్టింగ్‌లలో కదలడానికి పైకి మరియు కిందికి ఉపయోగించండి. టెక్స్ట్ ఫీల్డ్‌లను మార్చడానికి ఓకే నొక్కండి. ప్రారంభ మరియు ముగింపు సమయాలు ఐచ్ఛికం.';
 
   @override
   String get quizSettingsNavText =>
-      'Use Up and Down to move through settings, and OK to edit. Saving a draft or its settings does not publish the quiz.';
+      'సెట్టింగ్‌లలో కదలడానికి పైకి మరియు కిందికి, మార్చడానికి ఓకే ఉపయోగించండి. డ్రాఫ్ట్‌ను లేదా దాని సెట్టింగ్‌లను సేవ్ చేస్తే క్విజ్ ప్రచురించబడదు.';
 
   @override
   String get quizSettingsReviewInfo =>
-      'Review and change the saved settings below. Saving does not publish the quiz.';
+      'కింద సేవ్ చేసిన సెట్టింగ్‌లను సమీక్షించి మార్చండి. సేవ్ చేస్తే క్విజ్ ప్రచురించబడదు.';
 
   @override
   String get quizPracticeDefaults =>
-      'Ungraded practice. Unlimited attempts, no timer, immediate feedback.';
+      'మార్కులు లేని అభ్యాసం. అపరిమిత ప్రయత్నాలు, టైమర్ లేదు, వెంటనే ఫీడ్‌బ్యాక్.';
 
   @override
   String get quizGradedDefaults =>
-      'Default graded settings: one attempt, no timer, feedback after final submission.';
+      'మార్కులతో క్విజ్ డిఫాల్ట్ సెట్టింగ్‌లు: ఒక ప్రయత్నం, టైమర్ లేదు, చివరి సమర్పణ తర్వాత ఫీడ్‌బ్యాక్.';
 
   @override
-  String get quizHideOptionalSettingsText => 'Hide optional settings';
+  String get quizHideOptionalSettingsText => 'ఐచ్ఛిక సెట్టింగ్‌లను దాచండి';
 
   @override
-  String get quizShowOptionalSettingsText => 'Show optional settings';
+  String get quizShowOptionalSettingsText => 'ఐచ్ఛిక సెట్టింగ్‌లను చూపండి';
 
   @override
-  String get quizAttemptLimitFieldText => 'Attempt limit, 1 to 20';
+  String get quizAttemptLimitFieldText => 'ప్రయత్నాల పరిమితి, 1 నుండి 20';
 
   @override
-  String get quizTimeLimitFieldText => 'Time limit in minutes (optional)';
+  String get quizTimeLimitFieldText => 'సమయ పరిమితి నిమిషాల్లో (ఐచ్ఛికం)';
 
   @override
   String get quizUntimedInfo =>
-      'Untimed and ungraded, unlimited retries. Availability times still apply if set.';
+      'సమయ పరిమితి లేదు, మార్కులు లేవు, అపరిమిత ప్రయత్నాలు. అందుబాటు సమయాలు సెట్ చేస్తే అవి ఇంకా వర్తిస్తాయి.';
 
   @override
   String quizFeedbackValue(String policy) {
-    return 'Feedback: $policy';
+    return 'ఫీడ్‌బ్యాక్: $policy';
   }
 
   @override
   String quizReleaseValue(String time) {
-    return 'Release: $time';
+    return 'విడుదల: $time';
   }
 
   @override
   String quizOpeningTimeLabel(String time) {
-    return '$time. Press OK to set opening time. Left clears it.';
+    return '$time. ప్రారంభ సమయం సెట్ చేయడానికి ఓకే నొక్కండి. ఎడమ దాన్ని తీసివేస్తుంది.';
   }
 
   @override
-  String get quizNoOpeningTimeSet => 'No opening time set';
+  String get quizNoOpeningTimeSet => 'ప్రారంభ సమయం సెట్ చేయలేదు';
 
   @override
-  String get quizNoOpeningTimeShort => 'No opening time';
+  String get quizNoOpeningTimeShort => 'ప్రారంభ సమయం లేదు';
 
   @override
   String get quizOpeningTimeHint =>
-      'Optional · enter year, month, day, hour and minute';
+      'ఐచ్ఛికం · సంవత్సరం, నెల, రోజు, గంట మరియు నిమిషం నమోదు చేయండి';
 
   @override
   String quizClosingTimeLabel(String time) {
-    return '$time. Press OK to set closing time. Left clears it.';
+    return '$time. ముగింపు సమయం సెట్ చేయడానికి ఓకే నొక్కండి. ఎడమ దాన్ని తీసివేస్తుంది.';
   }
 
   @override
-  String get quizNoClosingTimeSet => 'No closing time set';
+  String get quizNoClosingTimeSet => 'ముగింపు సమయం సెట్ చేయలేదు';
 
   @override
-  String get quizNoClosingTimeShort => 'No closing time';
+  String get quizNoClosingTimeShort => 'ముగింపు సమయం లేదు';
 
   @override
-  String get quizClosingTimeHint => 'Optional · must be after opening time';
+  String get quizClosingTimeHint => 'ఐచ్ఛికం · ప్రారంభ సమయం తర్వాత ఉండాలి';
 
   @override
-  String get quizShuffleQuestions => 'Shuffle questions once per attempt';
+  String get quizShuffleQuestions =>
+      'ప్రతి ప్రయత్నానికి ఒకసారి ప్రశ్నల క్రమం మార్చండి';
 
   @override
-  String get quizShuffleOptions => 'Shuffle options once per attempt';
+  String get quizShuffleOptions =>
+      'ప్రతి ప్రయత్నానికి ఒకసారి ఎంపికల క్రమం మార్చండి';
 
   @override
   String messageProblem(String text) {
-    return 'Problem: $text';
+    return 'సమస్య: $text';
   }
 
   @override
   String messageMessage(String text) {
-    return 'Message: $text';
+    return 'సందేశం: $text';
   }
 
   @override
-  String get adminSetupSectionAccounts => 'Accounts';
+  String get adminSetupSectionAccounts => 'ఖాతాలు';
 
   @override
-  String get adminSetupSectionCatalog => 'Classes and subjects';
+  String get adminSetupSectionCatalog => 'తరగతులు మరియు సబ్జెక్టులు';
 
   @override
-  String get adminSetupSectionTimetable => 'Timetable';
+  String get adminSetupSectionTimetable => 'టైమ్‌టేబుల్';
 
   @override
-  String get adminSetupSectionSchedule => 'Today\'s schedule';
+  String get adminSetupSectionSchedule => 'ఈరోజు టైమ్‌టేబుల్';
 
   @override
-  String get adminSetupSectionSharedPhones => 'Shared phones';
+  String get adminSetupSectionSharedPhones => 'పంచుకునే ఫోన్‌లు';
 
   @override
-  String get adminSetupSectionHolidays => 'Holidays';
+  String get adminSetupSectionHolidays => 'సెలవులు';
 
   @override
-  String get adminSetupSectionIssues => 'Issues';
+  String get adminSetupSectionIssues => 'సమస్యలు';
 
   @override
-  String get adminSetupSectionRecords => 'Class records';
+  String get adminSetupSectionRecords => 'తరగతి రికార్డులు';
 
   @override
-  String get adminSetupSectionPicker => 'Section';
+  String get adminSetupSectionPicker => 'విభాగం';
 
   @override
   String adminSetupRefresh(String section) {
-    return 'Refresh $section';
+    return '$section రిఫ్రెష్ చేయండి';
   }
 
   @override
-  String get adminSetupLogOut => 'Log out';
+  String get adminSetupLogOut => 'లాగ్ అవుట్';
 
   @override
-  String get adminSetupLoading => 'Loading';
+  String get adminSetupLoading => 'లోడ్ అవుతోంది';
 
   @override
-  String get adminSetupSaving => 'Saving';
+  String get adminSetupSaving => 'సేవ్ అవుతోంది';
 
   @override
-  String get adminSetupRetry => 'Try again';
+  String get adminSetupRetry => 'మళ్ళీ ప్రయత్నించండి';
 
   @override
   String adminSetupLoadFailed(String reason) {
-    return 'This list could not be loaded. $reason';
+    return 'ఈ జాబితాను లోడ్ చేయలేకపోయాము. $reason';
   }
 
   @override
   String get adminSetupUnknownError =>
-      'Something went wrong. Please try again.';
+      'ఏదో తప్పు జరిగింది. దయచేసి మళ్ళీ ప్రయత్నించండి.';
 
   @override
   String get adminSetupNotSaved =>
-      'The change could not be saved. Refresh and try again.';
+      'మార్పును సేవ్ చేయలేకపోయాము. రిఫ్రెష్ చేసి మళ్ళీ ప్రయత్నించండి.';
 
   @override
-  String get adminSetupCancel => 'Cancel';
+  String get adminSetupCancel => 'రద్దు చేయండి';
 
   @override
-  String get adminSetupSave => 'Save';
+  String get adminSetupSave => 'సేవ్ చేయండి';
 
   @override
-  String get adminSetupClose => 'Close';
+  String get adminSetupClose => 'మూసివేయండి';
 
   @override
-  String get adminSetupDelete => 'Delete';
+  String get adminSetupDelete => 'తొలగించండి';
 
   @override
-  String get adminSetupRemove => 'Remove';
+  String get adminSetupRemove => 'తీసివేయండి';
 
   @override
-  String get adminSetupEdit => 'Edit';
+  String get adminSetupEdit => 'మార్చండి';
 
   @override
   String adminSetupEditNamed(String name) {
-    return 'Edit $name';
+    return '$name మార్చండి';
   }
 
   @override
   String adminSetupRequiredField(String field) {
-    return '$field is required.';
+    return '$field తప్పనిసరి.';
   }
 
   @override
-  String get adminSetupNoDate => 'Not set';
+  String get adminSetupNoDate => 'సెట్ చేయలేదు';
 
   @override
   String adminSetupDateValue(String field, String date) {
@@ -13486,7 +13602,7 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String adminSetupClearDate(String field) {
-    return 'Clear $field';
+    return '$field తీసివేయండి';
   }
 
   @override
@@ -13505,84 +13621,85 @@ class AppLocalizationsTe extends AppLocalizations {
   }
 
   @override
-  String get adminSetupDateField => 'Date';
+  String get adminSetupDateField => 'తేదీ';
 
   @override
-  String get adminSetupInactive => 'Deactivated';
+  String get adminSetupInactive => 'నిష్క్రియం చేయబడింది';
 
   @override
-  String get adminSetupFilterAll => 'All';
+  String get adminSetupFilterAll => 'అన్నీ';
 
   @override
-  String get adminSetupShowFilter => 'Show';
+  String get adminSetupShowFilter => 'చూపించు';
 
   @override
-  String get adminSetupRoleStudent => 'Student';
+  String get adminSetupRoleStudent => 'విద్యార్థి';
 
   @override
-  String get adminSetupRoleTeacher => 'Teacher';
+  String get adminSetupRoleTeacher => 'ఉపాధ్యాయులు';
 
   @override
-  String get adminSetupAddPerson => 'Add person';
+  String get adminSetupAddPerson => 'వ్యక్తిని జోడించండి';
 
   @override
-  String get adminSetupSearchLabel => 'Search by name or phone number';
+  String get adminSetupSearchLabel => 'పేరు లేదా ఫోన్ నంబర్‌తో వెతకండి';
 
   @override
-  String get adminSetupSearchButton => 'Search';
+  String get adminSetupSearchButton => 'వెతకండి';
 
   @override
-  String get adminSetupAccountTypeHeading => 'Account type';
+  String get adminSetupAccountTypeHeading => 'ఖాతా రకం';
 
   @override
-  String get adminSetupAssignmentHeading => 'Class or subject assignment';
+  String get adminSetupAssignmentHeading => 'తరగతి లేదా సబ్జెక్టు కేటాయింపు';
 
   @override
   String adminSetupAccountsShown(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count accounts shown.',
-      one: '1 account shown.',
-      zero: 'No matching accounts.',
+      other: '$count ఖాతాలు చూపబడ్డాయి.',
+      one: '1 ఖాతా చూపబడింది.',
+      zero: 'సరిపోయే ఖాతాలు లేవు.',
     );
     return '$_temp0';
   }
 
   @override
   String adminSetupTeachersHeading(int count) {
-    return 'Teachers ($count)';
+    return 'ఉపాధ్యాయులు ($count)';
   }
 
   @override
   String adminSetupStudentsHeading(int count) {
-    return 'Students ($count)';
+    return 'విద్యార్థులు ($count)';
   }
 
   @override
-  String get adminSetupNameField => 'Name';
+  String get adminSetupNameField => 'పేరు';
 
   @override
-  String get adminSetupPhoneField => 'Phone number';
+  String get adminSetupPhoneField => 'ఫోన్ నంబర్';
 
   @override
-  String get adminSetupRoleField => 'Role';
+  String get adminSetupRoleField => 'పాత్ర';
 
   @override
   String get adminSetupTeacherPairsHeading =>
-      'Classes and subjects this teacher teaches';
+      'ఈ ఉపాధ్యాయులు బోధించే తరగతులు మరియు సబ్జెక్టులు';
 
   @override
-  String get adminSetupNoPairs => 'None yet. You can add them later.';
+  String get adminSetupNoPairs =>
+      'ఇంకా ఏవీ లేవు. మీరు వాటిని తర్వాత జోడించవచ్చు.';
 
   @override
-  String get adminSetupClassField => 'Class';
+  String get adminSetupClassField => 'తరగతి';
 
   @override
-  String get adminSetupSubjectField => 'Subject';
+  String get adminSetupSubjectField => 'సబ్జెక్టు';
 
   @override
-  String get adminSetupAddPair => 'Add class and subject';
+  String get adminSetupAddPair => 'తరగతి మరియు సబ్జెక్టు జోడించండి';
 
   @override
   String adminSetupPairLabel(String className, String subject) {
@@ -13591,261 +13708,261 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String adminSetupRemovePair(String className, String subject) {
-    return 'Remove $className, $subject';
+    return '$className, $subject తీసివేయండి';
   }
 
   @override
   String get adminSetupNoSubjectsInClass =>
-      'This class has no subjects yet. Add subjects under Classes and subjects.';
+      'ఈ తరగతికి ఇంకా సబ్జెక్టులు లేవు. తరగతులు మరియు సబ్జెక్టులు విభాగంలో సబ్జెక్టులను జోడించండి.';
 
   @override
   String get adminSetupNoActiveClasses =>
-      'There are no active classes yet. Add one under Classes and subjects.';
+      'ఇంకా యాక్టివ్ తరగతులు లేవు. తరగతులు మరియు సబ్జెక్టులు విభాగంలో ఒకటి జోడించండి.';
 
   @override
   String adminSetupPersonAdded(String name) {
-    return '$name was added.';
+    return '$name జోడించబడ్డారు.';
   }
 
   @override
   String adminSetupEditPerson(String name) {
-    return 'Edit $name';
+    return '$name మార్చండి';
   }
 
   @override
   String get adminSetupPhoneChangeNote =>
-      'Changing the phone number signs this person out on every phone.';
+      'ఫోన్ నంబర్ మార్చితే, ఈ వ్యక్తి అన్ని ఫోన్‌లలో సైన్ అవుట్ అవుతారు.';
 
   @override
   String adminSetupPersonSaved(String name) {
-    return 'Changes to $name were saved.';
+    return '$name కు చేసిన మార్పులు సేవ్ అయ్యాయి.';
   }
 
   @override
-  String get adminSetupDeactivate => 'Deactivate';
+  String get adminSetupDeactivate => 'నిష్క్రియం చేయండి';
 
   @override
-  String get adminSetupActivate => 'Activate';
+  String get adminSetupActivate => 'యాక్టివేట్ చేయండి';
 
   @override
   String adminSetupDeactivateNamed(String name) {
-    return 'Deactivate $name';
+    return '$name ను నిష్క్రియం చేయండి';
   }
 
   @override
   String adminSetupActivateNamed(String name) {
-    return 'Activate $name';
+    return '$name ను యాక్టివేట్ చేయండి';
   }
 
   @override
   String adminSetupDeactivateTitle(String name) {
-    return 'Deactivate $name?';
+    return '$name ను నిష్క్రియం చేయాలా?';
   }
 
   @override
   String adminSetupDeactivateMessage(String name) {
-    return '$name will be signed out and cannot sign in until the account is activated again.';
+    return '$name సైన్ అవుట్ అవుతారు, ఖాతాను మళ్ళీ యాక్టివేట్ చేసే వరకు సైన్ ఇన్ చేయలేరు.';
   }
 
   @override
   String adminSetupActivated(String name) {
-    return '$name can sign in again.';
+    return '$name మళ్ళీ సైన్ ఇన్ చేయవచ్చు.';
   }
 
   @override
   String adminSetupDeactivated(String name) {
-    return '$name was deactivated.';
+    return '$name నిష్క్రియం చేయబడ్డారు.';
   }
 
   @override
-  String get adminSetupSignOutEverywhere => 'Sign out everywhere';
+  String get adminSetupSignOutEverywhere => 'అన్ని చోట్లా సైన్ అవుట్ చేయండి';
 
   @override
   String adminSetupSignOutNamed(String name) {
-    return 'Sign $name out everywhere';
+    return '$name ను అన్ని చోట్లా సైన్ అవుట్ చేయండి';
   }
 
   @override
   String adminSetupSignOutTitle(String name) {
-    return 'Sign $name out everywhere?';
+    return '$name ను అన్ని చోట్లా సైన్ అవుట్ చేయాలా?';
   }
 
   @override
   String adminSetupSignOutMessage(String name) {
-    return 'This ends $name\'s sign-in on every phone, for example if someone else used their number. They can sign in again with their phone number.';
+    return 'ఇది అన్ని ఫోన్‌లలో $name సైన్ ఇన్‌ను ముగిస్తుంది, ఉదాహరణకు వేరొకరు వారి నంబర్‌ను వాడితే. వారు తమ ఫోన్ నంబర్‌తో మళ్ళీ సైన్ ఇన్ చేయవచ్చు.';
   }
 
   @override
   String adminSetupSignedOut(String name) {
-    return '$name was signed out everywhere.';
+    return '$name అన్ని చోట్లా సైన్ అవుట్ చేయబడ్డారు.';
   }
 
   @override
-  String get adminSetupStudentClassAction => 'Change class';
+  String get adminSetupStudentClassAction => 'తరగతి మార్చండి';
 
   @override
-  String get adminSetupTeacherAssignmentsAction => 'Classes and subjects';
+  String get adminSetupTeacherAssignmentsAction => 'తరగతులు మరియు సబ్జెక్టులు';
 
   @override
   String adminSetupStudentDetail(String className) {
-    return 'Student. Class: $className';
+    return 'విద్యార్థి. తరగతి: $className';
   }
 
   @override
-  String get adminSetupStudentNoClass => 'Student. No class yet.';
+  String get adminSetupStudentNoClass => 'విద్యార్థి. ఇంకా తరగతి లేదు.';
 
   @override
   String adminSetupTeacherDetail(String pairs) {
-    return 'Teacher. Teaches: $pairs';
+    return 'ఉపాధ్యాయులు. బోధించేవి: $pairs';
   }
 
   @override
-  String get adminSetupTeacherNoPairs => 'Teacher. No classes or subjects yet.';
+  String get adminSetupTeacherNoPairs =>
+      'ఉపాధ్యాయులు. ఇంకా తరగతులు లేదా సబ్జెక్టులు లేవు.';
 
   @override
   String adminSetupPhoneDetail(String phone) {
-    return 'Phone: $phone';
+    return 'ఫోన్: $phone';
   }
 
   @override
   String adminSetupClassDialogTitle(String name) {
-    return 'Class for $name';
+    return '$name కోసం తరగతి';
   }
 
   @override
   String adminSetupRemoveFromClass(String className) {
-    return 'Remove from $className';
+    return '$className నుండి తీసివేయండి';
   }
 
   @override
   String adminSetupStudentEnrolled(String name, String className) {
-    return '$name is now in $className.';
+    return '$name ఇప్పుడు $className లో ఉన్నారు.';
   }
 
   @override
   String adminSetupStudentRemoved(String name) {
-    return '$name was removed from their class.';
+    return '$name వారి తరగతి నుండి తీసివేయబడ్డారు.';
   }
 
   @override
   String adminSetupAssignmentsTitle(String name) {
-    return 'Classes and subjects for $name';
+    return '$name కోసం తరగతులు మరియు సబ్జెక్టులు';
   }
 
   @override
-  String get adminSetupCurrentPairs => 'Currently teaches';
+  String get adminSetupCurrentPairs => 'ప్రస్తుతం బోధిస్తున్నవి';
 
   @override
   String adminSetupPairAdded(String name, String className, String subject) {
-    return '$name now teaches $className, $subject.';
+    return '$name ఇప్పుడు $className, $subject బోధిస్తారు.';
   }
 
   @override
   String adminSetupPairRemoved(String name, String className, String subject) {
-    return '$name no longer teaches $className, $subject.';
+    return '$name ఇకపై $className, $subject బోధించరు.';
   }
 
   @override
-  String get adminSetupClassesHeading => 'Classes';
+  String get adminSetupClassesHeading => 'తరగతులు';
 
   @override
-  String get adminSetupSubjectsHeading => 'Subjects';
+  String get adminSetupSubjectsHeading => 'సబ్జెక్టులు';
 
   @override
-  String get adminSetupAddClass => 'Add class';
+  String get adminSetupAddClass => 'తరగతి జోడించండి';
 
   @override
-  String get adminSetupAddSubject => 'Add subject';
+  String get adminSetupAddSubject => 'సబ్జెక్టు జోడించండి';
 
   @override
-  String get adminSetupNoClasses => 'No classes yet.';
+  String get adminSetupNoClasses => 'ఇంకా తరగతులు లేవు.';
 
   @override
-  String get adminSetupNoSubjects => 'No subjects yet.';
+  String get adminSetupNoSubjects => 'ఇంకా సబ్జెక్టులు లేవు.';
 
   @override
-  String get adminSetupSubjectsButton => 'Subjects';
+  String get adminSetupSubjectsButton => 'సబ్జెక్టులు';
 
   @override
   String adminSetupClassSubjects(String className) {
-    return 'Subjects in $className';
+    return '$className లోని సబ్జెక్టులు';
   }
 
   @override
   String adminSetupArchiveNamed(String name) {
-    return 'Archive $name';
+    return '$name ఆర్కైవ్ చేయండి';
   }
 
   @override
   String adminSetupRestoreNamed(String name) {
-    return 'Restore $name';
+    return '$name పునరుద్ధరించండి';
   }
 
   @override
   String get adminSetupNoSubjectsToChoose =>
-      'There are no active subjects yet. Add a subject first.';
+      'ఇంకా యాక్టివ్ సబ్జెక్టులు లేవు. ముందుగా ఒక సబ్జెక్టు జోడించండి.';
 
   @override
-  String get adminSetupAddLesson => 'Add lesson to timetable';
+  String get adminSetupAddLesson => 'టైమ్‌టేబుల్‌కు పాఠం జోడించండి';
 
   @override
-  String get adminSetupEditLesson => 'Edit timetable lesson';
+  String get adminSetupEditLesson => 'టైమ్‌టేబుల్ పాఠాన్ని మార్చండి';
 
   @override
-  String get adminSetupAllTeachers => 'All teachers';
+  String get adminSetupAllTeachers => 'అందరు ఉపాధ్యాయులు';
 
   @override
-  String get adminSetupAllClasses => 'All classes';
+  String get adminSetupAllClasses => 'అన్ని తరగతులు';
 
   @override
-  String get adminSetupTeacherField => 'Teacher';
+  String get adminSetupTeacherField => 'ఉపాధ్యాయులు';
 
   @override
-  String get adminSetupWeekdayField => 'Day of the week';
+  String get adminSetupWeekdayField => 'వారంలో రోజు';
 
   @override
-  String get adminSetupStartField => 'Start time';
+  String get adminSetupStartField => 'ప్రారంభ సమయం';
 
   @override
-  String get adminSetupEndField => 'End time';
+  String get adminSetupEndField => 'ముగింపు సమయం';
 
   @override
-  String get adminSetupTimeHelper =>
-      '24-hour India time (IST), for example 09:30';
+  String get adminSetupTimeHelper => '24 గంటల భారత సమయం (IST), ఉదాహరణకు 09:30';
 
   @override
   String adminSetupTimeInvalid(String field) {
-    return 'Enter the $field as 24-hour time, for example 09:30.';
+    return '$field ను 24 గంటల సమయంగా నమోదు చేయండి, ఉదాహరణకు 09:30.';
   }
 
   @override
-  String get adminSetupEndBeforeStart => 'The lesson must end after it starts.';
+  String get adminSetupEndBeforeStart => 'పాఠం ప్రారంభమైన తర్వాతే ముగియాలి.';
 
   @override
   String get adminSetupUntilBeforeFrom =>
-      'The last date must be on or after the first date.';
+      'చివరి తేదీ మొదటి తేదీ రోజు లేదా ఆ తర్వాత ఉండాలి.';
 
   @override
-  String get adminSetupValidFrom => 'First date';
+  String get adminSetupValidFrom => 'మొదటి తేదీ';
 
   @override
-  String get adminSetupValidUntil => 'Last date';
+  String get adminSetupValidUntil => 'చివరి తేదీ';
 
   @override
-  String get adminSetupLessonField => 'Lesson playlist (optional)';
+  String get adminSetupLessonField => 'పాఠం ప్లేలిస్ట్ (ఐచ్ఛికం)';
 
   @override
-  String get adminSetupNoLesson => 'No lesson playlist';
+  String get adminSetupNoLesson => 'పాఠం ప్లేలిస్ట్ లేదు';
 
   @override
   String get adminSetupNoLessonsFound =>
-      'This teacher has no lesson playlists for this class and subject yet.';
+      'ఈ ఉపాధ్యాయులకు ఈ తరగతి మరియు సబ్జెక్టుకు ఇంకా పాఠం ప్లేలిస్ట్‌లు లేవు.';
 
   @override
-  String get adminSetupShowInactive => 'Show deactivated lessons';
+  String get adminSetupShowInactive => 'నిష్క్రియం చేసిన పాఠాలను చూపండి';
 
   @override
-  String get adminSetupNoTimetable => 'No timetable lessons match.';
+  String get adminSetupNoTimetable => 'సరిపోయే టైమ్‌టేబుల్ పాఠాలు లేవు.';
 
   @override
   String adminSetupEntryTitle(
@@ -13854,48 +13971,48 @@ class AppLocalizationsTe extends AppLocalizations {
     String subject,
     String className,
   ) {
-    return '$start to $end: $subject, $className';
+    return '$start నుండి $end: $subject, $className';
   }
 
   @override
   String adminSetupEntryTeacher(String name) {
-    return 'Teacher: $name';
+    return 'ఉపాధ్యాయులు: $name';
   }
 
   @override
   String adminSetupEntryLesson(String title) {
-    return 'Lesson playlist: $title';
+    return 'పాఠం ప్లేలిస్ట్: $title';
   }
 
   @override
-  String get adminSetupEntryNoLesson => 'No lesson playlist chosen.';
+  String get adminSetupEntryNoLesson => 'పాఠం ప్లేలిస్ట్ ఎంచుకోలేదు.';
 
   @override
   String adminSetupEntryFrom(String date) {
-    return 'From $date';
+    return '$date నుండి';
   }
 
   @override
   String adminSetupEntryUntil(String date) {
-    return 'Until $date';
+    return '$date వరకు';
   }
 
   @override
-  String get adminSetupDateChanges => 'Date changes';
+  String get adminSetupDateChanges => 'తేదీ మార్పులు';
 
   @override
   String adminSetupDateChangesNamed(String title) {
-    return 'Date changes for $title';
+    return '$title కోసం తేదీ మార్పులు';
   }
 
   @override
-  String get adminSetupDeactivateLesson => 'Deactivate';
+  String get adminSetupDeactivateLesson => 'నిష్క్రియం చేయండి';
 
   @override
-  String get adminSetupReactivateLesson => 'Reactivate';
+  String get adminSetupReactivateLesson => 'మళ్ళీ యాక్టివేట్ చేయండి';
 
   @override
-  String get adminSetupDeactivateLessonTitle => 'Deactivate this lesson?';
+  String get adminSetupDeactivateLessonTitle => 'ఈ పాఠాన్ని నిష్క్రియం చేయాలా?';
 
   @override
   String adminSetupDeactivateLessonMessage(
@@ -13904,201 +14021,203 @@ class AppLocalizationsTe extends AppLocalizations {
     String weekday,
     String start,
   ) {
-    return '$subject for $className on $weekday at $start will no longer be scheduled.';
+    return '$weekday న $start కు $className కోసం $subject ఇకపై టైమ్‌టేబుల్‌లో ఉండదు.';
   }
 
   @override
-  String get adminSetupLessonSaved => 'Timetable saved.';
+  String get adminSetupLessonSaved => 'టైమ్‌టేబుల్ సేవ్ అయింది.';
 
   @override
-  String get adminSetupLessonDeactivated => 'Lesson deactivated.';
+  String get adminSetupLessonDeactivated => 'పాఠం నిష్క్రియం చేయబడింది.';
 
   @override
-  String get adminSetupLessonReactivated => 'Lesson reactivated.';
+  String get adminSetupLessonReactivated => 'పాఠం మళ్ళీ యాక్టివేట్ చేయబడింది.';
 
   @override
   String adminSetupClassSubjectFixed(String className, String subject) {
-    return '$className, $subject. To change the class or subject, deactivate this lesson and add a new one.';
+    return '$className, $subject. తరగతి లేదా సబ్జెక్టు మార్చడానికి, ఈ పాఠాన్ని నిష్క్రియం చేసి కొత్తది జోడించండి.';
   }
 
   @override
   String adminSetupDateChangesTitle(String lesson, String weekday) {
-    return 'Date changes: $lesson, every $weekday';
+    return 'తేదీ మార్పులు: $lesson, ప్రతి $weekday';
   }
 
   @override
-  String get adminSetupNoDateChanges => 'No date changes.';
+  String get adminSetupNoDateChanges => 'తేదీ మార్పులు లేవు.';
 
   @override
-  String get adminSetupAddDateChange => 'Change one date';
+  String get adminSetupAddDateChange => 'ఒక తేదీని మార్చండి';
 
   @override
-  String get adminSetupCancelledLabel => 'Cancelled on this date.';
+  String get adminSetupCancelledLabel => 'ఈ తేదీన రద్దు చేయబడింది.';
 
   @override
   String adminSetupSubstituteLabel(String name) {
-    return 'Substitute teacher: $name';
+    return 'బదులు ఉపాధ్యాయులు: $name';
   }
 
   @override
   String get adminSetupDifferentLesson =>
-      'A different lesson playlist is used on this date.';
+      'ఈ తేదీన వేరే పాఠం ప్లేలిస్ట్ వాడబడుతుంది.';
 
   @override
   String adminSetupNoteLabel(String note) {
-    return 'Note: $note';
+    return 'నోట్: $note';
   }
 
   @override
-  String get adminSetupClearChange => 'Clear change';
+  String get adminSetupClearChange => 'మార్పును తీసివేయండి';
 
   @override
   String adminSetupClearChangeNamed(String date) {
-    return 'Clear the change for $date';
+    return '$date కోసం మార్పును తీసివేయండి';
   }
 
   @override
   String adminSetupEditDateChangeNamed(String date) {
-    return 'Edit the change for $date';
+    return '$date కోసం మార్పును సవరించండి';
   }
 
   @override
   String adminSetupChangeCleared(String date) {
-    return 'The change for $date was cleared.';
+    return '$date కోసం మార్పు తీసివేయబడింది.';
   }
 
   @override
   String adminSetupDateChangeTitle(String lesson) {
-    return 'Change one date: $lesson';
+    return 'ఒక తేదీని మార్చండి: $lesson';
   }
 
   @override
-  String get adminSetupCancelOnDate => 'Cancel the lesson on this date';
+  String get adminSetupCancelOnDate => 'ఈ తేదీన పాఠాన్ని రద్దు చేయండి';
 
   @override
-  String get adminSetupSubstituteField => 'Substitute teacher (optional)';
+  String get adminSetupSubstituteField => 'బదులు ఉపాధ్యాయులు (ఐచ్ఛికం)';
 
   @override
   String adminSetupRegularTeacher(String name) {
-    return 'No substitute ($name teaches)';
+    return 'బదులు ఎవరూ లేరు ($name బోధిస్తారు)';
   }
 
   @override
-  String get adminSetupDateLessonField => 'Lesson playlist on this date';
+  String get adminSetupDateLessonField => 'ఈ తేదీన పాఠం ప్లేలిస్ట్';
 
   @override
-  String get adminSetupUsualLesson => 'Same as usual';
+  String get adminSetupUsualLesson => 'ఎప్పటిలాగే';
 
   @override
-  String get adminSetupNoteField => 'Note (optional)';
+  String get adminSetupNoteField => 'నోట్ (ఐచ్ఛికం)';
 
   @override
   String adminSetupDateChangeSaved(String date) {
-    return 'The change for $date was saved.';
+    return '$date కోసం మార్పు సేవ్ అయింది.';
   }
 
   @override
-  String get adminSetupChooseDateFirst => 'Choose a date.';
+  String get adminSetupChooseDateFirst => 'ఒక తేదీని ఎంచుకోండి.';
 
   @override
-  String get adminSetupPreviousDay => 'Previous day';
+  String get adminSetupPreviousDay => 'మునుపటి రోజు';
 
   @override
-  String get adminSetupNextDay => 'Next day';
+  String get adminSetupNextDay => 'తర్వాతి రోజు';
 
   @override
-  String get adminSetupToday => 'Today';
+  String get adminSetupToday => 'ఈరోజు';
 
   @override
   String adminSetupScheduleFor(String date) {
-    return 'Lessons on $date';
+    return '$date న పాఠాలు';
   }
 
   @override
-  String get adminSetupNoLessonsOnDay => 'No lessons on this date.';
+  String get adminSetupNoLessonsOnDay => 'ఈ తేదీన పాఠాలు లేవు.';
 
   @override
   String adminSetupScheduleSubstitute(String name) {
-    return 'Teacher: $name (substitute)';
+    return 'ఉపాధ్యాయులు: $name (బదులు)';
   }
 
   @override
   String adminSetupStateLabel(String state) {
-    return 'Status: $state';
+    return 'స్థితి: $state';
   }
 
   @override
-  String get adminSetupStateUpcoming => 'Upcoming';
+  String get adminSetupStateUpcoming => 'రాబోతోంది';
 
   @override
-  String get adminSetupStateLive => 'Live now';
+  String get adminSetupStateLive => 'ఇప్పుడు లైవ్‌లో ఉంది';
 
   @override
-  String get adminSetupStateHeld => 'Held';
+  String get adminSetupStateHeld => 'జరిగింది';
 
   @override
-  String get adminSetupStateCancelled => 'Cancelled';
+  String get adminSetupStateCancelled => 'రద్దు చేయబడింది';
 
   @override
-  String get adminSetupStateNotStarted => 'Not started';
+  String get adminSetupStateNotStarted => 'ప్రారంభం కాలేదు';
 
   @override
-  String get adminSetupLessonReady => 'Lesson playlist ready.';
+  String get adminSetupLessonReady => 'పాఠం ప్లేలిస్ట్ సిద్ధంగా ఉంది.';
 
   @override
   String get adminSetupSharedPhoneNote =>
-      'On a shared phone, each person enters the shared phone number, then their short profile number. The profile number only chooses whose account opens. It is not a password.';
+      'షేర్ చేసిన ఫోన్‌లో, ప్రతి వ్యక్తి షేర్ చేసిన ఫోన్ నంబర్‌ను, తర్వాత తమ చిన్న ప్రొఫైల్ నంబర్‌ను నమోదు చేస్తారు. ప్రొఫైల్ నంబర్ ఎవరి ఖాతా తెరవాలో మాత్రమే ఎంచుకుంటుంది. ఇది పాస్‌వర్డ్ కాదు.';
 
   @override
-  String get adminSetupAddSharedPhone => 'Add shared phone';
+  String get adminSetupAddSharedPhone => 'షేర్ చేసిన ఫోన్‌ను జోడించండి';
 
   @override
-  String get adminSetupEditSharedPhone => 'Edit shared phone';
+  String get adminSetupEditSharedPhone => 'షేర్ చేసిన ఫోన్‌ను మార్చండి';
 
   @override
-  String get adminSetupSharedPhoneName => 'Name, for example Class 5 phone';
+  String get adminSetupSharedPhoneName => 'పేరు, ఉదాహరణకు తరగతి 5 ఫోన్';
 
   @override
-  String get adminSetupSharedPhoneNumber => 'Shared phone number';
+  String get adminSetupSharedPhoneNumber => 'షేర్ చేసిన ఫోన్ నంబర్';
 
   @override
-  String get adminSetupSharedPhoneActiveSwitch => 'Shared phone can be used';
+  String get adminSetupSharedPhoneActiveSwitch =>
+      'షేర్ చేసిన ఫోన్‌ను ఉపయోగించవచ్చు';
 
   @override
-  String get adminSetupSharedPhoneSaved => 'Shared phone saved.';
+  String get adminSetupSharedPhoneSaved => 'షేర్ చేసిన ఫోన్ సేవ్ చేయబడింది.';
 
   @override
-  String get adminSetupNoSharedPhones => 'No shared phones yet.';
+  String get adminSetupNoSharedPhones => 'ఇంకా షేర్ చేసిన ఫోన్‌లు లేవు.';
 
   @override
   String adminSetupGroupNumber(String phone) {
-    return 'Number: $phone';
+    return 'నంబర్: $phone';
   }
 
   @override
   String adminSetupMemberLine(String name, String role, String code) {
-    return '$name, $role. Profile number $code';
+    return '$name, $role. ప్రొఫైల్ నంబర్ $code';
   }
 
   @override
-  String get adminSetupNoMembers => 'No people on this phone yet.';
+  String get adminSetupNoMembers => 'ఈ ఫోన్‌లో ఇంకా ఎవరూ లేరు.';
 
   @override
-  String get adminSetupAddMember => 'Add person';
+  String get adminSetupAddMember => 'వ్యక్తిని జోడించండి';
 
   @override
   String adminSetupAddMemberTitle(String group) {
-    return 'Add a person to $group';
+    return '$groupకు ఒక వ్యక్తిని జోడించండి';
   }
 
   @override
-  String get adminSetupSearchPeople => 'Search people by name or phone number';
+  String get adminSetupSearchPeople =>
+      'పేరు లేదా ఫోన్ నంబర్‌తో వ్యక్తులను వెతకండి';
 
   @override
-  String get adminSetupNoPeopleFound => 'No matching people.';
+  String get adminSetupNoPeopleFound => 'సరిపోయే వ్యక్తులు ఎవరూ లేరు.';
 
   @override
-  String get adminSetupPersonField => 'Person';
+  String get adminSetupPersonField => 'వ్యక్తి';
 
   @override
   String adminSetupPersonOption(String name, String role, String phone) {
@@ -14106,116 +14225,117 @@ class AppLocalizationsTe extends AppLocalizations {
   }
 
   @override
-  String get adminSetupChoosePerson => 'Choose a person.';
+  String get adminSetupChoosePerson => 'ఒక వ్యక్తిని ఎంచుకోండి.';
 
   @override
-  String get adminSetupProfileCodeField => 'Profile number';
+  String get adminSetupProfileCodeField => 'ప్రొఫైల్ నంబర్';
 
   @override
   String get adminSetupProfileCodeHelper =>
-      '1 to 4 digits, different for each person on this phone.';
+      '1 నుండి 4 అంకెలు, ఈ ఫోన్‌లో ప్రతి వ్యక్తికి వేరుగా ఉండాలి.';
 
   @override
   String get adminSetupProfileCodeInvalid =>
-      'Enter a profile number of 1 to 4 digits.';
+      '1 నుండి 4 అంకెల ప్రొఫైల్ నంబర్‌ను నమోదు చేయండి.';
 
   @override
   String adminSetupMemberAdded(String name, String group) {
-    return '$name was added to $group.';
+    return '$nameను $groupకు జోడించారు.';
   }
 
   @override
   String adminSetupRemoveMemberNamed(String name, String group) {
-    return 'Remove $name from $group';
+    return '$group నుండి $nameను తీసివేయండి';
   }
 
   @override
   String adminSetupRemoveMemberTitle(String name, String group) {
-    return 'Remove $name from $group?';
+    return '$group నుండి $nameను తీసివేయాలా?';
   }
 
   @override
   String adminSetupRemoveMemberMessage(String name) {
-    return '$name will no longer be able to choose their profile on this shared phone.';
+    return '$name ఇకపై ఈ షేర్ చేసిన ఫోన్‌లో తమ ప్రొఫైల్‌ను ఎంచుకోలేరు.';
   }
 
   @override
   String adminSetupMemberRemoved(String name, String group) {
-    return '$name was removed from $group.';
+    return '$group నుండి $nameను తీసివేశారు.';
   }
 
   @override
-  String get adminSetupHolidayNote => 'No lessons are scheduled on holidays.';
+  String get adminSetupHolidayNote => 'సెలవు రోజుల్లో పాఠాలు షెడ్యూల్ చేయబడవు.';
 
   @override
-  String get adminSetupAddHoliday => 'Add holiday';
+  String get adminSetupAddHoliday => 'సెలవును జోడించండి';
 
   @override
-  String get adminSetupHolidayName => 'Holiday name';
+  String get adminSetupHolidayName => 'సెలవు పేరు';
 
   @override
-  String get adminSetupNoHolidays => 'No holidays yet.';
+  String get adminSetupNoHolidays => 'ఇంకా సెలవులు లేవు.';
 
   @override
   String adminSetupHolidayAdded(String name, String date) {
-    return '$name on $date was added.';
+    return '$dateన $name జోడించబడింది.';
   }
 
   @override
   String adminSetupDeleteHolidayNamed(String name, String date) {
-    return 'Delete $name on $date';
+    return '$dateన ఉన్న $nameను తొలగించండి';
   }
 
   @override
-  String get adminSetupDeleteHolidayTitle => 'Delete this holiday?';
+  String get adminSetupDeleteHolidayTitle => 'ఈ సెలవును తొలగించాలా?';
 
   @override
   String adminSetupDeleteHolidayMessage(String name, String date) {
-    return '$name on $date will be removed, and lessons will be scheduled on that date again.';
+    return '$dateన ఉన్న $name తీసివేయబడుతుంది, ఆ తేదీన మళ్ళీ పాఠాలు షెడ్యూల్ చేయబడతాయి.';
   }
 
   @override
-  String get adminSetupHolidayDeleted => 'The holiday was deleted.';
+  String get adminSetupHolidayDeleted => 'సెలవు తొలగించబడింది.';
 
   @override
-  String get adminSetupIssuesOpen => 'Open';
+  String get adminSetupIssuesOpen => 'పరిష్కరించనివి';
 
   @override
-  String get adminSetupIssuesResolved => 'Resolved';
+  String get adminSetupIssuesResolved => 'పరిష్కరించబడినవి';
 
   @override
-  String get adminSetupNoIssues => 'No issues to show.';
+  String get adminSetupNoIssues => 'చూపించడానికి సమస్యలు లేవు.';
 
   @override
   String adminSetupIssueSeen(int count, String when) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Seen $count times.',
-      one: 'Seen once.',
+      other: '$count సార్లు కనిపించింది.',
+      one: 'ఒకసారి కనిపించింది.',
     );
-    return '$_temp0 Last seen $when.';
+    return '$_temp0 చివరిగా $when కనిపించింది.';
   }
 
   @override
-  String get adminSetupMarkResolved => 'Mark resolved';
+  String get adminSetupMarkResolved => 'పరిష్కరించబడినట్లు గుర్తించండి';
 
   @override
   String adminSetupMarkResolvedNamed(String message) {
-    return 'Mark resolved: $message';
+    return 'పరిష్కరించబడినట్లు గుర్తించండి: $message';
   }
 
   @override
-  String get adminSetupIssueResolved => 'Issue marked resolved.';
+  String get adminSetupIssueResolved =>
+      'సమస్య పరిష్కరించబడినట్లు గుర్తించబడింది.';
 
   @override
-  String get adminSetupRecordsLive => 'Live';
+  String get adminSetupRecordsLive => 'లైవ్';
 
   @override
-  String get adminSetupRecordsEnded => 'Ended';
+  String get adminSetupRecordsEnded => 'ముగిసినవి';
 
   @override
-  String get adminSetupNoRecords => 'No classes to show.';
+  String get adminSetupNoRecords => 'చూపించడానికి తరగతులు లేవు.';
 
   @override
   String adminSetupRecordTitle(String subject, String className) {
@@ -14223,36 +14343,36 @@ class AppLocalizationsTe extends AppLocalizations {
   }
 
   @override
-  String get adminSetupRecordLive => 'Live now';
+  String get adminSetupRecordLive => 'ఇప్పుడు లైవ్‌లో ఉంది';
 
   @override
   String adminSetupRecordLiveUntil(String clock) {
-    return 'Live now. Ends at $clock';
+    return 'ఇప్పుడు లైవ్‌లో ఉంది. $clockకు ముగుస్తుంది';
   }
 
   @override
   String adminSetupRecordStarted(String when) {
-    return 'Started $when';
+    return '$when ప్రారంభమైంది';
   }
 
   @override
   String adminSetupRecordEnded(String when) {
-    return 'Ended $when';
+    return '$when ముగిసింది';
   }
 
   @override
-  String get adminSetupEndedByTeacher => 'The teacher ended the class.';
+  String get adminSetupEndedByTeacher => 'ఉపాధ్యాయులు తరగతిని ముగించారు.';
 
   @override
-  String get adminSetupEndedByAdmin => 'An administrator ended the class.';
+  String get adminSetupEndedByAdmin => 'నిర్వాహకులు తరగతిని ముగించారు.';
 
   @override
   String get adminSetupEndedAutomatically =>
-      'The class ended automatically at its end time.';
+      'ముగింపు సమయానికి తరగతి ఆటోమేటిక్‌గా ముగిసింది.';
 
   @override
   String adminSetupEndedOther(String reason) {
-    return 'End reason: $reason';
+    return 'ముగింపు కారణం: $reason';
   }
 
   @override
@@ -14260,9 +14380,9 @@ class AppLocalizationsTe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count students joined.',
-      one: '1 student joined.',
-      zero: 'No students joined.',
+      other: '$count మంది విద్యార్థులు చేరారు.',
+      one: '1 విద్యార్థి చేరారు.',
+      zero: 'విద్యార్థులు ఎవరూ చేరలేదు.',
     );
     return '$_temp0';
   }
@@ -14272,257 +14392,259 @@ class AppLocalizationsTe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count extra minutes added.',
-      one: '1 extra minute added.',
-      zero: 'No extra time added.',
+      other: '$count అదనపు నిమిషాలు జోడించబడ్డాయి.',
+      one: '1 అదనపు నిమిషం జోడించబడింది.',
+      zero: 'అదనపు సమయం జోడించలేదు.',
     );
     return '$_temp0';
   }
 
   @override
-  String get adminSetupAddFifteen => 'Add 15 minutes';
+  String get adminSetupAddFifteen => '15 నిమిషాలు జోడించండి';
 
   @override
   String adminSetupAddFifteenNamed(String title) {
-    return 'Add 15 minutes to $title';
+    return '$titleకు 15 నిమిషాలు జోడించండి';
   }
 
   @override
-  String get adminSetupEndForEveryone => 'End class for everyone';
+  String get adminSetupEndForEveryone => 'అందరికీ తరగతిని ముగించండి';
 
   @override
   String adminSetupEndForEveryoneNamed(String title) {
-    return 'End $title for everyone';
+    return 'అందరికీ $titleను ముగించండి';
   }
 
   @override
-  String get adminSetupEndTitle => 'End this class for everyone?';
+  String get adminSetupEndTitle => 'అందరికీ ఈ తరగతిని ముగించాలా?';
 
   @override
   String adminSetupEndMessage(String title) {
-    return '$title will end now for the teacher and every student.';
+    return 'ఉపాధ్యాయులకు మరియు ప్రతి విద్యార్థికి $title ఇప్పుడే ముగుస్తుంది.';
   }
 
   @override
-  String get adminSetupKeepClass => 'Keep class going';
+  String get adminSetupKeepClass => 'తరగతిని కొనసాగించండి';
 
   @override
-  String get adminSetupEndClass => 'End class';
+  String get adminSetupEndClass => 'తరగతిని ముగించండి';
 
   @override
-  String get adminSetupEnded => 'The class was ended.';
+  String get adminSetupEnded => 'తరగతి ముగించబడింది.';
 
   @override
   String adminSetupExtended(String clock) {
-    return 'The class now ends at $clock.';
+    return 'తరగతి ఇప్పుడు $clockకు ముగుస్తుంది.';
   }
 
   @override
-  String get loginScreenName => 'Sign in';
+  String get loginScreenName => 'సైన్ ఇన్';
 
   @override
-  String get loginIntro => 'Type your phone number, then press 1 to sign in.';
+  String get loginIntro =>
+      'మీ ఫోన్ నంబర్ టైప్ చేసి, సైన్ ఇన్ చేయడానికి 1 నొక్కండి.';
 
   @override
-  String get loginPhoneField => 'Phone number. Type it with the number keys.';
+  String get loginPhoneField => 'ఫోన్ నంబర్. నంబర్ కీలతో టైప్ చేయండి.';
 
   @override
-  String get loginPhoneLabel => 'Phone number';
+  String get loginPhoneLabel => 'ఫోన్ నంబర్';
 
   @override
-  String get loginProfileField => 'Your profile number on this shared phone';
+  String get loginProfileField => 'ఈ షేర్ చేసిన ఫోన్‌లో మీ ప్రొఫైల్ నంబర్';
 
   @override
-  String get loginProfileLabel => 'Profile number';
+  String get loginProfileLabel => 'ప్రొఫైల్ నంబర్';
 
   @override
   String get loginEnterProfileCode =>
-      'This phone is shared. Type your profile number, then press 1.';
+      'ఈ ఫోన్ షేర్ చేయబడింది. మీ ప్రొఫైల్ నంబర్ టైప్ చేసి, 1 నొక్కండి.';
 
   @override
-  String get loginKeySignIn => 'Sign in';
+  String get loginKeySignIn => 'సైన్ ఇన్';
 
   @override
-  String get loginKeyContinue => 'Continue';
+  String get loginKeyContinue => 'కొనసాగించండి';
 
   @override
-  String get loginKeySim => 'Fill in my number from the SIM card';
+  String get loginKeySim => 'SIM కార్డ్ నుండి నా నంబర్‌ను నింపండి';
 
   @override
-  String get loginKeyAdmin => 'Administrator sign in';
+  String get loginKeyAdmin => 'నిర్వాహకుల సైన్ ఇన్';
 
   @override
-  String get loginKeyChangeNumber => 'Use a different number';
+  String get loginKeyChangeNumber => 'వేరే నంబర్ ఉపయోగించండి';
 
   @override
-  String get loginErrorEnterPhone => 'Type your phone number first.';
+  String get loginErrorEnterPhone => 'ముందుగా మీ ఫోన్ నంబర్ టైప్ చేయండి.';
 
   @override
-  String get loginErrorEnterProfile => 'Type your profile number first.';
+  String get loginErrorEnterProfile => 'ముందుగా మీ ప్రొఫైల్ నంబర్ టైప్ చేయండి.';
 
   @override
   String get loginNumberNotRegistered =>
-      'This number is not registered. Ask your school administrator to add you.';
+      'ఈ నంబర్ నమోదు కాలేదు. మిమ్మల్ని జోడించమని మీ పాఠశాల నిర్వాహకులను అడగండి.';
 
   @override
   String get loginProfileNotRecognised =>
-      'That profile number is not on this phone. Try again.';
+      'ఆ ప్రొఫైల్ నంబర్ ఈ ఫోన్‌లో లేదు. మళ్ళీ ప్రయత్నించండి.';
 
   @override
   String get loginAdminUsesPassword =>
-      'Administrators sign in with a password. Press 3.';
+      'నిర్వాహకులు పాస్‌వర్డ్‌తో సైన్ ఇన్ చేస్తారు. 3 నొక్కండి.';
 
   @override
-  String get loginSigningIn => 'Signing in.';
+  String get loginSigningIn => 'సైన్ ఇన్ అవుతోంది.';
 
   @override
-  String get adminLoginScreenName => 'Administrator sign in';
+  String get adminLoginScreenName => 'నిర్వాహకుల సైన్ ఇన్';
 
   @override
   String get adminLoginIntro =>
-      'Type your phone number and password, then press 1.';
+      'మీ ఫోన్ నంబర్ మరియు పాస్‌వర్డ్ టైప్ చేసి, 1 నొక్కండి.';
 
   @override
-  String get classNoLongerLive => 'That class is not live now.';
+  String get classNoLongerLive => 'ఆ తరగతి ఇప్పుడు లైవ్‌లో లేదు.';
 
   @override
-  String get classAlertTitle => 'Class has started';
+  String get classAlertTitle => 'తరగతి ప్రారంభమైంది';
 
   @override
-  String get classAlertBody => 'Your class has started. Open to join.';
+  String get classAlertBody => 'మీ తరగతి ప్రారంభమైంది. చేరడానికి తెరవండి.';
 
   @override
-  String get classAlertWaitingBody => 'Your class is live. Open to join.';
+  String get classAlertWaitingBody =>
+      'మీ తరగతి లైవ్‌లో ఉంది. చేరడానికి తెరవండి.';
 
   @override
-  String get classAlertChannelName => 'Class starting';
+  String get classAlertChannelName => 'తరగతి ప్రారంభమవుతోంది';
 
   @override
   String get classAlertChannelDescription =>
-      'Rings for up to one minute when your class starts.';
+      'మీ తరగతి ప్రారంభమైనప్పుడు ఒక నిమిషం వరకు మోగుతుంది.';
 
   @override
-  String get classAlertWaitingChannelName => 'Class live';
+  String get classAlertWaitingChannelName => 'తరగతి లైవ్';
 
   @override
   String get classAlertWaitingChannelDescription =>
-      'Stays while your class is live so you can join.';
+      'మీరు చేరగలిగేలా మీ తరగతి లైవ్‌లో ఉన్నంత వరకు ఉంటుంది.';
 
   @override
-  String get classAlertStarted => 'Your class has started.';
+  String get classAlertStarted => 'మీ తరగతి ప్రారంభమైంది.';
 
   @override
   String classAlertSubjectStarted(String subject) {
-    return '$subject class has started.';
+    return '$subject తరగతి ప్రారంభమైంది.';
   }
 
   @override
   String get classAlertKeys =>
-      'Press OK or 1 to join. Press 0 to stop the ringing.';
+      'చేరడానికి ఓకే లేదా 1 నొక్కండి. మోగడం ఆపడానికి 0 నొక్కండి.';
 
   @override
-  String get classAlertJoin => 'Join class';
+  String get classAlertJoin => 'తరగతిలో చేరండి';
 
   @override
-  String get classAlertNotNow => 'Not now';
+  String get classAlertNotNow => 'ఇప్పుడు కాదు';
 
   @override
-  String get homeTitle => 'Home';
+  String get homeTitle => 'హోమ్';
 
   @override
-  String get homeChecking => 'Checking for your class.';
+  String get homeChecking => 'మీ తరగతి కోసం చూస్తోంది.';
 
   @override
   String get homeOffline =>
-      'No internet. Your class will appear when you are back online.';
+      'ఇంటర్నెట్ లేదు. మీరు మళ్ళీ ఆన్‌లైన్‌కి వచ్చినప్పుడు మీ తరగతి కనిపిస్తుంది.';
 
   @override
-  String get homeSignInAgain => 'Please sign in again.';
+  String get homeSignInAgain => 'దయచేసి మళ్ళీ సైన్ ఇన్ చేయండి.';
 
   @override
-  String get homeStarForAll => 'Press star for all options.';
+  String get homeStarForAll => 'అన్ని ఎంపికల కోసం స్టార్ నొక్కండి.';
 
   @override
   String homeBriefLive(String subject) {
-    return '$subject class is live. Press 1 to join.';
+    return '$subject తరగతి లైవ్‌లో ఉంది. చేరడానికి 1 నొక్కండి.';
   }
 
   @override
   String homeBriefNext(String subject, String time) {
-    return 'Next class: $subject at $time. You can use other options while you wait.';
+    return 'తర్వాతి తరగతి: $timeకు $subject. వేచి ఉన్నప్పుడు మీరు ఇతర ఎంపికలను ఉపయోగించవచ్చు.';
   }
 
   @override
   String get homeBriefNoClass =>
-      'No class right now. Press 2 to continue learning.';
+      'ఇప్పుడు తరగతి లేదు. నేర్చుకోవడం కొనసాగించడానికి 2 నొక్కండి.';
 
   @override
   String homeJoinClass(String subject) {
-    return 'Join $subject class';
+    return '$subject తరగతిలో చేరండి';
   }
 
   @override
-  String get homeNoClassNow => 'No class now';
+  String get homeNoClassNow => 'ఇప్పుడు తరగతి లేదు';
 
   @override
   String get homeNoClassReason =>
-      'Your class will appear here by itself when your teacher starts it.';
+      'మీ ఉపాధ్యాయులు తరగతి ప్రారంభించినప్పుడు అది ఇక్కడ దానంతట అదే కనిపిస్తుంది.';
 
   @override
   String homeJoinWhenStarts(String subject, String time) {
-    return 'Join $subject automatically when it starts at $time';
+    return '$timeకు $subject ప్రారంభమైనప్పుడు ఆటోమేటిక్‌గా చేరండి';
   }
 
   @override
-  String get homeCancelAutoJoin => 'Stop joining automatically';
+  String get homeCancelAutoJoin => 'ఆటోమేటిక్‌గా చేరడం ఆపండి';
 
   @override
   String homeAutoJoinArmed(String subject) {
-    return 'I will open $subject when your teacher starts it, if you stay on this screen. You will join muted. Press 1 to cancel.';
+    return 'మీరు ఈ స్క్రీన్‌లోనే ఉంటే, మీ ఉపాధ్యాయులు $subject ప్రారంభించినప్పుడు నేను దాన్ని తెరుస్తాను. మీరు మ్యూట్‌లో చేరతారు. రద్దు చేయడానికి 1 నొక్కండి.';
   }
 
   @override
-  String get homeAutoJoinCancelled => 'Automatic joining cancelled.';
+  String get homeAutoJoinCancelled => 'ఆటోమేటిక్‌గా చేరడం రద్దు చేయబడింది.';
 
   @override
   String get homeAutoJoinLeft =>
-      'Automatic joining stopped because you left the home screen.';
+      'మీరు హోమ్ స్క్రీన్ నుండి వెళ్ళినందున ఆటోమేటిక్‌గా చేరడం ఆగిపోయింది.';
 
   @override
   String homeAutoJoined(String subject) {
-    return '$subject has started. Joining you now, muted.';
+    return '$subject ప్రారంభమైంది. మిమ్మల్ని ఇప్పుడు మ్యూట్‌లో చేరుస్తోంది.';
   }
 
   @override
-  String get homeReturningToClass => 'Returning to your class.';
+  String get homeReturningToClass => 'మీ తరగతికి తిరిగి వెళ్తోంది.';
 
   @override
-  String get homeContinueLearning => 'Continue learning';
+  String get homeContinueLearning => 'నేర్చుకోవడం కొనసాగించండి';
 
   @override
   String get homeNothingToContinue =>
-      'Nothing to continue yet. Press 3 for learning journeys.';
+      'కొనసాగించడానికి ఇంకా ఏమీ లేదు. అభ్యాస ప్రయాణాల కోసం 3 నొక్కండి.';
 
   @override
   String homeContinuing(String title) {
-    return 'Continuing $title.';
+    return '$title కొనసాగుతోంది.';
   }
 
   @override
-  String get homeJourneys => 'Learning journeys';
+  String get homeJourneys => 'అభ్యాస ప్రయాణాలు';
 
   @override
-  String get homeQuizzes => 'Quizzes';
+  String get homeQuizzes => 'క్విజ్‌లు';
 
   @override
-  String get homeMore => 'More';
+  String get homeMore => 'మరిన్ని';
 
   @override
-  String get homeMoreBrief => 'Less used options.';
+  String get homeMoreBrief => 'తక్కువగా ఉపయోగించే ఎంపికలు.';
 
   @override
   String homeYourClass(String className) {
-    return 'Your class: $className.';
+    return 'మీ తరగతి: $className.';
   }
 
   @override
@@ -14532,235 +14654,239 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String teacherHomeBriefLive(String subject) {
-    return 'Your $subject class is live. Press 1 to return to it.';
+    return 'మీ $subject తరగతి లైవ్‌లో ఉంది. దానికి తిరిగి వెళ్ళడానికి 1 నొక్కండి.';
   }
 
   @override
   String teacherHomeBriefReady(String place) {
-    return '$place is ready. Press 1 to start it.';
+    return '$place సిద్ధంగా ఉంది. దాన్ని ప్రారంభించడానికి 1 నొక్కండి.';
   }
 
   @override
   String teacherHomeBriefNext(String place, String time) {
-    return 'Next class: $place at $time.';
+    return 'తదుపరి తరగతి: $timeకి $place.';
   }
 
   @override
-  String get teacherHomeBriefNoClass => 'No class on your timetable now.';
+  String get teacherHomeBriefNoClass =>
+      'ఇప్పుడు మీ టైమ్‌టేబుల్‌లో తరగతి ఏదీ లేదు.';
 
   @override
   String teacherHomeReturn(String subject) {
-    return 'Return to $subject class';
+    return '$subject తరగతికి తిరిగి వెళ్ళండి';
   }
 
   @override
   String teacherHomeStart(String place) {
-    return 'Start $place';
+    return '$place ప్రారంభించండి';
   }
 
   @override
   String teacherHomeNext(String place, String time) {
-    return 'Next: $place at $time';
+    return 'తదుపరి: $timeకి $place';
   }
 
   @override
   String teacherHomeOpensAt(String time) {
-    return 'You can start it from $time.';
+    return 'మీరు దీన్ని $time నుండి ప్రారంభించవచ్చు.';
   }
 
   @override
   String get teacherHomeNoClassReason =>
-      'Nothing is scheduled now. To teach anyway, press 5 for More, then 3.';
+      'ఇప్పుడు ఏదీ షెడ్యూల్ చేయబడలేదు. అయినా బోధించడానికి, మరిన్ని కోసం 5 నొక్కండి, తర్వాత 3.';
 
   @override
-  String get teacherHomeStarting => 'Starting your class.';
+  String get teacherHomeStarting => 'మీ తరగతి ప్రారంభిస్తోంది.';
 
   @override
   String teacherHomeStarted(String subject) {
-    return '$subject class started. Your students are being called.';
+    return '$subject తరగతి ప్రారంభమైంది. మీ విద్యార్థులను పిలుస్తున్నాము.';
   }
 
   @override
-  String get teacherHomeUnscheduled => 'Start an unscheduled class';
+  String get teacherHomeUnscheduled => 'షెడ్యూల్ చేయని తరగతి ప్రారంభించండి';
 
   @override
   String get teacherHomeUnscheduledTitle =>
-      'Which class do you want to teach now?';
+      'మీరు ఇప్పుడు ఏ తరగతికి బోధించాలనుకుంటున్నారు?';
 
   @override
   String get teacherHomeAlreadyLive =>
-      'You already have a live class. Press 1 on Home to return to it.';
+      'మీకు ఇప్పటికే ఒక లైవ్ తరగతి ఉంది. దానికి తిరిగి వెళ్ళడానికి హోమ్‌లో 1 నొక్కండి.';
 
   @override
   String get teacherHomeChangeWorkspace =>
-      'Change class and subject for lessons';
+      'పాఠాల కోసం తరగతి మరియు సబ్జెక్టు మార్చండి';
 
   @override
-  String get teacherHomeOneWorkspace => 'You teach one class and subject.';
+  String get teacherHomeOneWorkspace =>
+      'మీరు ఒకే తరగతి మరియు సబ్జెక్టుకు బోధిస్తున్నారు.';
 
   @override
   String teacherHomeContentFor(String place) {
-    return 'Lessons, quizzes and playlists are for $place.';
+    return 'పాఠాలు, క్విజ్‌లు మరియు ప్లేలిస్ట్‌లు $place కోసం.';
   }
 
   @override
   String teacherHomeLaterItem(String place, String time) {
-    return 'Later: $place at $time.';
+    return 'తర్వాత: $timeకి $place.';
   }
 
   @override
   String get keyClassListWhoJoined =>
-      'Class list: who is here, who left, who has not joined';
+      'తరగతి జాబితా: ఎవరు ఉన్నారు, ఎవరు వెళ్ళిపోయారు, ఎవరు చేరలేదు';
 
   @override
-  String get keyMuteAllStudents => 'Mute all students';
+  String get keyMuteAllStudents => 'విద్యార్థులందరినీ మ్యూట్ చేయండి';
 
   @override
   String get keyTeacherToolsAddTimeOrEnd =>
-      'Teacher tools: add time or end the class for everyone';
+      'ఉపాధ్యాయుల సాధనాలు: సమయం పెంచండి లేదా అందరికీ తరగతిని ముగించండి';
 
   @override
   String get sessionMicAskOnce =>
-      'You join muted. SEEDS will now ask to use the microphone, so you can speak when you choose.';
+      'మీరు మ్యూట్‌లో చేరుతారు. మీకు కావలసినప్పుడు మాట్లాడగలిగేలా, SEEDS ఇప్పుడు మైక్రోఫోన్ ఉపయోగించడానికి అనుమతి అడుగుతుంది.';
 
   @override
-  String get sessionMicAskAgain => 'To speak, allow the microphone.';
+  String get sessionMicAskAgain => 'మాట్లాడటానికి, మైక్రోఫోన్‌ను అనుమతించండి.';
 
   @override
   String get sessionMicStillOff =>
-      'The microphone is still off. You can keep listening.';
+      'మైక్రోఫోన్ ఇంకా ఆఫ్‌లో ఉంది. మీరు వింటూ ఉండవచ్చు.';
 
   @override
-  String get sessionMicSettingsTitle => 'Microphone is blocked';
+  String get sessionMicSettingsTitle => 'మైక్రోఫోన్ బ్లాక్ చేయబడింది';
 
   @override
   String get sessionMicSettingsMessage =>
-      'Android will not ask again. To speak, open Settings, choose Permissions, and allow the microphone. You can keep listening.';
+      'Android మళ్ళీ అడగదు. మాట్లాడటానికి, సెట్టింగ్‌లు తెరిచి, అనుమతులు ఎంచుకుని, మైక్రోఫోన్‌ను అనుమతించండి. మీరు వింటూ ఉండవచ్చు.';
 
   @override
-  String get sessionMicSettingsOpen => 'Open settings';
+  String get sessionMicSettingsOpen => 'సెట్టింగ్‌లు తెరవండి';
 
   @override
-  String get sessionMicSettingsCancel => 'Keep listening';
+  String get sessionMicSettingsCancel => 'వింటూ ఉండండి';
 
   @override
-  String get sessionMuteAllButton => '3: Mute all students';
+  String get sessionMuteAllButton => '3: విద్యార్థులందరినీ మ్యూట్ చేయండి';
 
   @override
-  String get sessionMuteAllLabel => 'Mute all students';
+  String get sessionMuteAllLabel => 'విద్యార్థులందరినీ మ్యూట్ చేయండి';
 
   @override
-  String get sessionMuteAllWaiting => 'Still muting everyone. Please wait.';
+  String get sessionMuteAllWaiting =>
+      'ఇంకా అందరినీ మ్యూట్ చేస్తోంది. దయచేసి వేచి ఉండండి.';
 
   @override
   String sessionMuteAllDone(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count students muted.',
-      one: '1 student muted.',
+      other: '$count మంది విద్యార్థులు మ్యూట్ చేయబడ్డారు.',
+      one: '1 విద్యార్థి మ్యూట్ చేయబడ్డారు.',
     );
     return '$_temp0';
   }
 
   @override
-  String get sessionMuteAllNone => 'Every student was already muted.';
+  String get sessionMuteAllNone =>
+      'ప్రతి విద్యార్థి ఇప్పటికే మ్యూట్‌లో ఉన్నారు.';
 
   @override
   String sessionMuteAllNotConfirmed(String reason) {
-    return 'Muting everyone was not confirmed. $reason Press 3 to try again.';
+    return 'అందరినీ మ్యూట్ చేయడం నిర్ధారించబడలేదు. $reason మళ్ళీ ప్రయత్నించడానికి 3 నొక్కండి.';
   }
 
   @override
-  String get sessionClassListButton => '4: Class list';
+  String get sessionClassListButton => '4: తరగతి జాబితా';
 
   @override
   String sessionClassListLabel(String people) {
-    return 'Class list. $people';
+    return 'తరగతి జాబితా. $people';
   }
 
   @override
-  String get sessionClassListTitle => 'Class list';
+  String get sessionClassListTitle => 'తరగతి జాబితా';
 
   @override
   String sessionRosterCounts(int here, int left, int notJoined) {
-    return '$here here, $left left, $notJoined not joined yet.';
+    return '$here మంది ఇక్కడ ఉన్నారు, $left మంది వెళ్ళిపోయారు, $notJoined మంది ఇంకా చేరలేదు.';
   }
 
   @override
   String sessionHereNow(int count) {
-    return 'Here now: $count';
+    return 'ఇప్పుడు ఇక్కడ ఉన్నవారు: $count';
   }
 
   @override
   String sessionLeftClass(int count) {
-    return 'Joined, then left: $count';
+    return 'చేరి, తర్వాత వెళ్ళిపోయినవారు: $count';
   }
 
   @override
   String sessionNotJoined(int count) {
-    return 'Not joined yet: $count';
+    return 'ఇంకా చేరనివారు: $count';
   }
 
   @override
-  String get sessionHereNowTitle => 'Here now';
+  String get sessionHereNowTitle => 'ఇప్పుడు ఇక్కడ ఉన్నవారు';
 
   @override
-  String get sessionLeftClassTitle => 'Joined, then left';
+  String get sessionLeftClassTitle => 'చేరి, తర్వాత వెళ్ళిపోయినవారు';
 
   @override
-  String get sessionNotJoinedTitle => 'Not joined yet';
+  String get sessionNotJoinedTitle => 'ఇంకా చేరనివారు';
 
   @override
   String sessionRemovedName(String name) {
-    return '$name, removed by you';
+    return '$name, మీరు తీసివేశారు';
   }
 
   @override
-  String get sessionNobody => 'Nobody.';
+  String get sessionNobody => 'ఎవరూ లేరు.';
 
   @override
-  String get sessionRemindNotJoined => 'Ring students who have not joined';
+  String get sessionRemindNotJoined => 'చేరని విద్యార్థులకు రింగ్ చేయండి';
 
   @override
-  String get sessionEveryoneJoined => 'Everyone has joined.';
+  String get sessionEveryoneJoined => 'అందరూ చేరారు.';
 
   @override
   String sessionReminderSent(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Ringing $count students.',
-      one: 'Ringing 1 student.',
-      zero: 'Nobody to ring now.',
+      other: '$count మంది విద్యార్థులకు రింగ్ చేస్తోంది.',
+      one: '1 విద్యార్థికి రింగ్ చేస్తోంది.',
+      zero: 'ఇప్పుడు రింగ్ చేయడానికి ఎవరూ లేరు.',
     );
     return '$_temp0';
   }
 
   @override
   String sessionReminderSentSomeWaiting(int queued, int cooling) {
-    return 'Ringing $queued. $cooling were rung in the last 5 minutes and will not be rung again yet.';
+    return '$queued మందికి రింగ్ చేస్తోంది. $cooling మందికి గత 5 నిమిషాల్లో రింగ్ చేశారు, వారికి ఇప్పుడే మళ్ళీ రింగ్ చేయదు.';
   }
 
   @override
   String get sessionRosterUnavailable =>
-      'The class list could not be read. Try again.';
+      'తరగతి జాబితాను చదవలేకపోయింది. మళ్ళీ ప్రయత్నించండి.';
 
   @override
-  String get sessionAddTime => 'Add 15 minutes';
+  String get sessionAddTime => '15 నిమిషాలు జోడించండి';
 
   @override
   String get sessionCannotAddTime =>
-      'No more time can be added before the next class.';
+      'తర్వాతి తరగతికి ముందు ఇంకా సమయం జోడించలేరు.';
 
   @override
   String sessionEndsBy(String clock) {
-    return 'Class ends by $clock.';
+    return 'తరగతి $clockకల్లా ముగుస్తుంది.';
   }
 
   @override
   String sessionExtendedUntil(String clock) {
-    return 'Done. The class now ends by $clock.';
+    return 'పూర్తయింది. తరగతి ఇప్పుడు $clockకల్లా ముగుస్తుంది.';
   }
 
   @override
@@ -14768,8 +14894,8 @@ class AppLocalizationsTe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       minutes,
       locale: localeName,
-      other: 'The class ends automatically in $minutes minutes.',
-      one: 'The class ends automatically in 1 minute.',
+      other: 'తరగతి $minutes నిమిషాల్లో ఆటోమేటిక్‌గా ముగుస్తుంది.',
+      one: 'తరగతి 1 నిమిషంలో ఆటోమేటిక్‌గా ముగుస్తుంది.',
     );
     return '$_temp0';
   }
@@ -14780,9 +14906,9 @@ class AppLocalizationsTe extends AppLocalizations {
       minutes,
       locale: localeName,
       other:
-          'The class ends automatically in $minutes minutes. To add 15 minutes, press 7 then 1.',
+          'తరగతి $minutes నిమిషాల్లో ఆటోమేటిక్‌గా ముగుస్తుంది. 15 నిమిషాలు జోడించడానికి, 7 తర్వాత 1 నొక్కండి.',
       one:
-          'The class ends automatically in 1 minute. To add 15 minutes, press 7 then 1.',
+          'తరగతి 1 నిమిషంలో ఆటోమేటిక్‌గా ముగుస్తుంది. 15 నిమిషాలు జోడించడానికి, 7 తర్వాత 1 నొక్కండి.',
     );
     return '$_temp0';
   }
@@ -14792,87 +14918,87 @@ class AppLocalizationsTe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       minutes,
       locale: localeName,
-      other: 'The class ends in $minutes minutes.',
-      one: 'The class ends in 1 minute.',
+      other: 'తరగతి $minutes నిమిషాల్లో ముగుస్తుంది.',
+      one: 'తరగతి 1 నిమిషంలో ముగుస్తుంది.',
     );
     return '$_temp0';
   }
 
   @override
   String get sessionLessonReady =>
-      'Today\'s lesson is ready. Press 5, then 3, to play it for the class.';
+      'ఈ రోజు పాఠం సిద్ధంగా ఉంది. తరగతికి ప్లే చేయడానికి 5, తర్వాత 3 నొక్కండి.';
 
   @override
   String get sessionLessonNextReady =>
-      'The next part of today\'s lesson is ready. Press 6 to play it.';
+      'ఈ రోజు పాఠంలోని తర్వాతి భాగం సిద్ధంగా ఉంది. ప్లే చేయడానికి 6 నొక్కండి.';
 
   @override
   String get sessionJoinedStudentBrief =>
-      'You are in class and muted. Press 1 to speak, 2 to raise your hand.';
+      'మీరు తరగతిలో ఉన్నారు, మ్యూట్‌లో ఉన్నారు. మాట్లాడటానికి 1, చేయి ఎత్తడానికి 2 నొక్కండి.';
 
   @override
   String get sessionJoinedTeacherBrief =>
-      'Your class is live. You are muted. Press 1 to speak, 3 to mute all students.';
+      'మీ తరగతి లైవ్‌లో ఉంది. మీరు మ్యూట్‌లో ఉన్నారు. మాట్లాడటానికి 1, విద్యార్థులందరినీ మ్యూట్ చేయడానికి 3 నొక్కండి.';
 
   @override
-  String get sessionStarForKeys => 'Press star for all keys.';
+  String get sessionStarForKeys => 'అన్ని కీల కోసం స్టార్ నొక్కండి.';
 
   @override
   String settingsAutoDownload(String state) {
-    return 'Prepare new journeys for offline use on Wi-Fi: $state';
+    return 'Wi-Fi లో కొత్త ప్రయాణాలను ఆఫ్‌లైన్ వాడకం కోసం సిద్ధం చేయండి: $state';
   }
 
   @override
-  String get settingsAutoDownloadOn => 'Journeys will be prepared on Wi-Fi.';
+  String get settingsAutoDownloadOn => 'ప్రయాణాలు Wi-Fi లో సిద్ధం చేయబడతాయి.';
 
   @override
   String get settingsAutoDownloadOff =>
-      'Journeys will not be prepared automatically.';
+      'ప్రయాణాలు ఆటోమేటిక్‌గా సిద్ధం చేయబడవు.';
 
   @override
   String get adminSetupTeacherNeedsPair =>
-      'Add at least one class and subject for the teacher.';
+      'ఉపాధ్యాయులకు కనీసం ఒక తరగతి మరియు సబ్జెక్టును జోడించండి.';
 
   @override
   String get adminSetupTeacherHasNoPairs =>
-      'No teacher has a class and subject yet. Add them to a teacher in People first.';
+      'ఇంకా ఏ ఉపాధ్యాయులకూ తరగతి మరియు సబ్జెక్టు లేదు. ముందుగా వ్యక్తులు విభాగంలో ఒక ఉపాధ్యాయులకు వాటిని జోడించండి.';
 
   @override
-  String get adminSetupDaysField => 'Days';
+  String get adminSetupDaysField => 'రోజులు';
 
   @override
-  String get adminSetupChooseDays => 'Choose at least one day.';
+  String get adminSetupChooseDays => 'కనీసం ఒక రోజును ఎంచుకోండి.';
 
   @override
   String adminSetupLessonsAdded(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count lessons added, one for each day.',
-      one: 'Lesson added.',
+      other: '$count పాఠాలు జోడించబడ్డాయి, ప్రతి రోజుకు ఒకటి.',
+      one: 'పాఠం జోడించబడింది.',
     );
     return '$_temp0';
   }
 
   @override
-  String get adminSetupArrangeBy => 'Arrange by';
+  String get adminSetupArrangeBy => 'దీని ప్రకారం అమర్చండి';
 
   @override
-  String get adminSetupArrangeDay => 'Day';
+  String get adminSetupArrangeDay => 'రోజు';
 
   @override
-  String get adminSetupArrangeTeacher => 'Teacher';
+  String get adminSetupArrangeTeacher => 'ఉపాధ్యాయులు';
 
   @override
-  String get adminSetupArrangeClass => 'Class';
+  String get adminSetupArrangeClass => 'తరగతి';
 
   @override
   String adminSetupGroupHeading(String name, int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count lessons',
-      one: '1 lesson',
+      other: '$count పాఠాలు',
+      one: '1 పాఠం',
     );
     return '$name · $_temp0';
   }
@@ -14883,304 +15009,306 @@ class AppLocalizationsTe extends AppLocalizations {
   }
 
   @override
-  String get adminSetupTimetableSearch => 'Search lessons';
+  String get adminSetupTimetableSearch => 'పాఠాలను వెతకండి';
 
   @override
-  String get adminSetupNoMatchingLessons => 'No lessons match.';
+  String get adminSetupNoMatchingLessons => 'సరిపోయే పాఠాలు లేవు.';
 
   @override
-  String get sessionMoreButton => '7: More';
+  String get sessionMoreButton => '7: మరిన్ని';
 
   @override
-  String get sessionMoreLabel => 'More options';
+  String get sessionMoreLabel => 'మరిన్ని ఎంపికలు';
 
   @override
-  String get sessionMoreTitle => 'More options';
+  String get sessionMoreTitle => 'మరిన్ని ఎంపికలు';
 
   @override
-  String get sessionMoreClassroomCheck => 'Classroom check';
+  String get sessionMoreClassroomCheck => 'తరగతి తనిఖీ';
 
   @override
-  String get sessionMoreStatus => 'Class status';
+  String get sessionMoreStatus => 'తరగతి స్థితి';
 
   @override
-  String get sessionMoreWhatIsPlaying => 'What is playing';
+  String get sessionMoreWhatIsPlaying => 'ఏమి ప్లే అవుతోంది';
 
   @override
-  String get sessionMoreWhoIsHere => 'Who is in class';
+  String get sessionMoreWhoIsHere => 'తరగతిలో ఎవరు ఉన్నారు';
 
   @override
-  String get sessionKeyRaisedHands => 'Raised hands';
+  String get sessionKeyRaisedHands => 'ఎత్తిన చేతులు';
 
   @override
-  String get sessionKeyClassList => 'Class list';
+  String get sessionKeyClassList => 'తరగతి జాబితా';
 
   @override
-  String get sessionKeyLessonRecording => 'Lesson recording';
+  String get sessionKeyLessonRecording => 'పాఠం రికార్డింగ్';
 
   @override
-  String get sessionKeyAnswerQuestion => 'Answer the question';
+  String get sessionKeyAnswerQuestion => 'ప్రశ్నకు సమాధానం ఇవ్వండి';
 
   @override
-  String get sessionKeyMore => 'More options';
+  String get sessionKeyMore => 'మరిన్ని ఎంపికలు';
 
   @override
-  String get sessionKeyLeave => 'Leave class';
+  String get sessionKeyLeave => 'తరగతి నుండి వెళ్ళండి';
 
   @override
-  String get sessionEndClassButton => '8: End class for everyone';
+  String get sessionEndClassButton => '8: అందరికీ తరగతిని ముగించండి';
 
   @override
-  String get sessionEndClassLabel => 'End class for everyone. Asks to confirm';
+  String get sessionEndClassLabel =>
+      'అందరికీ తరగతిని ముగించండి. నిర్ధారించమని అడుగుతుంది';
 
   @override
   String sessionActivityQuizItem(String title, int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count questions',
-      one: '1 question',
+      other: '$count ప్రశ్నలు',
+      one: '1 ప్రశ్న',
     );
-    return 'Quiz: $title, $_temp0';
+    return 'క్విజ్: $title, $_temp0';
   }
 
   @override
   String sessionActivityJourneyItem(String title) {
-    return 'Journey: $title';
+    return 'ప్రయాణం: $title';
   }
 
   @override
   String sessionActivityStopItem(String title) {
-    return 'Stop offering $title';
+    return '$title అందించడం ఆపండి';
   }
 
   @override
   String sessionActivityStartedTeacher(String title) {
-    return '$title is open for the class. Press 6 for its status.';
+    return '$title తరగతి కోసం తెరిచి ఉంది. దాని స్థితి కోసం 6 నొక్కండి.';
   }
 
   @override
   String sessionActivityStoppedTeacher(String title) {
-    return '$title is no longer offered in class. Students can still find it on Home.';
+    return '$title ఇకపై తరగతిలో అందించబడదు. విద్యార్థులు దాన్ని ఇప్పటికీ హోమ్‌లో కనుగొనవచ్చు.';
   }
 
   @override
   String sessionActivityQuizStarted(String title) {
-    return 'Your teacher started a quiz: $title. Press 4 to begin.';
+    return 'మీ ఉపాధ్యాయులు ఒక క్విజ్ ప్రారంభించారు: $title. మొదలుపెట్టడానికి 4 నొక్కండి.';
   }
 
   @override
   String sessionActivityJourneyStarted(String title) {
-    return 'Your teacher started a journey: $title. Press 4 to begin.';
+    return 'మీ ఉపాధ్యాయులు ఒక ప్రయాణం ప్రారంభించారు: $title. మొదలుపెట్టడానికి 4 నొక్కండి.';
   }
 
   @override
   String sessionActivityStoppedStudent(String title) {
-    return '$title is closed in class. You can still find it on Home.';
+    return '$title తరగతిలో మూసివేయబడింది. మీరు దాన్ని ఇప్పటికీ హోమ్‌లో కనుగొనవచ్చు.';
   }
 
   @override
   String sessionActivityStartQuizLabel(String title) {
-    return 'Start the quiz $title';
+    return '$title క్విజ్ ప్రారంభించండి';
   }
 
   @override
   String sessionActivityStartJourneyLabel(String title) {
-    return 'Start the journey $title';
+    return '$title ప్రయాణం ప్రారంభించండి';
   }
 
   @override
   String sessionActivityStateStudent(String title) {
-    return '$title is open.';
+    return '$title తెరిచి ఉంది.';
   }
 
   @override
   String sessionActivityStateTeacher(String title) {
-    return '$title is open for the class.';
+    return '$title తరగతి కోసం తెరిచి ఉంది.';
   }
 
   @override
   String sessionActivityOpening(String title) {
-    return 'Opening $title.';
+    return '$title తెరుస్తోంది.';
   }
 
   @override
   String sessionActivityCouldNotOpen(String title) {
-    return '$title could not be opened. Check your connection and try again.';
+    return '$title తెరవలేకపోయింది. మీ కనెక్షన్ తనిఖీ చేసి మళ్ళీ ప్రయత్నించండి.';
   }
 
   @override
-  String get sessionBackInClass => 'Back in class.';
+  String get sessionBackInClass => 'మళ్ళీ తరగతిలో ఉన్నారు.';
 
   @override
   String sessionActivityProgress(String title, int started, int finished) {
-    return '$title: $started started, $finished finished.';
+    return '$title: $started మంది ప్రారంభించారు, $finished మంది పూర్తి చేశారు.';
   }
 
   @override
-  String get sessionWhatIsPlayingButton => '3: What is playing';
+  String get sessionWhatIsPlayingButton => '3: ఏమి ప్లే అవుతోంది';
 
   @override
-  String get sessionKeyEndClass => 'End class for everyone';
+  String get sessionKeyEndClass => 'అందరికీ తరగతిని ముగించండి';
 
   @override
-  String get sessionKeyWhatIsPlaying => 'What is playing';
+  String get sessionKeyWhatIsPlaying => 'ఏమి ప్లే అవుతోంది';
 
   @override
-  String get sessionQuizButton => '6: Quiz';
+  String get sessionQuizButton => '6: క్విజ్';
 
   @override
-  String get sessionJourneyButton => '7: Journey';
+  String get sessionJourneyButton => '7: ప్రయాణం';
 
   @override
-  String get sessionQuizLabel => 'Start a quiz for the class';
+  String get sessionQuizLabel => 'తరగతి కోసం ఒక క్విజ్ ప్రారంభించండి';
 
   @override
-  String get sessionJourneyLabel => 'Start a journey for the class';
+  String get sessionJourneyLabel => 'తరగతి కోసం ఒక ప్రయాణం ప్రారంభించండి';
 
   @override
   String sessionOpenLabel(String title) {
-    return '$title is open. Hear who is left, remind them, or stop it';
+    return '$title తెరిచి ఉంది. ఎవరు మిగిలి ఉన్నారో వినండి, వారికి గుర్తు చేయండి, లేదా దాన్ని ఆపండి';
   }
 
   @override
-  String get sessionKeyQuiz => 'Quiz for the class';
+  String get sessionKeyQuiz => 'తరగతి కోసం క్విజ్';
 
   @override
-  String get sessionKeyJourney => 'Journey for the class';
+  String get sessionKeyJourney => 'తరగతి కోసం ప్రయాణం';
 
   @override
   String sessionStartQuizButton(String title) {
-    return '4: Start quiz: $title';
+    return '4: క్విజ్ ప్రారంభించండి: $title';
   }
 
   @override
   String sessionStartJourneyButton(String title) {
-    return '4: Start journey: $title';
+    return '4: ప్రయాణం ప్రారంభించండి: $title';
   }
 
   @override
-  String get sessionPickQuizTitle => 'Start a quiz for the class';
+  String get sessionPickQuizTitle => 'తరగతి కోసం ఒక క్విజ్ ప్రారంభించండి';
 
   @override
-  String get sessionPickJourneyTitle => 'Start a journey for the class';
+  String get sessionPickJourneyTitle => 'తరగతి కోసం ఒక ప్రయాణం ప్రారంభించండి';
 
   @override
   String get sessionNoQuizToStart =>
-      'No published quiz is open for this class and subject. Publish one from Quizzes on Home first.';
+      'ఈ తరగతి మరియు సబ్జెక్టు కోసం ప్రచురించబడిన క్విజ్ ఏదీ తెరిచి లేదు. ముందుగా హోమ్‌లోని క్విజ్‌లు నుండి ఒకటి ప్రచురించండి.';
 
   @override
   String get sessionNoJourneyToStart =>
-      'No published journey for this class and subject. Publish one from Journeys on Home first.';
+      'ఈ తరగతి మరియు సబ్జెక్టు కోసం ప్రచురించబడిన ప్రయాణం లేదు. ముందుగా హోమ్‌లోని ప్రయాణాలు నుండి ఒకటి ప్రచురించండి.';
 
   @override
   String sessionFinishedOf(int finished, int enrolled) {
-    return '$finished of $enrolled finished.';
+    return '$enrolled మందిలో $finished మంది పూర్తి చేశారు.';
   }
 
   @override
   String sessionLeftInClass(int count) {
-    return 'In class, not done ($count)';
+    return 'తరగతిలో ఉన్నవారు, పూర్తి చేయనివారు ($count)';
   }
 
   @override
   String sessionLeftWholeClass(int count) {
-    return 'Whole class, not done ($count)';
+    return 'మొత్తం తరగతి, పూర్తి చేయనివారు ($count)';
   }
 
   @override
-  String get sessionLeftInClassTitle => 'In class, not done';
+  String get sessionLeftInClassTitle => 'తరగతిలో ఉన్నవారు, పూర్తి చేయనివారు';
 
   @override
-  String get sessionLeftWholeClassTitle => 'Whole class, not done';
+  String get sessionLeftWholeClassTitle => 'మొత్తం తరగతి, పూర్తి చేయనివారు';
 
   @override
-  String get sessionRemindLeft => 'Remind those in class who are not done';
+  String get sessionRemindLeft =>
+      'తరగతిలో ఉండి పూర్తి చేయనివారికి గుర్తు చేయండి';
 
   @override
-  String get sessionStartDifferentQuiz => 'Start a different quiz';
+  String get sessionStartDifferentQuiz => 'వేరే క్విజ్ ప్రారంభించండి';
 
   @override
-  String get sessionStartDifferentJourney => 'Start a different journey';
+  String get sessionStartDifferentJourney => 'వేరే ప్రయాణం ప్రారంభించండి';
 
   @override
   String sessionLeftNotStarted(String name) {
-    return '$name, not started';
+    return '$name, ప్రారంభించలేదు';
   }
 
   @override
   String sessionLeftStarted(String name) {
-    return '$name, started, not finished';
+    return '$name, ప్రారంభించారు, పూర్తి చేయలేదు';
   }
 
   @override
-  String get sessionLeftHere => 'in class';
+  String get sessionLeftHere => 'తరగతిలో ఉన్నారు';
 
   @override
-  String get sessionLeftAway => 'not in class';
+  String get sessionLeftAway => 'తరగతిలో లేరు';
 
   @override
-  String get sessionLeftNobodyInClass => 'Everyone in class has finished.';
+  String get sessionLeftNobodyInClass => 'తరగతిలో ఉన్న అందరూ పూర్తి చేశారు.';
 
   @override
-  String get sessionLeftNobody => 'Everyone in the class has finished.';
+  String get sessionLeftNobody => 'తరగతిలోని అందరూ పూర్తి చేశారు.';
 
   @override
   String sessionRemindedLeft(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Reminded $count students.',
-      one: 'Reminded 1 student.',
-      zero: 'Nobody in class needs a reminder.',
+      other: '$count మంది విద్యార్థులకు గుర్తు చేశారు.',
+      one: '1 విద్యార్థికి గుర్తు చేశారు.',
+      zero: 'తరగతిలో ఎవరికీ గుర్తు చేయాల్సిన అవసరం లేదు.',
     );
     return '$_temp0';
   }
 
   @override
   String sessionActivityReminderQuiz(String title) {
-    return 'Your teacher reminds you to do the quiz $title. Press 4 to begin.';
+    return '$title క్విజ్ చేయమని మీ ఉపాధ్యాయులు గుర్తు చేస్తున్నారు. మొదలుపెట్టడానికి 4 నొక్కండి.';
   }
 
   @override
   String sessionActivityReminderJourney(String title) {
-    return 'Your teacher reminds you to do the journey $title. Press 4 to begin.';
+    return '$title ప్రయాణం చేయమని మీ ఉపాధ్యాయులు గుర్తు చేస్తున్నారు. మొదలుపెట్టడానికి 4 నొక్కండి.';
   }
 
   @override
-  String get sessionKeyStartActivity => 'Start the quiz or journey';
+  String get sessionKeyStartActivity => 'క్విజ్ లేదా ప్రయాణం ప్రారంభించండి';
 
   @override
-  String get startupSettingsKey2 => '2. Settings';
+  String get startupSettingsKey2 => '2. సెట్టింగ్‌లు';
 
   @override
   String get libraryPauseSessionKey3 =>
-      'Pause audio for the whole session, key 3';
+      'మొత్తం సెషన్ కోసం ఆడియోను పాజ్ చేయండి, కీ 3';
 
   @override
-  String get authSaveNewPasswordKey1 => '1: Save new password';
+  String get authSaveNewPasswordKey1 => '1: కొత్త పాస్‌వర్డ్ సేవ్ చేయండి';
 
   @override
-  String get quizSaveSettingsKey1 => '1: Save settings';
+  String get quizSaveSettingsKey1 => '1: సెట్టింగ్‌లు సేవ్ చేయండి';
 
   @override
-  String get quizSaveQuestionKey1 => '1: Save question';
+  String get quizSaveQuestionKey1 => '1: ప్రశ్నను సేవ్ చేయండి';
 
   @override
-  String get quizContinueToQuestionsKey1 => '1: Continue to questions';
+  String get quizContinueToQuestionsKey1 => '1: ప్రశ్నలకు కొనసాగండి';
 
   @override
-  String get adminAuthorSection => 'Quizzes and journeys';
+  String get adminAuthorSection => 'క్విజ్‌లు మరియు ప్రయాణాలు';
 
   @override
   String get adminAuthorNote =>
-      'Create and publish quizzes and learning journeys for a teacher. Everything you make belongs to that teacher, uses only their question bank and their own recordings, and the teacher is told about it on their Home.';
+      'ఒక ఉపాధ్యాయుల కోసం క్విజ్‌లు మరియు అభ్యాస ప్రయాణాలను తయారు చేసి ప్రచురించండి. మీరు తయారు చేసే ప్రతిదీ ఆ ఉపాధ్యాయులకే చెందుతుంది, వారి ప్రశ్నల బ్యాంక్ మరియు వారి స్వంత రికార్డింగ్‌లను మాత్రమే ఉపయోగిస్తుంది, మరియు దాని గురించి ఉపాధ్యాయులకు వారి హోమ్‌లో తెలియజేయబడుతుంది.';
 
   @override
-  String get adminAuthorTeacher => 'Teacher';
+  String get adminAuthorTeacher => 'ఉపాధ్యాయులు';
 
   @override
-  String get adminAuthorWorkspace => 'Class and subject';
+  String get adminAuthorWorkspace => 'తరగతి మరియు సబ్జెక్టు';
 
   @override
   String adminAuthorWorkspaceName(String className, String subjectName) {
@@ -15189,59 +15317,60 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get adminAuthorNoTeachers =>
-      'No teacher has a class and subject yet. Assign one in Accounts first.';
+      'ఇంకా ఏ ఉపాధ్యాయులకూ తరగతి మరియు సబ్జెక్టు లేదు. ముందుగా ఖాతాలు విభాగంలో ఒకటి కేటాయించండి.';
 
   @override
-  String get adminAuthorKind => 'Show';
+  String get adminAuthorKind => 'చూపించు';
 
   @override
-  String get adminAuthorKindQuizzes => 'Quizzes';
+  String get adminAuthorKindQuizzes => 'క్విజ్‌లు';
 
   @override
-  String get adminAuthorKindJourneys => 'Journeys';
+  String get adminAuthorKindJourneys => 'ప్రయాణాలు';
 
   @override
-  String get adminAuthorNewQuiz => 'New quiz';
+  String get adminAuthorNewQuiz => 'కొత్త క్విజ్';
 
   @override
-  String get adminAuthorNewJourney => 'New journey';
+  String get adminAuthorNewJourney => 'కొత్త ప్రయాణం';
 
   @override
   String adminAuthorNewQuizFor(String teacher) {
-    return 'New quiz for $teacher';
+    return '$teacher కోసం కొత్త క్విజ్';
   }
 
   @override
   String adminAuthorNewJourneyFor(String teacher) {
-    return 'New journey for $teacher';
+    return '$teacher కోసం కొత్త ప్రయాణం';
   }
 
   @override
   String get adminAuthorNoQuizzes =>
-      'This teacher has no quizzes for this class and subject.';
+      'ఈ తరగతి మరియు సబ్జెక్టు కోసం ఈ ఉపాధ్యాయులకు క్విజ్‌లు లేవు.';
 
   @override
   String get adminAuthorNoJourneys =>
-      'This teacher has no journeys for this class and subject.';
+      'ఈ తరగతి మరియు సబ్జెక్టు కోసం ఈ ఉపాధ్యాయులకు ప్రయాణాలు లేవు.';
 
   @override
-  String get adminAuthorStatusDraft => 'Draft';
+  String get adminAuthorStatusDraft => 'డ్రాఫ్ట్';
 
   @override
-  String get adminAuthorStatusPublished => 'Published';
+  String get adminAuthorStatusPublished => 'ప్రచురించబడింది';
 
   @override
-  String get adminAuthorStatusScheduled => 'Published, opens later';
+  String get adminAuthorStatusScheduled =>
+      'ప్రచురించబడింది, తర్వాత తెరుచుకుంటుంది';
 
   @override
-  String get adminAuthorStatusClosed => 'Closed';
+  String get adminAuthorStatusClosed => 'మూసివేయబడింది';
 
   @override
-  String get adminAuthorStatusArchived => 'Archived';
+  String get adminAuthorStatusArchived => 'ఆర్కైవ్ చేయబడింది';
 
   @override
   String adminAuthorStatusChanged(String status) {
-    return '$status, with unpublished changes';
+    return '$status, ప్రచురించని మార్పులతో';
   }
 
   @override
@@ -15249,8 +15378,8 @@ class AppLocalizationsTe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count questions',
-      one: '1 question',
+      other: '$count ప్రశ్నలు',
+      one: '1 ప్రశ్న',
     );
     return '$_temp0';
   }
@@ -15260,137 +15389,138 @@ class AppLocalizationsTe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count steps',
-      one: '1 step',
+      other: '$count దశలు',
+      one: '1 దశ',
     );
     return '$_temp0';
   }
 
   @override
-  String get adminAuthorMode => 'Quiz type';
+  String get adminAuthorMode => 'క్విజ్ రకం';
 
   @override
-  String get adminAuthorModeGraded => 'Graded';
+  String get adminAuthorModeGraded => 'మార్కులతో';
 
   @override
-  String get adminAuthorModePractice => 'Practice';
+  String get adminAuthorModePractice => 'అభ్యాసం';
 
   @override
-  String get adminAuthorEdit => 'Edit';
+  String get adminAuthorEdit => 'మార్చండి';
 
   @override
   String adminAuthorEditNamed(String title) {
-    return 'Edit $title';
+    return '$title ను సవరించండి';
   }
 
   @override
-  String get adminAuthorPublish => 'Publish';
+  String get adminAuthorPublish => 'ప్రచురించండి';
 
   @override
   String adminAuthorPublishNamed(String title) {
-    return 'Publish $title';
+    return '$title ను ప్రచురించండి';
   }
 
   @override
-  String get adminAuthorClose => 'Close quiz';
+  String get adminAuthorClose => 'క్విజ్ ముగించండి';
 
   @override
   String adminAuthorCloseNamed(String title) {
-    return 'Close $title';
+    return '$title ను ముగించండి';
   }
 
   @override
-  String get adminAuthorArchive => 'Archive';
+  String get adminAuthorArchive => 'ఆర్కైవ్ చేయండి';
 
   @override
   String adminAuthorArchiveNamed(String title) {
-    return 'Archive $title';
+    return '$title ను ఆర్కైవ్ చేయండి';
   }
 
   @override
-  String get adminAuthorPublishQuizTitle => 'Publish this quiz?';
+  String get adminAuthorPublishQuizTitle => 'ఈ క్విజ్‌ను ప్రచురించాలా?';
 
   @override
   String adminAuthorPublishQuizMessage(String title, String teacher) {
-    return '$title will open to the class as $teacher\'s quiz, and the students will be notified.';
+    return '$title తరగతికి $teacher గారి క్విజ్‌గా తెరవబడుతుంది, విద్యార్థులకు నోటిఫికేషన్ వెళ్తుంది.';
   }
 
   @override
-  String get adminAuthorPublishJourneyTitle => 'Publish this journey?';
+  String get adminAuthorPublishJourneyTitle =>
+      'ఈ అభ్యాస ప్రయాణాన్ని ప్రచురించాలా?';
 
   @override
   String adminAuthorPublishJourneyMessage(String title, String teacher) {
-    return '$title will be available to the class as $teacher\'s journey, and the students will be notified.';
+    return '$title తరగతికి $teacher గారి అభ్యాస ప్రయాణంగా అందుబాటులో ఉంటుంది, విద్యార్థులకు నోటిఫికేషన్ వెళ్తుంది.';
   }
 
   @override
-  String get adminAuthorCloseQuizTitle => 'Close this quiz?';
+  String get adminAuthorCloseQuizTitle => 'ఈ క్విజ్‌ను ముగించాలా?';
 
   @override
   String adminAuthorCloseQuizMessage(String title) {
-    return 'Students can no longer answer $title. Unfinished attempts are submitted as they are.';
+    return 'విద్యార్థులు ఇకపై $title కు జవాబు ఇవ్వలేరు. పూర్తి కాని ప్రయత్నాలు ఉన్నవి ఉన్నట్లుగా సమర్పించబడతాయి.';
   }
 
   @override
-  String get adminAuthorArchiveTitle => 'Archive this journey?';
+  String get adminAuthorArchiveTitle => 'ఈ అభ్యాస ప్రయాణాన్ని ఆర్కైవ్ చేయాలా?';
 
   @override
   String adminAuthorArchiveMessage(String title) {
-    return 'Students will no longer see $title.';
+    return 'విద్యార్థులకు ఇకపై $title కనిపించదు.';
   }
 
   @override
   String adminAuthorPublished(String title) {
-    return '$title published.';
+    return '$title ప్రచురించబడింది.';
   }
 
   @override
   String adminAuthorClosed(String title) {
-    return '$title closed.';
+    return '$title ముగించబడింది.';
   }
 
   @override
   String adminAuthorArchived(String title) {
-    return '$title archived.';
+    return '$title ఆర్కైవ్ చేయబడింది.';
   }
 
   @override
   String adminAuthorCreated(String title) {
-    return '$title created as a draft.';
+    return '$title డ్రాఫ్ట్‌గా సృష్టించబడింది.';
   }
 
   @override
-  String get adminAuthorSaved => 'Journey saved.';
+  String get adminAuthorSaved => 'అభ్యాస ప్రయాణం సేవ్ చేయబడింది.';
 
   @override
   String adminAuthorNotReady(String problems) {
-    return 'This quiz is not ready to publish. $problems';
+    return 'ఈ క్విజ్ ప్రచురించడానికి సిద్ధంగా లేదు. $problems';
   }
 
   @override
-  String get adminAuthorTitle => 'Title';
+  String get adminAuthorTitle => 'శీర్షిక';
 
   @override
-  String get adminAuthorDescription => 'Description (optional)';
+  String get adminAuthorDescription => 'వివరణ (ఐచ్ఛికం)';
 
   @override
-  String get adminAuthorQuizSettings => 'Quiz settings';
+  String get adminAuthorQuizSettings => 'క్విజ్ సెట్టింగ్‌లు';
 
   @override
   String adminAuthorEditQuiz(String title) {
-    return 'Edit quiz: $title';
+    return 'క్విజ్ సవరించండి: $title';
   }
 
   @override
   String adminAuthorEditJourney(String title) {
-    return 'Edit journey: $title';
+    return 'అభ్యాస ప్రయాణం సవరించండి: $title';
   }
 
   @override
-  String get adminAuthorQuestions => 'Questions';
+  String get adminAuthorQuestions => 'ప్రశ్నలు';
 
   @override
-  String get adminAuthorNoQuestions => 'No questions yet.';
+  String get adminAuthorNoQuestions => 'ఇంకా ప్రశ్నలు లేవు.';
 
   @override
   String adminAuthorQuestionLine(int number, String text) {
@@ -15399,203 +15529,203 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String adminAuthorCorrectAnswer(String answer) {
-    return 'Correct answer: $answer';
+    return 'సరైన జవాబు: $answer';
   }
 
   @override
-  String get adminAuthorRemove => 'Remove';
+  String get adminAuthorRemove => 'తీసివేయండి';
 
   @override
   String adminAuthorRemoveNamed(String item) {
-    return 'Remove $item';
+    return '$item ను తీసివేయండి';
   }
 
   @override
-  String get adminAuthorAddNewQuestion => 'Type a new question';
+  String get adminAuthorAddNewQuestion => 'కొత్త ప్రశ్న టైప్ చేయండి';
 
   @override
-  String get adminAuthorAddBankQuestion => 'Add from question bank';
+  String get adminAuthorAddBankQuestion => 'ప్రశ్నల బ్యాంక్ నుండి జోడించండి';
 
   @override
-  String get adminAuthorQuestionText => 'Question';
+  String get adminAuthorQuestionText => 'ప్రశ్న';
 
   @override
   String adminAuthorOption(int number) {
-    return 'Option $number';
+    return 'ఎంపిక $number';
   }
 
   @override
   String adminAuthorOptionalOption(int number) {
-    return 'Option $number (optional)';
+    return 'ఎంపిక $number (ఐచ్ఛికం)';
   }
 
   @override
-  String get adminAuthorCorrectOption => 'Correct answer';
+  String get adminAuthorCorrectOption => 'సరైన జవాబు';
 
   @override
   String get adminAuthorCorrectIsBlank =>
-      'The correct answer is blank. Fill it in or choose another option.';
+      'సరైన జవాబు ఖాళీగా ఉంది. దాన్ని నింపండి లేదా వేరే ఎంపికను ఎంచుకోండి.';
 
   @override
-  String get adminAuthorExplanation => 'Explanation (optional)';
+  String get adminAuthorExplanation => 'వివరణ (ఐచ్ఛికం)';
 
   @override
   String get adminAuthorSaveToBank =>
-      'Also save to the teacher\'s question bank';
+      'ఉపాధ్యాయుల ప్రశ్నల బ్యాంక్‌లో కూడా సేవ్ చేయండి';
 
   @override
-  String get adminAuthorNeedFourOptions => 'Fill in all four options.';
+  String get adminAuthorNeedFourOptions => 'నాలుగు ఎంపికలనూ నింపండి.';
 
   @override
-  String get adminAuthorNeedTwoOptions => 'Fill in at least two options.';
+  String get adminAuthorNeedTwoOptions => 'కనీసం రెండు ఎంపికలు నింపండి.';
 
   @override
-  String get adminAuthorDuplicateOptions => 'Each option must be different.';
+  String get adminAuthorDuplicateOptions => 'ప్రతి ఎంపిక వేరుగా ఉండాలి.';
 
   @override
   String adminAuthorRequired(String field) {
-    return '$field is required.';
+    return '$field తప్పనిసరి.';
   }
 
   @override
-  String get adminAuthorAdd => 'Add';
+  String get adminAuthorAdd => 'జోడించండి';
 
   @override
   String adminAuthorAddNamed(String item) {
-    return 'Add $item';
+    return '$item ను జోడించండి';
   }
 
   @override
-  String get adminAuthorBankTitle => 'Teacher\'s question bank';
+  String get adminAuthorBankTitle => 'ఉపాధ్యాయుల ప్రశ్నల బ్యాంక్';
 
   @override
   String get adminAuthorBankEmpty =>
-      'This teacher has no saved questions for this class and subject.';
+      'ఈ తరగతి మరియు సబ్జెక్టుకు ఈ ఉపాధ్యాయులు సేవ్ చేసిన ప్రశ్నలు లేవు.';
 
   @override
-  String get adminAuthorDone => 'Done';
+  String get adminAuthorDone => 'పూర్తయింది';
 
   @override
-  String get adminAuthorGraded => 'Graded: score the questions';
+  String get adminAuthorGraded => 'మార్కులతో: ప్రశ్నలకు మార్కులు ఇవ్వండి';
 
   @override
-  String get adminAuthorRetries => 'Retries after a wrong answer';
+  String get adminAuthorRetries => 'తప్పు జవాబు తర్వాత మళ్లీ ప్రయత్నాలు';
 
   @override
-  String get adminAuthorSteps => 'Steps';
+  String get adminAuthorSteps => 'దశలు';
 
   @override
-  String get adminAuthorNoSteps => 'No steps yet.';
+  String get adminAuthorNoSteps => 'ఇంకా దశలు లేవు.';
 
   @override
   String adminAuthorStepRecording(String title) {
-    return 'Recording: $title';
+    return 'రికార్డింగ్: $title';
   }
 
   @override
   String adminAuthorStepNarration(String text) {
-    return 'Narration: $text';
+    return 'వివరణ పాఠం: $text';
   }
 
   @override
   String adminAuthorStepQuestion(String text) {
-    return 'Question: $text';
+    return 'ప్రశ్న: $text';
   }
 
   @override
   String adminAuthorStepPoll(String text) {
-    return 'Poll: $text';
+    return 'పోల్: $text';
   }
 
   @override
-  String get adminAuthorMoveUp => 'Move up';
+  String get adminAuthorMoveUp => 'పైకి జరపండి';
 
   @override
   String adminAuthorMoveUpNamed(String item) {
-    return 'Move $item up';
+    return '$item ను పైకి జరపండి';
   }
 
   @override
-  String get adminAuthorMoveDown => 'Move down';
+  String get adminAuthorMoveDown => 'కిందికి జరపండి';
 
   @override
   String adminAuthorMoveDownNamed(String item) {
-    return 'Move $item down';
+    return '$item ను కిందికి జరపండి';
   }
 
   @override
-  String get adminAuthorAddRecording => 'Add recording';
+  String get adminAuthorAddRecording => 'రికార్డింగ్ జోడించండి';
 
   @override
-  String get adminAuthorAddNarration => 'Add narration';
+  String get adminAuthorAddNarration => 'వివరణ పాఠం జోడించండి';
 
   @override
-  String get adminAuthorAddQuestion => 'Add question';
+  String get adminAuthorAddQuestion => 'ప్రశ్న జోడించండి';
 
   @override
-  String get adminAuthorAddPoll => 'Add poll';
+  String get adminAuthorAddPoll => 'పోల్ జోడించండి';
 
   @override
-  String get adminAuthorRecordingsTitle => 'Teacher\'s recordings';
+  String get adminAuthorRecordingsTitle => 'ఉపాధ్యాయుల రికార్డింగ్‌లు';
 
   @override
   String get adminAuthorRecordingsNote =>
-      'Only recordings this teacher uploaded for this class and subject can be used.';
+      'ఈ తరగతి మరియు సబ్జెక్టుకు ఈ ఉపాధ్యాయులు అప్‌లోడ్ చేసిన రికార్డింగ్‌లను మాత్రమే ఉపయోగించవచ్చు.';
 
   @override
   String get adminAuthorNoRecordings =>
-      'This teacher has not uploaded a recording for this class and subject.';
+      'ఈ తరగతి మరియు సబ్జెక్టుకు ఈ ఉపాధ్యాయులు ఏ రికార్డింగ్ అప్‌లోడ్ చేయలేదు.';
 
   @override
-  String get adminAuthorNarrationText => 'Narration text';
+  String get adminAuthorNarrationText => 'వివరణ పాఠం టెక్స్ట్';
 
   @override
-  String get adminAuthorPollText => 'Poll question';
+  String get adminAuthorPollText => 'పోల్ ప్రశ్న';
 
   @override
-  String get adminAuthorSaveJourney => 'Save journey';
+  String get adminAuthorSaveJourney => 'అభ్యాస ప్రయాణం సేవ్ చేయండి';
 
   @override
   String teacherHomeNotice(String kind, String title, String action) {
-    return '$kind $title: $action for you by your administrator.';
+    return '$kind $title: మీ నిర్వాహకులు మీ కోసం $action.';
   }
 
   @override
-  String get teacherHomeNoticeQuiz => 'Quiz';
+  String get teacherHomeNoticeQuiz => 'క్విజ్';
 
   @override
-  String get teacherHomeNoticeJourney => 'Journey';
+  String get teacherHomeNoticeJourney => 'ప్రయాణం';
 
   @override
-  String get teacherHomeNoticeCreated => 'added';
+  String get teacherHomeNoticeCreated => 'జోడించారు';
 
   @override
-  String get teacherHomeNoticePublished => 'published';
+  String get teacherHomeNoticePublished => 'ప్రచురించారు';
 
   @override
-  String get teacherHomeNoticeClosed => 'closed';
+  String get teacherHomeNoticeClosed => 'మూసివేశారు';
 
   @override
-  String get teacherHomeNoticeArchived => 'archived';
+  String get teacherHomeNoticeArchived => 'ఆర్కైవ్ చేశారు';
 
   @override
   String sessionPeopleJoined(String names) {
-    return '$names joined.';
+    return '$names చేరారు.';
   }
 
   @override
   String sessionPeopleLeft(String names) {
-    return '$names left.';
+    return '$names వెళ్లిపోయారు.';
   }
 
   @override
   String sessionNamesAnd(String first, String last) {
-    return '$first and $last';
+    return '$first మరియు $last';
   }
 
   @override
   String sessionHereOf(int here, int total) {
-    return '$here of $total here.';
+    return '$total లో $here మంది ఉన్నారు.';
   }
 
   @override
@@ -15603,63 +15733,64 @@ class AppLocalizationsTe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count students here.',
-      one: '1 student here.',
-      zero: 'No students here.',
+      other: '$count మంది విద్యార్థులు ఉన్నారు.',
+      one: '1 విద్యార్థి ఉన్నారు.',
+      zero: 'విద్యార్థులు ఎవరూ లేరు.',
     );
     return '$_temp0';
   }
 
   @override
   String sessionStartSummary(int here, int total) {
-    return '$here of $total students here.';
+    return '$total మంది విద్యార్థులలో $here మంది ఉన్నారు.';
   }
 
   @override
   String uiFocusedField(String field) {
-    return 'You are in $field.';
+    return 'మీరు $fieldలో ఉన్నారు.';
   }
 
   @override
-  String get sessionStartButton => '5: Start';
+  String get sessionStartButton => '5: ప్రారంభించండి';
 
   @override
   String get sessionStartLabel =>
-      'Start a quiz, journey or recording for the class';
+      'తరగతి కోసం క్విజ్, అభ్యాస ప్రయాణం లేదా రికార్డింగ్ ప్రారంభించండి';
 
   @override
-  String get sessionStartTitle => 'Start for the class';
+  String get sessionStartTitle => 'తరగతి కోసం ప్రారంభించండి';
 
   @override
-  String get sessionStartQuiz => 'Quiz';
+  String get sessionStartQuiz => 'క్విజ్';
 
   @override
-  String get sessionStartJourney => 'Journey';
+  String get sessionStartJourney => 'అభ్యాస ప్రయాణం';
 
   @override
-  String get sessionStartRecording => 'Recording';
+  String get sessionStartRecording => 'రికార్డింగ్';
 
   @override
   String sessionStatusKeyButton(String title) {
-    return '6: Status of $title';
+    return '6: $title స్థితి';
   }
 
   @override
   String sessionStatusKeyLabel(String title) {
-    return 'Status of $title';
+    return '$title స్థితి';
   }
 
   @override
-  String get sessionKeyStart => 'Start a quiz, journey or recording';
+  String get sessionKeyStart =>
+      'క్విజ్, అభ్యాస ప్రయాణం లేదా రికార్డింగ్ ప్రారంభించండి';
 
   @override
-  String get sessionKeyStatus => 'Status of what is running';
+  String get sessionKeyStatus => 'జరుగుతున్న దాని స్థితి';
 
   @override
   String sessionActivityCounts(int present, int started, int finished) {
-    return '$present students in class. $started have attempted it, $finished finished.';
+    return 'తరగతిలో $present మంది విద్యార్థులు ఉన్నారు. $started మంది ప్రయత్నించారు, $finished మంది పూర్తి చేశారు.';
   }
 
   @override
-  String get sessionNowPlayingTitle => 'the recording';
+  String get sessionNowPlayingTitle => 'రికార్డింగ్';
 }

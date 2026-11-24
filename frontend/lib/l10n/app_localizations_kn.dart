@@ -10,63 +10,63 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get spokenDigitWords =>
-      'zero, one, two, three, four, five, six, seven, eight, nine';
+      'ಸೊನ್ನೆ, ಒಂದು, ಎರಡು, ಮೂರು, ನಾಲ್ಕು, ಐದು, ಆರು, ಏಳು, ಎಂಟು, ಒಂಬತ್ತು';
 
   @override
   String get spokenMonths =>
-      'January, February, March, April, May, June, July, August, September, October, November, December';
+      'ಜನವರಿ, ಫೆಬ್ರವರಿ, ಮಾರ್ಚ್, ಏಪ್ರಿಲ್, ಮೇ, ಜೂನ್, ಜುಲೈ, ಆಗಸ್ಟ್, ಸೆಪ್ಟೆಂಬರ್, ಅಕ್ಟೋಬರ್, ನವೆಂಬರ್, ಡಿಸೆಂಬರ್';
 
   @override
   String get spokenWeekdays =>
-      'Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday';
+      'ಸೋಮವಾರ, ಮಂಗಳವಾರ, ಬುಧವಾರ, ಗುರುವಾರ, ಶುಕ್ರವಾರ, ಶನಿವಾರ, ಭಾನುವಾರ';
 
   @override
-  String get spokenPlus => 'plus';
+  String get spokenPlus => 'ಪ್ಲಸ್';
 
   @override
   String spokenSession(String number) {
-    return 'session $number';
+    return 'ಸೆಷನ್ $number';
   }
 
   @override
-  String get spokenNoon => '12 noon';
+  String get spokenNoon => 'ಮಧ್ಯಾಹ್ನ 12';
 
   @override
-  String get spokenMidnight => 'midnight';
+  String get spokenMidnight => 'ಮಧ್ಯರಾತ್ರಿ';
 
   @override
   String spokenOClock(String hour) {
-    return '$hour o\'clock';
+    return '$hour ಗಂಟೆ';
   }
 
   @override
   String spokenMorning(String clock) {
-    return '$clock in the morning';
+    return 'ಬೆಳಿಗ್ಗೆ $clock';
   }
 
   @override
   String spokenAfternoon(String clock) {
-    return '$clock in the afternoon';
+    return 'ಮಧ್ಯಾಹ್ನ $clock';
   }
 
   @override
   String spokenEvening(String clock) {
-    return '$clock in the evening';
+    return 'ಸಂಜೆ $clock';
   }
 
   @override
   String spokenNight(String clock) {
-    return '$clock at night';
+    return 'ರಾತ್ರಿ $clock';
   }
 
   @override
-  String get spokenToday => 'today';
+  String get spokenToday => 'ಇಂದು';
 
   @override
-  String get spokenTomorrow => 'tomorrow';
+  String get spokenTomorrow => 'ನಾಳೆ';
 
   @override
-  String get spokenYesterday => 'yesterday';
+  String get spokenYesterday => 'ನಿನ್ನೆ';
 
   @override
   String spokenDate(String weekday, String day, String month) {
@@ -85,7 +85,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String spokenDateAtTime(String date, String time) {
-    return '$date at $time';
+    return '$date, $timeಕ್ಕೆ';
   }
 
   @override
@@ -93,8 +93,8 @@ class AppLocalizationsKn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count hours',
-      one: '1 hour',
+      other: '$count ಗಂಟೆಗಳು',
+      one: '1 ಗಂಟೆ',
     );
     return '$_temp0';
   }
@@ -104,8 +104,8 @@ class AppLocalizationsKn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count minutes',
-      one: '1 minute',
+      other: '$count ನಿಮಿಷಗಳು',
+      one: '1 ನಿಮಿಷ',
     );
     return '$_temp0';
   }
@@ -115,347 +115,349 @@ class AppLocalizationsKn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count seconds',
-      one: '1 second',
+      other: '$count ಸೆಕೆಂಡುಗಳು',
+      one: '1 ಸೆಕೆಂಡ್',
     );
     return '$_temp0';
   }
 
   @override
   String spokenPositionOf(String position, String total) {
-    return '$position of $total';
+    return '$total ರಲ್ಲಿ $position';
   }
 
   @override
   String spokenPercent(String value) {
-    return '$value percent';
+    return '$value ಪ್ರತಿಶತ';
   }
 
   @override
-  String get spokenOn => 'on';
+  String get spokenOn => 'ಆನ್';
 
   @override
-  String get spokenOff => 'off';
+  String get spokenOff => 'ಆಫ್';
 
   @override
-  String get keyBack10Seconds => 'Back 10 seconds';
+  String get keyBack10Seconds => '10 ಸೆಕೆಂಡ್ ಹಿಂದೆ';
 
   @override
-  String get keyPlayOrPause => 'Play or pause';
+  String get keyPlayOrPause => 'ಪ್ಲೇ ಅಥವಾ ವಿರಾಮ';
 
   @override
-  String get keyForward10Seconds => 'Forward 10 seconds';
+  String get keyForward10Seconds => '10 ಸೆಕೆಂಡ್ ಮುಂದೆ';
 
   @override
-  String get keySlower => 'Slower';
+  String get keySlower => 'ನಿಧಾನ';
 
   @override
-  String get keyFaster => 'Faster';
+  String get keyFaster => 'ವೇಗ';
 
   @override
-  String get keySlowerPlaybackSpeed => 'Slower playback speed';
+  String get keySlowerPlaybackSpeed => 'ಪ್ಲೇಬ್ಯಾಕ್ ವೇಗ ಕಡಿಮೆ';
 
   @override
-  String get keyFasterPlaybackSpeed => 'Faster playback speed';
+  String get keyFasterPlaybackSpeed => 'ಪ್ಲೇಬ್ಯಾಕ್ ವೇಗ ಹೆಚ್ಚು';
 
   @override
-  String get keyLogin => 'Login';
+  String get keyLogin => 'ಸೈನ್ ಇನ್';
 
   @override
-  String get keyRegister => 'Register';
+  String get keyRegister => 'ನೋಂದಣಿ';
 
   @override
-  String get keySettings => 'Settings';
+  String get keySettings => 'ಸೆಟ್ಟಿಂಗ್‌ಗಳು';
 
   @override
-  String get keySelectStudentAccount => 'Select Student Account';
+  String get keySelectStudentAccount => 'ವಿದ್ಯಾರ್ಥಿ ಖಾತೆ ಆರಿಸಿ';
 
   @override
-  String get keySelectTeacherAccount => 'Select Teacher Account';
+  String get keySelectTeacherAccount => 'ಶಿಕ್ಷಕರ ಖಾತೆ ಆರಿಸಿ';
 
   @override
-  String get keySelectAdministratorAccount => 'Select Administrator Account';
+  String get keySelectAdministratorAccount => 'ನಿರ್ವಾಹಕರ ಖಾತೆ ಆರಿಸಿ';
 
   @override
-  String get keyGoToLogin => 'Go to Login';
+  String get keyGoToLogin => 'ಸೈನ್ ಇನ್‌ಗೆ ಹೋಗಿ';
 
   @override
-  String get keyToggleTeacherRegistration => 'Toggle Teacher Registration';
+  String get keyToggleTeacherRegistration => 'ಶಿಕ್ಷಕರ ನೋಂದಣಿ ಆನ್ ಅಥವಾ ಆಫ್';
 
   @override
-  String get keyGoBack => 'Go Back';
+  String get keyGoBack => 'ಹಿಂದೆ ಹೋಗಿ';
 
   @override
-  String get keyToggleTTS => 'Toggle T T S';
+  String get keyToggleTTS => 'ಟಿ ಟಿ ಎಸ್ ಆನ್ ಅಥವಾ ಆಫ್';
 
   @override
-  String get keyToggleVoiceCommands => 'Toggle Voice Commands';
+  String get keyToggleVoiceCommands => 'ಧ್ವನಿ ಆಜ್ಞೆಗಳು ಆನ್ ಅಥವಾ ಆಫ್';
 
   @override
-  String get keyShowOrHideShortcuts => 'Show or Hide Shortcuts';
+  String get keyShowOrHideShortcuts => 'ಶಾರ್ಟ್‌ಕಟ್‌ಗಳನ್ನು ತೋರಿಸಿ ಅಥವಾ ಮರೆಮಾಡಿ';
 
   @override
-  String get keyToggleHighContrast => 'Toggle High Contrast';
+  String get keyToggleHighContrast => 'ಹೈ ಕಾಂಟ್ರಾಸ್ಟ್ ಆನ್ ಅಥವಾ ಆಫ್';
 
   @override
-  String get keyTestTTS => 'Test T T S';
+  String get keyTestTTS => 'ಟಿ ಟಿ ಎಸ್ ಪರೀಕ್ಷಿಸಿ';
 
   @override
-  String get keySaveSettings => 'Save Settings';
+  String get keySaveSettings => 'ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಉಳಿಸಿ';
 
   @override
-  String get keyCheckVoice => 'Check voice';
+  String get keyCheckVoice => 'ಧ್ವನಿ ಪರಿಶೀಲಿಸಿ';
 
   @override
-  String get keySoundCuesOnOrOff => 'Sound cues on or off';
+  String get keySoundCuesOnOrOff => 'ಶಬ್ದ ಸೂಚನೆಗಳು ಆನ್ ಅಥವಾ ಆಫ್';
 
   @override
-  String get keyVibrationOnOrOff => 'Vibration on or off';
+  String get keyVibrationOnOrOff => 'ಕಂಪನ ಆನ್ ಅಥವಾ ಆಫ್';
 
   @override
-  String get keyLogOutAsksToConfirm => 'Log out, asks to confirm';
+  String get keyLogOutAsksToConfirm => 'ಲಾಗ್ ಔಟ್, ಖಚಿತಪಡಿಸಲು ಕೇಳುತ್ತದೆ';
 
   @override
-  String get keyRefreshSessions => 'Refresh Sessions';
+  String get keyRefreshSessions => 'ಸೆಷನ್‌ಗಳನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಿ';
 
   @override
-  String get keySearchSessionsByNameOrID => 'Search Sessions by Name or ID';
+  String get keySearchSessionsByNameOrID =>
+      'ಹೆಸರು ಅಥವಾ ID ಮೂಲಕ ಸೆಷನ್‌ಗಳನ್ನು ಹುಡುಕಿ';
 
   @override
-  String get keyRecordedAudioLibrary => 'Recorded Audio Library';
+  String get keyRecordedAudioLibrary => 'ರೆಕಾರ್ಡ್ ಮಾಡಿದ ಆಡಿಯೋ ಲೈಬ್ರರಿ';
 
   @override
-  String get keyMyPrivatePlaylists => 'My Private Playlists';
+  String get keyMyPrivatePlaylists => 'ನನ್ನ ಖಾಸಗಿ ಪ್ಲೇಲಿಸ್ಟ್‌ಗಳು';
 
   @override
-  String get keyQuizzes => 'Quizzes';
+  String get keyQuizzes => 'ಕ್ವಿಜ್‌ಗಳು';
 
   @override
-  String get keyLearningJourneys => 'Learning journeys';
+  String get keyLearningJourneys => 'ಕಲಿಕೆಯ ಪಯಣಗಳು';
 
   @override
-  String get keyCreateSession => 'Create Session';
+  String get keyCreateSession => 'ಸೆಷನ್ ರಚಿಸಿ';
 
   @override
-  String get keyClassPlaylists => 'Class Playlists';
+  String get keyClassPlaylists => 'ತರಗತಿ ಪ್ಲೇಲಿಸ್ಟ್‌ಗಳು';
 
   @override
   String get keyChooseClassAndSubjectWorkspace =>
-      'Choose class and subject workspace';
+      'ತರಗತಿ ಮತ್ತು ವಿಷಯದ ಕಾರ್ಯಕ್ಷೇತ್ರ ಆರಿಸಿ';
 
   @override
-  String get keyRefresh => 'Refresh';
+  String get keyRefresh => 'ರಿಫ್ರೆಶ್';
 
   @override
-  String get keySearchUsers => 'Search Users';
+  String get keySearchUsers => 'ಬಳಕೆದಾರರನ್ನು ಹುಡುಕಿ';
 
   @override
-  String get keyChangeAccountTypeFilter => 'Change Account Type Filter';
+  String get keyChangeAccountTypeFilter => 'ಖಾತೆ ಪ್ರಕಾರದ ಫಿಲ್ಟರ್ ಬದಲಿಸಿ';
 
   @override
-  String get keyChangeAssignmentFilter => 'Change Assignment Filter';
+  String get keyChangeAssignmentFilter => 'ನಿಯೋಜನೆ ಫಿಲ್ಟರ್ ಬದಲಿಸಿ';
 
   @override
-  String get keyCreateSubject => 'Create Subject';
+  String get keyCreateSubject => 'ವಿಷಯ ರಚಿಸಿ';
 
   @override
-  String get keyCreateClass => 'Create Class';
+  String get keyCreateClass => 'ತರಗತಿ ರಚಿಸಿ';
 
   @override
   String get keyChooseAccountsClassesOrSubjectsSection =>
-      'Choose Accounts, Classes, or Subjects section';
+      'ಖಾತೆಗಳು, ತರಗತಿಗಳು ಅಥವಾ ವಿಷಯಗಳ ವಿಭಾಗ ಆರಿಸಿ';
 
   @override
-  String get keyGoBackAlt => 'Go back';
+  String get keyGoBackAlt => 'ಹಿಂದೆ ಹೋಗಿ';
 
   @override
-  String get keyCreateBankQuestion => 'Create bank question';
+  String get keyCreateBankQuestion => 'ಪ್ರಶ್ನೆ ಬ್ಯಾಂಕ್ ಪ್ರಶ್ನೆ ರಚಿಸಿ';
 
   @override
-  String get keyCreateQuizDraft => 'Create quiz draft';
+  String get keyCreateQuizDraft => 'ಕ್ವಿಜ್ ಕರಡು ರಚಿಸಿ';
 
   @override
   String get keyCreateUntimedUngradedPractice =>
-      'Create untimed ungraded practice';
+      'ಸಮಯ ಮಿತಿ ಮತ್ತು ಅಂಕಗಳಿಲ್ಲದ ಅಭ್ಯಾಸ ರಚಿಸಿ';
 
   @override
-  String get keyRefreshQuizzes => 'Refresh quizzes';
+  String get keyRefreshQuizzes => 'ಕ್ವಿಜ್‌ಗಳನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಿ';
 
   @override
-  String get keyChooseOption1 => 'Choose option 1';
+  String get keyChooseOption1 => 'ಆಯ್ಕೆ 1 ಆರಿಸಿ';
 
   @override
-  String get keyChooseOption2 => 'Choose option 2';
+  String get keyChooseOption2 => 'ಆಯ್ಕೆ 2 ಆರಿಸಿ';
 
   @override
-  String get keyChooseOption3 => 'Choose option 3';
+  String get keyChooseOption3 => 'ಆಯ್ಕೆ 3 ಆರಿಸಿ';
 
   @override
-  String get keyChooseOption4 => 'Choose option 4';
+  String get keyChooseOption4 => 'ಆಯ್ಕೆ 4 ಆರಿಸಿ';
 
   @override
-  String get keySubmitSelectedAnswer => 'Submit selected answer';
+  String get keySubmitSelectedAnswer => 'ಆರಿಸಿದ ಉತ್ತರವನ್ನು ಸಲ್ಲಿಸಿ';
 
   @override
-  String get keyRepeatQuestionAndOptions => 'Repeat question and options';
+  String get keyRepeatQuestionAndOptions =>
+      'ಪ್ರಶ್ನೆ ಮತ್ತು ಆಯ್ಕೆಗಳನ್ನು ಮತ್ತೆ ಹೇಳಿ';
 
   @override
-  String get keySlowerQuizSpeech => 'Slower quiz speech';
+  String get keySlowerQuizSpeech => 'ಕ್ವಿಜ್ ಧ್ವನಿ ನಿಧಾನ';
 
   @override
-  String get keyWhereAmIIncludingTimeLeft => 'Where am I, including time left';
+  String get keyWhereAmIIncludingTimeLeft => 'ನಾನು ಎಲ್ಲಿದ್ದೇನೆ, ಉಳಿದ ಸಮಯ ಸೇರಿ';
 
   @override
-  String get keyFasterQuizSpeech => 'Faster quiz speech';
+  String get keyFasterQuizSpeech => 'ಕ್ವಿಜ್ ಧ್ವನಿ ವೇಗ';
 
   @override
-  String get keyMuteOrUnmute => 'Mute or unmute';
+  String get keyMuteOrUnmute => 'ಮ್ಯೂಟ್ ಅಥವಾ ಅನ್‌ಮ್ಯೂಟ್';
 
   @override
-  String get keyRaiseOrLowerHand => 'Raise or lower hand';
+  String get keyRaiseOrLowerHand => 'ಕೈ ಎತ್ತಿ ಅಥವಾ ಕೈ ಇಳಿಸಿ';
 
   @override
-  String get keyHearClassStatus => 'Hear class status';
+  String get keyHearClassStatus => 'ತರಗತಿಯ ಸ್ಥಿತಿ ಕೇಳಿ';
 
   @override
-  String get keyChat => 'Chat';
+  String get keyChat => 'ಚಾಟ್';
 
   @override
   String get keyHearWhatTheTeacherIsPlaying =>
-      'Hear what the teacher is playing';
+      'ಶಿಕ್ಷಕರು ಏನು ಪ್ಲೇ ಮಾಡುತ್ತಿದ್ದಾರೆ ಎಂದು ಕೇಳಿ';
 
   @override
-  String get keyAnswerClassroomCheck => 'Answer classroom check';
+  String get keyAnswerClassroomCheck => 'ತರಗತಿ ಪರಿಶೀಲನೆಗೆ ಉತ್ತರಿಸಿ';
 
   @override
-  String get keyWhoIsInTheClass => 'Who is in the class';
+  String get keyWhoIsInTheClass => 'ತರಗತಿಯಲ್ಲಿ ಯಾರಿದ್ದಾರೆ';
 
   @override
-  String get keyLeaveSessionAsksToConfirm => 'Leave session, asks to confirm';
+  String get keyLeaveSessionAsksToConfirm => 'ಸೆಷನ್ ಬಿಡಿ, ಖಚಿತಪಡಿಸಲು ಕೇಳುತ್ತದೆ';
 
   @override
   String get keyRaisedHandsAcknowledgeAndLowerThemInOrder =>
-      'Raised hands: acknowledge and lower them in order';
+      'ಎತ್ತಿದ ಕೈಗಳು: ಕ್ರಮವಾಗಿ ಗಮನಿಸಿ ಮತ್ತು ಇಳಿಸಿ';
 
   @override
   String get keyClassRecordingPlayerPlayAndControlTheRecording =>
-      'Class recording player: play and control the recording';
+      'ತರಗತಿ ರೆಕಾರ್ಡಿಂಗ್ ಪ್ಲೇಯರ್: ರೆಕಾರ್ಡಿಂಗ್ ಪ್ಲೇ ಮಾಡಿ ಮತ್ತು ನಿಯಂತ್ರಿಸಿ';
 
   @override
   String get keyClassroomCheckStartCloseAndHearResponses =>
-      'Classroom check: start, close and hear responses';
+      'ತರಗತಿ ಪರಿಶೀಲನೆ: ಪ್ರಾರಂಭಿಸಿ, ಮುಚ್ಚಿ ಮತ್ತು ಉತ್ತರಗಳನ್ನು ಕೇಳಿ';
 
   @override
   String get keyParticipantsMuteOrRemoveSomeone =>
-      'Participants: mute or remove someone';
+      'ಭಾಗವಹಿಸುವವರು: ಯಾರನ್ನಾದರೂ ಮ್ಯೂಟ್ ಮಾಡಿ ಅಥವಾ ತೆಗೆದುಹಾಕಿ';
 
   @override
   String get keyTeacherToolsInviteStudentsEndClassForEveryone =>
-      'Teacher tools: invite students, end class for everyone';
+      'ಶಿಕ್ಷಕರ ಉಪಕರಣಗಳು: ವಿದ್ಯಾರ್ಥಿಗಳನ್ನು ಆಹ್ವಾನಿಸಿ, ಎಲ್ಲರಿಗೂ ತರಗತಿ ಮುಗಿಸಿ';
 
   @override
-  String get keyRefreshClasses => 'Refresh Classes';
+  String get keyRefreshClasses => 'ತರಗತಿಗಳನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಿ';
 
   @override
-  String get keySearchClassByName => 'Search Class by Name';
+  String get keySearchClassByName => 'ಹೆಸರಿನಿಂದ ತರಗತಿ ಹುಡುಕಿ';
 
   @override
-  String get keyAllAudioFiles => 'All Audio Files';
+  String get keyAllAudioFiles => 'ಎಲ್ಲಾ ಆಡಿಯೋ ಫೈಲ್‌ಗಳು';
 
   @override
   String get keyFocusFirstActiveClassUseDPadToBrowseClasses =>
-      'Focus first active class; use D-pad to browse classes';
+      'ಮೊದಲ ಸಕ್ರಿಯ ತರಗತಿಗೆ ಹೋಗಿ; ತರಗತಿಗಳನ್ನು ನೋಡಲು D-pad ಬಳಸಿ';
 
   @override
-  String get keyRefreshFiles => 'Refresh files';
+  String get keyRefreshFiles => 'ಫೈಲ್‌ಗಳನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಿ';
 
   @override
-  String get keyNextSubjectFilter => 'Next subject filter';
+  String get keyNextSubjectFilter => 'ಮುಂದಿನ ವಿಷಯ ಫಿಲ್ಟರ್';
 
   @override
-  String get keyStopPlayback => 'Stop playback';
+  String get keyStopPlayback => 'ಪ್ಲೇಬ್ಯಾಕ್ ನಿಲ್ಲಿಸಿ';
 
   @override
-  String get keyAddAudioFile => 'Add audio file';
+  String get keyAddAudioFile => 'ಆಡಿಯೋ ಫೈಲ್ ಸೇರಿಸಿ';
 
   @override
-  String get keyUploadNewFile => 'Upload New File';
+  String get keyUploadNewFile => 'ಹೊಸ ಫೈಲ್ ಅಪ್‌ಲೋಡ್ ಮಾಡಿ';
 
   @override
-  String get keySelectFromExistingLibrary => 'Select from Existing Library';
+  String get keySelectFromExistingLibrary => 'ಈಗಿರುವ ಲೈಬ್ರರಿಯಿಂದ ಆರಿಸಿ';
 
   @override
-  String get keyRefreshList => 'Refresh List';
+  String get keyRefreshList => 'ಪಟ್ಟಿಯನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಿ';
 
   @override
   String get appName => 'SEEDS';
 
   @override
-  String get languageEnglish => 'English';
+  String get languageEnglish => 'ಇಂಗ್ಲಿಷ್';
 
   @override
-  String get languageHindi => 'Hindi';
+  String get languageHindi => 'ಹಿಂದಿ';
 
   @override
-  String get languageKannada => 'Kannada';
+  String get languageKannada => 'ಕನ್ನಡ';
 
   @override
-  String get languageTelugu => 'Telugu';
+  String get languageTelugu => 'ತೆಲುಗು';
 
   @override
-  String get languageBengali => 'Bengali';
+  String get languageBengali => 'ಬಂಗಾಳಿ';
 
   @override
-  String get commonPleaseWait => 'Please wait. Still working.';
+  String get commonPleaseWait => 'ದಯವಿಟ್ಟು ಕಾಯಿರಿ. ಇನ್ನೂ ಕೆಲಸ ನಡೆಯುತ್ತಿದೆ.';
 
   @override
-  String get commonSignInFirst => 'Please sign in first.';
+  String get commonSignInFirst => 'ದಯವಿಟ್ಟು ಮೊದಲು ಸೈನ್ ಇನ್ ಮಾಡಿ.';
 
   @override
   String get commonAccountChanged =>
-      'Your account changed on this phone. Sign in again.';
+      'ಈ ಫೋನ್‌ನಲ್ಲಿ ನಿಮ್ಮ ಖಾತೆ ಬದಲಾಗಿದೆ. ಮತ್ತೆ ಸೈನ್ ಇನ್ ಮಾಡಿ.';
 
   @override
   String get commonNoWorkspace =>
-      'No class and subject is chosen. Press 7 to choose a workspace.';
+      'ಯಾವುದೇ ತರಗತಿ ಮತ್ತು ವಿಷಯವನ್ನು ಆರಿಸಿಲ್ಲ. ಕಾರ್ಯಕ್ಷೇತ್ರ ಆರಿಸಲು 7 ಒತ್ತಿ.';
 
   @override
   String get commonNoConnection =>
-      'No connection to the school server. Check your internet and try again.';
+      'ಶಾಲೆಯ ಸರ್ವರ್‌ಗೆ ಸಂಪರ್ಕವಿಲ್ಲ. ನಿಮ್ಮ ಇಂಟರ್ನೆಟ್ ಪರಿಶೀಲಿಸಿ ಮತ್ತು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
-  String get commonNotAvailable => 'This is not available right now.';
+  String get commonNotAvailable => 'ಇದು ಈಗ ಲಭ್ಯವಿಲ್ಲ.';
 
   @override
-  String get commonNothingChanged => 'Nothing was changed.';
+  String get commonNothingChanged => 'ಏನನ್ನೂ ಬದಲಾಯಿಸಲಾಗಿಲ್ಲ.';
 
   @override
-  String get commonNoMessages => 'There are no messages on this screen.';
+  String get commonNoMessages => 'ಈ ಪರದೆಯಲ್ಲಿ ಯಾವುದೇ ಸಂದೇಶಗಳಿಲ್ಲ.';
 
   @override
-  String get commonEndOfList => 'End of list. Back to the first item.';
+  String get commonEndOfList => 'ಪಟ್ಟಿಯ ಕೊನೆ. ಮೊದಲ ಐಟಂಗೆ ಹಿಂತಿರುಗಲಾಗಿದೆ.';
 
   @override
-  String get commonTopOfList => 'Top of list. Moved to the last item.';
+  String get commonTopOfList => 'ಪಟ್ಟಿಯ ಮೇಲ್ಭಾಗ. ಕೊನೆಯ ಐಟಂಗೆ ಹೋಗಲಾಗಿದೆ.';
 
   @override
   String commonOpening(String what) {
-    return 'Opening $what.';
+    return '$what ತೆರೆಯಲಾಗುತ್ತಿದೆ.';
   }
 
   @override
   String commonOpeningNeedsInternet(String what) {
-    return 'Opening $what. Internet is required.';
+    return '$what ತೆರೆಯಲಾಗುತ್ತಿದೆ. ಇಂಟರ್ನೆಟ್ ಅಗತ್ಯವಿದೆ.';
   }
 
   @override
   String commonUnavailable(String what) {
-    return '$what is not available.';
+    return '$what ಲಭ್ಯವಿಲ್ಲ.';
   }
 
   @override
   String commonUnavailableBecause(String what, String reason) {
-    return '$what is not available. $reason';
+    return '$what ಲಭ್ಯವಿಲ್ಲ. $reason';
   }
 
   @override
@@ -465,12 +467,12 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String commonWhereFocused(String item) {
-    return 'Focused: $item.';
+    return 'ಆಯ್ಕೆಯಾಗಿರುವುದು: $item.';
   }
 
   @override
   String keypadPressFor(String key, String action) {
-    return 'Press $key for $action';
+    return '$actionಗಾಗಿ $key ಒತ್ತಿ';
   }
 
   @override
@@ -478,174 +480,174 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get keypadRepeatInstructions =>
-      'Press star to repeat these instructions.';
+      'ಈ ಸೂಚನೆಗಳನ್ನು ಮತ್ತೆ ಕೇಳಲು ಸ್ಟಾರ್ ಒತ್ತಿ.';
 
   @override
-  String get keypadRepeatFullHelp => 'Press star to repeat full help.';
+  String get keypadRepeatFullHelp =>
+      'ಪೂರ್ಣ ಸಹಾಯವನ್ನು ಮತ್ತೆ ಕೇಳಲು ಸ್ಟಾರ್ ಒತ್ತಿ.';
 
   @override
-  String get keypadStarForShortcuts => 'Press star for all shortcuts.';
+  String get keypadStarForShortcuts => 'ಎಲ್ಲಾ ಶಾರ್ಟ್‌ಕಟ್‌ಗಳಿಗಾಗಿ ಸ್ಟಾರ್ ಒತ್ತಿ.';
 
   @override
   String keypadScreenReaderIntro(String screen) {
-    return '$screen. Press star for keypad help.';
+    return '$screen. ಕೀಪ್ಯಾಡ್ ಸಹಾಯಕ್ಕಾಗಿ ಸ್ಟಾರ್ ಒತ್ತಿ.';
   }
 
   @override
   String keypadMoveThroughSections(String sections) {
-    return 'Use D-pad up and down to move through $sections. Press OK to activate the focused control.';
+    return '$sections ನಡುವೆ ಚಲಿಸಲು D-pad ಮೇಲೆ ಮತ್ತು ಕೆಳಗೆ ಬಳಸಿ. ಆಯ್ಕೆಯಾಗಿರುವ ನಿಯಂತ್ರಣವನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಲು ಓಕೆ ಒತ್ತಿ.';
   }
 
   @override
   String get keypadNumberedBackAndStop =>
-      'Press 0 to go back or cancel. Press hash to stop app speech.';
+      'ಹಿಂದೆ ಹೋಗಲು ಅಥವಾ ರದ್ದುಮಾಡಲು 0 ಒತ್ತಿ. ಆ್ಯಪ್ ಧ್ವನಿ ನಿಲ್ಲಿಸಲು ಹ್ಯಾಶ್ ಒತ್ತಿ.';
 
   @override
   String get keypadNumberedEditing =>
-      'While editing, keys enter text. Press OK to finish, or use up or down to leave the field.';
+      'ಎಡಿಟ್ ಮಾಡುವಾಗ, ಕೀಗಳು ಪಠ್ಯವನ್ನು ನಮೂದಿಸುತ್ತವೆ. ಮುಗಿಸಲು ಓಕೆ ಒತ್ತಿ, ಅಥವಾ ಫೀಲ್ಡ್‌ನಿಂದ ಹೊರಬರಲು ಮೇಲೆ ಅಥವಾ ಕೆಳಗೆ ಬಳಸಿ.';
 
   @override
   String get keypadNumberedMove =>
-      'Use D-pad up and down to move between choices and OK to select.';
+      'ಆಯ್ಕೆಗಳ ನಡುವೆ ಚಲಿಸಲು D-pad ಮೇಲೆ ಮತ್ತು ಕೆಳಗೆ ಬಳಸಿ, ಆರಿಸಲು ಓಕೆ ಒತ್ತಿ.';
 
   @override
   String get keypadEssentialMove =>
-      'Use up and down to move, and OK to select.';
+      'ಚಲಿಸಲು ಮೇಲೆ ಮತ್ತು ಕೆಳಗೆ ಬಳಸಿ, ಆರಿಸಲು ಓಕೆ ಒತ್ತಿ.';
 
   @override
-  String get keypadPressZeroBack => 'Press 0 to go back.';
+  String get keypadPressZeroBack => 'ಹಿಂದೆ ಹೋಗಲು 0 ಒತ್ತಿ.';
 
   @override
   String get keypadHashAndStar =>
-      'Press hash to stop speech. Press star to repeat these instructions.';
+      'ಧ್ವನಿ ನಿಲ್ಲಿಸಲು ಹ್ಯಾಶ್ ಒತ್ತಿ. ಈ ಸೂಚನೆಗಳನ್ನು ಮತ್ತೆ ಕೇಳಲು ಸ್ಟಾರ್ ಒತ್ತಿ.';
 
   @override
-  String get keypadDirectionKeys => 'Use the direction keys to move.';
+  String get keypadDirectionKeys => 'ಚಲಿಸಲು ದಿಕ್ಕಿನ ಕೀಗಳನ್ನು ಬಳಸಿ.';
 
   @override
   String get keypadDirectionKeysAndOk =>
-      'Use the direction keys to move and OK to select.';
+      'ಚಲಿಸಲು ದಿಕ್ಕಿನ ಕೀಗಳನ್ನು ಬಳಸಿ, ಆರಿಸಲು ಓಕೆ ಒತ್ತಿ.';
 
   @override
   String get keypadActivateOrEdit =>
-      'Press OK to activate a control or edit a field.';
+      'ನಿಯಂತ್ರಣವನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಲು ಅಥವಾ ಫೀಲ್ಡ್ ಎಡಿಟ್ ಮಾಡಲು ಓಕೆ ಒತ್ತಿ.';
 
   @override
   String get keypadLeaveField =>
-      'While editing, press OK or use up or down to leave the field.';
+      'ಎಡಿಟ್ ಮಾಡುವಾಗ, ಫೀಲ್ಡ್‌ನಿಂದ ಹೊರಬರಲು ಓಕೆ ಒತ್ತಿ ಅಥವಾ ಮೇಲೆ ಅಥವಾ ಕೆಳಗೆ ಬಳಸಿ.';
 
   @override
   String keypadPosition(String index, String total) {
-    return ', $index of $total';
+    return ', $total ರಲ್ಲಿ $index';
   }
 
   @override
   String keypadEditingPressOk(String label) {
-    return '$label. Editing. Press OK when finished.';
+    return '$label. ಎಡಿಟ್ ಮಾಡಲಾಗುತ್ತಿದೆ. ಮುಗಿದ ನಂತರ ಓಕೆ ಒತ್ತಿ.';
   }
 
   @override
   String keypadEditingUseUpDown(String label) {
-    return '$label. Editing. Use up or down to leave this field.';
+    return '$label. ಎಡಿಟ್ ಮಾಡಲಾಗುತ್ತಿದೆ. ಈ ಫೀಲ್ಡ್‌ನಿಂದ ಹೊರಬರಲು ಮೇಲೆ ಅಥವಾ ಕೆಳಗೆ ಬಳಸಿ.';
   }
 
   @override
-  String get keypadControlUnavailable =>
-      'This control is not available right now.';
+  String get keypadControlUnavailable => 'ಈ ನಿಯಂತ್ರಣ ಈಗ ಲಭ್ಯವಿಲ್ಲ.';
 
   @override
-  String get keypadMainScreen =>
-      'This is the main screen. There is nothing to go back to.';
+  String get keypadMainScreen => 'ಇದು ಮುಖ್ಯ ಪರದೆ. ಹಿಂದೆ ಹೋಗಲು ಏನೂ ಇಲ್ಲ.';
 
   @override
   String messageLast(String text) {
-    return 'Last message: $text';
+    return 'ಕೊನೆಯ ಸಂದೇಶ: $text';
   }
 
   @override
   String messageLastProblem(String text) {
-    return 'Last problem: $text';
+    return 'ಕೊನೆಯ ಸಮಸ್ಯೆ: $text';
   }
 
   @override
   String ttsSpeedDescription(String speed) {
-    return '$speed times normal speed';
+    return 'ಸಾಮಾನ್ಯ ವೇಗದ $speed ಪಟ್ಟು';
   }
 
   @override
   String get ttsUnavailable =>
-      'Speech is unavailable. Enable an English Android text-to-speech voice, then use Test TTS in Settings.';
+      'ಧ್ವನಿ ಲಭ್ಯವಿಲ್ಲ. ಇಂಗ್ಲಿಷ್ Android ಟೆಕ್ಸ್ಟ್-ಟು-ಸ್ಪೀಚ್ ಧ್ವನಿಯನ್ನು ಆನ್ ಮಾಡಿ, ನಂತರ ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ \'ಧ್ವನಿ ಪರೀಕ್ಷಿಸಿ\' ಬಟನ್ ಒತ್ತಿ.';
 
   @override
   String ttsLanguageFallback(String language) {
-    return 'No $language voice is available on this phone, so SEEDS will speak English. Install the $language voice in Android text-to-speech settings, then check the voice in Settings.';
+    return 'ಈ ಫೋನ್‌ನಲ್ಲಿ $language ಧ್ವನಿ ಲಭ್ಯವಿಲ್ಲ, ಆದ್ದರಿಂದ SEEDS ಇಂಗ್ಲಿಷ್‌ನಲ್ಲಿ ಮಾತನಾಡುತ್ತದೆ. Android ಟೆಕ್ಸ್ಟ್-ಟು-ಸ್ಪೀಚ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ $language ಧ್ವನಿಯನ್ನು ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಿ, ನಂತರ ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಧ್ವನಿಯನ್ನು ಪರಿಶೀಲಿಸಿ.';
   }
 
   @override
   String get ttsScreenReaderDetected =>
-      'Screen reader detected. SEEDS will send its announcements to your screen reader.';
+      'ಸ್ಕ್ರೀನ್ ರೀಡರ್ ಪತ್ತೆಯಾಗಿದೆ. SEEDS ತನ್ನ ಪ್ರಕಟಣೆಗಳನ್ನು ನಿಮ್ಮ ಸ್ಕ್ರೀನ್ ರೀಡರ್‌ಗೆ ಕಳುಹಿಸುತ್ತದೆ.';
 
   @override
   String get ttsScreenReaderOff =>
-      'Screen reader turned off. SEEDS will speak for itself.';
+      'ಸ್ಕ್ರೀನ್ ರೀಡರ್ ಆಫ್ ಆಗಿದೆ. SEEDS ತಾನೇ ಮಾತನಾಡುತ್ತದೆ.';
 
   @override
   String ttsVoiceInstalled(String language) {
-    return 'Android reports installed $language voice data. Use Test TTS in Settings, then test it again in airplane mode before relying on offline speech. This check cannot prove that you can hear it.';
+    return '$language ಧ್ವನಿ ಡೇಟಾ ಇನ್‌ಸ್ಟಾಲ್ ಆಗಿದೆ ಎಂದು Android ಹೇಳುತ್ತಿದೆ. ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ \'ಧ್ವನಿ ಪರೀಕ್ಷಿಸಿ\' ಬಟನ್ ಒತ್ತಿ, ನಂತರ ಆಫ್‌ಲೈನ್ ಧ್ವನಿಯನ್ನು ನಂಬುವ ಮೊದಲು ಏರ್‌ಪ್ಲೇನ್ ಮೋಡ್‌ನಲ್ಲಿ ಮತ್ತೆ ಪರೀಕ್ಷಿಸಿ. ನಿಮಗೆ ಅದು ಕೇಳಿಸುತ್ತದೆ ಎಂದು ಈ ಪರಿಶೀಲನೆ ಖಚಿತಪಡಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ.';
   }
 
   @override
   String ttsVoiceNotOffline(String language) {
-    return '$language is available, but installed offline voice data was not confirmed. Speech may need internet.';
+    return '$language ಲಭ್ಯವಿದೆ, ಆದರೆ ಇನ್‌ಸ್ಟಾಲ್ ಆದ ಆಫ್‌ಲೈನ್ ಧ್ವನಿ ಡೇಟಾ ಖಚಿತವಾಗಿಲ್ಲ. ಧ್ವನಿಗೆ ಇಂಟರ್ನೆಟ್ ಬೇಕಾಗಬಹುದು.';
   }
 
   @override
   String ttsVoiceMissing(String language) {
-    return 'No $language voice was detected.';
+    return 'ಯಾವುದೇ $language ಧ್ವನಿ ಪತ್ತೆಯಾಗಿಲ್ಲ.';
   }
 
   @override
   String ttsVoiceUnverified(String language) {
-    return '$language voice availability could not be verified.';
+    return '$language ಧ್ವನಿ ಲಭ್ಯವಿದೆಯೇ ಎಂದು ಪರಿಶೀಲಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.';
   }
 
   @override
   String ttsVoiceRecovery(String language) {
-    return 'Open Android Settings, find Text-to-speech output, select the $language voice and install its voice data. Return here and check again. You can use your Android screen reader instead of app speech.';
+    return 'Android ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ತೆರೆಯಿರಿ, Text-to-speech output ಹುಡುಕಿ, $language ಧ್ವನಿಯನ್ನು ಆರಿಸಿ ಮತ್ತು ಅದರ ಧ್ವನಿ ಡೇಟಾವನ್ನು ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಿ. ಇಲ್ಲಿಗೆ ಹಿಂತಿರುಗಿ ಮತ್ತೆ ಪರಿಶೀಲಿಸಿ. ಆ್ಯಪ್ ಧ್ವನಿಯ ಬದಲು ನಿಮ್ಮ Android ಸ್ಕ್ರೀನ್ ರೀಡರ್ ಬಳಸಬಹುದು.';
   }
 
   @override
   String get ttsSpeedChangeFailed =>
-      'Speech speed could not be changed. Try again.';
+      'ಧ್ವನಿಯ ವೇಗವನ್ನು ಬದಲಾಯಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
   String get ttsSettingsFailed =>
-      'Speech settings could not be applied. Try Test TTS again.';
+      'ಧ್ವನಿ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಅನ್ವಯಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. \'ಧ್ವನಿ ಪರೀಕ್ಷಿಸಿ\' ಬಟನ್ ಮತ್ತೆ ಒತ್ತಿ.';
 
   @override
   String get ttsCouldNotStart =>
-      'Speech could not start. Try Test TTS in Settings.';
+      'ಧ್ವನಿ ಪ್ರಾರಂಭವಾಗಲಿಲ್ಲ. ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ \'ಧ್ವನಿ ಪರೀಕ್ಷಿಸಿ\' ಬಟನ್ ಒತ್ತಿ.';
 
   @override
   String get ttsNotAvailable =>
-      'Speech was not available. Try Test TTS in Settings.';
+      'ಧ್ವನಿ ಲಭ್ಯವಿರಲಿಲ್ಲ. ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ \'ಧ್ವನಿ ಪರೀಕ್ಷಿಸಿ\' ಬಟನ್ ಒತ್ತಿ.';
 
   @override
-  String get ttsFailed => 'Speech failed. Try Test TTS in Settings.';
+  String get ttsFailed =>
+      'ಧ್ವನಿ ವಿಫಲವಾಯಿತು. ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ \'ಧ್ವನಿ ಪರೀಕ್ಷಿಸಿ\' ಬಟನ್ ಒತ್ತಿ.';
 
   @override
   String get ttsLessonResumeFailed =>
-      'The recorded lesson could not resume. Select Play to retry.';
+      'ರೆಕಾರ್ಡ್ ಮಾಡಿದ ಪಾಠವನ್ನು ಮುಂದುವರಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಲು Play ಆರಿಸಿ.';
 
   @override
   String get ttsStopFailed =>
-      'Speech could not be stopped. Check the Android TTS engine.';
+      'ಧ್ವನಿಯನ್ನು ನಿಲ್ಲಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. Android TTS ಎಂಜಿನ್ ಪರಿಶೀಲಿಸಿ.';
 
   @override
-  String get ttsNoPendingUpdates => 'No pending updates.';
+  String get ttsNoPendingUpdates => 'ಬಾಕಿ ಇರುವ ಅಪ್‌ಡೇಟ್‌ಗಳಿಲ್ಲ.';
 
   @override
-  String get ttsOtherUpdates => 'Other updates';
+  String get ttsOtherUpdates => 'ಇತರ ಅಪ್‌ಡೇಟ್‌ಗಳು';
 
   @override
   String ttsUpdateGroup(String group) {
@@ -654,7 +656,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String ttsUpdateGroupCount(String group, int count) {
-    return '$group, $count updates.';
+    return '$group, $count ಅಪ್‌ಡೇಟ್‌ಗಳು.';
   }
 
   @override
@@ -662,126 +664,127 @@ class AppLocalizationsKn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count other update groups.',
-      one: '1 other update group.',
+      other: '$count ಇತರ ಅಪ್‌ಡೇಟ್ ಗುಂಪುಗಳು.',
+      one: '1 ಇತರ ಅಪ್‌ಡೇಟ್ ಗುಂಪು.',
     );
     return '$_temp0';
   }
 
   @override
-  String get settingsScreenName => 'Settings';
+  String get settingsScreenName => 'ಸೆಟ್ಟಿಂಗ್‌ಗಳು';
 
   @override
   String get settingsSections =>
-      'four sections: Speech, Display, Keys and help, then Save settings';
+      'ನಾಲ್ಕು ವಿಭಾಗಗಳು: ಧ್ವನಿ, ಪ್ರದರ್ಶನ, ಕೀಗಳು ಮತ್ತು ಸಹಾಯ, ನಂತರ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಉಳಿಸಿ';
 
   @override
-  String get settingsLoaded => 'Settings loaded';
+  String get settingsLoaded => 'ಸೆಟ್ಟಿಂಗ್‌ಗಳು ಲೋಡ್ ಆಗಿವೆ';
 
   @override
-  String get settingsSaved => 'Settings saved';
+  String get settingsSaved => 'ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಉಳಿಸಲಾಗಿದೆ';
 
   @override
-  String get settingsResetSaved => 'Settings reset to defaults and saved';
+  String get settingsResetSaved =>
+      'ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಡೀಫಾಲ್ಟ್‌ಗೆ ಮರುಹೊಂದಿಸಿ ಉಳಿಸಲಾಗಿದೆ';
 
   @override
   String settingsTestSpeech(String volume, String speed) {
-    return 'This is a test of the text to speech system. Volume is $volume percent. Speech speed is $speed.';
+    return 'ಇದು ಟೆಕ್ಸ್ಟ್-ಟು-ಸ್ಪೀಚ್ ವ್ಯವಸ್ಥೆಯ ಪರೀಕ್ಷೆ. ವಾಲ್ಯೂಮ್ $volume ಪ್ರತಿಶತ. ಧ್ವನಿಯ ವೇಗ $speed.';
   }
 
   @override
   String settingsFastestSpeed(String speed) {
-    return 'Fastest speech speed, $speed';
+    return 'ಅತಿ ಹೆಚ್ಚು ಧ್ವನಿ ವೇಗ, $speed';
   }
 
   @override
   String settingsSlowestSpeed(String speed) {
-    return 'Slowest speech speed, $speed';
+    return 'ಅತಿ ಕಡಿಮೆ ಧ್ವನಿ ವೇಗ, $speed';
   }
 
   @override
   String settingsSpeechSpeed(String speed) {
-    return 'Speech speed $speed';
+    return 'ಧ್ವನಿ ವೇಗ $speed';
   }
 
   @override
-  String get settingsVoiceCommandsEnabled => 'Voice commands enabled';
+  String get settingsVoiceCommandsEnabled => 'ಧ್ವನಿ ಆಜ್ಞೆಗಳು ಆನ್ ಆಗಿವೆ';
 
   @override
-  String get settingsVoiceCommandsDisabled => 'Voice commands disabled';
+  String get settingsVoiceCommandsDisabled => 'ಧ್ವನಿ ಆಜ್ಞೆಗಳು ಆಫ್ ಆಗಿವೆ';
 
   @override
-  String get settingsHighContrastOn => 'High contrast on';
+  String get settingsHighContrastOn => 'ಹೈ ಕಾಂಟ್ರಾಸ್ಟ್ ಆನ್';
 
   @override
-  String get settingsHighContrastOff => 'High contrast off';
+  String get settingsHighContrastOff => 'ಹೈ ಕಾಂಟ್ರಾಸ್ಟ್ ಆಫ್';
 
   @override
-  String get settingsShortcutsShown => 'Keypad shortcuts shown';
+  String get settingsShortcutsShown => 'ಕೀಪ್ಯಾಡ್ ಶಾರ್ಟ್‌ಕಟ್‌ಗಳನ್ನು ತೋರಿಸಲಾಗಿದೆ';
 
   @override
-  String get settingsShortcutsHidden => 'Keypad shortcuts hidden';
+  String get settingsShortcutsHidden =>
+      'ಕೀಪ್ಯಾಡ್ ಶಾರ್ಟ್‌ಕಟ್‌ಗಳನ್ನು ಮರೆಮಾಡಲಾಗಿದೆ';
 
   @override
   String get settingsVoiceHelp =>
-      'In a session, activate Listen for command, then say mute, unmute, raise hand, lower hand, leave, or repeat. Listening does not restart automatically. Unmute asks for a key or touch confirmation.';
+      'ಸೆಷನ್‌ನಲ್ಲಿ, ಆಜ್ಞೆಗಾಗಿ ಆಲಿಸಿ ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ, ನಂತರ ಮ್ಯೂಟ್, ಅನ್‌ಮ್ಯೂಟ್, ಕೈ ಎತ್ತಿ, ಕೈ ಇಳಿಸಿ, ಬಿಡಿ, ಅಥವಾ ಮತ್ತೆ ಹೇಳಿ ಎಂದು ಹೇಳಿ. ಆಲಿಸುವುದು ತಾನಾಗಿಯೇ ಮತ್ತೆ ಪ್ರಾರಂಭವಾಗುವುದಿಲ್ಲ. ಅನ್‌ಮ್ಯೂಟ್‌ಗೆ ಕೀ ಅಥವಾ ಸ್ಪರ್ಶದ ಮೂಲಕ ಖಚಿತಪಡಿಸುವಿಕೆ ಕೇಳಲಾಗುತ್ತದೆ.';
 
   @override
   String settingsModeAutomatic(String current) {
-    return 'Automatic: follows TalkBack unless you choose. Now $current.';
+    return 'ಸ್ವಯಂಚಾಲಿತ: ನೀವು ಆರಿಸದಿದ್ದರೆ TalkBack ಅನ್ನು ಅನುಸರಿಸುತ್ತದೆ. ಈಗ $current.';
   }
 
   @override
-  String get settingsModeUsingScreenReader => 'using the screen reader';
+  String get settingsModeUsingScreenReader => 'ಸ್ಕ್ರೀನ್ ರೀಡರ್ ಬಳಸಲಾಗುತ್ತಿದೆ';
 
   @override
-  String get settingsModeUsingSelfVoicing => 'self-voicing';
+  String get settingsModeUsingSelfVoicing => 'ಆ್ಯಪ್ ತಾನೇ ಮಾತನಾಡುತ್ತಿದೆ';
 
   @override
   String get settingsModeScreenReader =>
-      'Screen reader: announcements go to TalkBack. App narration is off.';
+      'ಸ್ಕ್ರೀನ್ ರೀಡರ್: ಪ್ರಕಟಣೆಗಳು TalkBack ಗೆ ಹೋಗುತ್ತವೆ. ಆ್ಯಪ್ ನಿರೂಪಣೆ ಆಫ್ ಆಗಿದೆ.';
 
   @override
-  String get settingsModeSelfVoicing =>
-      'Self-voicing: the app speaks for itself.';
+  String get settingsModeSelfVoicing => 'ಸ್ವಯಂ ಧ್ವನಿ: ಆ್ಯಪ್ ತಾನೇ ಮಾತನಾಡುತ್ತದೆ.';
 
   @override
   String settingsSoundCues(String state) {
-    return 'Sound cues $state.';
+    return 'ಧ್ವನಿ ಸೂಚನೆಗಳು $state.';
   }
 
   @override
   String settingsSoundCuesOnSaved(String state) {
-    return 'Sound cues $state. This is the saved sound.';
+    return 'ಧ್ವನಿ ಸೂಚನೆಗಳು $state. ಇದು ಉಳಿಸಿದಾಗ ಬರುವ ಧ್ವನಿ.';
   }
 
   @override
   String settingsVibration(String state) {
-    return 'Vibration $state.';
+    return 'ಕಂಪನ $state.';
   }
 
   @override
   String settingsVibrationOnBuzz(String state) {
-    return 'Vibration $state. One short buzz means OK.';
+    return 'ಕಂಪನ $state. ಒಂದು ಸಣ್ಣ ಕಂಪನ ಎಂದರೆ ಸರಿ.';
   }
 
   @override
   String settingsSoundCuesLabel(String state) {
-    return 'Sound cues, $state. Short sounds for correct, wrong, saved, errors and your turn to speak';
+    return 'ಧ್ವನಿ ಸೂಚನೆಗಳು, $state. ಸರಿ, ತಪ್ಪು, ಉಳಿಸಲಾಗಿದೆ, ದೋಷಗಳು ಮತ್ತು ನೀವು ಮಾತನಾಡುವ ಸರದಿಗೆ ಸಣ್ಣ ಧ್ವನಿಗಳು';
   }
 
   @override
   String settingsVibrationLabel(String state) {
-    return 'Vibration, $state. One buzz for OK, two for an error, a long buzz for leaving';
+    return 'ಕಂಪನ, $state. ಸರಿಗೆ ಒಂದು ಕಂಪನ, ದೋಷಕ್ಕೆ ಎರಡು, ಹೊರಹೋಗಲು ಒಂದು ದೀರ್ಘ ಕಂಪನ';
   }
 
   @override
   String get settingsSoundCuesHelp =>
-      'Short sounds for correct, wrong, saved, errors, end of list and your turn to speak. Saved immediately.';
+      'ಸರಿ, ತಪ್ಪು, ಉಳಿಸಲಾಗಿದೆ, ದೋಷಗಳು, ಪಟ್ಟಿಯ ಕೊನೆ ಮತ್ತು ನೀವು ಮಾತನಾಡುವ ಸರದಿಗೆ ಸಣ್ಣ ಧ್ವನಿಗಳು. ತಕ್ಷಣ ಉಳಿಸಲಾಗುತ್ತದೆ.';
 
   @override
   String get settingsVibrationHelp =>
-      'One short buzz for OK, two for an error, one long buzz for leaving or ending. Saved immediately.';
+      'ಸರಿಗೆ ಒಂದು ಸಣ್ಣ ಕಂಪನ, ದೋಷಕ್ಕೆ ಎರಡು, ಹೊರಹೋಗಲು ಅಥವಾ ಮುಗಿಸಲು ಒಂದು ದೀರ್ಘ ಕಂಪನ. ತಕ್ಷಣ ಉಳಿಸಲಾಗುತ್ತದೆ.';
 
   @override
   String settingsState(
@@ -794,163 +797,165 @@ class AppLocalizationsKn extends AppLocalizations {
     String vibration,
     String language,
   ) {
-    return 'App speech $speech, speed $speed, volume $volume percent. Text size $textSize percent. High contrast $highContrast. Sound cues $soundCues. Vibration $vibration. Speech language $language.';
+    return 'ಆ್ಯಪ್ ಧ್ವನಿ $speech, ವೇಗ $speed, ವಾಲ್ಯೂಮ್ $volume ಪ್ರತಿಶತ. ಅಕ್ಷರದ ಗಾತ್ರ $textSize ಪ್ರತಿಶತ. ಹೈ ಕಾಂಟ್ರಾಸ್ಟ್ $highContrast. ಧ್ವನಿ ಸೂಚನೆಗಳು $soundCues. ಕಂಪನ $vibration. ಮಾತಿನ ಭಾಷೆ $language.';
   }
 
   @override
   String settingsVolume(String percent) {
-    return 'Volume $percent percent';
+    return 'ವಾಲ್ಯೂಮ್ $percent ಪ್ರತಿಶತ';
   }
 
   @override
   String settingsTextSize(String percent) {
-    return 'Text size $percent percent';
+    return 'ಅಕ್ಷರದ ಗಾತ್ರ $percent ಪ್ರತಿಶತ';
   }
 
   @override
-  String get settingsSpeechOff => 'App speech off';
+  String get settingsSpeechOff => 'ಆ್ಯಪ್ ಧ್ವನಿ ಆಫ್';
 
   @override
-  String get settingsSpeechOn => 'App speech on';
+  String get settingsSpeechOn => 'ಆ್ಯಪ್ ಧ್ವನಿ ಆನ್';
 
   @override
   String settingsSpeechMode(String description) {
-    return 'Speech mode. $description';
+    return 'ಮಾತಿನ ವಿಧಾನ. $description';
   }
 
   @override
   String settingsNarration(String level) {
-    return 'Narration level $level.';
+    return 'ನಿರೂಪಣೆಯ ಮಟ್ಟ $level.';
   }
 
   @override
-  String get settingsNarrationEssential => 'essential';
+  String get settingsNarrationEssential => 'ಅಗತ್ಯ';
 
   @override
-  String get settingsNarrationStandard => 'standard';
+  String get settingsNarrationStandard => 'ಸಾಮಾನ್ಯ';
 
   @override
-  String get settingsNarrationDetailed => 'detailed';
+  String get settingsNarrationDetailed => 'ವಿವರವಾದ';
 
   @override
   String settingsLanguage(String language) {
-    return 'Speech language $language.';
+    return 'ಮಾತಿನ ಭಾಷೆ $language.';
   }
 
   @override
   String settingsLanguageLabel(String language) {
-    return 'Speech language, $language. Press OK to change.';
+    return 'ಮಾತಿನ ಭಾಷೆ, $language. ಬದಲಾಯಿಸಲು ಓಕೆ ಒತ್ತಿ.';
   }
 
   @override
-  String get settingsBack => 'Back';
+  String get settingsBack => 'ಹಿಂದೆ';
 
   @override
   String get settingsResetLabel =>
-      'Reset settings to defaults, asks to confirm';
+      'ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಮೂಲ ಸ್ಥಿತಿಗೆ ಮರುಹೊಂದಿಸಿ, ದೃಢೀಕರಣ ಕೇಳುತ್ತದೆ';
 
   @override
   String settingsSpeechSectionLabel(String state) {
-    return 'Speech section. App speech, $state';
+    return 'ಮಾತಿನ ವಿಭಾಗ. ಆ್ಯಪ್ ಧ್ವನಿ, $state';
   }
 
   @override
   String settingsVolumeLabel(String percent) {
-    return 'Volume $percent percent. Left or right to change';
+    return 'ವಾಲ್ಯೂಮ್ $percent ಪ್ರತಿಶತ. ಬದಲಾಯಿಸಲು ಎಡ ಅಥವಾ ಬಲ';
   }
 
   @override
   String settingsSpeedLabel(String speed) {
-    return 'Speech speed $speed. Left or right to change';
+    return 'ಮಾತಿನ ವೇಗ $speed. ಬದಲಾಯಿಸಲು ಎಡ ಅಥವಾ ಬಲ';
   }
 
   @override
-  String get settingsTestLabel => 'Test speech';
+  String get settingsTestLabel => 'ಧ್ವನಿ ಪರೀಕ್ಷಿಸಿ';
 
   @override
   String settingsModeLabel(String description) {
-    return 'Speech mode. $description Press OK to change.';
+    return 'ಮಾತಿನ ವಿಧಾನ. $description ಬದಲಾಯಿಸಲು ಓಕೆ ಒತ್ತಿ.';
   }
 
   @override
   String settingsNarrationLabel(String level) {
-    return 'Narration level $level. Press OK to change.';
+    return 'ನಿರೂಪಣೆಯ ಮಟ್ಟ $level. ಬದಲಾಯಿಸಲು ಓಕೆ ಒತ್ತಿ.';
   }
 
   @override
   String settingsCheckVoiceLabel(String language) {
-    return 'Check $language voice';
+    return '$language ಧ್ವನಿ ಪರಿಶೀಲಿಸಿ';
   }
 
   @override
-  String get settingsStopLabel => 'Stop speech';
+  String get settingsStopLabel => 'ಮಾತು ನಿಲ್ಲಿಸಿ';
 
   @override
   String settingsContrastLabel(String state) {
-    return 'Display section. High contrast, $state. On by default';
+    return 'ಪ್ರದರ್ಶನ ವಿಭಾಗ. ಹೈ ಕಾಂಟ್ರಾಸ್ಟ್, $state. ಮೊದಲಿನಿಂದ ಆನ್ ಆಗಿರುತ್ತದೆ';
   }
 
   @override
   String settingsTextSizeLabel(String percent) {
-    return 'Text size $percent percent. Left or right to change';
+    return 'ಅಕ್ಷರದ ಗಾತ್ರ $percent ಪ್ರತಿಶತ. ಬದಲಾಯಿಸಲು ಎಡ ಅಥವಾ ಬಲ';
   }
 
   @override
   String settingsShortcutsLabel(String state) {
-    return 'Keys and help section. Show keypad shortcuts, $state';
+    return 'ಕೀಗಳು ಮತ್ತು ಸಹಾಯ ವಿಭಾಗ. ಕೀಪ್ಯಾಡ್ ಶಾರ್ಟ್‌ಕಟ್‌ಗಳನ್ನು ತೋರಿಸಿ, $state';
   }
 
   @override
   String settingsVoiceCommandsLabel(String state) {
-    return 'Voice commands in sessions, $state';
+    return 'ಸೆಷನ್‌ಗಳಲ್ಲಿ ಧ್ವನಿ ಆದೇಶಗಳು, $state';
   }
 
   @override
-  String get settingsVoiceHelpLabel => 'Voice command help';
+  String get settingsVoiceHelpLabel => 'ಧ್ವನಿ ಆದೇಶ ಸಹಾಯ';
 
   @override
-  String get settingsRepeatHelpLabel => 'Repeat Settings help';
+  String get settingsRepeatHelpLabel => 'ಸೆಟ್ಟಿಂಗ್‌ಗಳ ಸಹಾಯವನ್ನು ಮತ್ತೆ ಕೇಳಿ';
 
   @override
-  String get settingsSaveLabel => 'Save settings';
+  String get settingsSaveLabel => 'ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಉಳಿಸಿ';
 
   @override
   String get settingsResetQuestion =>
-      'Reset all settings to defaults? Speech, display and key settings return to their original values.';
+      'ಎಲ್ಲಾ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಮೂಲ ಸ್ಥಿತಿಗೆ ಮರುಹೊಂದಿಸಬೇಕೇ? ಮಾತು, ಪ್ರದರ್ಶನ ಮತ್ತು ಕೀ ಸೆಟ್ಟಿಂಗ್‌ಗಳು ಮೂಲ ಮೌಲ್ಯಗಳಿಗೆ ಹಿಂತಿರುಗುತ್ತವೆ.';
 
   @override
   String settingsResetScreen(String question) {
-    return 'Reset settings. $question';
+    return 'ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಮರುಹೊಂದಿಸಿ. $question';
   }
 
   @override
-  String get settingsResetCancel => 'Cancel';
+  String get settingsResetCancel => 'ರದ್ದುಮಾಡಿ';
 
   @override
-  String get settingsResetConfirm => 'Reset';
+  String get settingsResetConfirm => 'ಮರುಹೊಂದಿಸಿ';
 
   @override
-  String get settingsResetCancelLabel => 'Cancel, keep my settings';
+  String get settingsResetCancelLabel =>
+      'ರದ್ದುಮಾಡಿ, ನನ್ನ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಉಳಿಸಿಕೊಳ್ಳಿ';
 
   @override
-  String get settingsResetConfirmLabel => 'Reset all settings to defaults';
+  String get settingsResetConfirmLabel =>
+      'ಎಲ್ಲಾ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಮೂಲ ಸ್ಥಿತಿಗೆ ಮರುಹೊಂದಿಸಿ';
 
   @override
-  String get quizNotSet => 'not set';
+  String get quizNotSet => 'ಹೊಂದಿಸಿಲ್ಲ';
 
   @override
-  String get quizNotAvailable => 'not available';
+  String get quizNotAvailable => 'ಲಭ್ಯವಿಲ್ಲ';
 
   @override
-  String get quizNotAvailableCapital => 'Not available';
+  String get quizNotAvailableCapital => 'ಲಭ್ಯವಿಲ್ಲ';
 
   @override
   String quizQuestionCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count questions',
-      one: '1 question',
+      other: '$count ಪ್ರಶ್ನೆಗಳು',
+      one: '1 ಪ್ರಶ್ನೆ',
     );
     return '$_temp0';
   }
@@ -960,8 +965,8 @@ class AppLocalizationsKn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count attempts',
-      one: '1 attempt',
+      other: '$count ಪ್ರಯತ್ನಗಳು',
+      one: '1 ಪ್ರಯತ್ನ',
     );
     return '$_temp0';
   }
@@ -971,275 +976,274 @@ class AppLocalizationsKn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count students',
-      one: '1 student',
+      other: '$count ವಿದ್ಯಾರ್ಥಿಗಳು',
+      one: '1 ವಿದ್ಯಾರ್ಥಿ',
     );
     return '$_temp0';
   }
 
   @override
   String get quizAccountChanged =>
-      'Your account changed. Return to quizzes and sign in again.';
+      'ನಿಮ್ಮ ಖಾತೆ ಬದಲಾಗಿದೆ. ಕ್ವಿಜ್‌ಗಳಿಗೆ ಹಿಂತಿರುಗಿ ಮತ್ತೆ ಸೈನ್ ಇನ್ ಮಾಡಿ.';
 
   @override
   String get quizUnlimitedPractice =>
-      'Unlimited practice attempts. Not graded.';
+      'ಅನಿಯಮಿತ ಅಭ್ಯಾಸ ಪ್ರಯತ್ನಗಳು. ಅಂಕ ನೀಡುವುದಿಲ್ಲ.';
 
   @override
   String quizAttemptsRemaining(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count attempts remaining.',
-      one: '1 attempt remaining.',
+      other: '$count ಪ್ರಯತ್ನಗಳು ಉಳಿದಿವೆ.',
+      one: '1 ಪ್ರಯತ್ನ ಉಳಿದಿದೆ.',
     );
     return '$_temp0';
   }
 
   @override
   String quizTimeLimit(String duration) {
-    return 'Time limit $duration.';
+    return 'ಸಮಯ ಮಿತಿ $duration.';
   }
 
   @override
-  String get quizNoTimeLimit => 'No time limit.';
+  String get quizNoTimeLimit => 'ಸಮಯ ಮಿತಿ ಇಲ್ಲ.';
 
   @override
-  String get quizNoTimeLimitShort => 'No time limit';
+  String get quizNoTimeLimitShort => 'ಸಮಯ ಮಿತಿ ಇಲ್ಲ';
 
   @override
   String get quizFeedbackAfterCompletion =>
-      'Answer feedback and scores are released after you finish the quiz.';
+      'ನೀವು ಕ್ವಿಜ್ ಮುಗಿಸಿದ ನಂತರ ಉತ್ತರದ ಪ್ರತಿಕ್ರಿಯೆ ಮತ್ತು ಅಂಕಗಳನ್ನು ನೀಡಲಾಗುತ್ತದೆ.';
 
   @override
   String quizFeedbackScheduled(String when) {
-    return 'Feedback and scores are released after you finish and after $when.';
+    return 'ನೀವು ಮುಗಿಸಿದ ನಂತರ ಮತ್ತು $when ನಂತರ ಪ್ರತಿಕ್ರಿಯೆ ಮತ್ತು ಅಂಕಗಳನ್ನು ನೀಡಲಾಗುತ್ತದೆ.';
   }
 
   @override
   String get quizFeedbackScoreOnly =>
-      'Only the score is released after you finish. Answers and explanations are not released.';
+      'ನೀವು ಮುಗಿಸಿದ ನಂತರ ಅಂಕಗಳನ್ನು ಮಾತ್ರ ನೀಡಲಾಗುತ್ತದೆ. ಉತ್ತರಗಳು ಮತ್ತು ವಿವರಣೆಗಳನ್ನು ನೀಡಲಾಗುವುದಿಲ್ಲ.';
 
   @override
   String get quizFeedbackImmediate =>
-      'You hear whether each answer is right as soon as you submit it.';
+      'ಪ್ರತಿ ಉತ್ತರ ಸಲ್ಲಿಸಿದ ತಕ್ಷಣ ಅದು ಸರಿಯೇ ಎಂದು ನೀವು ಕೇಳುತ್ತೀರಿ.';
 
   @override
-  String get quizPolicyAfterCompletion => 'after the quiz is finished';
+  String get quizPolicyAfterCompletion => 'ಕ್ವಿಜ್ ಮುಗಿದ ನಂತರ';
 
   @override
-  String get quizPolicyScheduled => 'at a scheduled time';
+  String get quizPolicyScheduled => 'ನಿಗದಿತ ಸಮಯದಲ್ಲಿ';
 
   @override
-  String get quizPolicyScoreOnly => 'score only';
+  String get quizPolicyScoreOnly => 'ಅಂಕ ಮಾತ್ರ';
 
   @override
-  String get quizPolicyLegacyImmediate => 'immediately, older setting';
+  String get quizPolicyLegacyImmediate => 'ತಕ್ಷಣ, ಹಳೆಯ ಸೆಟ್ಟಿಂಗ್';
 
   @override
-  String get quizPolicyImmediate => 'immediately after each answer';
+  String get quizPolicyImmediate => 'ಪ್ರತಿ ಉತ್ತರದ ತಕ್ಷಣ';
 
   @override
   String quizPracticeResult(String correct, String total) {
-    return 'Practice, not an academic grade. $correct of $total correct in this practice.';
+    return 'ಅಭ್ಯಾಸ, ಶೈಕ್ಷಣಿಕ ಗ್ರೇಡ್ ಅಲ್ಲ. ಈ ಅಭ್ಯಾಸದಲ್ಲಿ $total ರಲ್ಲಿ $correct ಸರಿ.';
   }
 
   @override
   String quizScoreNotReleased(String message) {
-    return 'Score not released. $message';
+    return 'ಅಂಕ ನೀಡಿಲ್ಲ. $message';
   }
 
   @override
-  String get quizCheckReleasePolicy => 'Check the release policy.';
+  String get quizCheckReleasePolicy => 'ಬಿಡುಗಡೆ ನೀತಿಯನ್ನು ಪರಿಶೀಲಿಸಿ.';
 
   @override
   String quizScoreResult(String correct, String total, String percent) {
-    return 'Score $correct of $total, $percent.';
+    return 'ಅಂಕ $total ರಲ್ಲಿ $correct, $percent.';
   }
 
   @override
-  String get quizStatusInProgress => 'in progress';
+  String get quizStatusInProgress => 'ನಡೆಯುತ್ತಿದೆ';
 
   @override
-  String get quizStatusTimedOut => 'finished when time ran out';
+  String get quizStatusTimedOut => 'ಸಮಯ ಮುಗಿದಾಗ ಮುಕ್ತಾಯವಾಯಿತು';
 
   @override
-  String get quizStatusCompleted => 'finished';
+  String get quizStatusCompleted => 'ಮುಗಿದಿದೆ';
 
   @override
-  String get quizStatusPublished => 'published';
+  String get quizStatusPublished => 'ಪ್ರಕಟಿತ';
 
   @override
-  String get quizStatusDraft => 'draft';
+  String get quizStatusDraft => 'ಕರಡು';
 
   @override
-  String get quizStatusClosed => 'closed';
+  String get quizStatusClosed => 'ಮುಚ್ಚಲಾಗಿದೆ';
 
   @override
-  String get quizStatusScheduled => 'scheduled';
+  String get quizStatusScheduled => 'ನಿಗದಿಯಾಗಿದೆ';
 
   @override
-  String get quizStatusOpen => 'open';
+  String get quizStatusOpen => 'ತೆರೆದಿದೆ';
 
   @override
   String quizQuestionHeading(String number, String total) {
-    return 'Question $number of $total';
+    return 'ಪ್ರಶ್ನೆ $number, ಒಟ್ಟು $total';
   }
 
   @override
   String quizQuestionWithText(String number, String total, String text) {
-    return 'Question $number of $total. $text';
+    return 'ಪ್ರಶ್ನೆ $number, ಒಟ್ಟು $total. $text';
   }
 
   @override
   String quizOptionSpoken(String number, String text) {
-    return 'Option $number. $text.';
+    return 'ಆಯ್ಕೆ $number. $text.';
   }
 
   @override
   String quizOptionLabel(String number, String count, String text) {
-    return 'Option $number of $count, $text';
+    return 'ಆಯ್ಕೆ $number, ಒಟ್ಟು $count, $text';
   }
 
   @override
   String quizOptionTargetSelected(String number, String text) {
-    return 'Option $number, $text, selected. Press OK or $number to choose';
+    return 'ಆಯ್ಕೆ $number, $text, ಆಯ್ಕೆಮಾಡಲಾಗಿದೆ. ಆರಿಸಲು ಓಕೆ ಅಥವಾ $number ಒತ್ತಿ';
   }
 
   @override
   String quizOptionTargetNotSelected(String number, String text) {
-    return 'Option $number, $text, not selected. Press OK or $number to choose';
+    return 'ಆಯ್ಕೆ $number, $text, ಆಯ್ಕೆಮಾಡಿಲ್ಲ. ಆರಿಸಲು ಓಕೆ ಅಥವಾ $number ಒತ್ತಿ';
   }
 
   @override
   String quizAnswerKeysBrief(String count) {
-    return 'Press 1 to $count, then 5.';
+    return '1 ರಿಂದ $count ಒತ್ತಿ, ನಂತರ 5.';
   }
 
   @override
   String quizAnswerKeysDetailed(String count) {
-    return 'Press 1 to $count to choose an answer, then 5 to submit it. Press 6 to repeat the question, 8 to hear where you are.';
+    return 'ಉತ್ತರ ಆರಿಸಲು 1 ರಿಂದ $count ಒತ್ತಿ, ನಂತರ ಸಲ್ಲಿಸಲು 5 ಒತ್ತಿ. ಪ್ರಶ್ನೆಯನ್ನು ಮತ್ತೆ ಕೇಳಲು 6, ನೀವು ಎಲ್ಲಿದ್ದೀರಿ ಎಂದು ಕೇಳಲು 8 ಒತ್ತಿ.';
   }
 
   @override
   String quizChosenBrief(String number, String text) {
-    return 'Option $number, $text, selected.';
+    return 'ಆಯ್ಕೆ $number, $text, ಆಯ್ಕೆಮಾಡಲಾಗಿದೆ.';
   }
 
   @override
   String quizChosenDetailed(String number, String text) {
-    return 'Option $number, $text, selected. Press 5 to submit, or choose another number.';
+    return 'ಆಯ್ಕೆ $number, $text, ಆಯ್ಕೆಮಾಡಲಾಗಿದೆ. ಸಲ್ಲಿಸಲು 5 ಒತ್ತಿ, ಅಥವಾ ಬೇರೆ ಸಂಖ್ಯೆ ಆರಿಸಿ.';
   }
 
   @override
   String quizChooseFirst(String count) {
-    return 'Choose an answer first. Press 1 to $count, then 5 to submit.';
+    return 'ಮೊದಲು ಒಂದು ಉತ್ತರ ಆರಿಸಿ. 1 ರಿಂದ $count ಒತ್ತಿ, ನಂತರ ಸಲ್ಲಿಸಲು 5 ಒತ್ತಿ.';
   }
 
   @override
   String quizNoSuchOption(String option, String count) {
-    return 'There is no option $option. Press 1 to $count.';
+    return 'ಆಯ್ಕೆ $option ಇಲ್ಲ. 1 ರಿಂದ $count ಒತ್ತಿ.';
   }
 
   @override
-  String get quizSubmitting => 'Submitting your answer.';
+  String get quizSubmitting => 'ನಿಮ್ಮ ಉತ್ತರವನ್ನು ಸಲ್ಲಿಸಲಾಗುತ್ತಿದೆ.';
 
   @override
   String quizCorrectFeedback(String answer) {
-    return 'Correct! $answer.';
+    return 'ಸರಿ! $answer.';
   }
 
   @override
   String quizWrongFeedback(String answer) {
-    return 'Not quite. The answer is $answer.';
+    return 'ಸರಿಯಾಗಿಲ್ಲ. ಉತ್ತರ $answer.';
   }
 
   @override
-  String get quizAnswerSavedBrief => 'Answer saved.';
+  String get quizAnswerSavedBrief => 'ಉತ್ತರ ಉಳಿಸಲಾಗಿದೆ.';
 
   @override
-  String get quizAnswerSavedLocked => 'Answer saved and locked.';
+  String get quizAnswerSavedLocked => 'ಉತ್ತರ ಉಳಿಸಿ ಲಾಕ್ ಮಾಡಲಾಗಿದೆ.';
 
   @override
-  String get quizSavedHeading => 'Answer saved and locked';
+  String get quizSavedHeading => 'ಉತ್ತರ ಉಳಿಸಿ ಲಾಕ್ ಮಾಡಲಾಗಿದೆ';
 
   @override
-  String get quizCorrectHeading => 'Correct';
+  String get quizCorrectHeading => 'ಸರಿ';
 
   @override
-  String get quizWrongHeading => 'Incorrect';
+  String get quizWrongHeading => 'ತಪ್ಪು';
 
   @override
   String quizYouSelected(String text) {
-    return 'You selected: $text';
+    return 'ನೀವು ಆರಿಸಿದ್ದು: $text';
   }
 
   @override
   String quizCorrectAnswerIs(String text) {
-    return 'Correct answer: $text';
+    return 'ಸರಿಯಾದ ಉತ್ತರ: $text';
   }
 
   @override
-  String get quizNoExplanation => 'No explanation provided.';
+  String get quizNoExplanation => 'ಯಾವುದೇ ವಿವರಣೆ ನೀಡಿಲ್ಲ.';
 
   @override
   String quizAnswerFailed(String reason) {
-    return '$reason Your selection is preserved. Press 5 to try again.';
+    return '$reason ನಿಮ್ಮ ಆಯ್ಕೆ ಉಳಿದಿದೆ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಲು 5 ಒತ್ತಿ.';
   }
 
   @override
-  String get quizAnswerUnreadable =>
-      'The answer confirmation could not be read.';
+  String get quizAnswerUnreadable => 'ಉತ್ತರದ ದೃಢೀಕರಣವನ್ನು ಓದಲು ಆಗಲಿಲ್ಲ.';
 
   @override
-  String get quizNoOptionSelected => 'No option selected.';
+  String get quizNoOptionSelected => 'ಯಾವುದೇ ಆಯ್ಕೆ ಆರಿಸಿಲ್ಲ.';
 
   @override
   String quizSelectionSaved(String number, String text) {
-    return 'Selected option $number, $text. Answer saved.';
+    return 'ಆರಿಸಿದ ಆಯ್ಕೆ $number, $text. ಉತ್ತರ ಉಳಿಸಲಾಗಿದೆ.';
   }
 
   @override
   String quizSelectionNotSubmitted(String number, String text) {
-    return 'Selected option $number, $text. Not submitted yet.';
+    return 'ಆರಿಸಿದ ಆಯ್ಕೆ $number, $text. ಇನ್ನೂ ಸಲ್ಲಿಸಿಲ್ಲ.';
   }
 
   @override
-  String get quizRepeatQuestion => 'Repeat question and options';
+  String get quizRepeatQuestion => 'ಪ್ರಶ್ನೆ ಮತ್ತು ಆಯ್ಕೆಗಳನ್ನು ಮತ್ತೆ ಕೇಳಿ';
 
   @override
-  String get quizAnswerConfirmed => 'Answer confirmed saved and locked.';
+  String get quizAnswerConfirmed => 'ಉತ್ತರ ಉಳಿಸಿ ಲಾಕ್ ಮಾಡಿರುವುದು ದೃಢಪಟ್ಟಿದೆ.';
 
   @override
   String get quizFeedbackStaysAvailable =>
-      'Feedback for it stays available privately on the next question.';
+      'ಇದರ ಪ್ರತಿಕ್ರಿಯೆ ಮುಂದಿನ ಪ್ರಶ್ನೆಯಲ್ಲಿ ಖಾಸಗಿಯಾಗಿ ಸಿಗುತ್ತದೆ.';
 
   @override
   String get quizPreviousFeedback =>
-      'Hear feedback for the previous answer, privately';
+      'ಹಿಂದಿನ ಉತ್ತರದ ಪ್ರತಿಕ್ರಿಯೆಯನ್ನು ಖಾಸಗಿಯಾಗಿ ಕೇಳಿ';
 
   @override
   String get quizAnswerLockNotice =>
-      'Each answer is saved and locked when you press 5.';
+      'ನೀವು 5 ಒತ್ತಿದಾಗ ಪ್ರತಿ ಉತ್ತರ ಉಳಿಸಿ ಲಾಕ್ ಆಗುತ್ತದೆ.';
 
   @override
   String quizTimeLeft(String duration) {
-    return 'Time left: $duration.';
+    return 'ಉಳಿದ ಸಮಯ: $duration.';
   }
 
   @override
   String quizClockLeft(String clock) {
-    return '$clock left';
+    return '$clock ಉಳಿದಿದೆ';
   }
 
   @override
   String quizClockRemaining(String clock) {
-    return '$clock remaining';
+    return '$clock ಬಾಕಿ ಇದೆ';
   }
 
   @override
   String quizTimeWarning(String duration) {
-    return '$duration left in this quiz.';
+    return 'ಈ ಕ್ವಿಜ್‌ನಲ್ಲಿ $duration ಉಳಿದಿದೆ.';
   }
 
   @override
@@ -1247,34 +1251,35 @@ class AppLocalizationsKn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Time is up. $count answers saved. Finishing the quiz.',
-      one: 'Time is up. 1 answer saved. Finishing the quiz.',
+      other:
+          'ಸಮಯ ಮುಗಿದಿದೆ. $count ಉತ್ತರಗಳನ್ನು ಉಳಿಸಲಾಗಿದೆ. ಕ್ವಿಜ್ ಮುಗಿಸಲಾಗುತ್ತಿದೆ.',
+      one: 'ಸಮಯ ಮುಗಿದಿದೆ. 1 ಉತ್ತರ ಉಳಿಸಲಾಗಿದೆ. ಕ್ವಿಜ್ ಮುಗಿಸಲಾಗುತ್ತಿದೆ.',
     );
     return '$_temp0';
   }
 
   @override
   String quizWhereQuestion(String number, String total) {
-    return 'Question $number of $total.';
+    return '$total ರಲ್ಲಿ ಪ್ರಶ್ನೆ $number.';
   }
 
   @override
   String quizAnsweredCount(String count) {
-    return '$count answered.';
+    return '$count ಉತ್ತರಿಸಲಾಗಿದೆ.';
   }
 
   @override
   String get quizAllSaved =>
-      'All answers are saved. Press 5 to finish and hear your result.';
+      'ಎಲ್ಲಾ ಉತ್ತರಗಳನ್ನು ಉಳಿಸಲಾಗಿದೆ. ಮುಗಿಸಿ ನಿಮ್ಮ ಫಲಿತಾಂಶ ಕೇಳಲು 5 ಒತ್ತಿ.';
 
   @override
-  String get quizFinishNow => 'Finish quiz now, with confirmation';
+  String get quizFinishNow => 'ಈಗ ಕ್ವಿಜ್ ಮುಗಿಸಿ, ದೃಢೀಕರಣದೊಂದಿಗೆ';
 
   @override
-  String get quizFinishNowButton => 'Finish quiz now';
+  String get quizFinishNowButton => 'ಈಗ ಕ್ವಿಜ್ ಮುಗಿಸಿ';
 
   @override
-  String get quizFinishTitle => 'Finish quiz now?';
+  String get quizFinishTitle => 'ಈಗ ಕ್ವಿಜ್ ಮುಗಿಸಬೇಕೆ?';
 
   @override
   String quizFinishMessage(int count) {
@@ -1282,166 +1287,166 @@ class AppLocalizationsKn extends AppLocalizations {
       count,
       locale: localeName,
       other:
-          'The server shows $count questions not answered. Only saved answers count. A selected answer that you did not submit is not included. You cannot change answers after finishing.',
+          'ಸರ್ವರ್ ಪ್ರಕಾರ $count ಪ್ರಶ್ನೆಗಳಿಗೆ ಉತ್ತರಿಸಿಲ್ಲ. ಉಳಿಸಿದ ಉತ್ತರಗಳು ಮಾತ್ರ ಲೆಕ್ಕಕ್ಕೆ ಬರುತ್ತವೆ. ನೀವು ಆರಿಸಿ ಸಲ್ಲಿಸದ ಉತ್ತರವನ್ನು ಸೇರಿಸಲಾಗುವುದಿಲ್ಲ. ಮುಗಿಸಿದ ನಂತರ ಉತ್ತರಗಳನ್ನು ಬದಲಾಯಿಸಲು ಆಗುವುದಿಲ್ಲ.',
       one:
-          'The server shows 1 question not answered. Only saved answers count. A selected answer that you did not submit is not included. You cannot change answers after finishing.',
+          'ಸರ್ವರ್ ಪ್ರಕಾರ 1 ಪ್ರಶ್ನೆಗೆ ಉತ್ತರಿಸಿಲ್ಲ. ಉಳಿಸಿದ ಉತ್ತರಗಳು ಮಾತ್ರ ಲೆಕ್ಕಕ್ಕೆ ಬರುತ್ತವೆ. ನೀವು ಆರಿಸಿ ಸಲ್ಲಿಸದ ಉತ್ತರವನ್ನು ಸೇರಿಸಲಾಗುವುದಿಲ್ಲ. ಮುಗಿಸಿದ ನಂತರ ಉತ್ತರಗಳನ್ನು ಬದಲಾಯಿಸಲು ಆಗುವುದಿಲ್ಲ.',
     );
     return '$_temp0';
   }
 
   @override
-  String get quizFinishConfirm => 'Finish quiz';
+  String get quizFinishConfirm => 'ಕ್ವಿಜ್ ಮುಗಿಸಿ';
 
   @override
-  String get quizFinishCancel => 'Keep working';
+  String get quizFinishCancel => 'ಮುಂದುವರಿಸಿ';
 
   @override
   String get quizFinishUnchecked =>
-      'Your saved answers could not be checked, or this attempt has ended. The quiz was not finished. Return to the quiz list to refresh it.';
+      'ನಿಮ್ಮ ಉಳಿಸಿದ ಉತ್ತರಗಳನ್ನು ಪರಿಶೀಲಿಸಲು ಆಗಲಿಲ್ಲ, ಅಥವಾ ಈ ಪ್ರಯತ್ನ ಮುಗಿದಿದೆ. ಕ್ವಿಜ್ ಮುಗಿಸಿಲ್ಲ. ರಿಫ್ರೆಶ್ ಮಾಡಲು ಕ್ವಿಜ್ ಪಟ್ಟಿಗೆ ಹಿಂತಿರುಗಿ.';
 
   @override
   String get quizFinishTimedOut =>
-      'Checking your saved answers took too long. The quiz was not finished. Check your connection and try again.';
+      'ನಿಮ್ಮ ಉಳಿಸಿದ ಉತ್ತರಗಳನ್ನು ಪರಿಶೀಲಿಸಲು ತುಂಬಾ ಸಮಯ ಹಿಡಿಯಿತು. ಕ್ವಿಜ್ ಮುಗಿಸಿಲ್ಲ. ನಿಮ್ಮ ಸಂಪರ್ಕ ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
-  String get quizFinishing => 'Finishing the quiz';
+  String get quizFinishing => 'ಕ್ವಿಜ್ ಮುಗಿಸಲಾಗುತ್ತಿದೆ';
 
   @override
-  String get quizFinishAndHear => 'Finish and hear result';
+  String get quizFinishAndHear => 'ಮುಗಿಸಿ ಫಲಿತಾಂಶ ಕೇಳಿ';
 
   @override
-  String get quizRetryFinishing => 'Retry finishing';
+  String get quizRetryFinishing => 'ಮುಗಿಸಲು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ';
 
   @override
   String quizCompletionFailed(String reason) {
-    return '$reason Your saved answers are preserved. Press 5 to retry finishing.';
+    return '$reason ನಿಮ್ಮ ಉಳಿಸಿದ ಉತ್ತರಗಳು ಸುರಕ್ಷಿತವಾಗಿವೆ. ಮುಗಿಸಲು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಲು 5 ಒತ್ತಿ.';
   }
 
   @override
-  String get quizCompletionNotConfirmed => 'Completion was not confirmed.';
+  String get quizCompletionNotConfirmed => 'ಪೂರ್ಣಗೊಂಡಿರುವುದು ದೃಢಪಟ್ಟಿಲ್ಲ.';
 
   @override
   String get quizCompleted =>
-      'Quiz finished. Your result is private. Press 8 to hear it, or 0 to return to quizzes.';
+      'ಕ್ವಿಜ್ ಮುಗಿದಿದೆ. ನಿಮ್ಮ ಫಲಿತಾಂಶ ಖಾಸಗಿಯಾಗಿದೆ. ಅದನ್ನು ಕೇಳಲು 8 ಒತ್ತಿ, ಅಥವಾ ಕ್ವಿಜ್‌ಗಳಿಗೆ ಹಿಂತಿರುಗಲು 0 ಒತ್ತಿ.';
 
   @override
   String get quizCompletedTimedOut =>
-      'Time ran out. Quiz finished. Your result is private. Press 8 to hear it, or 0 to return to quizzes.';
+      'ಸಮಯ ಮುಗಿಯಿತು. ಕ್ವಿಜ್ ಮುಗಿದಿದೆ. ನಿಮ್ಮ ಫಲಿತಾಂಶ ಖಾಸಗಿಯಾಗಿದೆ. ಅದನ್ನು ಕೇಳಲು 8 ಒತ್ತಿ, ಅಥವಾ ಕ್ವಿಜ್‌ಗಳಿಗೆ ಹಿಂತಿರುಗಲು 0 ಒತ್ತಿ.';
 
   @override
   String get quizResultPrivate =>
-      'Quiz finished. Result private. Use Read result privately.';
+      'ಕ್ವಿಜ್ ಮುಗಿದಿದೆ. ಫಲಿತಾಂಶ ಖಾಸಗಿ. ಫಲಿತಾಂಶವನ್ನು ಖಾಸಗಿಯಾಗಿ ಓದಿ ಬಳಸಿ.';
 
   @override
-  String get quizResultHeading => 'Attempt complete';
+  String get quizResultHeading => 'ಪ್ರಯತ್ನ ಪೂರ್ಣಗೊಂಡಿದೆ';
 
   @override
-  String get quizReadResult => 'Read result privately';
+  String get quizReadResult => 'ಫಲಿತಾಂಶವನ್ನು ಖಾಸಗಿಯಾಗಿ ಓದಿ';
 
   @override
-  String get quizReturnToQuizzes => 'Return to quizzes';
+  String get quizReturnToQuizzes => 'ಕ್ವಿಜ್‌ಗಳಿಗೆ ಹಿಂತಿರುಗಿ';
 
   @override
-  String get quizLeave => 'Leave without submitting, with confirmation';
+  String get quizLeave => 'ಸಲ್ಲಿಸದೆ ಹೊರಡಿ, ದೃಢೀಕರಣದೊಂದಿಗೆ';
 
   @override
-  String get quizLeaveTitle => 'Leave and resume later?';
+  String get quizLeaveTitle => 'ಹೊರಟು ನಂತರ ಮುಂದುವರಿಸಬೇಕೆ?';
 
   @override
   String get quizLeaveMessage =>
-      'This does not submit your attempt. Only saved answers are kept; a selected answer that you did not submit may be lost. Any time limit keeps running. You can resume while the quiz allows it.';
+      'ಇದು ನಿಮ್ಮ ಪ್ರಯತ್ನವನ್ನು ಸಲ್ಲಿಸುವುದಿಲ್ಲ. ಉಳಿಸಿದ ಉತ್ತರಗಳು ಮಾತ್ರ ಉಳಿಯುತ್ತವೆ; ನೀವು ಆರಿಸಿ ಸಲ್ಲಿಸದ ಉತ್ತರ ಕಳೆದುಹೋಗಬಹುದು. ಸಮಯ ಮಿತಿ ಇದ್ದರೆ ಅದು ಮುಂದುವರಿಯುತ್ತದೆ. ಕ್ವಿಜ್ ಅನುಮತಿಸುವವರೆಗೆ ನೀವು ಮುಂದುವರಿಸಬಹುದು.';
 
   @override
-  String get quizLeaveConfirm => 'Leave without submitting';
+  String get quizLeaveConfirm => 'ಸಲ್ಲಿಸದೆ ಹೊರಡಿ';
 
   @override
-  String get quizLeaveCancel => 'Stay in quiz';
+  String get quizLeaveCancel => 'ಕ್ವಿಜ್‌ನಲ್ಲೇ ಇರಿ';
 
   @override
   String get quizWaitBeforeLeaving =>
-      'Please wait. Your answer is still being saved.';
+      'ದಯವಿಟ್ಟು ಕಾಯಿರಿ. ನಿಮ್ಮ ಉತ್ತರ ಇನ್ನೂ ಉಳಿಸಲಾಗುತ್ತಿದೆ.';
 
   @override
   String quizAttemptScreen(String title) {
-    return 'Quiz attempt, $title';
+    return 'ಕ್ವಿಜ್ ಪ್ರಯತ್ನ, $title';
   }
 
   @override
   String get quizAttemptNavigationCompleted =>
-      'return to quizzes, read result privately and quiz speech speed';
+      'ಕ್ವಿಜ್‌ಗಳಿಗೆ ಹಿಂತಿರುಗಿ, ಫಲಿತಾಂಶವನ್ನು ಖಾಸಗಿಯಾಗಿ ಓದಿ ಮತ್ತು ಕ್ವಿಜ್ ಧ್ವನಿ ವೇಗ';
 
   @override
   String get quizAttemptNavigationTimed =>
-      'the question, each answer option, the selected answer, quiz speech speed, time left, submit, Finish quiz now and Leave. Moving focus never selects or submits';
+      'ಪ್ರಶ್ನೆ, ಪ್ರತಿ ಉತ್ತರ ಆಯ್ಕೆ, ಆರಿಸಿದ ಉತ್ತರ, ಕ್ವಿಜ್ ಧ್ವನಿ ವೇಗ, ಉಳಿದ ಸಮಯ, ಸಲ್ಲಿಸಿ, ಈಗ ಕ್ವಿಜ್ ಮುಗಿಸಿ ಮತ್ತು ಹೊರಡಿ. ಫೋಕಸ್ ಸರಿಸಿದರೆ ಎಂದಿಗೂ ಆಯ್ಕೆ ಅಥವಾ ಸಲ್ಲಿಕೆ ಆಗುವುದಿಲ್ಲ';
 
   @override
   String get quizAttemptNavigationUntimed =>
-      'the question, each answer option, the selected answer, quiz speech speed, submit, Finish quiz now and Leave. Moving focus never selects or submits';
+      'ಪ್ರಶ್ನೆ, ಪ್ರತಿ ಉತ್ತರ ಆಯ್ಕೆ, ಆರಿಸಿದ ಉತ್ತರ, ಕ್ವಿಜ್ ಧ್ವನಿ ವೇಗ, ಸಲ್ಲಿಸಿ, ಈಗ ಕ್ವಿಜ್ ಮುಗಿಸಿ ಮತ್ತು ಹೊರಡಿ. ಫೋಕಸ್ ಸರಿಸಿದರೆ ಎಂದಿಗೂ ಆಯ್ಕೆ ಅಥವಾ ಸಲ್ಲಿಕೆ ಆಗುವುದಿಲ್ಲ';
 
   @override
   String get quizSpeedHelp =>
-      'Press 7 or 9 to make quiz speech slower or faster.';
+      'ಕ್ವಿಜ್ ಧ್ವನಿಯನ್ನು ನಿಧಾನ ಅಥವಾ ವೇಗ ಮಾಡಲು 7 ಅಥವಾ 9 ಒತ್ತಿ.';
 
   @override
   String get quizSpeedScreenReader =>
-      'Quiz speech speed changes app speech only. Change your screen reader speed in Android settings.';
+      'ಕ್ವಿಜ್ ಧ್ವನಿ ವೇಗ ಆ್ಯಪ್ ಧ್ವನಿಯನ್ನು ಮಾತ್ರ ಬದಲಾಯಿಸುತ್ತದೆ. ನಿಮ್ಮ ಸ್ಕ್ರೀನ್ ರೀಡರ್ ವೇಗವನ್ನು Android ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಬದಲಾಯಿಸಿ.';
 
   @override
-  String get quizSpeedHeading => 'Quiz speech speed';
+  String get quizSpeedHeading => 'ಕ್ವಿಜ್ ಧ್ವನಿ ವೇಗ';
 
   @override
   String quizSpeedTarget(String description) {
-    return 'Quiz speech speed, $description. Left or right to change, or press 7 or 9';
+    return 'ಕ್ವಿಜ್ ಧ್ವನಿ ವೇಗ, $description. ಬದಲಾಯಿಸಲು ಎಡ ಅಥವಾ ಬಲ, ಅಥವಾ 7 ಅಥವಾ 9 ಒತ್ತಿ';
   }
 
   @override
   String quizSpeedRead(String description) {
-    return 'Quiz speech speed, $description. Press 7 for slower or 9 for faster. This speed is used only in quizzes.';
+    return 'ಕ್ವಿಜ್ ಧ್ವನಿ ವೇಗ, $description. ನಿಧಾನಕ್ಕೆ 7 ಅಥವಾ ವೇಗಕ್ಕೆ 9 ಒತ್ತಿ. ಈ ವೇಗವನ್ನು ಕ್ವಿಜ್‌ಗಳಲ್ಲಿ ಮಾತ್ರ ಬಳಸಲಾಗುತ್ತದೆ.';
   }
 
   @override
   String quizSpeedFaster(String description) {
-    return 'Faster. $description.';
+    return 'ವೇಗವಾಗಿ. $description.';
   }
 
   @override
   String quizSpeedSlower(String description) {
-    return 'Slower. $description.';
+    return 'ನಿಧಾನವಾಗಿ. $description.';
   }
 
   @override
   String quizSpeedFastest(String description) {
-    return 'Fastest quiz speech, $description.';
+    return 'ಅತಿ ವೇಗದ ಕ್ವಿಜ್ ಧ್ವನಿ, $description.';
   }
 
   @override
   String quizSpeedSlowest(String description) {
-    return 'Slowest quiz speech, $description.';
+    return 'ಅತಿ ನಿಧಾನದ ಕ್ವಿಜ್ ಧ್ವನಿ, $description.';
   }
 
   @override
-  String get quizStudentScreen => 'Student quizzes';
+  String get quizStudentScreen => 'ವಿದ್ಯಾರ್ಥಿ ಕ್ವಿಜ್‌ಗಳು';
 
   @override
   String get quizStudentNavigation =>
-      'refresh, quiz state and subject filters, available quizzes, and attempt history';
+      'ರಿಫ್ರೆಶ್, ಕ್ವಿಜ್ ಸ್ಥಿತಿ ಮತ್ತು ವಿಷಯ ಫಿಲ್ಟರ್‌ಗಳು, ಲಭ್ಯವಿರುವ ಕ್ವಿಜ್‌ಗಳು ಮತ್ತು ಪ್ರಯತ್ನಗಳ ಇತಿಹಾಸ';
 
   @override
   String get quizStudentIntroBrief =>
-      'Use left or right on a filter to change it.';
+      'ಫಿಲ್ಟರ್ ಬದಲಾಯಿಸಲು ಅದರ ಮೇಲೆ ಎಡ ಅಥವಾ ಬಲ ಬಳಸಿ.';
 
   @override
   String get quizStudentIntroDetailed =>
-      'Use left or right on a filter to change it. Press OK on a quiz to hear its details and confirm starting. Moving focus never starts a quiz.';
+      'ಫಿಲ್ಟರ್ ಬದಲಾಯಿಸಲು ಅದರ ಮೇಲೆ ಎಡ ಅಥವಾ ಬಲ ಬಳಸಿ. ಕ್ವಿಜ್‌ನ ವಿವರ ಕೇಳಿ ಪ್ರಾರಂಭವನ್ನು ದೃಢೀಕರಿಸಲು ಅದರ ಮೇಲೆ ಓಕೆ ಒತ್ತಿ. ಫೋಕಸ್ ಸರಿಸಿದರೆ ಎಂದಿಗೂ ಕ್ವಿಜ್ ಪ್ರಾರಂಭವಾಗುವುದಿಲ್ಲ.';
 
   @override
   String quizAvailable(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count quizzes available.',
-      one: '1 quiz available.',
-      zero: 'No quizzes available.',
+      other: '$count ಕ್ವಿಜ್‌ಗಳು ಲಭ್ಯವಿವೆ.',
+      one: '1 ಕ್ವಿಜ್ ಲಭ್ಯವಿದೆ.',
+      zero: 'ಯಾವುದೇ ಕ್ವಿಜ್ ಲಭ್ಯವಿಲ್ಲ.',
     );
     return '$_temp0';
   }
@@ -1451,39 +1456,39 @@ class AppLocalizationsKn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count quizzes shown, $open open.',
-      one: '1 quiz shown, $open open.',
+      other: '$count ಕ್ವಿಜ್‌ಗಳನ್ನು ತೋರಿಸಲಾಗಿದೆ, $open ತೆರೆದಿವೆ.',
+      one: '1 ಕ್ವಿಜ್ ತೋರಿಸಲಾಗಿದೆ, $open ತೆರೆದಿದೆ.',
     );
     return '$_temp0';
   }
 
   @override
-  String get quizStateAll => 'All states';
+  String get quizStateAll => 'ಎಲ್ಲಾ ಸ್ಥಿತಿಗಳು';
 
   @override
-  String get quizStateScheduled => 'Scheduled';
+  String get quizStateScheduled => 'ನಿಗದಿಯಾಗಿದೆ';
 
   @override
-  String get quizStateOpen => 'Open';
+  String get quizStateOpen => 'ತೆರೆದಿದೆ';
 
   @override
-  String get quizStateClosed => 'Closed';
+  String get quizStateClosed => 'ಮುಚ್ಚಲಾಗಿದೆ';
 
   @override
   String quizStateFilter(String name, String position, String count) {
-    return 'Quiz state: $name, $position of $count.';
+    return 'ಕ್ವಿಜ್ ಸ್ಥಿತಿ: $name, $count ರಲ್ಲಿ $position.';
   }
 
   @override
   String quizSubjectFilter(String name, String position, String count) {
-    return 'Subject: $name, $position of $count.';
+    return 'ವಿಷಯ: $name, $count ರಲ್ಲಿ $position.';
   }
 
   @override
-  String get quizChangeWithArrows => 'Left or right to change';
+  String get quizChangeWithArrows => 'ಬದಲಾಯಿಸಲು ಎಡ ಅಥವಾ ಬಲ';
 
   @override
-  String get quizAllSubjects => 'All subjects';
+  String get quizAllSubjects => 'ಎಲ್ಲಾ ವಿಷಯಗಳು';
 
   @override
   String quizRowHead(String subject, String title, String status) {
@@ -1491,26 +1496,26 @@ class AppLocalizationsKn extends AppLocalizations {
   }
 
   @override
-  String get quizStartQuiz => 'Start quiz';
+  String get quizStartQuiz => 'ಕ್ವಿಜ್ ಪ್ರಾರಂಭಿಸಿ';
 
   @override
-  String get quizResumeQuiz => 'Resume quiz';
+  String get quizResumeQuiz => 'ಕ್ವಿಜ್ ಮುಂದುವರಿಸಿ';
 
   @override
   String quizHistoryRow(String title, String score) {
-    return 'Review $title attempt history. Highest score $score';
+    return '$title ಪ್ರಯತ್ನಗಳ ಇತಿಹಾಸ ಪರಿಶೀಲಿಸಿ. ಅತಿ ಹೆಚ್ಚು ಅಂಕ $score';
   }
 
   @override
   String quizLimitReached(String title) {
-    return 'No attempts left for $title. Open attempt history to review your scores.';
+    return '$title ಗೆ ಯಾವುದೇ ಪ್ರಯತ್ನ ಉಳಿದಿಲ್ಲ. ನಿಮ್ಮ ಅಂಕಗಳನ್ನು ಪರಿಶೀಲಿಸಲು ಪ್ರಯತ್ನಗಳ ಇತಿಹಾಸ ತೆರೆಯಿರಿ.';
   }
 
   @override
-  String get quizStartTitle => 'Start quiz?';
+  String get quizStartTitle => 'ಕ್ವಿಜ್ ಪ್ರಾರಂಭಿಸಬೇಕೆ?';
 
   @override
-  String get quizResumeTitle => 'Resume quiz?';
+  String get quizResumeTitle => 'ಕ್ವಿಜ್ ಮುಂದುವರಿಸಬೇಕೆ?';
 
   @override
   String quizTitleSentence(String title) {
@@ -1519,61 +1524,61 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String quizClosesSentence(String when) {
-    return 'Closes $when.';
+    return '$when ಮುಚ್ಚುತ್ತದೆ.';
   }
 
   @override
-  String get quizStartAttempt => 'Start attempt';
+  String get quizStartAttempt => 'ಪ್ರಯತ್ನ ಪ್ರಾರಂಭಿಸಿ';
 
   @override
-  String get quizResumeAttempt => 'Resume attempt';
+  String get quizResumeAttempt => 'ಪ್ರಯತ್ನ ಮುಂದುವರಿಸಿ';
 
   @override
   String get quizStartFailed =>
-      'The quiz could not be started. Check that it is open.';
+      'ಕ್ವಿಜ್ ಪ್ರಾರಂಭಿಸಲು ಆಗಲಿಲ್ಲ. ಅದು ತೆರೆದಿದೆಯೇ ಎಂದು ಪರಿಶೀಲಿಸಿ.';
 
   @override
-  String get quizHistoryFailed => 'Attempt history could not be loaded.';
+  String get quizHistoryFailed => 'ಪ್ರಯತ್ನಗಳ ಇತಿಹಾಸ ಲೋಡ್ ಮಾಡಲು ಆಗಲಿಲ್ಲ.';
 
   @override
   String get quizHistoryScreen =>
-      'Attempt history. Scores are private. Move to the summary or an attempt to review it.';
+      'ಪ್ರಯತ್ನಗಳ ಇತಿಹಾಸ. ಅಂಕಗಳು ಖಾಸಗಿ. ಪರಿಶೀಲಿಸಲು ಸಾರಾಂಶ ಅಥವಾ ಒಂದು ಪ್ರಯತ್ನಕ್ಕೆ ಹೋಗಿ.';
 
   @override
-  String get quizPracticeHistory => 'Practice history. Not academic grades.';
+  String get quizPracticeHistory => 'ಅಭ್ಯಾಸ ಇತಿಹಾಸ. ಶೈಕ್ಷಣಿಕ ಅಂಕಗಳಲ್ಲ.';
 
   @override
   String quizHighestScoreValue(String score) {
-    return 'Highest score: $score';
+    return 'ಅತಿ ಹೆಚ್ಚು ಅಂಕ: $score';
   }
 
   @override
   String get quizNoScoreReleasedYet =>
-      'Completed attempts exist; no score is released yet.';
+      'ಪೂರ್ಣಗೊಂಡ ಪ್ರಯತ್ನಗಳಿವೆ; ಇನ್ನೂ ಯಾವುದೇ ಅಂಕ ಬಿಡುಗಡೆಯಾಗಿಲ್ಲ.';
 
   @override
-  String get quizNoCompletedAttempt => 'No completed attempt';
+  String get quizNoCompletedAttempt => 'ಪೂರ್ಣಗೊಂಡ ಪ್ರಯತ್ನ ಇಲ್ಲ';
 
   @override
   String quizHistoryAttempt(String number, String status, String result) {
-    return 'Attempt $number. $status. $result Press OK to review.';
+    return 'ಪ್ರಯತ್ನ $number. $status. $result ಪರಿಶೀಲಿಸಲು ಓಕೆ ಒತ್ತಿ.';
   }
 
   @override
   String get quizResumeFromList =>
-      'This attempt is in progress. Return to the quiz list to resume it. Leaving does not submit.';
+      'ಈ ಪ್ರಯತ್ನ ನಡೆಯುತ್ತಿದೆ. ಮುಂದುವರಿಸಲು ಕ್ವಿಜ್ ಪಟ್ಟಿಗೆ ಹಿಂತಿರುಗಿ. ಹೊರಟರೆ ಸಲ್ಲಿಕೆ ಆಗುವುದಿಲ್ಲ.';
 
   @override
   String get quizReviewFailed =>
-      'Attempt review could not be loaded. Check your connection and try again.';
+      'ಪ್ರಯತ್ನದ ಪರಿಶೀಲನೆ ಲೋಡ್ ಮಾಡಲು ಆಗಲಿಲ್ಲ. ನಿಮ್ಮ ಸಂಪರ್ಕ ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
   String get quizReviewTimedOut =>
-      'Attempt review took too long. Check your connection and try again.';
+      'ಪ್ರಯತ್ನದ ಪರಿಶೀಲನೆಗೆ ತುಂಬಾ ಸಮಯ ಹಿಡಿಯಿತು. ನಿಮ್ಮ ಸಂಪರ್ಕ ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
   String quizReviewScreenMessage(String message) {
-    return 'Attempt review. $message';
+    return 'ಪ್ರಯತ್ನದ ಪರಿಶೀಲನೆ. $message';
   }
 
   @override
@@ -1582,8 +1587,9 @@ class AppLocalizationsKn extends AppLocalizations {
       count,
       locale: localeName,
       other:
-          'Attempt review. $count questions. Use up and down to review each answer.',
-      one: 'Attempt review. 1 question. Use up and down to review each answer.',
+          'ಪ್ರಯತ್ನದ ಪರಿಶೀಲನೆ. $count ಪ್ರಶ್ನೆಗಳು. ಪ್ರತಿ ಉತ್ತರವನ್ನು ಪರಿಶೀಲಿಸಲು ಮೇಲೆ ಮತ್ತು ಕೆಳಗೆ ಬಳಸಿ.',
+      one:
+          'ಪ್ರಯತ್ನದ ಪರಿಶೀಲನೆ. 1 ಪ್ರಶ್ನೆ. ಪ್ರತಿ ಉತ್ತರವನ್ನು ಪರಿಶೀಲಿಸಲು ಮೇಲೆ ಮತ್ತು ಕೆಳಗೆ ಬಳಸಿ.',
     );
     return '$_temp0';
   }
@@ -1596,7 +1602,7 @@ class AppLocalizationsKn extends AppLocalizations {
     String answer,
     String explanation,
   ) {
-    return 'Question $number. Correct. $question. You chose $chosen. Correct answer $answer. $explanation';
+    return 'ಪ್ರಶ್ನೆ $number. ಸರಿ. $question. ನೀವು ಆರಿಸಿದ್ದು $chosen. ಸರಿಯಾದ ಉತ್ತರ $answer. $explanation';
   }
 
   @override
@@ -1607,32 +1613,32 @@ class AppLocalizationsKn extends AppLocalizations {
     String answer,
     String explanation,
   ) {
-    return 'Question $number. Incorrect. $question. You chose $chosen. Correct answer $answer. $explanation';
+    return 'ಪ್ರಶ್ನೆ $number. ತಪ್ಪು. $question. ನೀವು ಆರಿಸಿದ್ದು $chosen. ಸರಿಯಾದ ಉತ್ತರ $answer. $explanation';
   }
 
   @override
-  String get quizNoAnswer => 'no answer';
+  String get quizNoAnswer => 'ಉತ್ತರ ಇಲ್ಲ';
 
   @override
   String quizTeacherScreen(String className, String subjectName) {
-    return 'Teacher quizzes for $className, $subjectName';
+    return '$className, $subjectName ಗಾಗಿ ಶಿಕ್ಷಕರ ಕ್ವಿಜ್‌ಗಳು';
   }
 
   @override
   String get quizTeacherNavigation =>
-      'bank search and saved questions, quiz drafts, published quizzes, and their results';
+      'ಬ್ಯಾಂಕ್ ಹುಡುಕಾಟ ಮತ್ತು ಉಳಿಸಿದ ಪ್ರಶ್ನೆಗಳು, ಕ್ವಿಜ್ ಕರಡುಗಳು, ಪ್ರಕಟಿತ ಕ್ವಿಜ್‌ಗಳು ಮತ್ತು ಅವುಗಳ ಫಲಿತಾಂಶಗಳು';
 
   @override
   String get quizTeacherIntroDetailed =>
-      'Use the D-pad to explore bank search and saved questions, quiz drafts, published quizzes and results.';
+      'ಬ್ಯಾಂಕ್ ಹುಡುಕಾಟ ಮತ್ತು ಉಳಿಸಿದ ಪ್ರಶ್ನೆಗಳು, ಕ್ವಿಜ್ ಕರಡುಗಳು, ಪ್ರಕಟಿತ ಕ್ವಿಜ್‌ಗಳು ಮತ್ತು ಫಲಿತಾಂಶಗಳನ್ನು ನೋಡಲು D-pad ಬಳಸಿ.';
 
   @override
   String quizBankQuestionCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count bank questions',
-      one: '1 bank question',
+      other: '$count ಬ್ಯಾಂಕ್ ಪ್ರಶ್ನೆಗಳು',
+      one: '1 ಬ್ಯಾಂಕ್ ಪ್ರಶ್ನೆ',
     );
     return '$_temp0';
   }
@@ -1642,8 +1648,8 @@ class AppLocalizationsKn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count quizzes',
-      one: '1 quiz',
+      other: '$count ಕ್ವಿಜ್‌ಗಳು',
+      one: '1 ಕ್ವಿಜ್',
     );
     return '$_temp0';
   }
@@ -1653,15 +1659,15 @@ class AppLocalizationsKn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count drafts',
-      one: '1 draft',
+      other: '$count ಕರಡುಗಳು',
+      one: '1 ಕರಡು',
     );
     return '$_temp0';
   }
 
   @override
   String quizTeacherLoaded(String questions, String quizzes) {
-    return '$questions and $quizzes loaded.';
+    return '$questions ಮತ್ತು $quizzes ಲೋಡ್ ಆಗಿವೆ.';
   }
 
   @override
@@ -1671,280 +1677,278 @@ class AppLocalizationsKn extends AppLocalizations {
     String closed,
     String bankQuestions,
   ) {
-    return '$drafts, $published published, $closed closed. $bankQuestions.';
+    return '$drafts, $published ಪ್ರಕಟಿತ, $closed ಮುಚ್ಚಲಾಗಿದೆ. $bankQuestions.';
   }
 
   @override
   String get quizTeacherLoadFailed =>
-      'The question bank or quiz list could not be refreshed. Press 1 to try again before creating another quiz.';
+      'ಪ್ರಶ್ನೆ ಬ್ಯಾಂಕ್ ಅಥವಾ ಕ್ವಿಜ್ ಪಟ್ಟಿಯನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಲು ಆಗಲಿಲ್ಲ. ಇನ್ನೊಂದು ಕ್ವಿಜ್ ರಚಿಸುವ ಮೊದಲು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಲು 1 ಒತ್ತಿ.';
 
   @override
-  String get quizRefreshQuizzes => 'Refresh quiz content';
+  String get quizRefreshQuizzes => 'ಕ್ವಿಜ್ ವಿಷಯವನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಿ';
 
   @override
-  String get quizSearchBank => 'Search private question bank';
+  String get quizSearchBank => 'ಖಾಸಗಿ ಪ್ರಶ್ನೆ ಬ್ಯಾಂಕ್ ಹುಡುಕಿ';
 
   @override
-  String get quizCreateQuestion => 'Create four option question';
+  String get quizCreateQuestion => 'ನಾಲ್ಕು ಆಯ್ಕೆಗಳ ಪ್ರಶ್ನೆ ರಚಿಸಿ';
 
   @override
-  String get quizCreateQuiz => 'Create quiz draft';
+  String get quizCreateQuiz => 'ಕ್ವಿಜ್ ಕರಡು ರಚಿಸಿ';
 
   @override
   String get quizCreatePractice =>
-      'Create separate untimed ungraded practice. Unlimited retries';
+      'ಸಮಯ ಮಿತಿ ಇಲ್ಲದ, ಅಂಕರಹಿತ ಪ್ರತ್ಯೇಕ ಅಭ್ಯಾಸ ರಚಿಸಿ. ಅನಿಯಮಿತ ಮರುಪ್ರಯತ್ನಗಳು';
 
   @override
   String quizBankQuestionItem(String question, String revision) {
-    return 'Question bank item, $question. Revision $revision. Press OK for edit, revision history, duplicate, archive, or add actions';
+    return 'ಪ್ರಶ್ನೆ ಬ್ಯಾಂಕ್ ಐಟಂ, $question. ಆವೃತ್ತಿ $revision. ಸಂಪಾದನೆ, ಆವೃತ್ತಿ ಇತಿಹಾಸ, ನಕಲು, ಆರ್ಕೈವ್ ಅಥವಾ ಸೇರಿಸುವ ಕ್ರಿಯೆಗಳಿಗೆ ಓಕೆ ಒತ್ತಿ';
   }
 
   @override
-  String get quizRevisionUnknownOlder => 'unknown, older question';
+  String get quizRevisionUnknownOlder => 'ತಿಳಿದಿಲ್ಲ, ಹಳೆಯ ಪ್ರಶ್ನೆ';
 
   @override
-  String get quizRevisionUnknownLegacy => 'unknown legacy';
+  String get quizRevisionUnknownLegacy => 'ತಿಳಿದಿಲ್ಲ, ಹಳೆಯದು';
 
   @override
   String quizContinueCreating(String title, String questions) {
-    return 'Continue creating $title. $questions';
+    return '$title ರಚಿಸುವುದನ್ನು ಮುಂದುವರಿಸಿ. $questions';
   }
 
   @override
   String quizContinueCreatingRaw(String title, String count) {
-    return 'Continue creating $title. $count questions';
+    return '$title ರಚಿಸುವುದನ್ನು ಮುಂದುವರಿಸಿ. $count ಪ್ರಶ್ನೆಗಳು';
   }
 
   @override
   String quizCloseWithConfirmation(String title) {
-    return 'Close $title, with confirmation';
+    return '$title ಮುಚ್ಚಿ, ದೃಢೀಕರಣದೊಂದಿಗೆ';
   }
 
   @override
   String quizCloseNamed(String title) {
-    return 'Close $title';
+    return '$title ಮುಚ್ಚಿ';
   }
 
   @override
   String quizIsClosed(String title) {
-    return '$title is closed';
+    return '$title ಮುಚ್ಚಲಾಗಿದೆ';
   }
 
   @override
   String quizDuplicateTarget(String title) {
-    return 'Duplicate $title into a new editable draft';
+    return '$title ಅನ್ನು ಹೊಸ ಸಂಪಾದಿಸಬಹುದಾದ ಕರಡಾಗಿ ನಕಲಿಸಿ';
   }
 
   @override
   String quizResultsTarget(String title) {
-    return 'View results for $title';
+    return '$title ಫಲಿತಾಂಶಗಳನ್ನು ನೋಡಿ';
   }
 
   @override
   String quizCard(String title, String status, String questions) {
-    return '$title. Status $status. $questions.';
+    return '$title. ಸ್ಥಿತಿ $status. $questions.';
   }
 
   @override
   String get quizAccountChangedBank =>
-      'Your account changed. Reopen the question bank before continuing.';
+      'ನಿಮ್ಮ ಖಾತೆ ಬದಲಾಗಿದೆ. ಮುಂದುವರಿಯುವ ಮೊದಲು ಪ್ರಶ್ನೆ ಬ್ಯಾಂಕ್ ಅನ್ನು ಮತ್ತೆ ತೆರೆಯಿರಿ.';
 
   @override
   String quizQuestionSaveUnconfirmed(String reason) {
-    return '$reason Question save could not be confirmed. Check the bank and refresh before retrying; do not create a duplicate.';
+    return '$reason ಪ್ರಶ್ನೆ ಉಳಿಸಿರುವುದು ದೃಢಪಟ್ಟಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸುವ ಮೊದಲು ಬ್ಯಾಂಕ್ ಪರಿಶೀಲಿಸಿ ರಿಫ್ರೆಶ್ ಮಾಡಿ; ನಕಲು ರಚಿಸಬೇಡಿ.';
   }
 
   @override
   String get quizMissingRevision =>
-      'The server returned a question without a revision. Ask the administrator to update the quiz backend.';
+      'ಸರ್ವರ್ ಆವೃತ್ತಿ ಇಲ್ಲದ ಪ್ರಶ್ನೆಯನ್ನು ಕಳುಹಿಸಿದೆ. ಕ್ವಿಜ್ ಬ್ಯಾಕೆಂಡ್ ಅಪ್‌ಡೇಟ್ ಮಾಡಲು ನಿರ್ವಾಹಕರನ್ನು ಕೇಳಿ.';
 
   @override
-  String get quizSavedQuestionMismatch => 'The saved question did not match.';
+  String get quizSavedQuestionMismatch => 'ಉಳಿಸಿದ ಪ್ರಶ್ನೆ ಹೊಂದಿಕೆಯಾಗಲಿಲ್ಲ.';
 
   @override
   String get quizQuestionSaved =>
-      'Question saved. Editing this bank question later will not change existing quizzes.';
+      'ಪ್ರಶ್ನೆ ಉಳಿಸಲಾಗಿದೆ. ಈ ಬ್ಯಾಂಕ್ ಪ್ರಶ್ನೆಯನ್ನು ನಂತರ ಸಂಪಾದಿಸಿದರೆ ಈಗಿರುವ ಕ್ವಿಜ್‌ಗಳು ಬದಲಾಗುವುದಿಲ್ಲ.';
 
   @override
   String get quizNoRevisionForEdit =>
-      'This server did not supply a question revision. Ask the administrator to update the quiz backend before editing.';
+      'ಈ ಸರ್ವರ್ ಪ್ರಶ್ನೆಯ ಆವೃತ್ತಿಯನ್ನು ನೀಡಲಿಲ್ಲ. ಸಂಪಾದಿಸುವ ಮೊದಲು ಕ್ವಿಜ್ ಬ್ಯಾಕೆಂಡ್ ಅಪ್‌ಡೇಟ್ ಮಾಡಲು ನಿರ್ವಾಹಕರನ್ನು ಕೇಳಿ.';
 
   @override
   String quizQuestionUpdateUnconfirmed(String reason) {
-    return '$reason The bank question could not be confirmed updated. Refresh and review its current revision before retrying.';
+    return '$reason ಬ್ಯಾಂಕ್ ಪ್ರಶ್ನೆ ಅಪ್‌ಡೇಟ್ ಆಗಿರುವುದು ದೃಢಪಟ್ಟಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸುವ ಮೊದಲು ರಿಫ್ರೆಶ್ ಮಾಡಿ ಅದರ ಈಗಿನ ಆವೃತ್ತಿಯನ್ನು ಪರಿಶೀಲಿಸಿ.';
   }
 
   @override
-  String get quizSavedRevisionMismatch => 'The saved revision did not match.';
+  String get quizSavedRevisionMismatch => 'ಉಳಿಸಿದ ಆವೃತ್ತಿ ಹೊಂದಿಕೆಯಾಗಲಿಲ್ಲ.';
 
   @override
   String get quizQuestionUpdated =>
-      'Bank question updated. Existing quiz snapshots were not changed.';
+      'ಬ್ಯಾಂಕ್ ಪ್ರಶ್ನೆ ಅಪ್‌ಡೇಟ್ ಆಗಿದೆ. ಈಗಿರುವ ಕ್ವಿಜ್ ಪ್ರತಿಗಳನ್ನು ಬದಲಾಯಿಸಿಲ್ಲ.';
 
   @override
-  String get quizArchiveTitle => 'Archive bank question?';
+  String get quizArchiveTitle => 'ಬ್ಯಾಂಕ್ ಪ್ರಶ್ನೆಯನ್ನು ಆರ್ಕೈವ್ ಮಾಡಬೇಕೆ?';
 
   @override
   String get quizArchiveMessage =>
-      'Archive this private bank question? Existing quiz snapshots and attempts are not changed.';
+      'ಈ ಖಾಸಗಿ ಬ್ಯಾಂಕ್ ಪ್ರಶ್ನೆಯನ್ನು ಆರ್ಕೈವ್ ಮಾಡಬೇಕೆ? ಈಗಿರುವ ಕ್ವಿಜ್ ಪ್ರತಿಗಳು ಮತ್ತು ಪ್ರಯತ್ನಗಳು ಬದಲಾಗುವುದಿಲ್ಲ.';
 
   @override
-  String get quizArchiveConfirm => 'Archive question';
+  String get quizArchiveConfirm => 'ಪ್ರಶ್ನೆ ಆರ್ಕೈವ್ ಮಾಡಿ';
 
   @override
-  String get quizArchiveFailed => 'The bank question could not be archived.';
+  String get quizArchiveFailed => 'ಬ್ಯಾಂಕ್ ಪ್ರಶ್ನೆಯನ್ನು ಆರ್ಕೈವ್ ಮಾಡಲು ಆಗಲಿಲ್ಲ.';
 
   @override
-  String get quizArchived => 'Bank question archived.';
+  String get quizArchived => 'ಬ್ಯಾಂಕ್ ಪ್ರಶ್ನೆ ಆರ್ಕೈವ್ ಮಾಡಲಾಗಿದೆ.';
 
   @override
   String get quizDuplicateQuestionFailed =>
-      'The bank question could not be duplicated.';
+      'ಬ್ಯಾಂಕ್ ಪ್ರಶ್ನೆಯನ್ನು ನಕಲಿಸಲು ಆಗಲಿಲ್ಲ.';
 
   @override
-  String get quizQuestionDuplicated => 'Bank question copy created.';
+  String get quizQuestionDuplicated => 'ಬ್ಯಾಂಕ್ ಪ್ರಶ್ನೆಯ ನಕಲು ರಚಿಸಲಾಗಿದೆ.';
 
   @override
   String quizQuestionActions(String question) {
-    return 'Actions for $question';
+    return '$question ಗಾಗಿ ಕ್ರಿಯೆಗಳು';
   }
 
   @override
-  String get quizActionEdit => 'Edit bank question';
+  String get quizActionEdit => 'ಬ್ಯಾಂಕ್ ಪ್ರಶ್ನೆ ಸಂಪಾದಿಸಿ';
 
   @override
-  String get quizActionDuplicate => 'Duplicate bank question';
+  String get quizActionDuplicate => 'ಬ್ಯಾಂಕ್ ಪ್ರಶ್ನೆ ನಕಲಿಸಿ';
 
   @override
-  String get quizActionArchive => 'Archive bank question';
+  String get quizActionArchive => 'ಬ್ಯಾಂಕ್ ಪ್ರಶ್ನೆ ಆರ್ಕೈವ್ ಮಾಡಿ';
 
   @override
-  String get quizActionRevisions => 'Read question revision history';
+  String get quizActionRevisions => 'ಪ್ರಶ್ನೆಯ ಆವೃತ್ತಿ ಇತಿಹಾಸ ಓದಿ';
 
   @override
   String quizActionAddTo(String title) {
-    return 'Add to $title';
+    return '$title ಗೆ ಸೇರಿಸಿ';
   }
 
   @override
   String get quizRefreshBeforeDraft =>
-      'Refresh and review the quiz list before creating another draft.';
+      'ಇನ್ನೊಂದು ಕರಡು ರಚಿಸುವ ಮೊದಲು ಕ್ವಿಜ್ ಪಟ್ಟಿಯನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಿ ಪರಿಶೀಲಿಸಿ.';
 
   @override
   String quizDraftUnconfirmed(String reason) {
-    return '$reason Draft save could not be confirmed. Refresh the quiz list before creating another draft.';
+    return '$reason ಕರಡು ಉಳಿಸಿರುವುದು ದೃಢಪಟ್ಟಿಲ್ಲ. ಇನ್ನೊಂದು ಕರಡು ರಚಿಸುವ ಮೊದಲು ಕ್ವಿಜ್ ಪಟ್ಟಿಯನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಿ.';
   }
 
   @override
-  String get quizSavedDraftMismatch => 'The saved draft did not match.';
+  String get quizSavedDraftMismatch => 'ಉಳಿಸಿದ ಕರಡು ಹೊಂದಿಕೆಯಾಗಲಿಲ್ಲ.';
 
   @override
-  String get quizDraftSaved => 'Quiz draft saved.';
+  String get quizDraftSaved => 'ಕ್ವಿಜ್ ಕರಡು ಉಳಿಸಲಾಗಿದೆ.';
 
   @override
-  String get quizAddToQuizFailed =>
-      'The question could not be added to this quiz.';
+  String get quizAddToQuizFailed => 'ಪ್ರಶ್ನೆಯನ್ನು ಈ ಕ್ವಿಜ್‌ಗೆ ಸೇರಿಸಲು ಆಗಲಿಲ್ಲ.';
 
   @override
-  String get quizAddedToQuiz => 'Question added to the quiz.';
+  String get quizAddedToQuiz => 'ಪ್ರಶ್ನೆಯನ್ನು ಕ್ವಿಜ್‌ಗೆ ಸೇರಿಸಲಾಗಿದೆ.';
 
   @override
-  String get quizPublishTitle => 'Publish quiz?';
+  String get quizPublishTitle => 'ಕ್ವಿಜ್ ಪ್ರಕಟಿಸಬೇಕೆ?';
 
   @override
   String quizPublishMessage(String title) {
-    return 'Publish \"$title\" to eligible students? Questions become fixed for this quiz.';
+    return '\"$title\" ಅನ್ನು ಅರ್ಹ ವಿದ್ಯಾರ್ಥಿಗಳಿಗೆ ಪ್ರಕಟಿಸಬೇಕೆ? ಈ ಕ್ವಿಜ್‌ಗೆ ಪ್ರಶ್ನೆಗಳು ಸ್ಥಿರವಾಗುತ್ತವೆ.';
   }
 
   @override
   String quizPublishMessageSnapshots(String title) {
-    return 'Publish \"$title\" to eligible students? Questions become academic snapshots.';
+    return '\"$title\" ಅನ್ನು ಅರ್ಹ ವಿದ್ಯಾರ್ಥಿಗಳಿಗೆ ಪ್ರಕಟಿಸಬೇಕೆ? ಪ್ರಶ್ನೆಗಳು ಶೈಕ್ಷಣಿಕ ಪ್ರತಿಗಳಾಗುತ್ತವೆ.';
   }
 
   @override
-  String get quizPublishConfirm => 'Publish quiz';
+  String get quizPublishConfirm => 'ಕ್ವಿಜ್ ಪ್ರಕಟಿಸಿ';
 
   @override
   String get quizPublishUnconfirmed =>
-      'Publishing could not be confirmed. Refresh and review the quiz status before trying again.';
+      'ಪ್ರಕಟಣೆ ದೃಢಪಟ್ಟಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸುವ ಮೊದಲು ರಿಫ್ರೆಶ್ ಮಾಡಿ ಕ್ವಿಜ್ ಸ್ಥಿತಿ ಪರಿಶೀಲಿಸಿ.';
 
   @override
   String get quizPublishedNoRecipients =>
-      'Quiz published. There are no eligible students to notify.';
+      'ಕ್ವಿಜ್ ಪ್ರಕಟಿಸಲಾಗಿದೆ. ತಿಳಿಸಲು ಯಾವುದೇ ಅರ್ಹ ವಿದ್ಯಾರ್ಥಿಗಳಿಲ್ಲ.';
 
   @override
-  String get quizNoEligibleToNotify =>
-      'There are no eligible students to notify.';
+  String get quizNoEligibleToNotify => 'ತಿಳಿಸಲು ಯಾವುದೇ ಅರ್ಹ ವಿದ್ಯಾರ್ಥಿಗಳಿಲ್ಲ.';
 
   @override
   String get quizPublishedNoneDelivered =>
-      'Quiz published, but no student device notifications were delivered. Check notification registration and server Firebase credentials.';
+      'ಕ್ವಿಜ್ ಪ್ರಕಟಿಸಲಾಗಿದೆ, ಆದರೆ ಯಾವುದೇ ವಿದ್ಯಾರ್ಥಿ ಸಾಧನಕ್ಕೆ ಅಧಿಸೂಚನೆ ತಲುಪಿಲ್ಲ. ಅಧಿಸೂಚನೆ ನೋಂದಣಿ ಮತ್ತು ಸರ್ವರ್ Firebase ರುಜುವಾತುಗಳನ್ನು ಪರಿಶೀಲಿಸಿ.';
 
   @override
   String quizPublishedWithFailures(String sent, String failures) {
-    return 'Quiz published. $sent device notifications sent and $failures failed.';
+    return 'ಕ್ವಿಜ್ ಪ್ರಕಟಿಸಲಾಗಿದೆ. $sent ಸಾಧನ ಅಧಿಸೂಚನೆಗಳನ್ನು ಕಳುಹಿಸಲಾಗಿದೆ ಮತ್ತು $failures ವಿಫಲವಾಗಿವೆ.';
   }
 
   @override
   String quizPublishedSent(String sent) {
-    return 'Quiz published. $sent device notifications sent.';
+    return 'ಕ್ವಿಜ್ ಪ್ರಕಟಿಸಲಾಗಿದೆ. $sent ಸಾಧನ ಅಧಿಸೂಚನೆಗಳನ್ನು ಕಳುಹಿಸಲಾಗಿದೆ.';
   }
 
   @override
-  String get quizCloseTitle => 'Close quiz?';
+  String get quizCloseTitle => 'ಕ್ವಿಜ್ ಮುಚ್ಚಬೇಕೆ?';
 
   @override
   String quizCloseMessage(String title) {
-    return 'Close \"$title\"? No new attempts can start and active attempts will be finished.';
+    return '\"$title\" ಮುಚ್ಚಬೇಕೆ? ಯಾವುದೇ ಹೊಸ ಪ್ರಯತ್ನ ಪ್ರಾರಂಭಿಸಲು ಆಗುವುದಿಲ್ಲ ಮತ್ತು ನಡೆಯುತ್ತಿರುವ ಪ್ರಯತ್ನಗಳನ್ನು ಮುಗಿಸಲಾಗುತ್ತದೆ.';
   }
 
   @override
   String quizCloseMessageFinalized(String title) {
-    return 'Close \"$title\"? No new attempts can start and active attempts will be finalized.';
+    return '\"$title\" ಮುಚ್ಚಬೇಕೆ? ಯಾವುದೇ ಹೊಸ ಪ್ರಯತ್ನ ಪ್ರಾರಂಭಿಸಲು ಆಗುವುದಿಲ್ಲ ಮತ್ತು ನಡೆಯುತ್ತಿರುವ ಪ್ರಯತ್ನಗಳನ್ನು ಅಂತಿಮಗೊಳಿಸಲಾಗುತ್ತದೆ.';
   }
 
   @override
-  String get quizCloseConfirm => 'Close quiz';
+  String get quizCloseConfirm => 'ಕ್ವಿಜ್ ಮುಚ್ಚಿ';
 
   @override
-  String get quizCloseFailed => 'The quiz could not be closed.';
+  String get quizCloseFailed => 'ಕ್ವಿಜ್ ಮುಚ್ಚಲು ಆಗಲಿಲ್ಲ.';
 
   @override
-  String get quizClosed => 'Quiz closed.';
+  String get quizClosed => 'ಕ್ವಿಜ್ ಮುಚ್ಚಲಾಗಿದೆ.';
 
   @override
-  String get quizDuplicateQuizFailed => 'The quiz could not be duplicated.';
+  String get quizDuplicateQuizFailed => 'ಕ್ವಿಜ್‌ನ ನಕಲು ಮಾಡಲು ಆಗಲಿಲ್ಲ.';
 
   @override
-  String get quizQuizDuplicated => 'Editable quiz draft created.';
+  String get quizQuizDuplicated => 'ಬದಲಾಯಿಸಬಹುದಾದ ಕ್ವಿಜ್ ಕರಡು ರಚಿಸಲಾಗಿದೆ.';
 
   @override
   String get quizDraftAccountChanged =>
-      'Your account changed. This draft cannot be reviewed here.';
+      'ನಿಮ್ಮ ಖಾತೆ ಬದಲಾಗಿದೆ. ಈ ಕರಡನ್ನು ಇಲ್ಲಿ ಪರಿಶೀಲಿಸಲು ಆಗುವುದಿಲ್ಲ.';
 
   @override
   String get quizDraftLoadFailed =>
-      'The draft or question bank could not be loaded. Refresh before continuing.';
+      'ಕರಡು ಅಥವಾ ಪ್ರಶ್ನೆ ಬ್ಯಾಂಕ್ ಲೋಡ್ ಆಗಲಿಲ್ಲ. ಮುಂದುವರಿಯುವ ಮೊದಲು ರಿಫ್ರೆಶ್ ಮಾಡಿ.';
 
   @override
   String quizBankRefreshFailed(String reason) {
-    return '$reason The question bank could not be refreshed. No question was added. Try Choose a saved question again.';
+    return '$reason ಪ್ರಶ್ನೆ ಬ್ಯಾಂಕ್ ರಿಫ್ರೆಶ್ ಆಗಲಿಲ್ಲ. ಯಾವುದೇ ಪ್ರಶ್ನೆ ಸೇರಿಸಲಾಗಿಲ್ಲ. ಉಳಿಸಿದ ಪ್ರಶ್ನೆ ಆಯ್ಕೆಮಾಡಿ ಅನ್ನು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
   }
 
   @override
   String get quizSavedListUnreadable =>
-      'The saved question list could not be read.';
+      'ಉಳಿಸಿದ ಪ್ರಶ್ನೆಗಳ ಪಟ್ಟಿಯನ್ನು ಓದಲು ಆಗಲಿಲ್ಲ.';
 
   @override
   String get quizNoUnusedQuestions =>
-      'No unused questions are available in this workspace. Choose Write a question.';
+      'ಈ ಕಾರ್ಯಕ್ಷೇತ್ರದಲ್ಲಿ ಬಳಸದ ಪ್ರಶ್ನೆಗಳು ಇಲ್ಲ. ಪ್ರಶ್ನೆ ಬರೆಯಿರಿ ಆಯ್ಕೆಮಾಡಿ.';
 
   @override
   String get quizAllSavedQuestionsUsed =>
-      'Every saved question is already in this quiz. Choose Write a question.';
+      'ಉಳಿಸಿದ ಎಲ್ಲಾ ಪ್ರಶ್ನೆಗಳು ಈಗಾಗಲೇ ಈ ಕ್ವಿಜ್‌ನಲ್ಲಿವೆ. ಪ್ರಶ್ನೆ ಬರೆಯಿರಿ ಆಯ್ಕೆಮಾಡಿ.';
 
   @override
-  String get quizChooseSaved => 'Choose a saved question';
+  String get quizChooseSaved => 'ಉಳಿಸಿದ ಪ್ರಶ್ನೆ ಆಯ್ಕೆಮಾಡಿ';
 
   @override
   String quizSavedQuestionFrom(
@@ -1952,40 +1956,41 @@ class AppLocalizationsKn extends AppLocalizations {
     String className,
     String subjectName,
   ) {
-    return '$question. From $className, $subjectName';
+    return '$question. $className, $subjectName ಇಂದ';
   }
 
   @override
-  String get quizAnotherClass => 'another class';
+  String get quizAnotherClass => 'ಬೇರೆ ತರಗತಿ';
 
   @override
-  String get quizAnotherSubject => 'another subject';
+  String get quizAnotherSubject => 'ಬೇರೆ ವಿಷಯ';
 
   @override
   String quizAddUnconfirmed(String reason) {
-    return '$reason Adding the question could not be confirmed. Refresh and review saved questions before adding again; it may already be saved.';
+    return '$reason ಪ್ರಶ್ನೆ ಸೇರಿಸಿದ್ದು ಖಚಿತವಾಗಲಿಲ್ಲ. ಮತ್ತೆ ಸೇರಿಸುವ ಮೊದಲು ರಿಫ್ರೆಶ್ ಮಾಡಿ ಉಳಿಸಿದ ಪ್ರಶ್ನೆಗಳನ್ನು ಪರಿಶೀಲಿಸಿ; ಅದು ಈಗಾಗಲೇ ಉಳಿಸಿರಬಹುದು.';
   }
 
   @override
-  String get quizQuestionAddedSentence => 'Question added.';
+  String get quizQuestionAddedSentence => 'ಪ್ರಶ್ನೆ ಸೇರಿಸಲಾಗಿದೆ.';
 
   @override
-  String get quizAddAnotherOrReview => 'Add another or choose Review.';
+  String get quizAddAnotherOrReview =>
+      'ಇನ್ನೊಂದು ಸೇರಿಸಿ ಅಥವಾ ಪರಿಶೀಲಿಸಿ ಆಯ್ಕೆಮಾಡಿ.';
 
   @override
   String quizQuestionsSaved(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count questions saved.',
-      one: '1 question saved.',
+      other: '$count ಪ್ರಶ್ನೆಗಳನ್ನು ಉಳಿಸಲಾಗಿದೆ.',
+      one: '1 ಪ್ರಶ್ನೆ ಉಳಿಸಲಾಗಿದೆ.',
     );
     return '$_temp0';
   }
 
   @override
   String quizQuestionsSavedRaw(String count) {
-    return '$count questions saved.';
+    return '$count ಪ್ರಶ್ನೆಗಳನ್ನು ಉಳಿಸಲಾಗಿದೆ.';
   }
 
   @override
@@ -2003,227 +2008,232 @@ class AppLocalizationsKn extends AppLocalizations {
     String description,
     String count,
   ) {
-    return '$title. $description $count questions.';
+    return '$title. $description $count ಪ್ರಶ್ನೆಗಳು.';
   }
 
   @override
   String get quizUngradedPracticeSummary =>
-      'Ungraded practice. Unlimited attempts. No timer.';
+      'ಅಂಕರಹಿತ ಅಭ್ಯಾಸ. ಅಪರಿಮಿತ ಪ್ರಯತ್ನಗಳು. ಟೈಮರ್ ಇಲ್ಲ.';
 
   @override
   String quizGradedSummary(String attempts) {
-    return 'Graded quiz. $attempts.';
+    return 'ಅಂಕಸಹಿತ ಕ್ವಿಜ್. $attempts.';
   }
 
   @override
   String quizGradedSummaryRaw(String count) {
-    return 'Graded quiz. $count attempts.';
+    return 'ಅಂಕಸಹಿತ ಕ್ವಿಜ್. $count ಪ್ರಯತ್ನಗಳು.';
   }
 
   @override
-  String get quizNoTimer => 'No timer.';
+  String get quizNoTimer => 'ಟೈಮರ್ ಇಲ್ಲ.';
 
   @override
   String quizPerAttempt(String duration) {
-    return '$duration per attempt.';
+    return 'ಪ್ರತಿ ಪ್ರಯತ್ನಕ್ಕೆ $duration.';
   }
 
   @override
   String quizMinutesPerAttemptRaw(String minutes) {
-    return '$minutes minutes per attempt.';
+    return 'ಪ್ರತಿ ಪ್ರಯತ್ನಕ್ಕೆ $minutes ನಿಮಿಷಗಳು.';
   }
 
   @override
   String quizOpensSentence(String when) {
-    return 'Opens $when.';
+    return '$when ತೆರೆಯುತ್ತದೆ.';
   }
 
   @override
   String quizOpensColon(String value) {
-    return 'Opens: $value.';
+    return 'ತೆರೆಯುವುದು: $value.';
   }
 
   @override
   String quizClosesColon(String value) {
-    return 'Closes: $value.';
+    return 'ಮುಚ್ಚುವುದು: $value.';
   }
 
   @override
-  String get quizWhenPublished => 'when published';
+  String get quizWhenPublished => 'ಪ್ರಕಟಿಸಿದಾಗ';
 
   @override
-  String get quizNeverNotScheduled => 'never, not scheduled';
+  String get quizNeverNotScheduled => 'ಎಂದಿಗೂ ಇಲ್ಲ, ನಿಗದಿಪಡಿಸಿಲ್ಲ';
 
   @override
-  String get quizNotScheduled => 'not scheduled';
+  String get quizNotScheduled => 'ನಿಗದಿಪಡಿಸಿಲ್ಲ';
 
   @override
   String quizShuffleQuestionsState(String state) {
-    return 'Shuffle questions $state.';
+    return 'ಪ್ರಶ್ನೆಗಳ ಕ್ರಮ ಬದಲಾವಣೆ $state.';
   }
 
   @override
   String quizShuffleOptionsState(String state) {
-    return 'Shuffle options $state.';
+    return 'ಆಯ್ಕೆಗಳ ಕ್ರಮ ಬದಲಾವಣೆ $state.';
   }
 
   @override
   String quizShuffleQuestionsColon(String state) {
-    return 'Shuffle questions: $state.';
+    return 'ಪ್ರಶ್ನೆಗಳ ಕ್ರಮ ಬದಲಾವಣೆ: $state.';
   }
 
   @override
   String quizShuffleOptionsColon(String state) {
-    return 'Shuffle options: $state.';
+    return 'ಆಯ್ಕೆಗಳ ಕ್ರಮ ಬದಲಾವಣೆ: $state.';
   }
 
   @override
-  String get quizRemoveChoose => 'Choose a question to remove from this draft';
+  String get quizRemoveChoose =>
+      'ಈ ಕರಡಿನಿಂದ ತೆಗೆದುಹಾಕಲು ಒಂದು ಪ್ರಶ್ನೆ ಆಯ್ಕೆಮಾಡಿ';
 
   @override
   String quizRemoveOption(String number, String text) {
-    return 'Question $number: $text';
+    return 'ಪ್ರಶ್ನೆ $number: $text';
   }
 
   @override
-  String get quizRemoveTitle => 'Remove selected question?';
+  String get quizRemoveTitle => 'ಆಯ್ಕೆಮಾಡಿದ ಪ್ರಶ್ನೆಯನ್ನು ತೆಗೆದುಹಾಕಬೇಕೆ?';
 
   @override
   String get quizRemoveMessage =>
-      'Remove this question from the draft? The reusable question bank is not changed.';
+      'ಈ ಪ್ರಶ್ನೆಯನ್ನು ಕರಡಿನಿಂದ ತೆಗೆದುಹಾಕಬೇಕೆ? ಮರುಬಳಕೆಯ ಪ್ರಶ್ನೆ ಬ್ಯಾಂಕ್ ಬದಲಾಗುವುದಿಲ್ಲ.';
 
   @override
-  String get quizRemoveConfirm => 'Remove question';
+  String get quizRemoveConfirm => 'ಪ್ರಶ್ನೆ ತೆಗೆದುಹಾಕಿ';
 
   @override
   String get quizRemoveUnconfirmed =>
-      'Removal could not be confirmed. Review the refreshed draft before trying again.';
+      'ತೆಗೆದುಹಾಕಿದ್ದು ಖಚಿತವಾಗಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸುವ ಮೊದಲು ರಿಫ್ರೆಶ್ ಆದ ಕರಡನ್ನು ಪರಿಶೀಲಿಸಿ.';
 
   @override
-  String get quizQuestionRemovedSentence => 'Question removed from the draft.';
+  String get quizQuestionRemovedSentence =>
+      'ಪ್ರಶ್ನೆಯನ್ನು ಕರಡಿನಿಂದ ತೆಗೆದುಹಾಕಲಾಗಿದೆ.';
 
   @override
   String get quizSettingsUnconfirmed =>
-      'Settings save could not be confirmed. Refresh and review the saved settings before publishing.';
+      'ಸೆಟ್ಟಿಂಗ್‌ಗಳು ಉಳಿಸಿದ್ದು ಖಚಿತವಾಗಲಿಲ್ಲ. ಪ್ರಕಟಿಸುವ ಮೊದಲು ರಿಫ್ರೆಶ್ ಮಾಡಿ ಉಳಿಸಿದ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಪರಿಶೀಲಿಸಿ.';
 
   @override
   String get quizSettingsSaved =>
-      'Quiz settings saved. Review them before publishing.';
+      'ಕ್ವಿಜ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಉಳಿಸಲಾಗಿದೆ. ಪ್ರಕಟಿಸುವ ಮೊದಲು ಅವುಗಳನ್ನು ಪರಿಶೀಲಿಸಿ.';
 
   @override
   String quizSavedQuestion(String number, String text) {
-    return 'Saved question $number: $text. Already in this draft. Press OK to read its options';
+    return 'ಉಳಿಸಿದ ಪ್ರಶ್ನೆ $number: $text. ಈಗಾಗಲೇ ಈ ಕರಡಿನಲ್ಲಿದೆ. ಅದರ ಆಯ್ಕೆಗಳನ್ನು ಓದಲು ಓಕೆ ಒತ್ತಿ';
   }
 
   @override
   String quizQuestionNumbered(String number, String text) {
-    return 'Question $number. $text.';
+    return 'ಪ್ರಶ್ನೆ $number. $text.';
   }
 
   @override
   String quizDraftOption(String number, String text) {
-    return 'Option $number: $text.';
+    return 'ಆಯ್ಕೆ $number: $text.';
   }
 
   @override
   String quizDraftOptionCorrect(String number, String text) {
-    return 'Option $number: $text, correct answer.';
+    return 'ಆಯ್ಕೆ $number: $text, ಸರಿಯಾದ ಉತ್ತರ.';
   }
 
   @override
-  String get quizReviewingBeforePublishing => 'Reviewing before publishing.';
+  String get quizReviewingBeforePublishing =>
+      'ಪ್ರಕಟಿಸುವ ಮೊದಲು ಪರಿಶೀಲಿಸಲಾಗುತ್ತಿದೆ.';
 
   @override
-  String get quizAddingQuestions => 'Adding questions.';
+  String get quizAddingQuestions => 'ಪ್ರಶ್ನೆಗಳನ್ನು ಸೇರಿಸಲಾಗುತ್ತಿದೆ.';
 
   @override
-  String get quizRefreshSavedDraft => 'Refresh saved draft';
+  String get quizRefreshSavedDraft => 'ಉಳಿಸಿದ ಕರಡನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಿ';
 
   @override
   String get quizWriteQuestionTarget =>
-      'Write a question and save it to this quiz and your question bank';
+      'ಒಂದು ಪ್ರಶ್ನೆ ಬರೆದು ಅದನ್ನು ಈ ಕ್ವಿಜ್ ಮತ್ತು ನಿಮ್ಮ ಪ್ರಶ್ನೆ ಬ್ಯಾಂಕ್‌ಗೆ ಉಳಿಸಿ';
 
   @override
   String get quizReviewBeforePublishingTarget =>
-      'Review questions and quiz settings before publishing';
+      'ಪ್ರಕಟಿಸುವ ಮೊದಲು ಪ್ರಶ್ನೆಗಳು ಮತ್ತು ಕ್ವಿಜ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಪರಿಶೀಲಿಸಿ';
 
   @override
   String get quizRemoveQuestionTarget =>
-      'Remove a question from this draft, with confirmation';
+      'ಖಚಿತಪಡಿಸುವಿಕೆಯೊಂದಿಗೆ ಈ ಕರಡಿನಿಂದ ಒಂದು ಪ್ರಶ್ನೆ ತೆಗೆದುಹಾಕಿ';
 
   @override
   String get quizChangeSettingsTarget =>
-      'Change title or optional quiz settings';
+      'ಶೀರ್ಷಿಕೆ ಅಥವಾ ಐಚ್ಛಿಕ ಕ್ವಿಜ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಬದಲಾಯಿಸಿ';
 
   @override
-  String get quizBackToAdding => 'Back to adding questions';
+  String get quizBackToAdding => 'ಪ್ರಶ್ನೆಗಳನ್ನು ಸೇರಿಸುವುದಕ್ಕೆ ಹಿಂತಿರುಗಿ';
 
   @override
-  String get quizPublishWithConfirmation => 'Publish quiz, with confirmation';
+  String get quizPublishWithConfirmation =>
+      'ಖಚಿತಪಡಿಸುವಿಕೆಯೊಂದಿಗೆ ಕ್ವಿಜ್ ಪ್ರಕಟಿಸಿ';
 
   @override
   String get quizSaveForLaterTarget =>
-      'Save for later and return. Confirmed changes are already saved as a draft';
+      'ನಂತರಕ್ಕೆ ಉಳಿಸಿ ಹಿಂತಿರುಗಿ. ಖಚಿತವಾದ ಬದಲಾವಣೆಗಳು ಈಗಾಗಲೇ ಕರಡಾಗಿ ಉಳಿಸಲಾಗಿವೆ';
 
   @override
   String get quizDraftNavigationReview =>
-      'saved questions, quiz settings, and publishing with confirmation';
+      'ಉಳಿಸಿದ ಪ್ರಶ್ನೆಗಳು, ಕ್ವಿಜ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳು, ಮತ್ತು ಖಚಿತಪಡಿಸುವಿಕೆಯೊಂದಿಗೆ ಪ್ರಕಟಣೆ';
 
   @override
   String get quizDraftNavigationAdd =>
-      'write or choose saved questions, remove questions, and review the draft';
+      'ಪ್ರಶ್ನೆಗಳನ್ನು ಬರೆಯಿರಿ ಅಥವಾ ಉಳಿಸಿದವನ್ನು ಆಯ್ಕೆಮಾಡಿ, ಪ್ರಶ್ನೆಗಳನ್ನು ತೆಗೆದುಹಾಕಿ, ಮತ್ತು ಕರಡನ್ನು ಪರಿಶೀಲಿಸಿ';
 
   @override
-  String get quizPublishedScreen => 'Quiz published';
+  String get quizPublishedScreen => 'ಕ್ವಿಜ್ ಪ್ರಕಟಿಸಲಾಗಿದೆ';
 
   @override
   String get quizDraftStep3 =>
-      'Step 3 of 3. Review before publishing. Nothing is published until you confirm.';
+      'ಹಂತ 3, 3 ರಲ್ಲಿ. ಪ್ರಕಟಿಸುವ ಮೊದಲು ಪರಿಶೀಲಿಸಿ. ನೀವು ಖಚಿತಪಡಿಸುವವರೆಗೆ ಏನೂ ಪ್ರಕಟವಾಗುವುದಿಲ್ಲ.';
 
   @override
   String get quizDraftStep2 =>
-      'Step 2 of 3. Add questions. Choose Write or Use saved question. Then Review.';
+      'ಹಂತ 2, 3 ರಲ್ಲಿ. ಪ್ರಶ್ನೆಗಳನ್ನು ಸೇರಿಸಿ. ಬರೆಯಿರಿ ಅಥವಾ ಉಳಿಸಿದ ಪ್ರಶ್ನೆ ಬಳಸಿ ಆಯ್ಕೆಮಾಡಿ. ನಂತರ ಪರಿಶೀಲಿಸಿ.';
 
   @override
-  String get quizSaveForLater => 'Save for later and return';
+  String get quizSaveForLater => 'ನಂತರಕ್ಕೆ ಉಳಿಸಿ ಹಿಂತಿರುಗಿ';
 
   @override
-  String get quizWriteQuestion => 'Write a question';
+  String get quizWriteQuestion => 'ಪ್ರಶ್ನೆ ಬರೆಯಿರಿ';
 
   @override
-  String get quizUseSavedQuestion => 'Use saved question';
+  String get quizUseSavedQuestion => 'ಉಳಿಸಿದ ಪ್ರಶ್ನೆ ಬಳಸಿ';
 
   @override
-  String get quizRemoveQuestion => 'Remove a question';
+  String get quizRemoveQuestion => 'ಒಂದು ಪ್ರಶ್ನೆ ತೆಗೆದುಹಾಕಿ';
 
   @override
-  String get quizReview => 'Review';
+  String get quizReview => 'ಪರಿಶೀಲಿಸಿ';
 
   @override
-  String get quizPublishConfirmLabel => 'Publish with confirmation';
+  String get quizPublishConfirmLabel => 'ಖಚಿತಪಡಿಸುವಿಕೆಯೊಂದಿಗೆ ಪ್ರಕಟಿಸಿ';
 
   @override
-  String get quizChangeSettingsLabel => 'Change title or optional settings';
+  String get quizChangeSettingsLabel =>
+      'ಶೀರ್ಷಿಕೆ ಅಥವಾ ಐಚ್ಛಿಕ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಬದಲಾಯಿಸಿ';
 
   @override
   String quizResultsScreen(String title) {
-    return 'Results for $title';
+    return '$title ಫಲಿತಾಂಶಗಳು';
   }
 
   @override
   String get quizResultsNavigation =>
-      'quiz summary, student results, and available result actions';
+      'ಕ್ವಿಜ್ ಸಾರಾಂಶ, ವಿದ್ಯಾರ್ಥಿಗಳ ಫಲಿತಾಂಶಗಳು, ಮತ್ತು ಲಭ್ಯವಿರುವ ಫಲಿತಾಂಶ ಕ್ರಿಯೆಗಳು';
 
   @override
-  String get quizResultsFailed => 'Quiz results could not be loaded.';
+  String get quizResultsFailed => 'ಕ್ವಿಜ್ ಫಲಿತಾಂಶಗಳು ಲೋಡ್ ಆಗಲಿಲ್ಲ.';
 
   @override
   String quizStudentsCompleted(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count students completed.',
-      one: '1 student completed.',
+      other: '$count ವಿದ್ಯಾರ್ಥಿಗಳು ಪೂರ್ಣಗೊಳಿಸಿದ್ದಾರೆ.',
+      one: '1 ವಿದ್ಯಾರ್ಥಿ ಪೂರ್ಣಗೊಳಿಸಿದ್ದಾರೆ.',
     );
     return '$_temp0';
   }
@@ -2233,64 +2243,64 @@ class AppLocalizationsKn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count students not attempted yet.',
-      one: '1 student not attempted yet.',
+      other: '$count ವಿದ್ಯಾರ್ಥಿಗಳು ಇನ್ನೂ ಪ್ರಯತ್ನಿಸಿಲ್ಲ.',
+      one: '1 ವಿದ್ಯಾರ್ಥಿ ಇನ್ನೂ ಪ್ರಯತ್ನಿಸಿಲ್ಲ.',
     );
     return '$_temp0';
   }
 
   @override
   String quizResultsLoadedRaw(String completed, String notAttempted) {
-    return '$completed students completed. $notAttempted students have not attempted.';
+    return '$completed ವಿದ್ಯಾರ್ಥಿಗಳು ಪೂರ್ಣಗೊಳಿಸಿದ್ದಾರೆ. $notAttempted ವಿದ್ಯಾರ್ಥಿಗಳು ಪ್ರಯತ್ನಿಸಿಲ್ಲ.';
   }
 
   @override
   String quizStatEligible(String value) {
-    return 'Eligible: $value';
+    return 'ಅರ್ಹರು: $value';
   }
 
   @override
   String quizStatStarted(String value) {
-    return 'Started: $value';
+    return 'ಪ್ರಾರಂಭಿಸಿದವರು: $value';
   }
 
   @override
   String quizStatCompleted(String value) {
-    return 'Completed: $value';
+    return 'ಪೂರ್ಣಗೊಳಿಸಿದವರು: $value';
   }
 
   @override
   String quizStatNotAttempted(String value) {
-    return 'Not attempted: $value';
+    return 'ಪ್ರಯತ್ನಿಸದವರು: $value';
   }
 
   @override
   String quizStatCompletion(String value) {
-    return 'Completion: $value';
+    return 'ಪೂರ್ಣಗೊಳಿಸುವಿಕೆ: $value';
   }
 
   @override
   String quizStatCompletionPercent(String value) {
-    return 'Completion: $value percent';
+    return 'ಪೂರ್ಣಗೊಳಿಸುವಿಕೆ: $value ಪ್ರತಿಶತ';
   }
 
   @override
   String get quizPracticeParticipation =>
-      'Practice participation, not academic grades.';
+      'ಅಭ್ಯಾಸದಲ್ಲಿ ಭಾಗವಹಿಸುವಿಕೆ, ಶೈಕ್ಷಣಿಕ ಅಂಕಗಳಲ್ಲ.';
 
   @override
   String quizStatAverageHighest(String value) {
-    return 'Average highest score: $value';
+    return 'ಸರಾಸರಿ ಅತಿ ಹೆಚ್ಚಿನ ಅಂಕ: $value';
   }
 
   @override
   String quizStatLowest(String value) {
-    return 'Lowest completed score: $value';
+    return 'ಪೂರ್ಣಗೊಂಡವುಗಳಲ್ಲಿ ಅತಿ ಕಡಿಮೆ ಅಂಕ: $value';
   }
 
   @override
   String quizStudentNotAttempted(String name) {
-    return '$name has not attempted this quiz.';
+    return '$name ಈ ಕ್ವಿಜ್ ಪ್ರಯತ್ನಿಸಿಲ್ಲ.';
   }
 
   @override
@@ -2298,51 +2308,51 @@ class AppLocalizationsKn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$name. $count practice attempts. Not academic grades.',
-      one: '$name. 1 practice attempt. Not academic grades.',
+      other: '$name. $count ಅಭ್ಯಾಸ ಪ್ರಯತ್ನಗಳು. ಶೈಕ್ಷಣಿಕ ಅಂಕಗಳಲ್ಲ.',
+      one: '$name. 1 ಅಭ್ಯಾಸ ಪ್ರಯತ್ನ. ಶೈಕ್ಷಣಿಕ ಅಂಕಗಳಲ್ಲ.',
     );
     return '$_temp0';
   }
 
   @override
   String quizStudentPracticeRaw(String name, String count) {
-    return '$name. $count practice attempts. Not academic grades.';
+    return '$name. $count ಅಭ್ಯಾಸ ಪ್ರಯತ್ನಗಳು. ಶೈಕ್ಷಣಿಕ ಅಂಕಗಳಲ್ಲ.';
   }
 
   @override
   String quizStudentAttemptScore(String number, String score, String status) {
-    return 'attempt $number, $score, $status';
+    return 'ಪ್ರಯತ್ನ $number, $score, $status';
   }
 
   @override
   String quizStudentAttemptRaw(String number, String score, String status) {
-    return 'attempt $number, $score percent, $status';
+    return 'ಪ್ರಯತ್ನ $number, $score ಪ್ರತಿಶತ, $status';
   }
 
   @override
   String quizStudentScores(String name, String highest, String scores) {
-    return '$name. Highest score $highest. $scores.';
+    return '$name. ಅತಿ ಹೆಚ್ಚಿನ ಅಂಕ $highest. $scores.';
   }
 
   @override
   String quizStudentScoresRaw(String name, String highest, String scores) {
-    return '$name. Highest score $highest percent. $scores.';
+    return '$name. ಅತಿ ಹೆಚ್ಚಿನ ಅಂಕ $highest ಪ್ರತಿಶತ. $scores.';
   }
 
   @override
   String get quizExtraMismatch =>
-      'The extra-time confirmation did not match. Refresh before retrying.';
+      'ಹೆಚ್ಚುವರಿ ಸಮಯದ ಖಚಿತಪಡಿಸುವಿಕೆ ಹೊಂದಿಕೆಯಾಗಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸುವ ಮೊದಲು ರಿಫ್ರೆಶ್ ಮಾಡಿ.';
 
   @override
   String get quizExtraSaved =>
-      'Extra time confirmed for future attempts only. Existing attempt deadlines are unchanged and quiz closing time still applies.';
+      'ಹೆಚ್ಚುವರಿ ಸಮಯವನ್ನು ಮುಂದಿನ ಪ್ರಯತ್ನಗಳಿಗೆ ಮಾತ್ರ ಖಚಿತಪಡಿಸಲಾಗಿದೆ. ಈಗಿರುವ ಪ್ರಯತ್ನಗಳ ಗಡುವು ಬದಲಾಗಿಲ್ಲ ಮತ್ತು ಕ್ವಿಜ್ ಮುಚ್ಚುವ ಸಮಯ ಇನ್ನೂ ಅನ್ವಯಿಸುತ್ತದೆ.';
 
   @override
   String get quizEveryoneAttempted =>
-      'Every eligible student has attempted this quiz.';
+      'ಎಲ್ಲಾ ಅರ್ಹ ವಿದ್ಯಾರ್ಥಿಗಳು ಈ ಕ್ವಿಜ್ ಪ್ರಯತ್ನಿಸಿದ್ದಾರೆ.';
 
   @override
-  String get quizRemindTitle => 'Remind students?';
+  String get quizRemindTitle => 'ವಿದ್ಯಾರ್ಥಿಗಳಿಗೆ ನೆನಪಿಸಬೇಕೆ?';
 
   @override
   String quizRemindMessage(int count, String title) {
@@ -2350,137 +2360,136 @@ class AppLocalizationsKn extends AppLocalizations {
       count,
       locale: localeName,
       other:
-          'Send one quiz reminder to all $count students who have not attempted $title?',
-      one:
-          'Send one quiz reminder to all 1 student who have not attempted $title?',
+          '$title ಪ್ರಯತ್ನಿಸದ ಎಲ್ಲಾ $count ವಿದ್ಯಾರ್ಥಿಗಳಿಗೆ ಒಂದು ಕ್ವಿಜ್ ಜ್ಞಾಪನೆ ಕಳುಹಿಸಬೇಕೆ?',
+      one: '$title ಪ್ರಯತ್ನಿಸದ 1 ವಿದ್ಯಾರ್ಥಿಗೆ ಒಂದು ಕ್ವಿಜ್ ಜ್ಞಾಪನೆ ಕಳುಹಿಸಬೇಕೆ?',
     );
     return '$_temp0';
   }
 
   @override
   String quizRemindMessageRaw(String count, String title) {
-    return 'Send one quiz reminder to all $count students who have not attempted $title?';
+    return '$title ಪ್ರಯತ್ನಿಸದ ಎಲ್ಲಾ $count ವಿದ್ಯಾರ್ಥಿಗಳಿಗೆ ಒಂದು ಕ್ವಿಜ್ ಜ್ಞಾಪನೆ ಕಳುಹಿಸಬೇಕೆ?';
   }
 
   @override
-  String get quizRemindConfirm => 'Send reminder';
+  String get quizRemindConfirm => 'ಜ್ಞಾಪನೆ ಕಳುಹಿಸಿ';
 
   @override
-  String get quizRemindFailed => 'Quiz reminders could not be sent.';
+  String get quizRemindFailed => 'ಕ್ವಿಜ್ ಜ್ಞಾಪನೆಗಳನ್ನು ಕಳುಹಿಸಲು ಆಗಲಿಲ್ಲ.';
 
   @override
   String quizReminded(String notified, String queued) {
-    return 'Reminder sent to $notified students. $queued device notifications queued.';
+    return '$notified ವಿದ್ಯಾರ್ಥಿಗಳಿಗೆ ಜ್ಞಾಪನೆ ಕಳುಹಿಸಲಾಗಿದೆ. $queued ಸಾಧನ ಅಧಿಸೂಚನೆಗಳು ಸರದಿಯಲ್ಲಿವೆ.';
   }
 
   @override
   String quizReminderProcessed(String notified, String queued) {
-    return 'Reminder processed for $notified students. $queued device notifications queued.';
+    return '$notified ವಿದ್ಯಾರ್ಥಿಗಳಿಗೆ ಜ್ಞಾಪನೆ ಪ್ರಕ್ರಿಯೆಗೊಳಿಸಲಾಗಿದೆ. $queued ಸಾಧನ ಅಧಿಸೂಚನೆಗಳು ಸರದಿಯಲ್ಲಿವೆ.';
   }
 
   @override
-  String get quizRefreshResults => 'Refresh quiz results';
+  String get quizRefreshResults => 'ಕ್ವಿಜ್ ಫಲಿತಾಂಶಗಳನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಿ';
 
   @override
-  String get quizRefreshResultsLabel => 'Refresh results';
+  String get quizRefreshResultsLabel => 'ಫಲಿತಾಂಶಗಳನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಿ';
 
   @override
-  String get quizRemindAllLabel => 'Remind all students who have not attempted';
+  String get quizRemindAllLabel => 'ಪ್ರಯತ್ನಿಸದ ಎಲ್ಲಾ ವಿದ್ಯಾರ್ಥಿಗಳಿಗೆ ನೆನಪಿಸಿ';
 
   @override
   String get quizRemindUnavailable =>
-      'All students have attempted. Reminder unavailable';
+      'ಎಲ್ಲಾ ವಿದ್ಯಾರ್ಥಿಗಳು ಪ್ರಯತ್ನಿಸಿದ್ದಾರೆ. ಜ್ಞಾಪನೆ ಲಭ್ಯವಿಲ್ಲ';
 
   @override
   String quizRemindTarget(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Send a reminder to all $count students who have not attempted',
-      one: 'Send a reminder to all 1 student who have not attempted',
+      other: 'ಪ್ರಯತ್ನಿಸದ ಎಲ್ಲಾ $count ವಿದ್ಯಾರ್ಥಿಗಳಿಗೆ ಜ್ಞಾಪನೆ ಕಳುಹಿಸಿ',
+      one: 'ಪ್ರಯತ್ನಿಸದ 1 ವಿದ್ಯಾರ್ಥಿಗೆ ಜ್ಞಾಪನೆ ಕಳುಹಿಸಿ',
     );
     return '$_temp0';
   }
 
   @override
   String quizRemindTargetRaw(String count) {
-    return 'Send a reminder to all $count students who have not attempted';
+    return 'ಪ್ರಯತ್ನಿಸದ ಎಲ್ಲಾ $count ವಿದ್ಯಾರ್ಥಿಗಳಿಗೆ ಜ್ಞಾಪನೆ ಕಳುಹಿಸಿ';
   }
 
   @override
   String quizExtraTarget(String name, String duration) {
-    return 'Set extra time for $name. Future attempts only. Current extra time $duration';
+    return '$name ಅವರಿಗೆ ಹೆಚ್ಚುವರಿ ಸಮಯ ನಿಗದಿಪಡಿಸಿ. ಮುಂದಿನ ಪ್ರಯತ್ನಗಳಿಗೆ ಮಾತ್ರ. ಈಗಿನ ಹೆಚ್ಚುವರಿ ಸಮಯ $duration';
   }
 
   @override
   String quizExtraTargetRaw(String name, String minutes) {
-    return 'Set extra minutes for $name. Future attempts only. Current extra $minutes minutes';
+    return '$name ಅವರಿಗೆ ಹೆಚ್ಚುವರಿ ನಿಮಿಷಗಳನ್ನು ನಿಗದಿಪಡಿಸಿ. ಮುಂದಿನ ಪ್ರಯತ್ನಗಳಿಗೆ ಮಾತ್ರ. ಈಗಿನ ಹೆಚ್ಚುವರಿ $minutes ನಿಮಿಷಗಳು';
   }
 
   @override
   String quizExtraButton(String minutes) {
-    return 'Future extra time: $minutes minutes. Set';
+    return 'ಮುಂದಿನ ಹೆಚ್ಚುವರಿ ಸಮಯ: $minutes ನಿಮಿಷಗಳು. ನಿಗದಿಪಡಿಸಿ';
   }
 
   @override
-  String get quizResultsNotLoaded => 'Results not loaded.';
+  String get quizResultsNotLoaded => 'ಫಲಿತಾಂಶಗಳು ಲೋಡ್ ಆಗಿಲ್ಲ.';
 
   @override
   String quizCompletionSentence(String percent) {
-    return 'Completion $percent.';
+    return 'ಪೂರ್ಣಗೊಳಿಸುವಿಕೆ $percent.';
   }
 
   @override
   String quizExtraScreen(String name) {
-    return 'Extra time for $name. Future attempts only; active attempt deadlines stay fixed. Quiz closing time still applies. Entering zero minutes removes extra time. Press 0 outside the field to cancel.';
+    return '$name ಅವರಿಗೆ ಹೆಚ್ಚುವರಿ ಸಮಯ. ಮುಂದಿನ ಪ್ರಯತ್ನಗಳಿಗೆ ಮಾತ್ರ; ನಡೆಯುತ್ತಿರುವ ಪ್ರಯತ್ನಗಳ ಗಡುವು ಬದಲಾಗುವುದಿಲ್ಲ. ಕ್ವಿಜ್ ಮುಚ್ಚುವ ಸಮಯ ಇನ್ನೂ ಅನ್ವಯಿಸುತ್ತದೆ. ಸೊನ್ನೆ ನಿಮಿಷ ನಮೂದಿಸಿದರೆ ಹೆಚ್ಚುವರಿ ಸಮಯ ತೆಗೆದುಹಾಕಲಾಗುತ್ತದೆ. ರದ್ದುಮಾಡಲು ಫೀಲ್ಡ್‌ನ ಹೊರಗೆ 0 ಒತ್ತಿ.';
   }
 
   @override
   String quizExtraField(String value) {
-    return 'Extra minutes, currently $value. Press OK to edit';
+    return 'ಹೆಚ್ಚುವರಿ ನಿಮಿಷಗಳು, ಈಗ $value. ಬದಲಾಯಿಸಲು ಓಕೆ ಒತ್ತಿ';
   }
 
   @override
-  String get quizEmpty => 'empty';
+  String get quizEmpty => 'ಖಾಲಿ';
 
   @override
-  String get quizExtraSave => 'Save extra time for future attempts';
+  String get quizExtraSave => 'ಮುಂದಿನ ಪ್ರಯತ್ನಗಳಿಗೆ ಹೆಚ್ಚುವರಿ ಸಮಯ ಉಳಿಸಿ';
 
   @override
-  String get quizExtraCancel => 'Cancel without changing extra time';
+  String get quizExtraCancel => 'ಹೆಚ್ಚುವರಿ ಸಮಯ ಬದಲಾಯಿಸದೆ ರದ್ದುಮಾಡಿ';
 
   @override
   String get quizExtraInvalid =>
-      'Enter a whole number of minutes, zero or more, within the server integer range.';
+      'ಸೊನ್ನೆ ಅಥವಾ ಹೆಚ್ಚಿನ, ಸರ್ವರ್ ಮಿತಿಯೊಳಗಿನ ಪೂರ್ಣ ಸಂಖ್ಯೆಯ ನಿಮಿಷಗಳನ್ನು ನಮೂದಿಸಿ.';
 
   @override
-  String get quizExtraCorrect => 'Move up to Extra minutes to correct it.';
+  String get quizExtraCorrect => 'ಸರಿಪಡಿಸಲು ಹೆಚ್ಚುವರಿ ನಿಮಿಷಗಳಿಗೆ ಮೇಲೆ ಹೋಗಿ.';
 
   @override
   String get quizEditorInvalid =>
-      'Enter a question, four different non-empty options, and then choose the correct answer.';
+      'ಒಂದು ಪ್ರಶ್ನೆ, ನಾಲ್ಕು ಬೇರೆ ಬೇರೆ ಖಾಲಿಯಿಲ್ಲದ ಆಯ್ಕೆಗಳನ್ನು ನಮೂದಿಸಿ, ನಂತರ ಸರಿಯಾದ ಉತ್ತರ ಆಯ್ಕೆಮಾಡಿ.';
 
   @override
   String get quizEditorSpokenInvalid =>
-      'Use up to 20 different topics of 80 characters each. Described notation needs a spoken question, all four spoken options, and a spoken explanation if an explanation is provided. Review and confirm every spoken alternative before saving.';
+      'ತಲಾ 80 ಅಕ್ಷರಗಳ ವರೆಗಿನ, ಗರಿಷ್ಠ 20 ಬೇರೆ ಬೇರೆ ವಿಷಯಗಳನ್ನು ಬಳಸಿ. ವಿವರಿಸಿದ ಸಂಕೇತಕ್ಕೆ ಮಾತಿನ ಪ್ರಶ್ನೆ, ನಾಲ್ಕೂ ಮಾತಿನ ಆಯ್ಕೆಗಳು, ಮತ್ತು ವಿವರಣೆ ನೀಡಿದ್ದರೆ ಮಾತಿನ ವಿವರಣೆ ಬೇಕು. ಉಳಿಸುವ ಮೊದಲು ಪ್ರತಿಯೊಂದು ಮಾತಿನ ಪರ್ಯಾಯವನ್ನು ಪರಿಶೀಲಿಸಿ ಖಚಿತಪಡಿಸಿ.';
 
   @override
   String quizCorrectChosen(String number, String count) {
-    return 'Correct answer: option $number, $number of $count.';
+    return 'ಸರಿಯಾದ ಉತ್ತರ: ಆಯ್ಕೆ $number, $count ರಲ್ಲಿ $number.';
   }
 
   @override
   String quizCorrectChosenWithText(String number, String text, String count) {
-    return 'Correct answer: option $number, $text, $number of $count.';
+    return 'ಸರಿಯಾದ ಉತ್ತರ: ಆಯ್ಕೆ $number, $text, $count ರಲ್ಲಿ $number.';
   }
 
   @override
   String get quizCorrectNotSelected =>
-      'Correct answer not selected. Use left or right to choose';
+      'ಸರಿಯಾದ ಉತ್ತರ ಆಯ್ಕೆಮಾಡಿಲ್ಲ. ಆಯ್ಕೆಮಾಡಲು ಎಡ ಅಥವಾ ಬಲ ಬಳಸಿ';
 
   @override
   String quizCorrectTarget(String number, String text) {
-    return 'Correct answer: option $number, $text. Use left or right to change';
+    return 'ಸರಿಯಾದ ಉತ್ತರ: ಆಯ್ಕೆ $number, $text. ಬದಲಾಯಿಸಲು ಎಡ ಅಥವಾ ಬಲ ಬಳಸಿ';
   }
 
   @override
@@ -2489,114 +2498,115 @@ class AppLocalizationsKn extends AppLocalizations {
   }
 
   @override
-  String get quizContentDescribed =>
-      'Content: teacher-described notation or diagram';
+  String get quizContentDescribed => 'ವಿಷಯ: ಶಿಕ್ಷಕರು ವಿವರಿಸಿದ ಸಂಕೇತ ಅಥವಾ ಚಿತ್ರ';
 
   @override
-  String get quizContentPlain => 'Content: English plain text';
+  String get quizContentPlain => 'ವಿಷಯ: ಇಂಗ್ಲಿಷ್ ಸಾದಾ ಪಠ್ಯ';
 
   @override
-  String get quizReviewedYes => 'Spoken alternatives reviewed by teacher: yes';
+  String get quizReviewedYes =>
+      'ಮಾತಿನ ಪರ್ಯಾಯಗಳನ್ನು ಶಿಕ್ಷಕರು ಪರಿಶೀಲಿಸಿದ್ದಾರೆ: ಹೌದು';
 
   @override
-  String get quizReviewedNo => 'Spoken alternatives reviewed by teacher: no';
+  String get quizReviewedNo =>
+      'ಮಾತಿನ ಪರ್ಯಾಯಗಳನ್ನು ಶಿಕ್ಷಕರು ಪರಿಶೀಲಿಸಿದ್ದಾರೆ: ಇಲ್ಲ';
 
   @override
   String get quizSettingsInvalid =>
-      'Check the title, attempt limit from 1 to 20, time limit, and schedule. The closing time must be after the opening time.';
+      'ಶೀರ್ಷಿಕೆ, 1 ರಿಂದ 20 ರವರೆಗಿನ ಪ್ರಯತ್ನ ಮಿತಿ, ಸಮಯ ಮಿತಿ, ಮತ್ತು ವೇಳಾಪಟ್ಟಿ ಪರಿಶೀಲಿಸಿ. ಮುಚ್ಚುವ ಸಮಯ ತೆರೆಯುವ ಸಮಯದ ನಂತರ ಇರಬೇಕು.';
 
   @override
   String get quizSetOpening =>
-      'Set opening time using the date and time number fields.';
+      'ದಿನಾಂಕ ಮತ್ತು ಸಮಯದ ಸಂಖ್ಯೆ ಫೀಲ್ಡ್‌ಗಳನ್ನು ಬಳಸಿ ತೆರೆಯುವ ಸಮಯ ನಿಗದಿಪಡಿಸಿ.';
 
   @override
   String get quizSetClosing =>
-      'Set closing time using the date and time number fields.';
+      'ದಿನಾಂಕ ಮತ್ತು ಸಮಯದ ಸಂಖ್ಯೆ ಫೀಲ್ಡ್‌ಗಳನ್ನು ಬಳಸಿ ಮುಚ್ಚುವ ಸಮಯ ನಿಗದಿಪಡಿಸಿ.';
 
   @override
   String quizOpeningSet(String when) {
-    return 'Opening time set to $when.';
+    return 'ತೆರೆಯುವ ಸಮಯವನ್ನು $when ಗೆ ನಿಗದಿಪಡಿಸಲಾಗಿದೆ.';
   }
 
   @override
   String quizClosingSet(String when) {
-    return 'Closing time set to $when.';
+    return 'ಮುಚ್ಚುವ ಸಮಯವನ್ನು $when ಗೆ ನಿಗದಿಪಡಿಸಲಾಗಿದೆ.';
   }
 
   @override
   String quizReleaseSet(String when) {
-    return 'Feedback release set to $when.';
+    return 'ಪ್ರತಿಕ್ರಿಯೆ ಬಿಡುಗಡೆಯನ್ನು $when ಗೆ ನಿಗದಿಪಡಿಸಲಾಗಿದೆ.';
   }
 
   @override
-  String get quizOpeningCleared => 'Opening time cleared.';
+  String get quizOpeningCleared => 'ತೆರೆಯುವ ಸಮಯ ತೆಗೆದುಹಾಕಲಾಗಿದೆ.';
 
   @override
-  String get quizClosingCleared => 'Closing time cleared.';
+  String get quizClosingCleared => 'ಮುಚ್ಚುವ ಸಮಯ ತೆಗೆದುಹಾಕಲಾಗಿದೆ.';
 
   @override
-  String get quizNoOpeningTime => 'No opening time set';
+  String get quizNoOpeningTime => 'ತೆರೆಯುವ ಸಮಯ ನಿಗದಿಪಡಿಸಿಲ್ಲ';
 
   @override
-  String get quizNoClosingTime => 'No closing time set';
+  String get quizNoClosingTime => 'ಮುಚ್ಚುವ ಸಮಯ ನಿಗದಿಪಡಿಸಿಲ್ಲ';
 
   @override
   String quizOpensAt(String when) {
-    return 'Opens $when';
+    return '$when ತೆರೆಯುತ್ತದೆ';
   }
 
   @override
   String quizClosesAt(String when) {
-    return 'Closes $when';
+    return '$when ಮುಚ್ಚುತ್ತದೆ';
   }
 
   @override
   String quizPolicyChoice(String name, String position, String count) {
-    return 'Feedback: $name, $position of $count.';
+    return 'ಪ್ರತಿಕ್ರಿಯೆ: $name, $count ರಲ್ಲಿ $position.';
   }
 
   @override
   String quizScheduledRelease(String when) {
-    return 'Scheduled feedback release $when';
+    return 'ನಿಗದಿತ ಪ್ರತಿಕ್ರಿಯೆ ಬಿಡುಗಡೆ $when';
   }
 
   @override
   String quizAttemptLimitField(String value) {
-    return 'Attempt limit, currently $value. Press OK to edit';
+    return 'ಪ್ರಯತ್ನ ಮಿತಿ, ಈಗ $value. ಬದಲಾಯಿಸಲು ಓಕೆ ಒತ್ತಿ';
   }
 
   @override
   String quizTimeLimitField(String value) {
-    return 'Optional time limit in minutes, $value. Press OK to edit';
+    return 'ನಿಮಿಷಗಳಲ್ಲಿ ಐಚ್ಛಿಕ ಸಮಯ ಮಿತಿ, $value. ಬದಲಾಯಿಸಲು ಓಕೆ ಒತ್ತಿ';
   }
 
   @override
   String get quizRevisionsScreen =>
-      'Private read-only question revision history. Use older and newer revision controls, then read each section.';
+      'ಖಾಸಗಿ, ಓದಲು ಮಾತ್ರ ಇರುವ ಪ್ರಶ್ನೆ ಪರಿಷ್ಕರಣೆ ಇತಿಹಾಸ. ಹಳೆಯ ಮತ್ತು ಹೊಸ ಪರಿಷ್ಕರಣೆ ನಿಯಂತ್ರಣಗಳನ್ನು ಬಳಸಿ, ನಂತರ ಪ್ರತಿ ವಿಭಾಗವನ್ನು ಓದಿ.';
 
   @override
   String get quizRevisionsAccount =>
-      'Your account changed. Return and sign in again before viewing private question history.';
+      'ನಿಮ್ಮ ಖಾತೆ ಬದಲಾಗಿದೆ. ಖಾಸಗಿ ಪ್ರಶ್ನೆ ಇತಿಹಾಸ ನೋಡುವ ಮೊದಲು ಹಿಂತಿರುಗಿ ಮತ್ತೆ ಸೈನ್ ಇನ್ ಮಾಡಿ.';
 
   @override
   String get quizRevisionsCleared =>
-      'Your account changed. Private question history was cleared.';
+      'ನಿಮ್ಮ ಖಾತೆ ಬದಲಾಗಿದೆ. ಖಾಸಗಿ ಪ್ರಶ್ನೆ ಇತಿಹಾಸವನ್ನು ತೆರವುಗೊಳಿಸಲಾಗಿದೆ.';
 
   @override
   String get quizRevisionsUnverified =>
-      'Question revision history could not be verified. Retry loading.';
+      'ಪ್ರಶ್ನೆ ಪರಿಷ್ಕರಣೆ ಇತಿಹಾಸವನ್ನು ಪರಿಶೀಲಿಸಲು ಆಗಲಿಲ್ಲ. ಮತ್ತೆ ಲೋಡ್ ಮಾಡಿ.';
 
   @override
   String get quizRevisionsContentUnverified =>
-      'Question revision content could not be verified. Retry loading.';
+      'ಪ್ರಶ್ನೆ ಪರಿಷ್ಕರಣೆಯ ವಿಷಯವನ್ನು ಪರಿಶೀಲಿಸಲು ಆಗಲಿಲ್ಲ. ಮತ್ತೆ ಲೋಡ್ ಮಾಡಿ.';
 
   @override
   String get quizRevisionsTimedOut =>
-      'Question history took too long. Check your connection and retry.';
+      'ಪ್ರಶ್ನೆ ಇತಿಹಾಸಕ್ಕೆ ತುಂಬಾ ಸಮಯ ಹಿಡಿಯಿತು. ನಿಮ್ಮ ಸಂಪರ್ಕ ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
   String get quizNoRevisions =>
-      'No tracked revisions. Older question history is unknown, not reconstructed.';
+      'ದಾಖಲಾದ ಪರಿಷ್ಕರಣೆಗಳಿಲ್ಲ. ಹಳೆಯ ಪ್ರಶ್ನೆ ಇತಿಹಾಸ ತಿಳಿದಿಲ್ಲ, ಅದನ್ನು ಮರುರಚಿಸಲಾಗಿಲ್ಲ.';
 
   @override
   String quizRevisionsLoaded(int count, String revision, String when) {
@@ -2604,19 +2614,19 @@ class AppLocalizationsKn extends AppLocalizations {
       count,
       locale: localeName,
       other:
-          '$count revisions loaded. Read-only question revision $revision, saved $when. Existing quiz and attempt snapshots are not changed.',
+          '$count ಪರಿಷ್ಕರಣೆಗಳು ಲೋಡ್ ಆಗಿವೆ. ಓದಲು ಮಾತ್ರ ಇರುವ ಪ್ರಶ್ನೆ ಪರಿಷ್ಕರಣೆ $revision, $when ಉಳಿಸಲಾಗಿದೆ. ಈಗಿರುವ ಕ್ವಿಜ್ ಮತ್ತು ಪ್ರಯತ್ನದ ಪ್ರತಿಗಳು ಬದಲಾಗುವುದಿಲ್ಲ.',
       one:
-          '1 revision loaded. Read-only question revision $revision, saved $when. Existing quiz and attempt snapshots are not changed.',
+          '1 ಪರಿಷ್ಕರಣೆ ಲೋಡ್ ಆಗಿದೆ. ಓದಲು ಮಾತ್ರ ಇರುವ ಪ್ರಶ್ನೆ ಪರಿಷ್ಕರಣೆ $revision, $when ಉಳಿಸಲಾಗಿದೆ. ಈಗಿರುವ ಕ್ವಿಜ್ ಮತ್ತು ಪ್ರಯತ್ನದ ಪ್ರತಿಗಳು ಬದಲಾಗುವುದಿಲ್ಲ.',
     );
     return '$_temp0';
   }
 
   @override
-  String get quizDateUnknown => 'date unknown';
+  String get quizDateUnknown => 'ದಿನಾಂಕ ತಿಳಿದಿಲ್ಲ';
 
   @override
   String quizRevisionSelected(String revision) {
-    return 'Revision $revision selected. Read-only.';
+    return 'ಪರಿಷ್ಕರಣೆ $revision ಆಯ್ಕೆಮಾಡಲಾಗಿದೆ. ಓದಲು ಮಾತ್ರ.';
   }
 
   @override
@@ -2625,349 +2635,351 @@ class AppLocalizationsKn extends AppLocalizations {
     String position,
     String count,
   ) {
-    return 'Revision $revision selected, $position of $count. Read-only.';
+    return 'ಪರಿಷ್ಕರಣೆ $revision ಆಯ್ಕೆಮಾಡಲಾಗಿದೆ, $count ರಲ್ಲಿ $position. ಓದಲು ಮಾತ್ರ.';
   }
 
   @override
   String quizRevisionFailed(String message) {
-    return '$message Focus is on Refresh revisions.';
+    return '$message ಗಮನ ಪರಿಷ್ಕರಣೆಗಳನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಿ ಮೇಲಿದೆ.';
   }
 
   @override
-  String get quizNoRevisionLoaded => 'No revision loaded.';
+  String get quizNoRevisionLoaded => 'ಯಾವುದೇ ಪರಿಷ್ಕರಣೆ ಲೋಡ್ ಆಗಿಲ್ಲ.';
 
   @override
   String quizShowingRevision(String revision) {
-    return 'Showing revision $revision. Read-only.';
+    return 'ಪರಿಷ್ಕರಣೆ $revision ತೋರಿಸಲಾಗುತ್ತಿದೆ. ಓದಲು ಮಾತ್ರ.';
   }
 
   @override
   String quizRevisionVersion(String revision, String when) {
-    return 'Revision $revision. Saved $when. Read-only.';
+    return 'ಪರಿಷ್ಕರಣೆ $revision. $when ಉಳಿಸಲಾಗಿದೆ. ಓದಲು ಮಾತ್ರ.';
   }
 
   @override
   String quizRevisionQuestion(String text) {
-    return 'Question: $text';
+    return 'ಪ್ರಶ್ನೆ: $text';
   }
 
   @override
   String quizRevisionTopics(String topics) {
-    return 'Topics: $topics';
+    return 'ವಿಷಯಗಳು: $topics';
   }
 
   @override
   String quizRevisionOption(String number, String text) {
-    return 'Option $number: $text.';
+    return 'ಆಯ್ಕೆ $number: $text.';
   }
 
   @override
-  String get quizCorrectAnswerSentence => 'Correct answer.';
+  String get quizCorrectAnswerSentence => 'ಸರಿಯಾದ ಉತ್ತರ.';
 
   @override
   String quizRevisionExplanation(String text) {
-    return 'Explanation: $text';
+    return 'ವಿವರಣೆ: $text';
   }
 
   @override
-  String get quizNotProvided => 'Not provided';
+  String get quizNotProvided => 'ನೀಡಿಲ್ಲ';
 
   @override
   String get quizRevisionNotice =>
-      'Only revisions saved after tracking was introduced are available. Older history is unknown. Existing quiz and attempt snapshots are never rewritten.';
+      'ದಾಖಲಿಸುವಿಕೆ ಆರಂಭವಾದ ನಂತರ ಉಳಿಸಿದ ಪರಿಷ್ಕರಣೆಗಳು ಮಾತ್ರ ಲಭ್ಯವಿವೆ. ಹಳೆಯ ಇತಿಹಾಸ ತಿಳಿದಿಲ್ಲ. ಈಗಿರುವ ಕ್ವಿಜ್ ಮತ್ತು ಪ್ರಯತ್ನದ ಪ್ರತಿಗಳನ್ನು ಎಂದಿಗೂ ಮತ್ತೆ ಬರೆಯಲಾಗುವುದಿಲ್ಲ.';
 
   @override
   String quizRevisionVersionTitle(String revision, String when) {
-    return 'Revision $revision, $when';
+    return 'ಪರಿಷ್ಕರಣೆ $revision, $when';
   }
 
   @override
-  String get quizQuestionTextTitle => 'Question text';
+  String get quizQuestionTextTitle => 'ಪ್ರಶ್ನೆಯ ಪಠ್ಯ';
 
   @override
-  String get quizTopicsTitle => 'Topics';
+  String get quizTopicsTitle => 'ವಿಷಯಗಳು';
 
   @override
   String quizOptionNumber(String number) {
-    return 'Option $number';
+    return 'ಆಯ್ಕೆ $number';
   }
 
   @override
   String quizOptionNumberCorrect(String number) {
-    return 'Option $number, correct answer';
+    return 'ಆಯ್ಕೆ $number, ಸರಿಯಾದ ಉತ್ತರ';
   }
 
   @override
-  String get quizExplanationTitle => 'Explanation';
+  String get quizExplanationTitle => 'ವಿವರಣೆ';
 
   @override
-  String get quizRevisionNoticeTitle => 'About revision history';
+  String get quizRevisionNoticeTitle => 'ಪರಿಷ್ಕರಣೆ ಇತಿಹಾಸದ ಬಗ್ಗೆ';
 
   @override
   String quizRevisionSectionTarget(String title) {
-    return '$title. Press OK to hear it';
+    return '$title. ಕೇಳಲು ಓಕೆ ಒತ್ತಿ';
   }
 
   @override
   String get quizAccountChangedSignIn =>
-      'Account changed. Return and sign in again.';
+      'ಖಾತೆ ಬದಲಾಗಿದೆ. ಹಿಂತಿರುಗಿ ಮತ್ತೆ ಸೈನ್ ಇನ್ ಮಾಡಿ.';
 
   @override
-  String get quizGoBack => 'Go back';
+  String get quizGoBack => 'ಹಿಂದಕ್ಕೆ ಹೋಗಿ';
 
   @override
-  String get quizCancel => 'Cancel';
+  String get quizCancel => 'ರದ್ದುಮಾಡಿ';
 
   @override
-  String get quizCancelAndReturn => 'Cancel and return';
+  String get quizCancelAndReturn => 'ರದ್ದುಮಾಡಿ ಹಿಂತಿರುಗಿ';
 
   @override
-  String get quizActionNavigation => 'the available actions and cancel';
+  String get quizActionNavigation => 'ಲಭ್ಯವಿರುವ ಕ್ರಿಯೆಗಳು ಮತ್ತು ರದ್ದುಮಾಡಿ';
 
   @override
-  String get quizRefreshRevisions => 'Refresh revisions';
+  String get quizRefreshRevisions => 'ಪರಿಷ್ಕರಣೆಗಳನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಿ';
 
   @override
-  String get quizNewerRevision => 'Newer revision';
+  String get quizNewerRevision => 'ಹೊಸ ಪರಿಷ್ಕರಣೆ';
 
   @override
-  String get quizOlderRevision => 'Older revision';
+  String get quizOlderRevision => 'ಹಳೆಯ ಪರಿಷ್ಕರಣೆ';
 
   @override
-  String get quizBankArchived => 'Bank question archived';
+  String get quizBankArchived => 'ಬ್ಯಾಂಕ್ ಪ್ರಶ್ನೆ ಆರ್ಕೈವ್ ಮಾಡಲಾಗಿದೆ';
 
   @override
-  String get quizBankCopied => 'Bank question copy created';
+  String get quizBankCopied => 'ಬ್ಯಾಂಕ್ ಪ್ರಶ್ನೆಯ ಪ್ರತಿ ರಚಿಸಲಾಗಿದೆ';
 
   @override
-  String get quizSnapshotAdded => 'Question snapshot added to quiz';
+  String get quizSnapshotAdded => 'ಪ್ರಶ್ನೆಯ ಪ್ರತಿಯನ್ನು ಕ್ವಿಜ್‌ಗೆ ಸೇರಿಸಲಾಗಿದೆ';
 
   @override
-  String get quizQuizClosed => 'Quiz closed';
+  String get quizQuizClosed => 'ಕ್ವಿಜ್ ಮುಚ್ಚಲಾಗಿದೆ';
 
   @override
-  String get quizDraftCreated => 'Editable quiz draft created';
+  String get quizDraftCreated => 'ಬದಲಾಯಿಸಬಹುದಾದ ಕ್ವಿಜ್ ಕರಡು ರಚಿಸಲಾಗಿದೆ';
 
   @override
-  String get quizNoAnswerSelected => 'No answer selected.';
+  String get quizNoAnswerSelected => 'ಯಾವುದೇ ಉತ್ತರ ಆಯ್ಕೆಮಾಡಿಲ್ಲ.';
 
   @override
-  String get quizSelectBeforeSubmit => 'Select one option before submitting.';
+  String get quizSelectBeforeSubmit => 'ಸಲ್ಲಿಸುವ ಮೊದಲು ಒಂದು ಆಯ್ಕೆಯನ್ನು ಆರಿಸಿ.';
 
   @override
   String get quizSubmitBeforeContinuing =>
-      'Submit your answer before continuing.';
+      'ಮುಂದುವರಿಯುವ ಮೊದಲು ನಿಮ್ಮ ಉತ್ತರ ಸಲ್ಲಿಸಿ.';
 
   @override
   String get quizTeacherNavigationPrivate =>
-      'private bank search and saved questions, quiz drafts, published quizzes, and their results';
+      'ಖಾಸಗಿ ಬ್ಯಾಂಕ್ ಹುಡುಕಾಟ ಮತ್ತು ಉಳಿಸಿದ ಪ್ರಶ್ನೆಗಳು, ಕ್ವಿಜ್ ಕರಡುಗಳು, ಪ್ರಕಟಿತ ಕ್ವಿಜ್‌ಗಳು, ಮತ್ತು ಅವುಗಳ ಫಲಿತಾಂಶಗಳು';
 
   @override
   String get quizStudentNavigationHelp =>
-      'Use D-pad up and down to reach refresh, quiz state filter, subject filter, each available quiz or practice activity, and its attempt history. Use left or right on a filter to change it. Press OK on a quiz to hear its details and confirm starting or resuming; press OK on attempt history to review past attempts. Moving focus never starts an attempt.';
+      'ರಿಫ್ರೆಶ್, ಕ್ವಿಜ್ ಸ್ಥಿತಿ ಫಿಲ್ಟರ್, ವಿಷಯ ಫಿಲ್ಟರ್, ಲಭ್ಯವಿರುವ ಪ್ರತಿ ಕ್ವಿಜ್ ಅಥವಾ ಅಭ್ಯಾಸ ಚಟುವಟಿಕೆ ಮತ್ತು ಅದರ ಪ್ರಯತ್ನಗಳ ಇತಿಹಾಸವನ್ನು ತಲುಪಲು D-pad ಮೇಲೆ ಮತ್ತು ಕೆಳಗೆ ಬಳಸಿ. ಫಿಲ್ಟರ್ ಬದಲಾಯಿಸಲು ಅದರ ಮೇಲೆ ಎಡ ಅಥವಾ ಬಲ ಬಳಸಿ. ಕ್ವಿಜ್‌ನ ವಿವರ ಕೇಳಲು ಮತ್ತು ಪ್ರಾರಂಭಿಸುವುದನ್ನು ಅಥವಾ ಮುಂದುವರಿಸುವುದನ್ನು ಖಚಿತಪಡಿಸಲು ಅದರ ಮೇಲೆ ಓಕೆ ಒತ್ತಿ; ಹಿಂದಿನ ಪ್ರಯತ್ನಗಳನ್ನು ನೋಡಲು ಪ್ರಯತ್ನಗಳ ಇತಿಹಾಸದ ಮೇಲೆ ಓಕೆ ಒತ್ತಿ. ಫೋಕಸ್ ಚಲಿಸಿದರೆ ಯಾವುದೇ ಪ್ರಯತ್ನ ಪ್ರಾರಂಭವಾಗುವುದಿಲ್ಲ.';
 
   @override
-  String get quizNoQuizzesAvailable => 'No quizzes available.';
+  String get quizNoQuizzesAvailable => 'ಯಾವುದೇ ಕ್ವಿಜ್ ಲಭ್ಯವಿಲ್ಲ.';
 
   @override
   String quizQuizzesAvailableRaw(String count) {
-    return '$count quizzes available.';
+    return '$count ಕ್ವಿಜ್‌ಗಳು ಲಭ್ಯವಿವೆ.';
   }
 
   @override
   String get quizStudentNavigationSections =>
-      'refresh, quiz state and subject filters, available quizzes and practice activities, and previous attempts';
+      'ರಿಫ್ರೆಶ್, ಕ್ವಿಜ್ ಸ್ಥಿತಿ ಮತ್ತು ವಿಷಯ ಫಿಲ್ಟರ್‌ಗಳು, ಲಭ್ಯವಿರುವ ಕ್ವಿಜ್‌ಗಳು ಮತ್ತು ಅಭ್ಯಾಸ ಚಟುವಟಿಕೆಗಳು, ಮತ್ತು ಹಿಂದಿನ ಪ್ರಯತ್ನಗಳು';
 
   @override
   String quizAttemptLimitReached(String title) {
-    return 'Attempt limit reached for $title. Open attempt history to review your scores.';
+    return '$title ಗೆ ಪ್ರಯತ್ನಗಳ ಮಿತಿ ಮುಗಿದಿದೆ. ನಿಮ್ಮ ಅಂಕಗಳನ್ನು ನೋಡಲು ಪ್ರಯತ್ನಗಳ ಇತಿಹಾಸ ತೆರೆಯಿರಿ.';
   }
 
   @override
-  String get quizNoPerAttemptLimit => 'No per-attempt time limit.';
+  String get quizNoPerAttemptLimit => 'ಪ್ರತಿ ಪ್ರಯತ್ನಕ್ಕೆ ಸಮಯ ಮಿತಿ ಇಲ್ಲ.';
 
   @override
   String quizTimeLimitRaw(String minutes) {
-    return 'Time limit $minutes minutes.';
+    return 'ಸಮಯ ಮಿತಿ $minutes ನಿಮಿಷಗಳು.';
   }
 
   @override
-  String get quizCannotGoBack => 'You cannot go back to change it.';
+  String get quizCannotGoBack =>
+      'ಅದನ್ನು ಬದಲಾಯಿಸಲು ನೀವು ಹಿಂದೆ ಹೋಗಲು ಸಾಧ್ಯವಿಲ್ಲ.';
 
   @override
   String get quizStartFailedAvailability =>
-      'The quiz could not be started. Check its availability.';
+      'ಕ್ವಿಜ್ ಪ್ರಾರಂಭಿಸಲು ಆಗಲಿಲ್ಲ. ಅದು ಲಭ್ಯವಿದೆಯೇ ಎಂದು ಪರಿಶೀಲಿಸಿ.';
 
   @override
-  String get quizStateFieldName => 'Quiz state';
+  String get quizStateFieldName => 'ಕ್ವಿಜ್ ಸ್ಥಿತಿ';
 
   @override
-  String get quizSubjectFieldName => 'Subject';
+  String get quizSubjectFieldName => 'ವಿಷಯ';
 
   @override
   String quizUseLeftRightToChange(String item) {
-    return '$item. Use left or right to change';
+    return '$item. ಬದಲಾಯಿಸಲು ಎಡ ಅಥವಾ ಬಲ ಬಳಸಿ';
   }
 
   @override
   String get quizAttemptCompletePrivate =>
-      'Attempt complete. Your result remains private.';
+      'ಪ್ರಯತ್ನ ಪೂರ್ಣಗೊಂಡಿದೆ. ನಿಮ್ಮ ಫಲಿತಾಂಶ ಖಾಸಗಿಯಾಗಿಯೇ ಇರುತ್ತದೆ.';
 
   @override
   String get quizHelpCompleted =>
-      'Use D-pad up and down to move between return to quizzes and read result privately. Press OK to activate a button. Press 8 to read your result privately or 0 to return.';
+      'ಕ್ವಿಜ್‌ಗಳಿಗೆ ಹಿಂತಿರುಗಿ ಮತ್ತು ಫಲಿತಾಂಶವನ್ನು ಖಾಸಗಿಯಾಗಿ ಓದಿ ಇವುಗಳ ನಡುವೆ ಚಲಿಸಲು D-pad ಮೇಲೆ ಮತ್ತು ಕೆಳಗೆ ಬಳಸಿ. ಬಟನ್ ಸಕ್ರಿಯಗೊಳಿಸಲು ಓಕೆ ಒತ್ತಿ. ನಿಮ್ಮ ಫಲಿತಾಂಶವನ್ನು ಖಾಸಗಿಯಾಗಿ ಓದಲು 8 ಒತ್ತಿ ಅಥವಾ ಹಿಂತಿರುಗಲು 0 ಒತ್ತಿ.';
 
   @override
   String get quizHelpRetry =>
-      'Press 5 to retry finishing, 8 to hear where you are, or 0 to leave with confirmation. Use D-pad up and down for the other controls.';
+      'ಮುಗಿಸುವುದನ್ನು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಲು 5, ನೀವು ಎಲ್ಲಿದ್ದೀರಿ ಎಂದು ಕೇಳಲು 8, ಅಥವಾ ಖಚಿತಪಡಿಸಿ ಹೊರಹೋಗಲು 0 ಒತ್ತಿ. ಇತರ ನಿಯಂತ್ರಣಗಳಿಗೆ D-pad ಮೇಲೆ ಮತ್ತು ಕೆಳಗೆ ಬಳಸಿ.';
 
   @override
   String get quizHelpNext =>
-      'The next question follows automatically. Press 6 to repeat, 8 to hear where you are.';
+      'ಮುಂದಿನ ಪ್ರಶ್ನೆ ತಾನಾಗಿಯೇ ಬರುತ್ತದೆ. ಮತ್ತೆ ಕೇಳಲು 6, ನೀವು ಎಲ್ಲಿದ್ದೀರಿ ಎಂದು ಕೇಳಲು 8 ಒತ್ತಿ.';
 
   @override
   String quizHelpChoose(String count) {
-    return 'Press 1 to $count to choose, then 5 to submit. Press 6 to repeat the question and options, 8 to hear where you are and the time left.';
+    return 'ಆಯ್ಕೆ ಮಾಡಲು 1 ರಿಂದ $count ಒತ್ತಿ, ನಂತರ ಸಲ್ಲಿಸಲು 5 ಒತ್ತಿ. ಪ್ರಶ್ನೆ ಮತ್ತು ಆಯ್ಕೆಗಳನ್ನು ಮತ್ತೆ ಕೇಳಲು 6, ನೀವು ಎಲ್ಲಿದ್ದೀರಿ ಮತ್ತು ಉಳಿದ ಸಮಯ ಕೇಳಲು 8 ಒತ್ತಿ.';
   }
 
   @override
   String get quizHelpFinishLeave =>
-      'Finish quiz now is in the D-pad list and asks to confirm. Press 0 to leave without submitting.';
+      'ಈಗ ಕ್ವಿಜ್ ಮುಗಿಸಿ ಎಂಬುದು D-pad ಪಟ್ಟಿಯಲ್ಲಿದೆ ಮತ್ತು ಅದು ಖಚಿತಪಡಿಸಲು ಕೇಳುತ್ತದೆ. ಸಲ್ಲಿಸದೆ ಹೊರಹೋಗಲು 0 ಒತ್ತಿ.';
 
   @override
   String quizSelectedOptionNotSubmitted(String number, String text) {
-    return 'Selected option $number. $text. Not submitted yet.';
+    return 'ಆಯ್ಕೆ $number ಆರಿಸಲಾಗಿದೆ. $text. ಇನ್ನೂ ಸಲ್ಲಿಸಿಲ್ಲ.';
   }
 
   @override
   String quizSelectedOptionConfirmed(String number, String text) {
-    return 'Selected option $number. $text. Answer confirmed.';
+    return 'ಆಯ್ಕೆ $number ಆರಿಸಲಾಗಿದೆ. $text. ಉತ್ತರ ಖಚಿತವಾಗಿದೆ.';
   }
 
   @override
   String quizFeedbackCorrect(String answer, String explanation) {
-    return 'Correct. Correct answer: $answer. $explanation';
+    return 'ಸರಿ. ಸರಿಯಾದ ಉತ್ತರ: $answer. $explanation';
   }
 
   @override
   String quizFeedbackIncorrect(String answer, String explanation) {
-    return 'Incorrect. Correct answer: $answer. $explanation';
+    return 'ತಪ್ಪು. ಸರಿಯಾದ ಉತ್ತರ: $answer. $explanation';
   }
 
   @override
   String quizOptionSelectedNotSubmitted(String number, String text) {
-    return 'Option $number. $text. Selected, not submitted. Press 5 to save your answer.';
+    return 'ಆಯ್ಕೆ $number. $text. ಆರಿಸಲಾಗಿದೆ, ಸಲ್ಲಿಸಿಲ್ಲ. ನಿಮ್ಮ ಉತ್ತರ ಉಳಿಸಲು 5 ಒತ್ತಿ.';
   }
 
   @override
   String get quizAttemptFinishedWhere =>
-      'Attempt finished. Press 8 to hear your result privately.';
+      'ಪ್ರಯತ್ನ ಮುಗಿದಿದೆ. ನಿಮ್ಮ ಫಲಿತಾಂಶವನ್ನು ಖಾಸಗಿಯಾಗಿ ಕೇಳಲು 8 ಒತ್ತಿ.';
 
   @override
-  String get quizNoOptionChosenYet => 'No option chosen yet.';
+  String get quizNoOptionChosenYet => 'ಇನ್ನೂ ಯಾವುದೇ ಆಯ್ಕೆ ಆರಿಸಿಲ್ಲ.';
 
   @override
   String quizOptionChosen(String number) {
-    return 'Option $number chosen.';
+    return 'ಆಯ್ಕೆ $number ಆರಿಸಲಾಗಿದೆ.';
   }
 
   @override
   String quizCompletionFailedRetry(String reason) {
-    return '$reason Your saved answers are preserved. Select Retry completion to check the result.';
+    return '$reason ನೀವು ಉಳಿಸಿದ ಉತ್ತರಗಳು ಸುರಕ್ಷಿತವಾಗಿವೆ. ಫಲಿತಾಂಶ ಪರಿಶೀಲಿಸಲು ಪೂರ್ಣಗೊಳಿಸುವಿಕೆ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ ಆರಿಸಿ.';
   }
 
   @override
   String quizAttemptStatusPrivate(String status) {
-    return 'Attempt $status. Your result is private.';
+    return 'ಪ್ರಯತ್ನ $status. ನಿಮ್ಮ ಫಲಿತಾಂಶ ಖಾಸಗಿಯಾಗಿದೆ.';
   }
 
   @override
   String get quizEarlyCountUnconfirmed =>
-      'The current saved-answer count could not be confirmed, or this attempt has ended. No early submission was sent. Return to the quiz list to refresh its status.';
+      'ಈಗ ಉಳಿಸಿರುವ ಉತ್ತರಗಳ ಸಂಖ್ಯೆಯನ್ನು ಖಚಿತಪಡಿಸಲು ಆಗಲಿಲ್ಲ, ಅಥವಾ ಈ ಪ್ರಯತ್ನ ಮುಗಿದಿದೆ. ಬೇಗನೆ ಸಲ್ಲಿಕೆ ಕಳುಹಿಸಲಾಗಿಲ್ಲ. ಅದರ ಸ್ಥಿತಿ ರಿಫ್ರೆಶ್ ಮಾಡಲು ಕ್ವಿಜ್ ಪಟ್ಟಿಗೆ ಹಿಂತಿರುಗಿ.';
 
   @override
-  String get quizEarlyTitle => 'Submit this attempt early?';
+  String get quizEarlyTitle => 'ಈ ಪ್ರಯತ್ನವನ್ನು ಬೇಗನೆ ಸಲ್ಲಿಸಬೇಕೇ?';
 
   @override
   String quizEarlyMessage(String count) {
-    return 'The server check confirms $count unanswered questions. Only answers saved on the server when finalized are included. A selected but unsaved answer is not included. Final submission cannot be undone or edited. Back never submits.';
+    return 'ಸರ್ವರ್ ಪರಿಶೀಲನೆ ಪ್ರಕಾರ $count ಪ್ರಶ್ನೆಗಳಿಗೆ ಉತ್ತರಿಸಿಲ್ಲ. ಅಂತಿಮಗೊಳಿಸುವಾಗ ಸರ್ವರ್‌ನಲ್ಲಿ ಉಳಿಸಿರುವ ಉತ್ತರಗಳು ಮಾತ್ರ ಸೇರುತ್ತವೆ. ಆರಿಸಿದ ಆದರೆ ಉಳಿಸದ ಉತ್ತರ ಸೇರುವುದಿಲ್ಲ. ಅಂತಿಮ ಸಲ್ಲಿಕೆಯನ್ನು ರದ್ದುಮಾಡಲು ಅಥವಾ ಬದಲಾಯಿಸಲು ಆಗುವುದಿಲ್ಲ. ಹಿಂದೆ ಹೋದರೆ ಎಂದಿಗೂ ಸಲ್ಲಿಕೆ ಆಗುವುದಿಲ್ಲ.';
   }
 
   @override
-  String get quizEarlyConfirm => 'Finalize saved answers';
+  String get quizEarlyConfirm => 'ಉಳಿಸಿದ ಉತ್ತರಗಳನ್ನು ಅಂತಿಮಗೊಳಿಸಿ';
 
   @override
   String get quizEarlyTimedOut =>
-      'Checking saved answers timed out. No early submission was sent. Check your connection and retry.';
+      'ಉಳಿಸಿದ ಉತ್ತರಗಳ ಪರಿಶೀಲನೆಗೆ ಸಮಯ ಮೀರಿತು. ಬೇಗನೆ ಸಲ್ಲಿಕೆ ಕಳುಹಿಸಲಾಗಿಲ್ಲ. ನಿಮ್ಮ ಸಂಪರ್ಕ ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
   String get quizWaitPending =>
-      'Wait for the pending answer or completion confirmation before leaving.';
+      'ಹೊರಹೋಗುವ ಮೊದಲು ಬಾಕಿ ಇರುವ ಉತ್ತರ ಅಥವಾ ಪೂರ್ಣಗೊಳಿಸುವಿಕೆಯ ಖಚಿತತೆಗಾಗಿ ಕಾಯಿರಿ.';
 
   @override
   String get quizLeaveMessageServer =>
-      'This does not submit your attempt. Only server-confirmed answers are saved; an unsaved selection may be lost. Any timer keeps running. Resume is allowed only while the server permits this attempt.';
+      'ಇದರಿಂದ ನಿಮ್ಮ ಪ್ರಯತ್ನ ಸಲ್ಲಿಕೆಯಾಗುವುದಿಲ್ಲ. ಸರ್ವರ್ ಖಚಿತಪಡಿಸಿದ ಉತ್ತರಗಳು ಮಾತ್ರ ಉಳಿಯುತ್ತವೆ; ಉಳಿಸದ ಆಯ್ಕೆ ಕಳೆದುಹೋಗಬಹುದು. ಯಾವುದೇ ಟೈಮರ್ ಓಡುತ್ತಲೇ ಇರುತ್ತದೆ. ಸರ್ವರ್ ಈ ಪ್ರಯತ್ನಕ್ಕೆ ಅನುಮತಿಸುವವರೆಗೆ ಮಾತ್ರ ಮುಂದುವರಿಸಬಹುದು.';
 
   @override
-  String get quizStayInAttempt => 'Stay in attempt';
+  String get quizStayInAttempt => 'ಪ್ರಯತ್ನದಲ್ಲೇ ಇರಿ';
 
   @override
-  String get quizNextQuestionNow => 'Next question now';
+  String get quizNextQuestionNow => 'ಈಗ ಮುಂದಿನ ಪ್ರಶ್ನೆ';
 
   @override
-  String get quizReadAllOptions => 'Read all answer options';
+  String get quizReadAllOptions => 'ಎಲ್ಲಾ ಉತ್ತರ ಆಯ್ಕೆಗಳನ್ನು ಓದಿ';
 
   @override
   String quizOptionTargetSelectedSubmit(String number, String text) {
-    return 'Option $number, $text, selected. Press OK or $number to select. Press 5 to submit only when ready';
+    return 'ಆಯ್ಕೆ $number, $text, ಆರಿಸಲಾಗಿದೆ. ಆರಿಸಲು ಓಕೆ ಅಥವಾ $number ಒತ್ತಿ. ಸಿದ್ಧರಾದಾಗ ಮಾತ್ರ ಸಲ್ಲಿಸಲು 5 ಒತ್ತಿ';
   }
 
   @override
   String quizOptionTargetNotSelectedSubmit(String number, String text) {
-    return 'Option $number, $text, not selected. Press OK or $number to select. Press 5 to submit only when ready';
+    return 'ಆಯ್ಕೆ $number, $text, ಆರಿಸಿಲ್ಲ. ಆರಿಸಲು ಓಕೆ ಅಥವಾ $number ಒತ್ತಿ. ಸಿದ್ಧರಾದಾಗ ಮಾತ್ರ ಸಲ್ಲಿಸಲು 5 ಒತ್ತಿ';
   }
 
   @override
-  String get quizReadSelectionTarget => 'Read selected answer and saved status';
+  String get quizReadSelectionTarget =>
+      'ಆರಿಸಿದ ಉತ್ತರ ಮತ್ತು ಉಳಿಸಿದ ಸ್ಥಿತಿಯನ್ನು ಓದಿ';
 
   @override
-  String get quizStopSpeech => 'Stop speech';
+  String get quizStopSpeech => 'ಮಾತು ನಿಲ್ಲಿಸಿ';
 
   @override
-  String get quizAnswerFeedback => 'Answer feedback';
+  String get quizAnswerFeedback => 'ಉತ್ತರದ ಪ್ರತಿಕ್ರಿಯೆ';
 
   @override
   String get quizAnswerConfirmedReadFeedback =>
-      'Answer confirmed saved and locked. Press OK to read feedback privately.';
+      'ಉತ್ತರ ಉಳಿಸಲಾಗಿದೆ ಮತ್ತು ಲಾಕ್ ಆಗಿದೆ ಎಂದು ಖಚಿತವಾಗಿದೆ. ಪ್ರತಿಕ್ರಿಯೆಯನ್ನು ಖಾಸಗಿಯಾಗಿ ಓದಲು ಓಕೆ ಒತ್ತಿ.';
 
   @override
-  String get quizRetryCompletion => 'Retry completion';
+  String get quizRetryCompletion => 'ಪೂರ್ಣಗೊಳಿಸುವಿಕೆ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ';
 
   @override
-  String get quizViewResult => 'View result';
+  String get quizViewResult => 'ಫಲಿತಾಂಶ ನೋಡಿ';
 
   @override
-  String get quizNextQuestion => 'Next question';
+  String get quizNextQuestion => 'ಮುಂದಿನ ಪ್ರಶ್ನೆ';
 
   @override
   String get quizAttemptInProgressResume =>
-      'Attempt in progress. Return to the quiz list to resume it. Leaving does not submit.';
+      'ಪ್ರಯತ್ನ ನಡೆಯುತ್ತಿದೆ. ಅದನ್ನು ಮುಂದುವರಿಸಲು ಕ್ವಿಜ್ ಪಟ್ಟಿಗೆ ಹಿಂತಿರುಗಿ. ಹೊರಹೋದರೆ ಸಲ್ಲಿಕೆ ಆಗುವುದಿಲ್ಲ.';
 
   @override
   String get quizReviewTimedOutShort =>
-      'Attempt review timed out. Check your connection and try again.';
+      'ಪ್ರಯತ್ನದ ಪರಿಶೀಲನೆಗೆ ಸಮಯ ಮೀರಿತು. ನಿಮ್ಮ ಸಂಪರ್ಕ ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
   String get quizNoScoreCurrentlyReleased =>
-      'Completed attempts exist; no score is currently released.';
+      'ಪೂರ್ಣಗೊಂಡ ಪ್ರಯತ್ನಗಳಿವೆ; ಸದ್ಯಕ್ಕೆ ಯಾವುದೇ ಅಂಕ ಬಿಡುಗಡೆಯಾಗಿಲ್ಲ.';
 
   @override
   String get quizHistoryScreenNavigate =>
-      'Attempt history. Scores are private. Navigate to the summary or an attempt to review.';
+      'ಪ್ರಯತ್ನಗಳ ಇತಿಹಾಸ. ಅಂಕಗಳು ಖಾಸಗಿಯಾಗಿವೆ. ಸಾರಾಂಶಕ್ಕೆ ಅಥವಾ ನೋಡಬೇಕಾದ ಪ್ರಯತ್ನಕ್ಕೆ ಹೋಗಿ.';
 
   @override
   String quizHistoryAttemptRaw(String number, String status, String result) {
-    return 'Attempt $number. $status. $result. Press OK to review.';
+    return 'ಪ್ರಯತ್ನ $number. $status. $result. ನೋಡಲು ಓಕೆ ಒತ್ತಿ.';
   }
 
   @override
@@ -2978,7 +2990,7 @@ class AppLocalizationsKn extends AppLocalizations {
     String answer,
     String explanation,
   ) {
-    return 'Question $number. Correct. $question. Selected $selected. Correct answer $answer. $explanation';
+    return 'ಪ್ರಶ್ನೆ $number. ಸರಿ. $question. ಆರಿಸಿದ್ದು $selected. ಸರಿಯಾದ ಉತ್ತರ $answer. $explanation';
   }
 
   @override
@@ -2989,82 +3001,83 @@ class AppLocalizationsKn extends AppLocalizations {
     String answer,
     String explanation,
   ) {
-    return 'Question $number. Incorrect. $question. Selected $selected. Correct answer $answer. $explanation';
+    return 'ಪ್ರಶ್ನೆ $number. ತಪ್ಪು. $question. ಆರಿಸಿದ್ದು $selected. ಸರಿಯಾದ ಉತ್ತರ $answer. $explanation';
   }
 
   @override
-  String get quizNoAnswerCapital => 'No answer';
+  String get quizNoAnswerCapital => 'ಉತ್ತರವಿಲ್ಲ';
 
   @override
   String quizReviewScreenRaw(String count) {
-    return 'Attempt review. $count questions. Use up and down to review each answer.';
+    return 'ಪ್ರಯತ್ನದ ಪರಿಶೀಲನೆ. $count ಪ್ರಶ್ನೆಗಳು. ಪ್ರತಿ ಉತ್ತರ ನೋಡಲು ಮೇಲೆ ಮತ್ತು ಕೆಳಗೆ ಬಳಸಿ.';
   }
 
   @override
-  String get quizMetaTopics => 'Topics or concepts, one per line (optional)';
+  String get quizMetaTopics =>
+      'ವಿಷಯಾಂಶಗಳು ಅಥವಾ ಪರಿಕಲ್ಪನೆಗಳು, ಸಾಲಿಗೆ ಒಂದು (ಐಚ್ಛಿಕ)';
 
   @override
-  String get quizMetaSpokenQuestion => 'Teacher-written spoken question';
+  String get quizMetaSpokenQuestion => 'ಶಿಕ್ಷಕರು ಬರೆದ ಮಾತಿನ ಪ್ರಶ್ನೆ';
 
   @override
   String quizMetaSpokenOption(String number) {
-    return 'Spoken option $number';
+    return 'ಮಾತಿನ ಆಯ್ಕೆ $number';
   }
 
   @override
-  String get quizMetaSpokenExplanation => 'Teacher-written spoken explanation';
+  String get quizMetaSpokenExplanation => 'ಶಿಕ್ಷಕರು ಬರೆದ ಮಾತಿನ ವಿವರಣೆ';
 
   @override
   String quizCorrectSelected(String number) {
-    return 'Option $number selected as correct answer';
+    return 'ಆಯ್ಕೆ $number ಅನ್ನು ಸರಿಯಾದ ಉತ್ತರವಾಗಿ ಆರಿಸಲಾಗಿದೆ';
   }
 
   @override
   String quizCorrectSelectedWithText(String number, String text) {
-    return 'Option $number selected as correct answer, $text';
+    return 'ಆಯ್ಕೆ $number ಅನ್ನು ಸರಿಯಾದ ಉತ್ತರವಾಗಿ ಆರಿಸಲಾಗಿದೆ, $text';
   }
 
   @override
-  String get quizEditBankQuestion => 'Edit bank question';
+  String get quizEditBankQuestion => 'ಬ್ಯಾಂಕ್ ಪ್ರಶ್ನೆ ಸಂಪಾದಿಸಿ';
 
   @override
-  String get quizCreateBankQuestion => 'Create bank question';
+  String get quizCreateBankQuestion => 'ಬ್ಯಾಂಕ್ ಪ್ರಶ್ನೆ ರಚಿಸಿ';
 
   @override
   String get quizEditorNavigation =>
-      'question text, four answer fields, correct-answer selection, optional spoken descriptions, and save or cancel';
+      'ಪ್ರಶ್ನೆಯ ಪಠ್ಯ, ನಾಲ್ಕು ಉತ್ತರ ಕ್ಷೇತ್ರಗಳು, ಸರಿಯಾದ ಉತ್ತರದ ಆಯ್ಕೆ, ಐಚ್ಛಿಕ ಮಾತಿನ ವಿವರಣೆಗಳು, ಮತ್ತು ಉಳಿಸಿ ಅಥವಾ ರದ್ದುಮಾಡಿ';
 
   @override
-  String get quizSaveQuestion => 'Save question';
+  String get quizSaveQuestion => 'ಪ್ರಶ್ನೆ ಉಳಿಸಿ';
 
   @override
-  String get quizCancelQuestion => 'Cancel question';
+  String get quizCancelQuestion => 'ಪ್ರಶ್ನೆ ರದ್ದುಮಾಡಿ';
 
   @override
   String quizPressOkToEdit(String item) {
-    return '$item. Press OK to edit';
+    return '$item. ಸಂಪಾದಿಸಲು ಓಕೆ ಒತ್ತಿ';
   }
 
   @override
   String quizPressOkToChange(String item) {
-    return '$item. Press OK to change';
+    return '$item. ಬದಲಾಯಿಸಲು ಓಕೆ ಒತ್ತಿ';
   }
 
   @override
   String quizCorrectIsOption(String number, String text) {
-    return 'Option $number, $text, is the correct answer. Use left or right to change';
+    return 'ಆಯ್ಕೆ $number, $text, ಸರಿಯಾದ ಉತ್ತರ. ಬದಲಾಯಿಸಲು ಎಡ ಅಥವಾ ಬಲ ಬಳಸಿ';
   }
 
   @override
   String get quizHideOptionalExplanation =>
-      'Hide optional explanation, topics and spoken notation';
+      'ಐಚ್ಛಿಕ ವಿವರಣೆ, ವಿಷಯಾಂಶಗಳು ಮತ್ತು ಮಾತಿನ ಸಂಕೇತವನ್ನು ಮರೆಮಾಡಿ';
 
   @override
   String get quizShowOptionalExplanation =>
-      'Show optional explanation, topics and spoken notation';
+      'ಐಚ್ಛಿಕ ವಿವರಣೆ, ವಿಷಯಾಂಶಗಳು ಮತ್ತು ಮಾತಿನ ಸಂಕೇತವನ್ನು ತೋರಿಸಿ';
 
   @override
-  String get quizOptionalExplanation => 'Optional answer explanation';
+  String get quizOptionalExplanation => 'ಐಚ್ಛಿಕ ಉತ್ತರ ವಿವರಣೆ';
 
   @override
   String quizNumericDateTime(
@@ -3074,314 +3087,318 @@ class AppLocalizationsKn extends AppLocalizations {
     String hour,
     String minute,
   ) {
-    return '$day/$month/$year at $hour:$minute';
+    return '$day/$month/$year ರಂದು $hour:$minute ಕ್ಕೆ';
   }
 
   @override
-  String get quizCheckTitleLimits => 'Check the title, limits, and schedule.';
+  String get quizCheckTitleLimits =>
+      'ಶೀರ್ಷಿಕೆ, ಮಿತಿಗಳು ಮತ್ತು ವೇಳಾಪಟ್ಟಿಯನ್ನು ಪರಿಶೀಲಿಸಿ.';
 
   @override
   String get quizSettingsNavigation =>
-      'title, optional description, timing and attempt settings, feedback and shuffle choices, and continue or cancel';
+      'ಶೀರ್ಷಿಕೆ, ಐಚ್ಛಿಕ ವಿವರಣೆ, ಸಮಯ ಮತ್ತು ಪ್ರಯತ್ನ ಸೆಟ್ಟಿಂಗ್‌ಗಳು, ಪ್ರತಿಕ್ರಿಯೆ ಮತ್ತು ಕಲಸುವ ಆಯ್ಕೆಗಳು, ಮತ್ತು ಮುಂದುವರಿಸಿ ಅಥವಾ ರದ್ದುಮಾಡಿ';
 
   @override
   String get quizChangeSettingsScreen =>
-      'Change quiz title and optional settings. Saving does not publish.';
+      'ಕ್ವಿಜ್ ಶೀರ್ಷಿಕೆ ಮತ್ತು ಐಚ್ಛಿಕ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಬದಲಾಯಿಸಿ. ಉಳಿಸಿದರೆ ಪ್ರಕಟವಾಗುವುದಿಲ್ಲ.';
 
   @override
   String get quizCreatePracticeScreen =>
-      'Create untimed ungraded practice. Unlimited retries and immediate feedback.';
+      'ಸಮಯ ಮಿತಿ ಇಲ್ಲದ, ಅಂಕರಹಿತ ಅಭ್ಯಾಸ ರಚಿಸಿ. ಅಮಿತ ಮರುಪ್ರಯತ್ನಗಳು ಮತ್ತು ತಕ್ಷಣದ ಪ್ರತಿಕ್ರಿಯೆ.';
 
   @override
-  String get quizContinueToQuestions => 'Continue to questions';
+  String get quizContinueToQuestions => 'ಪ್ರಶ್ನೆಗಳಿಗೆ ಮುಂದುವರಿಯಿರಿ';
 
   @override
-  String get quizSaveSettingsReturn => 'Save settings and return to review';
+  String get quizSaveSettingsReturn =>
+      'ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಉಳಿಸಿ ಪರಿಶೀಲನೆಗೆ ಹಿಂತಿರುಗಿ';
 
   @override
-  String get quizQuizTitle => 'Quiz title';
+  String get quizQuizTitle => 'ಕ್ವಿಜ್ ಶೀರ್ಷಿಕೆ';
 
   @override
   String get quizHideOptionalSettings =>
-      'Hide optional settings: description, attempts, timing, feedback and shuffle';
+      'ಐಚ್ಛಿಕ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಮರೆಮಾಡಿ: ವಿವರಣೆ, ಪ್ರಯತ್ನಗಳು, ಸಮಯ, ಪ್ರತಿಕ್ರಿಯೆ ಮತ್ತು ಕಲಸುವಿಕೆ';
 
   @override
   String get quizShowOptionalSettings =>
-      'Show optional settings: description, attempts, timing, feedback and shuffle';
+      'ಐಚ್ಛಿಕ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ತೋರಿಸಿ: ವಿವರಣೆ, ಪ್ರಯತ್ನಗಳು, ಸಮಯ, ಪ್ರತಿಕ್ರಿಯೆ ಮತ್ತು ಕಲಸುವಿಕೆ';
 
   @override
-  String get quizOptionalDescription => 'Optional quiz description';
+  String get quizOptionalDescription => 'ಐಚ್ಛಿಕ ಕ್ವಿಜ್ ವಿವರಣೆ';
 
   @override
   String quizSetOrClear(String item) {
-    return '$item. Press OK to set it. Use left to clear it';
+    return '$item. ಹೊಂದಿಸಲು ಓಕೆ ಒತ್ತಿ. ತೆರವುಗೊಳಿಸಲು ಎಡ ಬಳಸಿ';
   }
 
   @override
   String quizShuffleQuestionsToggle(String state) {
-    return 'Shuffle questions $state. Press OK or left or right to toggle';
+    return 'ಪ್ರಶ್ನೆಗಳನ್ನು ಕಲಸಿ $state. ಬದಲಾಯಿಸಲು ಓಕೆ ಅಥವಾ ಎಡ ಅಥವಾ ಬಲ ಒತ್ತಿ';
   }
 
   @override
   String quizShuffleOptionsToggle(String state) {
-    return 'Shuffle answer options $state. Press OK or left or right to toggle';
+    return 'ಉತ್ತರ ಆಯ್ಕೆಗಳನ್ನು ಕಲಸಿ $state. ಬದಲಾಯಿಸಲು ಓಕೆ ಅಥವಾ ಎಡ ಅಥವಾ ಬಲ ಒತ್ತಿ';
   }
 
   @override
-  String get quizCancelQuizCreation => 'Cancel quiz creation';
+  String get quizCancelQuizCreation => 'ಕ್ವಿಜ್ ರಚನೆ ರದ್ದುಮಾಡಿ';
 
   @override
   String quizFeedbackPolicyTarget(String policy) {
-    return 'Feedback policy $policy. Left or right changes it';
+    return 'ಪ್ರತಿಕ್ರಿಯೆ ನೀತಿ $policy. ಎಡ ಅಥವಾ ಬಲ ಅದನ್ನು ಬದಲಾಯಿಸುತ್ತದೆ';
   }
 
   @override
-  String get quizSaveDraftContinue => 'Save draft and continue to questions';
+  String get quizSaveDraftContinue => 'ಕರಡು ಉಳಿಸಿ ಪ್ರಶ್ನೆಗಳಿಗೆ ಮುಂದುವರಿಯಿರಿ';
 
   @override
-  String get sessionScreenTeacherClass => 'Teacher class';
+  String get sessionScreenTeacherClass => 'ಶಿಕ್ಷಕರ ತರಗತಿ';
 
   @override
-  String get sessionScreenClass => 'Class';
+  String get sessionScreenClass => 'ತರಗತಿ';
 
   @override
-  String get sessionDefaultTitle => 'Session';
+  String get sessionDefaultTitle => 'ಸೆಷನ್';
 
   @override
-  String get sessionJoining => 'Joining the class. Please wait.';
+  String get sessionJoining => 'ತರಗತಿಗೆ ಸೇರಲಾಗುತ್ತಿದೆ. ದಯವಿಟ್ಟು ಕಾಯಿರಿ.';
 
   @override
-  String get sessionConnecting => 'Connecting to the class.';
+  String get sessionConnecting => 'ತರಗತಿಗೆ ಸಂಪರ್ಕಿಸಲಾಗುತ್ತಿದೆ.';
 
   @override
   String get sessionJoinFailed =>
-      'The class could not be joined. Press 0 to leave, then try again.';
+      'ತರಗತಿಗೆ ಸೇರಲು ಆಗಲಿಲ್ಲ. ಹೊರಹೋಗಲು 0 ಒತ್ತಿ, ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
   String get sessionLeaveKeyHint =>
-      'Press 0 to leave the class. It asks to confirm.';
+      'ತರಗತಿಯಿಂದ ಹೊರಹೋಗಲು 0 ಒತ್ತಿ. ಅದು ಖಚಿತಪಡಿಸಲು ಕೇಳುತ್ತದೆ.';
 
   @override
-  String get sessionKeyLine => '*: Help and last message. #: Stop speech.';
+  String get sessionKeyLine => '*: ಸಹಾಯ ಮತ್ತು ಕೊನೆಯ ಸಂದೇಶ. #: ಮಾತು ನಿಲ್ಲಿಸಿ.';
 
   @override
   String sessionJoinedBrief(String status) {
-    return 'In class. $status Press star for help.';
+    return 'ತರಗತಿಯಲ್ಲಿದ್ದೀರಿ. $status ಸಹಾಯಕ್ಕಾಗಿ ಸ್ಟಾರ್ ಒತ್ತಿ.';
   }
 
   @override
   String sessionJoinedDetailed(String status, String keys) {
-    return 'You are in the class. $status $keys Use up and down to move between controls and OK to select. Press star for where you are and help. Press hash to stop speech.';
+    return 'ನೀವು ತರಗತಿಯಲ್ಲಿದ್ದೀರಿ. $status $keys ನಿಯಂತ್ರಣಗಳ ನಡುವೆ ಚಲಿಸಲು ಮೇಲೆ ಮತ್ತು ಕೆಳಗೆ ಬಳಸಿ, ಆರಿಸಲು ಓಕೆ ಒತ್ತಿ. ನೀವು ಎಲ್ಲಿದ್ದೀರಿ ಮತ್ತು ಸಹಾಯಕ್ಕಾಗಿ ಸ್ಟಾರ್ ಒತ್ತಿ. ಮಾತು ನಿಲ್ಲಿಸಲು ಹ್ಯಾಶ್ ಒತ್ತಿ.';
   }
 
   @override
   String sessionPressKeyFor(String key, String action) {
-    return 'Press $key for $action.';
+    return '$action ಗಾಗಿ $key ಒತ್ತಿ.';
   }
 
   @override
-  String get sessionMicWaitingLabel => 'Microphone waiting for confirmation';
+  String get sessionMicWaitingLabel => 'ಮೈಕ್ರೊಫೋನ್ ಖಚಿತತೆಗಾಗಿ ಕಾಯುತ್ತಿದೆ';
 
   @override
-  String get sessionUnmuteMicrophone => 'Unmute microphone';
+  String get sessionUnmuteMicrophone => 'ಮೈಕ್ರೊಫೋನ್ ಅನ್‌ಮ್ಯೂಟ್ ಮಾಡಿ';
 
   @override
-  String get sessionMuteMicrophone => 'Mute microphone';
+  String get sessionMuteMicrophone => 'ಮೈಕ್ರೊಫೋನ್ ಮ್ಯೂಟ್ ಮಾಡಿ';
 
   @override
-  String get sessionMuteButtonWaiting => '1: Waiting';
+  String get sessionMuteButtonWaiting => '1: ಕಾಯುತ್ತಿದೆ';
 
   @override
-  String get sessionMuteButtonUnmute => '1: Unmute';
+  String get sessionMuteButtonUnmute => '1: ಅನ್‌ಮ್ಯೂಟ್';
 
   @override
-  String get sessionMuteButtonMute => '1: Mute';
+  String get sessionMuteButtonMute => '1: ಮ್ಯೂಟ್';
 
   @override
-  String get sessionHandWaitingLabel => 'Hand waiting for confirmation';
+  String get sessionHandWaitingLabel => 'ಕೈ ಖಚಿತತೆಗಾಗಿ ಕಾಯುತ್ತಿದೆ';
 
   @override
-  String get sessionLowerHand => 'Lower hand';
+  String get sessionLowerHand => 'ಕೈ ಇಳಿಸಿ';
 
   @override
-  String get sessionRaiseHand => 'Raise hand';
+  String get sessionRaiseHand => 'ಕೈ ಎತ್ತಿ';
 
   @override
-  String get sessionHandButtonWaiting => '2: Waiting';
+  String get sessionHandButtonWaiting => '2: ಕಾಯುತ್ತಿದೆ';
 
   @override
-  String get sessionHandButtonLower => '2: Lower hand';
+  String get sessionHandButtonLower => '2: ಕೈ ಇಳಿಸಿ';
 
   @override
-  String get sessionHandButtonRaise => '2: Raise hand';
+  String get sessionHandButtonRaise => '2: ಕೈ ಎತ್ತಿ';
 
   @override
-  String get sessionStatusLabel => 'Hear class status';
+  String get sessionStatusLabel => 'ತರಗತಿಯ ಸ್ಥಿತಿ ಕೇಳಿ';
 
   @override
-  String get sessionStatusButton => '3: Class status';
+  String get sessionStatusButton => '3: ತರಗತಿಯ ಸ್ಥಿತಿ';
 
   @override
   String sessionChatLabel(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Chat. $count messages',
-      one: 'Chat. 1 message',
-      zero: 'Chat. No messages yet',
+      other: 'ಚಾಟ್. $count ಸಂದೇಶಗಳು',
+      one: 'ಚಾಟ್. 1 ಸಂದೇಶ',
+      zero: 'ಚಾಟ್. ಇನ್ನೂ ಸಂದೇಶಗಳಿಲ್ಲ',
     );
     return '$_temp0';
   }
 
   @override
-  String get sessionChatButton => '4: Chat';
+  String get sessionChatButton => '4: ಚಾಟ್';
 
   @override
-  String get sessionRecordingPlayerNone => 'Lesson recording. None chosen yet';
+  String get sessionRecordingPlayerNone =>
+      'ಪಾಠದ ರೆಕಾರ್ಡಿಂಗ್. ಇನ್ನೂ ಯಾವುದನ್ನೂ ಆರಿಸಿಲ್ಲ';
 
   @override
   String sessionRecordingPlayerPlaying(String title) {
-    return 'Lesson recording. $title, playing';
+    return 'ಪಾಠದ ರೆಕಾರ್ಡಿಂಗ್. $title, ಪ್ಲೇ ಆಗುತ್ತಿದೆ';
   }
 
   @override
   String sessionRecordingPlayerPaused(String title) {
-    return 'Lesson recording. $title, paused';
+    return 'ಪಾಠದ ರೆಕಾರ್ಡಿಂಗ್. $title, ವಿರಾಮದಲ್ಲಿದೆ';
   }
 
   @override
   String get sessionRecordingStudentNone =>
-      'Class recording. Nothing playing. Only the teacher controls it';
+      'ತರಗತಿಯ ರೆಕಾರ್ಡಿಂಗ್. ಏನೂ ಪ್ಲೇ ಆಗುತ್ತಿಲ್ಲ. ಶಿಕ್ಷಕರು ಮಾತ್ರ ಇದನ್ನು ನಿಯಂತ್ರಿಸುತ್ತಾರೆ';
 
   @override
   String sessionRecordingStudentPlaying(String title) {
-    return 'Class recording, $title, playing by the teacher. Hear where it is';
+    return 'ತರಗತಿಯ ರೆಕಾರ್ಡಿಂಗ್, $title, ಶಿಕ್ಷಕರು ಪ್ಲೇ ಮಾಡುತ್ತಿದ್ದಾರೆ. ಅದು ಎಲ್ಲಿದೆ ಎಂದು ಕೇಳಿ';
   }
 
   @override
   String sessionRecordingStudentPaused(String title) {
-    return 'Class recording, $title, paused by the teacher. Hear where it is';
+    return 'ತರಗತಿಯ ರೆಕಾರ್ಡಿಂಗ್, $title, ಶಿಕ್ಷಕರು ವಿರಾಮಗೊಳಿಸಿದ್ದಾರೆ. ಅದು ಎಲ್ಲಿದೆ ಎಂದು ಕೇಳಿ';
   }
 
   @override
-  String get sessionRecordingStatusButton => '5: Recording status';
+  String get sessionRecordingStatusButton => '5: ರೆಕಾರ್ಡಿಂಗ್ ಸ್ಥಿತಿ';
 
   @override
   String get sessionStudentRecordingNone =>
-      'No class recording is playing. Only the teacher can play one.';
+      'ಯಾವುದೇ ತರಗತಿಯ ರೆಕಾರ್ಡಿಂಗ್ ಪ್ಲೇ ಆಗುತ್ತಿಲ್ಲ. ಶಿಕ್ಷಕರು ಮಾತ್ರ ಪ್ಲೇ ಮಾಡಬಹುದು.';
 
   @override
   String sessionStudentRecordingPlaying(String title, String position) {
-    return '$title, playing, at $position. Only the teacher can play, pause or move the class recording.';
+    return '$title, ಪ್ಲೇ ಆಗುತ್ತಿದೆ, $position ನಲ್ಲಿದೆ. ತರಗತಿಯ ರೆಕಾರ್ಡಿಂಗ್ ಅನ್ನು ಶಿಕ್ಷಕರು ಮಾತ್ರ ಪ್ಲೇ, ವಿರಾಮ ಅಥವಾ ಮುಂದೆ-ಹಿಂದೆ ಮಾಡಬಹುದು.';
   }
 
   @override
   String sessionStudentRecordingPaused(String title, String position) {
-    return '$title, paused, at $position. Only the teacher can play, pause or move the class recording.';
+    return '$title, ವಿರಾಮದಲ್ಲಿದೆ, $position ನಲ್ಲಿದೆ. ತರಗತಿಯ ರೆಕಾರ್ಡಿಂಗ್ ಅನ್ನು ಶಿಕ್ಷಕರು ಮಾತ್ರ ಪ್ಲೇ, ವಿರಾಮ ಅಥವಾ ಮುಂದೆ-ಹಿಂದೆ ಮಾಡಬಹುದು.';
   }
 
   @override
-  String get sessionRecordingPlayerButton => '5: Lesson recording';
+  String get sessionRecordingPlayerButton => '5: ಪಾಠದ ರೆಕಾರ್ಡಿಂಗ್';
 
   @override
   String get sessionOpeningPlayerToChoose =>
-      'No recording is selected yet. Press 1 to choose one.';
+      'ಇನ್ನೂ ಯಾವುದೇ ರೆಕಾರ್ಡಿಂಗ್ ಆರಿಸಿಲ್ಲ. ಒಂದನ್ನು ಆರಿಸಲು 1 ಒತ್ತಿ.';
 
   @override
-  String get sessionCheckLabel => 'Answer the teacher\'s question';
+  String get sessionCheckLabel => 'ಶಿಕ್ಷಕರ ಪ್ರಶ್ನೆಗೆ ಉತ್ತರಿಸಿ';
 
   @override
-  String get sessionCheckButton => '3: Answer the question';
+  String get sessionCheckButton => '3: ಪ್ರಶ್ನೆಗೆ ಉತ್ತರಿಸಿ';
 
   @override
   String sessionHandsLabel(String waiting) {
-    return 'Raised hands. $waiting';
+    return 'ಎತ್ತಿದ ಕೈಗಳು. $waiting';
   }
 
   @override
-  String get sessionHandsButton => '2: Raised hands';
+  String get sessionHandsButton => '2: ಎತ್ತಿದ ಕೈಗಳು';
 
   @override
   String sessionHandsButtonCount(int count) {
-    return '2: Raised hands ($count)';
+    return '2: ಎತ್ತಿದ ಕೈಗಳು ($count)';
   }
 
   @override
   String get sessionTeacherCheckLabel =>
-      'Classroom check. Start a private check, close it and hear responses';
+      'ತರಗತಿ ಪರಿಶೀಲನೆ. ಖಾಸಗಿ ಪರಿಶೀಲನೆ ಪ್ರಾರಂಭಿಸಿ, ಅದನ್ನು ಮುಚ್ಚಿ ಮತ್ತು ಉತ್ತರಗಳನ್ನು ಕೇಳಿ';
 
   @override
   String sessionParticipantsLabel(String people) {
-    return 'Participants. $people Mute or remove someone, or hear a summary';
+    return 'ಭಾಗವಹಿಸುವವರು. $people ಯಾರನ್ನಾದರೂ ಮ್ಯೂಟ್ ಮಾಡಿ ಅಥವಾ ತೆಗೆದುಹಾಕಿ, ಅಥವಾ ಸಾರಾಂಶ ಕೇಳಿ';
   }
 
   @override
-  String get sessionParticipantsButton => '7: Participants';
+  String get sessionParticipantsButton => '7: ಭಾಗವಹಿಸುವವರು';
 
   @override
   String get sessionToolsLabel =>
-      'Teacher tools. Add time or end the class for everyone';
+      'ಶಿಕ್ಷಕರ ಉಪಕರಣಗಳು. ಸಮಯ ಸೇರಿಸಿ ಅಥವಾ ಎಲ್ಲರಿಗೂ ತರಗತಿ ಮುಗಿಸಿ';
 
   @override
-  String get sessionToolsButton => '9: Teacher tools';
+  String get sessionToolsButton => '9: ಶಿಕ್ಷಕರ ಉಪಕರಣಗಳು';
 
   @override
   String get sessionVoiceStartLabel =>
-      'Listen for one voice command, up to 12 seconds. Starts only when you press OK';
+      'ಒಂದು ಧ್ವನಿ ಆದೇಶಕ್ಕಾಗಿ 12 ಸೆಕೆಂಡುಗಳವರೆಗೆ ಆಲಿಸಿ. ನೀವು ಓಕೆ ಒತ್ತಿದಾಗ ಮಾತ್ರ ಪ್ರಾರಂಭವಾಗುತ್ತದೆ';
 
   @override
-  String get sessionVoiceStopLabel => 'Stop listening for a voice command';
+  String get sessionVoiceStopLabel => 'ಧ್ವನಿ ಆದೇಶಕ್ಕಾಗಿ ಆಲಿಸುವುದನ್ನು ನಿಲ್ಲಿಸಿ';
 
   @override
-  String get sessionVoiceStartButton => 'Listen for command';
+  String get sessionVoiceStartButton => 'ಆದೇಶಕ್ಕಾಗಿ ಆಲಿಸಿ';
 
   @override
-  String get sessionVoiceStopButton => 'Stop listening';
+  String get sessionVoiceStopButton => 'ಆಲಿಸುವುದನ್ನು ನಿಲ್ಲಿಸಿ';
 
   @override
-  String get sessionUpdatesLabel => 'Read class updates';
+  String get sessionUpdatesLabel => 'ತರಗತಿಯ ಅಪ್‌ಡೇಟ್‌ಗಳನ್ನು ಓದಿ';
 
   @override
-  String get sessionUpdatesButton => 'Class updates';
+  String get sessionUpdatesButton => 'ತರಗತಿಯ ಅಪ್‌ಡೇಟ್‌ಗಳು';
 
   @override
-  String get sessionRetryLabel => 'Retry class connection';
+  String get sessionRetryLabel => 'ತರಗತಿಯ ಸಂಪರ್ಕ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ';
 
   @override
-  String get sessionRetryButton => 'Retry connection';
+  String get sessionRetryButton => 'ಸಂಪರ್ಕ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ';
 
   @override
-  String get sessionLeaveLabel => 'Leave class';
+  String get sessionLeaveLabel => 'ತರಗತಿಯಿಂದ ಹೊರಹೋಗಿ';
 
   @override
-  String get sessionLeaveButton => '0: Leave class';
+  String get sessionLeaveButton => '0: ತರಗತಿಯಿಂದ ಹೊರಹೋಗಿ';
 
   @override
-  String get sessionMicWaiting => 'Microphone waiting for confirmation.';
+  String get sessionMicWaiting => 'ಮೈಕ್ರೊಫೋನ್ ಖಚಿತತೆಗಾಗಿ ಕಾಯುತ್ತಿದೆ.';
 
   @override
-  String get sessionMicMuted => 'Muted.';
+  String get sessionMicMuted => 'ಮ್ಯೂಟ್ ಆಗಿದೆ.';
 
   @override
-  String get sessionMicUnmutedHeard => 'Unmuted. Others can hear you.';
+  String get sessionMicUnmutedHeard =>
+      'ಅನ್‌ಮ್ಯೂಟ್ ಆಗಿದೆ. ಇತರರು ನಿಮ್ಮನ್ನು ಕೇಳಬಹುದು.';
 
   @override
-  String get sessionHandWaiting => 'Hand waiting for confirmation.';
+  String get sessionHandWaiting => 'ಕೈ ಖಚಿತತೆಗಾಗಿ ಕಾಯುತ್ತಿದೆ.';
 
   @override
-  String get sessionHandRaisedState => 'Hand raised.';
+  String get sessionHandRaisedState => 'ಕೈ ಎತ್ತಲಾಗಿದೆ.';
 
   @override
-  String get sessionHandDown => 'Hand down.';
+  String get sessionHandDown => 'ಕೈ ಕೆಳಗಿದೆ.';
 
   @override
   String sessionHandsWaiting(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count hands waiting.',
-      one: '1 hand waiting.',
-      zero: 'No hands waiting.',
+      other: '$count ಕೈಗಳು ಕಾಯುತ್ತಿವೆ.',
+      one: '1 ಕೈ ಕಾಯುತ್ತಿದೆ.',
+      zero: 'ಯಾವುದೇ ಕೈ ಕಾಯುತ್ತಿಲ್ಲ.',
     );
     return '$_temp0';
   }
@@ -3391,27 +3408,27 @@ class AppLocalizationsKn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count people in the class.',
-      one: '1 person in the class.',
+      other: 'ತರಗತಿಯಲ್ಲಿ $count ಜನರು ಇದ್ದಾರೆ.',
+      one: 'ತರಗತಿಯಲ್ಲಿ 1 ವ್ಯಕ್ತಿ ಇದ್ದಾರೆ.',
     );
     return '$_temp0';
   }
 
   @override
-  String get sessionNoRecordingSelected => 'No recording selected.';
+  String get sessionNoRecordingSelected => 'ಯಾವುದೇ ರೆಕಾರ್ಡಿಂಗ್ ಆರಿಸಿಲ್ಲ.';
 
   @override
   String sessionRecordingStatePlaying(String title) {
-    return 'Recording playing: $title.';
+    return 'ರೆಕಾರ್ಡಿಂಗ್ ಪ್ಲೇ ಆಗುತ್ತಿದೆ: $title.';
   }
 
   @override
   String sessionRecordingStatePaused(String title) {
-    return 'Recording paused: $title.';
+    return 'ರೆಕಾರ್ಡಿಂಗ್ ವಿರಾಮದಲ್ಲಿದೆ: $title.';
   }
 
   @override
-  String get sessionCheckOpen => 'Classroom check open.';
+  String get sessionCheckOpen => 'ತರಗತಿ ಪರಿಶೀಲನೆ ತೆರೆದಿದೆ.';
 
   @override
   String sessionConnectionLabel(String label) {
@@ -3423,249 +3440,251 @@ class AppLocalizationsKn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count chat messages.',
-      one: '1 chat message.',
+      other: '$count ಚಾಟ್ ಸಂದೇಶಗಳು.',
+      one: '1 ಚಾಟ್ ಸಂದೇಶ.',
     );
     return '$_temp0';
   }
 
   @override
-  String get sessionRecordingFallback => 'Class recording';
+  String get sessionRecordingFallback => 'ತರಗತಿಯ ರೆಕಾರ್ಡಿಂಗ್';
 
   @override
-  String get sessionRecordingFallbackLower => 'class recording';
+  String get sessionRecordingFallbackLower => 'ತರಗತಿಯ ರೆಕಾರ್ಡಿಂಗ್';
 
   @override
   String sessionUserFallback(String id) {
-    return 'User $id';
+    return 'ಬಳಕೆದಾರ $id';
   }
 
   @override
   String sessionConnectionRestored(String message) {
-    return 'Connection restored. $message';
+    return 'ಸಂಪರ್ಕ ಮರಳಿ ಬಂದಿದೆ. $message';
   }
 
   @override
   String sessionConnectionLost(String message) {
-    return 'Connection lost. $message';
+    return 'ಸಂಪರ್ಕ ಕಡಿತಗೊಂಡಿದೆ. $message';
   }
 
   @override
   String sessionCouldNotConnect(String message) {
-    return 'Could not connect. $message';
+    return 'ಸಂಪರ್ಕಿಸಲು ಆಗಲಿಲ್ಲ. $message';
   }
 
   @override
-  String get sessionMicDialogTitle => 'Microphone access';
+  String get sessionMicDialogTitle => 'ಮೈಕ್ರೊಫೋನ್ ಪ್ರವೇಶ';
 
   @override
   String get sessionMicDialogMessage =>
-      'In this class SEEDS uses the microphone for live audio and explicitly activated voice commands. You can stay without microphone access, but others will not hear you. Separate private-note recording requires its own explicit start outside live classes.';
+      'ಈ ತರಗತಿಯಲ್ಲಿ SEEDS ಲೈವ್ ಆಡಿಯೋಗಾಗಿ ಮತ್ತು ನೀವೇ ಸ್ಪಷ್ಟವಾಗಿ ಆನ್ ಮಾಡಿದ ಧ್ವನಿ ಆದೇಶಗಳಿಗಾಗಿ ಮೈಕ್ರೊಫೋನ್ ಬಳಸುತ್ತದೆ. ಮೈಕ್ರೊಫೋನ್ ಪ್ರವೇಶ ಇಲ್ಲದೆಯೂ ನೀವು ಇರಬಹುದು, ಆದರೆ ಇತರರು ನಿಮ್ಮನ್ನು ಕೇಳಲು ಆಗುವುದಿಲ್ಲ. ಪ್ರತ್ಯೇಕ ಖಾಸಗಿ ಟಿಪ್ಪಣಿ ರೆಕಾರ್ಡಿಂಗ್‌ಗೆ ಲೈವ್ ತರಗತಿಗಳ ಹೊರಗೆ ತನ್ನದೇ ಆದ ಸ್ಪಷ್ಟ ಪ್ರಾರಂಭ ಬೇಕು.';
 
   @override
-  String get sessionMicDialogConfirm => 'Continue to class';
+  String get sessionMicDialogConfirm => 'ತರಗತಿಗೆ ಮುಂದುವರಿಯಿರಿ';
 
   @override
   String get sessionMicSkipped =>
-      'Microphone access was skipped. You joined the class muted.';
+      'ಮೈಕ್ರೊಫೋನ್ ಪ್ರವೇಶ ಬಿಟ್ಟುಬಿಡಲಾಗಿದೆ. ನೀವು ಮ್ಯೂಟ್ ಆಗಿ ತರಗತಿಗೆ ಸೇರಿದ್ದೀರಿ.';
 
   @override
   String get sessionMicUnavailable =>
-      'Microphone access is unavailable. You joined the class muted.';
+      'ಮೈಕ್ರೊಫೋನ್ ಪ್ರವೇಶ ಲಭ್ಯವಿಲ್ಲ. ನೀವು ಮ್ಯೂಟ್ ಆಗಿ ತರಗತಿಗೆ ಸೇರಿದ್ದೀರಿ.';
 
   @override
-  String get sessionWaitingMic => 'Waiting for microphone confirmation.';
+  String get sessionWaitingMic => 'ಮೈಕ್ರೊಫೋನ್ ಖಚಿತತೆಗಾಗಿ ಕಾಯಲಾಗುತ್ತಿದೆ.';
 
   @override
-  String get sessionMuted => 'Muted';
+  String get sessionMuted => 'ಮ್ಯೂಟ್ ಆಗಿದೆ';
 
   @override
-  String get sessionUnmuted => 'Unmuted';
+  String get sessionUnmuted => 'ಅನ್‌ಮ್ಯೂಟ್ ಆಗಿದೆ';
 
   @override
   String get sessionMutedLocallyOnly =>
-      'Microphone muted on this phone. The class confirmation was not received.';
+      'ಈ ಫೋನ್‌ನಲ್ಲಿ ಮೈಕ್ರೊಫೋನ್ ಮ್ಯೂಟ್ ಆಗಿದೆ. ತರಗತಿಯಿಂದ ಖಚಿತತೆ ಬಂದಿಲ್ಲ.';
 
   @override
-  String get sessionMutedByTeacher => 'The teacher muted your microphone.';
+  String get sessionMutedByTeacher =>
+      'ಶಿಕ್ಷಕರು ನಿಮ್ಮ ಮೈಕ್ರೊಫೋನ್ ಮ್ಯೂಟ್ ಮಾಡಿದ್ದಾರೆ.';
 
   @override
   String get sessionMicClassClosed =>
-      'The class has closed. No microphone action was sent.';
+      'ತರಗತಿ ಮುಚ್ಚಿದೆ. ಯಾವುದೇ ಮೈಕ್ರೊಫೋನ್ ಕ್ರಿಯೆ ಕಳುಹಿಸಲಾಗಿಲ್ಲ.';
 
   @override
   String get sessionMicUnavailableRejoin =>
-      'Microphone access is unavailable. Check microphone permission and rejoin the class before trying to speak.';
+      'ಮೈಕ್ರೊಫೋನ್ ಪ್ರವೇಶ ಲಭ್ಯವಿಲ್ಲ. ಮಾತನಾಡಲು ಪ್ರಯತ್ನಿಸುವ ಮೊದಲು ಮೈಕ್ರೊಫೋನ್ ಅನುಮತಿ ಪರಿಶೀಲಿಸಿ ಮತ್ತು ತರಗತಿಗೆ ಮತ್ತೆ ಸೇರಿ.';
 
   @override
   String get sessionMicClosedBeforeConfirm =>
-      'The class closed before microphone confirmation.';
+      'ಮೈಕ್ರೊಫೋನ್ ಖಚಿತತೆಗೆ ಮೊದಲೇ ತರಗತಿ ಮುಚ್ಚಿತು.';
 
   @override
   String get sessionMicNoLongerAvailable =>
-      'Microphone access is no longer available. Rejoin the class before trying to speak.';
+      'ಮೈಕ್ರೊಫೋನ್ ಪ್ರವೇಶ ಈಗ ಲಭ್ಯವಿಲ್ಲ. ಮಾತನಾಡಲು ಪ್ರಯತ್ನಿಸುವ ಮೊದಲು ತರಗತಿಗೆ ಮತ್ತೆ ಸೇರಿ.';
 
   @override
   String get sessionMicStayedMuted =>
-      'Your microphone stayed muted because the class mute state changed. Select Unmute when you are ready to speak.';
+      'ತರಗತಿಯ ಮ್ಯೂಟ್ ಸ್ಥಿತಿ ಬದಲಾದ ಕಾರಣ ನಿಮ್ಮ ಮೈಕ್ರೊಫೋನ್ ಮ್ಯೂಟ್ ಆಗಿಯೇ ಉಳಿದಿದೆ. ಮಾತನಾಡಲು ಸಿದ್ಧರಾದಾಗ ಅನ್‌ಮ್ಯೂಟ್ ಆರಿಸಿ.';
 
   @override
-  String get sessionWaitingHand => 'Waiting for hand status confirmation.';
+  String get sessionWaitingHand => 'ಕೈ ಸ್ಥಿತಿಯ ಖಚಿತತೆಗಾಗಿ ಕಾಯಲಾಗುತ್ತಿದೆ.';
 
   @override
-  String get sessionHandRaised => 'Hand raised';
+  String get sessionHandRaised => 'ಕೈ ಎತ್ತಲಾಗಿದೆ';
 
   @override
-  String get sessionHandLowered => 'Hand lowered';
+  String get sessionHandLowered => 'ಕೈ ಇಳಿಸಲಾಗಿದೆ';
 
   @override
   String get sessionHandNotConfirmed =>
-      'Your hand change was not confirmed. Press 2 to try again.';
+      'ನಿಮ್ಮ ಕೈ ಬದಲಾವಣೆ ಖಚಿತವಾಗಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಲು 2 ಒತ್ತಿ.';
 
   @override
   String sessionRaisedHandBy(String name) {
-    return '$name raised hand. Press 2 for raised hands.';
+    return '$name ಕೈ ಎತ್ತಿದ್ದಾರೆ. ಎತ್ತಿದ ಕೈಗಳಿಗಾಗಿ 2 ಒತ್ತಿ.';
   }
 
   @override
   String get sessionRaisedHandUnknown =>
-      'A participant raised hand. Press 2 for raised hands.';
+      'ಒಬ್ಬ ಭಾಗವಹಿಸುವವರು ಕೈ ಎತ್ತಿದ್ದಾರೆ. ಕೈ ಎತ್ತಿದವರಿಗಾಗಿ 2 ಒತ್ತಿ.';
 
   @override
-  String get sessionParticipantJoined => 'A participant joined.';
+  String get sessionParticipantJoined => 'ಒಬ್ಬ ಭಾಗವಹಿಸುವವರು ಸೇರಿದ್ದಾರೆ.';
 
   @override
-  String get sessionParticipantsJoinedGroup => 'Participants joined';
+  String get sessionParticipantsJoinedGroup => 'ಸೇರಿದ ಭಾಗವಹಿಸುವವರು';
 
   @override
-  String get sessionParticipantLeft => 'A participant left.';
+  String get sessionParticipantLeft => 'ಒಬ್ಬ ಭಾಗವಹಿಸುವವರು ಹೊರಟಿದ್ದಾರೆ.';
 
   @override
-  String get sessionParticipantsLeftGroup => 'Participants left';
+  String get sessionParticipantsLeftGroup => 'ಹೊರಟ ಭಾಗವಹಿಸುವವರು';
 
   @override
-  String get sessionParticipantFallback => 'Participant';
+  String get sessionParticipantFallback => 'ಭಾಗವಹಿಸುವವರು';
 
   @override
-  String get sessionThisParticipant => 'This participant';
+  String get sessionThisParticipant => 'ಈ ಭಾಗವಹಿಸುವವರು';
 
   @override
   String sessionParticipantSelf(String name) {
-    return '$name, you';
+    return '$name, ನೀವು';
   }
 
   @override
-  String get sessionRoleTeacher => 'teacher';
+  String get sessionRoleTeacher => 'ಶಿಕ್ಷಕರು';
 
   @override
-  String get sessionRoleStudent => 'student';
+  String get sessionRoleStudent => 'ವಿದ್ಯಾರ್ಥಿ';
 
   @override
-  String get sessionStateHandRaised => 'hand raised';
+  String get sessionStateHandRaised => 'ಕೈ ಎತ್ತಿದ್ದಾರೆ';
 
   @override
-  String get sessionStateMuted => 'muted';
+  String get sessionStateMuted => 'ಮ್ಯೂಟ್ ಆಗಿದೆ';
 
   @override
-  String get sessionStateUnmuted => 'unmuted';
+  String get sessionStateUnmuted => 'ಅನ್‌ಮ್ಯೂಟ್ ಆಗಿದೆ';
 
   @override
-  String get sessionStateSpeaking => 'speaking';
+  String get sessionStateSpeaking => 'ಮಾತನಾಡುತ್ತಿದ್ದಾರೆ';
 
   @override
   String sessionAlreadyMuted(String name) {
-    return '$name is muted. Only $name can unmute.';
+    return '$name ಮ್ಯೂಟ್ ಆಗಿದ್ದಾರೆ. $name ಮಾತ್ರ ಅನ್‌ಮ್ಯೂಟ್ ಮಾಡಬಹುದು.';
   }
 
   @override
   String sessionParticipantMuted(String name) {
-    return '$name muted.';
+    return '$name ಮ್ಯೂಟ್ ಆಗಿದ್ದಾರೆ.';
   }
 
   @override
   String sessionRemoveTitle(String name) {
-    return 'Remove $name?';
+    return '$name ಅವರನ್ನು ತೆಗೆದುಹಾಕಬೇಕೇ?';
   }
 
   @override
   String sessionRemoveMessage(String name) {
-    return '$name will be removed from this class and returned to their dashboard. They can be invited again later.';
+    return '$name ಅವರನ್ನು ಈ ತರಗತಿಯಿಂದ ತೆಗೆದುಹಾಕಲಾಗುತ್ತದೆ ಮತ್ತು ಅವರ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್‌ಗೆ ಕಳುಹಿಸಲಾಗುತ್ತದೆ. ನಂತರ ಅವರನ್ನು ಮತ್ತೆ ಆಹ್ವಾನಿಸಬಹುದು.';
   }
 
   @override
   String sessionKeep(String name) {
-    return 'Keep $name';
+    return '$name ಅವರನ್ನು ಉಳಿಸಿ';
   }
 
   @override
   String sessionRemove(String name) {
-    return 'Remove $name';
+    return '$name ಅವರನ್ನು ತೆಗೆದುಹಾಕಿ';
   }
 
   @override
   String sessionRemoved(String name) {
-    return '$name removed from the class.';
+    return '$name ಅವರನ್ನು ತರಗತಿಯಿಂದ ತೆಗೆದುಹಾಕಲಾಗಿದೆ.';
   }
 
   @override
   String chatMessageFrom(String sender, String text) {
-    return 'Message from $sender: $text';
+    return '$sender ಅವರಿಂದ ಸಂದೇಶ: $text';
   }
 
   @override
-  String get chatSenderUnknown => 'Unknown';
+  String get chatSenderUnknown => 'ಅಪರಿಚಿತ';
 
   @override
-  String get chatSenderUnknownLower => 'unknown';
+  String get chatSenderUnknownLower => 'ಅಪರಿಚಿತ';
 
   @override
-  String get chatWaitingConfirmation => 'Waiting for message confirmation.';
+  String get chatWaitingConfirmation => 'ಸಂದೇಶದ ದೃಢೀಕರಣಕ್ಕಾಗಿ ಕಾಯಲಾಗುತ್ತಿದೆ.';
 
   @override
-  String get chatEmptyMessage => 'Enter a message before selecting Send.';
+  String get chatEmptyMessage =>
+      'ಕಳುಹಿಸಿ ಆಯ್ಕೆ ಮಾಡುವ ಮೊದಲು ಸಂದೇಶವನ್ನು ಬರೆಯಿರಿ.';
 
   @override
-  String get chatMessageSent => 'Message sent.';
+  String get chatMessageSent => 'ಸಂದೇಶ ಕಳುಹಿಸಲಾಗಿದೆ.';
 
   @override
-  String get chatSending => 'Sending';
+  String get chatSending => 'ಕಳುಹಿಸಲಾಗುತ್ತಿದೆ';
 
   @override
-  String get chatSent => 'Sent';
+  String get chatSent => 'ಕಳುಹಿಸಲಾಗಿದೆ';
 
   @override
-  String get chatNotConfirmed => 'Not confirmed';
+  String get chatNotConfirmed => 'ದೃಢೀಕರಿಸಲಾಗಿಲ್ಲ';
 
   @override
-  String get chatNoMessages => 'No messages yet.';
+  String get chatNoMessages => 'ಇನ್ನೂ ಯಾವುದೇ ಸಂದೇಶಗಳಿಲ್ಲ.';
 
   @override
-  String get chatTitle => 'Chat';
+  String get chatTitle => 'ಚಾಟ್';
 
   @override
-  String get chatReadMessages => 'Read messages, newest first';
+  String get chatReadMessages => 'ಸಂದೇಶಗಳನ್ನು ಓದಿ, ಹೊಸದು ಮೊದಲು';
 
   @override
-  String get chatWriteMessage => 'Write a message';
+  String get chatWriteMessage => 'ಸಂದೇಶ ಬರೆಯಿರಿ';
 
   @override
-  String get chatMessageField => 'Your message to the class';
+  String get chatMessageField => 'ತರಗತಿಗೆ ನಿಮ್ಮ ಸಂದೇಶ';
 
   @override
-  String get chatMessagesTitle => 'Chat messages';
+  String get chatMessagesTitle => 'ಚಾಟ್ ಸಂದೇಶಗಳು';
 
   @override
-  String get chatPhraseUnderstood => 'I understood';
+  String get chatPhraseUnderstood => 'ನನಗೆ ಅರ್ಥವಾಯಿತು';
 
   @override
-  String get chatPhraseRepeat => 'Please repeat';
+  String get chatPhraseRepeat => 'ದಯವಿಟ್ಟು ಮತ್ತೆ ಹೇಳಿ';
 
   @override
-  String get chatPhraseQuestion => 'I have a question';
+  String get chatPhraseQuestion => 'ನನಗೆ ಒಂದು ಪ್ರಶ್ನೆ ಇದೆ';
 
   @override
   String chatSendPhrase(String phrase) {
-    return 'Send: $phrase';
+    return 'ಕಳುಹಿಸಿ: $phrase';
   }
 
   @override
@@ -3673,21 +3692,21 @@ class AppLocalizationsKn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count messages.',
-      one: '1 message.',
+      other: '$count ಸಂದೇಶಗಳು.',
+      one: '1 ಸಂದೇಶ.',
     );
     return '$_temp0';
   }
 
   @override
-  String get chatHelpBrief => 'Read, write or send a quick phrase.';
+  String get chatHelpBrief => 'ಓದಿ, ಬರೆಯಿರಿ ಅಥವಾ ತ್ವರಿತ ವಾಕ್ಯವನ್ನು ಕಳುಹಿಸಿ.';
 
   @override
   String get chatHelpDetailed =>
-      'Press 1 to read messages, 2 to write one, or 3 to 5 to send a quick phrase. Press 8 to hear the newest message.';
+      'ಸಂದೇಶಗಳನ್ನು ಓದಲು 1 ಒತ್ತಿ, ಬರೆಯಲು 2 ಒತ್ತಿ, ಅಥವಾ ತ್ವರಿತ ವಾಕ್ಯ ಕಳುಹಿಸಲು 3 ರಿಂದ 5 ಒತ್ತಿ. ಹೊಸ ಸಂದೇಶವನ್ನು ಕೇಳಲು 8 ಒತ್ತಿ.';
 
   @override
-  String get chatYou => 'You';
+  String get chatYou => 'ನೀವು';
 
   @override
   String chatMessageLine(String sender, String text) {
@@ -3706,270 +3725,273 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String chatMessageDetailSent(String line, String time) {
-    return '$line. Sent $time.';
+    return '$line. $time ಕ್ಕೆ ಕಳುಹಿಸಲಾಗಿದೆ.';
   }
 
   @override
   String chatNewestMessage(String detail) {
-    return 'Newest message. $detail';
+    return 'ಹೊಸ ಸಂದೇಶ. $detail';
   }
 
   @override
-  String get chatReadLatest => 'Read latest message';
+  String get chatReadLatest => 'ಹೊಸ ಸಂದೇಶವನ್ನು ಓದಿ';
 
   @override
-  String get chatMessageLabel => 'Chat message';
+  String get chatMessageLabel => 'ಚಾಟ್ ಸಂದೇಶ';
 
   @override
-  String get chatSendMessage => 'Send message';
+  String get chatSendMessage => 'ಸಂದೇಶ ಕಳುಹಿಸಿ';
 
   @override
   String chatSaid(String sender, String text) {
-    return '$sender said: $text';
+    return '$sender ಹೇಳಿದರು: $text';
   }
 
   @override
   String chatSaidDelivery(String sender, String text, String delivery) {
-    return '$sender said: $text. $delivery';
+    return '$sender ಹೇಳಿದರು: $text. $delivery';
   }
 
   @override
   String chatLatestLineDelivery(String sender, String text, String delivery) {
-    return '$sender: $text\nDelivery status: $delivery.';
+    return '$sender: $text\nತಲುಪಿಸುವ ಸ್ಥಿತಿ: $delivery.';
   }
 
   @override
-  String get sessionLeaveTitle => 'Leave class?';
+  String get sessionLeaveTitle => 'ತರಗತಿಯಿಂದ ಹೊರಡಬೇಕೇ?';
 
   @override
   String get sessionLeaveMessage =>
-      'You will leave this class and return to your dashboard. You will remain logged in.';
+      'ನೀವು ಈ ತರಗತಿಯಿಂದ ಹೊರಟು ನಿಮ್ಮ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್‌ಗೆ ಹಿಂತಿರುಗುತ್ತೀರಿ. ನೀವು ಲಾಗ್ ಇನ್ ಆಗಿಯೇ ಇರುತ್ತೀರಿ.';
 
   @override
   String get sessionTeacherLeaveMessage =>
-      'You will leave and return to your dashboard. The class keeps running for students. To end it for everyone, use 9, Teacher tools.';
+      'ನೀವು ಹೊರಟು ನಿಮ್ಮ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್‌ಗೆ ಹಿಂತಿರುಗುತ್ತೀರಿ. ವಿದ್ಯಾರ್ಥಿಗಳಿಗೆ ತರಗತಿ ಮುಂದುವರಿಯುತ್ತದೆ. ಎಲ್ಲರಿಗೂ ಕೊನೆಗೊಳಿಸಲು, 9, ಶಿಕ್ಷಕರ ಉಪಕರಣಗಳನ್ನು ಬಳಸಿ.';
 
   @override
-  String get sessionStay => 'Stay in class';
+  String get sessionStay => 'ತರಗತಿಯಲ್ಲೇ ಇರಿ';
 
   @override
-  String get sessionLeave => 'Leave class';
+  String get sessionLeave => 'ತರಗತಿಯಿಂದ ಹೊರಡಿ';
 
   @override
-  String get sessionLeaveLocallyTitle => 'Leave without server confirmation?';
+  String get sessionLeaveLocallyTitle => 'ಸರ್ವರ್ ದೃಢೀಕರಣವಿಲ್ಲದೆ ಹೊರಡಬೇಕೇ?';
 
   @override
   String get sessionLeaveLocallyMessage =>
-      'This phone is muted. The server did not confirm clearing your raised hand. Leave locally now, or stay and retry? A fresh join resets your hand.';
+      'ಈ ಫೋನ್ ಮ್ಯೂಟ್ ಆಗಿದೆ. ನಿಮ್ಮ ಎತ್ತಿದ ಕೈ ಇಳಿಸಿರುವುದನ್ನು ಸರ್ವರ್ ದೃಢೀಕರಿಸಿಲ್ಲ. ಈಗ ಈ ಫೋನ್‌ನಲ್ಲಿ ಮಾತ್ರ ಹೊರಡಬೇಕೇ, ಅಥವಾ ಇದ್ದು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಬೇಕೇ? ಹೊಸದಾಗಿ ಸೇರಿದರೆ ನಿಮ್ಮ ಕೈ ಮರುಹೊಂದಿಸಲಾಗುತ್ತದೆ.';
 
   @override
-  String get sessionStayAndRetry => 'Stay and retry';
+  String get sessionStayAndRetry => 'ಇದ್ದು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ';
 
   @override
-  String get sessionLeaveLocally => 'Leave locally';
+  String get sessionLeaveLocally => 'ಈ ಫೋನ್‌ನಲ್ಲಿ ಮಾತ್ರ ಹೊರಡಿ';
 
   @override
-  String get sessionEndTitle => 'End class for everyone?';
+  String get sessionEndTitle => 'ಎಲ್ಲರಿಗೂ ತರಗತಿಯನ್ನು ಕೊನೆಗೊಳಿಸಬೇಕೇ?';
 
   @override
   String get sessionEndMessage =>
-      'This stops the class for every participant and returns everyone to their dashboard. Nobody will be logged out.';
+      'ಇದು ಪ್ರತಿಯೊಬ್ಬ ಭಾಗವಹಿಸುವವರಿಗೂ ತರಗತಿಯನ್ನು ನಿಲ್ಲಿಸುತ್ತದೆ ಮತ್ತು ಎಲ್ಲರನ್ನೂ ಅವರ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್‌ಗೆ ಹಿಂತಿರುಗಿಸುತ್ತದೆ. ಯಾರನ್ನೂ ಲಾಗ್ ಔಟ್ ಮಾಡಲಾಗುವುದಿಲ್ಲ.';
 
   @override
-  String get sessionEndCancel => 'Keep the class going';
+  String get sessionEndCancel => 'ತರಗತಿಯನ್ನು ಮುಂದುವರಿಸಿ';
 
   @override
-  String get sessionEndConfirm => 'End for everyone';
+  String get sessionEndConfirm => 'ಎಲ್ಲರಿಗೂ ಕೊನೆಗೊಳಿಸಿ';
 
   @override
-  String get sessionWaitingEnd => 'Waiting for end-class confirmation.';
+  String get sessionWaitingEnd =>
+      'ತರಗತಿ ಕೊನೆಗೊಳಿಸುವ ದೃಢೀಕರಣಕ್ಕಾಗಿ ಕಾಯಲಾಗುತ್ತಿದೆ.';
 
   @override
   String get sessionEndNotConfirmed =>
-      'Ending the class was not confirmed. The class is still running.';
+      'ತರಗತಿ ಕೊನೆಗೊಳಿಸುವುದನ್ನು ದೃಢೀಕರಿಸಲಾಗಿಲ್ಲ. ತರಗತಿ ಇನ್ನೂ ನಡೆಯುತ್ತಿದೆ.';
 
   @override
-  String get sessionEndingForEveryone => 'Ending the class for everyone.';
+  String get sessionEndingForEveryone =>
+      'ಎಲ್ಲರಿಗೂ ತರಗತಿಯನ್ನು ಕೊನೆಗೊಳಿಸಲಾಗುತ್ತಿದೆ.';
 
   @override
-  String get sessionYouLeft => 'You left the class.';
+  String get sessionYouLeft => 'ನೀವು ತರಗತಿಯಿಂದ ಹೊರಟಿದ್ದೀರಿ.';
 
   @override
-  String get sessionClassEnded => 'The class has ended.';
+  String get sessionClassEnded => 'ತರಗತಿ ಮುಗಿದಿದೆ.';
 
   @override
-  String get sessionYouWereRemoved => 'You were removed from the class.';
+  String get sessionYouWereRemoved => 'ನಿಮ್ಮನ್ನು ತರಗತಿಯಿಂದ ತೆಗೆದುಹಾಕಲಾಗಿದೆ.';
 
   @override
   String get sessionSignInChanged =>
-      'Your sign-in changed. Sign in again or contact your school administrator.';
+      'ನಿಮ್ಮ ಸೈನ್ ಇನ್ ಬದಲಾಗಿದೆ. ಮತ್ತೆ ಸೈನ್ ಇನ್ ಮಾಡಿ ಅಥವಾ ನಿಮ್ಮ ಶಾಲೆಯ ನಿರ್ವಾಹಕರನ್ನು ಸಂಪರ್ಕಿಸಿ.';
 
   @override
   String get sessionCleanupFailed =>
-      'Sign-in ended. Native audio cleanup could not be confirmed. Close SEEDS if audio continues.';
+      'ಸೈನ್ ಇನ್ ಕೊನೆಗೊಂಡಿದೆ. ಫೋನ್‌ನ ಆಡಿಯೊ ಸ್ವಚ್ಛಗೊಳಿಸುವಿಕೆಯನ್ನು ದೃಢೀಕರಿಸಲಾಗಲಿಲ್ಲ. ಆಡಿಯೊ ಮುಂದುವರಿದರೆ SEEDS ಅನ್ನು ಮುಚ್ಚಿ.';
 
   @override
   String get sessionCleanupTimedOut =>
-      'Sign-in ended. Audio cleanup timed out. Close SEEDS if audio continues.';
+      'ಸೈನ್ ಇನ್ ಕೊನೆಗೊಂಡಿದೆ. ಆಡಿಯೊ ಸ್ವಚ್ಛಗೊಳಿಸುವಿಕೆಯ ಸಮಯ ಮೀರಿದೆ. ಆಡಿಯೊ ಮುಂದುವರಿದರೆ SEEDS ಅನ್ನು ಮುಚ್ಚಿ.';
 
   @override
   String get sessionRequestFailed =>
-      'We could not complete that request. Please try again.';
+      'ಆ ವಿನಂತಿಯನ್ನು ಪೂರ್ಣಗೊಳಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
-  String get sessionVoiceStopped => 'Voice listening stopped.';
+  String get sessionVoiceStopped => 'ಧ್ವನಿ ಆಲಿಸುವಿಕೆ ನಿಂತಿದೆ.';
 
   @override
-  String get sessionVoiceUnmuteTitle => 'Unmute your microphone?';
+  String get sessionVoiceUnmuteTitle => 'ನಿಮ್ಮ ಮೈಕ್ರೊಫೋನ್ ಅನ್‌ಮ್ಯೂಟ್ ಮಾಡಬೇಕೇ?';
 
   @override
   String get sessionVoiceUnmuteMessage =>
-      'A voice command requested unmute. Confirm with a key or touch. Other class members will be able to hear you.';
+      'ಧ್ವನಿ ಆದೇಶವು ಅನ್‌ಮ್ಯೂಟ್ ಕೇಳಿದೆ. ಕೀ ಅಥವಾ ಸ್ಪರ್ಶದಿಂದ ದೃಢೀಕರಿಸಿ. ತರಗತಿಯ ಇತರ ಸದಸ್ಯರು ನಿಮ್ಮನ್ನು ಕೇಳಬಹುದು.';
 
   @override
-  String get sessionVoiceUnmuteConfirm => 'Unmute';
+  String get sessionVoiceUnmuteConfirm => 'ಅನ್‌ಮ್ಯೂಟ್';
 
   @override
-  String get sessionVoiceUnmuteCancel => 'Stay muted';
+  String get sessionVoiceUnmuteCancel => 'ಮ್ಯೂಟ್‌ನಲ್ಲೇ ಇರಿ';
 
   @override
-  String get sessionAlreadyUnmuted => 'Already unmuted';
+  String get sessionAlreadyUnmuted => 'ಈಗಾಗಲೇ ಅನ್‌ಮ್ಯೂಟ್ ಆಗಿದೆ';
 
   @override
-  String get sessionAlreadyMutedSelf => 'Already muted';
+  String get sessionAlreadyMutedSelf => 'ಈಗಾಗಲೇ ಮ್ಯೂಟ್ ಆಗಿದೆ';
 
   @override
-  String get sessionHandAlreadyLowered => 'Hand is already lowered';
+  String get sessionHandAlreadyLowered => 'ಕೈ ಈಗಾಗಲೇ ಇಳಿಸಲಾಗಿದೆ';
 
   @override
-  String get sessionHandAlreadyRaised => 'Hand is already raised';
+  String get sessionHandAlreadyRaised => 'ಕೈ ಈಗಾಗಲೇ ಎತ್ತಲಾಗಿದೆ';
 
   @override
-  String get sessionCommandNotRecognized => 'Command not recognized';
+  String get sessionCommandNotRecognized => 'ಆದೇಶ ಗುರುತಿಸಲಾಗಲಿಲ್ಲ';
 
   @override
   String get sessionVoiceStopUnconfirmed =>
-      'Voice listening stop not confirmed. Retry stopping.';
+      'ಧ್ವನಿ ಆಲಿಸುವಿಕೆ ನಿಂತಿರುವುದು ದೃಢೀಕರಿಸಲಾಗಿಲ್ಲ. ಮತ್ತೆ ನಿಲ್ಲಿಸಲು ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
-  String get sessionVoiceStopping => 'Stopping voice listening.';
+  String get sessionVoiceStopping => 'ಧ್ವನಿ ಆಲಿಸುವಿಕೆಯನ್ನು ನಿಲ್ಲಿಸಲಾಗುತ್ತಿದೆ.';
 
   @override
-  String get sessionVoiceStarting => 'Starting voice commands.';
+  String get sessionVoiceStarting => 'ಧ್ವನಿ ಆದೇಶಗಳನ್ನು ಪ್ರಾರಂಭಿಸಲಾಗುತ್ತಿದೆ.';
 
   @override
-  String get sessionVoiceFinishing => 'Finishing voice recognition.';
+  String get sessionVoiceFinishing =>
+      'ಧ್ವನಿ ಗುರುತಿಸುವಿಕೆಯನ್ನು ಮುಗಿಸಲಾಗುತ್ತಿದೆ.';
 
   @override
   String get sessionVoiceListening =>
-      'Listening for one command, up to 12 seconds.';
+      'ಒಂದು ಆದೇಶಕ್ಕಾಗಿ ಆಲಿಸಲಾಗುತ್ತಿದೆ, 12 ಸೆಕೆಂಡುಗಳವರೆಗೆ.';
 
   @override
   String get sessionVoiceIdle =>
-      'Not listening. Activate Listen for command to start.';
+      'ಆಲಿಸುತ್ತಿಲ್ಲ. ಪ್ರಾರಂಭಿಸಲು ಆದೇಶಕ್ಕಾಗಿ ಆಲಿಸಿ ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ.';
 
   @override
   String get sessionVoiceSpeechNotStopped =>
-      'App speech could not be stopped. Try Stop speech before listening.';
+      'ಆ್ಯಪ್ ಧ್ವನಿಯನ್ನು ನಿಲ್ಲಿಸಲಾಗಲಿಲ್ಲ. ಆಲಿಸುವ ಮೊದಲು ಧ್ವನಿ ನಿಲ್ಲಿಸಿ ಅನ್ನು ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
   String get sessionVoiceUnavailable =>
-      'Voice commands are unavailable. Check microphone permission and Android English speech services.';
+      'ಧ್ವನಿ ಆದೇಶಗಳು ಲಭ್ಯವಿಲ್ಲ. ಮೈಕ್ರೊಫೋನ್ ಅನುಮತಿ ಮತ್ತು Android ಇಂಗ್ಲಿಷ್ ಧ್ವನಿ ಸೇವೆಗಳನ್ನು ಪರಿಶೀಲಿಸಿ.';
 
   @override
   String get sessionVoiceCouldNotStart =>
-      'Voice commands could not start. Check microphone permission and English speech services, then try again.';
+      'ಧ್ವನಿ ಆದೇಶಗಳನ್ನು ಪ್ರಾರಂಭಿಸಲಾಗಲಿಲ್ಲ. ಮೈಕ್ರೊಫೋನ್ ಅನುಮತಿ ಮತ್ತು ಇಂಗ್ಲಿಷ್ ಧ್ವನಿ ಸೇವೆಗಳನ್ನು ಪರಿಶೀಲಿಸಿ, ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
   String get sessionVoiceCouldNotFinish =>
-      'Voice recognition could not finish. Check permission and English speech services, then activate Listen to retry.';
+      'ಧ್ವನಿ ಗುರುತಿಸುವಿಕೆ ಮುಗಿಯಲಿಲ್ಲ. ಅನುಮತಿ ಮತ್ತು ಇಂಗ್ಲಿಷ್ ಧ್ವನಿ ಸೇವೆಗಳನ್ನು ಪರಿಶೀಲಿಸಿ, ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಲು ಆಲಿಸಿ ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ.';
 
   @override
   String get sessionVoiceNoCommand =>
-      'No command heard. Activate Listen for command to try again.';
+      'ಯಾವುದೇ ಆದೇಶ ಕೇಳಿಸಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಲು ಆದೇಶಕ್ಕಾಗಿ ಆಲಿಸಿ ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ.';
 
   @override
   String get sessionVoiceCommandFailed =>
-      'The voice command could not be completed. Use its keypad control or try again.';
+      'ಧ್ವನಿ ಆದೇಶವನ್ನು ಪೂರ್ಣಗೊಳಿಸಲಾಗಲಿಲ್ಲ. ಅದರ ಕೀಪ್ಯಾಡ್ ನಿಯಂತ್ರಣವನ್ನು ಬಳಸಿ ಅಥವಾ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
   String get sessionVoiceCannotStop =>
-      'Voice listening could not be stopped. Retry Stop listening or leave the class and check the Android microphone indicator.';
+      'ಧ್ವನಿ ಆಲಿಸುವಿಕೆಯನ್ನು ನಿಲ್ಲಿಸಲಾಗಲಿಲ್ಲ. ಆಲಿಸುವುದನ್ನು ನಿಲ್ಲಿಸಿ ಅನ್ನು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ ಅಥವಾ ತರಗತಿಯಿಂದ ಹೊರಟು Android ಮೈಕ್ರೊಫೋನ್ ಸೂಚಕವನ್ನು ಪರಿಶೀಲಿಸಿ.';
 
   @override
   String get sessionRecordingSelectionChanged =>
-      'The class recording selection changed. Use Read class updates for details.';
+      'ತರಗತಿಯ ರೆಕಾರ್ಡಿಂಗ್ ಆಯ್ಕೆ ಬದಲಾಗಿದೆ. ವಿವರಗಳಿಗಾಗಿ ತರಗತಿ ಅಪ್‌ಡೇಟ್‌ಗಳನ್ನು ಓದಿ ಅನ್ನು ಬಳಸಿ.';
 
   @override
-  String get sessionRecordingSelectionGroup => 'Class recording selection';
+  String get sessionRecordingSelectionGroup => 'ತರಗತಿಯ ರೆಕಾರ್ಡಿಂಗ್ ಆಯ್ಕೆ';
 
   @override
-  String get sessionPlaybackFinished => 'Recording finished.';
+  String get sessionPlaybackFinished => 'ರೆಕಾರ್ಡಿಂಗ್ ಮುಗಿದಿದೆ.';
 
   @override
-  String get sessionNoRecording => 'No class recording is selected.';
+  String get sessionNoRecording => 'ಯಾವುದೇ ತರಗತಿ ರೆಕಾರ್ಡಿಂಗ್ ಆಯ್ಕೆ ಮಾಡಿಲ್ಲ.';
 
   @override
   String get sessionNoRecordingTeacher =>
-      'No class recording is selected. In the recording player, press 1 to choose one.';
+      'ಯಾವುದೇ ತರಗತಿ ರೆಕಾರ್ಡಿಂಗ್ ಆಯ್ಕೆ ಮಾಡಿಲ್ಲ. ರೆಕಾರ್ಡಿಂಗ್ ಪ್ಲೇಯರ್‌ನಲ್ಲಿ, ಒಂದನ್ನು ಆಯ್ಕೆ ಮಾಡಲು 1 ಒತ್ತಿ.';
 
   @override
   String get sessionPreviewFailed =>
-      'The private preview could not start. Check the connection and try again.';
+      'ಖಾಸಗಿ ಪೂರ್ವವೀಕ್ಷಣೆ ಪ್ರಾರಂಭವಾಗಲಿಲ್ಲ. ಸಂಪರ್ಕವನ್ನು ಪರಿಶೀಲಿಸಿ ಮತ್ತು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
   String sessionClassPauseUnconfirmed(String reason) {
-    return 'Your local audio is paused. The class pause was not confirmed. $reason';
+    return 'ನಿಮ್ಮ ಫೋನ್‌ನ ಆಡಿಯೊ ವಿರಾಮಗೊಂಡಿದೆ. ತರಗತಿಯ ವಿರಾಮವನ್ನು ದೃಢೀಕರಿಸಲಾಗಿಲ್ಲ. $reason';
   }
 
   @override
   String sessionSpeed(String speed) {
-    return '$speed times speed';
+    return '$speed ಪಟ್ಟು ವೇಗ';
   }
 
   @override
   String sessionPlaybackAccepted(String title) {
-    return 'Class playback request accepted for $title.';
+    return '$title ಗಾಗಿ ತರಗತಿ ಪ್ಲೇ ವಿನಂತಿಯನ್ನು ಸ್ವೀಕರಿಸಲಾಗಿದೆ.';
   }
 
   @override
   String sessionSelected(String title) {
-    return '$title selected for the class. Press 5 to play it.';
+    return '$title ಅನ್ನು ತರಗತಿಗಾಗಿ ಆಯ್ಕೆ ಮಾಡಲಾಗಿದೆ. ಅದನ್ನು ಪ್ಲೇ ಮಾಡಲು 5 ಒತ್ತಿ.';
   }
 
   @override
   String sessionPreviewing(String title) {
-    return 'Previewing $title on this phone only.';
+    return '$title ಅನ್ನು ಈ ಫೋನ್‌ನಲ್ಲಿ ಮಾತ್ರ ಪೂರ್ವವೀಕ್ಷಿಸಲಾಗುತ್ತಿದೆ.';
   }
 
   @override
-  String get sessionPreviewStopped => 'Preview stopped.';
+  String get sessionPreviewStopped => 'ಪೂರ್ವವೀಕ್ಷಣೆ ನಿಂತಿದೆ.';
 
   @override
-  String get sessionRecordingsTitle => 'Class recording player';
+  String get sessionRecordingsTitle => 'ತರಗತಿ ರೆಕಾರ್ಡಿಂಗ್ ಪ್ಲೇಯರ್';
 
   @override
-  String get sessionChooseRecording => 'Choose a recording from the library';
+  String get sessionChooseRecording => 'ಲೈಬ್ರರಿಯಿಂದ ರೆಕಾರ್ಡಿಂಗ್ ಆಯ್ಕೆ ಮಾಡಿ';
 
   @override
-  String get sessionUploadRecording => 'Upload a new recording';
+  String get sessionUploadRecording => 'ಹೊಸ ರೆಕಾರ್ಡಿಂಗ್ ಅಪ್‌ಲೋಡ್ ಮಾಡಿ';
 
   @override
-  String get sessionHearRecording => 'Hear recording status';
+  String get sessionHearRecording => 'ರೆಕಾರ್ಡಿಂಗ್ ಸ್ಥಿತಿಯನ್ನು ಕೇಳಿ';
 
   @override
-  String get sessionPlayPauseClass => 'Play or pause for the class';
+  String get sessionPlayPauseClass => 'ತರಗತಿಗಾಗಿ ಪ್ಲೇ ಅಥವಾ ವಿರಾಮ';
 
   @override
   String get sessionLibraryLoading =>
-      'The recording library is still loading. Try again shortly.';
+      'ರೆಕಾರ್ಡಿಂಗ್ ಲೈಬ್ರರಿ ಇನ್ನೂ ಲೋಡ್ ಆಗುತ್ತಿದೆ. ಸ್ವಲ್ಪ ಸಮಯದ ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
   String get sessionLibraryEmpty =>
-      'No recordings for this class yet. Press 2 to upload one.';
+      'ಈ ತರಗತಿಗೆ ಇನ್ನೂ ಯಾವುದೇ ರೆಕಾರ್ಡಿಂಗ್‌ಗಳಿಲ್ಲ. ಒಂದನ್ನು ಅಪ್‌ಲೋಡ್ ಮಾಡಲು 2 ಒತ್ತಿ.';
 
   @override
-  String get sessionPositionHint => 'Use left and right to move 10 seconds';
+  String get sessionPositionHint => '10 ಸೆಕೆಂಡುಗಳು ಸರಿಸಲು ಎಡ ಮತ್ತು ಬಲ ಬಳಸಿ';
 
   @override
   String sessionRecordingStatusPlaying(
@@ -3977,7 +3999,7 @@ class AppLocalizationsKn extends AppLocalizations {
     String position,
     String speed,
   ) {
-    return '$title. Playing for the class. $position. $speed.';
+    return '$title. ತರಗತಿಗಾಗಿ ಪ್ಲೇ ಆಗುತ್ತಿದೆ. $position. $speed.';
   }
 
   @override
@@ -3986,248 +4008,251 @@ class AppLocalizationsKn extends AppLocalizations {
     String position,
     String speed,
   ) {
-    return '$title. Paused. $position. $speed.';
+    return '$title. ವಿರಾಮಗೊಂಡಿದೆ. $position. $speed.';
   }
 
   @override
   String sessionPositionLabel(String position) {
-    return 'Position $position. Use left and right to move 10 seconds';
+    return 'ಸ್ಥಾನ $position. 10 ಸೆಕೆಂಡುಗಳು ಸರಿಸಲು ಎಡ ಮತ್ತು ಬಲ ಬಳಸಿ';
   }
 
   @override
-  String get sessionUntitled => 'Untitled';
+  String get sessionUntitled => 'ಶೀರ್ಷಿಕೆ ಇಲ್ಲ';
 
   @override
-  String get sessionFileSelectedForClass => 'selected for the class';
+  String get sessionFileSelectedForClass => 'ತರಗತಿಗಾಗಿ ಆಯ್ಕೆ ಮಾಡಲಾಗಿದೆ';
 
   @override
-  String get sessionFilePreviewing => 'previewing';
+  String get sessionFilePreviewing => 'ಪೂರ್ವವೀಕ್ಷಿಸಲಾಗುತ್ತಿದೆ';
 
   @override
-  String get sessionPlayForClass => 'Select and play for the class now';
+  String get sessionPlayForClass => 'ಆಯ್ಕೆ ಮಾಡಿ ಮತ್ತು ಈಗ ತರಗತಿಗಾಗಿ ಪ್ಲೇ ಮಾಡಿ';
 
   @override
-  String get sessionSelectOnly => 'Select only, play later with 5';
+  String get sessionSelectOnly => 'ಆಯ್ಕೆ ಮಾತ್ರ ಮಾಡಿ, ನಂತರ 5 ರಿಂದ ಪ್ಲೇ ಮಾಡಿ';
 
   @override
-  String get sessionPreviewPrivately => 'Preview privately on this phone';
+  String get sessionPreviewPrivately => 'ಈ ಫೋನ್‌ನಲ್ಲಿ ಖಾಸಗಿಯಾಗಿ ಪೂರ್ವವೀಕ್ಷಿಸಿ';
 
   @override
-  String get sessionStopPreview => 'Stop the private preview';
+  String get sessionStopPreview => 'ಖಾಸಗಿ ಪೂರ್ವವೀಕ್ಷಣೆಯನ್ನು ನಿಲ್ಲಿಸಿ';
 
   @override
-  String get sessionUploadDetailsTitle => 'Upload audio details';
+  String get sessionUploadDetailsTitle => 'ಆಡಿಯೊ ಅಪ್‌ಲೋಡ್ ವಿವರಗಳು';
 
   @override
-  String get sessionUploadTitle => 'Upload Audio';
+  String get sessionUploadTitle => 'ಆಡಿಯೊ ಅಪ್‌ಲೋಡ್ ಮಾಡಿ';
 
   @override
   String sessionUploadFile(String name) {
-    return 'File: $name';
+    return 'ಫೈಲ್: $name';
   }
 
   @override
-  String get sessionTitleField => 'Audio title, required';
+  String get sessionTitleField => 'ಆಡಿಯೊ ಶೀರ್ಷಿಕೆ, ಅಗತ್ಯವಿದೆ';
 
   @override
-  String get sessionDescriptionField => 'Audio description, optional';
+  String get sessionDescriptionField => 'ಆಡಿಯೊ ವಿವರಣೆ, ಐಚ್ಛಿಕ';
 
   @override
-  String get sessionCancelUpload => 'Cancel upload';
+  String get sessionCancelUpload => 'ಅಪ್‌ಲೋಡ್ ರದ್ದುಮಾಡಿ';
 
   @override
-  String get sessionConfirmUpload => 'Upload audio';
+  String get sessionConfirmUpload => 'ಆಡಿಯೊ ಅಪ್‌ಲೋಡ್ ಮಾಡಿ';
 
   @override
-  String get sessionTitleRequired => 'Title is required';
+  String get sessionTitleRequired => 'ಶೀರ್ಷಿಕೆ ಅಗತ್ಯವಿದೆ';
 
   @override
-  String get sessionChooseSessionsTitle => 'Choose classes for this audio';
+  String get sessionChooseSessionsTitle => 'ಈ ಆಡಿಯೊಗಾಗಿ ತರಗತಿಗಳನ್ನು ಆಯ್ಕೆ ಮಾಡಿ';
 
   @override
-  String get sessionAddToSessions => 'Add audio to classes';
+  String get sessionAddToSessions => 'ಆಡಿಯೊವನ್ನು ತರಗತಿಗಳಿಗೆ ಸೇರಿಸಿ';
 
   @override
-  String get sessionConfirmSessions => 'Confirm selected classes';
+  String get sessionConfirmSessions => 'ಆಯ್ಕೆ ಮಾಡಿದ ತರಗತಿಗಳನ್ನು ದೃಢೀಕರಿಸಿ';
 
   @override
-  String get sessionSelectAtLeastOne => 'Select at least one class';
+  String get sessionSelectAtLeastOne => 'ಕನಿಷ್ಠ ಒಂದು ತರಗತಿಯನ್ನು ಆಯ್ಕೆ ಮಾಡಿ';
 
   @override
-  String get sessionSessionSelected => 'Class selected';
+  String get sessionSessionSelected => 'ತರಗತಿ ಆಯ್ಕೆ ಮಾಡಲಾಗಿದೆ';
 
   @override
-  String get sessionSessionUnselected => 'Class unselected';
+  String get sessionSessionUnselected => 'ತರಗತಿ ಆಯ್ಕೆ ತೆಗೆಯಲಾಗಿದೆ';
 
   @override
   String sessionChoiceSelected(String title) {
-    return 'Selected, $title';
+    return 'ಆಯ್ಕೆ ಮಾಡಲಾಗಿದೆ, $title';
   }
 
   @override
   String sessionChoiceNotSelected(String title) {
-    return 'Not selected, $title';
+    return 'ಆಯ್ಕೆ ಮಾಡಿಲ್ಲ, $title';
   }
 
   @override
   String sessionClassNumbered(String number) {
-    return 'Class $number';
+    return 'ತರಗತಿ $number';
   }
 
   @override
   String get sessionUploadContextMissing =>
-      'The class and subject of this class could not be determined.';
+      'ಈ ತರಗತಿಯ ತರಗತಿ ಮತ್ತು ವಿಷಯವನ್ನು ನಿರ್ಧರಿಸಲಾಗಲಿಲ್ಲ.';
 
   @override
-  String get sessionUploadSuccess => 'Upload successful.';
+  String get sessionUploadSuccess => 'ಅಪ್‌ಲೋಡ್ ಯಶಸ್ವಿಯಾಗಿದೆ.';
 
   @override
-  String get sessionUploadInProgress => 'Audio upload in progress';
+  String get sessionUploadInProgress => 'ಆಡಿಯೊ ಅಪ್‌ಲೋಡ್ ನಡೆಯುತ್ತಿದೆ';
 
   @override
-  String get sessionPlayNowTitle => 'Play for everyone now?';
+  String get sessionPlayNowTitle => 'ಈಗ ಎಲ್ಲರಿಗೂ ಪ್ಲೇ ಮಾಡಬೇಕೇ?';
 
   @override
   String sessionPlayNowMessage(String title) {
-    return '$title is selected. Play it for all participants now?';
+    return '$title ಆಯ್ಕೆ ಮಾಡಲಾಗಿದೆ. ಈಗ ಎಲ್ಲಾ ಭಾಗವಹಿಸುವವರಿಗೂ ಪ್ಲೇ ಮಾಡಬೇಕೇ?';
   }
 
   @override
-  String get sessionPlayNow => 'Play now';
+  String get sessionPlayNow => 'ಈಗ ಪ್ಲೇ ಮಾಡಿ';
 
   @override
-  String get sessionNotYet => 'Not yet';
+  String get sessionNotYet => 'ಈಗ ಬೇಡ';
 
   @override
-  String get sessionUploadEditTitle => 'Edit Title';
+  String get sessionUploadEditTitle => 'ಶೀರ್ಷಿಕೆ ಬದಲಿಸಿ';
 
   @override
-  String get sessionUploadEditDescription => 'Edit Description';
+  String get sessionUploadEditDescription => 'ವಿವರಣೆ ಬದಲಿಸಿ';
 
   @override
-  String get sessionUploadKey => 'Upload';
+  String get sessionUploadKey => 'ಅಪ್‌ಲೋಡ್';
 
   @override
-  String get sessionCancel => 'Cancel';
+  String get sessionCancel => 'ರದ್ದುಮಾಡಿ';
 
   @override
   String get classroomCheckUnreadable =>
-      'Classroom check state could not be read. Refresh before responding.';
+      'ತರಗತಿ ಪರಿಶೀಲನೆಯ ಸ್ಥಿತಿಯನ್ನು ಓದಲಾಗಲಿಲ್ಲ. ಉತ್ತರಿಸುವ ಮೊದಲು ರಿಫ್ರೆಶ್ ಮಾಡಿ.';
 
   @override
   String get classroomCheckUnconfirmed =>
-      'The classroom check action was not confirmed. Refresh before trying again.';
+      'ತರಗತಿ ಪರಿಶೀಲನೆಯ ಕ್ರಿಯೆಯನ್ನು ದೃಢೀಕರಿಸಲಾಗಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸುವ ಮೊದಲು ರಿಫ್ರೆಶ್ ಮಾಡಿ.';
 
   @override
   String get classroomCheckConfirmationUnreadable =>
-      'The classroom check confirmation was unreadable. Refresh before trying again.';
+      'ತರಗತಿ ಪರಿಶೀಲನೆಯ ದೃಢೀಕರಣವನ್ನು ಓದಲಾಗಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸುವ ಮೊದಲು ರಿಫ್ರೆಶ್ ಮಾಡಿ.';
 
   @override
   String get classroomCheckOpenedForYou =>
-      'Your teacher asked a question. Press 3 to answer.';
+      'ನಿಮ್ಮ ಶಿಕ್ಷಕರು ಒಂದು ಪ್ರಶ್ನೆ ಕೇಳಿದ್ದಾರೆ. ಉತ್ತರಿಸಲು 3 ಒತ್ತಿ.';
 
   @override
   String get classroomCheckHelp =>
-      'Private classroom check. Understood, Please repeat or Need help. Only the responding student and session teacher can read a response. It is not graded. Responses clear on the next check, session end or server restart. Use Read or Refresh for confirmed state. Stop speech and Back are available.';
+      'ಖಾಸಗಿ ತರಗತಿ ಪರಿಶೀಲನೆ. ಅರ್ಥವಾಯಿತು, ದಯವಿಟ್ಟು ಮತ್ತೆ ಹೇಳಿ ಅಥವಾ ಸಹಾಯ ಬೇಕು. ಉತ್ತರಿಸಿದ ವಿದ್ಯಾರ್ಥಿ ಮತ್ತು ಸೆಷನ್ ಶಿಕ್ಷಕರು ಮಾತ್ರ ಉತ್ತರವನ್ನು ಓದಬಹುದು. ಇದಕ್ಕೆ ಅಂಕ ನೀಡುವುದಿಲ್ಲ. ಮುಂದಿನ ಪರಿಶೀಲನೆ, ಸೆಷನ್ ಮುಕ್ತಾಯ ಅಥವಾ ಸರ್ವರ್ ಮರುಪ್ರಾರಂಭದಲ್ಲಿ ಉತ್ತರಗಳು ಅಳಿಸಿಹೋಗುತ್ತವೆ. ದೃಢೀಕರಿಸಿದ ಸ್ಥಿತಿಗಾಗಿ ಓದಿ ಅಥವಾ ರಿಫ್ರೆಶ್ ಬಳಸಿ. ಧ್ವನಿ ನಿಲ್ಲಿಸಿ ಮತ್ತು ಹಿಂದೆ ಲಭ್ಯವಿದೆ.';
 
   @override
-  String get classroomCheckTitle => 'Classroom check';
+  String get classroomCheckTitle => 'ತರಗತಿ ಪರಿಶೀಲನೆ';
 
   @override
-  String get classroomCheckNewTitle => 'Open a new classroom check?';
+  String get classroomCheckNewTitle => 'ಹೊಸ ತರಗತಿ ಪರಿಶೀಲನೆ ತೆರೆಯಬೇಕೇ?';
 
   @override
   String get classroomCheckNewMessage =>
-      'This clears all responses from the previous check. Students choose Understood, Please repeat or Need help. Only you and each responding student can read their response. It is not graded or retained as an academic record.';
+      'ಇದು ಹಿಂದಿನ ಪರಿಶೀಲನೆಯ ಎಲ್ಲಾ ಉತ್ತರಗಳನ್ನು ಅಳಿಸುತ್ತದೆ. ವಿದ್ಯಾರ್ಥಿಗಳು ಅರ್ಥವಾಯಿತು, ದಯವಿಟ್ಟು ಮತ್ತೆ ಹೇಳಿ ಅಥವಾ ಸಹಾಯ ಬೇಕು ಆಯ್ಕೆ ಮಾಡುತ್ತಾರೆ. ನೀವು ಮತ್ತು ಉತ್ತರಿಸಿದ ಪ್ರತಿ ವಿದ್ಯಾರ್ಥಿ ಮಾತ್ರ ಅವರ ಉತ್ತರವನ್ನು ಓದಬಹುದು. ಇದಕ್ಕೆ ಅಂಕ ನೀಡುವುದಿಲ್ಲ ಮತ್ತು ಶೈಕ್ಷಣಿಕ ದಾಖಲೆಯಾಗಿ ಇಡುವುದಿಲ್ಲ.';
 
   @override
-  String get classroomCheckNewConfirm => 'Clear previous and open';
+  String get classroomCheckNewConfirm => 'ಹಿಂದಿನದನ್ನು ಅಳಿಸಿ ತೆರೆಯಿರಿ';
 
   @override
-  String get classroomCheckNewCancel => 'Keep current check';
+  String get classroomCheckNewCancel => 'ಈಗಿನ ಪರಿಶೀಲನೆಯನ್ನು ಉಳಿಸಿ';
 
   @override
-  String get classroomCheckSending => 'Sending. Waiting for confirmation.';
+  String get classroomCheckSending =>
+      'ಕಳುಹಿಸಲಾಗುತ್ತಿದೆ. ದೃಢೀಕರಣಕ್ಕಾಗಿ ಕಾಯಲಾಗುತ್ತಿದೆ.';
 
   @override
   String get classroomCheckWaiting =>
-      'Waiting for confirmation. Do not resend.';
+      'ದೃಢೀಕರಣಕ್ಕಾಗಿ ಕಾಯಲಾಗುತ್ತಿದೆ. ಮತ್ತೆ ಕಳುಹಿಸಬೇಡಿ.';
 
   @override
-  String get sessionBackToClass => 'Back to class';
+  String get sessionBackToClass => 'ತರಗತಿಗೆ ಹಿಂತಿರುಗಿ';
 
   @override
-  String get classroomBackToSession => 'Back to session';
+  String get classroomBackToSession => 'ಸೆಷನ್‌ಗೆ ಹಿಂತಿರುಗಿ';
 
   @override
-  String get classroomBack => 'Back';
+  String get classroomBack => 'ಹಿಂದೆ';
 
   @override
-  String get classroomCheckRead => 'Read check status and confirmed responses';
+  String get classroomCheckRead =>
+      'ಪರಿಶೀಲನೆಯ ಸ್ಥಿತಿ ಮತ್ತು ದೃಢೀಕರಿಸಿದ ಉತ್ತರಗಳನ್ನು ಓದಿ';
 
   @override
-  String get classroomCheckReadButton => 'Read status and responses';
+  String get classroomCheckReadButton => 'ಸ್ಥಿತಿ ಮತ್ತು ಉತ್ತರಗಳನ್ನು ಓದಿ';
 
   @override
   String get classroomCheckRefresh =>
-      'Refresh private check state. Requires class connection';
+      'ಖಾಸಗಿ ಪರಿಶೀಲನೆಯ ಸ್ಥಿತಿಯನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಿ. ತರಗತಿ ಸಂಪರ್ಕ ಅಗತ್ಯವಿದೆ';
 
   @override
-  String get classroomCheckRefreshButton => 'Refresh from server';
+  String get classroomCheckRefreshButton => 'ಸರ್ವರ್‌ನಿಂದ ರಿಫ್ರೆಶ್ ಮಾಡಿ';
 
   @override
   String get classroomCheckOpenLabel =>
-      'Open a new check. Confirm clearing previous responses';
+      'ಹೊಸ ಪರಿಶೀಲನೆ ತೆರೆಯಿರಿ. ಹಿಂದಿನ ಉತ್ತರಗಳನ್ನು ಅಳಿಸುವುದನ್ನು ದೃಢೀಕರಿಸಿ';
 
   @override
-  String get classroomCheckOpenButton => 'Open new check';
+  String get classroomCheckOpenButton => 'ಹೊಸ ಪರಿಶೀಲನೆ ತೆರೆಯಿರಿ';
 
   @override
   String get classroomCheckCloseLabel =>
-      'Close this check. Keep current results until next check or session end';
+      'ಈ ಪರಿಶೀಲನೆಯನ್ನು ಮುಚ್ಚಿ. ಮುಂದಿನ ಪರಿಶೀಲನೆ ಅಥವಾ ಸೆಷನ್ ಮುಕ್ತಾಯದವರೆಗೆ ಈಗಿನ ಫಲಿತಾಂಶಗಳನ್ನು ಉಳಿಸಿ';
 
   @override
-  String get classroomCheckCloseButton => 'Close check';
+  String get classroomCheckCloseButton => 'ಪರಿಶೀಲನೆ ಮುಚ್ಚಿ';
 
   @override
   String classroomCheckAnswer(String choice) {
-    return '$choice. Send or change your private, ungraded response';
+    return '$choice. ನಿಮ್ಮ ಖಾಸಗಿ, ಅಂಕರಹಿತ ಉತ್ತರವನ್ನು ಕಳುಹಿಸಿ ಅಥವಾ ಬದಲಿಸಿ';
   }
 
   @override
-  String get sessionStopSpeech => 'Stop speech';
+  String get sessionStopSpeech => 'ಧ್ವನಿ ನಿಲ್ಲಿಸಿ';
 
   @override
-  String get classroomChoiceUnderstood => 'Understood';
+  String get classroomChoiceUnderstood => 'ಅರ್ಥವಾಯಿತು';
 
   @override
-  String get classroomChoiceRepeat => 'Please repeat';
+  String get classroomChoiceRepeat => 'ದಯವಿಟ್ಟು ಮತ್ತೆ ಹೇಳಿ';
 
   @override
-  String get classroomChoiceHelp => 'Need help';
+  String get classroomChoiceHelp => 'ಸಹಾಯ ಬೇಕು';
 
   @override
   String get classroomCheckNone =>
-      'No current check in the last received classroom state. Refresh to check.';
+      'ಕೊನೆಯದಾಗಿ ಪಡೆದ ತರಗತಿ ಸ್ಥಿತಿಯಲ್ಲಿ ಯಾವುದೇ ಪರಿಶೀಲನೆ ಇಲ್ಲ. ಪರಿಶೀಲಿಸಲು ರಿಫ್ರೆಶ್ ಮಾಡಿ.';
 
   @override
-  String get classroomCheckStatusOpen => 'Check open.';
+  String get classroomCheckStatusOpen => 'ಪರಿಶೀಲನೆ ತೆರೆದಿದೆ.';
 
   @override
   String get classroomCheckStatusClosed =>
-      'Check closed. Responses cannot be changed.';
+      'ಪರಿಶೀಲನೆ ಮುಚ್ಚಲಾಗಿದೆ. ಉತ್ತರಗಳನ್ನು ಬದಲಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ.';
 
   @override
-  String get classroomCheckNoResponseYet => 'No response confirmed yet.';
+  String get classroomCheckNoResponseYet =>
+      'ಇನ್ನೂ ಯಾವುದೇ ಉತ್ತರ ದೃಢೀಕರಿಸಲಾಗಿಲ್ಲ.';
 
   @override
   String classroomCheckYourResponse(String choice) {
-    return 'Your confirmed response: $choice.';
+    return 'ನಿಮ್ಮ ದೃಢೀಕರಿಸಿದ ಉತ್ತರ: $choice.';
   }
 
   @override
   String classroomCheckStudentSummary(String status, String response) {
-    return '$status $response Only you and the session teacher can read your response. This is not graded.';
+    return '$status $response ನೀವು ಮತ್ತು ಸೆಷನ್ ಶಿಕ್ಷಕರು ಮಾತ್ರ ನಿಮ್ಮ ಉತ್ತರವನ್ನು ಓದಬಹುದು. ಇದಕ್ಕೆ ಅಂಕ ನೀಡುವುದಿಲ್ಲ.';
   }
 
   @override
@@ -4236,7 +4261,7 @@ class AppLocalizationsKn extends AppLocalizations {
   }
 
   @override
-  String get classroomCheckNoResponses => 'No responses yet.';
+  String get classroomCheckNoResponses => 'ಇನ್ನೂ ಯಾವುದೇ ಉತ್ತರಗಳಿಲ್ಲ.';
 
   @override
   String classroomCheckTeacherSummary(
@@ -4249,51 +4274,51 @@ class AppLocalizationsKn extends AppLocalizations {
       count,
       locale: localeName,
       other:
-          '$status $count students responded. $counts. $named Responses are private to you and each responding student, and are not grades.',
+          '$status $count ವಿದ್ಯಾರ್ಥಿಗಳು ಉತ್ತರಿಸಿದ್ದಾರೆ. $counts. $named ಉತ್ತರಗಳು ನಿಮಗೆ ಮತ್ತು ಉತ್ತರಿಸಿದ ಪ್ರತಿ ವಿದ್ಯಾರ್ಥಿಗೆ ಮಾತ್ರ ಖಾಸಗಿಯಾಗಿವೆ, ಮತ್ತು ಅವು ಅಂಕಗಳಲ್ಲ.',
     );
     return '$_temp0';
   }
 
   @override
   String get classroomOnlyTeacherAcknowledges =>
-      'Only the session teacher may acknowledge a hand.';
+      'ಸೆಷನ್ ಶಿಕ್ಷಕರು ಮಾತ್ರ ಎತ್ತಿದ ಕೈಯನ್ನು ಸ್ವೀಕರಿಸಬಹುದು.';
 
   @override
   String get classroomHandChanged =>
-      'The selected hand changed. Read the queue again.';
+      'ಆಯ್ಕೆ ಮಾಡಿದ ಕೈ ಬದಲಾಗಿದೆ. ಸರದಿಯನ್ನು ಮತ್ತೆ ಓದಿ.';
 
   @override
   String get classroomAckUnconfirmed =>
-      'The hand acknowledgment was not confirmed. Read the queue before retrying.';
+      'ಕೈ ಸ್ವೀಕಾರವನ್ನು ದೃಢೀಕರಿಸಲಾಗಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸುವ ಮೊದಲು ಸರದಿಯನ್ನು ಓದಿ.';
 
   @override
   String get classroomAckUnreadable =>
-      'Hand acknowledgment was not readable. Check the queue before trying again.';
+      'ಕೈ ಸ್ವೀಕಾರವನ್ನು ಓದಲಾಗಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸುವ ಮೊದಲು ಸರದಿಯನ್ನು ಪರಿಶೀಲಿಸಿ.';
 
   @override
   String classroomAcknowledgedChanged(String name) {
-    return '$name acknowledged earlier. Their hand has since changed; read the queue again. Their microphone was not changed.';
+    return '$name ಅವರನ್ನು ಮೊದಲೇ ಸ್ವೀಕರಿಸಲಾಗಿದೆ. ಅದರ ನಂತರ ಅವರ ಕೈ ಬದಲಾಗಿದೆ; ಸರದಿಯನ್ನು ಮತ್ತೆ ಓದಿ. ಅವರ ಮೈಕ್ರೊಫೋನ್ ಬದಲಾಯಿಸಲಾಗಿಲ್ಲ.';
   }
 
   @override
   String classroomAcknowledged(String name) {
-    return '$name acknowledged. The selected hand was lowered. Their microphone was not changed.';
+    return '$name ಅವರನ್ನು ಸ್ವೀಕರಿಸಲಾಗಿದೆ. ಆಯ್ಕೆ ಮಾಡಿದ ಕೈ ಇಳಿಸಲಾಗಿದೆ. ಅವರ ಮೈಕ್ರೊಫೋನ್ ಬದಲಾಯಿಸಲಾಗಿಲ್ಲ.';
   }
 
   @override
   String get classroomHandsHelp =>
-      'Raised hands. Read summary for the last received classroom state. Previous and Next select a raised hand without changing it. Acknowledge lowers only the selected hand after server confirmation. It never unmutes anyone. Older hands with unknown order are labelled separately.';
+      'ಎತ್ತಿದ ಕೈಗಳು. ಕೊನೆಯದಾಗಿ ಪಡೆದ ತರಗತಿ ಸ್ಥಿತಿಗಾಗಿ ಸಾರಾಂಶ ಓದಿ. ಹಿಂದಿನ ಮತ್ತು ಮುಂದಿನ ಎತ್ತಿದ ಕೈಯನ್ನು ಬದಲಿಸದೆ ಆಯ್ಕೆ ಮಾಡುತ್ತವೆ. ಸ್ವೀಕರಿಸಿ ಸರ್ವರ್ ದೃಢೀಕರಣದ ನಂತರ ಆಯ್ಕೆ ಮಾಡಿದ ಕೈಯನ್ನು ಮಾತ್ರ ಇಳಿಸುತ್ತದೆ. ಇದು ಯಾರನ್ನೂ ಎಂದಿಗೂ ಅನ್‌ಮ್ಯೂಟ್ ಮಾಡುವುದಿಲ್ಲ. ಕ್ರಮ ತಿಳಿಯದ ಹಳೆಯ ಕೈಗಳನ್ನು ಪ್ರತ್ಯೇಕವಾಗಿ ಗುರುತಿಸಲಾಗುತ್ತದೆ.';
 
   @override
   String get classroomConsoleHelp =>
-      'Classroom console. Read summary for the last received classroom state. Previous and Next select a raised hand without changing it. Acknowledge lowers only the selected hand after server confirmation. It never unmutes anyone. Older hands with unknown order are labelled separately.';
+      'ತರಗತಿ ಕನ್ಸೋಲ್. ಕೊನೆಯದಾಗಿ ಪಡೆದ ತರಗತಿ ಸ್ಥಿತಿಗಾಗಿ ಸಾರಾಂಶ ಓದಿ. ಹಿಂದಿನ ಮತ್ತು ಮುಂದಿನ ಎತ್ತಿದ ಕೈಯನ್ನು ಬದಲಿಸದೆ ಆಯ್ಕೆ ಮಾಡುತ್ತವೆ. ಸ್ವೀಕರಿಸಿ ಸರ್ವರ್ ದೃಢೀಕರಣದ ನಂತರ ಆಯ್ಕೆ ಮಾಡಿದ ಕೈಯನ್ನು ಮಾತ್ರ ಇಳಿಸುತ್ತದೆ. ಇದು ಯಾರನ್ನೂ ಎಂದಿಗೂ ಅನ್‌ಮ್ಯೂಟ್ ಮಾಡುವುದಿಲ್ಲ. ಕ್ರಮ ತಿಳಿಯದ ಹಳೆಯ ಕೈಗಳನ್ನು ಪ್ರತ್ಯೇಕವಾಗಿ ಗುರುತಿಸಲಾಗುತ್ತದೆ.';
 
   @override
-  String get classroomHandsTitle => 'Raised hands';
+  String get classroomHandsTitle => 'ಎತ್ತಿದ ಕೈಗಳು';
 
   @override
   String get classroomNoHands =>
-      'No raised hands in the last received classroom state.';
+      'ಕೊನೆಯದಾಗಿ ಪಡೆದ ತರಗತಿ ಸ್ಥಿತಿಯಲ್ಲಿ ಯಾವುದೇ ಎತ್ತಿದ ಕೈಗಳಿಲ್ಲ.';
 
   @override
   String classroomSelectedGone(int count) {
@@ -4301,9 +4326,9 @@ class AppLocalizationsKn extends AppLocalizations {
       count,
       locale: localeName,
       other:
-          'The selected hand is no longer in the queue. $count raised hands remain. Use Next or Previous to select a hand.',
+          'ಆಯ್ಕೆ ಮಾಡಿದ ಕೈ ಈಗ ಸರದಿಯಲ್ಲಿ ಇಲ್ಲ. $count ಎತ್ತಿದ ಕೈಗಳು ಉಳಿದಿವೆ. ಕೈ ಆಯ್ಕೆ ಮಾಡಲು ಮುಂದಿನ ಅಥವಾ ಹಿಂದಿನ ಬಳಸಿ.',
       one:
-          'The selected hand is no longer in the queue. 1 raised hand remain. Use Next or Previous to select a hand.',
+          'ಆಯ್ಕೆ ಮಾಡಿದ ಕೈ ಈಗ ಸರದಿಯಲ್ಲಿ ಇಲ್ಲ. 1 ಎತ್ತಿದ ಕೈ ಉಳಿದಿದೆ. ಕೈ ಆಯ್ಕೆ ಮಾಡಲು ಮುಂದಿನ ಅಥವಾ ಹಿಂದಿನ ಬಳಸಿ.',
     );
     return '$_temp0';
   }
@@ -4314,116 +4339,118 @@ class AppLocalizationsKn extends AppLocalizations {
       count,
       locale: localeName,
       other:
-          'The selected hand is no longer in the queue. $count raised hands remain. Use Next or Previous to select a hand.',
+          'ಆಯ್ಕೆ ಮಾಡಿದ ಕೈ ಈಗ ಸರದಿಯಲ್ಲಿ ಇಲ್ಲ. $count ಎತ್ತಿದ ಕೈಗಳು ಉಳಿದಿವೆ. ಕೈ ಆಯ್ಕೆ ಮಾಡಲು ಮುಂದಿನ ಅಥವಾ ಹಿಂದಿನ ಬಳಸಿ.',
     );
     return '$_temp0';
   }
 
   @override
   String classroomHandTitle(String position, String total, String name) {
-    return 'Hand $position of $total, $name, waiting';
+    return '$total ರಲ್ಲಿ ಕೈ $position, $name, ಕಾಯುತ್ತಿದ್ದಾರೆ';
   }
 
   @override
   String classroomParticipantNumbered(String id) {
-    return 'Participant $id';
+    return 'ಭಾಗವಹಿಸುವವರು $id';
   }
 
   @override
-  String get classroomKnownOrder => 'Server-recorded queue order.';
+  String get classroomKnownOrder => 'ಸರ್ವರ್ ದಾಖಲಿಸಿದ ಸರದಿ ಕ್ರಮ.';
 
   @override
   String get classroomUnknownOrder =>
-      'Original raise order unknown; shown before known-order hands.';
+      'ಕೈ ಎತ್ತಿದ ಮೂಲ ಕ್ರಮ ತಿಳಿದಿಲ್ಲ; ಕ್ರಮ ತಿಳಿದಿರುವ ಕೈಗಳ ಮೊದಲು ತೋರಿಸಲಾಗಿದೆ.';
 
   @override
-  String get classroomReportedMuted => 'Microphone reported muted.';
+  String get classroomReportedMuted =>
+      'ಮೈಕ್ರೊಫೋನ್ ಮ್ಯೂಟ್ ಆಗಿದೆ ಎಂದು ವರದಿಯಾಗಿದೆ.';
 
   @override
   String get classroomReportedUnmuted =>
-      'Microphone reported unmuted; this is not proof of speech.';
+      'ಮೈಕ್ರೊಫೋನ್ ಅನ್‌ಮ್ಯೂಟ್ ಆಗಿದೆ ಎಂದು ವರದಿಯಾಗಿದೆ; ಇದು ಮಾತನಾಡುತ್ತಿರುವುದಕ್ಕೆ ಪುರಾವೆಯಲ್ಲ.';
 
   @override
-  String get classroomNoHandsShort => 'No raised hands';
+  String get classroomNoHandsShort => 'ಎತ್ತಿದ ಕೈಗಳಿಲ್ಲ';
 
   @override
-  String get classroomNoHandSelected => 'No hand selected';
+  String get classroomNoHandSelected => 'ಯಾವುದೇ ಕೈ ಆಯ್ಕೆ ಮಾಡಿಲ್ಲ';
 
   @override
   String classroomLowering(String name) {
-    return 'Lowering hand for $name. Waiting for the server.';
+    return '$name ಅವರ ಕೈ ಇಳಿಸಲಾಗುತ್ತಿದೆ. ಸರ್ವರ್‌ಗಾಗಿ ಕಾಯಲಾಗುತ್ತಿದೆ.';
   }
 
   @override
   String classroomLoweredLast(String name) {
-    return 'Hand lowered for $name. The hand queue is now empty.';
+    return '$name ಅವರ ಕೈ ಇಳಿಸಲಾಗಿದೆ. ಕೈ ಸರದಿ ಈಗ ಖಾಲಿಯಾಗಿದೆ.';
   }
 
   @override
   String classroomLoweredNext(String name, String next) {
-    return 'Hand lowered for $name. Next: $next.';
+    return '$name ಅವರ ಕೈ ಇಳಿಸಲಾಗಿದೆ. ಮುಂದಿನದು: $next.';
   }
 
   @override
-  String get classroomNoSummary => 'No classroom summary is available yet.';
+  String get classroomNoSummary => 'ಇನ್ನೂ ಯಾವುದೇ ತರಗತಿ ಸಾರಾಂಶ ಲಭ್ಯವಿಲ್ಲ.';
 
   @override
-  String get classroomReadSummary => 'Read classroom summary';
+  String get classroomReadSummary => 'ತರಗತಿ ಸಾರಾಂಶ ಓದಿ';
 
   @override
-  String get classroomPreviousHand => 'Previous raised hand';
+  String get classroomPreviousHand => 'ಹಿಂದಿನ ಎತ್ತಿದ ಕೈ';
 
   @override
-  String get classroomReadHand => 'Read selected hand';
+  String get classroomReadHand => 'ಆಯ್ಕೆ ಮಾಡಿದ ಕೈಯನ್ನು ಓದಿ';
 
   @override
   String classroomReadHandLabel(String hand) {
-    return 'Read selected hand. $hand';
+    return 'ಆಯ್ಕೆ ಮಾಡಿದ ಕೈಯನ್ನು ಓದಿ. $hand';
   }
 
   @override
-  String get classroomNextHand => 'Next raised hand';
+  String get classroomNextHand => 'ಮುಂದಿನ ಎತ್ತಿದ ಕೈ';
 
   @override
-  String get classroomWaitingAck => 'Waiting for hand acknowledgment';
+  String get classroomWaitingAck => 'ಕೈ ಸ್ವೀಕಾರಕ್ಕಾಗಿ ಕಾಯಲಾಗುತ್ತಿದೆ';
 
   @override
   String get classroomAckNoneSelected =>
-      'Acknowledge and lower selected hand. No hand selected';
+      'ಆಯ್ಕೆ ಮಾಡಿದ ಕೈಯನ್ನು ಸ್ವೀಕರಿಸಿ ಇಳಿಸಿ. ಯಾವುದೇ ಕೈ ಆಯ್ಕೆ ಮಾಡಿಲ್ಲ';
 
   @override
   String classroomAckLabel(String name) {
-    return 'Lower $name. Never unmutes';
+    return '$name ಅವರ ಕೈ ಇಳಿಸಿ. ಎಂದಿಗೂ ಅನ್‌ಮ್ಯೂಟ್ ಮಾಡುವುದಿಲ್ಲ';
   }
 
   @override
-  String get classroomAckSelectedLabel => 'Lower selected hand. Never unmutes';
+  String get classroomAckSelectedLabel =>
+      'ಆಯ್ಕೆ ಮಾಡಿದ ಕೈ ಇಳಿಸಿ. ಎಂದಿಗೂ ಅನ್‌ಮ್ಯೂಟ್ ಮಾಡುವುದಿಲ್ಲ';
 
   @override
-  String get classroomAckButton => 'Acknowledge and lower hand';
+  String get classroomAckButton => 'ಗಮನಿಸಿ ಮತ್ತು ಕೈ ಇಳಿಸಿ';
 
   @override
-  String get classroomRepeatConsoleHelp => 'Repeat console help';
+  String get classroomRepeatConsoleHelp => 'ಕನ್ಸೋಲ್ ಸಹಾಯವನ್ನು ಮತ್ತೆ ಕೇಳಿ';
 
   @override
   String get classroomConsoleSections =>
-      'read classroom summary, previous hand, read selected hand, next hand, acknowledge hand, stop speech, help and back. If no hands or summary are available, selecting their controls reads that status';
+      'ತರಗತಿ ಸಾರಾಂಶ ಓದಿ, ಹಿಂದಿನ ಕೈ, ಆಯ್ಕೆ ಮಾಡಿದ ಕೈ ಓದಿ, ಮುಂದಿನ ಕೈ, ಕೈ ಗಮನಿಸಿ, ಧ್ವನಿ ನಿಲ್ಲಿಸಿ, ಸಹಾಯ ಮತ್ತು ಹಿಂದೆ. ಯಾವುದೇ ಕೈ ಅಥವಾ ಸಾರಾಂಶ ಲಭ್ಯವಿಲ್ಲದಿದ್ದರೆ, ಅವುಗಳ ನಿಯಂತ್ರಣ ಆಯ್ಕೆ ಮಾಡಿದಾಗ ಆ ಸ್ಥಿತಿಯನ್ನು ಓದುತ್ತದೆ';
 
   @override
   String get classroomSnapshotNote =>
-      'Counts reflect the last received snapshot, not guaranteed audio delivery. Active speaker identification is unavailable.';
+      'ಎಣಿಕೆಗಳು ಕೊನೆಯದಾಗಿ ಸಿಕ್ಕ ಮಾಹಿತಿಯನ್ನು ತೋರಿಸುತ್ತವೆ, ಆಡಿಯೋ ತಲುಪಿದೆ ಎಂಬ ಖಚಿತತೆ ಇಲ್ಲ. ಯಾರು ಮಾತನಾಡುತ್ತಿದ್ದಾರೆ ಎಂದು ಗುರುತಿಸುವುದು ಲಭ್ಯವಿಲ್ಲ.';
 
   @override
   String get classroomWaitingAckNote =>
-      'Waiting for server acknowledgment. No microphone is changed.';
+      'ಸರ್ವರ್ ದೃಢೀಕರಣಕ್ಕಾಗಿ ಕಾಯುತ್ತಿದೆ. ಯಾವುದೇ ಮೈಕ್ರೊಫೋನ್ ಬದಲಾಗುವುದಿಲ್ಲ.';
 
   @override
   String classroomSummaryParticipants(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count participants',
-      one: '1 participant',
+      other: '$count ಭಾಗವಹಿಸುವವರು',
+      one: '1 ಭಾಗವಹಿಸುವವರು',
     );
     return '$_temp0';
   }
@@ -4433,8 +4460,8 @@ class AppLocalizationsKn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count raised hands',
-      one: '1 raised hand',
+      other: '$count ಎತ್ತಿದ ಕೈಗಳು',
+      one: '1 ಎತ್ತಿದ ಕೈ',
     );
     return '$_temp0';
   }
@@ -4444,39 +4471,41 @@ class AppLocalizationsKn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count microphones',
-      one: '1 microphone',
+      other: '$count ಮೈಕ್ರೊಫೋನ್‌ಗಳು',
+      one: '1 ಮೈಕ್ರೊಫೋನ್',
     );
     return '$_temp0';
   }
 
   @override
-  String get classroomSummaryNobodySpeaking => 'Nobody detected speaking.';
+  String get classroomSummaryNobodySpeaking =>
+      'ಯಾರೂ ಮಾತನಾಡುತ್ತಿರುವುದು ಕಂಡುಬಂದಿಲ್ಲ.';
 
   @override
   String classroomSummarySpeaking(String names) {
-    return 'Detected speaking: $names.';
+    return 'ಮಾತನಾಡುತ್ತಿರುವವರು: $names.';
   }
 
   @override
-  String get classroomSummaryNoRecording => 'No class recording selected.';
+  String get classroomSummaryNoRecording =>
+      'ಯಾವುದೇ ತರಗತಿ ರೆಕಾರ್ಡಿಂಗ್ ಆಯ್ಕೆ ಮಾಡಿಲ್ಲ.';
 
   @override
   String classroomSummaryRecordingPlaying(String title) {
-    return 'Class recording $title. Playing requested.';
+    return 'ತರಗತಿ ರೆಕಾರ್ಡಿಂಗ್ $title. ಪ್ಲೇ ಮಾಡಲು ವಿನಂತಿಸಲಾಗಿದೆ.';
   }
 
   @override
   String classroomSummaryRecordingPaused(String title) {
-    return 'Class recording $title. Paused.';
+    return 'ತರಗತಿ ರೆಕಾರ್ಡಿಂಗ್ $title. ವಿರಾಮಗೊಳಿಸಲಾಗಿದೆ.';
   }
 
   @override
   String get classroomSummaryPreviewActive =>
-      'Private preview active on this phone only.';
+      'ಖಾಸಗಿ ಪೂರ್ವವೀಕ್ಷಣೆ ಈ ಫೋನ್‌ನಲ್ಲಿ ಮಾತ್ರ ನಡೆಯುತ್ತಿದೆ.';
 
   @override
-  String get classroomSummaryPreviewStopped => 'Private preview stopped.';
+  String get classroomSummaryPreviewStopped => 'ಖಾಸಗಿ ಪೂರ್ವವೀಕ್ಷಣೆ ನಿಂತಿದೆ.';
 
   @override
   String classroomSummary(
@@ -4488,29 +4517,29 @@ class AppLocalizationsKn extends AppLocalizations {
     String recording,
     String preview,
   ) {
-    return 'Local connection: $connection. Last received classroom state: $people, $hands, $muted reported muted. Remote reconnecting counts are unavailable. $speaking $recording $preview Microphone flags and accepted playback requests do not prove that anyone spoke or heard audio.';
+    return 'ಸ್ಥಳೀಯ ಸಂಪರ್ಕ: $connection. ಕೊನೆಯದಾಗಿ ಸಿಕ್ಕ ತರಗತಿ ಸ್ಥಿತಿ: $people, $hands, $muted ಮ್ಯೂಟ್ ಆಗಿವೆ ಎಂದು ವರದಿಯಾಗಿದೆ. ಇತರರು ಮರುಸಂಪರ್ಕಿಸುತ್ತಿರುವ ಎಣಿಕೆ ಲಭ್ಯವಿಲ್ಲ. $speaking $recording $preview ಮೈಕ್ರೊಫೋನ್ ಸ್ಥಿತಿ ಮತ್ತು ಸ್ವೀಕರಿಸಿದ ಪ್ಲೇ ವಿನಂತಿಗಳು ಯಾರಾದರೂ ಮಾತನಾಡಿದರು ಅಥವಾ ಆಡಿಯೋ ಕೇಳಿದರು ಎಂಬುದನ್ನು ಸಾಬೀತುಪಡಿಸುವುದಿಲ್ಲ.';
   }
 
   @override
-  String get sessionToolsTitle => 'Teacher tools';
+  String get sessionToolsTitle => 'ಶಿಕ್ಷಕರ ಸಾಧನಗಳು';
 
   @override
-  String get sessionInvite => 'Invite students';
+  String get sessionInvite => 'ವಿದ್ಯಾರ್ಥಿಗಳನ್ನು ಆಹ್ವಾನಿಸಿ';
 
   @override
-  String get sessionEndClass => 'End class for everyone, asks to confirm';
+  String get sessionEndClass => 'ಎಲ್ಲರಿಗೂ ತರಗತಿ ಮುಗಿಸಿ, ದೃಢೀಕರಿಸಲು ಕೇಳುತ್ತದೆ';
 
   @override
-  String get sessionPeopleTitle => 'Participants and raised hands';
+  String get sessionPeopleTitle => 'ಭಾಗವಹಿಸುವವರು ಮತ್ತು ಎತ್ತಿದ ಕೈಗಳು';
 
   @override
   String sessionHandQueue(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Raised hands queue, $count hands waiting',
-      one: 'Raised hands queue, 1 hand waiting',
-      zero: 'Raised hands queue, No hands waiting',
+      other: 'ಎತ್ತಿದ ಕೈಗಳ ಸಾಲು, $count ಕೈಗಳು ಕಾಯುತ್ತಿವೆ',
+      one: 'ಎತ್ತಿದ ಕೈಗಳ ಸಾಲು, 1 ಕೈ ಕಾಯುತ್ತಿದೆ',
+      zero: 'ಎತ್ತಿದ ಕೈಗಳ ಸಾಲು, ಯಾವ ಕೈಯೂ ಕಾಯುತ್ತಿಲ್ಲ',
     );
     return '$_temp0';
   }
@@ -4520,253 +4549,252 @@ class AppLocalizationsKn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Participants list, $count people',
-      one: 'Participants list, 1 person',
+      other: 'ಭಾಗವಹಿಸುವವರ ಪಟ್ಟಿ, $count ಜನರು',
+      one: 'ಭಾಗವಹಿಸುವವರ ಪಟ್ಟಿ, 1 ವ್ಯಕ್ತಿ',
     );
     return '$_temp0';
   }
 
   @override
-  String get sessionSummaryChoice => 'Hear classroom summary';
+  String get sessionSummaryChoice => 'ತರಗತಿ ಸಾರಾಂಶ ಕೇಳಿ';
 
   @override
-  String get sessionParticipantsTitle => 'Participants';
+  String get sessionParticipantsTitle => 'ಭಾಗವಹಿಸುವವರು';
 
   @override
-  String get sessionMembersTitle => 'People in the class';
+  String get sessionMembersTitle => 'ತರಗತಿಯಲ್ಲಿರುವ ಜನರು';
 
   @override
-  String get sessionMembersButton => '7: Who is in class';
+  String get sessionMembersButton => '7: ತರಗತಿಯಲ್ಲಿ ಯಾರಿದ್ದಾರೆ';
 
   @override
   String sessionMembersLabel(String people) {
-    return 'Who is in the class. $people Select a person to hear details';
+    return 'ತರಗತಿಯಲ್ಲಿ ಯಾರಿದ್ದಾರೆ. $people ವಿವರ ಕೇಳಲು ಒಬ್ಬ ವ್ಯಕ್ತಿಯನ್ನು ಆಯ್ಕೆ ಮಾಡಿ';
   }
 
   @override
-  String get sessionHearDetails => 'Hear details';
+  String get sessionHearDetails => 'ವಿವರ ಕೇಳಿ';
 
   @override
   String sessionMuteParticipant(String name) {
-    return 'Mute $name';
+    return '$name ಅವರನ್ನು ಮ್ಯೂಟ್ ಮಾಡಿ';
   }
 
   @override
   String sessionRemoveParticipant(String name) {
-    return 'Remove $name from the class, asks to confirm';
+    return '$name ಅವರನ್ನು ತರಗತಿಯಿಂದ ತೆಗೆದುಹಾಕಿ, ದೃಢೀಕರಿಸಲು ಕೇಳುತ್ತದೆ';
   }
 
   @override
-  String get sessionParticipantGone => 'That participant has left the class.';
+  String get sessionParticipantGone => 'ಆ ಭಾಗವಹಿಸುವವರು ತರಗತಿಯಿಂದ ಹೊರಟಿದ್ದಾರೆ.';
 
   @override
-  String get sessionNoOtherParticipants => 'Nobody else is in the class yet.';
+  String get sessionNoOtherParticipants => 'ಇನ್ನೂ ಬೇರೆ ಯಾರೂ ತರಗತಿಯಲ್ಲಿ ಇಲ್ಲ.';
 
   @override
   String sessionTileRemoveMessage(String name) {
-    return '$name will be removed from this class and returned to their dashboard.';
+    return '$name ಅವರನ್ನು ಈ ತರಗತಿಯಿಂದ ತೆಗೆದುಹಾಕಿ ಅವರ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್‌ಗೆ ಕಳುಹಿಸಲಾಗುತ್ತದೆ.';
   }
 
   @override
   String sessionTileRemoveFromSessionMessage(String name) {
-    return '$name will be removed from this session and returned to their dashboard.';
+    return '$name ಅವರನ್ನು ಈ ಸೆಷನ್‌ನಿಂದ ತೆಗೆದುಹಾಕಿ ಅವರ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್‌ಗೆ ಕಳುಹಿಸಲಾಗುತ್ತದೆ.';
   }
 
   @override
   String sessionUnmuteParticipant(String name) {
-    return 'Unmute $name';
+    return '$name ಅವರನ್ನು ಅನ್‌ಮ್ಯೂಟ್ ಮಾಡಿ';
   }
 
   @override
   String sessionRemoveFromClass(String name) {
-    return 'Remove $name from class';
+    return '$name ಅವರನ್ನು ತರಗತಿಯಿಂದ ತೆಗೆದುಹಾಕಿ';
   }
 
   @override
-  String get sessionConnStateConnecting => 'Connecting';
+  String get sessionConnStateConnecting => 'ಸಂಪರ್ಕಿಸಲಾಗುತ್ತಿದೆ';
 
   @override
-  String get sessionConnStateConnected => 'Connected';
+  String get sessionConnStateConnected => 'ಸಂಪರ್ಕಗೊಂಡಿದೆ';
 
   @override
-  String get sessionConnStateInterrupted => 'Connection interrupted';
+  String get sessionConnStateInterrupted => 'ಸಂಪರ್ಕ ಅಡಚಣೆಯಾಗಿದೆ';
 
   @override
-  String get sessionConnStateReconnecting => 'Reconnecting';
+  String get sessionConnStateReconnecting => 'ಮರುಸಂಪರ್ಕಿಸಲಾಗುತ್ತಿದೆ';
 
   @override
-  String get sessionConnStateSignInRequired => 'Sign-in required';
+  String get sessionConnStateSignInRequired => 'ಸೈನ್ ಇನ್ ಅಗತ್ಯವಿದೆ';
 
   @override
-  String get sessionConnStateUnavailable => 'Class unavailable';
+  String get sessionConnStateUnavailable => 'ತರಗತಿ ಲಭ್ಯವಿಲ್ಲ';
 
   @override
-  String get sessionConnStateEnded => 'Class ended';
+  String get sessionConnStateEnded => 'ತರಗತಿ ಮುಗಿದಿದೆ';
 
   @override
-  String get sessionConnStateDisconnected => 'Disconnected';
+  String get sessionConnStateDisconnected => 'ಸಂಪರ್ಕ ಕಡಿತಗೊಂಡಿದೆ';
 
   @override
-  String get sessionReconnectingToClass => 'Reconnecting to the class.';
+  String get sessionReconnectingToClass => 'ತರಗತಿಗೆ ಮರುಸಂಪರ್ಕಿಸಲಾಗುತ್ತಿದೆ.';
 
   @override
   String get sessionSignInRequiredLeave =>
-      'Sign-in is required. Leave the session and sign in again.';
+      'ಸೈನ್ ಇನ್ ಅಗತ್ಯವಿದೆ. ಸೆಷನ್‌ನಿಂದ ಹೊರಬಂದು ಮತ್ತೆ ಸೈನ್ ಇನ್ ಮಾಡಿ.';
 
   @override
   String get sessionSignInExpiredLeave =>
-      'Sign-in expired. Leave the session and sign in again.';
+      'ಸೈನ್ ಇನ್ ಅವಧಿ ಮುಗಿದಿದೆ. ಸೆಷನ್‌ನಿಂದ ಹೊರಬಂದು ಮತ್ತೆ ಸೈನ್ ಇನ್ ಮಾಡಿ.';
 
   @override
   String get sessionClassNoLongerAvailable =>
-      'This class is no longer available to your account. You can go back.';
+      'ಈ ತರಗತಿ ಇನ್ನು ಮುಂದೆ ನಿಮ್ಮ ಖಾತೆಗೆ ಲಭ್ಯವಿಲ್ಲ. ನೀವು ಹಿಂದೆ ಹೋಗಬಹುದು.';
 
   @override
-  String get sessionServiceUnavailable => 'The class service is unavailable.';
+  String get sessionServiceUnavailable => 'ತರಗತಿ ಸೇವೆ ಲಭ್ಯವಿಲ್ಲ.';
 
   @override
   String get sessionConnectionUnreadable =>
-      'The class connection response could not be read.';
+      'ತರಗತಿ ಸಂಪರ್ಕದ ಪ್ರತಿಕ್ರಿಯೆಯನ್ನು ಓದಲು ಆಗಲಿಲ್ಲ.';
 
   @override
   String get sessionConnectionNotConfirmed =>
-      'The class did not confirm the connection.';
+      'ತರಗತಿ ಸಂಪರ್ಕವನ್ನು ದೃಢೀಕರಿಸಲಿಲ್ಲ.';
 
   @override
-  String get sessionConnectionInterrupted =>
-      'The class connection was interrupted.';
+  String get sessionConnectionInterrupted => 'ತರಗತಿ ಸಂಪರ್ಕಕ್ಕೆ ಅಡಚಣೆಯಾಯಿತು.';
 
   @override
-  String get sessionConnectionClosed => 'The class connection closed.';
+  String get sessionConnectionClosed => 'ತರಗತಿ ಸಂಪರ್ಕ ಮುಚ್ಚಿತು.';
 
   @override
   String get sessionConnectionCouldNotConfirm =>
-      'The class connection could not be confirmed.';
+      'ತರಗತಿ ಸಂಪರ್ಕವನ್ನು ದೃಢೀಕರಿಸಲು ಆಗಲಿಲ್ಲ.';
 
   @override
-  String get sessionNoUpdates => 'No updates were received from the class.';
+  String get sessionNoUpdates => 'ತರಗತಿಯಿಂದ ಯಾವುದೇ ಅಪ್‌ಡೇಟ್ ಬಂದಿಲ್ಲ.';
 
   @override
-  String get sessionUpdateUnreadable => 'A class update could not be read.';
+  String get sessionUpdateUnreadable => 'ಒಂದು ತರಗತಿ ಅಪ್‌ಡೇಟ್ ಓದಲು ಆಗಲಿಲ್ಲ.';
 
   @override
   String get sessionUpdateUnexpectedFormat =>
-      'A class update had an unexpected format.';
+      'ಒಂದು ತರಗತಿ ಅಪ್‌ಡೇಟ್ ಅನಿರೀಕ್ಷಿತ ರೂಪದಲ್ಲಿತ್ತು.';
 
   @override
   String get sessionUpdateTypeUnreadable =>
-      'A class update type could not be read.';
+      'ಒಂದು ತರಗತಿ ಅಪ್‌ಡೇಟ್‌ನ ಪ್ರಕಾರ ಓದಲು ಆಗಲಿಲ್ಲ.';
 
   @override
   String get sessionParticipationNotConfirmed =>
-      'Your class participation was not confirmed.';
+      'ತರಗತಿಯಲ್ಲಿ ನಿಮ್ಮ ಭಾಗವಹಿಸುವಿಕೆ ದೃಢೀಕರಿಸಲಾಗಿಲ್ಲ.';
 
   @override
-  String get sessionConnectedToClass => 'Connected to the class.';
+  String get sessionConnectedToClass => 'ತರಗತಿಗೆ ಸಂಪರ್ಕಗೊಂಡಿದೆ.';
 
   @override
   String get sessionSignInChangedShort =>
-      'Your sign-in changed. Sign in again.';
+      'ನಿಮ್ಮ ಸೈನ್ ಇನ್ ಬದಲಾಗಿದೆ. ಮತ್ತೆ ಸೈನ್ ಇನ್ ಮಾಡಿ.';
 
   @override
   String get sessionRemovedGoBack =>
-      'You have been removed from the class. You can go back.';
+      'ನಿಮ್ಮನ್ನು ತರಗತಿಯಿಂದ ತೆಗೆದುಹಾಕಲಾಗಿದೆ. ನೀವು ಹಿಂದೆ ಹೋಗಬಹುದು.';
 
   @override
   String sessionConnectionLostReconnecting(String reason) {
-    return '$reason Reconnecting. Previous actions will not be sent again automatically.';
+    return '$reason ಮರುಸಂಪರ್ಕಿಸಲಾಗುತ್ತಿದೆ. ಹಿಂದಿನ ಕ್ರಿಯೆಗಳನ್ನು ತಾನಾಗಿಯೇ ಮತ್ತೆ ಕಳುಹಿಸಲಾಗುವುದಿಲ್ಲ.';
   }
 
   @override
   String get sessionActionClassUnavailable =>
-      'The class is not available. This action was not sent.';
+      'ತರಗತಿ ಲಭ್ಯವಿಲ್ಲ. ಈ ಕ್ರಿಯೆಯನ್ನು ಕಳುಹಿಸಲಾಗಿಲ್ಲ.';
 
   @override
   String get sessionActionSessionChanged =>
-      'The session changed. This action was not sent.';
+      'ಸೆಷನ್ ಬದಲಾಗಿದೆ. ಈ ಕ್ರಿಯೆಯನ್ನು ಕಳುಹಿಸಲಾಗಿಲ್ಲ.';
 
   @override
   String get sessionActionSignInRequired =>
-      'Sign-in is required. This action was not sent.';
+      'ಸೈನ್ ಇನ್ ಅಗತ್ಯವಿದೆ. ಈ ಕ್ರಿಯೆಯನ್ನು ಕಳುಹಿಸಲಾಗಿಲ್ಲ.';
 
   @override
   String get sessionActionConnectionChanged =>
-      'The connection changed before confirmation. The action may have been received; check its status before retrying.';
+      'ದೃಢೀಕರಣಕ್ಕೆ ಮೊದಲೇ ಸಂಪರ್ಕ ಬದಲಾಯಿತು. ಕ್ರಿಯೆ ತಲುಪಿರಬಹುದು; ಮತ್ತೆ ಪ್ರಯತ್ನಿಸುವ ಮೊದಲು ಅದರ ಸ್ಥಿತಿ ಪರಿಶೀಲಿಸಿ.';
 
   @override
   String get sessionAccountChangedLeave =>
-      'Your account changed. Leave the session and sign in again.';
+      'ನಿಮ್ಮ ಖಾತೆ ಬದಲಾಗಿದೆ. ಸೆಷನ್‌ನಿಂದ ಹೊರಬಂದು ಮತ್ತೆ ಸೈನ್ ಇನ್ ಮಾಡಿ.';
 
   @override
   String get sessionActionAccountChanged =>
-      'Your account changed before the action could be confirmed.';
+      'ಕ್ರಿಯೆ ದೃಢೀಕರಿಸುವ ಮೊದಲೇ ನಿಮ್ಮ ಖಾತೆ ಬದಲಾಯಿತು.';
 
   @override
   String get sessionActionNotConfirmedByClass =>
-      'The class did not confirm the action. Check its status before trying again.';
+      'ತರಗತಿ ಈ ಕ್ರಿಯೆಯನ್ನು ದೃಢೀಕರಿಸಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸುವ ಮೊದಲು ಅದರ ಸ್ಥಿತಿ ಪರಿಶೀಲಿಸಿ.';
 
   @override
   String get sessionActionMayHaveReached =>
-      'The action was not confirmed. It may have reached the class. Check its status before trying again.';
+      'ಕ್ರಿಯೆ ದೃಢೀಕರಿಸಲಾಗಿಲ್ಲ. ಅದು ತರಗತಿಯನ್ನು ತಲುಪಿರಬಹುದು. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸುವ ಮೊದಲು ಅದರ ಸ್ಥಿತಿ ಪರಿಶೀಲಿಸಿ.';
 
   @override
-  String get sessionRtcConnectionClosed => 'Connection closed.';
+  String get sessionRtcConnectionClosed => 'ಸಂಪರ್ಕ ಮುಚ್ಚಿತು.';
 
   @override
-  String get sessionRtcNetworkError => 'Network error';
+  String get sessionRtcNetworkError => 'ನೆಟ್‌ವರ್ಕ್ ದೋಷ';
 
   @override
   String sessionRtcConnected(String id) {
-    return 'Connected to session $id';
+    return 'ಸೆಷನ್ $id ಗೆ ಸಂಪರ್ಕಗೊಂಡಿದೆ';
   }
 
   @override
   String sessionRtcParticipantJoined(String id) {
-    return 'Participant $id joined.';
+    return 'ಭಾಗವಹಿಸುವವರು $id ಸೇರಿದರು.';
   }
 
   @override
   String sessionRtcParticipantLeft(String id) {
-    return 'Participant $id left.';
+    return 'ಭಾಗವಹಿಸುವವರು $id ಹೊರಟರು.';
   }
 
   @override
   String sessionRtcParticipantMuted(String id) {
-    return 'Participant $id is now muted';
+    return 'ಭಾಗವಹಿಸುವವರು $id ಈಗ ಮ್ಯೂಟ್ ಆಗಿದ್ದಾರೆ';
   }
 
   @override
   String sessionRtcParticipantUnmuted(String id) {
-    return 'Participant $id is now unmuted';
+    return 'ಭಾಗವಹಿಸುವವರು $id ಈಗ ಅನ್‌ಮ್ಯೂಟ್ ಆಗಿದ್ದಾರೆ';
   }
 
   @override
   String sessionRtcMessage(String text) {
-    return 'Message: $text';
+    return 'ಸಂದೇಶ: $text';
   }
 
   @override
   String sessionRtcTeacherPlaying(String id) {
-    return 'Teacher started playing audio $id';
+    return 'ಶಿಕ್ಷಕರು ಆಡಿಯೋ $id ಪ್ಲೇ ಮಾಡಲು ಆರಂಭಿಸಿದರು';
   }
 
   @override
   String sessionRtcAudioStarted(String id) {
-    return 'Audio stream started for participant $id';
+    return 'ಭಾಗವಹಿಸುವವರು $id ಅವರ ಆಡಿಯೋ ಸ್ಟ್ರೀಮ್ ಆರಂಭವಾಯಿತು';
   }
 
   @override
   String librarySpeedTimes(String speed) {
-    return '$speed times';
+    return '$speed ಪಟ್ಟು';
   }
 
   @override
   String get libraryNoClassForSession =>
-      'No class found with this session name.';
+      'ಈ ಸೆಷನ್ ಹೆಸರಿನಲ್ಲಿ ಯಾವುದೇ ತರಗತಿ ಸಿಗಲಿಲ್ಲ.';
 
   @override
   String librarySubjectFilterLabel(String name) {
-    return 'Subject filter: $name. Key 2, or left or right to change';
+    return 'ವಿಷಯ ಫಿಲ್ಟರ್: $name. ಬದಲಾಯಿಸಲು ಕೀ 2, ಅಥವಾ ಎಡ ಅಥವಾ ಬಲ';
   }
 
   @override
@@ -4775,34 +4803,34 @@ class AppLocalizationsKn extends AppLocalizations {
     String index,
     String total,
   ) {
-    return 'Subject filter: $name, $index of $total. Key 2, or left or right to change';
+    return 'ವಿಷಯ ಫಿಲ್ಟರ್: $name, $total ರಲ್ಲಿ $index. ಬದಲಾಯಿಸಲು ಕೀ 2, ಅಥವಾ ಎಡ ಅಥವಾ ಬಲ';
   }
 
   @override
-  String get libraryAllSubjects => 'All subjects';
+  String get libraryAllSubjects => 'ಎಲ್ಲಾ ವಿಷಯಗಳು';
 
   @override
   String libraryRestoredToPlaylist(String title) {
-    return '$title is back in the playlist.';
+    return '$title ಮತ್ತೆ ಪ್ಲೇಲಿಸ್ಟ್‌ನಲ್ಲಿದೆ.';
   }
 
   @override
-  String get librarySizeZero => '0 megabytes';
+  String get librarySizeZero => '0 ಮೆಗಾಬೈಟ್';
 
   @override
-  String get librarySizeTiny => 'less than 0.1 megabytes';
+  String get librarySizeTiny => '0.1 ಮೆಗಾಬೈಟ್‌ಗಿಂತ ಕಡಿಮೆ';
 
   @override
-  String get librarySizeOne => '1 megabyte';
+  String get librarySizeOne => '1 ಮೆಗಾಬೈಟ್';
 
   @override
   String librarySizeMegabytes(String value) {
-    return '$value megabytes';
+    return '$value ಮೆಗಾಬೈಟ್';
   }
 
   @override
   String libraryStorageUsed(String size, String limit) {
-    return '$size used of $limit.';
+    return '$limit ರಲ್ಲಿ $size ಬಳಸಲಾಗಿದೆ.';
   }
 
   @override
@@ -4810,29 +4838,29 @@ class AppLocalizationsKn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count recordings',
-      one: '1 recording',
+      other: '$count ರೆಕಾರ್ಡಿಂಗ್‌ಗಳು',
+      one: '1 ರೆಕಾರ್ಡಿಂಗ್',
     );
     return '$_temp0';
   }
 
   @override
   String libraryPlayingBrief(String title, String position) {
-    return '$title, playing from $position.';
+    return '$title, $position ನಿಂದ ಪ್ಲೇ ಆಗುತ್ತಿದೆ.';
   }
 
   @override
   String libraryPlayingDetailed(String title, String position, String speed) {
-    return '$title, playing from $position, speed $speed.';
+    return '$title, $position ನಿಂದ ಪ್ಲೇ ಆಗುತ್ತಿದೆ, ವೇಗ $speed.';
   }
 
   @override
   String libraryPausedAt(String position) {
-    return 'Paused at $position.';
+    return '$position ನಲ್ಲಿ ವಿರಾಮಗೊಳಿಸಲಾಗಿದೆ.';
   }
 
   @override
-  String get libraryPlayerStateNothing => 'Nothing playing.';
+  String get libraryPlayerStateNothing => 'ಏನೂ ಪ್ಲೇ ಆಗುತ್ತಿಲ್ಲ.';
 
   @override
   String libraryPlayerStatePlaying(
@@ -4840,118 +4868,118 @@ class AppLocalizationsKn extends AppLocalizations {
     String position,
     String speed,
   ) {
-    return 'Playing $title, $position, speed $speed.';
+    return '$title ಪ್ಲೇ ಆಗುತ್ತಿದೆ, $position, ವೇಗ $speed.';
   }
 
   @override
   String libraryPlayerStatePaused(String title, String position, String speed) {
-    return 'Paused $title, $position, speed $speed.';
+    return '$title ವಿರಾಮಗೊಂಡಿದೆ, $position, ವೇಗ $speed.';
   }
 
   @override
   String librarySpeedChanged(String speed) {
-    return 'Speed $speed.';
+    return 'ವೇಗ $speed.';
   }
 
   @override
-  String get librarySlowest => 'Already at the slowest speed.';
+  String get librarySlowest => 'ಈಗಾಗಲೇ ಅತಿ ಕಡಿಮೆ ವೇಗದಲ್ಲಿದೆ.';
 
   @override
-  String get libraryFastest => 'Already at the fastest speed.';
+  String get libraryFastest => 'ಈಗಾಗಲೇ ಅತಿ ಹೆಚ್ಚು ವೇಗದಲ್ಲಿದೆ.';
 
   @override
   String get libraryNoLessonLoaded =>
-      'No lesson is loaded. Choose a lesson to play first.';
+      'ಯಾವುದೇ ಪಾಠ ಲೋಡ್ ಆಗಿಲ್ಲ. ಮೊದಲು ಪ್ಲೇ ಮಾಡಲು ಒಂದು ಪಾಠ ಆಯ್ಕೆ ಮಾಡಿ.';
 
   @override
   String libraryNoLessonPlayingPress(String key) {
-    return 'No lesson is playing. Press $key to play the first lesson.';
+    return 'ಯಾವುದೇ ಪಾಠ ಪ್ಲೇ ಆಗುತ್ತಿಲ್ಲ. ಮೊದಲ ಪಾಠ ಪ್ಲೇ ಮಾಡಲು $key ಒತ್ತಿ.';
   }
 
   @override
-  String get libraryNothingIsPlaying => 'Nothing is playing.';
+  String get libraryNothingIsPlaying => 'ಏನೂ ಪ್ಲೇ ಆಗುತ್ತಿಲ್ಲ.';
 
   @override
   String get libraryNothingPlayingHint =>
-      'Nothing playing. Select a lesson or press 5.';
+      'ಏನೂ ಪ್ಲೇ ಆಗುತ್ತಿಲ್ಲ. ಒಂದು ಪಾಠ ಆಯ್ಕೆ ಮಾಡಿ ಅಥವಾ 5 ಒತ್ತಿ.';
 
   @override
   String libraryStopped(String title) {
-    return '$title stopped.';
+    return '$title ನಿಲ್ಲಿಸಲಾಗಿದೆ.';
   }
 
   @override
   String libraryFinished(String title) {
-    return '$title finished.';
+    return '$title ಮುಗಿದಿದೆ.';
   }
 
   @override
-  String get libraryWaitForPlayer => 'Please wait for the lesson player.';
+  String get libraryWaitForPlayer => 'ದಯವಿಟ್ಟು ಪಾಠ ಪ್ಲೇಯರ್‌ಗಾಗಿ ಕಾಯಿರಿ.';
 
   @override
   String get librarySeekFailed =>
-      'Could not move to that lesson position. Try again.';
+      'ಪಾಠದ ಆ ಸ್ಥಾನಕ್ಕೆ ಹೋಗಲು ಆಗಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
   String get librarySpeedFailed =>
-      'Could not change playback speed. Try again.';
+      'ಪ್ಲೇ ವೇಗ ಬದಲಾಯಿಸಲು ಆಗಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
   String libraryPlayFailed(String title) {
-    return 'Could not play $title. Check your connection, then select it again.';
+    return '$title ಪ್ಲೇ ಮಾಡಲು ಆಗಲಿಲ್ಲ. ನಿಮ್ಮ ಸಂಪರ್ಕ ಪರಿಶೀಲಿಸಿ, ನಂತರ ಅದನ್ನು ಮತ್ತೆ ಆಯ್ಕೆ ಮಾಡಿ.';
   }
 
   @override
   String get libraryCheckingOfflineAccess =>
-      'Internet unavailable. Checking your saved offline access.';
+      'ಇಂಟರ್ನೆಟ್ ಲಭ್ಯವಿಲ್ಲ. ನಿಮ್ಮ ಉಳಿಸಿದ ಆಫ್‌ಲೈನ್ ಪ್ರವೇಶವನ್ನು ಪರಿಶೀಲಿಸಲಾಗುತ್ತಿದೆ.';
 
   @override
   String get libraryLessonGone =>
-      'This lesson is no longer available. Your saved progress and bookmarks are kept.';
+      'ಈ ಪಾಠ ಇನ್ನು ಮುಂದೆ ಲಭ್ಯವಿಲ್ಲ. ನಿಮ್ಮ ಉಳಿಸಿದ ಪ್ರಗತಿ ಮತ್ತು ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳನ್ನು ಇಟ್ಟುಕೊಳ್ಳಲಾಗಿದೆ.';
 
   @override
   String librarySeekLabel(String position) {
-    return 'Lesson position $position. Use left or right to move 10 seconds.';
+    return 'ಪಾಠದ ಸ್ಥಾನ $position. 10 ಸೆಕೆಂಡ್ ಸರಿಯಲು ಎಡ ಅಥವಾ ಬಲ ಬಳಸಿ.';
   }
 
   @override
   String libraryRewindLabel(String key) {
-    return 'Back 10 seconds, key $key';
+    return '10 ಸೆಕೆಂಡ್ ಹಿಂದೆ, ಕೀ $key';
   }
 
   @override
   String libraryForwardLabel(String key) {
-    return 'Forward 10 seconds, key $key';
+    return '10 ಸೆಕೆಂಡ್ ಮುಂದೆ, ಕೀ $key';
   }
 
   @override
   String librarySlowerLabel(String key, String speed) {
-    return 'Slower, key $key. Now $speed';
+    return 'ನಿಧಾನ, ಕೀ $key. ಈಗ $speed';
   }
 
   @override
   String libraryFasterLabel(String key, String speed) {
-    return 'Faster, key $key. Now $speed';
+    return 'ವೇಗ ಹೆಚ್ಚಿಸಿ, ಕೀ $key. ಈಗ $speed';
   }
 
   @override
   String libraryPauseLabel(String title, String key) {
-    return 'Pause $title, key $key';
+    return '$title ವಿರಾಮಗೊಳಿಸಿ, ಕೀ $key';
   }
 
   @override
   String libraryPlayLabel(String title, String key) {
-    return 'Play $title, key $key';
+    return '$title ಪ್ಲೇ ಮಾಡಿ, ಕೀ $key';
   }
 
   @override
   String libraryResumeLabel(String title, String key) {
-    return 'Resume $title, key $key';
+    return '$title ಮುಂದುವರಿಸಿ, ಕೀ $key';
   }
 
   @override
   String libraryStopLabel(String title, String key) {
-    return 'Stop $title, key $key';
+    return '$title ನಿಲ್ಲಿಸಿ, ಕೀ $key';
   }
 
   @override
@@ -4962,7 +4990,7 @@ class AppLocalizationsKn extends AppLocalizations {
     String slower,
     String faster,
   ) {
-    return 'Press $rewind to go back 10 seconds, $playPause to play or pause, $forward to go forward 10 seconds, $slower for slower and $faster for faster.';
+    return '10 ಸೆಕೆಂಡ್ ಹಿಂದೆ ಹೋಗಲು $rewind, ಪ್ಲೇ ಅಥವಾ ವಿರಾಮಕ್ಕೆ $playPause, 10 ಸೆಕೆಂಡ್ ಮುಂದೆ ಹೋಗಲು $forward, ನಿಧಾನಕ್ಕೆ $slower ಮತ್ತು ವೇಗಕ್ಕೆ $faster ಒತ್ತಿ.';
   }
 
   @override
@@ -4970,8 +4998,8 @@ class AppLocalizationsKn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count bookmarks',
-      one: '1 bookmark',
+      other: '$count ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು',
+      one: '1 ಬುಕ್‌ಮಾರ್ಕ್',
     );
     return '$_temp0';
   }
@@ -4985,17 +5013,17 @@ class AppLocalizationsKn extends AppLocalizations {
     String repeat,
     String saving,
   ) {
-    return '$title. Position $position. Speed $speed. $bookmarks. A-B repeat $repeat. Progress saving $saving.';
+    return '$title. ಸ್ಥಾನ $position. ವೇಗ $speed. $bookmarks. A-B ಪುನರಾವರ್ತನೆ $repeat. ಪ್ರಗತಿ ಉಳಿಸುವಿಕೆ $saving.';
   }
 
   @override
   String libraryReadStatusLabel(String status) {
-    return 'Read learning status. $status';
+    return 'ಕಲಿಕೆಯ ಸ್ಥಿತಿ ಓದಿ. $status';
   }
 
   @override
   String libraryAddBookmarkLabel(String time) {
-    return 'Add bookmark at $time';
+    return '$time ನಲ್ಲಿ ಬುಕ್‌ಮಾರ್ಕ್ ಸೇರಿಸಿ';
   }
 
   @override
@@ -5003,251 +5031,255 @@ class AppLocalizationsKn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Bookmarks. $count saved points',
-      one: 'Bookmarks. 1 saved point',
+      other: 'ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು. $count ಉಳಿಸಿದ ಸ್ಥಾನಗಳು',
+      one: 'ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು. 1 ಉಳಿಸಿದ ಸ್ಥಾನ',
     );
     return '$_temp0';
   }
 
   @override
   String libraryNotesLabel(String time) {
-    return 'Private study notes at $time. Pauses the lesson before opening';
+    return '$time ನಲ್ಲಿ ಖಾಸಗಿ ಅಧ್ಯಯನ ಟಿಪ್ಪಣಿಗಳು. ತೆರೆಯುವ ಮೊದಲು ಪಾಠವನ್ನು ವಿರಾಮಗೊಳಿಸುತ್ತದೆ';
   }
 
   @override
   String get libraryRepeatStartLabel =>
-      'Set repeat start A at the current position';
+      'ಈಗಿನ ಸ್ಥಾನದಲ್ಲಿ ಪುನರಾವರ್ತನೆಯ ಆರಂಭ A ಹೊಂದಿಸಿ';
 
   @override
-  String get libraryRepeatEndLabel => 'Set repeat end B after start A';
+  String get libraryRepeatEndLabel =>
+      'ಆರಂಭ A ನಂತರ ಪುನರಾವರ್ತನೆಯ ಅಂತ್ಯ B ಹೊಂದಿಸಿ';
 
   @override
-  String get libraryRepeatTurnOffLabel => 'Turn A-B repeat off';
+  String get libraryRepeatTurnOffLabel => 'A-B ಪುನರಾವರ್ತನೆ ಆಫ್ ಮಾಡಿ';
 
   @override
-  String get libraryRepeatTurnOnLabel => 'Turn A-B repeat on';
+  String get libraryRepeatTurnOnLabel => 'A-B ಪುನರಾವರ್ತನೆ ಆನ್ ಮಾಡಿ';
 
   @override
-  String get libraryRepeatClearLabel => 'Clear saved A-B repeat points';
+  String get libraryRepeatClearLabel =>
+      'ಉಳಿಸಿದ A-B ಪುನರಾವರ್ತನೆ ಸ್ಥಾನಗಳನ್ನು ಅಳಿಸಿ';
 
   @override
   String libraryRetryLabel(String issue) {
-    return 'Retry saving learning progress. $issue';
+    return 'ಕಲಿಕೆಯ ಪ್ರಗತಿ ಉಳಿಸಲು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ. $issue';
   }
 
   @override
   String libraryBookmarkSaved(String time) {
-    return 'Bookmark saved at $time.';
+    return '$time ನಲ್ಲಿ ಬುಕ್‌ಮಾರ್ಕ್ ಉಳಿಸಲಾಗಿದೆ.';
   }
 
   @override
   String libraryRepeatStartSet(String time) {
-    return 'Repeat start set at $time.';
+    return 'ಪುನರಾವರ್ತನೆಯ ಆರಂಭ $time ನಲ್ಲಿ ಹೊಂದಿಸಲಾಗಿದೆ.';
   }
 
   @override
   String libraryRepeatEndSetBrief(String time) {
-    return 'Repeat end set at $time.';
+    return 'ಪುನರಾವರ್ತನೆಯ ಅಂತ್ಯ $time ನಲ್ಲಿ ಹೊಂದಿಸಲಾಗಿದೆ.';
   }
 
   @override
   String libraryRepeatEndSetDetailed(String time) {
-    return 'Repeat end set at $time. Select Repeat on to start looping.';
+    return 'ಪುನರಾವರ್ತನೆಯ ಅಂತ್ಯ $time ನಲ್ಲಿ ಹೊಂದಿಸಲಾಗಿದೆ. ಮತ್ತೆ ಮತ್ತೆ ಪ್ಲೇ ಮಾಡಲು ಪುನರಾವರ್ತನೆ ಆನ್ ಆಯ್ಕೆ ಮಾಡಿ.';
   }
 
   @override
   String libraryRepeatState(String state) {
-    return 'A-B repeat $state.';
+    return 'A-B ಪುನರಾವರ್ತನೆ $state.';
   }
 
   @override
-  String get libraryRepeatCleared => 'A-B repeat points cleared.';
+  String get libraryRepeatCleared => 'A-B ಪುನರಾವರ್ತನೆ ಸ್ಥಾನಗಳನ್ನು ಅಳಿಸಲಾಗಿದೆ.';
 
   @override
-  String get libraryProgressSaved => 'Learning progress saved.';
+  String get libraryProgressSaved => 'ಕಲಿಕೆಯ ಪ್ರಗತಿ ಉಳಿಸಲಾಗಿದೆ.';
 
   @override
   String get libraryActionFailed =>
-      'The player could not complete this action. Check playback and try again.';
+      'ಪ್ಲೇಯರ್ ಈ ಕ್ರಿಯೆಯನ್ನು ಪೂರ್ಣಗೊಳಿಸಲು ಆಗಲಿಲ್ಲ. ಪ್ಲೇಬ್ಯಾಕ್ ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
-  String get libraryCheckPosition => 'Check the lesson position and try again.';
+  String get libraryCheckPosition => 'ಪಾಠದ ಸ್ಥಾನ ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
-  String get libraryProgressUnavailableTitle => 'Saved progress unavailable';
+  String get libraryProgressUnavailableTitle => 'ಉಳಿಸಿದ ಪ್ರಗತಿ ಲಭ್ಯವಿಲ್ಲ';
 
   @override
   String libraryProgressUnavailable(String reason) {
-    return '$reason Listen from the beginning without changing saved data? Saving stays off until you retry successfully.';
+    return '$reason ಉಳಿಸಿದ ಮಾಹಿತಿಯನ್ನು ಬದಲಾಯಿಸದೆ ಆರಂಭದಿಂದ ಕೇಳುವಿರಾ? ಮತ್ತೆ ಯಶಸ್ವಿಯಾಗಿ ಪ್ರಯತ್ನಿಸುವವರೆಗೆ ಉಳಿಸುವಿಕೆ ಆಫ್ ಆಗಿರುತ್ತದೆ.';
   }
 
   @override
-  String get libraryListenFromBeginning => 'Listen from beginning';
+  String get libraryListenFromBeginning => 'ಆರಂಭದಿಂದ ಕೇಳಿ';
 
   @override
   String get libraryBookmarkNameScreen =>
-      'Name bookmark. Press OK to edit. Up or down leaves editing.';
+      'ಬುಕ್‌ಮಾರ್ಕ್‌ಗೆ ಹೆಸರು ನೀಡಿ. ಬದಲಾಯಿಸಲು ಓಕೆ ಒತ್ತಿ. ಮೇಲೆ ಅಥವಾ ಕೆಳಗೆ ಒತ್ತಿದರೆ ಬದಲಾವಣೆಯಿಂದ ಹೊರಬರುತ್ತದೆ.';
 
   @override
-  String get libraryEnterBookmarkName => 'Enter a bookmark name.';
+  String get libraryEnterBookmarkName => 'ಬುಕ್‌ಮಾರ್ಕ್ ಹೆಸರು ನಮೂದಿಸಿ.';
 
   @override
   String libraryBookmarkLabel(String label, String time) {
-    return '$label. $time. Jump to bookmark';
+    return '$label. $time. ಬುಕ್‌ಮಾರ್ಕ್‌ಗೆ ಹೋಗಿ';
   }
 
   @override
   String libraryBookmarkJumped(String label, String time) {
-    return '$label. Position $time.';
+    return '$label. ಸ್ಥಾನ $time.';
   }
 
   @override
   String libraryRemoveBookmarkLabel(String label) {
-    return 'Remove $label';
+    return '$label ತೆಗೆದುಹಾಕಿ';
   }
 
   @override
   String libraryRemoveBookmarkQuestion(String label) {
-    return 'Remove $label? This does not remove the lesson or any other bookmarks.';
+    return '$label ತೆಗೆದುಹಾಕಬೇಕೇ? ಇದು ಪಾಠವನ್ನು ಅಥವಾ ಬೇರೆ ಯಾವುದೇ ಬುಕ್‌ಮಾರ್ಕ್ ಅನ್ನು ತೆಗೆದುಹಾಕುವುದಿಲ್ಲ.';
   }
 
   @override
   String libraryBookmarkRemoved(String label) {
-    return '$label removed.';
+    return '$label ತೆಗೆದುಹಾಕಲಾಗಿದೆ.';
   }
 
   @override
   String get libraryBookmarksScreen =>
-      'Bookmarks. Select a point to jump. This does not start paused playback. Remove asks for confirmation.';
+      'ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು. ಹೋಗಲು ಒಂದು ಸ್ಥಾನ ಆಯ್ಕೆ ಮಾಡಿ. ಇದು ವಿರಾಮಗೊಂಡ ಪ್ಲೇಬ್ಯಾಕ್ ಅನ್ನು ಆರಂಭಿಸುವುದಿಲ್ಲ. ತೆಗೆದುಹಾಕುವ ಮೊದಲು ದೃಢೀಕರಣ ಕೇಳುತ್ತದೆ.';
 
   @override
   String get libraryNoRecordingsUpload =>
-      'No recordings yet. Press 2 to upload audio.';
+      'ಇನ್ನೂ ಯಾವುದೇ ರೆಕಾರ್ಡಿಂಗ್ ಇಲ್ಲ. ಆಡಿಯೋ ಅಪ್‌ಲೋಡ್ ಮಾಡಲು 2 ಒತ್ತಿ.';
 
   @override
   String libraryRecordingsLoaded(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count recordings loaded.',
-      one: '1 recording loaded.',
+      other: '$count ರೆಕಾರ್ಡಿಂಗ್‌ಗಳು ಲೋಡ್ ಆಗಿವೆ.',
+      one: '1 ರೆಕಾರ್ಡಿಂಗ್ ಲೋಡ್ ಆಗಿದೆ.',
     );
     return '$_temp0';
   }
 
   @override
   String get libraryLoadFailed =>
-      'Could not load recordings. Check your internet connection, then press 1 to retry.';
+      'ರೆಕಾರ್ಡಿಂಗ್‌ಗಳನ್ನು ಲೋಡ್ ಮಾಡಲು ಆಗಲಿಲ್ಲ. ನಿಮ್ಮ ಇಂಟರ್ನೆಟ್ ಸಂಪರ್ಕ ಪರಿಶೀಲಿಸಿ, ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಲು 1 ಒತ್ತಿ.';
 
   @override
-  String get libraryTitleRequired => 'Title is required.';
+  String get libraryTitleRequired => 'ಶೀರ್ಷಿಕೆ ಅಗತ್ಯವಿದೆ.';
 
   @override
   String get libraryPickFailed =>
-      'Could not open the file. Try choosing it again.';
+      'ಫೈಲ್ ತೆರೆಯಲು ಆಗಲಿಲ್ಲ. ಅದನ್ನು ಮತ್ತೆ ಆಯ್ಕೆ ಮಾಡಿ ನೋಡಿ.';
 
   @override
   String get libraryChooseWorkspaceFirst =>
-      'Choose a class and subject workspace on the Teacher Dashboard before uploading audio.';
+      'ಆಡಿಯೋ ಅಪ್‌ಲೋಡ್ ಮಾಡುವ ಮೊದಲು ಶಿಕ್ಷಕರ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್‌ನಲ್ಲಿ ಒಂದು ತರಗತಿ ಮತ್ತು ವಿಷಯದ ವರ್ಕ್‌ಸ್ಪೇಸ್ ಆಯ್ಕೆ ಮಾಡಿ.';
 
   @override
   String libraryUploadingBrief(String title) {
-    return 'Uploading $title.';
+    return '$title ಅಪ್‌ಲೋಡ್ ಆಗುತ್ತಿದೆ.';
   }
 
   @override
   String libraryUploadingDetailed(String title) {
-    return 'Uploading $title. You will hear progress every 25 percent.';
+    return '$title ಅಪ್‌ಲೋಡ್ ಆಗುತ್ತಿದೆ. ಪ್ರತಿ 25 ಪ್ರತಿಶತಕ್ಕೆ ಪ್ರಗತಿ ಕೇಳಿಸುತ್ತದೆ.';
   }
 
   @override
   String libraryUploadingOnceDetailed(String title) {
-    return 'Uploading $title. Please wait; you will hear when it finishes.';
+    return '$title ಅಪ್‌ಲೋಡ್ ಆಗುತ್ತಿದೆ. ದಯವಿಟ್ಟು ಕಾಯಿರಿ; ಮುಗಿದಾಗ ನಿಮಗೆ ಕೇಳಿಸುತ್ತದೆ.';
   }
 
   @override
   String libraryUploadProgress(String title, String percent) {
-    return '$title: $percent uploaded.';
+    return '$title: $percent ಅಪ್‌ಲೋಡ್ ಆಗಿದೆ.';
   }
 
   @override
   String libraryUploaded(String title) {
-    return '$title uploaded.';
+    return '$title ಅಪ್‌ಲೋಡ್ ಆಗಿದೆ.';
   }
 
   @override
   String libraryUploadFailed(String title) {
-    return '$title could not be uploaded. Check your connection, then press 3 to try again.';
+    return '$title ಅಪ್‌ಲೋಡ್ ಮಾಡಲು ಆಗಲಿಲ್ಲ. ನಿಮ್ಮ ಸಂಪರ್ಕ ಪರಿಶೀಲಿಸಿ, ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಲು 3 ಒತ್ತಿ.';
   }
 
   @override
   String get libraryUploadNoSession =>
-      'Upload cancelled. Select at least one session, then press 3 to add audio again.';
+      'ಅಪ್‌ಲೋಡ್ ರದ್ದಾಗಿದೆ. ಕನಿಷ್ಠ ಒಂದು ಸೆಷನ್ ಆಯ್ಕೆ ಮಾಡಿ, ನಂತರ ಮತ್ತೆ ಆಡಿಯೋ ಸೇರಿಸಲು 3 ಒತ್ತಿ.';
 
   @override
   String get libraryUploadNoClass =>
-      'The session class and subject could not be determined.';
+      'ಸೆಷನ್‌ನ ತರಗತಿ ಮತ್ತು ವಿಷಯವನ್ನು ಗುರುತಿಸಲು ಆಗಲಿಲ್ಲ.';
 
   @override
   String get libraryFileUnreadable =>
-      'Could not read the file. Choose it again.';
+      'ಫೈಲ್ ಓದಲು ಆಗಲಿಲ್ಲ. ಅದನ್ನು ಮತ್ತೆ ಆಯ್ಕೆ ಮಾಡಿ.';
 
   @override
   String libraryPreviewStopped(String title) {
-    return 'Preview of $title stopped.';
+    return '$title ಪೂರ್ವವೀಕ್ಷಣೆ ನಿಂತಿದೆ.';
   }
 
   @override
   String libraryPreviewing(String title) {
-    return 'Previewing $title privately.';
+    return '$title ಖಾಸಗಿಯಾಗಿ ಪೂರ್ವವೀಕ್ಷಣೆ ಆಗುತ್ತಿದೆ.';
   }
 
   @override
-  String get libraryPreviewFinished => 'Preview finished.';
+  String get libraryPreviewFinished => 'ಪೂರ್ವವೀಕ್ಷಣೆ ಮುಗಿದಿದೆ.';
 
   @override
   String libraryPreviewFailed(String title) {
-    return 'Could not play $title. Check your connection and try again.';
+    return '$title ಪ್ಲೇ ಮಾಡಲು ಆಗಲಿಲ್ಲ. ನಿಮ್ಮ ಸಂಪರ್ಕ ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
   }
 
   @override
-  String get libraryNoActiveSession => 'No active session.';
+  String get libraryNoActiveSession => 'ಯಾವುದೇ ಸಕ್ರಿಯ ಸೆಷನ್ ಇಲ್ಲ.';
 
   @override
   String librarySelectedForSession(String title) {
-    return 'Selected $title for the session.';
+    return 'ಸೆಷನ್‌ಗಾಗಿ $title ಆಯ್ಕೆ ಮಾಡಲಾಗಿದೆ.';
   }
 
   @override
-  String get librarySelectFailed => 'Could not select the audio. Try again.';
+  String get librarySelectFailed =>
+      'ಆಡಿಯೋ ಆಯ್ಕೆ ಮಾಡಲು ಆಗಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
-  String get libraryClassPlayAccepted => 'Class playback request accepted.';
+  String get libraryClassPlayAccepted =>
+      'ತರಗತಿಯಲ್ಲಿ ಪ್ಲೇ ಮಾಡುವ ವಿನಂತಿ ಸ್ವೀಕರಿಸಲಾಗಿದೆ.';
 
   @override
   String get libraryClassPlayFailed =>
-      'Could not start class playback. Try again.';
+      'ತರಗತಿಯಲ್ಲಿ ಪ್ಲೇ ಆರಂಭಿಸಲು ಆಗಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
-  String get libraryClassPauseAccepted => 'Class pause request accepted.';
+  String get libraryClassPauseAccepted => 'ತರಗತಿ ವಿರಾಮದ ವಿನಂತಿ ಸ್ವೀಕರಿಸಲಾಗಿದೆ.';
 
   @override
   String get libraryClassPauseFailed =>
-      'Could not pause class audio. Try again.';
+      'ತರಗತಿ ಆಡಿಯೋ ವಿರಾಮಗೊಳಿಸಲು ಆಗಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
   String libraryStopPreviewLabel(String title) {
-    return 'Stop preview of $title privately. Only you can hear this.';
+    return '$title ನ ಖಾಸಗಿ ಪೂರ್ವವೀಕ್ಷಣೆ ನಿಲ್ಲಿಸಿ. ಇದು ನಿಮಗೆ ಮಾತ್ರ ಕೇಳಿಸುತ್ತದೆ.';
   }
 
   @override
   String libraryPreviewLabel(String title) {
-    return 'Preview $title privately. Only you can hear this.';
+    return '$title ಖಾಸಗಿಯಾಗಿ ಪೂರ್ವವೀಕ್ಷಿಸಿ. ಇದು ನಿಮಗೆ ಮಾತ್ರ ಕೇಳಿಸುತ್ತದೆ.';
   }
 
   @override
   String libraryBroadcastLabel(String title) {
-    return 'Play $title for everyone in the session';
+    return 'ಸೆಷನ್‌ನಲ್ಲಿರುವ ಎಲ್ಲರಿಗೂ $title ಪ್ಲೇ ಮಾಡಿ';
   }
 
   @override
@@ -5255,103 +5287,104 @@ class AppLocalizationsKn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count recordings.',
-      one: '1 recording.',
+      other: '$count ರೆಕಾರ್ಡಿಂಗ್‌ಗಳು.',
+      one: '1 ರೆಕಾರ್ಡಿಂಗ್.',
     );
     return '$_temp0';
   }
 
   @override
   String libraryPreviewingState(String title) {
-    return 'Previewing $title.';
+    return '$title ಪೂರ್ವವೀಕ್ಷಣೆ ಆಗುತ್ತಿದೆ.';
   }
 
   @override
-  String get libraryUploadInProgress => 'Upload in progress.';
+  String get libraryUploadInProgress => 'ಅಪ್‌ಲೋಡ್ ನಡೆಯುತ್ತಿದೆ.';
 
   @override
   String get libraryAccountChanged =>
-      'Your account changed. Open the library again.';
+      'ನಿಮ್ಮ ಖಾತೆ ಬದಲಾಗಿದೆ. ಲೈಬ್ರರಿಯನ್ನು ಮತ್ತೆ ತೆರೆಯಿರಿ.';
 
   @override
   String get libraryNoUnfinished =>
-      'No unfinished lesson is saved for this account. Choose a recorded lesson to start learning.';
+      'ಈ ಖಾತೆಗೆ ಯಾವುದೇ ಅಪೂರ್ಣ ಪಾಠ ಉಳಿಸಲಾಗಿಲ್ಲ. ಕಲಿಯಲು ಆರಂಭಿಸಲು ಒಂದು ರೆಕಾರ್ಡ್ ಮಾಡಿದ ಪಾಠ ಆಯ್ಕೆ ಮಾಡಿ.';
 
   @override
   String get libraryCannotCheckAccess =>
-      'Could not check lesson access. Connect to the internet and retry. Your saved progress is kept.';
+      'ಪಾಠದ ಪ್ರವೇಶ ಪರಿಶೀಲಿಸಲು ಆಗಲಿಲ್ಲ. ಇಂಟರ್ನೆಟ್‌ಗೆ ಸಂಪರ್ಕಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ. ನಿಮ್ಮ ಉಳಿಸಿದ ಪ್ರಗತಿಯನ್ನು ಇಟ್ಟುಕೊಳ್ಳಲಾಗಿದೆ.';
 
   @override
   String get libraryUnfinishedUnavailable =>
-      'Your unfinished lessons are not currently available in this library. Your saved progress and bookmarks are kept.';
+      'ನಿಮ್ಮ ಅಪೂರ್ಣ ಪಾಠಗಳು ಸದ್ಯಕ್ಕೆ ಈ ಲೈಬ್ರರಿಯಲ್ಲಿ ಲಭ್ಯವಿಲ್ಲ. ನಿಮ್ಮ ಉಳಿಸಿದ ಪ್ರಗತಿ ಮತ್ತು ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳನ್ನು ಇಟ್ಟುಕೊಳ್ಳಲಾಗಿದೆ.';
 
   @override
   String get libraryOpeningNextUnfinished =>
-      'The most recent lesson is unavailable here. Opening your next most recent available unfinished lesson. Saved progress is kept.';
+      'ಇತ್ತೀಚಿನ ಪಾಠ ಇಲ್ಲಿ ಲಭ್ಯವಿಲ್ಲ. ಲಭ್ಯವಿರುವ ಮುಂದಿನ ಇತ್ತೀಚಿನ ಅಪೂರ್ಣ ಪಾಠವನ್ನು ತೆರೆಯಲಾಗುತ್ತಿದೆ. ಉಳಿಸಿದ ಪ್ರಗತಿಯನ್ನು ಇಟ್ಟುಕೊಳ್ಳಲಾಗಿದೆ.';
 
   @override
   String get libraryContinueFailed =>
-      'Could not open saved learning progress. Check storage, your connection, and sign-in, then retry.';
+      'ಉಳಿಸಿದ ಕಲಿಕೆಯ ಪ್ರಗತಿಯನ್ನು ತೆರೆಯಲು ಆಗಲಿಲ್ಲ. ಸ್ಟೋರೇಜ್, ನಿಮ್ಮ ಸಂಪರ್ಕ ಮತ್ತು ಸೈನ್ ಇನ್ ಪರಿಶೀಲಿಸಿ, ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
   String get libraryNoActiveClassesNow =>
-      'No active classes right now. Press 3 for all audio files.';
+      'ಈಗ ಯಾವುದೇ ಸಕ್ರಿಯ ತರಗತಿಗಳಿಲ್ಲ. ಎಲ್ಲಾ ಆಡಿಯೋ ಫೈಲ್‌ಗಳಿಗಾಗಿ 3 ಒತ್ತಿ.';
 
   @override
   String libraryClassesLoaded(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count active classes loaded.',
-      one: '1 active class loaded.',
+      other: '$count ಸಕ್ರಿಯ ತರಗತಿಗಳು ಲೋಡ್ ಆಗಿವೆ.',
+      one: '1 ಸಕ್ರಿಯ ತರಗತಿ ಲೋಡ್ ಆಗಿದೆ.',
     );
     return '$_temp0';
   }
 
   @override
   String libraryClassesFailed(String reason) {
-    return '$reason Active classes could not be refreshed. Press 1 to retry. Saved downloads remain available.';
+    return '$reason ಸಕ್ರಿಯ ತರಗತಿಗಳನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಲು ಆಗಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಲು 1 ಒತ್ತಿ. ಉಳಿಸಿದ ಡೌನ್‌ಲೋಡ್‌ಗಳು ಲಭ್ಯವಿವೆ.';
   }
 
   @override
   String get libraryClassesLoading =>
-      'Classes are still loading. Try key 5 again shortly.';
+      'ತರಗತಿಗಳು ಇನ್ನೂ ಲೋಡ್ ಆಗುತ್ತಿವೆ. ಸ್ವಲ್ಪ ಸಮಯದ ನಂತರ ಮತ್ತೆ ಕೀ 5 ಒತ್ತಿ.';
 
   @override
   String get libraryNoActiveClassesStaying =>
-      'There are no active classes. Staying in the audio library.';
+      'ಯಾವುದೇ ಸಕ್ರಿಯ ತರಗತಿಗಳಿಲ್ಲ. ಆಡಿಯೋ ಲೈಬ್ರರಿಯಲ್ಲೇ ಇರಲಾಗುತ್ತಿದೆ.';
 
   @override
   String libraryFirstActiveClass(String title) {
-    return '$title. First active class. Use D-pad up and down to browse active class sessions. Press OK to open the selected class recordings.';
+    return '$title. ಮೊದಲ ಸಕ್ರಿಯ ತರಗತಿ. ಸಕ್ರಿಯ ತರಗತಿ ಸೆಷನ್‌ಗಳನ್ನು ನೋಡಲು D-pad ಮೇಲೆ ಮತ್ತು ಕೆಳಗೆ ಬಳಸಿ. ಆಯ್ಕೆ ಮಾಡಿದ ತರಗತಿಯ ರೆಕಾರ್ಡಿಂಗ್‌ಗಳನ್ನು ತೆರೆಯಲು ಓಕೆ ಒತ್ತಿ.';
   }
 
   @override
   String get libraryOpeningPlaylists =>
-      'Opening My Playlists. Playlist contents are private.';
+      'ನನ್ನ ಪ್ಲೇಲಿಸ್ಟ್‌ಗಳನ್ನು ತೆರೆಯಲಾಗುತ್ತಿದೆ. ಪ್ಲೇಲಿಸ್ಟ್‌ನ ವಿಷಯಗಳು ಖಾಸಗಿಯಾಗಿವೆ.';
 
   @override
   String libraryClassLabel(String title, String index, String count) {
-    return '$title. Class $index of $count';
+    return '$title. ತರಗತಿ $index, ಒಟ್ಟು $count ರಲ್ಲಿ';
   }
 
   @override
-  String get libraryLoadingActiveClasses => 'Loading active classes.';
+  String get libraryLoadingActiveClasses =>
+      'ಸಕ್ರಿಯ ತರಗತಿಗಳನ್ನು ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ.';
 
   @override
   String libraryActiveClassesSentence(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count active classes.',
-      one: '1 active class.',
+      other: '$count ಸಕ್ರಿಯ ತರಗತಿಗಳು.',
+      one: '1 ಸಕ್ರಿಯ ತರಗತಿ.',
     );
     return '$_temp0';
   }
 
   @override
   String libraryNoRecordingsFor(String where) {
-    return 'No recordings yet for $where.';
+    return '$where ಗೆ ಇನ್ನೂ ಯಾವುದೇ ರೆಕಾರ್ಡಿಂಗ್ ಇಲ್ಲ.';
   }
 
   @override
@@ -5359,54 +5392,54 @@ class AppLocalizationsKn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count recordings loaded for $where.',
-      one: '1 recording loaded for $where.',
+      other: '$where ಗೆ $count ರೆಕಾರ್ಡಿಂಗ್‌ಗಳು ಲೋಡ್ ಆಗಿವೆ.',
+      one: '$where ಗೆ 1 ರೆಕಾರ್ಡಿಂಗ್ ಲೋಡ್ ಆಗಿದೆ.',
     );
     return '$_temp0';
   }
 
   @override
   String get libraryDownloadsReadFailed =>
-      'Could not read downloaded lessons. Press 1 to retry.';
+      'ಡೌನ್‌ಲೋಡ್ ಮಾಡಿದ ಪಾಠಗಳನ್ನು ಓದಲು ಆಗಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಲು 1 ಒತ್ತಿ.';
 
   @override
   String get libraryClassLoadFailed =>
-      'Could not load recordings. Check your internet connection and sign-in, then press 1 to retry.';
+      'ರೆಕಾರ್ಡಿಂಗ್‌ಗಳನ್ನು ಲೋಡ್ ಮಾಡಲು ಆಗಲಿಲ್ಲ. ನಿಮ್ಮ ಇಂಟರ್ನೆಟ್ ಸಂಪರ್ಕ ಮತ್ತು ಸೈನ್ ಇನ್ ಪರಿಶೀಲಿಸಿ, ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಲು 1 ಒತ್ತಿ.';
 
   @override
   String libraryRetryAfter(String reason) {
-    return '$reason Press 1 to retry.';
+    return '$reason ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಲು 1 ಒತ್ತಿ.';
   }
 
   @override
   String get libraryDownloadedDescription =>
-      'Downloaded recording. Access renewal required after 30 days.';
+      'ಡೌನ್‌ಲೋಡ್ ಮಾಡಿದ ರೆಕಾರ್ಡಿಂಗ್. 30 ದಿನಗಳ ನಂತರ ಪ್ರವೇಶವನ್ನು ನವೀಕರಿಸಬೇಕು.';
 
   @override
   String get libraryDownloadedHelp =>
-      'Downloaded lessons. Existing offline access is checked before playing.';
+      'ಡೌನ್‌ಲೋಡ್ ಮಾಡಿದ ಪಾಠಗಳು. ಪ್ಲೇ ಮಾಡುವ ಮೊದಲು ಈಗಿರುವ ಆಫ್‌ಲೈನ್ ಪ್ರವೇಶವನ್ನು ಪರಿಶೀಲಿಸಲಾಗುತ್ತದೆ.';
 
   @override
   String get libraryOnlineHelp =>
-      'Audio Library. Online recordings require internet. Download lessons for offline playback.';
+      'ಆಡಿಯೋ ಲೈಬ್ರರಿ. ಆನ್‌ಲೈನ್ ರೆಕಾರ್ಡಿಂಗ್‌ಗಳಿಗೆ ಇಂಟರ್ನೆಟ್ ಬೇಕು. ಆಫ್‌ಲೈನ್‌ನಲ್ಲಿ ಕೇಳಲು ಪಾಠಗಳನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ.';
 
   @override
   String librarySubjectChoice(String name, String index, String count) {
-    return 'Subject: $name, $index of $count';
+    return 'ವಿಷಯ: $name, $count ರಲ್ಲಿ $index';
   }
 
   @override
   String librarySubjectLabel(String choice) {
-    return '$choice. Press 2, or left and right, to change';
+    return '$choice. ಬದಲಾಯಿಸಲು 2 ಒತ್ತಿ, ಅಥವಾ ಎಡ ಮತ್ತು ಬಲ ಒತ್ತಿ';
   }
 
   @override
   String get librarySubjectFixed =>
-      'This library is already limited to one subject.';
+      'ಈ ಲೈಬ್ರರಿ ಈಗಾಗಲೇ ಒಂದೇ ವಿಷಯಕ್ಕೆ ಸೀಮಿತವಾಗಿದೆ.';
 
   @override
   String libraryLength(String time) {
-    return 'Length $time';
+    return 'ಅವಧಿ $time';
   }
 
   @override
@@ -5414,15 +5447,15 @@ class AppLocalizationsKn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count recordings in $subject.',
-      one: '1 recording in $subject.',
+      other: '$subject ನಲ್ಲಿ $count ರೆಕಾರ್ಡಿಂಗ್‌ಗಳು.',
+      one: '$subject ನಲ್ಲಿ 1 ರೆಕಾರ್ಡಿಂಗ್.',
     );
     return '$_temp0';
   }
 
   @override
   String libraryNoTeacherPlaylists(String className, String subject) {
-    return 'No playlists yet for $className, $subject. Press 2 to create one.';
+    return '$className, $subject ಗೆ ಇನ್ನೂ ಯಾವುದೇ ಪ್ಲೇಲಿಸ್ಟ್ ಇಲ್ಲ. ಒಂದನ್ನು ರಚಿಸಲು 2 ಒತ್ತಿ.';
   }
 
   @override
@@ -5434,26 +5467,26 @@ class AppLocalizationsKn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count playlists loaded for $className, $subject.',
-      one: '1 playlist loaded for $className, $subject.',
+      other: '$className, $subject ಗೆ $count ಪ್ಲೇಲಿಸ್ಟ್‌ಗಳು ಲೋಡ್ ಆಗಿವೆ.',
+      one: '$className, $subject ಗೆ 1 ಪ್ಲೇಲಿಸ್ಟ್ ಲೋಡ್ ಆಗಿದೆ.',
     );
     return '$_temp0';
   }
 
   @override
-  String get libraryPlaylistCreateFailed => 'Playlist could not be created.';
+  String get libraryPlaylistCreateFailed => 'ಪ್ಲೇಲಿಸ್ಟ್ ರಚಿಸಲು ಆಗಲಿಲ್ಲ.';
 
   @override
   String get libraryNoMyPlaylists =>
-      'No playlists yet. Press 2 to create a private playlist.';
+      'ಇನ್ನೂ ಯಾವುದೇ ಪ್ಲೇಲಿಸ್ಟ್ ಇಲ್ಲ. ಖಾಸಗಿ ಪ್ಲೇಲಿಸ್ಟ್ ರಚಿಸಲು 2 ಒತ್ತಿ.';
 
   @override
   String libraryPrivatePlaylistCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count private playlists',
-      one: '1 private playlist',
+      other: '$count ಖಾಸಗಿ ಪ್ಲೇಲಿಸ್ಟ್‌ಗಳು',
+      one: '1 ಖಾಸಗಿ ಪ್ಲೇಲಿಸ್ಟ್',
     );
     return '$_temp0';
   }
@@ -5463,8 +5496,8 @@ class AppLocalizationsKn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count class playlists',
-      one: '1 class playlist',
+      other: '$count ತರಗತಿ ಪ್ಲೇಲಿಸ್ಟ್‌ಗಳು',
+      one: '1 ತರಗತಿ ಪ್ಲೇಲಿಸ್ಟ್',
     );
     return '$_temp0';
   }
@@ -5474,20 +5507,20 @@ class AppLocalizationsKn extends AppLocalizations {
     String privatePlaylists,
     String classPlaylists,
   ) {
-    return '$privatePlaylists and $classPlaylists loaded.';
+    return '$privatePlaylists ಮತ್ತು $classPlaylists ಲೋಡ್ ಆಗಿವೆ.';
   }
 
   @override
   String get libraryPrivatePlaylistCreateFailed =>
-      'Private playlist could not be created.';
+      'ಖಾಸಗಿ ಪ್ಲೇಲಿಸ್ಟ್ ರಚಿಸಲು ಆಗಲಿಲ್ಲ.';
 
   @override
   String libraryPlaylistsSentence(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count playlists.',
-      one: '1 playlist.',
+      other: '$count ಪ್ಲೇಲಿಸ್ಟ್‌ಗಳು.',
+      one: '1 ಪ್ಲೇಲಿಸ್ಟ್.',
     );
     return '$_temp0';
   }
@@ -5497,8 +5530,8 @@ class AppLocalizationsKn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count items',
-      one: '1 item',
+      other: '$count ಐಟಂಗಳು',
+      one: '1 ಐಟಂ',
     );
     return '$_temp0';
   }
@@ -5520,130 +5553,131 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get libraryPlaylistRefreshFailed =>
-      'Could not refresh this playlist. Check your connection and try again. Existing playback and saved progress have not been changed.';
+      'ಈ ಪ್ಲೇಲಿಸ್ಟ್ ಅನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಲು ಆಗಲಿಲ್ಲ. ನಿಮ್ಮ ಸಂಪರ್ಕ ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ. ಈಗಿನ ಪ್ಲೇಬ್ಯಾಕ್ ಮತ್ತು ಉಳಿಸಿದ ಪ್ರಗತಿಯನ್ನು ಬದಲಾಯಿಸಿಲ್ಲ.';
 
   @override
   String get libraryPlaylistLessonGone =>
-      'The current lesson is no longer available in this playlist. Playback stopped. Your saved progress and bookmarks are kept.';
+      'ಈಗಿನ ಪಾಠ ಈ ಪ್ಲೇಲಿಸ್ಟ್‌ನಲ್ಲಿ ಇನ್ನು ಲಭ್ಯವಿಲ್ಲ. ಪ್ಲೇಬ್ಯಾಕ್ ನಿಲ್ಲಿಸಲಾಗಿದೆ. ನಿಮ್ಮ ಉಳಿಸಿದ ಪ್ರಗತಿ ಮತ್ತು ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳನ್ನು ಇಟ್ಟುಕೊಳ್ಳಲಾಗಿದೆ.';
 
   @override
-  String get libraryNothingToAdd => 'No eligible audio is available to add.';
+  String get libraryNothingToAdd => 'ಸೇರಿಸಲು ಯಾವುದೇ ಅರ್ಹ ಆಡಿಯೋ ಲಭ್ಯವಿಲ್ಲ.';
 
   @override
   String libraryAddedToPlaylist(String title) {
-    return '$title added to the playlist.';
+    return '$title ಅನ್ನು ಪ್ಲೇಲಿಸ್ಟ್‌ಗೆ ಸೇರಿಸಲಾಗಿದೆ.';
   }
 
   @override
   String get libraryAddFailed =>
-      'Could not add the audio. Check your connection and try again.';
+      'ಆಡಿಯೋ ಸೇರಿಸಲು ಆಗಲಿಲ್ಲ. ನಿಮ್ಮ ಸಂಪರ್ಕ ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
   String libraryItemUnavailable(String title) {
-    return '$title is no longer available in your current class. You can remove it from this playlist.';
+    return '$title ನಿಮ್ಮ ಈಗಿನ ತರಗತಿಯಲ್ಲಿ ಇನ್ನು ಲಭ್ಯವಿಲ್ಲ. ನೀವು ಅದನ್ನು ಈ ಪ್ಲೇಲಿಸ್ಟ್‌ನಿಂದ ತೆಗೆದುಹಾಕಬಹುದು.';
   }
 
   @override
   String libraryItemCannotPlay(String title) {
-    return '$title is unavailable.';
+    return '$title ಲಭ್ಯವಿಲ್ಲ.';
   }
 
   @override
   String libraryPlayingItem(String announcement, String index, String count) {
-    return '$announcement Item $index of $count.';
+    return '$announcement ಐಟಂ $index, ಒಟ್ಟು $count ರಲ್ಲಿ.';
   }
 
   @override
   String get libraryPlaylistPlayFailed =>
-      'Could not play this lesson. Check your connection and try again.';
+      'ಈ ಪಾಠವನ್ನು ಪ್ಲೇ ಮಾಡಲು ಆಗಲಿಲ್ಲ. ನಿಮ್ಮ ಸಂಪರ್ಕ ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
-  String get libraryPlaylistEmpty => 'Playlist is empty.';
+  String get libraryPlaylistEmpty => 'ಪ್ಲೇಲಿಸ್ಟ್ ಖಾಲಿ ಇದೆ.';
 
   @override
-  String get libraryPlaylistEnded => 'End of playlist. Playback stopped.';
+  String get libraryPlaylistEnded =>
+      'ಪ್ಲೇಲಿಸ್ಟ್ ಮುಗಿದಿದೆ. ಪ್ಲೇಬ್ಯಾಕ್ ನಿಲ್ಲಿಸಲಾಗಿದೆ.';
 
   @override
   String libraryRenamed(String title) {
-    return 'Playlist renamed to $title.';
+    return 'ಪ್ಲೇಲಿಸ್ಟ್‌ನ ಹೆಸರನ್ನು $title ಎಂದು ಬದಲಾಯಿಸಲಾಗಿದೆ.';
   }
 
   @override
   String get libraryRenameFailed =>
-      'Could not rename the playlist. Check your connection and try again.';
+      'ಪ್ಲೇಲಿಸ್ಟ್‌ನ ಹೆಸರು ಬದಲಾಯಿಸಲು ಆಗಲಿಲ್ಲ. ನಿಮ್ಮ ಸಂಪರ್ಕ ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
-  String get libraryAlreadyFirst => 'The selected item is already first.';
+  String get libraryAlreadyFirst => 'ಆಯ್ಕೆ ಮಾಡಿದ ಐಟಂ ಈಗಾಗಲೇ ಮೊದಲನೆಯದಾಗಿದೆ.';
 
   @override
-  String get libraryAlreadyLast => 'The selected item is already last.';
+  String get libraryAlreadyLast => 'ಆಯ್ಕೆ ಮಾಡಿದ ಐಟಂ ಈಗಾಗಲೇ ಕೊನೆಯದಾಗಿದೆ.';
 
   @override
   String libraryMoved(String title, String position, String count) {
-    return '$title moved to position $position of $count.';
+    return '$title ಅನ್ನು $count ರಲ್ಲಿ $position ನೇ ಸ್ಥಾನಕ್ಕೆ ಸರಿಸಲಾಗಿದೆ.';
   }
 
   @override
   String libraryMoveFailed(String title) {
-    return 'Could not move $title. Check your connection and try again.';
+    return '$title ಅನ್ನು ಸರಿಸಲು ಆಗಲಿಲ್ಲ. ನಿಮ್ಮ ಸಂಪರ್ಕ ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
   }
 
   @override
   String libraryRemovedFromPlaylist(String title, String playlist) {
-    return 'Removed $title from $playlist.';
+    return '$title ಅನ್ನು $playlist ನಿಂದ ತೆಗೆದುಹಾಕಲಾಗಿದೆ.';
   }
 
   @override
   String libraryRemoveFailed(String title) {
-    return 'Could not remove $title. Check your connection and try again.';
+    return '$title ಅನ್ನು ತೆಗೆದುಹಾಕಲು ಆಗಲಿಲ್ಲ. ನಿಮ್ಮ ಸಂಪರ್ಕ ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
   }
 
   @override
   String libraryRemoveItemQuestion(String title, String playlist) {
-    return 'Remove $title from $playlist? The recording itself is kept in the library.';
+    return '$title ಅನ್ನು $playlist ನಿಂದ ತೆಗೆದುಹಾಕಬೇಕೆ? ರೆಕಾರ್ಡಿಂಗ್ ಲೈಬ್ರರಿಯಲ್ಲಿ ಉಳಿಯುತ್ತದೆ.';
   }
 
   @override
   String libraryRemoveItemLabel(String title) {
-    return 'Remove $title from playlist, asks to confirm';
+    return '$title ಅನ್ನು ಪ್ಲೇಲಿಸ್ಟ್‌ನಿಂದ ತೆಗೆದುಹಾಕಿ, ಖಚಿತಪಡಿಸಲು ಕೇಳುತ್ತದೆ';
   }
 
   @override
   String libraryPublished(String title) {
-    return '$title published to the class.';
+    return '$title ಅನ್ನು ತರಗತಿಗೆ ಪ್ರಕಟಿಸಲಾಗಿದೆ.';
   }
 
   @override
   String libraryReturnedToDraft(String title) {
-    return '$title returned to draft.';
+    return '$title ಅನ್ನು ಮತ್ತೆ ಕರಡಿಗೆ ಹಿಂತಿರುಗಿಸಲಾಗಿದೆ.';
   }
 
   @override
   String libraryChangeFailed(String title) {
-    return 'Could not change $title. Check your connection and try again.';
+    return '$title ಅನ್ನು ಬದಲಾಯಿಸಲು ಆಗಲಿಲ್ಲ. ನಿಮ್ಮ ಸಂಪರ್ಕ ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
   }
 
   @override
   String libraryDeleted(String title) {
-    return '$title deleted.';
+    return '$title ಅಳಿಸಲಾಗಿದೆ.';
   }
 
   @override
   String libraryRestoredAsDraft(String title) {
-    return '$title restored as a draft.';
+    return '$title ಅನ್ನು ಕರಡಾಗಿ ಮರುಸ್ಥಾಪಿಸಲಾಗಿದೆ.';
   }
 
   @override
   String libraryArchived(String title) {
-    return '$title archived.';
+    return '$title ಆರ್ಕೈವ್ ಮಾಡಲಾಗಿದೆ.';
   }
 
   @override
-  String get libraryPlaylistIsEmpty => 'The playlist is empty.';
+  String get libraryPlaylistIsEmpty => 'ಪ್ಲೇಲಿಸ್ಟ್ ಖಾಲಿ ಇದೆ.';
 
   @override
   String librarySelectedItem(String selected, String items) {
-    return 'Selected item $selected of $items.';
+    return 'ಆಯ್ಕೆ ಮಾಡಿದ ಐಟಂ $selected, ಒಟ್ಟು $items ರಲ್ಲಿ.';
   }
 
   @override
@@ -5652,63 +5686,64 @@ class AppLocalizationsKn extends AppLocalizations {
     String items,
     String title,
   ) {
-    return 'Selected item $selected of $items, $title.';
+    return 'ಆಯ್ಕೆ ಮಾಡಿದ ಐಟಂ $selected, ಒಟ್ಟು $items ರಲ್ಲಿ, $title.';
   }
 
   @override
   String get libraryAlreadyOneSubject =>
-      'This library is already limited to one subject';
+      'ಈ ಲೈಬ್ರರಿ ಈಗಾಗಲೇ ಒಂದೇ ವಿಷಯಕ್ಕೆ ಸೀಮಿತವಾಗಿದೆ';
 
   @override
-  String get libraryNoLessonIsPlaying => 'No lesson is playing.';
+  String get libraryNoLessonIsPlaying => 'ಯಾವುದೇ ಪಾಠ ಪ್ಲೇ ಆಗುತ್ತಿಲ್ಲ.';
 
   @override
   String libraryAddedToSession(String title) {
-    return '$title added to this session.';
+    return '$title ಅನ್ನು ಈ ಸೆಷನ್‌ಗೆ ಸೇರಿಸಲಾಗಿದೆ.';
   }
 
   @override
-  String get libraryPlaylistNotCreated => 'Playlist could not be created';
+  String get libraryPlaylistNotCreated => 'ಪ್ಲೇಲಿಸ್ಟ್ ರಚಿಸಲು ಆಗಲಿಲ್ಲ';
 
   @override
   String get libraryPrivatePlaylistNotCreated =>
-      'Private playlist could not be created';
+      'ಖಾಸಗಿ ಪ್ಲೇಲಿಸ್ಟ್ ರಚಿಸಲು ಆಗಲಿಲ್ಲ';
 
   @override
-  String get libraryNoEligibleAudio => 'No eligible audio is available to add';
+  String get libraryNoEligibleAudio => 'ಸೇರಿಸಲು ಯಾವುದೇ ಅರ್ಹ ಆಡಿಯೋ ಲಭ್ಯವಿಲ್ಲ';
 
   @override
-  String get libraryAudioAddedToPlaylist => 'Audio added to playlist';
+  String get libraryAudioAddedToPlaylist =>
+      'ಆಡಿಯೋವನ್ನು ಪ್ಲೇಲಿಸ್ಟ್‌ಗೆ ಸೇರಿಸಲಾಗಿದೆ';
 
   @override
   String libraryUnavailable(String title) {
-    return '$title is unavailable';
+    return '$title ಲಭ್ಯವಿಲ್ಲ';
   }
 
   @override
   String libraryPlaylistRenamed(String title) {
-    return 'Playlist renamed to $title';
+    return 'ಪ್ಲೇಲಿಸ್ಟ್‌ನ ಹೆಸರನ್ನು $title ಎಂದು ಬದಲಾಯಿಸಲಾಗಿದೆ';
   }
 
   @override
   String libraryMovedTo(String title, String position) {
-    return '$title moved to position $position';
+    return '$title ಅನ್ನು $position ನೇ ಸ್ಥಾನಕ್ಕೆ ಸರಿಸಲಾಗಿದೆ';
   }
 
   @override
-  String get libraryNoteRenamed => 'Private note renamed.';
+  String get libraryNoteRenamed => 'ಖಾಸಗಿ ಟಿಪ್ಪಣಿಯ ಹೆಸರನ್ನು ಬದಲಾಯಿಸಲಾಗಿದೆ.';
 
   @override
   String get downloadNoneYet =>
-      'No downloads yet. Press 2 to find recordings online.';
+      'ಇನ್ನೂ ಯಾವುದೇ ಡೌನ್‌ಲೋಡ್ ಇಲ್ಲ. ಆನ್‌ಲೈನ್‌ನಲ್ಲಿ ರೆಕಾರ್ಡಿಂಗ್‌ಗಳನ್ನು ಹುಡುಕಲು 2 ಒತ್ತಿ.';
 
   @override
   String downloadLessonCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count downloaded lessons',
-      one: '1 downloaded lesson',
+      other: '$count ಡೌನ್‌ಲೋಡ್ ಮಾಡಿದ ಪಾಠಗಳು',
+      one: '1 ಡೌನ್‌ಲೋಡ್ ಮಾಡಿದ ಪಾಠ',
     );
     return '$_temp0';
   }
@@ -5718,29 +5753,29 @@ class AppLocalizationsKn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count partial downloads',
-      one: '1 partial download',
+      other: '$count ಅರ್ಧ ಡೌನ್‌ಲೋಡ್‌ಗಳು',
+      one: '1 ಅರ್ಧ ಡೌನ್‌ಲೋಡ್',
     );
     return '$_temp0';
   }
 
   @override
   String downloadReadyToPlay(String lessons) {
-    return '$lessons ready to play.';
+    return '$lessons ಪ್ಲೇ ಮಾಡಲು ಸಿದ್ಧವಾಗಿವೆ.';
   }
 
   @override
   String downloadReadyToPlayWithPartial(String lessons, String partial) {
-    return '$lessons ready to play, $partial.';
+    return '$lessons ಪ್ಲೇ ಮಾಡಲು ಸಿದ್ಧವಾಗಿವೆ, $partial.';
   }
 
   @override
   String get downloadActionFailed =>
-      'Could not complete this download action. Check storage, your connection and sign-in, then retry.';
+      'ಈ ಡೌನ್‌ಲೋಡ್ ಕ್ರಿಯೆಯನ್ನು ಪೂರ್ಣಗೊಳಿಸಲು ಆಗಲಿಲ್ಲ. ಸ್ಟೋರೇಜ್, ನಿಮ್ಮ ಸಂಪರ್ಕ ಮತ್ತು ಸೈನ್ ಇನ್ ಪರಿಶೀಲಿಸಿ, ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
   String get downloadOnlineListFailed =>
-      'Could not load available recordings. Existing downloads still work until their access expires.';
+      'ಲಭ್ಯವಿರುವ ರೆಕಾರ್ಡಿಂಗ್‌ಗಳನ್ನು ಲೋಡ್ ಮಾಡಲು ಆಗಲಿಲ್ಲ. ಈಗಿರುವ ಡೌನ್‌ಲೋಡ್‌ಗಳು ಅವುಗಳ ಪ್ರವೇಶ ಮುಗಿಯುವವರೆಗೆ ಕೆಲಸ ಮಾಡುತ್ತವೆ.';
 
   @override
   String downloadAvailable(int count) {
@@ -5748,875 +5783,885 @@ class AppLocalizationsKn extends AppLocalizations {
       count,
       locale: localeName,
       other:
-          '$count recordings are available to download. Select the recordings you want.',
+          '$count ರೆಕಾರ್ಡಿಂಗ್‌ಗಳು ಡೌನ್‌ಲೋಡ್ ಮಾಡಲು ಲಭ್ಯವಿವೆ. ನಿಮಗೆ ಬೇಕಾದ ರೆಕಾರ್ಡಿಂಗ್‌ಗಳನ್ನು ಆಯ್ಕೆ ಮಾಡಿ.',
       one:
-          '1 recording is available to download. Select the recordings you want.',
+          '1 ರೆಕಾರ್ಡಿಂಗ್ ಡೌನ್‌ಲೋಡ್ ಮಾಡಲು ಲಭ್ಯವಿದೆ. ನಿಮಗೆ ಬೇಕಾದ ರೆಕಾರ್ಡಿಂಗ್‌ಗಳನ್ನು ಆಯ್ಕೆ ಮಾಡಿ.',
     );
     return '$_temp0';
   }
 
   @override
   String downloadStarting(String title) {
-    return 'Downloading $title. You will hear progress every 25 percent.';
+    return '$title ಡೌನ್‌ಲೋಡ್ ಆಗುತ್ತಿದೆ. ಪ್ರತಿ 25 ಪ್ರತಿಶತಕ್ಕೆ ನೀವು ಪ್ರಗತಿಯನ್ನು ಕೇಳುತ್ತೀರಿ.';
   }
 
   @override
   String downloadProgress(String title, String percent) {
-    return '$title $percent downloaded.';
+    return '$title $percent ಡೌನ್‌ಲೋಡ್ ಆಗಿದೆ.';
   }
 
   @override
   String get downloadVerified =>
-      'Download verified and saved for offline playback.';
+      'ಡೌನ್‌ಲೋಡ್ ಪರಿಶೀಲಿಸಲಾಗಿದೆ ಮತ್ತು ಆಫ್‌ಲೈನ್‌ನಲ್ಲಿ ಕೇಳಲು ಉಳಿಸಲಾಗಿದೆ.';
 
   @override
   String downloadDone(String title) {
-    return '$title downloaded, verified and saved for offline playback.';
+    return '$title ಡೌನ್‌ಲೋಡ್ ಆಗಿದೆ, ಪರಿಶೀಲಿಸಲಾಗಿದೆ ಮತ್ತು ಆಫ್‌ಲೈನ್‌ನಲ್ಲಿ ಕೇಳಲು ಉಳಿಸಲಾಗಿದೆ.';
   }
 
   @override
   String downloadPackQuestion(String recordings) {
-    return 'Download $recordings one at a time? This uses internet data and your account’s 50 MB allowance. On failure or cancellation, verified downloads and partial data are kept. No existing lesson is deleted.';
+    return '$recordings ಅನ್ನು ಒಂದೊಂದಾಗಿ ಡೌನ್‌ಲೋಡ್ ಮಾಡಬೇಕೆ? ಇದು ಇಂಟರ್ನೆಟ್ ಡೇಟಾ ಮತ್ತು ನಿಮ್ಮ ಖಾತೆಯ 50 MB ಮಿತಿಯನ್ನು ಬಳಸುತ್ತದೆ. ವಿಫಲವಾದರೆ ಅಥವಾ ರದ್ದುಗೊಳಿಸಿದರೆ, ಪರಿಶೀಲಿಸಿದ ಡೌನ್‌ಲೋಡ್‌ಗಳು ಮತ್ತು ಅರ್ಧ ಡೇಟಾವನ್ನು ಇಟ್ಟುಕೊಳ್ಳಲಾಗುತ್ತದೆ. ಈಗಿರುವ ಯಾವುದೇ ಪಾಠವನ್ನು ಅಳಿಸಲಾಗುವುದಿಲ್ಲ.';
   }
 
   @override
   String downloadPackStarting(String recordings) {
-    return 'Downloading $recordings, one at a time.';
+    return '$recordings ಅನ್ನು ಒಂದೊಂದಾಗಿ ಡೌನ್‌ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ.';
   }
 
   @override
   String downloadPackProgress(String done, String total) {
-    return '$done of $total recordings verified.';
+    return '$total ರಲ್ಲಿ $done ರೆಕಾರ್ಡಿಂಗ್‌ಗಳನ್ನು ಪರಿಶೀಲಿಸಲಾಗಿದೆ.';
   }
 
   @override
   String downloadPackDone(String done, String total) {
-    return '$done of $total recordings verified and saved.';
+    return '$total ರಲ್ಲಿ $done ರೆಕಾರ್ಡಿಂಗ್‌ಗಳನ್ನು ಪರಿಶೀಲಿಸಿ ಉಳಿಸಲಾಗಿದೆ.';
   }
 
   @override
   String downloadRenewed(String title) {
-    return 'Access renewed for $title. Up to 30 days of offline playback.';
+    return '$title ಗೆ ಪ್ರವೇಶವನ್ನು ನವೀಕರಿಸಲಾಗಿದೆ. 30 ದಿನಗಳವರೆಗೆ ಆಫ್‌ಲೈನ್‌ನಲ್ಲಿ ಕೇಳಬಹುದು.';
   }
 
   @override
   String downloadRemoveTitle(String title) {
-    return 'Remove download of $title?';
+    return '$title ನ ಡೌನ್‌ಲೋಡ್ ತೆಗೆದುಹಾಕಬೇಕೆ?';
   }
 
   @override
   String downloadRemoveQuestion(String title) {
-    return 'Remove the downloaded or partial audio for $title? Learning progress and bookmarks are kept. Other recordings and accounts are not affected.';
+    return '$title ನ ಡೌನ್‌ಲೋಡ್ ಆದ ಅಥವಾ ಅರ್ಧ ಆಡಿಯೋವನ್ನು ತೆಗೆದುಹಾಕಬೇಕೆ? ಕಲಿಕೆಯ ಪ್ರಗತಿ ಮತ್ತು ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳನ್ನು ಇಟ್ಟುಕೊಳ್ಳಲಾಗುತ್ತದೆ. ಇತರ ರೆಕಾರ್ಡಿಂಗ್‌ಗಳು ಮತ್ತು ಖಾತೆಗಳ ಮೇಲೆ ಪರಿಣಾಮವಿಲ್ಲ.';
   }
 
   @override
   String downloadRemoved(String title) {
-    return 'Removed the download of $title. Progress and bookmarks kept.';
+    return '$title ನ ಡೌನ್‌ಲೋಡ್ ತೆಗೆದುಹಾಕಲಾಗಿದೆ. ಪ್ರಗತಿ ಮತ್ತು ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳನ್ನು ಇಟ್ಟುಕೊಳ್ಳಲಾಗಿದೆ.';
   }
 
   @override
   String downloadUnreadableTitle(String id) {
-    return 'unreadable recording $id';
+    return 'ಓದಲಾಗದ ರೆಕಾರ್ಡಿಂಗ್ $id';
   }
 
   @override
-  String get downloadRenewalRequired => 'Access renewal required.';
+  String get downloadRenewalRequired => 'ಪ್ರವೇಶವನ್ನು ನವೀಕರಿಸಬೇಕು.';
 
   @override
   String downloadAccessExpires(String date) {
-    return 'Access expires $date.';
+    return 'ಪ್ರವೇಶ $date ಮುಗಿಯುತ್ತದೆ.';
   }
 
   @override
   String downloadPlayLabelComplete(String title, String size, String expiry) {
-    return 'Play $title. Downloaded. $size. $expiry';
+    return '$title ಪ್ಲೇ ಮಾಡಿ. ಡೌನ್‌ಲೋಡ್ ಆಗಿದೆ. $size. $expiry';
   }
 
   @override
   String downloadPlayLabelPartial(String title, String size, String expiry) {
-    return 'Play $title. Partial download, cannot play yet. $size. $expiry';
+    return '$title ಪ್ಲೇ ಮಾಡಿ. ಅರ್ಧ ಡೌನ್‌ಲೋಡ್, ಇನ್ನೂ ಪ್ಲೇ ಮಾಡಲು ಆಗುವುದಿಲ್ಲ. $size. $expiry';
   }
 
   @override
   String downloadRenewLabel(String title) {
-    return 'Renew access for $title. Requires internet';
+    return '$title ಗೆ ಪ್ರವೇಶ ನವೀಕರಿಸಿ. ಇಂಟರ್ನೆಟ್ ಬೇಕು';
   }
 
   @override
   String downloadRemoveLabel(String title) {
-    return 'Remove download of $title, asks to confirm';
+    return '$title ನ ಡೌನ್‌ಲೋಡ್ ತೆಗೆದುಹಾಕಿ, ಖಚಿತಪಡಿಸಲು ಕೇಳುತ್ತದೆ';
   }
 
   @override
   String downloadUnreadableLabel(String id) {
-    return 'Unreadable download record $id. Remove only this download, asks to confirm';
+    return 'ಓದಲಾಗದ ಡೌನ್‌ಲೋಡ್ ದಾಖಲೆ $id. ಈ ಡೌನ್‌ಲೋಡ್ ಮಾತ್ರ ತೆಗೆದುಹಾಕಿ, ಖಚಿತಪಡಿಸಲು ಕೇಳುತ್ತದೆ';
   }
 
   @override
   String downloadOrResumeLabel(String title) {
-    return 'Download or resume $title';
+    return '$title ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ ಅಥವಾ ಮುಂದುವರಿಸಿ';
   }
 
   @override
   String downloadCancelLabel(String title) {
-    return 'Cancel download of $title, key 4. Keep partial data for retry';
+    return '$title ನ ಡೌನ್‌ಲೋಡ್ ರದ್ದುಗೊಳಿಸಿ, ಕೀ 4. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಲು ಅರ್ಧ ಡೇಟಾ ಇಟ್ಟುಕೊಳ್ಳಿ';
   }
 
   @override
   String downloadUnavailableWhileBusy(String label) {
-    return '$label is unavailable while downloads are busy.';
+    return 'ಡೌನ್‌ಲೋಡ್‌ಗಳು ನಡೆಯುತ್ತಿರುವಾಗ $label ಲಭ್ಯವಿಲ್ಲ.';
   }
 
   @override
   String get downloadStorageUnknown =>
-      'Storage reservation unavailable. Refresh downloads or remove the selected unreadable records before downloading.';
+      'ಸ್ಟೋರೇಜ್ ಕಾಯ್ದಿರಿಸುವಿಕೆ ಲಭ್ಯವಿಲ್ಲ. ಡೌನ್‌ಲೋಡ್ ಮಾಡುವ ಮೊದಲು ಡೌನ್‌ಲೋಡ್‌ಗಳನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಿ ಅಥವಾ ಆಯ್ಕೆ ಮಾಡಿದ ಓದಲಾಗದ ದಾಖಲೆಗಳನ್ನು ತೆಗೆದುಹಾಕಿ.';
 
   @override
   String downloadCountComma(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count downloads,',
-      one: '1 download,',
+      other: '$count ಡೌನ್‌ಲೋಡ್‌ಗಳು,',
+      one: '1 ಡೌನ್‌ಲೋಡ್,',
     );
     return '$_temp0';
   }
 
   @override
-  String get downloadStorageUseUnknown => 'storage use unknown.';
+  String get downloadStorageUseUnknown => 'ಸ್ಟೋರೇಜ್ ಬಳಕೆ ತಿಳಿದಿಲ್ಲ.';
 
   @override
   String downloadDownloadingStarting(String title) {
-    return 'Downloading $title, starting.';
+    return '$title ಡೌನ್‌ಲೋಡ್ ಆಗುತ್ತಿದೆ, ಪ್ರಾರಂಭವಾಗುತ್ತಿದೆ.';
   }
 
   @override
   String downloadDownloadingPercent(String title, String percent) {
-    return 'Downloading $title, $percent.';
+    return '$title ಡೌನ್‌ಲೋಡ್ ಆಗುತ್ತಿದೆ, $percent.';
   }
 
   @override
   String downloadScreenLoaded(String complete) {
-    return '$complete downloaded lessons ready to play.';
+    return '$complete ಡೌನ್‌ಲೋಡ್ ಮಾಡಿದ ಪಾಠಗಳು ಪ್ಲೇ ಮಾಡಲು ಸಿದ್ಧವಾಗಿವೆ.';
   }
 
   @override
   String downloadScreenLoadedWithPartial(String complete, String partial) {
-    return '$complete downloaded lessons ready to play, $partial partial downloads.';
+    return '$complete ಡೌನ್‌ಲೋಡ್ ಮಾಡಿದ ಪಾಠಗಳು ಪ್ಲೇ ಮಾಡಲು ಸಿದ್ಧವಾಗಿವೆ, $partial ಅರ್ಧ ಡೌನ್‌ಲೋಡ್‌ಗಳು.';
   }
 
   @override
   String downloadAvailableCount(String count) {
-    return '$count recordings are available to download. Select the recordings you want.';
+    return '$count ರೆಕಾರ್ಡಿಂಗ್‌ಗಳು ಡೌನ್‌ಲೋಡ್ ಮಾಡಲು ಲಭ್ಯವಿವೆ. ನಿಮಗೆ ಬೇಕಾದ ರೆಕಾರ್ಡಿಂಗ್‌ಗಳನ್ನು ಆಯ್ಕೆ ಮಾಡಿ.';
   }
 
   @override
   String downloadRecordingFallback(String id) {
-    return 'Recording $id';
+    return 'ರೆಕಾರ್ಡಿಂಗ್ $id';
   }
 
   @override
-  String get downloadPackDialogTitle => 'Download listed recordings?';
+  String get downloadPackDialogTitle =>
+      'ಪಟ್ಟಿಯಲ್ಲಿರುವ ರೆಕಾರ್ಡಿಂಗ್‌ಗಳನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಬೇಕೆ?';
 
   @override
   String downloadPackDialogMessage(String count) {
-    return 'Download $count listed recordings one at a time? This uses internet data and your account’s 50 MB allowance. On failure or cancellation, verified downloads and partial data are kept. No existing lesson is deleted.';
+    return 'ಪಟ್ಟಿಯಲ್ಲಿರುವ $count ರೆಕಾರ್ಡಿಂಗ್‌ಗಳನ್ನು ಒಂದೊಂದಾಗಿ ಡೌನ್‌ಲೋಡ್ ಮಾಡಬೇಕೆ? ಇದು ಇಂಟರ್ನೆಟ್ ಡೇಟಾ ಮತ್ತು ನಿಮ್ಮ ಖಾತೆಯ 50 MB ಮಿತಿಯನ್ನು ಬಳಸುತ್ತದೆ. ವಿಫಲವಾದರೆ ಅಥವಾ ರದ್ದುಗೊಳಿಸಿದರೆ, ಪರಿಶೀಲಿಸಿದ ಡೌನ್‌ಲೋಡ್‌ಗಳು ಮತ್ತು ಅರ್ಧ ಡೇಟಾವನ್ನು ಇಟ್ಟುಕೊಳ್ಳಲಾಗುತ್ತದೆ. ಈಗಿರುವ ಯಾವುದೇ ಪಾಠವನ್ನು ಅಳಿಸಲಾಗುವುದಿಲ್ಲ.';
   }
 
   @override
-  String get downloadPackConfirm => 'Download listed';
+  String get downloadPackConfirm => 'ಪಟ್ಟಿಯದನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ';
 
   @override
-  String get downloadPackCancel => 'Choose individually';
+  String get downloadPackCancel => 'ಒಂದೊಂದಾಗಿ ಆಯ್ಕೆ ಮಾಡಿ';
 
   @override
-  String get downloadRemoveConfirm => 'Remove download';
+  String get downloadRemoveConfirm => 'ಡೌನ್‌ಲೋಡ್ ತೆಗೆದುಹಾಕಿ';
 
   @override
-  String get downloadKeep => 'Keep download';
+  String get downloadKeep => 'ಡೌನ್‌ಲೋಡ್ ಇಟ್ಟುಕೊಳ್ಳಿ';
 
   @override
-  String get downloadScreenName => 'Downloaded Lessons';
+  String get downloadScreenName => 'ಡೌನ್‌ಲೋಡ್ ಮಾಡಿದ ಪಾಠಗಳು';
 
   @override
-  String get downloadCancelBackTitle => 'Cancel download and go back?';
+  String get downloadCancelBackTitle => 'ಡೌನ್‌ಲೋಡ್ ರದ್ದುಗೊಳಿಸಿ ಹಿಂದೆ ಹೋಗಬೇಕೆ?';
 
   @override
   String get downloadCancelBackMessage =>
-      'Stop this download? Verified recordings and partial data are kept for an explicit retry.';
+      'ಈ ಡೌನ್‌ಲೋಡ್ ನಿಲ್ಲಿಸಬೇಕೆ? ಪರಿಶೀಲಿಸಿದ ರೆಕಾರ್ಡಿಂಗ್‌ಗಳು ಮತ್ತು ಅರ್ಧ ಡೇಟಾವನ್ನು ನೀವು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಲು ಇಟ್ಟುಕೊಳ್ಳಲಾಗುತ್ತದೆ.';
 
   @override
-  String get downloadCancelBackConfirm => 'Cancel and go back';
+  String get downloadCancelBackConfirm => 'ರದ್ದುಗೊಳಿಸಿ ಹಿಂದೆ ಹೋಗಿ';
 
   @override
-  String get downloadKeepDownloading => 'Keep downloading';
+  String get downloadKeepDownloading => 'ಡೌನ್‌ಲೋಡ್ ಮುಂದುವರಿಸಿ';
 
   @override
   String downloadReserved(String megabytes) {
-    return '$megabytes of 50 MB reserved for this account.';
+    return 'ಈ ಖಾತೆಗೆ 50 MB ರಲ್ಲಿ $megabytes ಕಾಯ್ದಿರಿಸಲಾಗಿದೆ.';
   }
 
   @override
-  String get downloadBack => 'Back';
+  String get downloadBack => 'ಹಿಂದೆ';
 
   @override
-  String get downloadRefreshLabel => 'Refresh saved downloads, key 1';
+  String get downloadRefreshLabel =>
+      'ಉಳಿಸಿದ ಡೌನ್‌ಲೋಡ್‌ಗಳನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಿ, ಕೀ 1';
 
   @override
   String get downloadFindOnlineLabel =>
-      'Find recordings to download, key 2. Requires internet';
+      'ಡೌನ್‌ಲೋಡ್ ಮಾಡಲು ರೆಕಾರ್ಡಿಂಗ್‌ಗಳನ್ನು ಹುಡುಕಿ, ಕೀ 2. ಇಂಟರ್ನೆಟ್ ಬೇಕು';
 
   @override
-  String get downloadReadStatusLabel => 'Read download status, key 3';
+  String get downloadReadStatusLabel => 'ಡೌನ್‌ಲೋಡ್ ಸ್ಥಿತಿಯನ್ನು ಓದಿ, ಕೀ 3';
 
   @override
   String downloadPlayDownloadedLabel(String title) {
-    return 'Play $title. Downloaded';
+    return '$title ಪ್ಲೇ ಮಾಡಿ. ಡೌನ್‌ಲೋಡ್ ಆಗಿದೆ';
   }
 
   @override
   String downloadPlayPartialLabel(String title) {
-    return 'Play $title. Partial download, cannot play yet';
+    return '$title ಪ್ಲೇ ಮಾಡಿ. ಅರ್ಧ ಡೌನ್‌ಲೋಡ್, ಇನ್ನೂ ಪ್ಲೇ ಮಾಡಲು ಆಗುವುದಿಲ್ಲ';
   }
 
   @override
   String get downloadPackLabel =>
-      'Download all listed recordings, key 5, asks to confirm';
+      'ಪಟ್ಟಿಯಲ್ಲಿರುವ ಎಲ್ಲಾ ರೆಕಾರ್ಡಿಂಗ್‌ಗಳನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ, ಕೀ 5, ಖಚಿತಪಡಿಸಲು ಕೇಳುತ್ತದೆ';
 
   @override
   String get downloadIntroduction =>
-      '50 MB per account. Up to 30 days offline before online access renewal. Files and progress stay separate.';
+      'ಪ್ರತಿ ಖಾತೆಗೆ 50 MB. ಆನ್‌ಲೈನ್‌ನಲ್ಲಿ ಪ್ರವೇಶ ನವೀಕರಿಸುವ ಮೊದಲು 30 ದಿನಗಳವರೆಗೆ ಆಫ್‌ಲೈನ್. ಫೈಲ್‌ಗಳು ಮತ್ತು ಪ್ರಗತಿ ಬೇರೆ ಬೇರೆಯಾಗಿ ಇರುತ್ತವೆ.';
 
   @override
   String get downloadNavigationSections =>
-      'saved files to play, renew or remove, and online recordings to download or resume';
+      'ಪ್ಲೇ ಮಾಡಲು, ನವೀಕರಿಸಲು ಅಥವಾ ತೆಗೆದುಹಾಕಲು ಉಳಿಸಿದ ಫೈಲ್‌ಗಳು, ಮತ್ತು ಡೌನ್‌ಲೋಡ್ ಮಾಡಲು ಅಥವಾ ಮುಂದುವರಿಸಲು ಆನ್‌ಲೈನ್ ರೆಕಾರ್ಡಿಂಗ್‌ಗಳು';
 
   @override
-  String get downloadKeyRefresh => 'Refresh downloads';
+  String get downloadKeyRefresh => 'ಡೌನ್‌ಲೋಡ್‌ಗಳನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಿ';
 
   @override
-  String get downloadKeyFindOnline => 'Find recordings online';
+  String get downloadKeyFindOnline =>
+      'ಆನ್‌ಲೈನ್‌ನಲ್ಲಿ ರೆಕಾರ್ಡಿಂಗ್‌ಗಳನ್ನು ಹುಡುಕಿ';
 
   @override
-  String get downloadKeyReadStatus => 'Read status';
+  String get downloadKeyReadStatus => 'ಸ್ಥಿತಿಯನ್ನು ಓದಿ';
 
   @override
-  String get downloadKeyCancel => 'Cancel download';
+  String get downloadKeyCancel => 'ಡೌನ್‌ಲೋಡ್ ರದ್ದುಗೊಳಿಸಿ';
 
   @override
-  String get downloadKeyPack => 'Download listed recordings';
+  String get downloadKeyPack =>
+      'ಪಟ್ಟಿಯಲ್ಲಿರುವ ರೆಕಾರ್ಡಿಂಗ್‌ಗಳನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ';
 
   @override
   String get downloadErrInvalidInfo =>
-      'Download information is invalid or belongs to a different account. Existing files are kept.';
+      'ಡೌನ್‌ಲೋಡ್ ಮಾಹಿತಿ ಅಮಾನ್ಯವಾಗಿದೆ ಅಥವಾ ಬೇರೆ ಖಾತೆಗೆ ಸೇರಿದೆ. ಈಗಿರುವ ಫೈಲ್‌ಗಳನ್ನು ಇಟ್ಟುಕೊಳ್ಳಲಾಗಿದೆ.';
 
   @override
   String get downloadErrSignInToOpen =>
-      'Sign in before opening downloaded lessons.';
+      'ಡೌನ್‌ಲೋಡ್ ಮಾಡಿದ ಪಾಠಗಳನ್ನು ತೆರೆಯುವ ಮೊದಲು ಸೈನ್ ಇನ್ ಮಾಡಿ.';
 
   @override
   String get downloadErrAccountChanged =>
-      'Your account changed. Open Downloads again.';
+      'ನಿಮ್ಮ ಖಾತೆ ಬದಲಾಗಿದೆ. ಡೌನ್‌ಲೋಡ್‌ಗಳನ್ನು ಮತ್ತೆ ತೆರೆಯಿರಿ.';
 
   @override
   String get downloadErrNoStorage =>
-      'Download storage is unavailable on this device.';
+      'ಈ ಸಾಧನದಲ್ಲಿ ಡೌನ್‌ಲೋಡ್ ಸ್ಟೋರೇಜ್ ಲಭ್ಯವಿಲ್ಲ.';
 
   @override
   String get downloadErrStorageUnavailable =>
-      'Download storage is unavailable. Check free space and retry. Existing files have not been intentionally removed.';
+      'ಡೌನ್‌ಲೋಡ್ ಸ್ಟೋರೇಜ್ ಲಭ್ಯವಿಲ್ಲ. ಖಾಲಿ ಜಾಗ ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ. ಈಗಿರುವ ಫೈಲ್‌ಗಳನ್ನು ಉದ್ದೇಶಪೂರ್ವಕವಾಗಿ ತೆಗೆದುಹಾಕಿಲ್ಲ.';
 
   @override
   String get downloadErrRecordsUnreadable =>
-      'Download records could not be read. Existing files are kept.';
+      'ಡೌನ್‌ಲೋಡ್ ದಾಖಲೆಗಳನ್ನು ಓದಲು ಆಗಲಿಲ್ಲ. ಈಗಿರುವ ಫೈಲ್‌ಗಳನ್ನು ಇಟ್ಟುಕೊಳ್ಳಲಾಗಿದೆ.';
 
   @override
   String get downloadErrRecordUnreadable =>
-      'A download record could not be read. Existing files are kept.';
+      'ಒಂದು ಡೌನ್‌ಲೋಡ್ ದಾಖಲೆಯನ್ನು ಓದಲು ಆಗಲಿಲ್ಲ. ಈಗಿರುವ ಫೈಲ್‌ಗಳನ್ನು ಇಟ್ಟುಕೊಳ್ಳಲಾಗಿದೆ.';
 
   @override
   String get downloadErrIdentityMismatch =>
-      'Download identity does not match its record.';
+      'ಡೌನ್‌ಲೋಡ್ ಗುರುತು ಅದರ ದಾಖಲೆಗೆ ಹೊಂದುತ್ತಿಲ್ಲ.';
 
   @override
   String get downloadErrSignInToRenew =>
-      'Sign in online before renewing download access.';
+      'ಡೌನ್‌ಲೋಡ್ ಪ್ರವೇಶ ನವೀಕರಿಸುವ ಮೊದಲು ಆನ್‌ಲೈನ್‌ನಲ್ಲಿ ಸೈನ್ ಇನ್ ಮಾಡಿ.';
 
   @override
   String get downloadErrSignInChanged =>
-      'Your sign-in changed. Open Downloads again.';
+      'ನಿಮ್ಮ ಸೈನ್ ಇನ್ ಬದಲಾಗಿದೆ. ಡೌನ್‌ಲೋಡ್‌ಗಳನ್ನು ಮತ್ತೆ ತೆರೆಯಿರಿ.';
 
   @override
   String get downloadErrAccessNotConfirmed =>
-      'Recording access is no longer confirmed for this account. Reconnect and sign in to renew. The saved file is kept.';
+      'ಈ ಖಾತೆಗೆ ರೆಕಾರ್ಡಿಂಗ್ ಪ್ರವೇಶ ಇನ್ನು ಖಚಿತವಾಗಿಲ್ಲ. ನವೀಕರಿಸಲು ಮತ್ತೆ ಸಂಪರ್ಕಿಸಿ ಮತ್ತು ಸೈನ್ ಇನ್ ಮಾಡಿ. ಉಳಿಸಿದ ಫೈಲ್ ಅನ್ನು ಇಟ್ಟುಕೊಳ್ಳಲಾಗಿದೆ.';
 
   @override
   String get downloadErrTooLarge =>
-      'This recording is larger than the 50 MB download limit.';
+      'ಈ ರೆಕಾರ್ಡಿಂಗ್ 50 MB ಡೌನ್‌ಲೋಡ್ ಮಿತಿಗಿಂತ ದೊಡ್ಡದಾಗಿದೆ.';
 
   @override
   String get downloadErrRenewServer =>
-      'The server could not renew this recording. Try again later.';
+      'ಸರ್ವರ್ ಈ ರೆಕಾರ್ಡಿಂಗ್ ಅನ್ನು ನವೀಕರಿಸಲು ಆಗಲಿಲ್ಲ. ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
   String get downloadErrInvalidServerInfo =>
-      'The server returned invalid download information.';
+      'ಸರ್ವರ್ ಅಮಾನ್ಯ ಡೌನ್‌ಲೋಡ್ ಮಾಹಿತಿಯನ್ನು ಕಳುಹಿಸಿದೆ.';
 
   @override
   String get downloadErrDifferentRecording =>
-      'The server returned a different recording.';
+      'ಸರ್ವರ್ ಬೇರೆ ರೆಕಾರ್ಡಿಂಗ್ ಅನ್ನು ಕಳುಹಿಸಿದೆ.';
 
   @override
   String get downloadErrTimedOut =>
-      'The connection timed out. Reconnect and retry.';
+      'ಸಂಪರ್ಕದ ಸಮಯ ಮೀರಿದೆ. ಮತ್ತೆ ಸಂಪರ್ಕಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
   String get downloadErrRenewConnect =>
-      'Could not connect to renew this recording. Check your internet connection.';
+      'ಈ ರೆಕಾರ್ಡಿಂಗ್ ನವೀಕರಿಸಲು ಸಂಪರ್ಕಿಸಲು ಆಗಲಿಲ್ಲ. ನಿಮ್ಮ ಇಂಟರ್ನೆಟ್ ಸಂಪರ್ಕ ಪರಿಶೀಲಿಸಿ.';
 
   @override
   String get downloadErrClockUnreadable =>
-      'The offline time record could not be read. Connect and renew access.';
+      'ಆಫ್‌ಲೈನ್ ಸಮಯದ ದಾಖಲೆಯನ್ನು ಓದಲು ಆಗಲಿಲ್ಲ. ಸಂಪರ್ಕಿಸಿ ಮತ್ತು ಪ್ರವೇಶ ನವೀಕರಿಸಿ.';
 
   @override
   String get downloadErrClockBackwards =>
-      'The phone clock moved backwards. Correct its date and reconnect to renew access.';
+      'ಫೋನ್‌ನ ಗಡಿಯಾರ ಹಿಂದಕ್ಕೆ ಹೋಗಿದೆ. ಅದರ ದಿನಾಂಕ ಸರಿಪಡಿಸಿ ಮತ್ತು ಪ್ರವೇಶ ನವೀಕರಿಸಲು ಮತ್ತೆ ಸಂಪರ್ಕಿಸಿ.';
 
   @override
   String get downloadErrExpired =>
-      'Offline access expired after 30 days. Connect to the internet and renew this lesson. Your progress and downloaded file are kept.';
+      '30 ದಿನಗಳ ನಂತರ ಆಫ್‌ಲೈನ್ ಪ್ರವೇಶ ಮುಗಿದಿದೆ. ಇಂಟರ್ನೆಟ್‌ಗೆ ಸಂಪರ್ಕಿಸಿ ಈ ಪಾಠವನ್ನು ನವೀಕರಿಸಿ. ನಿಮ್ಮ ಪ್ರಗತಿ ಮತ್ತು ಡೌನ್‌ಲೋಡ್ ಮಾಡಿದ ಫೈಲ್ ಅನ್ನು ಇಟ್ಟುಕೊಳ್ಳಲಾಗಿದೆ.';
 
   @override
   String get downloadErrIncompleteForPlayback =>
-      'Download this lesson completely before offline playback.';
+      'ಆಫ್‌ಲೈನ್‌ನಲ್ಲಿ ಕೇಳುವ ಮೊದಲು ಈ ಪಾಠವನ್ನು ಪೂರ್ತಿಯಾಗಿ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ.';
 
   @override
   String get downloadErrRenewalRequired =>
-      'Access renewal is required. Connect and renew before playing this download.';
+      'ಪ್ರವೇಶವನ್ನು ನವೀಕರಿಸಬೇಕು. ಈ ಡೌನ್‌ಲೋಡ್ ಪ್ಲೇ ಮಾಡುವ ಮೊದಲು ಸಂಪರ್ಕಿಸಿ ನವೀಕರಿಸಿ.';
 
   @override
   String get downloadErrDamaged =>
-      'The downloaded recording is incomplete or damaged. Remove this download and download it again. Progress and bookmarks are separate.';
+      'ಡೌನ್‌ಲೋಡ್ ಮಾಡಿದ ರೆಕಾರ್ಡಿಂಗ್ ಅಪೂರ್ಣವಾಗಿದೆ ಅಥವಾ ಹಾಳಾಗಿದೆ. ಈ ಡೌನ್‌ಲೋಡ್ ತೆಗೆದುಹಾಕಿ ಮತ್ತೆ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ. ಪ್ರಗತಿ ಮತ್ತು ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು ಬೇರೆಯಾಗಿ ಇರುತ್ತವೆ.';
 
   @override
-  String get downloadErrDownloadFirst => 'Download this lesson first.';
+  String get downloadErrDownloadFirst => 'ಮೊದಲು ಈ ಪಾಠವನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ.';
 
   @override
   String get downloadErrRecordingChangedRenew =>
-      'This recording has changed. Remove its download and download the current recording. Progress and bookmarks are kept.';
+      'ಈ ರೆಕಾರ್ಡಿಂಗ್ ಬದಲಾಗಿದೆ. ಅದರ ಡೌನ್‌ಲೋಡ್ ತೆಗೆದುಹಾಕಿ ಮತ್ತು ಈಗಿನ ರೆಕಾರ್ಡಿಂಗ್ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ. ಪ್ರಗತಿ ಮತ್ತು ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳನ್ನು ಇಟ್ಟುಕೊಳ್ಳಲಾಗಿದೆ.';
 
   @override
   String get downloadErrCancelledAnyPartial =>
-      'Download cancelled. Any partial file is kept for an explicit retry.';
+      'ಡೌನ್‌ಲೋಡ್ ರದ್ದುಗೊಂಡಿದೆ. ನೀವು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಲು ಯಾವುದೇ ಅರ್ಧ ಫೈಲ್ ಅನ್ನು ಇಟ್ಟುಕೊಳ್ಳಲಾಗಿದೆ.';
 
   @override
   String get downloadErrRecordingChanged =>
-      'The recording changed. Remove its old download before downloading the current version. Progress is kept.';
+      'ರೆಕಾರ್ಡಿಂಗ್ ಬದಲಾಗಿದೆ. ಈಗಿನ ಆವೃತ್ತಿಯನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡುವ ಮೊದಲು ಅದರ ಹಳೆಯ ಡೌನ್‌ಲೋಡ್ ತೆಗೆದುಹಾಕಿ. ಪ್ರಗತಿಯನ್ನು ಇಟ್ಟುಕೊಳ್ಳಲಾಗಿದೆ.';
 
   @override
   String get downloadErrSavedDamaged =>
-      'The saved recording is damaged. Remove its download before retrying.';
+      'ಉಳಿಸಿದ ರೆಕಾರ್ಡಿಂಗ್ ಹಾಳಾಗಿದೆ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸುವ ಮೊದಲು ಅದರ ಡೌನ್‌ಲೋಡ್ ತೆಗೆದುಹಾಕಿ.';
 
   @override
   String get downloadErrQuota =>
-      'Your account has reached its 50 MB download limit. Choose which of your downloads to remove, then retry. Nothing was deleted.';
+      'ನಿಮ್ಮ ಖಾತೆ ತನ್ನ 50 MB ಡೌನ್‌ಲೋಡ್ ಮಿತಿಯನ್ನು ತಲುಪಿದೆ. ನಿಮ್ಮ ಯಾವ ಡೌನ್‌ಲೋಡ್‌ಗಳನ್ನು ತೆಗೆದುಹಾಕಬೇಕು ಎಂದು ಆಯ್ಕೆ ಮಾಡಿ, ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ. ಏನನ್ನೂ ಅಳಿಸಲಾಗಿಲ್ಲ.';
 
   @override
   String get downloadErrPartialInvalid =>
-      'The partial download is invalid. Remove it before retrying.';
+      'ಅರ್ಧ ಡೌನ್‌ಲೋಡ್ ಆದ ಡೇಟಾ ಸರಿಯಾಗಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸುವ ಮೊದಲು ಅದನ್ನು ತೆಗೆದುಹಾಕಿ.';
 
   @override
   String get downloadErrIntegrityPartial =>
-      'Download integrity check failed. Remove this partial download before retrying.';
+      'ಡೌನ್‌ಲೋಡ್ ಸಮಗ್ರತೆ ಪರಿಶೀಲನೆ ವಿಫಲವಾಯಿತು. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸುವ ಮೊದಲು ಈ ಅರ್ಧ ಡೌನ್‌ಲೋಡ್ ಅನ್ನು ತೆಗೆದುಹಾಕಿ.';
 
   @override
-  String get downloadErrSignInToDownload => 'Sign in before downloading.';
+  String get downloadErrSignInToDownload =>
+      'ಡೌನ್‌ಲೋಡ್ ಮಾಡುವ ಮೊದಲು ಸೈನ್ ಇನ್ ಮಾಡಿ.';
 
   @override
   String get downloadErrCancelledExplicit =>
-      'Download cancelled. Partial data is kept for an explicit retry.';
+      'ಡೌನ್‌ಲೋಡ್ ರದ್ದಾಗಿದೆ. ನೀವು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಲು ಅರ್ಧ ಡೇಟಾವನ್ನು ಇಟ್ಟುಕೊಳ್ಳಲಾಗಿದೆ.';
 
   @override
   String get downloadErrAccessDenied =>
-      'Download access was denied. Reconnect and renew access.';
+      'ಡೌನ್‌ಲೋಡ್ ಪ್ರವೇಶ ನಿರಾಕರಿಸಲಾಗಿದೆ. ಮತ್ತೆ ಸಂಪರ್ಕಿಸಿ ಮತ್ತು ಪ್ರವೇಶವನ್ನು ನವೀಕರಿಸಿ.';
 
   @override
   String get downloadErrUnexpectedPartial =>
-      'The server returned an unexpected partial recording. Retry without deleting existing data.';
+      'ಸರ್ವರ್ ಅನಿರೀಕ್ಷಿತವಾಗಿ ಅರ್ಧ ರೆಕಾರ್ಡಿಂಗ್ ಕಳುಹಿಸಿದೆ. ಈಗಿರುವ ಡೇಟಾವನ್ನು ಅಳಿಸದೆ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
   String get downloadErrCouldNotDownload =>
-      'The recording could not be downloaded. Check your connection and retry.';
+      'ರೆಕಾರ್ಡಿಂಗ್ ಡೌನ್‌ಲೋಡ್ ಆಗಲಿಲ್ಲ. ನಿಮ್ಮ ಸಂಪರ್ಕ ಪರಿಶೀಲಿಸಿ ಮತ್ತು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
   String get downloadErrSizeChanged =>
-      'The recording size changed. Retry downloading.';
+      'ರೆಕಾರ್ಡಿಂಗ್ ಗಾತ್ರ ಬದಲಾಗಿದೆ. ಮತ್ತೆ ಡೌನ್‌ಲೋಡ್ ಮಾಡಲು ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
   String get downloadErrAccountChangedStopped =>
-      'Your account changed. The download was stopped.';
+      'ನಿಮ್ಮ ಖಾತೆ ಬದಲಾಗಿದೆ. ಡೌನ್‌ಲೋಡ್ ನಿಲ್ಲಿಸಲಾಗಿದೆ.';
 
   @override
   String get downloadErrExceededSize =>
-      'The recording exceeded its declared size. Download stopped.';
+      'ರೆಕಾರ್ಡಿಂಗ್ ತಿಳಿಸಿದ ಗಾತ್ರಕ್ಕಿಂತ ದೊಡ್ಡದಾಗಿದೆ. ಡೌನ್‌ಲೋಡ್ ನಿಲ್ಲಿಸಲಾಗಿದೆ.';
 
   @override
   String get downloadErrIntegrity =>
-      'Download integrity check failed. Retry an incomplete download, or remove damaged partial data before retrying.';
+      'ಡೌನ್‌ಲೋಡ್ ಸಮಗ್ರತೆ ಪರಿಶೀಲನೆ ವಿಫಲವಾಯಿತು. ಅಪೂರ್ಣ ಡೌನ್‌ಲೋಡ್ ಅನ್ನು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ, ಅಥವಾ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸುವ ಮೊದಲು ಹಾಳಾದ ಅರ್ಧ ಡೇಟಾವನ್ನು ತೆಗೆದುಹಾಕಿ.';
 
   @override
   String get downloadErrSignInChangedStopped =>
-      'Your sign-in changed. Download stopped before installation.';
+      'ನಿಮ್ಮ ಸೈನ್ ಇನ್ ಬದಲಾಗಿದೆ. ಇನ್‌ಸ್ಟಾಲ್ ಆಗುವ ಮೊದಲೇ ಡೌನ್‌ಲೋಡ್ ನಿಲ್ಲಿಸಲಾಗಿದೆ.';
 
   @override
   String get downloadErrTimedOutPartial =>
-      'Download timed out. Partial data is kept; activate Download to retry.';
+      'ಡೌನ್‌ಲೋಡ್ ಸಮಯ ಮೀರಿದೆ. ಅರ್ಧ ಡೇಟಾವನ್ನು ಇಟ್ಟುಕೊಳ್ಳಲಾಗಿದೆ; ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಲು ಡೌನ್‌ಲೋಡ್ ಆಯ್ಕೆ ಮಾಡಿ.';
 
   @override
   String get downloadErrCancelledRetry =>
-      'Download cancelled. Partial data is kept for retry.';
+      'ಡೌನ್‌ಲೋಡ್ ರದ್ದಾಗಿದೆ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಲು ಅರ್ಧ ಡೇಟಾವನ್ನು ಇಟ್ಟುಕೊಳ್ಳಲಾಗಿದೆ.';
 
   @override
   String get downloadErrInterrupted =>
-      'Download interrupted. Partial data is kept; activate Download to retry.';
+      'ಡೌನ್‌ಲೋಡ್‌ಗೆ ಅಡಚಣೆಯಾಗಿದೆ. ಅರ್ಧ ಡೇಟಾವನ್ನು ಇಟ್ಟುಕೊಳ್ಳಲಾಗಿದೆ; ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಲು ಡೌನ್‌ಲೋಡ್ ಆಯ್ಕೆ ಮಾಡಿ.';
 
   @override
   String get libraryErrStorageUnavailable =>
-      'Learning storage is unavailable on this device. Your existing data has not been changed.';
+      'ಈ ಸಾಧನದಲ್ಲಿ ಕಲಿಕೆಯ ಸಂಗ್ರಹಣೆ ಲಭ್ಯವಿಲ್ಲ. ನಿಮ್ಮ ಈಗಿರುವ ಡೇಟಾವನ್ನು ಬದಲಾಯಿಸಲಾಗಿಲ್ಲ.';
 
   @override
   String get libraryErrStorageNotOpened =>
-      'Learning storage could not be opened. Check free space and retry.';
+      'ಕಲಿಕೆಯ ಸಂಗ್ರಹಣೆಯನ್ನು ತೆರೆಯಲು ಆಗಲಿಲ್ಲ. ಖಾಲಿ ಜಾಗ ಪರಿಶೀಲಿಸಿ ಮತ್ತು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
   String get libraryErrNoStorageLocation =>
-      'This device did not provide a learning storage location. Your existing data has not been changed.';
+      'ಈ ಸಾಧನವು ಕಲಿಕೆಯ ಸಂಗ್ರಹಣೆಗೆ ಜಾಗವನ್ನು ನೀಡಲಿಲ್ಲ. ನಿಮ್ಮ ಈಗಿರುವ ಡೇಟಾವನ್ನು ಬದಲಾಯಿಸಲಾಗಿಲ್ಲ.';
 
   @override
   String get libraryErrStartLessonFirst =>
-      'Start a lesson before retrying progress saving.';
+      'ಪ್ರಗತಿ ಉಳಿಸಲು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸುವ ಮೊದಲು ಒಂದು ಪಾಠವನ್ನು ಪ್ರಾರಂಭಿಸಿ.';
 
   @override
   String get libraryErrProgressNotSaved =>
-      'Learning progress was not saved. Retry when storage is available.';
+      'ಕಲಿಕೆಯ ಪ್ರಗತಿ ಉಳಿಸಲಾಗಿಲ್ಲ. ಸಂಗ್ರಹಣೆ ಲಭ್ಯವಾದಾಗ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
-  String get libraryErrChoosePosition => 'Choose a position within the lesson';
+  String get libraryErrChoosePosition => 'ಪಾಠದೊಳಗಿನ ಒಂದು ಸ್ಥಾನವನ್ನು ಆಯ್ಕೆ ಮಾಡಿ';
 
   @override
-  String get libraryErrChooseSpeed => 'Choose a playback speed from 0.25 to 3';
+  String get libraryErrChooseSpeed =>
+      '0.25 ರಿಂದ 3 ರ ನಡುವೆ ಪ್ಲೇಬ್ಯಾಕ್ ವೇಗವನ್ನು ಆಯ್ಕೆ ಮಾಡಿ';
 
   @override
   String get libraryErrChooseBookmarkPosition =>
-      'Choose a bookmark position within the lesson';
+      'ಪಾಠದೊಳಗೆ ಬುಕ್‌ಮಾರ್ಕ್ ಸ್ಥಾನವನ್ನು ಆಯ್ಕೆ ಮಾಡಿ';
 
   @override
   String get libraryErrBookmarkNotSaved =>
-      'Progress saving is unavailable. The bookmark was not saved.';
+      'ಪ್ರಗತಿ ಉಳಿಸುವಿಕೆ ಲಭ್ಯವಿಲ್ಲ. ಬುಕ್‌ಮಾರ್ಕ್ ಉಳಿಸಲಾಗಿಲ್ಲ.';
 
   @override
   String get libraryErrBookmarkChangesUnavailable =>
-      'Bookmark changes are unavailable until progress saving is restored.';
+      'ಪ್ರಗತಿ ಉಳಿಸುವಿಕೆ ಮರಳಿ ಬರುವವರೆಗೆ ಬುಕ್‌ಮಾರ್ಕ್ ಬದಲಾವಣೆಗಳು ಲಭ್ಯವಿಲ್ಲ.';
 
   @override
   String get libraryErrRepeatNotSaved =>
-      'Progress saving is unavailable. Repeat points were not saved.';
+      'ಪ್ರಗತಿ ಉಳಿಸುವಿಕೆ ಲಭ್ಯವಿಲ್ಲ. ಪುನರಾವರ್ತನೆ ಬಿಂದುಗಳನ್ನು ಉಳಿಸಲಾಗಿಲ್ಲ.';
 
   @override
   String get libraryErrSetRepeatFirst =>
-      'Set a start point and a later end point within this lesson first';
+      'ಮೊದಲು ಈ ಪಾಠದೊಳಗೆ ಪ್ರಾರಂಭ ಬಿಂದು ಮತ್ತು ಅದರ ನಂತರದ ಅಂತ್ಯ ಬಿಂದುವನ್ನು ಹೊಂದಿಸಿ';
 
   @override
   String get libraryErrRepeatFailed =>
-      'Repeat playback failed. Pause and try again.';
+      'ಪುನರಾವರ್ತನೆ ಪ್ಲೇಬ್ಯಾಕ್ ವಿಫಲವಾಯಿತು. ವಿರಾಮಗೊಳಿಸಿ ಮತ್ತು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
-  String get libraryScreenBack => 'Back';
+  String get libraryScreenBack => 'ಹಿಂದೆ';
 
   @override
-  String get libraryScreenRefreshTarget => 'Refresh audio files, key 1';
+  String get libraryScreenRefreshTarget =>
+      'ಆಡಿಯೋ ಫೈಲ್‌ಗಳನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಿ, ಕೀ 1';
 
   @override
   String get libraryScreenPauseSessionTarget =>
-      'Pause audio for the whole session, key 3';
+      'ಇಡೀ ಸೆಷನ್‌ಗೆ ಆಡಿಯೋ ವಿರಾಮಗೊಳಿಸಿ, ಕೀ 3';
 
   @override
-  String get libraryScreenUploadTarget => 'Upload audio, key 2';
+  String get libraryScreenUploadTarget => 'ಆಡಿಯೋ ಅಪ್‌ಲೋಡ್ ಮಾಡಿ, ಕೀ 2';
 
   @override
   String libraryScreenStopPreviewTarget(String title) {
-    return 'Stop preview of $title privately. Only you can hear this.';
+    return '$title ಖಾಸಗಿ ಪೂರ್ವವೀಕ್ಷಣೆ ನಿಲ್ಲಿಸಿ. ಇದನ್ನು ನೀವು ಮಾತ್ರ ಕೇಳಬಹುದು.';
   }
 
   @override
   String libraryScreenPreviewTarget(String title) {
-    return 'Preview $title privately. Only you can hear this.';
+    return '$title ಅನ್ನು ಖಾಸಗಿಯಾಗಿ ಪೂರ್ವವೀಕ್ಷಿಸಿ. ಇದನ್ನು ನೀವು ಮಾತ್ರ ಕೇಳಬಹುದು.';
   }
 
   @override
   String libraryScreenBroadcastTarget(String title) {
-    return 'Play $title for everyone in the session';
+    return '$title ಅನ್ನು ಸೆಷನ್‌ನಲ್ಲಿರುವ ಎಲ್ಲರಿಗೂ ಪ್ಲೇ ಮಾಡಿ';
   }
 
   @override
-  String get libraryScreenPreviewFinished => 'Preview finished';
+  String get libraryScreenPreviewFinished => 'ಪೂರ್ವವೀಕ್ಷಣೆ ಮುಗಿದಿದೆ';
 
   @override
   String get libraryScreenNoRecordings =>
-      'No recordings yet. Press 2 to upload audio.';
+      'ಇನ್ನೂ ಯಾವುದೇ ರೆಕಾರ್ಡಿಂಗ್ ಇಲ್ಲ. ಆಡಿಯೋ ಅಪ್‌ಲೋಡ್ ಮಾಡಲು 2 ಒತ್ತಿ.';
 
   @override
   String libraryScreenRecordingsLoaded(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count recordings loaded.',
+      other: '$count ರೆಕಾರ್ಡಿಂಗ್‌ಗಳು ಲೋಡ್ ಆಗಿವೆ.',
     );
     return '$_temp0';
   }
 
   @override
   String get libraryScreenLoadFailed =>
-      'Could not load recordings. Check your internet connection, then press 1 to retry.';
+      'ರೆಕಾರ್ಡಿಂಗ್‌ಗಳನ್ನು ಲೋಡ್ ಮಾಡಲು ಆಗಲಿಲ್ಲ. ನಿಮ್ಮ ಇಂಟರ್ನೆಟ್ ಸಂಪರ್ಕ ಪರಿಶೀಲಿಸಿ, ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಲು 1 ಒತ್ತಿ.';
 
   @override
-  String get libraryScreenTitleRequired => 'Title is required';
+  String get libraryScreenTitleRequired => 'ಶೀರ್ಷಿಕೆ ಅಗತ್ಯವಿದೆ';
 
   @override
-  String get libraryScreenUploadDialogName => 'Upload audio';
+  String get libraryScreenUploadDialogName => 'ಆಡಿಯೋ ಅಪ್‌ಲೋಡ್ ಮಾಡಿ';
 
   @override
-  String get libraryScreenEditTitleKey => 'Edit Title';
+  String get libraryScreenEditTitleKey => 'ಶೀರ್ಷಿಕೆ ಬದಲಿಸಿ';
 
   @override
-  String get libraryScreenEditDescriptionKey => 'Edit Description';
+  String get libraryScreenEditDescriptionKey => 'ವಿವರಣೆ ಬದಲಿಸಿ';
 
   @override
-  String get libraryScreenUploadKey => 'Upload';
+  String get libraryScreenUploadKey => 'ಅಪ್‌ಲೋಡ್';
 
   @override
-  String get libraryScreenCancelKey => 'Cancel';
+  String get libraryScreenCancelKey => 'ರದ್ದುಮಾಡಿ';
 
   @override
-  String get libraryScreenTitleField => 'Audio title, required';
+  String get libraryScreenTitleField => 'ಆಡಿಯೋ ಶೀರ್ಷಿಕೆ, ಅಗತ್ಯ';
 
   @override
-  String get libraryScreenDescriptionField => 'Audio description, optional';
+  String get libraryScreenDescriptionField => 'ಆಡಿಯೋ ವಿವರಣೆ, ಐಚ್ಛಿಕ';
 
   @override
-  String get libraryScreenCancelUpload => 'Cancel upload';
+  String get libraryScreenCancelUpload => 'ಅಪ್‌ಲೋಡ್ ರದ್ದುಮಾಡಿ';
 
   @override
-  String get libraryScreenPickFailed => 'Failed to pick file';
+  String get libraryScreenPickFailed => 'ಫೈಲ್ ಆಯ್ಕೆ ಮಾಡಲು ವಿಫಲವಾಯಿತು';
 
   @override
   String get libraryScreenChooseWorkspace =>
-      'Choose a class and subject workspace on the Teacher Dashboard before uploading audio.';
+      'ಆಡಿಯೋ ಅಪ್‌ಲೋಡ್ ಮಾಡುವ ಮೊದಲು ಶಿಕ್ಷಕರ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್‌ನಲ್ಲಿ ತರಗತಿ ಮತ್ತು ವಿಷಯದ ವರ್ಕ್‌ಸ್ಪೇಸ್ ಆಯ್ಕೆ ಮಾಡಿ.';
 
   @override
   String libraryScreenUploading(String title) {
-    return 'Uploading $title. You will hear progress every 25 percent.';
+    return '$title ಅಪ್‌ಲೋಡ್ ಆಗುತ್ತಿದೆ. ಪ್ರತಿ 25 ಪ್ರತಿಶತಕ್ಕೆ ನೀವು ಪ್ರಗತಿಯನ್ನು ಕೇಳುತ್ತೀರಿ.';
   }
 
   @override
   String libraryScreenUploaded(String title) {
-    return '$title uploaded.';
+    return '$title ಅಪ್‌ಲೋಡ್ ಆಗಿದೆ.';
   }
 
   @override
   String libraryScreenUploadProgress(String title, String percent) {
-    return '$title: $percent percent uploaded.';
+    return '$title: $percent ಪ್ರತಿಶತ ಅಪ್‌ಲೋಡ್ ಆಗಿದೆ.';
   }
 
   @override
   String libraryScreenPreviewStopped(String title) {
-    return 'Preview of $title stopped';
+    return '$title ಪೂರ್ವವೀಕ್ಷಣೆ ನಿಂತಿದೆ';
   }
 
   @override
   String libraryScreenPreviewing(String title) {
-    return 'Previewing $title privately';
+    return '$title ಅನ್ನು ಖಾಸಗಿಯಾಗಿ ಪೂರ್ವವೀಕ್ಷಿಸಲಾಗುತ್ತಿದೆ';
   }
 
   @override
   String libraryScreenPlayFailed(String title) {
-    return 'Could not play $title. Check your connection and try again.';
+    return '$title ಪ್ಲೇ ಮಾಡಲು ಆಗಲಿಲ್ಲ. ನಿಮ್ಮ ಸಂಪರ್ಕ ಪರಿಶೀಲಿಸಿ ಮತ್ತು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
   }
 
   @override
-  String get libraryScreenNoActiveSession => 'No active session';
+  String get libraryScreenNoActiveSession => 'ಯಾವುದೇ ಸಕ್ರಿಯ ಸೆಷನ್ ಇಲ್ಲ';
 
   @override
   String libraryScreenSelectedForSession(String title) {
-    return 'Selected $title for session';
+    return 'ಸೆಷನ್‌ಗಾಗಿ $title ಆಯ್ಕೆ ಮಾಡಲಾಗಿದೆ';
   }
 
   @override
-  String get libraryScreenAudioSelectedTitle => 'Audio Selected';
+  String get libraryScreenAudioSelectedTitle => 'ಆಡಿಯೋ ಆಯ್ಕೆ ಮಾಡಲಾಗಿದೆ';
 
   @override
   String libraryScreenPlayForEveryoneNow(String title) {
-    return 'Play \"$title\" for everyone in the session now?';
+    return '\"$title\" ಅನ್ನು ಈಗ ಸೆಷನ್‌ನಲ್ಲಿರುವ ಎಲ್ಲರಿಗೂ ಪ್ಲೇ ಮಾಡಬೇಕೇ?';
   }
 
   @override
-  String get libraryScreenNotYet => 'Not Yet';
+  String get libraryScreenNotYet => 'ಈಗ ಬೇಡ';
 
   @override
-  String get libraryScreenPlayNow => 'Play Now';
+  String get libraryScreenPlayNow => 'ಈಗ ಪ್ಲೇ ಮಾಡಿ';
 
   @override
-  String get libraryScreenSelectFailed => 'Failed to select audio';
+  String get libraryScreenSelectFailed => 'ಆಡಿಯೋ ಆಯ್ಕೆ ಮಾಡಲು ವಿಫಲವಾಯಿತು';
 
   @override
-  String get libraryScreenPlaybackAccepted => 'Class playback request accepted';
+  String get libraryScreenPlaybackAccepted =>
+      'ತರಗತಿ ಪ್ಲೇಬ್ಯಾಕ್ ವಿನಂತಿ ಸ್ವೀಕರಿಸಲಾಗಿದೆ';
 
   @override
-  String get libraryScreenPlaybackFailed => 'Failed to start playback';
+  String get libraryScreenPlaybackFailed => 'ಪ್ಲೇಬ್ಯಾಕ್ ಪ್ರಾರಂಭಿಸಲು ವಿಫಲವಾಯಿತು';
 
   @override
-  String get libraryScreenPauseAccepted => 'Class pause request accepted';
+  String get libraryScreenPauseAccepted => 'ತರಗತಿ ವಿರಾಮ ವಿನಂತಿ ಸ್ವೀಕರಿಸಲಾಗಿದೆ';
 
   @override
-  String get libraryScreenPauseFailed => 'Failed to pause audio';
+  String get libraryScreenPauseFailed => 'ಆಡಿಯೋ ವಿರಾಮಗೊಳಿಸಲು ವಿಫಲವಾಯಿತು';
 
   @override
-  String get libraryScreenAudioLibraryName => 'Audio library';
+  String get libraryScreenAudioLibraryName => 'ಆಡಿಯೋ ಲೈಬ್ರರಿ';
 
   @override
   String get libraryScreenAudioLibrarySections =>
-      'recordings, playback and speech controls, recording sharing, and upload tools when available';
+      'ರೆಕಾರ್ಡಿಂಗ್‌ಗಳು, ಪ್ಲೇಬ್ಯಾಕ್ ಮತ್ತು ಧ್ವನಿ ನಿಯಂತ್ರಣಗಳು, ರೆಕಾರ್ಡಿಂಗ್ ಹಂಚಿಕೆ, ಮತ್ತು ಲಭ್ಯವಿದ್ದಾಗ ಅಪ್‌ಲೋಡ್ ಸಾಧನಗಳು';
 
   @override
-  String get libraryScreenRefreshKey => 'Refresh Audio Files';
+  String get libraryScreenRefreshKey => 'ಆಡಿಯೋ ಫೈಲ್‌ಗಳನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಿ';
 
   @override
-  String get libraryScreenUploadAudioKey => 'Upload Audio';
+  String get libraryScreenUploadAudioKey => 'ಆಡಿಯೋ ಅಪ್‌ಲೋಡ್ ಮಾಡಿ';
 
   @override
-  String get libraryScreenPauseSessionKey => 'Pause Session Audio';
+  String get libraryScreenPauseSessionKey => 'ಸೆಷನ್ ಆಡಿಯೋ ವಿರಾಮಗೊಳಿಸಿ';
 
   @override
   String get libraryScreenBrowseTarget =>
-      'Focus first active class. Use D-pad to browse active sessions';
+      'ಮೊದಲ ಸಕ್ರಿಯ ತರಗತಿಗೆ ಹೋಗಿ. ಸಕ್ರಿಯ ಸೆಷನ್‌ಗಳನ್ನು ನೋಡಲು D-pad ಬಳಸಿ';
 
   @override
-  String get libraryScreenRefreshClassesTarget => 'Refresh classes';
+  String get libraryScreenRefreshClassesTarget => 'ತರಗತಿಗಳನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಿ';
 
   @override
-  String get libraryScreenSearchClassField => 'Search class by name';
+  String get libraryScreenSearchClassField => 'ಹೆಸರಿನಿಂದ ತರಗತಿ ಹುಡುಕಿ';
 
   @override
-  String get libraryScreenSearchTarget => 'Search';
+  String get libraryScreenSearchTarget => 'ಹುಡುಕಿ';
 
   @override
-  String get libraryScreenAllRecordedTarget => 'All recorded audio files';
+  String get libraryScreenAllRecordedTarget =>
+      'ಎಲ್ಲಾ ರೆಕಾರ್ಡ್ ಮಾಡಿದ ಆಡಿಯೋ ಫೈಲ್‌ಗಳು';
 
   @override
   String get libraryScreenContinueTarget =>
-      'Continue learning. Find your last unfinished recorded lesson';
+      'ಕಲಿಕೆ ಮುಂದುವರಿಸಿ. ನಿಮ್ಮ ಕೊನೆಯ ಅಪೂರ್ಣ ರೆಕಾರ್ಡ್ ಮಾಡಿದ ಪಾಠವನ್ನು ಹುಡುಕಿ';
 
   @override
   String get libraryScreenDownloadsTarget =>
-      'Downloaded lessons. Open saved recordings without loading online lists';
+      'ಡೌನ್‌ಲೋಡ್ ಮಾಡಿದ ಪಾಠಗಳು. ಆನ್‌ಲೈನ್ ಪಟ್ಟಿಗಳನ್ನು ಲೋಡ್ ಮಾಡದೆ ಉಳಿಸಿದ ರೆಕಾರ್ಡಿಂಗ್‌ಗಳನ್ನು ತೆರೆಯಿರಿ';
 
   @override
   String get libraryScreenNotesTarget =>
-      'Private notes and teacher recording drafts. Works from local storage';
+      'ಖಾಸಗಿ ಟಿಪ್ಪಣಿಗಳು ಮತ್ತು ಶಿಕ್ಷಕರ ರೆಕಾರ್ಡಿಂಗ್ ಕರಡುಗಳು. ಸಾಧನದ ಸಂಗ್ರಹಣೆಯಿಂದ ಕೆಲಸ ಮಾಡುತ್ತದೆ';
 
   @override
-  String get libraryScreenMyPlaylistsTarget => 'My private playlists';
+  String get libraryScreenMyPlaylistsTarget => 'ನನ್ನ ಖಾಸಗಿ ಪ್ಲೇಲಿಸ್ಟ್‌ಗಳು';
 
   @override
   String libraryScreenClassTarget(String title, String position, String total) {
-    return '$title. Class $position of $total';
+    return '$title. ತರಗತಿ $position / $total';
   }
 
   @override
   String get libraryScreenAccountChanged =>
-      'Your account changed. Open the library again.';
+      'ನಿಮ್ಮ ಖಾತೆ ಬದಲಾಗಿದೆ. ಲೈಬ್ರರಿಯನ್ನು ಮತ್ತೆ ತೆರೆಯಿರಿ.';
 
   @override
   String get libraryScreenNoUnfinishedLesson =>
-      'No unfinished lesson is saved for this account. Choose a recorded lesson to start learning.';
+      'ಈ ಖಾತೆಗೆ ಯಾವುದೇ ಅಪೂರ್ಣ ಪಾಠ ಉಳಿಸಲಾಗಿಲ್ಲ. ಕಲಿಕೆ ಪ್ರಾರಂಭಿಸಲು ಒಂದು ರೆಕಾರ್ಡ್ ಮಾಡಿದ ಪಾಠವನ್ನು ಆಯ್ಕೆ ಮಾಡಿ.';
 
   @override
   String get libraryScreenAccessCheckFailed =>
-      'Could not check lesson access. Connect to the internet and retry. Your saved progress is kept.';
+      'ಪಾಠದ ಪ್ರವೇಶವನ್ನು ಪರಿಶೀಲಿಸಲು ಆಗಲಿಲ್ಲ. ಇಂಟರ್ನೆಟ್‌ಗೆ ಸಂಪರ್ಕಿಸಿ ಮತ್ತು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ. ನಿಮ್ಮ ಉಳಿಸಿದ ಪ್ರಗತಿಯನ್ನು ಇಟ್ಟುಕೊಳ್ಳಲಾಗಿದೆ.';
 
   @override
   String get libraryScreenUnfinishedUnavailable =>
-      'Your unfinished lessons are not currently available in this library. Your saved progress and bookmarks are kept.';
+      'ನಿಮ್ಮ ಅಪೂರ್ಣ ಪಾಠಗಳು ಸದ್ಯಕ್ಕೆ ಈ ಲೈಬ್ರರಿಯಲ್ಲಿ ಲಭ್ಯವಿಲ್ಲ. ನಿಮ್ಮ ಉಳಿಸಿದ ಪ್ರಗತಿ ಮತ್ತು ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳನ್ನು ಇಟ್ಟುಕೊಳ್ಳಲಾಗಿದೆ.';
 
   @override
   String get libraryScreenOpeningNextUnfinished =>
-      'The most recent lesson is unavailable here. Opening your next most recent available unfinished lesson. Saved progress is kept.';
+      'ಇತ್ತೀಚಿನ ಪಾಠ ಇಲ್ಲಿ ಲಭ್ಯವಿಲ್ಲ. ಅದರ ನಂತರದ ಇತ್ತೀಚಿನ ಲಭ್ಯ ಅಪೂರ್ಣ ಪಾಠವನ್ನು ತೆರೆಯಲಾಗುತ್ತಿದೆ. ಉಳಿಸಿದ ಪ್ರಗತಿಯನ್ನು ಇಟ್ಟುಕೊಳ್ಳಲಾಗಿದೆ.';
 
   @override
   String get libraryScreenProgressOpenFailed =>
-      'Could not open saved learning progress. Check storage, your connection, and sign-in, then retry.';
+      'ಉಳಿಸಿದ ಕಲಿಕೆಯ ಪ್ರಗತಿಯನ್ನು ತೆರೆಯಲು ಆಗಲಿಲ್ಲ. ಸಂಗ್ರಹಣೆ, ನಿಮ್ಮ ಸಂಪರ್ಕ ಮತ್ತು ಸೈನ್ ಇನ್ ಪರಿಶೀಲಿಸಿ, ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
-  String get libraryScreenContinueLearningTitle => 'Continue Learning';
+  String get libraryScreenContinueLearningTitle => 'ಕಲಿಕೆ ಮುಂದುವರಿಸಿ';
 
   @override
   String get libraryScreenNoActiveClasses =>
-      'No active classes right now. Press 3 for all audio files.';
+      'ಈಗ ಯಾವುದೇ ಸಕ್ರಿಯ ತರಗತಿಗಳಿಲ್ಲ. ಎಲ್ಲಾ ಆಡಿಯೋ ಫೈಲ್‌ಗಳಿಗಾಗಿ 3 ಒತ್ತಿ.';
 
   @override
   String libraryScreenActiveClassesLoaded(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count active classes loaded.',
+      other: '$count ಸಕ್ರಿಯ ತರಗತಿಗಳು ಲೋಡ್ ಆಗಿವೆ.',
     );
     return '$_temp0';
   }
 
   @override
   String libraryScreenClassesRefreshFailed(String reason) {
-    return '$reason Active classes could not be refreshed. Press 1 to retry. Saved downloads remain available.';
+    return '$reason ಸಕ್ರಿಯ ತರಗತಿಗಳನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಲು ಆಗಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಲು 1 ಒತ್ತಿ. ಉಳಿಸಿದ ಡೌನ್‌ಲೋಡ್‌ಗಳು ಲಭ್ಯವಿವೆ.';
   }
 
   @override
   String get libraryScreenClassListUnreadable =>
-      'The class list could not be read.';
+      'ತರಗತಿ ಪಟ್ಟಿಯನ್ನು ಓದಲು ಆಗಲಿಲ್ಲ.';
 
   @override
-  String get libraryScreenSessionFallback => 'Session';
+  String get libraryScreenSessionFallback => 'ಸೆಷನ್';
 
   @override
-  String get libraryScreenMyAudioLibraryTitle => 'My Audio Library';
+  String get libraryScreenMyAudioLibraryTitle => 'ನನ್ನ ಆಡಿಯೋ ಲೈಬ್ರರಿ';
 
   @override
-  String get libraryScreenAllAudioFilesTitle => 'All Audio Files';
+  String get libraryScreenAllAudioFilesTitle => 'ಎಲ್ಲಾ ಆಡಿಯೋ ಫೈಲ್‌ಗಳು';
 
   @override
   String get libraryScreenNoActiveClassesStaying =>
-      'There are no active classes. Staying in the audio library.';
+      'ಯಾವುದೇ ಸಕ್ರಿಯ ತರಗತಿಗಳಿಲ್ಲ. ಆಡಿಯೋ ಲೈಬ್ರರಿಯಲ್ಲೇ ಇರಲಾಗುತ್ತಿದೆ.';
 
   @override
   String libraryScreenFirstActiveClass(String title) {
-    return '$title. First active class. Use D-pad up and down to browse active class sessions. Press OK to open the selected class recordings.';
+    return '$title. ಮೊದಲ ಸಕ್ರಿಯ ತರಗತಿ. ಸಕ್ರಿಯ ತರಗತಿ ಸೆಷನ್‌ಗಳನ್ನು ನೋಡಲು D-pad ಮೇಲೆ ಮತ್ತು ಕೆಳಗೆ ಬಳಸಿ. ಆಯ್ಕೆ ಮಾಡಿದ ತರಗತಿಯ ರೆಕಾರ್ಡಿಂಗ್‌ಗಳನ್ನು ತೆರೆಯಲು ಓಕೆ ಒತ್ತಿ.';
   }
 
   @override
   String get libraryScreenRecordedLibraryName =>
-      'Recorded Audio Library. Online lists require internet. Downloaded lessons open separately for offline playback.';
+      'ರೆಕಾರ್ಡ್ ಮಾಡಿದ ಆಡಿಯೋ ಲೈಬ್ರರಿ. ಆನ್‌ಲೈನ್ ಪಟ್ಟಿಗಳಿಗೆ ಇಂಟರ್ನೆಟ್ ಬೇಕು. ಡೌನ್‌ಲೋಡ್ ಮಾಡಿದ ಪಾಠಗಳು ಆಫ್‌ಲೈನ್ ಪ್ಲೇಬ್ಯಾಕ್‌ಗಾಗಿ ಪ್ರತ್ಯೇಕವಾಗಿ ತೆರೆಯುತ್ತವೆ.';
 
   @override
   String get libraryScreenRecordedLibrarySections =>
-      'continue learning, saved downloads and private notes, class search, and active class sessions';
+      'ಕಲಿಕೆ ಮುಂದುವರಿಸಿ, ಉಳಿಸಿದ ಡೌನ್‌ಲೋಡ್‌ಗಳು ಮತ್ತು ಖಾಸಗಿ ಟಿಪ್ಪಣಿಗಳು, ತರಗತಿ ಹುಡುಕಾಟ, ಮತ್ತು ಸಕ್ರಿಯ ತರಗತಿ ಸೆಷನ್‌ಗಳು';
 
   @override
-  String get libraryScreenMyPlaylistsKey => 'My Private Playlists';
+  String get libraryScreenMyPlaylistsKey => 'ನನ್ನ ಖಾಸಗಿ ಪ್ಲೇಲಿಸ್ಟ್‌ಗಳು';
 
   @override
   String get libraryScreenWaitForPlayerNotes =>
-      'Wait for the recording player before opening study notes.';
+      'ಅಧ್ಯಯನ ಟಿಪ್ಪಣಿಗಳನ್ನು ತೆರೆಯುವ ಮೊದಲು ರೆಕಾರ್ಡಿಂಗ್ ಪ್ಲೇಯರ್‌ಗಾಗಿ ಕಾಯಿರಿ.';
 
   @override
-  String get libraryScreenStatusPlaying => 'Playing';
+  String get libraryScreenStatusPlaying => 'ಪ್ಲೇ ಆಗುತ್ತಿದೆ';
 
   @override
-  String get libraryScreenStatusPaused => 'Paused';
+  String get libraryScreenStatusPaused => 'ವಿರಾಮಗೊಳಿಸಲಾಗಿದೆ';
 
   @override
-  String get libraryScreenUntitled => 'Untitled';
+  String get libraryScreenUntitled => 'ಶೀರ್ಷಿಕೆ ಇಲ್ಲ';
 
   @override
-  String get libraryScreenSubjectFallback => 'Subject';
+  String get libraryScreenSubjectFallback => 'ವಿಷಯ';
 
   @override
   String get libraryScreenDownloadedLessonsName =>
-      'Downloaded lessons. Existing offline access is checked before playing.';
+      'ಡೌನ್‌ಲೋಡ್ ಮಾಡಿದ ಪಾಠಗಳು. ಪ್ಲೇ ಮಾಡುವ ಮೊದಲು ಈಗಿರುವ ಆಫ್‌ಲೈನ್ ಪ್ರವೇಶವನ್ನು ಪರಿಶೀಲಿಸಲಾಗುತ್ತದೆ.';
 
   @override
   String get libraryScreenClassAudioName =>
-      'Audio Library. Online recordings require internet. Download lessons for offline playback.';
+      'ಆಡಿಯೋ ಲೈಬ್ರರಿ. ಆನ್‌ಲೈನ್ ರೆಕಾರ್ಡಿಂಗ್‌ಗಳಿಗೆ ಇಂಟರ್ನೆಟ್ ಬೇಕು. ಆಫ್‌ಲೈನ್ ಪ್ಲೇಬ್ಯಾಕ್‌ಗಾಗಿ ಪಾಠಗಳನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ.';
 
   @override
   String libraryScreenLessonPositionTarget(String position) {
-    return 'Lesson position $position. Use left or right to move 10 seconds.';
+    return 'ಪಾಠದ ಸ್ಥಾನ $position. 10 ಸೆಕೆಂಡ್ ಸರಿಸಲು ಎಡ ಅಥವಾ ಬಲ ಬಳಸಿ.';
   }
 
   @override
   String libraryScreenBack10Target(String key) {
-    return 'Back 10 seconds, key $key';
+    return '10 ಸೆಕೆಂಡ್ ಹಿಂದೆ, ಕೀ $key';
   }
 
   @override
   String libraryScreenPauseTarget(String title, String key) {
-    return 'Pause $title, key $key';
+    return '$title ವಿರಾಮಗೊಳಿಸಿ, ಕೀ $key';
   }
 
   @override
   String libraryScreenResumeTarget(String title, String key) {
-    return 'Resume $title, key $key';
+    return '$title ಮುಂದುವರಿಸಿ, ಕೀ $key';
   }
 
   @override
-  String get libraryScreenLessonFallback => 'lesson';
+  String get libraryScreenLessonFallback => 'ಪಾಠ';
 
   @override
   String libraryScreenForward10Target(String key) {
-    return 'Forward 10 seconds, key $key';
+    return '10 ಸೆಕೆಂಡ್ ಮುಂದೆ, ಕೀ $key';
   }
 
   @override
   String libraryScreenSlowerTarget(String key, String speed) {
-    return 'Slower, key $key. Now $speed times';
+    return 'ನಿಧಾನ, ಕೀ $key. ಈಗ $speed ಪಟ್ಟು';
   }
 
   @override
   String libraryScreenStopTarget(String title) {
-    return 'Stop $title, key 8';
+    return '$title ನಿಲ್ಲಿಸಿ, ಕೀ 8';
   }
 
   @override
   String libraryScreenFasterTarget(String key, String speed) {
-    return 'Faster, key $key. Now $speed times';
+    return 'ವೇಗ, ಕೀ $key. ಈಗ $speed ಪಟ್ಟು';
   }
 
   @override
   String get libraryScreenDownloadsManageTarget =>
-      'Download lessons or manage saved recordings';
+      'ಪಾಠಗಳನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ ಅಥವಾ ಉಳಿಸಿದ ರೆಕಾರ್ಡಿಂಗ್‌ಗಳನ್ನು ನಿರ್ವಹಿಸಿ';
 
   @override
-  String get libraryScreenStopSpeechTarget => 'Stop speech';
+  String get libraryScreenStopSpeechTarget => 'ಧ್ವನಿ ನಿಲ್ಲಿಸಿ';
 
   @override
-  String get libraryScreenUploadFirstTarget => 'Upload first audio';
+  String get libraryScreenUploadFirstTarget => 'ಮೊದಲ ಆಡಿಯೋ ಅಪ್‌ಲೋಡ್ ಮಾಡಿ';
 
   @override
-  String get libraryScreenRefreshEmptyTarget => 'Refresh empty audio library';
+  String get libraryScreenRefreshEmptyTarget =>
+      'ಖಾಲಿ ಆಡಿಯೋ ಲೈಬ್ರರಿಯನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಿ';
 
   @override
-  String get libraryScreenAddAudioTarget => 'Add audio, key 3';
+  String get libraryScreenAddAudioTarget => 'ಆಡಿಯೋ ಸೇರಿಸಿ, ಕೀ 3';
 
   @override
-  String get libraryScreenLessonTitleFallback => 'Lesson';
+  String get libraryScreenLessonTitleFallback => 'ಪಾಠ';
 
   @override
   String get libraryScreenDownloadedDescription =>
-      'Downloaded recording. Access renewal required after 30 days.';
+      'ಡೌನ್‌ಲೋಡ್ ಮಾಡಿದ ರೆಕಾರ್ಡಿಂಗ್. 30 ದಿನಗಳ ನಂತರ ಪ್ರವೇಶ ನವೀಕರಣ ಅಗತ್ಯ.';
 
   @override
   String libraryScreenSavedSubject(String id) {
-    return 'Saved subject $id';
+    return 'ಉಳಿಸಿದ ವಿಷಯ $id';
   }
 
   @override
   String get libraryScreenDownloadsReadFailed =>
-      'Could not read downloaded lessons. Press 1 to retry.';
+      'ಡೌನ್‌ಲೋಡ್ ಮಾಡಿದ ಪಾಠಗಳನ್ನು ಓದಲು ಆಗಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಲು 1 ಒತ್ತಿ.';
 
   @override
   String get libraryScreenLoadFailedSignIn =>
-      'Could not load recordings. Check your internet connection and sign-in, then press 1 to retry.';
+      'ರೆಕಾರ್ಡಿಂಗ್‌ಗಳನ್ನು ಲೋಡ್ ಮಾಡಲು ಆಗಲಿಲ್ಲ. ನಿಮ್ಮ ಇಂಟರ್ನೆಟ್ ಸಂಪರ್ಕ ಮತ್ತು ಸೈನ್ ಇನ್ ಪರಿಶೀಲಿಸಿ, ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಲು 1 ಒತ್ತಿ.';
 
   @override
   String libraryScreenNoRecordingsFor(String name) {
-    return 'No recordings yet for $name.';
+    return '$name ಗೆ ಇನ್ನೂ ಯಾವುದೇ ರೆಕಾರ್ಡಿಂಗ್ ಇಲ್ಲ.';
   }
 
   @override
@@ -6624,101 +6669,102 @@ class AppLocalizationsKn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count recordings loaded for $name.',
+      other: '$name ಗೆ $count ರೆಕಾರ್ಡಿಂಗ್‌ಗಳು ಲೋಡ್ ಆಗಿವೆ.',
     );
     return '$_temp0';
   }
 
   @override
   String get libraryScreenLessonNoLongerAvailable =>
-      'This lesson is no longer available. Your saved progress and bookmarks are kept.';
+      'ಈ ಪಾಠ ಈಗ ಲಭ್ಯವಿಲ್ಲ. ನಿಮ್ಮ ಉಳಿಸಿದ ಪ್ರಗತಿ ಮತ್ತು ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳನ್ನು ಇಟ್ಟುಕೊಳ್ಳಲಾಗಿದೆ.';
 
   @override
   String libraryScreenFailurePressRetry(String reason) {
-    return '$reason Press 1 to retry.';
+    return '$reason ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಲು 1 ಒತ್ತಿ.';
   }
 
   @override
   String libraryScreenSubjectNumber(String id) {
-    return 'Subject $id';
+    return 'ವಿಷಯ $id';
   }
 
   @override
   String get libraryScreenShowingAllSubjects =>
-      'Showing audio from all subjects';
+      'ಎಲ್ಲಾ ವಿಷಯಗಳ ಆಡಿಯೋ ತೋರಿಸಲಾಗುತ್ತಿದೆ';
 
   @override
   String libraryScreenShowingSubject(String subject, String count) {
-    return 'Showing $subject audio. $count files';
+    return '$subject ಆಡಿಯೋ ತೋರಿಸಲಾಗುತ್ತಿದೆ. $count ಫೈಲ್‌ಗಳು';
   }
 
   @override
   String libraryScreenPausedAt(String position) {
-    return 'Paused at $position.';
+    return '$position ನಲ್ಲಿ ವಿರಾಮಗೊಳಿಸಲಾಗಿದೆ.';
   }
 
   @override
   String get libraryScreenCheckingOfflineAccess =>
-      'Internet unavailable. Checking your saved offline access.';
+      'ಇಂಟರ್ನೆಟ್ ಲಭ್ಯವಿಲ್ಲ. ನಿಮ್ಮ ಉಳಿಸಿದ ಆಫ್‌ಲೈನ್ ಪ್ರವೇಶವನ್ನು ಪರಿಶೀಲಿಸಲಾಗುತ್ತಿದೆ.';
 
   @override
   String libraryScreenPlayFailedSelectAgain(String title) {
-    return 'Could not play $title. Check your connection, then select it again.';
+    return '$title ಪ್ಲೇ ಮಾಡಲು ಆಗಲಿಲ್ಲ. ನಿಮ್ಮ ಸಂಪರ್ಕ ಪರಿಶೀಲಿಸಿ, ನಂತರ ಅದನ್ನು ಮತ್ತೆ ಆಯ್ಕೆ ಮಾಡಿ.';
   }
 
   @override
-  String get libraryScreenNothingPlaying => 'Nothing is playing.';
+  String get libraryScreenNothingPlaying => 'ಏನೂ ಪ್ಲೇ ಆಗುತ್ತಿಲ್ಲ.';
 
   @override
   String libraryScreenTitleStopped(String title) {
-    return '$title stopped.';
+    return '$title ನಿಂತಿದೆ.';
   }
 
   @override
   String libraryScreenNoLessonPlayingPress(String key) {
-    return 'No lesson is playing. Press $key to play the first lesson.';
+    return 'ಯಾವುದೇ ಪಾಠ ಪ್ಲೇ ಆಗುತ್ತಿಲ್ಲ. ಮೊದಲ ಪಾಠ ಪ್ಲೇ ಮಾಡಲು $key ಒತ್ತಿ.';
   }
 
   @override
   String get libraryScreenSeekFailed =>
-      'Could not move to that lesson position. Try again.';
+      'ಪಾಠದ ಆ ಸ್ಥಾನಕ್ಕೆ ಹೋಗಲು ಆಗಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
-  String get libraryScreenSlowestSpeed => 'Already at the slowest speed.';
+  String get libraryScreenSlowestSpeed => 'ಈಗಾಗಲೇ ಅತ್ಯಂತ ನಿಧಾನ ವೇಗದಲ್ಲಿದೆ.';
 
   @override
-  String get libraryScreenFastestSpeed => 'Already at the fastest speed.';
+  String get libraryScreenFastestSpeed => 'ಈಗಾಗಲೇ ಅತ್ಯಂತ ವೇಗದಲ್ಲಿದೆ.';
 
   @override
   String get libraryScreenSpeedFailed =>
-      'Could not change playback speed. Try again.';
+      'ಪ್ಲೇಬ್ಯಾಕ್ ವೇಗ ಬದಲಾಯಿಸಲು ಆಗಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
-  String get libraryScreenReadFileFailed => 'Failed to read file data.';
+  String get libraryScreenReadFileFailed => 'ಫೈಲ್ ಡೇಟಾ ಓದಲು ವಿಫಲವಾಯಿತು.';
 
   @override
-  String get libraryScreenTitleFieldPlain => 'Audio title';
+  String get libraryScreenTitleFieldPlain => 'ಆಡಿಯೋ ಶೀರ್ಷಿಕೆ';
 
   @override
   String get libraryScreenChooseSessionsName =>
-      'Choose sessions for this audio';
+      'ಈ ಆಡಿಯೋಗಾಗಿ ಸೆಷನ್‌ಗಳನ್ನು ಆಯ್ಕೆ ಮಾಡಿ';
 
   @override
-  String get libraryScreenConfirmSessionsKey => 'Confirm Selected Sessions';
+  String get libraryScreenConfirmSessionsKey =>
+      'ಆಯ್ಕೆ ಮಾಡಿದ ಸೆಷನ್‌ಗಳನ್ನು ದೃಢೀಕರಿಸಿ';
 
   @override
   String libraryScreenSessionNumber(String id) {
-    return 'Session $id';
+    return 'ಸೆಷನ್ $id';
   }
 
   @override
   String libraryScreenSessionSelected(String name) {
-    return '$name, selected';
+    return '$name, ಆಯ್ಕೆ ಮಾಡಲಾಗಿದೆ';
   }
 
   @override
   String libraryScreenSessionNotSelected(String name) {
-    return '$name, not selected';
+    return '$name, ಆಯ್ಕೆ ಮಾಡಿಲ್ಲ';
   }
 
   @override
@@ -6726,71 +6772,72 @@ class AppLocalizationsKn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Confirm $count selected sessions',
+      other: 'ಆಯ್ಕೆ ಮಾಡಿದ $count ಸೆಷನ್‌ಗಳನ್ನು ದೃಢೀಕರಿಸಿ',
     );
     return '$_temp0';
   }
 
   @override
   String get libraryScreenUploadCancelledNoSession =>
-      'Upload cancelled. Select at least one session, then press 3 to add audio again.';
+      'ಅಪ್‌ಲೋಡ್ ರದ್ದಾಗಿದೆ. ಕನಿಷ್ಠ ಒಂದು ಸೆಷನ್ ಆಯ್ಕೆ ಮಾಡಿ, ನಂತರ ಮತ್ತೆ ಆಡಿಯೋ ಸೇರಿಸಲು 3 ಒತ್ತಿ.';
 
   @override
   String libraryScreenUploadingWait(String title) {
-    return 'Uploading $title. Please wait; you will hear when it finishes.';
+    return '$title ಅಪ್‌ಲೋಡ್ ಆಗುತ್ತಿದೆ. ದಯವಿಟ್ಟು ಕಾಯಿರಿ; ಮುಗಿದಾಗ ನಿಮಗೆ ಕೇಳಿಸುತ್ತದೆ.';
   }
 
   @override
   String get libraryScreenClassSubjectUnknown =>
-      'The session class and subject could not be determined';
+      'ಸೆಷನ್‌ನ ತರಗತಿ ಮತ್ತು ವಿಷಯವನ್ನು ಗುರುತಿಸಲು ಆಗಲಿಲ್ಲ';
 
   @override
   String libraryScreenUploadFailedRetry(String title) {
-    return '$title could not be uploaded. Check your connection, then press 3 to try again.';
+    return '$title ಅಪ್‌ಲೋಡ್ ಆಗಲಿಲ್ಲ. ನಿಮ್ಮ ಸಂಪರ್ಕ ಪರಿಶೀಲಿಸಿ, ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಲು 3 ಒತ್ತಿ.';
   }
 
   @override
-  String get libraryScreenAudioFallback => 'Audio';
+  String get libraryScreenAudioFallback => 'ಆಡಿಯೋ';
 
   @override
-  String get libraryScreenClassLibraryName => 'Class Audio Library';
+  String get libraryScreenClassLibraryName => 'ತರಗತಿ ಆಡಿಯೋ ಲೈಬ್ರರಿ';
 
   @override
   String get libraryScreenClassLibrarySections =>
-      'playback controls, bookmarks and learning progress, subject filter, downloads, recordings, and teacher upload tools when available';
+      'ಪ್ಲೇಬ್ಯಾಕ್ ನಿಯಂತ್ರಣಗಳು, ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು ಮತ್ತು ಕಲಿಕೆಯ ಪ್ರಗತಿ, ವಿಷಯ ಫಿಲ್ಟರ್, ಡೌನ್‌ಲೋಡ್‌ಗಳು, ರೆಕಾರ್ಡಿಂಗ್‌ಗಳು, ಮತ್ತು ಲಭ್ಯವಿದ್ದಾಗ ಶಿಕ್ಷಕರ ಅಪ್‌ಲೋಡ್ ಸಾಧನಗಳು';
 
   @override
-  String get libraryScreenSubjectFilterField => 'Subject filter (key 2)';
+  String get libraryScreenSubjectFilterField => 'ವಿಷಯ ಫಿಲ್ಟರ್ (ಕೀ 2)';
 
   @override
-  String get libraryScreenAllSubjects => 'All subjects';
+  String get libraryScreenAllSubjects => 'ಎಲ್ಲಾ ವಿಷಯಗಳು';
 
   @override
-  String get libraryScreenAddAudioOptionsName => 'Add Audio Options';
+  String get libraryScreenAddAudioOptionsName => 'ಆಡಿಯೋ ಸೇರಿಸುವ ಆಯ್ಕೆಗಳು';
 
   @override
-  String get libraryScreenCloseAddAudioTarget => 'Close add audio options';
+  String get libraryScreenCloseAddAudioTarget =>
+      'ಆಡಿಯೋ ಸೇರಿಸುವ ಆಯ್ಕೆಗಳನ್ನು ಮುಚ್ಚಿ';
 
   @override
-  String get libraryScreenUploadNewTarget => 'Upload new file, key 1';
+  String get libraryScreenUploadNewTarget => 'ಹೊಸ ಫೈಲ್ ಅಪ್‌ಲೋಡ್ ಮಾಡಿ, ಕೀ 1';
 
   @override
   String get libraryScreenSelectExistingTarget =>
-      'Select from existing library, key 2';
+      'ಈಗಿರುವ ಲೈಬ್ರರಿಯಿಂದ ಆಯ್ಕೆ ಮಾಡಿ, ಕೀ 2';
 
   @override
   String libraryScreenRecordingsAvailable(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count recordings available.',
+      other: '$count ರೆಕಾರ್ಡಿಂಗ್‌ಗಳು ಲಭ್ಯವಿವೆ.',
     );
     return '$_temp0';
   }
 
   @override
   String libraryScreenNoRecordingsMatch(String query) {
-    return 'No recordings match $query.';
+    return '$query ಗೆ ಹೊಂದುವ ಯಾವುದೇ ರೆಕಾರ್ಡಿಂಗ್ ಇಲ್ಲ.';
   }
 
   @override
@@ -6798,14 +6845,14 @@ class AppLocalizationsKn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count recordings match $query.',
+      other: '$count ರೆಕಾರ್ಡಿಂಗ್‌ಗಳು $query ಗೆ ಹೊಂದುತ್ತವೆ.',
     );
     return '$_temp0';
   }
 
   @override
   String get libraryScreenNoUnlinkedRecordings =>
-      'No unlinked recordings available for this class.';
+      'ಈ ತರಗತಿಗೆ ಜೋಡಿಸದ ಯಾವುದೇ ರೆಕಾರ್ಡಿಂಗ್ ಲಭ್ಯವಿಲ್ಲ.';
 
   @override
   String libraryScreenRecordingsAvailableChoose(int count) {
@@ -6813,64 +6860,65 @@ class AppLocalizationsKn extends AppLocalizations {
       count,
       locale: localeName,
       other:
-          '$count recordings available. Use up and down to choose, or search by title.',
+          '$count ರೆಕಾರ್ಡಿಂಗ್‌ಗಳು ಲಭ್ಯವಿವೆ. ಆಯ್ಕೆ ಮಾಡಲು ಮೇಲೆ ಮತ್ತು ಕೆಳಗೆ ಬಳಸಿ, ಅಥವಾ ಶೀರ್ಷಿಕೆಯಿಂದ ಹುಡುಕಿ.',
     );
     return '$_temp0';
   }
 
   @override
   String libraryScreenAddFailed(String title) {
-    return 'Could not add $title. Check your connection and try again.';
+    return '$title ಸೇರಿಸಲು ಆಗಲಿಲ್ಲ. ನಿಮ್ಮ ಸಂಪರ್ಕ ಪರಿಶೀಲಿಸಿ ಮತ್ತು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
   }
 
   @override
-  String get libraryScreenSelectExistingName => 'Select Existing Audio';
+  String get libraryScreenSelectExistingName => 'ಈಗಿರುವ ಆಡಿಯೋ ಆಯ್ಕೆ ಮಾಡಿ';
 
   @override
   String get libraryScreenSelectExistingSections =>
-      'search and every available recording';
+      'ಹುಡುಕಾಟ ಮತ್ತು ಲಭ್ಯವಿರುವ ಪ್ರತಿಯೊಂದು ರೆಕಾರ್ಡಿಂಗ್';
 
   @override
   String get libraryScreenRefreshAvailableTarget =>
-      'Refresh available audio, key 1';
+      'ಲಭ್ಯವಿರುವ ಆಡಿಯೋ ರಿಫ್ರೆಶ್ ಮಾಡಿ, ಕೀ 1';
 
   @override
   String get libraryScreenSearchRecordingsField =>
-      'Search recordings by title. Press OK to type';
+      'ಶೀರ್ಷಿಕೆಯಿಂದ ರೆಕಾರ್ಡಿಂಗ್‌ಗಳನ್ನು ಹುಡುಕಿ. ಟೈಪ್ ಮಾಡಲು ಓಕೆ ಒತ್ತಿ';
 
   @override
   String libraryScreenSearchRecordingsWithQuery(String query, int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Search recordings, $query. $count matches',
+      other: 'ರೆಕಾರ್ಡಿಂಗ್‌ಗಳನ್ನು ಹುಡುಕಿ, $query. $count ಹೊಂದಾಣಿಕೆಗಳು',
     );
     return '$_temp0';
   }
 
   @override
   String libraryScreenAddToSessionTarget(String title) {
-    return 'Add $title to this session';
+    return '$title ಅನ್ನು ಈ ಸೆಷನ್‌ಗೆ ಸೇರಿಸಿ';
   }
 
   @override
-  String get libraryScreenRepeatHelpTarget => 'Repeat audio library help';
+  String get libraryScreenRepeatHelpTarget =>
+      'ಆಡಿಯೋ ಲೈಬ್ರರಿ ಸಹಾಯವನ್ನು ಮತ್ತೆ ಕೇಳಿ';
 
   @override
-  String get playlistBack => 'Back';
+  String get playlistBack => 'ಹಿಂದೆ';
 
   @override
-  String get playlistCancel => 'Cancel';
+  String get playlistCancel => 'ರದ್ದುಮಾಡಿ';
 
   @override
-  String get playlistCreate => 'Create';
+  String get playlistCreate => 'ರಚಿಸಿ';
 
   @override
-  String get playlistRefresh => 'Refresh';
+  String get playlistRefresh => 'ರಿಫ್ರೆಶ್ ಮಾಡಿ';
 
   @override
   String playlistTeacherNone(String className, String subject) {
-    return 'No playlists yet for $className, $subject. Press 2 to create one.';
+    return '$className, $subject ಗೆ ಇನ್ನೂ ಯಾವುದೇ ಪ್ಲೇಲಿಸ್ಟ್ ಇಲ್ಲ. ಒಂದನ್ನು ರಚಿಸಲು 2 ಒತ್ತಿ.';
   }
 
   @override
@@ -6878,113 +6926,113 @@ class AppLocalizationsKn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count playlists',
+      other: '$count ಪ್ಲೇಲಿಸ್ಟ್‌ಗಳು',
     );
-    return '$_temp0 loaded for $className, $subject';
+    return '$className, $subject ಗೆ $_temp0 ಲೋಡ್ ಆಗಿವೆ';
   }
 
   @override
-  String get playlistCreateClassTitle => 'Create class playlist';
+  String get playlistCreateClassTitle => 'ತರಗತಿ ಪ್ಲೇಲಿಸ್ಟ್ ರಚಿಸಿ';
 
   @override
-  String get playlistTitleField => 'Playlist title';
+  String get playlistTitleField => 'ಪ್ಲೇಲಿಸ್ಟ್ ಶೀರ್ಷಿಕೆ';
 
   @override
-  String get playlistCancelCreation => 'Cancel playlist creation';
+  String get playlistCancelCreation => 'ಪ್ಲೇಲಿಸ್ಟ್ ರಚನೆ ರದ್ದುಮಾಡಿ';
 
   @override
-  String get playlistCreatePlaylist => 'Create playlist';
+  String get playlistCreatePlaylist => 'ಪ್ಲೇಲಿಸ್ಟ್ ರಚಿಸಿ';
 
   @override
-  String get playlistCreatePlaylistKey => 'Create Playlist';
+  String get playlistCreatePlaylistKey => 'ಪ್ಲೇಲಿಸ್ಟ್ ರಚಿಸಿ';
 
   @override
-  String get playlistRefreshPlaylists => 'Refresh playlists';
+  String get playlistRefreshPlaylists => 'ಪ್ಲೇಲಿಸ್ಟ್‌ಗಳನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಿ';
 
   @override
   String playlistTeacherItemLabel(String title, String status, String count) {
-    return '$title. $status. $count items';
+    return '$title. $status. $count ಐಟಂಗಳು';
   }
 
   @override
   String playlistTeacherScreen(String className, String subject) {
-    return 'Class Playlists, $className, $subject';
+    return 'ತರಗತಿ ಪ್ಲೇಲಿಸ್ಟ್‌ಗಳು, $className, $subject';
   }
 
   @override
-  String get playlistStatusArchived => 'Archived';
+  String get playlistStatusArchived => 'ಆರ್ಕೈವ್ ಮಾಡಲಾಗಿದೆ';
 
   @override
-  String get playlistStatusPublished => 'Published';
+  String get playlistStatusPublished => 'ಪ್ರಕಟಿತ';
 
   @override
-  String get playlistStatusDraft => 'Draft';
+  String get playlistStatusDraft => 'ಕರಡು';
 
   @override
   String get playlistStudentNone =>
-      'No playlists yet. Press 2 to create a private playlist.';
+      'ಇನ್ನೂ ಯಾವುದೇ ಪ್ಲೇಲಿಸ್ಟ್ ಇಲ್ಲ. ಖಾಸಗಿ ಪ್ಲೇಲಿಸ್ಟ್ ರಚಿಸಲು 2 ಒತ್ತಿ.';
 
   @override
   String playlistStudentLoaded(int privateCount, int classCount) {
     String _temp0 = intl.Intl.pluralLogic(
       privateCount,
       locale: localeName,
-      other: '$privateCount private playlists',
+      other: '$privateCount ಖಾಸಗಿ ಪ್ಲೇಲಿಸ್ಟ್‌ಗಳು',
     );
     String _temp1 = intl.Intl.pluralLogic(
       classCount,
       locale: localeName,
-      other: '$classCount class playlists',
+      other: '$classCount ತರಗತಿ ಪ್ಲೇಲಿಸ್ಟ್‌ಗಳು',
     );
-    return '$_temp0 and $_temp1 loaded';
+    return '$_temp0 ಮತ್ತು $_temp1 ಲೋಡ್ ಆಗಿವೆ';
   }
 
   @override
-  String get playlistCreatePrivate => 'Create private playlist';
+  String get playlistCreatePrivate => 'ಖಾಸಗಿ ಪ್ಲೇಲಿಸ್ಟ್ ರಚಿಸಿ';
 
   @override
-  String get playlistCreatePrivateKey => 'Create Private Playlist';
+  String get playlistCreatePrivateKey => 'ಖಾಸಗಿ ಪ್ಲೇಲಿಸ್ಟ್ ರಚಿಸಿ';
 
   @override
   String playlistPrivateItemLabel(String title, String count) {
-    return '$title, private, $count items';
+    return '$title, ಖಾಸಗಿ, $count ಐಟಂಗಳು';
   }
 
   @override
   String playlistClassItemLabel(String title, String subject, String count) {
-    return '$title, class playlist, $subject, $count items';
+    return '$title, ತರಗತಿ ಪ್ಲೇಲಿಸ್ಟ್, $subject, $count ಐಟಂಗಳು';
   }
 
   @override
   String get playlistStudentScreen =>
-      'My Playlists. Private playlists are visible only to you.';
+      'ನನ್ನ ಪ್ಲೇಲಿಸ್ಟ್‌ಗಳು. ಖಾಸಗಿ ಪ್ಲೇಲಿಸ್ಟ್‌ಗಳು ನಿಮಗೆ ಮಾತ್ರ ಕಾಣುತ್ತವೆ.';
 
   @override
   String get playlistWaitBeforeNotes =>
-      'Wait for the playlist player before opening study notes.';
+      'ಅಧ್ಯಯನ ಟಿಪ್ಪಣಿಗಳನ್ನು ತೆರೆಯುವ ಮೊದಲು ಪ್ಲೇಲಿಸ್ಟ್ ಪ್ಲೇಯರ್‌ಗಾಗಿ ಕಾಯಿರಿ.';
 
   @override
   String get playlistRefreshFailed =>
-      'Could not refresh this playlist. Check your connection and try again. Existing playback and saved progress have not been changed.';
+      'ಈ ಪ್ಲೇಲಿಸ್ಟ್ ರಿಫ್ರೆಶ್ ಮಾಡಲು ಆಗಲಿಲ್ಲ. ನಿಮ್ಮ ಸಂಪರ್ಕ ಪರಿಶೀಲಿಸಿ ಮತ್ತು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ. ಈಗಿನ ಪ್ಲೇಬ್ಯಾಕ್ ಮತ್ತು ಉಳಿಸಿದ ಪ್ರಗತಿಯನ್ನು ಬದಲಾಯಿಸಲಾಗಿಲ್ಲ.';
 
   @override
   String get playlistLessonGone =>
-      'The current lesson is no longer available in this playlist. Playback stopped. Your saved progress and bookmarks are kept.';
+      'ಈಗಿನ ಪಾಠ ಈ ಪ್ಲೇಲಿಸ್ಟ್‌ನಲ್ಲಿ ಈಗ ಲಭ್ಯವಿಲ್ಲ. ಪ್ಲೇಬ್ಯಾಕ್ ನಿಂತಿದೆ. ನಿಮ್ಮ ಉಳಿಸಿದ ಪ್ರಗತಿ ಮತ್ತು ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳನ್ನು ಇಟ್ಟುಕೊಳ್ಳಲಾಗಿದೆ.';
 
   @override
-  String get playlistStateArchived => 'archived';
+  String get playlistStateArchived => 'ಆರ್ಕೈವ್ ಮಾಡಲಾಗಿದೆ';
 
   @override
-  String get playlistStatePublished => 'published';
+  String get playlistStatePublished => 'ಪ್ರಕಟಿತ';
 
   @override
-  String get playlistStateDraft => 'draft';
+  String get playlistStateDraft => 'ಕರಡು';
 
   @override
-  String get playlistStatePrivate => 'private';
+  String get playlistStatePrivate => 'ಖಾಸಗಿ';
 
   @override
-  String get playlistStatePublishedClass => 'published class playlist';
+  String get playlistStatePublishedClass => 'ಪ್ರಕಟಿತ ತರಗತಿ ಪ್ಲೇಲಿಸ್ಟ್';
 
   @override
   String playlistLoaded(
@@ -6997,552 +7045,552 @@ class AppLocalizationsKn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count items',
+      other: '$count ಐಟಂಗಳು',
     );
     return '$title. $className $subject. $_temp0. $state.';
   }
 
   @override
-  String get playlistAddAudioScreen => 'Add audio to playlist';
+  String get playlistAddAudioScreen => 'ಪ್ಲೇಲಿಸ್ಟ್‌ಗೆ ಆಡಿಯೋ ಸೇರಿಸಿ';
 
   @override
   String playlistItemNoLongerAvailable(String title) {
-    return '$title is no longer available in your current class. You can remove it from this playlist.';
+    return '$title ಈಗ ನಿಮ್ಮ ಪ್ರಸ್ತುತ ತರಗತಿಯಲ್ಲಿ ಲಭ್ಯವಿಲ್ಲ. ನೀವು ಅದನ್ನು ಈ ಪ್ಲೇಲಿಸ್ಟ್‌ನಿಂದ ತೆಗೆದುಹಾಕಬಹುದು.';
   }
 
   @override
   String playlistItemPosition(String index, String total) {
-    return 'Item $index of $total.';
+    return 'ಐಟಂ $index / $total.';
   }
 
   @override
   String get playlistPlayFailed =>
-      'Could not play this lesson. Check your connection and try again.';
+      'ಈ ಪಾಠವನ್ನು ಪ್ಲೇ ಮಾಡಲು ಆಗಲಿಲ್ಲ. ನಿಮ್ಮ ಸಂಪರ್ಕ ಪರಿಶೀಲಿಸಿ ಮತ್ತು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
   String playlistPausedAt(String position) {
-    return 'Paused at $position.';
+    return '$position ನಲ್ಲಿ ವಿರಾಮಗೊಳಿಸಲಾಗಿದೆ.';
   }
 
   @override
-  String get playlistLessonDefault => 'Lesson';
+  String get playlistLessonDefault => 'ಪಾಠ';
 
   @override
-  String get playlistSave => 'Save';
+  String get playlistSave => 'ಉಳಿಸಿ';
 
   @override
-  String get playlistRenameScreen => 'Rename playlist';
+  String get playlistRenameScreen => 'ಪ್ಲೇಲಿಸ್ಟ್ ಮರುಹೆಸರಿಸಿ';
 
   @override
-  String get playlistCancelRename => 'Cancel rename';
+  String get playlistCancelRename => 'ಮರುಹೆಸರಿಸುವುದನ್ನು ರದ್ದುಮಾಡಿ';
 
   @override
-  String get playlistSaveTitle => 'Save playlist title';
+  String get playlistSaveTitle => 'ಪ್ಲೇಲಿಸ್ಟ್ ಶೀರ್ಷಿಕೆ ಉಳಿಸಿ';
 
   @override
-  String get playlistAlreadyFirst => 'The selected item is already first.';
+  String get playlistAlreadyFirst => 'ಆಯ್ಕೆ ಮಾಡಿದ ಐಟಂ ಈಗಾಗಲೇ ಮೊದಲಿನಲ್ಲಿದೆ.';
 
   @override
-  String get playlistAlreadyLast => 'The selected item is already last.';
+  String get playlistAlreadyLast => 'ಆಯ್ಕೆ ಮಾಡಿದ ಐಟಂ ಈಗಾಗಲೇ ಕೊನೆಯಲ್ಲಿದೆ.';
 
   @override
   String playlistMoveFailed(String title) {
-    return 'Could not move $title. Check your connection and try again.';
+    return '$title ಅನ್ನು ಸರಿಸಲು ಆಗಲಿಲ್ಲ. ನಿಮ್ಮ ಸಂಪರ್ಕ ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
   }
 
   @override
-  String get playlistThisPlaylist => 'this playlist';
+  String get playlistThisPlaylist => 'ಈ ಪ್ಲೇಲಿಸ್ಟ್';
 
   @override
   String playlistRemoveItemTitle(String title) {
-    return 'Remove $title?';
+    return '$title ತೆಗೆದುಹಾಕಬೇಕೇ?';
   }
 
   @override
   String playlistRemoveItemMessage(String title, String playlist) {
-    return 'Remove $title from $playlist? The recording itself is kept in the library.';
+    return '$playlist ನಿಂದ $title ತೆಗೆದುಹಾಕಬೇಕೇ? ರೆಕಾರ್ಡಿಂಗ್ ಲೈಬ್ರರಿಯಲ್ಲಿ ಹಾಗೆಯೇ ಇರುತ್ತದೆ.';
   }
 
   @override
   String playlistKeepItem(String title) {
-    return 'Keep $title';
+    return '$title ಇರಿಸಿ';
   }
 
   @override
   String playlistRemoveItem(String title) {
-    return 'Remove $title';
+    return '$title ತೆಗೆದುಹಾಕಿ';
   }
 
   @override
   String playlistRemoveFailed(String title) {
-    return 'Could not remove $title. Check your connection and try again.';
+    return '$title ತೆಗೆದುಹಾಕಲು ಆಗಲಿಲ್ಲ. ನಿಮ್ಮ ಸಂಪರ್ಕ ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
   }
 
   @override
   String playlistPublishedToClass(String title) {
-    return '$title published to the class';
+    return '$title ತರಗತಿಗೆ ಪ್ರಕಟಿಸಲಾಗಿದೆ';
   }
 
   @override
   String playlistReturnedToDraft(String title) {
-    return '$title returned to draft';
+    return '$title ಕರಡಿಗೆ ಮರಳಿಸಲಾಗಿದೆ';
   }
 
   @override
   String playlistChangeFailed(String title) {
-    return 'Could not change $title. Check your connection and try again.';
+    return '$title ಬದಲಾಯಿಸಲು ಆಗಲಿಲ್ಲ. ನಿಮ್ಮ ಸಂಪರ್ಕ ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
   }
 
   @override
   String playlistDeleteTitle(String title) {
-    return 'Delete $title?';
+    return '$title ಅಳಿಸಬೇಕೇ?';
   }
 
   @override
   String playlistRestoreTitle(String title) {
-    return 'Restore $title?';
+    return '$title ಮರುಸ್ಥಾಪಿಸಬೇಕೇ?';
   }
 
   @override
   String playlistArchiveTitle(String title) {
-    return 'Archive $title?';
+    return '$title ಆರ್ಕೈವ್ ಮಾಡಬೇಕೇ?';
   }
 
   @override
   String playlistDeleteMessage(String title) {
-    return 'This removes the private playlist $title and its ordered items. Recordings stay in the library.';
+    return 'ಇದು ಖಾಸಗಿ ಪ್ಲೇಲಿಸ್ಟ್ $title ಮತ್ತು ಅದರ ಕ್ರಮಬದ್ಧ ಐಟಂಗಳನ್ನು ತೆಗೆದುಹಾಕುತ್ತದೆ. ರೆಕಾರ್ಡಿಂಗ್‌ಗಳು ಲೈಬ್ರರಿಯಲ್ಲಿ ಇರುತ್ತವೆ.';
   }
 
   @override
   String playlistRestoreMessage(String title) {
-    return 'This returns $title to draft so it can be edited and published again.';
+    return 'ಇದು $title ಅನ್ನು ಕರಡಿಗೆ ಮರಳಿಸುತ್ತದೆ, ಆಗ ಅದನ್ನು ಸಂಪಾದಿಸಿ ಮತ್ತೆ ಪ್ರಕಟಿಸಬಹುದು.';
   }
 
   @override
   String playlistArchiveMessage(String title) {
-    return 'Students will no longer see $title. Teacher history is retained.';
+    return 'ವಿದ್ಯಾರ್ಥಿಗಳಿಗೆ ಇನ್ನು ಮುಂದೆ $title ಕಾಣುವುದಿಲ್ಲ. ಶಿಕ್ಷಕರ ಇತಿಹಾಸ ಉಳಿಯುತ್ತದೆ.';
   }
 
   @override
   String playlistDeleteConfirm(String title) {
-    return 'Delete $title';
+    return '$title ಅಳಿಸಿ';
   }
 
   @override
   String playlistRestoreConfirm(String title) {
-    return 'Restore $title';
+    return '$title ಮರುಸ್ಥಾಪಿಸಿ';
   }
 
   @override
   String playlistArchiveConfirm(String title) {
-    return 'Archive $title';
+    return '$title ಆರ್ಕೈವ್ ಮಾಡಿ';
   }
 
   @override
   String playlistDeleted(String title) {
-    return '$title deleted';
+    return '$title ಅಳಿಸಲಾಗಿದೆ';
   }
 
   @override
   String playlistRestoredDraft(String title) {
-    return '$title restored as a draft';
+    return '$title ಕರಡಾಗಿ ಮರುಸ್ಥಾಪಿಸಲಾಗಿದೆ';
   }
 
   @override
   String playlistArchived(String title) {
-    return '$title archived';
+    return '$title ಆರ್ಕೈವ್ ಮಾಡಲಾಗಿದೆ';
   }
 
   @override
-  String get playlistSelectedItem => 'selected item';
+  String get playlistSelectedItem => 'ಆಯ್ಕೆ ಮಾಡಿದ ಐಟಂ';
 
   @override
   String get playlistSeekFailed =>
-      'Could not move to that lesson position. Try again.';
+      'ಆ ಪಾಠದ ಸ್ಥಾನಕ್ಕೆ ಹೋಗಲು ಆಗಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
-  String get playlistRefreshPlaylist => 'Refresh playlist';
+  String get playlistRefreshPlaylist => 'ಪ್ಲೇಲಿಸ್ಟ್ ರಿಫ್ರೆಶ್ ಮಾಡಿ';
 
   @override
-  String get playlistWordPlaylist => 'playlist';
+  String get playlistWordPlaylist => 'ಪ್ಲೇಲಿಸ್ಟ್';
 
   @override
   String playlistRenameLabel(String title) {
-    return 'Rename $title';
+    return '$title ಮರುಹೆಸರಿಸಿ';
   }
 
   @override
-  String get playlistAddAudioLabel => 'Add audio, key 2';
+  String get playlistAddAudioLabel => 'ಆಡಿಯೋ ಸೇರಿಸಿ, ಕೀ 2';
 
   @override
   String playlistPauseLabel(String title, String key) {
-    return 'Pause $title, key $key';
+    return '$title ವಿರಾಮಗೊಳಿಸಿ, ಕೀ $key';
   }
 
   @override
   String playlistPlayLabel(String title, String key) {
-    return 'Play $title, key $key';
+    return '$title ಪ್ಲೇ ಮಾಡಿ, ಕೀ $key';
   }
 
   @override
-  String get playlistPreviousLabel => 'Previous item, key 3';
+  String get playlistPreviousLabel => 'ಹಿಂದಿನ ಐಟಂ, ಕೀ 3';
 
   @override
-  String get playlistNextLabel => 'Next item, key 8';
+  String get playlistNextLabel => 'ಮುಂದಿನ ಐಟಂ, ಕೀ 8';
 
   @override
   String playlistReturnToDraftLabel(String title) {
-    return 'Return $title to draft';
+    return '$title ಅನ್ನು ಕರಡಿಗೆ ಮರಳಿಸಿ';
   }
 
   @override
   String playlistPublishLabel(String title) {
-    return 'Publish $title to the class';
+    return '$title ಅನ್ನು ತರಗತಿಗೆ ಪ್ರಕಟಿಸಿ';
   }
 
   @override
   String playlistRestoreLabel(String title) {
-    return 'Restore $title';
+    return '$title ಮರುಸ್ಥಾಪಿಸಿ';
   }
 
   @override
   String playlistArchiveLabel(String title) {
-    return 'Archive $title, asks to confirm';
+    return '$title ಆರ್ಕೈವ್ ಮಾಡಿ, ದೃಢೀಕರಣ ಕೇಳುತ್ತದೆ';
   }
 
   @override
   String playlistDeleteLabel(String title) {
-    return 'Delete $title, asks to confirm';
+    return '$title ಅಳಿಸಿ, ದೃಢೀಕರಣ ಕೇಳುತ್ತದೆ';
   }
 
   @override
   String playlistSeekLabel(String position) {
-    return 'Lesson position $position. Use left or right to move 10 seconds';
+    return 'ಪಾಠದ ಸ್ಥಾನ $position. 10 ಸೆಕೆಂಡು ಸರಿಸಲು ಎಡ ಅಥವಾ ಬಲ ಬಳಸಿ';
   }
 
   @override
   String get playlistDownloadsLabel =>
-      'Download playlist recordings. Select individually or confirm all listed recordings';
+      'ಪ್ಲೇಲಿಸ್ಟ್ ರೆಕಾರ್ಡಿಂಗ್‌ಗಳನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ. ಒಂದೊಂದಾಗಿ ಆಯ್ಕೆ ಮಾಡಿ ಅಥವಾ ಪಟ್ಟಿಯಲ್ಲಿರುವ ಎಲ್ಲಾ ರೆಕಾರ್ಡಿಂಗ್‌ಗಳನ್ನು ದೃಢೀಕರಿಸಿ';
 
   @override
   String playlistMoveUpLabel(String title) {
-    return 'Move $title up';
+    return '$title ಮೇಲೆ ಸರಿಸಿ';
   }
 
   @override
   String playlistMoveDownLabel(String title) {
-    return 'Move $title down';
+    return '$title ಕೆಳಗೆ ಸರಿಸಿ';
   }
 
   @override
   String playlistRemoveItemLabel(String title) {
-    return 'Remove $title from playlist, asks to confirm';
+    return '$title ಅನ್ನು ಪ್ಲೇಲಿಸ್ಟ್‌ನಿಂದ ತೆಗೆದುಹಾಕಿ, ದೃಢೀಕರಣ ಕೇಳುತ್ತದೆ';
   }
 
   @override
   String get playlistItemUnavailableInClass =>
-      'Unavailable in your current class';
+      'ನಿಮ್ಮ ಪ್ರಸ್ತುತ ತರಗತಿಯಲ್ಲಿ ಲಭ್ಯವಿಲ್ಲ';
 
   @override
-  String get playlistItemSelected => 'Selected';
+  String get playlistItemSelected => 'ಆಯ್ಕೆ ಮಾಡಲಾಗಿದೆ';
 
   @override
-  String get playlistItemPlaying => 'Playing';
+  String get playlistItemPlaying => 'ಪ್ಲೇ ಆಗುತ್ತಿದೆ';
 
   @override
-  String get playlistItemSelectedPaused => 'Selected, paused';
+  String get playlistItemSelectedPaused => 'ಆಯ್ಕೆ ಮಾಡಲಾಗಿದೆ, ವಿರಾಮದಲ್ಲಿದೆ';
 
   @override
-  String get playlistAddAudioKey => 'Add Audio';
+  String get playlistAddAudioKey => 'ಆಡಿಯೋ ಸೇರಿಸಿ';
 
   @override
-  String get playlistPreviousItem => 'Previous item';
+  String get playlistPreviousItem => 'ಹಿಂದಿನ ಐಟಂ';
 
   @override
-  String get playlistNextItem => 'Next item';
+  String get playlistNextItem => 'ಮುಂದಿನ ಐಟಂ';
 
   @override
-  String get playlistScreenDefault => 'Playlist';
+  String get playlistScreenDefault => 'ಪ್ಲೇಲಿಸ್ಟ್';
 
   @override
   String playlistScreen(String title) {
-    return '$title playlist';
+    return '$title ಪ್ಲೇಲಿಸ್ಟ್';
   }
 
   @override
   String playlistItemUnavailable(String title) {
-    return '$title is unavailable in your current class';
+    return '$title ನಿಮ್ಮ ಪ್ರಸ್ತುತ ತರಗತಿಯಲ್ಲಿ ಲಭ್ಯವಿಲ್ಲ';
   }
 
   @override
-  String get notesNoRecordingActive => 'No recording active.';
+  String get notesNoRecordingActive => 'ಯಾವುದೇ ರೆಕಾರ್ಡಿಂಗ್ ನಡೆಯುತ್ತಿಲ್ಲ.';
 
   @override
   String get notesMicCouldNotRecord =>
-      'The microphone could not record this note.';
+      'ಮೈಕ್ರೊಫೋನ್ ಈ ಟಿಪ್ಪಣಿಯನ್ನು ರೆಕಾರ್ಡ್ ಮಾಡಲು ಆಗಲಿಲ್ಲ.';
 
   @override
   String get notesRecordingNotConfirmed =>
-      'Recording could not be confirmed. Its partial files are kept. Check microphone permission and storage.';
+      'ರೆಕಾರ್ಡಿಂಗ್ ದೃಢೀಕರಿಸಲು ಆಗಲಿಲ್ಲ. ಅದರ ಅಪೂರ್ಣ ಫೈಲ್‌ಗಳನ್ನು ಇರಿಸಲಾಗಿದೆ. ಮೈಕ್ರೊಫೋನ್ ಅನುಮತಿ ಮತ್ತು ಸಂಗ್ರಹಣೆಯನ್ನು ಪರಿಶೀಲಿಸಿ.';
 
   @override
   String get notesLeaveLiveSession =>
-      'Leave the live session and open private notes before recording.';
+      'ರೆಕಾರ್ಡ್ ಮಾಡುವ ಮೊದಲು ಲೈವ್ ಸೆಷನ್‌ನಿಂದ ಹೊರಬಂದು ಖಾಸಗಿ ಟಿಪ್ಪಣಿಗಳನ್ನು ತೆರೆಯಿರಿ.';
 
   @override
   String get notesMicPermissionDenied =>
-      'Microphone permission was not granted. No recording started. Enable it in Android settings and retry.';
+      'ಮೈಕ್ರೊಫೋನ್ ಅನುಮತಿ ನೀಡಲಾಗಿಲ್ಲ. ಯಾವುದೇ ರೆಕಾರ್ಡಿಂಗ್ ಪ್ರಾರಂಭವಾಗಿಲ್ಲ. Android ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಅದನ್ನು ಆನ್ ಮಾಡಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
   String get notesRecordingCancelledChanged =>
-      'Recording was cancelled because the screen or app changed. Start again when ready.';
+      'ಸ್ಕ್ರೀನ್ ಅಥವಾ ಆ್ಯಪ್ ಬದಲಾದ ಕಾರಣ ರೆಕಾರ್ಡಿಂಗ್ ರದ್ದಾಗಿದೆ. ಸಿದ್ಧವಾದಾಗ ಮತ್ತೆ ಪ್ರಾರಂಭಿಸಿ.';
 
   @override
   String get notesSpeechDidNotStop =>
-      'App speech did not stop. Check the TTS engine before recording.';
+      'ಆ್ಯಪ್ ಧ್ವನಿ ನಿಲ್ಲಲಿಲ್ಲ. ರೆಕಾರ್ಡ್ ಮಾಡುವ ಮೊದಲು ಟೆಕ್ಸ್ಟ್-ಟು-ಸ್ಪೀಚ್ ಎಂಜಿನ್ ಪರಿಶೀಲಿಸಿ.';
 
   @override
   String get notesRecordingDidNotStart =>
-      'Recording did not start because the app changed. Its empty draft is kept for selected removal.';
+      'ಆ್ಯಪ್ ಬದಲಾದ ಕಾರಣ ರೆಕಾರ್ಡಿಂಗ್ ಪ್ರಾರಂಭವಾಗಲಿಲ್ಲ. ಅದರ ಖಾಲಿ ಕರಡನ್ನು ಆಯ್ಕೆಮಾಡಿ ತೆಗೆದುಹಾಕಲು ಇರಿಸಲಾಗಿದೆ.';
 
   @override
   String get notesAnotherRecorderStopping =>
-      'Another private recorder is still stopping. Return to it or background the app before recording.';
+      'ಇನ್ನೊಂದು ಖಾಸಗಿ ರೆಕಾರ್ಡರ್ ಇನ್ನೂ ನಿಲ್ಲುತ್ತಿದೆ. ರೆಕಾರ್ಡ್ ಮಾಡುವ ಮೊದಲು ಅದಕ್ಕೆ ಹಿಂತಿರುಗಿ ಅಥವಾ ಆ್ಯಪ್ ಅನ್ನು ಹಿನ್ನೆಲೆಗೆ ಕಳುಹಿಸಿ.';
 
   @override
   String get notesNativeStartNotConfirmed =>
-      'The native recorder did not confirm starting. The draft is kept.';
+      'ಫೋನ್‌ನ ರೆಕಾರ್ಡರ್ ಪ್ರಾರಂಭವಾದುದನ್ನು ದೃಢೀಕರಿಸಲಿಲ್ಲ. ಕರಡನ್ನು ಇರಿಸಲಾಗಿದೆ.';
 
   @override
   String get notesNativeStopNotConfirmed =>
-      'Native recording stop was not confirmed. Background the app to stop capture before retrying.';
+      'ಫೋನ್‌ನ ರೆಕಾರ್ಡಿಂಗ್ ನಿಂತಿರುವುದು ದೃಢೀಕರಿಸಲಾಗಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸುವ ಮೊದಲು ರೆಕಾರ್ಡಿಂಗ್ ನಿಲ್ಲಿಸಲು ಆ್ಯಪ್ ಅನ್ನು ಹಿನ್ನೆಲೆಗೆ ಕಳುಹಿಸಿ.';
 
   @override
   String get notesDurationUnreadable =>
-      'The recorder duration was unreadable. Its incomplete file is kept.';
+      'ರೆಕಾರ್ಡರ್ ಅವಧಿಯನ್ನು ಓದಲು ಆಗಲಿಲ್ಲ. ಅದರ ಅಪೂರ್ಣ ಫೈಲ್ ಅನ್ನು ಇರಿಸಲಾಗಿದೆ.';
 
   @override
   String get notesRecordingInProgress =>
-      'Recording. Stop before speaking to app controls. Maximum five minutes; stops on app narration or interruption.';
+      'ರೆಕಾರ್ಡ್ ಆಗುತ್ತಿದೆ. ಆ್ಯಪ್ ನಿಯಂತ್ರಣಗಳಿಗೆ ಮಾತನಾಡುವ ಮೊದಲು ನಿಲ್ಲಿಸಿ. ಗರಿಷ್ಠ ಐದು ನಿಮಿಷ; ಆ್ಯಪ್ ಧ್ವನಿ ಅಥವಾ ಅಡಚಣೆ ಬಂದರೆ ನಿಲ್ಲುತ್ತದೆ.';
 
   @override
   String get notesNativeCaptureStopped =>
-      'Native capture is stopped. Any unfinished draft is kept for selected removal.';
+      'ಫೋನ್‌ನ ರೆಕಾರ್ಡಿಂಗ್ ನಿಂತಿದೆ. ಯಾವುದೇ ಅಪೂರ್ಣ ಕರಡನ್ನು ಆಯ್ಕೆಮಾಡಿ ತೆಗೆದುಹಾಕಲು ಇರಿಸಲಾಗಿದೆ.';
 
   @override
   String get notesRecorderStopNotConfirmed =>
-      'Recorder stop was not confirmed. Leave this screen or background the app to stop native capture before retrying.';
+      'ರೆಕಾರ್ಡರ್ ನಿಂತಿರುವುದು ದೃಢೀಕರಿಸಲಾಗಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸುವ ಮೊದಲು ಫೋನ್‌ನ ರೆಕಾರ್ಡಿಂಗ್ ನಿಲ್ಲಿಸಲು ಈ ಸ್ಕ್ರೀನ್‌ನಿಂದ ಹೊರಬನ್ನಿ ಅಥವಾ ಆ್ಯಪ್ ಅನ್ನು ಹಿನ್ನೆಲೆಗೆ ಕಳುಹಿಸಿ.';
 
   @override
   String get notesRecorderFailed =>
-      'The recorder failed. Its incomplete file is retained for selected removal.';
+      'ರೆಕಾರ್ಡರ್ ವಿಫಲವಾಗಿದೆ. ಅದರ ಅಪೂರ್ಣ ಫೈಲ್ ಅನ್ನು ಆಯ್ಕೆಮಾಡಿ ತೆಗೆದುಹಾಕಲು ಇರಿಸಲಾಗಿದೆ.';
 
   @override
   String get notesNotFinalized =>
-      'Recording stopped, but the note could not be finalized. Files are kept for selected removal.';
+      'ರೆಕಾರ್ಡಿಂಗ್ ನಿಂತಿದೆ, ಆದರೆ ಟಿಪ್ಪಣಿಯನ್ನು ಪೂರ್ಣಗೊಳಿಸಲು ಆಗಲಿಲ್ಲ. ಫೈಲ್‌ಗಳನ್ನು ಆಯ್ಕೆಮಾಡಿ ತೆಗೆದುಹಾಕಲು ಇರಿಸಲಾಗಿದೆ.';
 
   @override
-  String get notesRecordingLimitReached => 'Recording limit reached.';
+  String get notesRecordingLimitReached => 'ರೆಕಾರ್ಡಿಂಗ್ ಮಿತಿ ತಲುಪಿದೆ.';
 
   @override
-  String get notesRecordingInterrupted => 'Recording interrupted.';
+  String get notesRecordingInterrupted => 'ರೆಕಾರ್ಡಿಂಗ್‌ಗೆ ಅಡಚಣೆಯಾಗಿದೆ.';
 
   @override
-  String get notesRecordingStopped => 'Recording stopped.';
+  String get notesRecordingStopped => 'ರೆಕಾರ್ಡಿಂಗ್ ನಿಂತಿದೆ.';
 
   @override
   String get notesSavedOnPhone =>
-      'Private note saved on this phone. Review before publishing or sharing.';
+      'ಖಾಸಗಿ ಟಿಪ್ಪಣಿಯನ್ನು ಈ ಫೋನ್‌ನಲ್ಲಿ ಉಳಿಸಲಾಗಿದೆ. ಪ್ರಕಟಿಸುವ ಅಥವಾ ಹಂಚಿಕೊಳ್ಳುವ ಮೊದಲು ಪರಿಶೀಲಿಸಿ.';
 
   @override
-  String get notesSignInFirst => 'Sign in before opening private notes.';
+  String get notesSignInFirst =>
+      'ಖಾಸಗಿ ಟಿಪ್ಪಣಿಗಳನ್ನು ತೆರೆಯುವ ಮೊದಲು ಸೈನ್ ಇನ್ ಮಾಡಿ.';
 
   @override
-  String get notesInvalidIdentity => 'Invalid note identity.';
+  String get notesInvalidIdentity => 'ಟಿಪ್ಪಣಿಯ ಗುರುತು ಅಮಾನ್ಯವಾಗಿದೆ.';
 
   @override
   String get notesAccountChanged =>
-      'Your account changed. Open private notes again.';
+      'ನಿಮ್ಮ ಖಾತೆ ಬದಲಾಗಿದೆ. ಖಾಸಗಿ ಟಿಪ್ಪಣಿಗಳನ್ನು ಮತ್ತೆ ತೆರೆಯಿರಿ.';
 
   @override
   String get notesStorageUnavailable =>
-      'Private note storage is unavailable. Check free space and retry. Existing files are kept.';
+      'ಖಾಸಗಿ ಟಿಪ್ಪಣಿ ಸಂಗ್ರಹಣೆ ಲಭ್ಯವಿಲ್ಲ. ಖಾಲಿ ಜಾಗ ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ. ಈಗಿರುವ ಫೈಲ್‌ಗಳನ್ನು ಇರಿಸಲಾಗಿದೆ.';
 
   @override
   String get notesInvalidNameOrPosition =>
-      'Enter a note name of up to 160 characters and a valid lesson position.';
+      '160 ಅಕ್ಷರಗಳವರೆಗಿನ ಟಿಪ್ಪಣಿಯ ಹೆಸರು ಮತ್ತು ಮಾನ್ಯವಾದ ಪಾಠದ ಸ್ಥಾನವನ್ನು ನಮೂದಿಸಿ.';
 
   @override
   String get notesAllowanceFull =>
-      'Your private note allowance is full. Remove a chosen note before recording. No note was deleted.';
+      'ನಿಮ್ಮ ಖಾಸಗಿ ಟಿಪ್ಪಣಿ ಮಿತಿ ತುಂಬಿದೆ. ರೆಕಾರ್ಡ್ ಮಾಡುವ ಮೊದಲು ನೀವು ಆರಿಸಿದ ಒಂದು ಟಿಪ್ಪಣಿಯನ್ನು ತೆಗೆದುಹಾಕಿ. ಯಾವುದೇ ಟಿಪ್ಪಣಿ ಅಳಿಸಲಾಗಿಲ್ಲ.';
 
   @override
   String get notesInterruptedOrInvalid =>
-      'The note was interrupted or its duration is invalid. Its files are retained for selected removal.';
+      'ಟಿಪ್ಪಣಿಗೆ ಅಡಚಣೆಯಾಗಿದೆ ಅಥವಾ ಅದರ ಅವಧಿ ಅಮಾನ್ಯವಾಗಿದೆ. ಅದರ ಫೈಲ್‌ಗಳನ್ನು ಆಯ್ಕೆಮಾಡಿ ತೆಗೆದುಹಾಕಲು ಇರಿಸಲಾಗಿದೆ.';
 
   @override
   String get notesEmptyOrTooLarge =>
-      'This recording is empty or exceeds the private-note allowance. Its partial file is kept; review storage and remove the selected recording.';
+      'ಈ ರೆಕಾರ್ಡಿಂಗ್ ಖಾಲಿಯಾಗಿದೆ ಅಥವಾ ಖಾಸಗಿ ಟಿಪ್ಪಣಿ ಮಿತಿಯನ್ನು ಮೀರಿದೆ. ಅದರ ಅಪೂರ್ಣ ಫೈಲ್ ಅನ್ನು ಇರಿಸಲಾಗಿದೆ; ಸಂಗ್ರಹಣೆ ಪರಿಶೀಲಿಸಿ ಮತ್ತು ಆಯ್ಕೆ ಮಾಡಿದ ರೆಕಾರ್ಡಿಂಗ್ ತೆಗೆದುಹಾಕಿ.';
 
   @override
   String get notesIncompleteUnavailable =>
-      'This note is incomplete or unavailable. It has not been deleted.';
+      'ಈ ಟಿಪ್ಪಣಿ ಅಪೂರ್ಣವಾಗಿದೆ ಅಥವಾ ಲಭ್ಯವಿಲ್ಲ. ಅದನ್ನು ಅಳಿಸಲಾಗಿಲ್ಲ.';
 
   @override
-  String get notesInvalidName => 'Enter a note name of up to 160 characters.';
+  String get notesInvalidName => '160 ಅಕ್ಷರಗಳವರೆಗಿನ ಟಿಪ್ಪಣಿಯ ಹೆಸರನ್ನು ನಮೂದಿಸಿ.';
 
   @override
   String notesUnreadableTitle(String id) {
-    return 'Unreadable note $id';
+    return 'ಓದಲಾಗದ ಟಿಪ್ಪಣಿ $id';
   }
 
   @override
   String get notesRecordUnreadable =>
-      'This note record cannot be read. Its files are kept; only explicit selected removal changes them.';
+      'ಈ ಟಿಪ್ಪಣಿಯ ದಾಖಲೆಯನ್ನು ಓದಲು ಆಗುವುದಿಲ್ಲ. ಅದರ ಫೈಲ್‌ಗಳನ್ನು ಇರಿಸಲಾಗಿದೆ; ನೀವು ಸ್ಪಷ್ಟವಾಗಿ ಆಯ್ಕೆಮಾಡಿ ತೆಗೆದುಹಾಕಿದರೆ ಮಾತ್ರ ಅವು ಬದಲಾಗುತ್ತವೆ.';
 
   @override
   String notesInterruptedTitle(String id) {
-    return 'Interrupted recording $id';
+    return 'ಅಡಚಣೆಯಾದ ರೆಕಾರ್ಡಿಂಗ್ $id';
   }
 
   @override
   String get notesMetadataMissing =>
-      'Recording metadata is missing. The file is retained for selected removal.';
+      'ರೆಕಾರ್ಡಿಂಗ್ ಮಾಹಿತಿ ಕಾಣೆಯಾಗಿದೆ. ಫೈಲ್ ಅನ್ನು ಆಯ್ಕೆಮಾಡಿ ತೆಗೆದುಹಾಕಲು ಇರಿಸಲಾಗಿದೆ.';
 
   @override
   String get learningSavedLessonInvalid =>
-      'Saved lesson information is invalid. Your saved data has not been changed.';
+      'ಉಳಿಸಿದ ಪಾಠದ ಮಾಹಿತಿ ಅಮಾನ್ಯವಾಗಿದೆ. ನಿಮ್ಮ ಉಳಿಸಿದ ಡೇಟಾ ಬದಲಾಗಿಲ್ಲ.';
 
   @override
   String get learningSavedBookmarkUnreadable =>
-      'A saved bookmark could not be read. Your saved data has not been changed.';
+      'ಉಳಿಸಿದ ಒಂದು ಬುಕ್‌ಮಾರ್ಕ್ ಓದಲು ಆಗಲಿಲ್ಲ. ನಿಮ್ಮ ಉಳಿಸಿದ ಡೇಟಾ ಬದಲಾಗಿಲ್ಲ.';
 
   @override
   String get learningSavedBookmarkIdsInvalid =>
-      'Saved bookmark identifiers are invalid. Your saved data has not been changed.';
+      'ಉಳಿಸಿದ ಬುಕ್‌ಮಾರ್ಕ್ ಗುರುತುಗಳು ಅಮಾನ್ಯವಾಗಿವೆ. ನಿಮ್ಮ ಉಳಿಸಿದ ಡೇಟಾ ಬದಲಾಗಿಲ್ಲ.';
 
   @override
   String get learningSavedRepeatInvalid =>
-      'Saved repeat bounds are invalid. Your saved data has not been changed.';
+      'ಉಳಿಸಿದ ಪುನರಾವರ್ತನೆ ಮಿತಿಗಳು ಅಮಾನ್ಯವಾಗಿವೆ. ನಿಮ್ಮ ಉಳಿಸಿದ ಡೇಟಾ ಬದಲಾಗಿಲ್ಲ.';
 
   @override
   String get learningSignInFirst =>
-      'Sign in before using saved learning progress.';
+      'ಉಳಿಸಿದ ಕಲಿಕೆಯ ಪ್ರಗತಿ ಬಳಸುವ ಮೊದಲು ಸೈನ್ ಇನ್ ಮಾಡಿ.';
 
   @override
   String get learningAccountChanged =>
-      'Your account changed. Open the learning library again.';
+      'ನಿಮ್ಮ ಖಾತೆ ಬದಲಾಗಿದೆ. ಕಲಿಕೆಯ ಲೈಬ್ರರಿಯನ್ನು ಮತ್ತೆ ತೆರೆಯಿರಿ.';
 
   @override
   String get learningUnsupportedFormat =>
-      'Saved learning data has an unsupported format or account. Your saved data has not been changed.';
+      'ಉಳಿಸಿದ ಕಲಿಕೆಯ ಡೇಟಾದ ಸ್ವರೂಪ ಅಥವಾ ಖಾತೆ ಬೆಂಬಲಿತವಾಗಿಲ್ಲ. ನಿಮ್ಮ ಉಳಿಸಿದ ಡೇಟಾ ಬದಲಾಗಿಲ್ಲ.';
 
   @override
   String get learningIdentityMismatch =>
-      'Saved lesson identity does not match. Your saved data has not been changed.';
+      'ಉಳಿಸಿದ ಪಾಠದ ಗುರುತು ಹೊಂದಿಕೆಯಾಗುತ್ತಿಲ್ಲ. ನಿಮ್ಮ ಉಳಿಸಿದ ಡೇಟಾ ಬದಲಾಗಿಲ್ಲ.';
 
   @override
   String get learningDataUnreadable =>
-      'Saved learning data could not be read. Your saved data has not been changed.';
+      'ಉಳಿಸಿದ ಕಲಿಕೆಯ ಡೇಟಾ ಓದಲು ಆಗಲಿಲ್ಲ. ನಿಮ್ಮ ಉಳಿಸಿದ ಡೇಟಾ ಬದಲಾಗಿಲ್ಲ.';
 
   @override
   String get learningStorageUnavailableFreeSpace =>
-      'Learning storage is unavailable. Check free space and retry. Your saved data has not been intentionally removed.';
+      'ಕಲಿಕೆಯ ಸಂಗ್ರಹಣೆ ಲಭ್ಯವಿಲ್ಲ. ಖಾಲಿ ಜಾಗ ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ. ನಿಮ್ಮ ಉಳಿಸಿದ ಡೇಟಾವನ್ನು ಉದ್ದೇಶಪೂರ್ವಕವಾಗಿ ತೆಗೆದುಹಾಕಲಾಗಿಲ್ಲ.';
 
   @override
   String get learningStorageUnavailable =>
-      'Learning storage is unavailable. Check storage and retry.';
+      'ಕಲಿಕೆಯ ಸಂಗ್ರಹಣೆ ಲಭ್ಯವಿಲ್ಲ. ಸಂಗ್ರಹಣೆ ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
   String get learningSaveFailed =>
-      'Learning progress could not be saved. Check free space and retry.';
+      'ಕಲಿಕೆಯ ಪ್ರಗತಿಯನ್ನು ಉಳಿಸಲು ಆಗಲಿಲ್ಲ. ಖಾಲಿ ಜಾಗ ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
   String get learningProgressUnavailable =>
-      'Saved learning progress is unavailable. Check storage and retry.';
+      'ಉಳಿಸಿದ ಕಲಿಕೆಯ ಪ್ರಗತಿ ಲಭ್ಯವಿಲ್ಲ. ಸಂಗ್ರಹಣೆ ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
   String get learningStartLessonFirst =>
-      'Start this lesson before adding bookmarks or repeat points.';
+      'ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು ಅಥವಾ ಪುನರಾವರ್ತನೆ ಬಿಂದುಗಳನ್ನು ಸೇರಿಸುವ ಮೊದಲು ಈ ಪಾಠವನ್ನು ಪ್ರಾರಂಭಿಸಿ.';
 
   @override
   String learningSavedFieldUnreadable(String field) {
-    return 'The saved $field could not be read. Your saved data has not been changed.';
+    return 'ಉಳಿಸಿದ $field ಓದಲು ಆಗಲಿಲ್ಲ. ನಿಮ್ಮ ಉಳಿಸಿದ ಡೇಟಾ ಬದಲಾಗಿಲ್ಲ.';
   }
 
   @override
-  String get learningFieldBookmarkId => 'bookmark id';
+  String get learningFieldBookmarkId => 'ಬುಕ್‌ಮಾರ್ಕ್ ಐಡಿ';
 
   @override
-  String get learningFieldBookmarkLabel => 'bookmark label';
+  String get learningFieldBookmarkLabel => 'ಬುಕ್‌ಮಾರ್ಕ್ ಹೆಸರು';
 
   @override
-  String get learningFieldBookmarkPosition => 'bookmark position';
+  String get learningFieldBookmarkPosition => 'ಬುಕ್‌ಮಾರ್ಕ್ ಸ್ಥಾನ';
 
   @override
-  String get learningFieldUpdateTime => 'update time';
+  String get learningFieldUpdateTime => 'ಅಪ್‌ಡೇಟ್ ಸಮಯ';
 
   @override
-  String get learningFieldNextBookmarkId => 'next bookmark id';
+  String get learningFieldNextBookmarkId => 'ಮುಂದಿನ ಬುಕ್‌ಮಾರ್ಕ್ ಐಡಿ';
 
   @override
-  String get learningFieldLessonId => 'lesson id';
+  String get learningFieldLessonId => 'ಪಾಠದ ಐಡಿ';
 
   @override
-  String get learningFieldLessonTitle => 'lesson title';
+  String get learningFieldLessonTitle => 'ಪಾಠದ ಶೀರ್ಷಿಕೆ';
 
   @override
-  String get learningFieldPosition => 'position';
+  String get learningFieldPosition => 'ಸ್ಥಾನ';
 
   @override
-  String get learningInvalidProgress => 'Invalid lesson progress';
+  String get learningInvalidProgress => 'ಪಾಠದ ಪ್ರಗತಿ ಅಮಾನ್ಯವಾಗಿದೆ';
 
   @override
   String get learningBookmarkNeedsPositionLabel =>
-      'A bookmark needs a valid position and label';
+      'ಬುಕ್‌ಮಾರ್ಕ್‌ಗೆ ಮಾನ್ಯವಾದ ಸ್ಥಾನ ಮತ್ತು ಹೆಸರು ಬೇಕು';
 
   @override
   String get learningBookmarkExceedsDuration =>
-      'Bookmark position exceeds lesson duration';
+      'ಬುಕ್‌ಮಾರ್ಕ್ ಸ್ಥಾನ ಪಾಠದ ಅವಧಿಯನ್ನು ಮೀರಿದೆ';
 
   @override
   String learningDefaultBookmarkLabel(String number) {
-    return 'Bookmark $number';
+    return 'ಬುಕ್‌ಮಾರ್ಕ್ $number';
   }
 
   @override
-  String get learningBookmarkNotFound => 'Bookmark not found';
+  String get learningBookmarkNotFound => 'ಬುಕ್‌ಮಾರ್ಕ್ ಸಿಗಲಿಲ್ಲ';
 
   @override
   String get learningRepeatEndAfterStart =>
-      'Set the end point after the start point';
+      'ಕೊನೆಯ ಬಿಂದುವನ್ನು ಪ್ರಾರಂಭ ಬಿಂದುವಿನ ನಂತರ ಇರಿಸಿ';
 
   @override
   String get learningRepeatExceedsDuration =>
-      'Repeat points exceed lesson duration';
+      'ಪುನರಾವರ್ತನೆ ಬಿಂದುಗಳು ಪಾಠದ ಅವಧಿಯನ್ನು ಮೀರಿವೆ';
 
   @override
-  String get learningSavedProgressUnavailableTitle =>
-      'Saved progress unavailable';
+  String get learningSavedProgressUnavailableTitle => 'ಉಳಿಸಿದ ಪ್ರಗತಿ ಲಭ್ಯವಿಲ್ಲ';
 
   @override
   String get learningListenWithoutSavedPrompt =>
-      'Listen from the beginning without changing saved data? Saving stays off until you retry successfully.';
+      'ಉಳಿಸಿದ ಡೇಟಾ ಬದಲಾಯಿಸದೆ ಮೊದಲಿನಿಂದ ಕೇಳಬೇಕೇ? ನೀವು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ ಯಶಸ್ವಿಯಾಗುವವರೆಗೆ ಉಳಿಸುವಿಕೆ ಆಫ್ ಆಗಿರುತ್ತದೆ.';
 
   @override
-  String get learningListenFromBeginning => 'Listen from beginning';
+  String get learningListenFromBeginning => 'ಮೊದಲಿನಿಂದ ಕೇಳಿ';
 
   @override
-  String get learningRecordedLesson => 'Recorded lesson';
+  String get learningRecordedLesson => 'ರೆಕಾರ್ಡ್ ಮಾಡಿದ ಪಾಠ';
 
   @override
   String learningStatusPosition(String position) {
-    return 'Position $position.';
+    return 'ಸ್ಥಾನ $position.';
   }
 
   @override
   String learningSpeedTimes(String speed) {
-    return 'Speed $speed times.';
+    return 'ವೇಗ $speed ಪಟ್ಟು.';
   }
 
   @override
@@ -7550,52 +7598,51 @@ class AppLocalizationsKn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count bookmarks',
+      other: '$count ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು',
     );
     return '$_temp0';
   }
 
   @override
   String learningStatusRepeat(String state) {
-    return 'A-B repeat $state.';
+    return 'A-B ಪುನರಾವರ್ತನೆ $state.';
   }
 
   @override
   String learningStatusSaving(String state) {
-    return 'Progress saving $state.';
+    return 'ಪ್ರಗತಿ ಉಳಿಸುವಿಕೆ $state.';
   }
 
   @override
   String get learningNoLessonLoaded =>
-      'No lesson is loaded. Choose a lesson to play first.';
+      'ಯಾವುದೇ ಪಾಠ ಲೋಡ್ ಆಗಿಲ್ಲ. ಮೊದಲು ಪ್ಲೇ ಮಾಡಲು ಒಂದು ಪಾಠ ಆರಿಸಿ.';
 
   @override
-  String get learningSlowestSpeed => 'Already at the slowest speed.';
+  String get learningSlowestSpeed => 'ಈಗಾಗಲೇ ಅತ್ಯಂತ ನಿಧಾನ ವೇಗದಲ್ಲಿದೆ.';
 
   @override
-  String get learningFastestSpeed => 'Already at the fastest speed.';
+  String get learningFastestSpeed => 'ಈಗಾಗಲೇ ಅತ್ಯಂತ ವೇಗದ ವೇಗದಲ್ಲಿದೆ.';
 
   @override
-  String get learningCheckPosition =>
-      'Check the lesson position and try again.';
+  String get learningCheckPosition => 'ಪಾಠದ ಸ್ಥಾನ ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
   String get learningPlayerActionFailed =>
-      'The player could not complete this action. Check playback and try again.';
+      'ಪ್ಲೇಯರ್ ಈ ಕ್ರಿಯೆಯನ್ನು ಪೂರ್ಣಗೊಳಿಸಲು ಆಗಲಿಲ್ಲ. ಪ್ಲೇಬ್ಯಾಕ್ ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
   String learningBookmarkSavedAt(String time) {
-    return 'Bookmark saved at $time.';
+    return '$time ನಲ್ಲಿ ಬುಕ್‌ಮಾರ್ಕ್ ಉಳಿಸಲಾಗಿದೆ.';
   }
 
   @override
   String learningReadStatusLabel(String status) {
-    return 'Read learning status. $status';
+    return 'ಕಲಿಕೆಯ ಸ್ಥಿತಿ ಓದಿ. $status';
   }
 
   @override
   String learningAddBookmarkAt(String time) {
-    return 'Add bookmark at $time';
+    return '$time ನಲ್ಲಿ ಬುಕ್‌ಮಾರ್ಕ್ ಸೇರಿಸಿ';
   }
 
   @override
@@ -7603,192 +7650,196 @@ class AppLocalizationsKn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Bookmarks. $count saved points',
+      other: 'ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು. $count ಉಳಿಸಿದ ಬಿಂದುಗಳು',
     );
     return '$_temp0';
   }
 
   @override
   String learningPrivateNotesAt(String time) {
-    return 'Private study notes at $time. Pause lesson before opening';
+    return '$time ನಲ್ಲಿ ಖಾಸಗಿ ಅಧ್ಯಯನ ಟಿಪ್ಪಣಿಗಳು. ತೆರೆಯುವ ಮೊದಲು ಪಾಠವನ್ನು ವಿರಾಮಗೊಳಿಸಿ';
   }
 
   @override
   String get learningSetRepeatStartLabel =>
-      'Set repeat start A at the current position';
+      'ಪ್ರಸ್ತುತ ಸ್ಥಾನದಲ್ಲಿ ಪುನರಾವರ್ತನೆ ಪ್ರಾರಂಭ A ಹೊಂದಿಸಿ';
 
   @override
   String learningRepeatStartSet(String time) {
-    return 'Repeat start set at $time.';
+    return 'ಪುನರಾವರ್ತನೆ ಪ್ರಾರಂಭ $time ನಲ್ಲಿ ಹೊಂದಿಸಲಾಗಿದೆ.';
   }
 
   @override
-  String get learningSetRepeatEndLabel => 'Set repeat end B after start A';
+  String get learningSetRepeatEndLabel =>
+      'ಪ್ರಾರಂಭ A ನಂತರ ಪುನರಾವರ್ತನೆ ಕೊನೆ B ಹೊಂದಿಸಿ';
 
   @override
   String learningRepeatEndSet(String time) {
-    return 'Repeat end set at $time. Select Repeat on to start looping.';
+    return 'ಪುನರಾವರ್ತನೆ ಕೊನೆ $time ನಲ್ಲಿ ಹೊಂದಿಸಲಾಗಿದೆ. ಮತ್ತೆ ಮತ್ತೆ ಪ್ಲೇ ಮಾಡಲು ಪುನರಾವರ್ತನೆ ಆನ್ ಆಯ್ಕೆಮಾಡಿ.';
   }
 
   @override
-  String get learningTurnRepeatOff => 'Turn A-B repeat off';
+  String get learningTurnRepeatOff => 'A-B ಪುನರಾವರ್ತನೆ ಆಫ್ ಮಾಡಿ';
 
   @override
-  String get learningTurnRepeatOn => 'Turn A-B repeat on';
+  String get learningTurnRepeatOn => 'A-B ಪುನರಾವರ್ತನೆ ಆನ್ ಮಾಡಿ';
 
   @override
-  String get learningClearRepeatLabel => 'Clear saved A-B repeat points';
+  String get learningClearRepeatLabel =>
+      'ಉಳಿಸಿದ A-B ಪುನರಾವರ್ತನೆ ಬಿಂದುಗಳನ್ನು ತೆರವುಗೊಳಿಸಿ';
 
   @override
-  String get learningRepeatCleared => 'A-B repeat points cleared.';
+  String get learningRepeatCleared =>
+      'A-B ಪುನರಾವರ್ತನೆ ಬಿಂದುಗಳನ್ನು ತೆರವುಗೊಳಿಸಲಾಗಿದೆ.';
 
   @override
   String learningBackTenLabel(String key) {
-    return 'Back 10 seconds, key $key';
+    return '10 ಸೆಕೆಂಡು ಹಿಂದೆ, ಕೀ $key';
   }
 
   @override
   String learningForwardTenLabel(String key) {
-    return 'Forward 10 seconds, key $key';
+    return '10 ಸೆಕೆಂಡು ಮುಂದೆ, ಕೀ $key';
   }
 
   @override
   String learningSlowerLabel(String key, String speed) {
-    return 'Slower, key $key. Now $speed times';
+    return 'ನಿಧಾನ, ಕೀ $key. ಈಗ $speed ಪಟ್ಟು';
   }
 
   @override
   String learningFasterLabel(String key, String speed) {
-    return 'Faster, key $key. Now $speed times';
+    return 'ವೇಗ, ಕೀ $key. ಈಗ $speed ಪಟ್ಟು';
   }
 
   @override
   String learningRetrySavingLabel(String issue) {
-    return 'Retry saving learning progress. $issue';
+    return 'ಕಲಿಕೆಯ ಪ್ರಗತಿ ಉಳಿಸಲು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ. $issue';
   }
 
   @override
-  String get learningProgressSaved => 'Learning progress saved.';
+  String get learningProgressSaved => 'ಕಲಿಕೆಯ ಪ್ರಗತಿ ಉಳಿಸಲಾಗಿದೆ.';
 
   @override
-  String get learningEnterBookmarkName => 'Enter a bookmark name.';
+  String get learningEnterBookmarkName => 'ಬುಕ್‌ಮಾರ್ಕ್ ಹೆಸರನ್ನು ನಮೂದಿಸಿ.';
 
   @override
   String get learningNameBookmarkScreen =>
-      'Name bookmark. Press OK to edit. Up or down leaves editing.';
+      'ಬುಕ್‌ಮಾರ್ಕ್‌ಗೆ ಹೆಸರಿಡಿ. ಸಂಪಾದಿಸಲು ಓಕೆ ಒತ್ತಿ. ಮೇಲೆ ಅಥವಾ ಕೆಳಗೆ ಒತ್ತಿದರೆ ಸಂಪಾದನೆಯಿಂದ ಹೊರಬರುತ್ತದೆ.';
 
   @override
-  String get learningEditName => 'Edit name';
+  String get learningEditName => 'ಹೆಸರು ಸಂಪಾದಿಸಿ';
 
   @override
-  String get learningSaveBookmark => 'Save bookmark';
+  String get learningSaveBookmark => 'ಬುಕ್‌ಮಾರ್ಕ್ ಉಳಿಸಿ';
 
   @override
-  String get learningBookmarkNameField => 'Bookmark name';
+  String get learningBookmarkNameField => 'ಬುಕ್‌ಮಾರ್ಕ್ ಹೆಸರು';
 
   @override
   String learningBookmarkJumped(String label, String position) {
-    return '$label. Position $position.';
+    return '$label. ಸ್ಥಾನ $position.';
   }
 
   @override
-  String get learningRemoveBookmarkTitle => 'Remove bookmark?';
+  String get learningRemoveBookmarkTitle => 'ಬುಕ್‌ಮಾರ್ಕ್ ತೆಗೆದುಹಾಕಬೇಕೇ?';
 
   @override
   String learningRemoveBookmarkMessage(String label) {
-    return 'Remove $label? This does not remove the lesson or any other bookmarks.';
+    return '$label ತೆಗೆದುಹಾಕಬೇಕೇ? ಇದು ಪಾಠವನ್ನಾಗಲಿ ಬೇರೆ ಯಾವುದೇ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳನ್ನಾಗಲಿ ತೆಗೆದುಹಾಕುವುದಿಲ್ಲ.';
   }
 
   @override
-  String get learningKeepBookmark => 'Keep bookmark';
+  String get learningKeepBookmark => 'ಬುಕ್‌ಮಾರ್ಕ್ ಇರಿಸಿ';
 
   @override
-  String get learningRemoveBookmark => 'Remove bookmark';
+  String get learningRemoveBookmark => 'ಬುಕ್‌ಮಾರ್ಕ್ ತೆಗೆದುಹಾಕಿ';
 
   @override
   String learningBookmarkRemoved(String label) {
-    return '$label removed.';
+    return '$label ತೆಗೆದುಹಾಕಲಾಗಿದೆ.';
   }
 
   @override
   String get learningBookmarksScreen =>
-      'Bookmarks. Select a point to jump. This does not start paused playback. Remove asks for confirmation.';
+      'ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು. ಅಲ್ಲಿಗೆ ಹೋಗಲು ಒಂದು ಬಿಂದುವನ್ನು ಆಯ್ಕೆಮಾಡಿ. ಇದು ವಿರಾಮದಲ್ಲಿರುವ ಪ್ಲೇಬ್ಯಾಕ್ ಅನ್ನು ಪ್ರಾರಂಭಿಸುವುದಿಲ್ಲ. ತೆಗೆದುಹಾಕುವಾಗ ದೃಢೀಕರಣ ಕೇಳುತ್ತದೆ.';
 
   @override
-  String get learningCloseBookmarks => 'Close bookmarks';
+  String get learningCloseBookmarks => 'ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳನ್ನು ಮುಚ್ಚಿ';
 
   @override
   String learningJumpToBookmarkLabel(String label, String time) {
-    return '$label. $time. Jump to bookmark';
+    return '$label. $time. ಬುಕ್‌ಮಾರ್ಕ್‌ಗೆ ಹೋಗಿ';
   }
 
   @override
   String learningRemoveBookmarkLabel(String label) {
-    return 'Remove $label';
+    return '$label ತೆಗೆದುಹಾಕಿ';
   }
 
   @override
-  String get dashboardRefreshing => 'Refreshing sessions.';
+  String get dashboardRefreshing => 'ಸೆಷನ್‌ಗಳನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಲಾಗುತ್ತಿದೆ.';
 
   @override
-  String get dashboardShowMatching => 'Show matching sessions';
+  String get dashboardShowMatching => 'ಹೊಂದುವ ಸೆಷನ್‌ಗಳನ್ನು ತೋರಿಸಿ';
 
   @override
-  String get dashboardLogout => 'Log out, asks to confirm';
+  String get dashboardLogout => 'ಲಾಗ್ ಔಟ್, ದೃಢೀಕರಣ ಕೇಳುತ್ತದೆ';
 
   @override
-  String get dashboardRefresh => 'Refresh sessions';
+  String get dashboardRefresh => 'ಸೆಷನ್‌ಗಳನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಿ';
 
   @override
-  String get dashboardLibraryWhat => 'recorded audio library';
+  String get dashboardLibraryWhat => 'ರೆಕಾರ್ಡ್ ಮಾಡಿದ ಆಡಿಯೋ ಸಂಗ್ರಹ';
 
   @override
-  String get dashboardQuizzesWhat => 'quizzes';
+  String get dashboardQuizzesWhat => 'ಕ್ವಿಜ್‌ಗಳು';
 
   @override
   String dashboardSessions(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count sessions',
-      one: '1 session',
+      other: '$count ಸೆಷನ್‌ಗಳು',
+      one: '1 ಸೆಷನ್',
     );
     return '$_temp0';
   }
 
   @override
   String dashboardPosition(String index, String total) {
-    return '$index of $total';
+    return '$total ರಲ್ಲಿ $index';
   }
 
   @override
-  String get dashboardStudentScreen => 'Student Dashboard';
+  String get dashboardStudentScreen => 'ವಿದ್ಯಾರ್ಥಿ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್';
 
   @override
-  String get dashboardStudentLoading => 'Student dashboard is loading';
+  String get dashboardStudentLoading =>
+      'ವಿದ್ಯಾರ್ಥಿ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್ ಲೋಡ್ ಆಗುತ್ತಿದೆ';
 
   @override
   String get dashboardStudentSections =>
-      'refresh, session search, live sessions, recorded lessons, playlists, quizzes, learning journeys, and log out';
+      'ರಿಫ್ರೆಶ್, ಸೆಷನ್ ಹುಡುಕಾಟ, ಲೈವ್ ಸೆಷನ್‌ಗಳು, ರೆಕಾರ್ಡ್ ಮಾಡಿದ ಪಾಠಗಳು, ಪ್ಲೇಲಿಸ್ಟ್‌ಗಳು, ಕ್ವಿಜ್‌ಗಳು, ಕಲಿಕೆಯ ಪಯಣಗಳು ಮತ್ತು ಲಾಗ್ ಔಟ್';
 
   @override
   String get dashboardNoLiveSessions =>
-      'No live sessions right now. Press 1 to refresh.';
+      'ಈಗ ಯಾವುದೇ ಲೈವ್ ಸೆಷನ್ ಇಲ್ಲ. ರಿಫ್ರೆಶ್ ಮಾಡಲು 1 ಒತ್ತಿ.';
 
   @override
-  String get dashboardNoFilterMatch => 'No sessions match your filter.';
+  String get dashboardNoFilterMatch => 'ನಿಮ್ಮ ಫಿಲ್ಟರ್‌ಗೆ ಹೊಂದುವ ಸೆಷನ್ ಇಲ್ಲ.';
 
   @override
   String get dashboardNoMatchVisible =>
-      'No matching sessions. Clear the search or change the subject filter.';
+      'ಹೊಂದುವ ಸೆಷನ್ ಇಲ್ಲ. ಹುಡುಕಾಟವನ್ನು ಅಳಿಸಿ ಅಥವಾ ವಿಷಯ ಫಿಲ್ಟರ್ ಬದಲಿಸಿ.';
 
   @override
   String dashboardAvailable(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count sessions available.',
-      one: '1 session available.',
+      other: '$count ಸೆಷನ್‌ಗಳು ಲಭ್ಯವಿವೆ.',
+      one: '1 ಸೆಷನ್ ಲಭ್ಯವಿದೆ.',
     );
     return '$_temp0';
   }
@@ -7798,58 +7849,58 @@ class AppLocalizationsKn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count sessions available. Use down to browse.',
-      one: '1 session available. Use down to browse.',
+      other: '$count ಸೆಷನ್‌ಗಳು ಲಭ್ಯವಿವೆ. ನೋಡಲು ಕೆಳಗೆ ಬಳಸಿ.',
+      one: '1 ಸೆಷನ್ ಲಭ್ಯವಿದೆ. ನೋಡಲು ಕೆಳಗೆ ಬಳಸಿ.',
     );
     return '$_temp0';
   }
 
   @override
   String dashboardRefreshFailed(String reason) {
-    return '$reason Press 1 to try again.';
+    return '$reason ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಲು 1 ಒತ್ತಿ.';
   }
 
   @override
-  String get dashboardJoining => 'Joining session.';
+  String get dashboardJoining => 'ಸೆಷನ್‌ಗೆ ಸೇರುತ್ತಿದೆ.';
 
   @override
   String dashboardJoined(String session) {
-    return 'Joined $session.';
+    return '$session ಗೆ ಸೇರಿದ್ದೀರಿ.';
   }
 
   @override
   String get dashboardOpeningPlaylists =>
-      'Opening My Playlists. These playlists are private.';
+      'ನನ್ನ ಪ್ಲೇಲಿಸ್ಟ್‌ಗಳನ್ನು ತೆರೆಯುತ್ತಿದೆ. ಈ ಪ್ಲೇಲಿಸ್ಟ್‌ಗಳು ಖಾಸಗಿ.';
 
   @override
   String get dashboardSessionSearchHelp =>
-      'Session search. Press OK to type a session number, then go down to Show matching sessions and press OK. You can also search by name.';
+      'ಸೆಷನ್ ಹುಡುಕಾಟ. ಸೆಷನ್ ಸಂಖ್ಯೆ ಟೈಪ್ ಮಾಡಲು ಓಕೆ ಒತ್ತಿ, ನಂತರ ಕೆಳಗೆ ಹೋಗಿ ಹೊಂದುವ ಸೆಷನ್‌ಗಳನ್ನು ತೋರಿಸಿ ಆರಿಸಿ ಓಕೆ ಒತ್ತಿ. ನೀವು ಹೆಸರಿನಿಂದಲೂ ಹುಡುಕಬಹುದು.';
 
   @override
   String get dashboardSessionNumberFieldEmpty =>
-      'Session number field. Type a number, then choose Show matching sessions';
+      'ಸೆಷನ್ ಸಂಖ್ಯೆ ಫೀಲ್ಡ್. ಸಂಖ್ಯೆ ಟೈಪ್ ಮಾಡಿ, ನಂತರ ಹೊಂದುವ ಸೆಷನ್‌ಗಳನ್ನು ತೋರಿಸಿ ಆರಿಸಿ';
 
   @override
   String dashboardSessionNumberField(String digits) {
-    return 'Session number field, $digits';
+    return 'ಸೆಷನ್ ಸಂಖ್ಯೆ ಫೀಲ್ಡ್, $digits';
   }
 
   @override
-  String get dashboardNameField => 'Search sessions by name';
+  String get dashboardNameField => 'ಹೆಸರಿನಿಂದ ಸೆಷನ್‌ಗಳನ್ನು ಹುಡುಕಿ';
 
   @override
   String dashboardNoSessionNumber(String digits) {
-    return 'No live session number $digits.';
+    return '$digits ಸಂಖ್ಯೆಯ ಲೈವ್ ಸೆಷನ್ ಇಲ್ಲ.';
   }
 
   @override
   String dashboardFound(String label) {
-    return 'Found: $label. Press OK to join.';
+    return 'ಸಿಕ್ಕಿದೆ: $label. ಸೇರಲು ಓಕೆ ಒತ್ತಿ.';
   }
 
   @override
   String dashboardNoNameMatch(String query) {
-    return 'No sessions match $query.';
+    return '$query ಗೆ ಹೊಂದುವ ಸೆಷನ್ ಇಲ್ಲ.';
   }
 
   @override
@@ -7857,8 +7908,8 @@ class AppLocalizationsKn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Showing all $count sessions.',
-      one: 'Showing all 1 session.',
+      other: 'ಎಲ್ಲಾ $count ಸೆಷನ್‌ಗಳನ್ನು ತೋರಿಸಲಾಗುತ್ತಿದೆ.',
+      one: 'ಎಲ್ಲಾ 1 ಸೆಷನ್ ತೋರಿಸಲಾಗುತ್ತಿದೆ.',
     );
     return '$_temp0';
   }
@@ -7868,8 +7919,8 @@ class AppLocalizationsKn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Showing all $count sessions. Use down to browse.',
-      one: 'Showing all 1 session. Use down to browse.',
+      other: 'ಎಲ್ಲಾ $count ಸೆಷನ್‌ಗಳನ್ನು ತೋರಿಸಲಾಗುತ್ತಿದೆ. ನೋಡಲು ಕೆಳಗೆ ಬಳಸಿ.',
+      one: 'ಎಲ್ಲಾ 1 ಸೆಷನ್ ತೋರಿಸಲಾಗುತ್ತಿದೆ. ನೋಡಲು ಕೆಳಗೆ ಬಳಸಿ.',
     );
     return '$_temp0';
   }
@@ -7879,18 +7930,18 @@ class AppLocalizationsKn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count sessions match $query. Use down to browse.',
-      one: '1 session match $query. Use down to browse.',
+      other: '$count ಸೆಷನ್‌ಗಳು $query ಗೆ ಹೊಂದುತ್ತವೆ. ನೋಡಲು ಕೆಳಗೆ ಬಳಸಿ.',
+      one: '1 ಸೆಷನ್ $query ಗೆ ಹೊಂದುತ್ತದೆ. ನೋಡಲು ಕೆಳಗೆ ಬಳಸಿ.',
     );
     return '$_temp0';
   }
 
   @override
-  String get dashboardAllSubjects => 'all subjects';
+  String get dashboardAllSubjects => 'ಎಲ್ಲಾ ವಿಷಯಗಳು';
 
   @override
   String dashboardSubjectFilterLabel(String subject, String position) {
-    return 'Subject filter: $subject, $position. Use left or right to change';
+    return 'ವಿಷಯ ಫಿಲ್ಟರ್: $subject, $position. ಬದಲಿಸಲು ಎಡ ಅಥವಾ ಬಲ ಬಳಸಿ';
   }
 
   @override
@@ -7899,57 +7950,57 @@ class AppLocalizationsKn extends AppLocalizations {
     String position,
     String summary,
   ) {
-    return 'Subject filter: $subject, $position. $summary';
+    return 'ವಿಷಯ ಫಿಲ್ಟರ್: $subject, $position. $summary';
   }
 
   @override
-  String get dashboardLibrary => 'Recorded audio library';
+  String get dashboardLibrary => 'ರೆಕಾರ್ಡ್ ಮಾಡಿದ ಆಡಿಯೊ ಲೈಬ್ರರಿ';
 
   @override
-  String get dashboardPlaylists => 'My private playlists';
+  String get dashboardPlaylists => 'ನನ್ನ ಖಾಸಗಿ ಪ್ಲೇಲಿಸ್ಟ್‌ಗಳು';
 
   @override
-  String get dashboardQuizzes => 'Quizzes';
+  String get dashboardQuizzes => 'ಕ್ವಿಜ್‌ಗಳು';
 
   @override
   String get dashboardStudentJourneys =>
-      'Learning journeys: listen, answer and repeat, works offline';
+      'ಕಲಿಕೆಯ ಪಯಣಗಳು: ಕೇಳಿ, ಉತ್ತರಿಸಿ ಮತ್ತು ಪುನರಾವರ್ತಿಸಿ, ಆಫ್‌ಲೈನ್‌ನಲ್ಲೂ ಕೆಲಸ ಮಾಡುತ್ತದೆ';
 
   @override
   String dashboardTeacherName(String name) {
-    return 'Teacher $name';
+    return 'ಶಿಕ್ಷಕರು $name';
   }
 
   @override
-  String get dashboardLiveNow => 'live now';
+  String get dashboardLiveNow => 'ಈಗ ಲೈವ್';
 
   @override
-  String get dashboardStateRefreshing => 'Refreshing.';
+  String get dashboardStateRefreshing => 'ರಿಫ್ರೆಶ್ ಆಗುತ್ತಿದೆ.';
 
   @override
   String dashboardStateLiveSessions(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count live sessions.',
-      one: '1 live session.',
+      other: '$count ಲೈವ್ ಸೆಷನ್‌ಗಳು.',
+      one: '1 ಲೈವ್ ಸೆಷನ್.',
     );
     return '$_temp0';
   }
 
   @override
   String dashboardStateSubjectFilter(String subject) {
-    return 'Subject filter: $subject.';
+    return 'ವಿಷಯ ಫಿಲ್ಟರ್: $subject.';
   }
 
   @override
   String dashboardStateSessionNumber(String digits) {
-    return 'Session number typed: $digits.';
+    return 'ಟೈಪ್ ಮಾಡಿದ ಸೆಷನ್ ಸಂಖ್ಯೆ: $digits.';
   }
 
   @override
   String dashboardStateNameSearch(String query) {
-    return 'Name search: $query.';
+    return 'ಹೆಸರು ಹುಡುಕಾಟ: $query.';
   }
 
   @override
@@ -7957,37 +8008,37 @@ class AppLocalizationsKn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count sessions shown.',
-      one: '1 session shown.',
+      other: '$count ಸೆಷನ್‌ಗಳನ್ನು ತೋರಿಸಲಾಗಿದೆ.',
+      one: '1 ಸೆಷನ್ ತೋರಿಸಲಾಗಿದೆ.',
     );
     return '$_temp0';
   }
 
   @override
-  String get dashboardTeacherScreen => 'Teacher Dashboard';
+  String get dashboardTeacherScreen => 'ಶಿಕ್ಷಕರ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್';
 
   @override
-  String get dashboardTeacherLoading => 'Teacher dashboard is loading';
+  String get dashboardTeacherLoading => 'ಶಿಕ್ಷಕರ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್ ಲೋಡ್ ಆಗುತ್ತಿದೆ';
 
   @override
   String get dashboardTeacherSections =>
-      'class and subject selection, teaching tools, session search, and active or ended sessions';
+      'ತರಗತಿ ಮತ್ತು ವಿಷಯ ಆಯ್ಕೆ, ಬೋಧನಾ ಸಾಧನಗಳು, ಸೆಷನ್ ಹುಡುಕಾಟ, ಮತ್ತು ಸಕ್ರಿಯ ಅಥವಾ ಮುಗಿದ ಸೆಷನ್‌ಗಳು';
 
   @override
   String get dashboardNoSessionsYet =>
-      'No sessions yet. Press 2 to create one.';
+      'ಇನ್ನೂ ಯಾವುದೇ ಸೆಷನ್ ಇಲ್ಲ. ಒಂದನ್ನು ರಚಿಸಲು 2 ಒತ್ತಿ.';
 
   @override
   String get dashboardNoTeacherMatch =>
-      'No matching sessions. Clear the search to list all sessions.';
+      'ಹೊಂದುವ ಸೆಷನ್ ಇಲ್ಲ. ಎಲ್ಲಾ ಸೆಷನ್‌ಗಳನ್ನು ನೋಡಲು ಹುಡುಕಾಟವನ್ನು ಅಳಿಸಿ.';
 
   @override
   String dashboardTeacherCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count sessions.',
-      one: '1 session.',
+      other: '$count ಸೆಷನ್‌ಗಳು.',
+      one: '1 ಸೆಷನ್.',
     );
     return '$_temp0';
   }
@@ -7997,43 +8048,43 @@ class AppLocalizationsKn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count sessions, $live live now.',
-      one: '1 session, $live live now.',
+      other: '$count ಸೆಷನ್‌ಗಳು, $live ಈಗ ಲೈವ್.',
+      one: '1 ಸೆಷನ್, $live ಈಗ ಲೈವ್.',
     );
     return '$_temp0';
   }
 
   @override
   String dashboardNotRefreshed(String reason) {
-    return '$reason Sessions were not refreshed. Press 1 to try again.';
+    return '$reason ಸೆಷನ್‌ಗಳು ರಿಫ್ರೆಶ್ ಆಗಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಲು 1 ಒತ್ತಿ.';
   }
 
   @override
   String get dashboardNoAssignment =>
-      'No class and subject is assigned to you. Ask an administrator to assign one.';
+      'ನಿಮಗೆ ಯಾವುದೇ ತರಗತಿ ಮತ್ತು ವಿಷಯವನ್ನು ನೀಡಿಲ್ಲ. ಒಂದನ್ನು ನೀಡಲು ನಿರ್ವಾಹಕರನ್ನು ಕೇಳಿ.';
 
   @override
-  String get dashboardCreatingSession => 'Creating session';
+  String get dashboardCreatingSession => 'ಸೆಷನ್ ರಚಿಸಲಾಗುತ್ತಿದೆ';
 
   @override
   String dashboardCreated(String title) {
-    return 'Session $title created.';
+    return '$title ಸೆಷನ್ ರಚಿಸಲಾಗಿದೆ.';
   }
 
   @override
-  String get dashboardCreatedTitle => 'Session created';
+  String get dashboardCreatedTitle => 'ಸೆಷನ್ ರಚಿಸಲಾಗಿದೆ';
 
   @override
   String dashboardStartNow(String title) {
-    return 'Do you want to start \"$title\" now?';
+    return '\"$title\" ಅನ್ನು ಈಗ ಪ್ರಾರಂಭಿಸಬೇಕೇ?';
   }
 
   @override
   String get dashboardRequestFailed =>
-      'We could not complete that request. Check your connection and try again.';
+      'ಆ ವಿನಂತಿಯನ್ನು ಪೂರ್ಣಗೊಳಿಸಲು ಆಗಲಿಲ್ಲ. ನಿಮ್ಮ ಸಂಪರ್ಕ ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
-  String get dashboardOpeningSession => 'Opening session.';
+  String get dashboardOpeningSession => 'ಸೆಷನ್ ತೆರೆಯುತ್ತಿದೆ.';
 
   @override
   String dashboardWorkspace(String className, String subject) {
@@ -8046,138 +8097,140 @@ class AppLocalizationsKn extends AppLocalizations {
     String position,
     String status,
   ) {
-    return 'Workspace: $name, $position. $status';
+    return 'ವರ್ಕ್‌ಸ್ಪೇಸ್: $name, $position. $status';
   }
 
   @override
   String dashboardWorkspaceChosen(String name, String status) {
-    return '$name selected. $status Press 7 to choose another workspace.';
+    return '$name ಆಯ್ಕೆ ಮಾಡಲಾಗಿದೆ. $status ಬೇರೆ ವರ್ಕ್‌ಸ್ಪೇಸ್ ಆರಿಸಲು 7 ಒತ್ತಿ.';
   }
 
   @override
-  String get dashboardChooseWorkspaceTitle => 'Choose class and subject';
+  String get dashboardChooseWorkspaceTitle => 'ತರಗತಿ ಮತ್ತು ವಿಷಯ ಆರಿಸಿ';
 
   @override
-  String get dashboardNoWorkspace => 'No class and subject workspace assigned';
+  String get dashboardNoWorkspace =>
+      'ಯಾವುದೇ ತರಗತಿ ಮತ್ತು ವಿಷಯ ವರ್ಕ್‌ಸ್ಪೇಸ್ ನೀಡಿಲ್ಲ';
 
   @override
   String dashboardWorkspaceLabel(String name, String position) {
-    return 'Workspace: $name, $position. Left or right to change, OK or 7 for a numbered list';
+    return 'ವರ್ಕ್‌ಸ್ಪೇಸ್: $name, $position. ಬದಲಿಸಲು ಎಡ ಅಥವಾ ಬಲ, ಸಂಖ್ಯೆಯ ಪಟ್ಟಿಗೆ ಓಕೆ ಅಥವಾ 7';
   }
 
   @override
-  String get dashboardCreate => 'Create new session';
+  String get dashboardCreate => 'ಹೊಸ ಸೆಷನ್ ರಚಿಸಿ';
 
   @override
-  String get dashboardClassPlaylists => 'Class playlists';
+  String get dashboardClassPlaylists => 'ತರಗತಿ ಪ್ಲೇಲಿಸ್ಟ್‌ಗಳು';
 
   @override
   String get dashboardTeacherJourneys =>
-      'Learning journeys: recordings, questions and polls in one flow';
+      'ಕಲಿಕೆಯ ಪಯಣಗಳು: ರೆಕಾರ್ಡಿಂಗ್‌ಗಳು, ಪ್ರಶ್ನೆಗಳು ಮತ್ತು ಪೋಲ್‌ಗಳು ಒಂದೇ ಹರಿವಿನಲ್ಲಿ';
 
   @override
-  String get dashboardTeacherQuizzes => 'Quizzes and private question bank';
+  String get dashboardTeacherQuizzes =>
+      'ಕ್ವಿಜ್‌ಗಳು ಮತ್ತು ಖಾಸಗಿ ಪ್ರಶ್ನೆ ಬ್ಯಾಂಕ್';
 
   @override
-  String get dashboardOfflineLibrary => 'Offline audio library';
+  String get dashboardOfflineLibrary => 'ಆಫ್‌ಲೈನ್ ಆಡಿಯೊ ಲೈಬ್ರರಿ';
 
   @override
   String get dashboardSearchField =>
-      'Search sessions. Press OK, then type a name or the session number';
+      'ಸೆಷನ್‌ಗಳನ್ನು ಹುಡುಕಿ. ಓಕೆ ಒತ್ತಿ, ನಂತರ ಹೆಸರು ಅಥವಾ ಸೆಷನ್ ಸಂಖ್ಯೆ ಟೈಪ್ ಮಾಡಿ';
 
   @override
   String get dashboardTeacherSearchHelp =>
-      'Session search. Press OK to edit, then type a session name, or the session number using the number keys. Use up or down to leave the field and browse results.';
+      'ಸೆಷನ್ ಹುಡುಕಾಟ. ಎಡಿಟ್ ಮಾಡಲು ಓಕೆ ಒತ್ತಿ, ನಂತರ ಸೆಷನ್ ಹೆಸರು ಟೈಪ್ ಮಾಡಿ, ಅಥವಾ ಸಂಖ್ಯೆ ಕೀಗಳಿಂದ ಸೆಷನ್ ಸಂಖ್ಯೆ ಟೈಪ್ ಮಾಡಿ. ಫೀಲ್ಡ್‌ನಿಂದ ಹೊರಬಂದು ಫಲಿತಾಂಶಗಳನ್ನು ನೋಡಲು ಮೇಲೆ ಅಥವಾ ಕೆಳಗೆ ಬಳಸಿ.';
 
   @override
   String dashboardTeacherNoMatch(String query) {
-    return 'No sessions match $query. Clear the search to list all sessions.';
+    return '$query ಗೆ ಹೊಂದುವ ಸೆಷನ್ ಇಲ್ಲ. ಎಲ್ಲಾ ಸೆಷನ್‌ಗಳನ್ನು ನೋಡಲು ಹುಡುಕಾಟವನ್ನು ಅಳಿಸಿ.';
   }
 
   @override
-  String get dashboardEnded => 'ended';
+  String get dashboardEnded => 'ಮುಗಿದಿದೆ';
 
   @override
   String dashboardJoinedCount(String count) {
-    return '$count joined';
+    return '$count ಜನ ಸೇರಿದ್ದಾರೆ';
   }
 
   @override
-  String get dashboardPressOkToOpen => 'Press OK to open';
+  String get dashboardPressOkToOpen => 'ತೆರೆಯಲು ಓಕೆ ಒತ್ತಿ';
 
   @override
-  String get dashboardPressOkToReactivate => 'Press OK to reactivate';
+  String get dashboardPressOkToReactivate => 'ಮತ್ತೆ ಸಕ್ರಿಯಗೊಳಿಸಲು ಓಕೆ ಒತ್ತಿ';
 
   @override
   String dashboardEndLabel(String title) {
-    return 'End $title for everyone, asks to confirm';
+    return 'ಎಲ್ಲರಿಗೂ $title ಮುಗಿಸಿ, ದೃಢೀಕರಣ ಕೇಳುತ್ತದೆ';
   }
 
   @override
   String dashboardDeleteLabel(String title) {
-    return 'Delete ended session $title permanently, asks to confirm';
+    return 'ಮುಗಿದ ಸೆಷನ್ $title ಅನ್ನು ಶಾಶ್ವತವಾಗಿ ಅಳಿಸಿ, ದೃಢೀಕರಣ ಕೇಳುತ್ತದೆ';
   }
 
   @override
-  String get dashboardEndTitle => 'End session for everyone?';
+  String get dashboardEndTitle => 'ಎಲ್ಲರಿಗೂ ಸೆಷನ್ ಮುಗಿಸಬೇಕೇ?';
 
   @override
   String dashboardEndMessage(String title) {
-    return 'End \"$title\" and close it for every participant? The session will remain in your dashboard history.';
+    return '\"$title\" ಅನ್ನು ಮುಗಿಸಿ ಪ್ರತಿಯೊಬ್ಬ ಭಾಗವಹಿಸುವವರಿಗೂ ಮುಚ್ಚಬೇಕೇ? ಸೆಷನ್ ನಿಮ್ಮ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್ ಇತಿಹಾಸದಲ್ಲಿ ಉಳಿಯುತ್ತದೆ.';
   }
 
   @override
   String get dashboardEndedForEveryone =>
-      'Session ended for everyone and kept in session history.';
+      'ಎಲ್ಲರಿಗೂ ಸೆಷನ್ ಮುಗಿದಿದೆ ಮತ್ತು ಸೆಷನ್ ಇತಿಹಾಸದಲ್ಲಿ ಇರಿಸಲಾಗಿದೆ.';
 
   @override
   String get dashboardEndFailed =>
-      'The session could not be ended. Please try again.';
+      'ಸೆಷನ್ ಮುಗಿಸಲು ಆಗಲಿಲ್ಲ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
-  String get dashboardReactivateTitle => 'Reactivate session?';
+  String get dashboardReactivateTitle => 'ಸೆಷನ್ ಮತ್ತೆ ಸಕ್ರಿಯಗೊಳಿಸಬೇಕೇ?';
 
   @override
   String dashboardReactivateMessage(String title) {
-    return 'Reactivate \"$title\" so participants can join it again?';
+    return 'ಭಾಗವಹಿಸುವವರು ಮತ್ತೆ ಸೇರಲು \"$title\" ಅನ್ನು ಮತ್ತೆ ಸಕ್ರಿಯಗೊಳಿಸಬೇಕೇ?';
   }
 
   @override
-  String get dashboardReactivated => 'Session reactivated.';
+  String get dashboardReactivated => 'ಸೆಷನ್ ಮತ್ತೆ ಸಕ್ರಿಯಗೊಂಡಿದೆ.';
 
   @override
   String get dashboardReactivateFailed =>
-      'The session could not be reactivated. Please try again.';
+      'ಸೆಷನ್ ಮತ್ತೆ ಸಕ್ರಿಯಗೊಳಿಸಲು ಆಗಲಿಲ್ಲ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
-  String get dashboardOpenNowTitle => 'Open session now?';
+  String get dashboardOpenNowTitle => 'ಸೆಷನ್ ಈಗ ತೆರೆಯಬೇಕೇ?';
 
   @override
   String dashboardOpenNowMessage(String title) {
-    return '\"$title\" is active again. Open it now, or return to it later from the dashboard.';
+    return '\"$title\" ಮತ್ತೆ ಸಕ್ರಿಯವಾಗಿದೆ. ಈಗ ತೆರೆಯಿರಿ, ಅಥವಾ ನಂತರ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್‌ನಿಂದ ಅದಕ್ಕೆ ಹಿಂತಿರುಗಿ.';
   }
 
   @override
-  String get dashboardDeleteTitle => 'Permanently delete session?';
+  String get dashboardDeleteTitle => 'ಸೆಷನ್ ಶಾಶ್ವತವಾಗಿ ಅಳಿಸಬೇಕೇ?';
 
   @override
   String dashboardDeleteMessage(String title) {
-    return 'Permanently delete \"$title\", including its participants, chat, and logs? This cannot be undone.';
+    return '\"$title\" ಅನ್ನು ಅದರ ಭಾಗವಹಿಸುವವರು, ಚಾಟ್ ಮತ್ತು ಲಾಗ್‌ಗಳ ಸಹಿತ ಶಾಶ್ವತವಾಗಿ ಅಳಿಸಬೇಕೇ? ಇದನ್ನು ರದ್ದುಗೊಳಿಸಲು ಆಗುವುದಿಲ್ಲ.';
   }
 
   @override
-  String get dashboardDeleted => 'Session permanently deleted.';
+  String get dashboardDeleted => 'ಸೆಷನ್ ಶಾಶ್ವತವಾಗಿ ಅಳಿಸಲಾಗಿದೆ.';
 
   @override
   String get dashboardDeleteFailed =>
-      'The session could not be deleted. Please try again.';
+      'ಸೆಷನ್ ಅಳಿಸಲು ಆಗಲಿಲ್ಲ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
-  String get dashboardStateNoWorkspace => 'No workspace chosen.';
+  String get dashboardStateNoWorkspace => 'ಯಾವುದೇ ವರ್ಕ್‌ಸ್ಪೇಸ್ ಆರಿಸಿಲ್ಲ.';
 
   @override
   String dashboardStateWorkspace(String name) {
-    return 'Workspace: $name.';
+    return 'ವರ್ಕ್‌ಸ್ಪೇಸ್: $name.';
   }
 
   @override
@@ -8185,34 +8238,34 @@ class AppLocalizationsKn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count active sessions',
-      one: '1 active session',
+      other: '$count ಸಕ್ರಿಯ ಸೆಷನ್‌ಗಳು',
+      one: '1 ಸಕ್ರಿಯ ಸೆಷನ್',
     );
     return '$_temp0';
   }
 
   @override
   String dashboardStateTotals(String active, String total) {
-    return '$active, $total in total.';
+    return '$active, ಒಟ್ಟು $total.';
   }
 
   @override
   String dashboardStateSearch(String query) {
-    return 'Search: $query.';
+    return 'ಹುಡುಕಾಟ: $query.';
   }
 
   @override
   String get adminSaveFailed =>
-      'The change could not be saved. Press 1 to refresh, then try again.';
+      'ಬದಲಾವಣೆಯನ್ನು ಉಳಿಸಲು ಆಗಲಿಲ್ಲ. ರಿಫ್ರೆಶ್ ಮಾಡಲು 1 ಒತ್ತಿ, ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
   String adminChoiceLabel(String what, String name, String position) {
-    return '$what: $name, $position. Use left or right to change';
+    return '$what: $name, $position. ಬದಲಾಯಿಸಲು ಎಡ ಅಥವಾ ಬಲ ಬಳಸಿ';
   }
 
   @override
   String adminChoiceLabelSingle(String what, String name) {
-    return '$what: $name. Use left or right to change';
+    return '$what: $name. ಬದಲಾಯಿಸಲು ಎಡ ಅಥವಾ ಬಲ ಬಳಸಿ';
   }
 
   @override
@@ -8227,15 +8280,15 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String adminClassAndSubject(String className, String subject) {
-    return '$className selected. $subject subject selected.';
+    return '$className ಆಯ್ಕೆ ಮಾಡಲಾಗಿದೆ. $subject ವಿಷಯ ಆಯ್ಕೆ ಮಾಡಲಾಗಿದೆ.';
   }
 
   @override
-  String get adminNoSubjects => 'The selected class has no active subjects.';
+  String get adminNoSubjects => 'ಆಯ್ಕೆ ಮಾಡಿದ ತರಗತಿಯಲ್ಲಿ ಸಕ್ರಿಯ ವಿಷಯಗಳಿಲ್ಲ.';
 
   @override
   String adminStateSection(String section) {
-    return 'Section: $section.';
+    return 'ವಿಭಾಗ: $section.';
   }
 
   @override
@@ -8243,67 +8296,66 @@ class AppLocalizationsKn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count items shown.',
-      one: '1 item shown.',
+      other: '$count ಐಟಂಗಳನ್ನು ತೋರಿಸಲಾಗಿದೆ.',
+      one: '1 ಐಟಂ ತೋರಿಸಲಾಗಿದೆ.',
     );
     return '$_temp0';
   }
 
   @override
   String adminStateFilter(String filter) {
-    return 'Filter: $filter.';
+    return 'ಫಿಲ್ಟರ್: $filter.';
   }
 
   @override
   String adminStateSearch(String query) {
-    return 'Search: $query.';
+    return 'ಹುಡುಕಾಟ: $query.';
   }
 
   @override
   String get adminNoSubjectName =>
-      'No subject name entered. Nothing was created.';
+      'ವಿಷಯದ ಹೆಸರು ನಮೂದಿಸಿಲ್ಲ. ಏನನ್ನೂ ರಚಿಸಲಾಗಿಲ್ಲ.';
 
   @override
-  String get adminNoClassName => 'No class name entered. Nothing was created.';
+  String get adminNoClassName => 'ತರಗತಿಯ ಹೆಸರು ನಮೂದಿಸಿಲ್ಲ. ಏನನ್ನೂ ರಚಿಸಲಾಗಿಲ್ಲ.';
 
   @override
-  String get adminNoActiveSubjects => 'This class has no active subjects.';
+  String get adminNoActiveSubjects => 'ಈ ತರಗತಿಯಲ್ಲಿ ಸಕ್ರಿಯ ವಿಷಯಗಳಿಲ್ಲ.';
 
   @override
-  String get adminListReadFailed =>
-      'The administration list could not be read.';
+  String get adminListReadFailed => 'ನಿರ್ವಹಣಾ ಪಟ್ಟಿಯನ್ನು ಓದಲು ಆಗಲಿಲ್ಲ.';
 
   @override
   String adminNotRefreshed(String reason) {
-    return '$reason Administration data was not refreshed. Press 1 to retry.';
+    return '$reason ನಿರ್ವಹಣಾ ಡೇಟಾ ರಿಫ್ರೆಶ್ ಆಗಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಲು 1 ಒತ್ತಿ.';
   }
 
   @override
   String adminExploreIntro(String sections) {
-    return 'Use D-pad up and down to explore $sections. Press OK to select.';
+    return '$sections ನೋಡಲು D-pad ಮೇಲೆ ಮತ್ತು ಕೆಳಗೆ ಬಳಸಿ. ಆಯ್ಕೆ ಮಾಡಲು ಓಕೆ ಒತ್ತಿ.';
   }
 
   @override
   String adminSectionTitle(String section) {
-    return 'Administration. $section section';
+    return 'ನಿರ್ವಹಣೆ. $section ವಿಭಾಗ';
   }
 
   @override
-  String get adminSectionNameAccounts => 'accounts';
+  String get adminSectionNameAccounts => 'ಖಾತೆಗಳು';
 
   @override
-  String get adminSectionNameClasses => 'classes';
+  String get adminSectionNameClasses => 'ತರಗತಿಗಳು';
 
   @override
-  String get adminSectionNameSubjects => 'subjects';
+  String get adminSectionNameSubjects => 'ವಿಷಯಗಳು';
 
   @override
   String get adminNoMatchingAccounts =>
-      'No matching accounts. Change the search or filters.';
+      'ಹೊಂದಿಕೆಯಾಗುವ ಖಾತೆಗಳಿಲ್ಲ. ಹುಡುಕಾಟ ಅಥವಾ ಫಿಲ್ಟರ್‌ಗಳನ್ನು ಬದಲಾಯಿಸಿ.';
 
   @override
   String adminNoMatchingAccountsFor(String search) {
-    return 'No matching accounts for $search. Change the search or filters.';
+    return '$search ಗೆ ಹೊಂದಿಕೆಯಾಗುವ ಖಾತೆಗಳಿಲ್ಲ. ಹುಡುಕಾಟ ಅಥವಾ ಫಿಲ್ಟರ್‌ಗಳನ್ನು ಬದಲಾಯಿಸಿ.';
   }
 
   @override
@@ -8311,8 +8363,8 @@ class AppLocalizationsKn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count classes',
-      one: '1 class',
+      other: '$count ತರಗತಿಗಳು',
+      one: '1 ತರಗತಿ',
     );
     return '$_temp0';
   }
@@ -8322,8 +8374,8 @@ class AppLocalizationsKn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count subjects',
-      one: '1 subject',
+      other: '$count ವಿಷಯಗಳು',
+      one: '1 ವಿಷಯ',
     );
     return '$_temp0';
   }
@@ -8333,8 +8385,8 @@ class AppLocalizationsKn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count accounts. $classes and $subjects.',
-      one: '1 account. $classes and $subjects.',
+      other: '$count ಖಾತೆಗಳು. $classes ಮತ್ತು $subjects.',
+      one: '1 ಖಾತೆ. $classes ಮತ್ತು $subjects.',
     );
     return '$_temp0';
   }
@@ -8349,8 +8401,9 @@ class AppLocalizationsKn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count accounts match $search. $classes and $subjects.',
-      one: '1 account match $search. $classes and $subjects.',
+      other:
+          '$search ಗೆ $count ಖಾತೆಗಳು ಹೊಂದಿಕೆಯಾಗಿವೆ. $classes ಮತ್ತು $subjects.',
+      one: '$search ಗೆ 1 ಖಾತೆ ಹೊಂದಿಕೆಯಾಗಿದೆ. $classes ಮತ್ತು $subjects.',
     );
     return '$_temp0';
   }
@@ -8360,8 +8413,8 @@ class AppLocalizationsKn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count classes.',
-      one: '1 class.',
+      other: '$count ತರಗತಿಗಳು.',
+      one: '1 ತರಗತಿ.',
     );
     return '$_temp0';
   }
@@ -8371,281 +8424,283 @@ class AppLocalizationsKn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count subjects.',
-      one: '1 subject.',
+      other: '$count ವಿಷಯಗಳು.',
+      one: '1 ವಿಷಯ.',
     );
     return '$_temp0';
   }
 
   @override
   String get adminNavigationAccounts =>
-      'account search, account type and enrollment filters, and account management. Use left or right on a filter to change it';
+      'ಖಾತೆ ಹುಡುಕಾಟ, ಖಾತೆ ಪ್ರಕಾರ ಮತ್ತು ದಾಖಲಾತಿ ಫಿಲ್ಟರ್‌ಗಳು, ಮತ್ತು ಖಾತೆ ನಿರ್ವಹಣೆ. ಫಿಲ್ಟರ್ ಬದಲಾಯಿಸಲು ಅದರ ಮೇಲೆ ಎಡ ಅಥವಾ ಬಲ ಬಳಸಿ';
 
   @override
   String get adminNavigationClasses =>
-      'create class and the list of active or archived classes. Press OK on a class for its subject assignments and archive or restore actions';
+      'ತರಗತಿ ರಚನೆ ಮತ್ತು ಸಕ್ರಿಯ ಅಥವಾ ಆರ್ಕೈವ್ ಮಾಡಿದ ತರಗತಿಗಳ ಪಟ್ಟಿ. ವಿಷಯ ನಿಯೋಜನೆಗಳು ಮತ್ತು ಆರ್ಕೈವ್ ಅಥವಾ ಮರುಸ್ಥಾಪನೆ ಕ್ರಿಯೆಗಳಿಗಾಗಿ ತರಗತಿಯ ಮೇಲೆ ಓಕೆ ಒತ್ತಿ';
 
   @override
   String get adminNavigationSubjects =>
-      'create subject and the list of active or archived subjects. Press OK on a subject to archive or restore it';
+      'ವಿಷಯ ರಚನೆ ಮತ್ತು ಸಕ್ರಿಯ ಅಥವಾ ಆರ್ಕೈವ್ ಮಾಡಿದ ವಿಷಯಗಳ ಪಟ್ಟಿ. ವಿಷಯವನ್ನು ಆರ್ಕೈವ್ ಅಥವಾ ಮರುಸ್ಥಾಪಿಸಲು ಅದರ ಮೇಲೆ ಓಕೆ ಒತ್ತಿ';
 
   @override
-  String get adminSectionsTitle => 'Administration sections';
+  String get adminSectionsTitle => 'ನಿರ್ವಹಣಾ ವಿಭಾಗಗಳು';
 
   @override
-  String get adminSectionAccounts => 'Accounts and enrollment';
+  String get adminSectionAccounts => 'ಖಾತೆಗಳು ಮತ್ತು ದಾಖಲಾತಿ';
 
   @override
-  String get adminSectionClasses => 'Classes and their subjects';
+  String get adminSectionClasses => 'ತರಗತಿಗಳು ಮತ್ತು ಅವುಗಳ ವಿಷಯಗಳು';
 
   @override
-  String get adminSectionSubjects => 'Subjects';
+  String get adminSectionSubjects => 'ವಿಷಯಗಳು';
 
   @override
   String adminSectionChosen(String section) {
-    return '$section section.';
+    return '$section ವಿಭಾಗ.';
   }
 
   @override
   String adminSectionExplore(String what) {
-    return 'Use the D-pad to explore $what. Press 7 to change section.';
+    return '$what ನೋಡಲು D-pad ಬಳಸಿ. ವಿಭಾಗ ಬದಲಾಯಿಸಲು 7 ಒತ್ತಿ.';
   }
 
   @override
   String get adminExploreAccounts =>
-      'account filters, search and account management';
+      'ಖಾತೆ ಫಿಲ್ಟರ್‌ಗಳು, ಹುಡುಕಾಟ ಮತ್ತು ಖಾತೆ ನಿರ್ವಹಣೆ';
 
   @override
   String get adminExploreClasses =>
-      'class creation, subject assignments, and archive or restore actions';
+      'ತರಗತಿ ರಚನೆ, ವಿಷಯ ನಿಯೋಜನೆಗಳು, ಮತ್ತು ಆರ್ಕೈವ್ ಅಥವಾ ಮರುಸ್ಥಾಪನೆ ಕ್ರಿಯೆಗಳು';
 
   @override
   String get adminExploreSubjects =>
-      'subject creation and archive or restore actions';
+      'ವಿಷಯ ರಚನೆ ಮತ್ತು ಆರ್ಕೈವ್ ಅಥವಾ ಮರುಸ್ಥಾಪನೆ ಕ್ರಿಯೆಗಳು';
 
   @override
   String adminRoleFilterSelected(String label) {
-    return 'Account type filter: $label, selected.';
+    return 'ಖಾತೆ ಪ್ರಕಾರ ಫಿಲ್ಟರ್: $label, ಆಯ್ಕೆ ಮಾಡಲಾಗಿದೆ.';
   }
 
   @override
   String adminAssignmentFilterSelected(String label) {
-    return 'Assignment filter: $label, selected.';
+    return 'ನಿಯೋಜನೆ ಫಿಲ್ಟರ್: $label, ಆಯ್ಕೆ ಮಾಡಲಾಗಿದೆ.';
   }
 
   @override
-  String get adminRoleFilterStudents => 'Students only';
+  String get adminRoleFilterStudents => 'ವಿದ್ಯಾರ್ಥಿಗಳು ಮಾತ್ರ';
 
   @override
-  String get adminRoleFilterTeachers => 'Teachers only';
+  String get adminRoleFilterTeachers => 'ಶಿಕ್ಷಕರು ಮಾತ್ರ';
 
   @override
-  String get adminRoleFilterAll => 'All registered accounts';
+  String get adminRoleFilterAll => 'ನೋಂದಾಯಿತ ಎಲ್ಲಾ ಖಾತೆಗಳು';
 
   @override
-  String get adminAssignmentEnrolled => 'Enrolled';
+  String get adminAssignmentEnrolled => 'ದಾಖಲಾಗಿದ್ದಾರೆ';
 
   @override
-  String get adminAssignmentAssigned => 'Assigned';
+  String get adminAssignmentAssigned => 'ನಿಯೋಜಿಸಲಾಗಿದೆ';
 
   @override
-  String get adminAssignmentEnrolledOrAssigned => 'Enrolled or assigned';
+  String get adminAssignmentEnrolledOrAssigned =>
+      'ದಾಖಲಾಗಿದ್ದಾರೆ ಅಥವಾ ನಿಯೋಜಿಸಲಾಗಿದೆ';
 
   @override
-  String get adminAssignmentUnassigned => 'Unassigned';
+  String get adminAssignmentUnassigned => 'ನಿಯೋಜಿಸಲಾಗಿಲ್ಲ';
 
   @override
-  String get adminAssignmentAll => 'All assignment states';
+  String get adminAssignmentAll => 'ಎಲ್ಲಾ ನಿಯೋಜನೆ ಸ್ಥಿತಿಗಳು';
 
   @override
-  String get adminRoleStudent => 'student';
+  String get adminRoleStudent => 'ವಿದ್ಯಾರ್ಥಿ';
 
   @override
-  String get adminRoleTeacher => 'teacher';
+  String get adminRoleTeacher => 'ಶಿಕ್ಷಕರು';
 
   @override
-  String get adminNoClassAssigned => 'No class assigned';
+  String get adminNoClassAssigned => 'ಯಾವುದೇ ತರಗತಿ ನಿಯೋಜಿಸಲಾಗಿಲ್ಲ';
 
   @override
   String adminAssignmentCount(String count) {
-    return '$count assignments';
+    return '$count ನಿಯೋಜನೆಗಳು';
   }
 
   @override
   String adminAccountLabel(String name, String role, String access) {
-    return '$name, $role. $access. Press OK to manage';
+    return '$name, $role. $access. ನಿರ್ವಹಿಸಲು ಓಕೆ ಒತ್ತಿ';
   }
 
   @override
-  String get adminCancel => 'Cancel';
+  String get adminCancel => 'ರದ್ದುಮಾಡಿ';
 
   @override
-  String get adminSave => 'Save';
+  String get adminSave => 'ಉಳಿಸಿ';
 
   @override
-  String get adminCreateSubjectTitle => 'Create subject';
+  String get adminCreateSubjectTitle => 'ವಿಷಯ ರಚಿಸಿ';
 
   @override
-  String get adminSubjectNameField => 'Subject name';
+  String get adminSubjectNameField => 'ವಿಷಯದ ಹೆಸರು';
 
   @override
   String adminSubjectCreated(String name) {
-    return 'Subject $name created';
+    return '$name ವಿಷಯ ರಚಿಸಲಾಗಿದೆ';
   }
 
   @override
-  String get adminCreateClassTitle => 'Create class';
+  String get adminCreateClassTitle => 'ತರಗತಿ ರಚಿಸಿ';
 
   @override
-  String get adminClassNameField => 'Class name';
+  String get adminClassNameField => 'ತರಗತಿಯ ಹೆಸರು';
 
   @override
   String adminClassCreated(String name) {
-    return 'Class $name created';
+    return '$name ತರಗತಿ ರಚಿಸಲಾಗಿದೆ';
   }
 
   @override
-  String get adminArchiveClassTitle => 'Archive class?';
+  String get adminArchiveClassTitle => 'ತರಗತಿಯನ್ನು ಆರ್ಕೈವ್ ಮಾಡಬೇಕೇ?';
 
   @override
-  String get adminRestoreClassTitle => 'Restore class?';
+  String get adminRestoreClassTitle => 'ತರಗತಿಯನ್ನು ಮರುಸ್ಥಾಪಿಸಬೇಕೇ?';
 
   @override
   String adminArchiveItemMessage(String name) {
-    return 'New sessions, audio, and assignments cannot use $name while it is archived.';
+    return '$name ಆರ್ಕೈವ್ ಆಗಿರುವಾಗ ಹೊಸ ಸೆಷನ್‌ಗಳು, ಆಡಿಯೋ ಮತ್ತು ನಿಯೋಜನೆಗಳು ಅದನ್ನು ಬಳಸಲು ಸಾಧ್ಯವಿಲ್ಲ.';
   }
 
   @override
   String adminRestoreItemMessage(String name) {
-    return '$name will become available for assignments again.';
+    return '$name ಮತ್ತೆ ನಿಯೋಜನೆಗಳಿಗೆ ಲಭ್ಯವಾಗುತ್ತದೆ.';
   }
 
   @override
-  String get adminArchive => 'Archive';
+  String get adminArchive => 'ಆರ್ಕೈವ್ ಮಾಡಿ';
 
   @override
-  String get adminRestore => 'Restore';
+  String get adminRestore => 'ಮರುಸ್ಥಾಪಿಸಿ';
 
   @override
-  String get adminClassArchived => 'Class archived';
+  String get adminClassArchived => 'ತರಗತಿಯನ್ನು ಆರ್ಕೈವ್ ಮಾಡಲಾಗಿದೆ';
 
   @override
-  String get adminClassRestored => 'Class restored';
+  String get adminClassRestored => 'ತರಗತಿಯನ್ನು ಮರುಸ್ಥಾಪಿಸಲಾಗಿದೆ';
 
   @override
   String adminManageTitle(String name) {
-    return 'Manage $name';
+    return '$name ನಿರ್ವಹಿಸಿ';
   }
 
   @override
-  String get adminManageClassSubjects => 'Manage class subjects';
+  String get adminManageClassSubjects => 'ತರಗತಿಯ ವಿಷಯಗಳನ್ನು ನಿರ್ವಹಿಸಿ';
 
   @override
-  String get adminArchiveClassChoice => 'Archive class with confirmation';
+  String get adminArchiveClassChoice =>
+      'ದೃಢೀಕರಣದೊಂದಿಗೆ ತರಗತಿಯನ್ನು ಆರ್ಕೈವ್ ಮಾಡಿ';
 
   @override
-  String get adminRestoreClassChoice => 'Restore class with confirmation';
+  String get adminRestoreClassChoice => 'ದೃಢೀಕರಣದೊಂದಿಗೆ ತರಗತಿಯನ್ನು ಮರುಸ್ಥಾಪಿಸಿ';
 
   @override
   String adminSubjectsForClass(String name) {
-    return 'Subjects for $name';
+    return '$name ತರಗತಿಯ ವಿಷಯಗಳು';
   }
 
   @override
   String adminSubjectRemovedFrom(String name) {
-    return 'Subject removed from $name';
+    return '$name ಇಂದ ವಿಷಯವನ್ನು ತೆಗೆದುಹಾಕಲಾಗಿದೆ';
   }
 
   @override
   String adminSubjectAddedTo(String name) {
-    return 'Subject added to $name';
+    return '$name ಗೆ ವಿಷಯವನ್ನು ಸೇರಿಸಲಾಗಿದೆ';
   }
 
   @override
-  String get adminArchiveSubjectTitle => 'Archive subject?';
+  String get adminArchiveSubjectTitle => 'ವಿಷಯವನ್ನು ಆರ್ಕೈವ್ ಮಾಡಬೇಕೇ?';
 
   @override
-  String get adminRestoreSubjectTitle => 'Restore subject?';
+  String get adminRestoreSubjectTitle => 'ವಿಷಯವನ್ನು ಮರುಸ್ಥಾಪಿಸಬೇಕೇ?';
 
   @override
-  String get adminSubjectArchived => 'Subject archived';
+  String get adminSubjectArchived => 'ವಿಷಯವನ್ನು ಆರ್ಕೈವ್ ಮಾಡಲಾಗಿದೆ';
 
   @override
-  String get adminSubjectRestored => 'Subject restored';
+  String get adminSubjectRestored => 'ವಿಷಯವನ್ನು ಮರುಸ್ಥಾಪಿಸಲಾಗಿದೆ';
 
   @override
-  String get adminManageAssignments => 'Manage assignments';
+  String get adminManageAssignments => 'ನಿಯೋಜನೆಗಳನ್ನು ನಿರ್ವಹಿಸಿ';
 
   @override
-  String get adminPasswordRecovery => 'Password recovery';
+  String get adminPasswordRecovery => 'ಪಾಸ್‌ವರ್ಡ್ ಮರುಪಡೆಯುವಿಕೆ';
 
   @override
   String adminManageUserScreen(String name) {
-    return 'Manage $name. Choose assignments, password recovery, or Cancel.';
+    return '$name ನಿರ್ವಹಿಸಿ. ನಿಯೋಜನೆಗಳು, ಪಾಸ್‌ವರ್ಡ್ ಮರುಪಡೆಯುವಿಕೆ ಅಥವಾ ರದ್ದುಮಾಡಿ ಆಯ್ಕೆಮಾಡಿ.';
   }
 
   @override
   String get adminRecoveryNeedsVersion =>
-      'Account recovery requires a current server version. Refresh the account.';
+      'ಖಾತೆ ಮರುಪಡೆಯಲು ಸರ್ವರ್‌ನ ಈಗಿನ ಆವೃತ್ತಿ ಬೇಕು. ಖಾತೆಯನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಿ.';
 
   @override
   String get adminNoActiveClasses =>
-      'No active classes. Create or restore a class in the classes section first.';
+      'ಸಕ್ರಿಯ ತರಗತಿಗಳಿಲ್ಲ. ಮೊದಲು ತರಗತಿಗಳ ವಿಭಾಗದಲ್ಲಿ ಒಂದು ತರಗತಿಯನ್ನು ರಚಿಸಿ ಅಥವಾ ಮರುಸ್ಥಾಪಿಸಿ.';
 
   @override
-  String get adminTheCurrentClass => 'the current class';
+  String get adminTheCurrentClass => 'ಈಗಿನ ತರಗತಿ';
 
   @override
   String adminAssignClassTo(String name) {
-    return 'Assign class to $name';
+    return '$name ಅವರಿಗೆ ತರಗತಿ ನಿಯೋಜಿಸಿ';
   }
 
   @override
-  String get adminAssign => 'Assign';
+  String get adminAssign => 'ನಿಯೋಜಿಸಿ';
 
   @override
-  String get adminRemoveClass => 'Remove class';
+  String get adminRemoveClass => 'ತರಗತಿ ತೆಗೆದುಹಾಕಿ';
 
   @override
-  String get adminClassField => 'Class';
+  String get adminClassField => 'ತರಗತಿ';
 
   @override
   String adminRemoveStudentLabel(String name, String className) {
-    return 'Remove $name from $className, asks to confirm';
+    return '$className ಇಂದ $name ಅವರನ್ನು ತೆಗೆದುಹಾಕಿ, ದೃಢೀಕರಣ ಕೇಳುತ್ತದೆ';
   }
 
   @override
   String adminAssignStudentLabel(String name) {
-    return 'Assign $name to the selected class';
+    return 'ಆಯ್ಕೆಮಾಡಿದ ತರಗತಿಗೆ $name ಅವರನ್ನು ನಿಯೋಜಿಸಿ';
   }
 
   @override
-  String get adminRemoveFromClassTitle => 'Remove from class?';
+  String get adminRemoveFromClassTitle => 'ತರಗತಿಯಿಂದ ತೆಗೆದುಹಾಕಬೇಕೇ?';
 
   @override
   String adminRemoveFromClassMessage(String name, String className) {
-    return 'Remove $name from $className? They will no longer see that class until assigned again.';
+    return '$className ಇಂದ $name ಅವರನ್ನು ತೆಗೆದುಹಾಕಬೇಕೇ? ಮತ್ತೆ ನಿಯೋಜಿಸುವವರೆಗೆ ಅವರಿಗೆ ಆ ತರಗತಿ ಕಾಣುವುದಿಲ್ಲ.';
   }
 
   @override
-  String get adminKeepInClass => 'Keep in class';
+  String get adminKeepInClass => 'ತರಗತಿಯಲ್ಲೇ ಇರಿಸಿ';
 
   @override
-  String get adminRemoveFromClass => 'Remove from class';
+  String get adminRemoveFromClass => 'ತರಗತಿಯಿಂದ ತೆಗೆದುಹಾಕಿ';
 
   @override
   String adminStudentRemovedFromClass(String name) {
-    return '$name removed from class';
+    return '$name ಅವರನ್ನು ತರಗತಿಯಿಂದ ತೆಗೆದುಹಾಕಲಾಗಿದೆ';
   }
 
   @override
   String adminStudentAssignedTo(String name, String className) {
-    return '$name assigned to $className';
+    return '$name ಅವರನ್ನು $className ಗೆ ನಿಯೋಜಿಸಲಾಗಿದೆ';
   }
 
   @override
   String adminAssignTeacherScreen(String name) {
-    return 'Assign $name to a class and subject';
+    return '$name ಅವರನ್ನು ಒಂದು ತರಗತಿ ಮತ್ತು ವಿಷಯಕ್ಕೆ ನಿಯೋಜಿಸಿ';
   }
 
   @override
@@ -8654,20 +8709,20 @@ class AppLocalizationsKn extends AppLocalizations {
     String className,
     String subject,
   ) {
-    return 'Remove $name from $className, $subject, asks to confirm';
+    return '$className, $subject ಇಂದ $name ಅವರನ್ನು ತೆಗೆದುಹಾಕಿ, ದೃಢೀಕರಣ ಕೇಳುತ್ತದೆ';
   }
 
   @override
-  String get adminSubjectField => 'Subject';
+  String get adminSubjectField => 'ವಿಷಯ';
 
   @override
-  String get adminSaveAssignment => 'Save assignment';
+  String get adminSaveAssignment => 'ನಿಯೋಜನೆ ಉಳಿಸಿ';
 
   @override
-  String get adminTeacherAssignmentSaved => 'Teacher assignment saved';
+  String get adminTeacherAssignmentSaved => 'ಶಿಕ್ಷಕರ ನಿಯೋಜನೆ ಉಳಿಸಲಾಗಿದೆ';
 
   @override
-  String get adminRemoveAssignmentTitle => 'Remove assignment?';
+  String get adminRemoveAssignmentTitle => 'ನಿಯೋಜನೆ ತೆಗೆದುಹಾಕಬೇಕೇ?';
 
   @override
   String adminRemoveAssignmentMessage(
@@ -8675,81 +8730,81 @@ class AppLocalizationsKn extends AppLocalizations {
     String className,
     String subject,
   ) {
-    return 'Remove $name from $className, $subject?';
+    return '$className, $subject ಇಂದ $name ಅವರನ್ನು ತೆಗೆದುಹಾಕಬೇಕೇ?';
   }
 
   @override
-  String get adminKeep => 'Keep';
+  String get adminKeep => 'ಇರಿಸಿ';
 
   @override
-  String get adminRemove => 'Remove';
+  String get adminRemove => 'ತೆಗೆದುಹಾಕಿ';
 
   @override
-  String get adminTeacherAssignmentRemoved => 'Teacher assignment removed';
+  String get adminTeacherAssignmentRemoved => 'ಶಿಕ್ಷಕರ ನಿಯೋಜನೆ ತೆಗೆದುಹಾಕಲಾಗಿದೆ';
 
   @override
-  String get adminRefreshData => 'Refresh admin data';
+  String get adminRefreshData => 'ನಿರ್ವಾಹಕರ ಡೇಟಾ ರಿಫ್ರೆಶ್ ಮಾಡಿ';
 
   @override
-  String get adminLogout => 'Log out, asks to confirm';
+  String get adminLogout => 'ಲಾಗ್ ಔಟ್, ದೃಢೀಕರಣ ಕೇಳುತ್ತದೆ';
 
   @override
   String adminSectionButton(String section) {
-    return '$section section. Change administration section';
+    return '$section ವಿಭಾಗ. ನಿರ್ವಹಣಾ ವಿಭಾಗ ಬದಲಿಸಿ';
   }
 
   @override
   String get adminSearchAccounts =>
-      'Search accounts by name or phone number. Press OK to type';
+      'ಹೆಸರು ಅಥವಾ ಫೋನ್ ಸಂಖ್ಯೆಯಿಂದ ಖಾತೆಗಳನ್ನು ಹುಡುಕಿ. ಟೈಪ್ ಮಾಡಲು ಓಕೆ ಒತ್ತಿ';
 
   @override
   String adminRoleFilterLabel(String label) {
-    return 'Account type filter: $label, selected. Use left or right to change';
+    return 'ಖಾತೆ ಪ್ರಕಾರದ ಫಿಲ್ಟರ್: $label, ಆಯ್ಕೆಯಾಗಿದೆ. ಬದಲಿಸಲು ಎಡ ಅಥವಾ ಬಲ ಬಳಸಿ';
   }
 
   @override
   String adminAssignmentFilterLabel(String label) {
-    return 'Assignment filter: $label, selected. Use left or right to change';
+    return 'ನಿಯೋಜನೆ ಫಿಲ್ಟರ್: $label, ಆಯ್ಕೆಯಾಗಿದೆ. ಬದಲಿಸಲು ಎಡ ಅಥವಾ ಬಲ ಬಳಸಿ';
   }
 
   @override
   String adminClassActiveLabel(String name) {
-    return '$name, active. Press OK for class subjects and archive or restore actions';
+    return '$name, ಸಕ್ರಿಯ. ತರಗತಿಯ ವಿಷಯಗಳು ಮತ್ತು ಆರ್ಕೈವ್ ಅಥವಾ ಮರುಸ್ಥಾಪನೆ ಕ್ರಿಯೆಗಳಿಗೆ ಓಕೆ ಒತ್ತಿ';
   }
 
   @override
   String adminClassArchivedLabel(String name) {
-    return '$name, archived. Press OK for class subjects and archive or restore actions';
+    return '$name, ಆರ್ಕೈವ್ ಮಾಡಲಾಗಿದೆ. ತರಗತಿಯ ವಿಷಯಗಳು ಮತ್ತು ಆರ್ಕೈವ್ ಅಥವಾ ಮರುಸ್ಥಾಪನೆ ಕ್ರಿಯೆಗಳಿಗೆ ಓಕೆ ಒತ್ತಿ';
   }
 
   @override
   String adminSubjectActiveLabel(String name) {
-    return '$name, active. Press OK to archive';
+    return '$name, ಸಕ್ರಿಯ. ಆರ್ಕೈವ್ ಮಾಡಲು ಓಕೆ ಒತ್ತಿ';
   }
 
   @override
   String adminSubjectArchivedLabel(String name) {
-    return '$name, archived. Press OK to restore';
+    return '$name, ಆರ್ಕೈವ್ ಮಾಡಲಾಗಿದೆ. ಮರುಸ್ಥಾಪಿಸಲು ಓಕೆ ಒತ್ತಿ';
   }
 
   @override
   String adminSubjectInClass(String name) {
-    return '$name. Available in this class. Select to remove';
+    return '$name. ಈ ತರಗತಿಯಲ್ಲಿ ಲಭ್ಯವಿದೆ. ತೆಗೆದುಹಾಕಲು ಆಯ್ಕೆಮಾಡಿ';
   }
 
   @override
   String adminSubjectNotInClass(String name) {
-    return '$name. Not available in this class. Select to add';
+    return '$name. ಈ ತರಗತಿಯಲ್ಲಿ ಲಭ್ಯವಿಲ್ಲ. ಸೇರಿಸಲು ಆಯ್ಕೆಮಾಡಿ';
   }
 
   @override
-  String get teacherHomeLater => 'Later';
+  String get teacherHomeLater => 'ನಂತರ';
 
   @override
-  String get teacherHomeStartNow => 'Start now';
+  String get teacherHomeStartNow => 'ಈಗ ಪ್ರಾರಂಭಿಸಿ';
 
   @override
-  String get teacherHomeChooseWorkspaceTitle => 'Choose class and subject';
+  String get teacherHomeChooseWorkspaceTitle => 'ತರಗತಿ ಮತ್ತು ವಿಷಯ ಆರಿಸಿ';
 
   @override
   String teacherHomeWorkspaceItem(String className, String subjectName) {
@@ -8762,149 +8817,150 @@ class AppLocalizationsKn extends AppLocalizations {
     String subjectName,
     String status,
   ) {
-    return '$className, $subjectName selected. $status. Press 7 to choose another workspace.';
+    return '$className, $subjectName ಆಯ್ಕೆ ಮಾಡಲಾಗಿದೆ. $status. ಬೇರೆ ವರ್ಕ್‌ಸ್ಪೇಸ್ ಆರಿಸಲು 7 ಒತ್ತಿ.';
   }
 
   @override
-  String get teacherHomeUntitledSession => 'Untitled session';
+  String get teacherHomeUntitledSession => 'ಹೆಸರಿಲ್ಲದ ಸೆಷನ್';
 
   @override
-  String get teacherHomeUntitledSessionTitle => 'Untitled Session';
+  String get teacherHomeUntitledSessionTitle => 'ಹೆಸರಿಲ್ಲದ ಸೆಷನ್';
 
   @override
-  String get teacherHomeSessionFallback => 'session';
+  String get teacherHomeSessionFallback => 'ಸೆಷನ್';
 
   @override
   String get teacherHomeSearchLabel =>
-      'Search sessions. Press OK, then type a name or the session number';
+      'ಸೆಷನ್‌ಗಳನ್ನು ಹುಡುಕಿ. ಓಕೆ ಒತ್ತಿ, ನಂತರ ಹೆಸರು ಅಥವಾ ಸೆಷನ್ ಸಂಖ್ಯೆ ಟೈಪ್ ಮಾಡಿ';
 
   @override
-  String get teacherHomeKeepSessionOpen => 'Keep session open';
+  String get teacherHomeKeepSessionOpen => 'ಸೆಷನ್ ತೆರೆದೇ ಇಡಿ';
 
   @override
-  String get teacherHomeEndForEveryone => 'End for everyone';
+  String get teacherHomeEndForEveryone => 'ಎಲ್ಲರಿಗೂ ಮುಗಿಸಿ';
 
   @override
-  String get teacherHomeKeepEnded => 'Keep ended';
+  String get teacherHomeKeepEnded => 'ಮುಗಿದಂತೆಯೇ ಇಡಿ';
 
   @override
-  String get teacherHomeReactivate => 'Reactivate';
+  String get teacherHomeReactivate => 'ಮತ್ತೆ ಸಕ್ರಿಯಗೊಳಿಸಿ';
 
   @override
-  String get teacherHomeOpenLater => 'Open later';
+  String get teacherHomeOpenLater => 'ನಂತರ ತೆರೆಯಿರಿ';
 
   @override
-  String get teacherHomeOpenNow => 'Open now';
+  String get teacherHomeOpenNow => 'ಈಗ ತೆರೆಯಿರಿ';
 
   @override
-  String get teacherHomeKeepSession => 'Keep session';
+  String get teacherHomeKeepSession => 'ಸೆಷನ್ ಇಟ್ಟುಕೊಳ್ಳಿ';
 
   @override
-  String get teacherHomeDeletePermanently => 'Delete permanently';
+  String get teacherHomeDeletePermanently => 'ಶಾಶ್ವತವಾಗಿ ಅಳಿಸಿ';
 
   @override
-  String get teacherHomeNewSessionTitle => 'New Session';
+  String get teacherHomeNewSessionTitle => 'ಹೊಸ ಸೆಷನ್';
 
   @override
-  String get teacherHomeCreateScreen => 'Create new session';
+  String get teacherHomeCreateScreen => 'ಹೊಸ ಸೆಷನ್ ರಚಿಸಿ';
 
   @override
-  String get teacherHomeCreateSessionKey => 'Create session';
+  String get teacherHomeCreateSessionKey => 'ಸೆಷನ್ ರಚಿಸಿ';
 
   @override
-  String get teacherHomeTitleField => 'Session title field';
+  String get teacherHomeTitleField => 'ಸೆಷನ್ ಶೀರ್ಷಿಕೆ ಫೀಲ್ಡ್';
 
   @override
-  String get teacherHomeCancelCreate => 'Cancel session creation';
+  String get teacherHomeCancelCreate => 'ಸೆಷನ್ ರಚನೆ ರದ್ದುಮಾಡಿ';
 
   @override
   String get studentHomeSearchHelp =>
-      'Session search. Type a session number with the keypad, or move down to search by name. Press OK to edit. Use down to browse results.';
+      'ಸೆಷನ್ ಹುಡುಕಾಟ. ಕೀಪ್ಯಾಡ್‌ನಿಂದ ಸೆಷನ್ ಸಂಖ್ಯೆ ಟೈಪ್ ಮಾಡಿ, ಅಥವಾ ಹೆಸರಿನಿಂದ ಹುಡುಕಲು ಕೆಳಗೆ ಹೋಗಿ. ಎಡಿಟ್ ಮಾಡಲು ಓಕೆ ಒತ್ತಿ. ಫಲಿತಾಂಶಗಳನ್ನು ನೋಡಲು ಕೆಳಗೆ ಬಳಸಿ.';
 
   @override
   String studentHomeSubjectFallback(String id) {
-    return 'Subject $id';
+    return 'ವಿಷಯ $id';
   }
 
   @override
-  String get studentHomeUntitledSession => 'Untitled session';
+  String get studentHomeUntitledSession => 'ಹೆಸರಿಲ್ಲದ ಸೆಷನ್';
 
   @override
   String studentHomeSessionJoinLabel(String session) {
-    return '$session. Press OK to join';
+    return '$session. ಸೇರಲು ಓಕೆ ಒತ್ತಿ';
   }
 
   @override
   String get inviteNoStudentsEnrolled =>
-      'No students are enrolled in this class. Press 1 to refresh.';
+      'ಈ ತರಗತಿಯಲ್ಲಿ ಯಾವುದೇ ವಿದ್ಯಾರ್ಥಿಗಳು ದಾಖಲಾಗಿಲ್ಲ. ರಿಫ್ರೆಶ್ ಮಾಡಲು 1 ಒತ್ತಿ.';
 
   @override
   String inviteLoadedSummary(int count, String invited) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count students, $invited invited.',
-      one: '1 student, $invited invited.',
+      other: '$count ವಿದ್ಯಾರ್ಥಿಗಳು, $invited ಆಹ್ವಾನಿತರು.',
+      one: '1 ವಿದ್ಯಾರ್ಥಿ, $invited ಆಹ್ವಾನಿತರು.',
     );
     return '$_temp0';
   }
 
   @override
-  String get inviteUseSearch => 'Use the search field to find a name.';
+  String get inviteUseSearch => 'ಹೆಸರನ್ನು ಹುಡುಕಲು ಹುಡುಕಾಟದ ಜಾಗವನ್ನು ಬಳಸಿ.';
 
   @override
   String get inviteLoadFailed =>
-      'Could not load students. Check your connection and press 1 to try again.';
+      'ವಿದ್ಯಾರ್ಥಿಗಳನ್ನು ಲೋಡ್ ಮಾಡಲು ಆಗಲಿಲ್ಲ. ನಿಮ್ಮ ಸಂಪರ್ಕ ಪರಿಶೀಲಿಸಿ ಮತ್ತು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಲು 1 ಒತ್ತಿ.';
 
   @override
   String inviteAlreadyInvited(String name) {
-    return '$name is already invited.';
+    return '$name ಅವರನ್ನು ಈಗಾಗಲೇ ಆಹ್ವಾನಿಸಲಾಗಿದೆ.';
   }
 
   @override
   String inviteInvitedOne(String name) {
-    return 'Invited $name.';
+    return '$name ಅವರನ್ನು ಆಹ್ವಾನಿಸಲಾಗಿದೆ.';
   }
 
   @override
   String inviteOneFailed(String name) {
-    return 'Could not invite $name. Check your connection and press OK to try again.';
+    return '$name ಅವರನ್ನು ಆಹ್ವಾನಿಸಲು ಆಗಲಿಲ್ಲ. ನಿಮ್ಮ ಸಂಪರ್ಕ ಪರಿಶೀಲಿಸಿ ಮತ್ತು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಲು ಓಕೆ ಒತ್ತಿ.';
   }
 
   @override
-  String get inviteNoStudentsToInvite => 'There are no students to invite.';
+  String get inviteNoStudentsToInvite => 'ಆಹ್ವಾನಿಸಲು ಯಾವುದೇ ವಿದ್ಯಾರ್ಥಿಗಳಿಲ್ಲ.';
 
   @override
-  String get inviteAllAlreadyInvited => 'All students are already invited.';
+  String get inviteAllAlreadyInvited =>
+      'ಎಲ್ಲಾ ವಿದ್ಯಾರ್ಥಿಗಳನ್ನು ಈಗಾಗಲೇ ಆಹ್ವಾನಿಸಲಾಗಿದೆ.';
 
   @override
   String inviteInvitingAll(String count) {
-    return 'Inviting $count students. Please wait.';
+    return '$count ವಿದ್ಯಾರ್ಥಿಗಳನ್ನು ಆಹ್ವಾನಿಸಲಾಗುತ್ತಿದೆ. ದಯವಿಟ್ಟು ಕಾಯಿರಿ.';
   }
 
   @override
   String inviteProgress(String done, String total) {
-    return 'Inviting students: $done of $total done.';
+    return 'ವಿದ್ಯಾರ್ಥಿಗಳನ್ನು ಆಹ್ವಾನಿಸಲಾಗುತ್ತಿದೆ: $total ರಲ್ಲಿ $done ಮುಗಿದಿದೆ.';
   }
 
   @override
   String inviteAllDone(String count) {
-    return 'Invited all $count students.';
+    return 'ಎಲ್ಲಾ $count ವಿದ್ಯಾರ್ಥಿಗಳನ್ನು ಆಹ್ವಾನಿಸಲಾಗಿದೆ.';
   }
 
   @override
   String invitePartialFailed(String invited, String total, String names) {
-    return 'Invited $invited of $total students. Could not invite $names. Press 2 to try again.';
+    return '$total ರಲ್ಲಿ $invited ವಿದ್ಯಾರ್ಥಿಗಳನ್ನು ಆಹ್ವಾನಿಸಲಾಗಿದೆ. $names ಅವರನ್ನು ಆಹ್ವಾನಿಸಲು ಆಗಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಲು 2 ಒತ್ತಿ.';
   }
 
   @override
   String inviteShowingAll(String count) {
-    return 'Showing all $count students.';
+    return 'ಎಲ್ಲಾ $count ವಿದ್ಯಾರ್ಥಿಗಳನ್ನು ತೋರಿಸಲಾಗುತ್ತಿದೆ.';
   }
 
   @override
   String inviteNoMatch(String query) {
-    return 'No students match $query. Clear the search to list everyone.';
+    return '$query ಗೆ ಹೊಂದುವ ವಿದ್ಯಾರ್ಥಿಗಳಿಲ್ಲ. ಎಲ್ಲರನ್ನೂ ಪಟ್ಟಿ ಮಾಡಲು ಹುಡುಕಾಟವನ್ನು ಅಳಿಸಿ.';
   }
 
   @override
@@ -8912,160 +8968,160 @@ class AppLocalizationsKn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count students match $query. Use down to browse.',
-      one: '1 student matches $query. Use down to browse.',
+      other: '$count ವಿದ್ಯಾರ್ಥಿಗಳು $query ಗೆ ಹೊಂದುತ್ತಾರೆ. ನೋಡಲು ಕೆಳಗೆ ಬಳಸಿ.',
+      one: '1 ವಿದ್ಯಾರ್ಥಿ $query ಗೆ ಹೊಂದುತ್ತಾರೆ. ನೋಡಲು ಕೆಳಗೆ ಬಳಸಿ.',
     );
     return '$_temp0';
   }
 
   @override
   String inviteStudentInvited(String name) {
-    return '$name, invited';
+    return '$name, ಆಹ್ವಾನಿಸಲಾಗಿದೆ';
   }
 
   @override
   String inviteStudentNotInvited(String name) {
-    return '$name, not invited. Press OK to invite';
+    return '$name, ಆಹ್ವಾನಿಸಿಲ್ಲ. ಆಹ್ವಾನಿಸಲು ಓಕೆ ಒತ್ತಿ';
   }
 
   @override
-  String get inviteBackToSession => 'Back to session';
+  String get inviteBackToSession => 'ಸೆಷನ್‌ಗೆ ಹಿಂತಿರುಗಿ';
 
   @override
-  String get inviteRefreshList => 'Refresh student list';
+  String get inviteRefreshList => 'ವಿದ್ಯಾರ್ಥಿಗಳ ಪಟ್ಟಿ ರಿಫ್ರೆಶ್ ಮಾಡಿ';
 
   @override
-  String get inviteAllStudents => 'Invite all students';
+  String get inviteAllStudents => 'ಎಲ್ಲಾ ವಿದ್ಯಾರ್ಥಿಗಳನ್ನು ಆಹ್ವಾನಿಸಿ';
 
   @override
   String get inviteSearchLabel =>
-      'Search students by name or phone number. Press OK to type';
+      'ಹೆಸರು ಅಥವಾ ಫೋನ್ ಸಂಖ್ಯೆಯಿಂದ ವಿದ್ಯಾರ್ಥಿಗಳನ್ನು ಹುಡುಕಿ. ಟೈಪ್ ಮಾಡಲು ಓಕೆ ಒತ್ತಿ';
 
   @override
   String inviteScreenName(String title) {
-    return 'Invite students to $title';
+    return '$title ಗೆ ವಿದ್ಯಾರ್ಥಿಗಳನ್ನು ಆಹ್ವಾನಿಸಿ';
   }
 
   @override
-  String get inviteKeyBack => 'Back to Session';
+  String get inviteKeyBack => 'ಸೆಷನ್‌ಗೆ ಹಿಂತಿರುಗಿ';
 
   @override
-  String get inviteKeyRefresh => 'Refresh Students';
+  String get inviteKeyRefresh => 'ವಿದ್ಯಾರ್ಥಿಗಳನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಿ';
 
   @override
-  String get inviteKeyInviteAll => 'Invite All';
+  String get inviteKeyInviteAll => 'ಎಲ್ಲರನ್ನೂ ಆಹ್ವಾನಿಸಿ';
 
   @override
-  String get notificationTitleSessionInvitation => 'Live class';
+  String get notificationTitleSessionInvitation => 'ಲೈವ್ ತರಗತಿ';
 
   @override
-  String get notificationTitleJourneyPublished => 'New learning journey';
+  String get notificationTitleJourneyPublished => 'ಹೊಸ ಕಲಿಕೆಯ ಪಯಣ';
 
   @override
-  String get notificationTitleQuizPublished => 'New quiz';
+  String get notificationTitleQuizPublished => 'ಹೊಸ ಕ್ವಿಜ್';
 
   @override
-  String get notificationTitleQuizReminder => 'Quiz reminder';
+  String get notificationTitleQuizReminder => 'ಕ್ವಿಜ್ ಜ್ಞಾಪನೆ';
 
   @override
-  String get notificationTitleDefault => 'SEEDS update';
+  String get notificationTitleDefault => 'SEEDS ಅಪ್‌ಡೇಟ್';
 
   @override
   String get notificationArrivedSessionInvitation =>
-      'Your teacher started a class. Press 1 to join, or 0 for not now.';
+      'ನಿಮ್ಮ ಶಿಕ್ಷಕರು ತರಗತಿ ಪ್ರಾರಂಭಿಸಿದ್ದಾರೆ. ಸೇರಲು 1 ಒತ್ತಿ, ಅಥವಾ ಈಗ ಬೇಡವೆಂದರೆ 0 ಒತ್ತಿ.';
 
   @override
   String get notificationArrivedJourneyPublished =>
-      'Your teacher shared a new learning journey. Press 1 to open it, or 0 for not now.';
+      'ನಿಮ್ಮ ಶಿಕ್ಷಕರು ಹೊಸ ಕಲಿಕೆಯ ಪಯಣ ಹಂಚಿಕೊಂಡಿದ್ದಾರೆ. ತೆರೆಯಲು 1 ಒತ್ತಿ, ಅಥವಾ ಈಗ ಬೇಡವೆಂದರೆ 0 ಒತ್ತಿ.';
 
   @override
   String get notificationArrivedQuizPublished =>
-      'Your teacher published a new quiz. Press 1 to open your quizzes, or 0 for not now.';
+      'ನಿಮ್ಮ ಶಿಕ್ಷಕರು ಹೊಸ ಕ್ವಿಜ್ ಪ್ರಕಟಿಸಿದ್ದಾರೆ. ನಿಮ್ಮ ಕ್ವಿಜ್‌ಗಳನ್ನು ತೆರೆಯಲು 1 ಒತ್ತಿ, ಅಥವಾ ಈಗ ಬೇಡವೆಂದರೆ 0 ಒತ್ತಿ.';
 
   @override
   String get notificationArrivedQuizReminder =>
-      'Reminder: you have a quiz to take. Press 1 to open your quizzes, or 0 for not now.';
+      'ಜ್ಞಾಪನೆ: ನೀವು ತೆಗೆದುಕೊಳ್ಳಬೇಕಾದ ಕ್ವಿಜ್ ಇದೆ. ನಿಮ್ಮ ಕ್ವಿಜ್‌ಗಳನ್ನು ತೆರೆಯಲು 1 ಒತ್ತಿ, ಅಥವಾ ಈಗ ಬೇಡವೆಂದರೆ 0 ಒತ್ತಿ.';
 
   @override
   String get notificationArrivedDefault =>
-      'You have a new update. Press 0 to go back.';
+      'ನಿಮಗೆ ಹೊಸ ಅಪ್‌ಡೇಟ್ ಇದೆ. ಹಿಂದೆ ಹೋಗಲು 0 ಒತ್ತಿ.';
 
   @override
   String get notificationForegroundSessionInvitation =>
-      'Your teacher started a class. Join it from Live sessions on your dashboard.';
+      'ನಿಮ್ಮ ಶಿಕ್ಷಕರು ತರಗತಿ ಪ್ರಾರಂಭಿಸಿದ್ದಾರೆ. ನಿಮ್ಮ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್‌ನ ಲೈವ್ ಸೆಷನ್‌ಗಳಿಂದ ಸೇರಿ.';
 
   @override
   String get notificationForegroundJourneyPublished =>
-      'Your teacher shared a new learning journey. Find it under Learning journeys.';
+      'ನಿಮ್ಮ ಶಿಕ್ಷಕರು ಹೊಸ ಕಲಿಕೆಯ ಪಯಣ ಹಂಚಿಕೊಂಡಿದ್ದಾರೆ. ಅದನ್ನು ಕಲಿಕೆಯ ಪಯಣಗಳಲ್ಲಿ ಹುಡುಕಿ.';
 
   @override
   String get notificationForegroundQuizPublished =>
-      'Your teacher published a new quiz.';
+      'ನಿಮ್ಮ ಶಿಕ್ಷಕರು ಹೊಸ ಕ್ವಿಜ್ ಪ್ರಕಟಿಸಿದ್ದಾರೆ.';
 
   @override
   String get notificationForegroundQuizReminder =>
-      'Reminder: you have a quiz to take.';
+      'ಜ್ಞಾಪನೆ: ನೀವು ತೆಗೆದುಕೊಳ್ಳಬೇಕಾದ ಕ್ವಿಜ್ ಇದೆ.';
 
   @override
-  String get notificationForegroundDefault => 'You have a new update.';
+  String get notificationForegroundDefault => 'ನಿಮಗೆ ಹೊಸ ಅಪ್‌ಡೇಟ್ ಇದೆ.';
 
   @override
-  String get notificationOpenJoinClass => 'Join class';
+  String get notificationOpenJoinClass => 'ತರಗತಿಗೆ ಸೇರಿ';
 
   @override
-  String get notificationOpenJourney => 'Open journey';
+  String get notificationOpenJourney => 'ಪಯಣ ತೆರೆಯಿರಿ';
 
   @override
-  String get notificationOpenQuizzes => 'Open quizzes';
+  String get notificationOpenQuizzes => 'ಕ್ವಿಜ್‌ಗಳನ್ನು ತೆರೆಯಿರಿ';
 
   @override
-  String get notificationOpenBack => 'Back';
+  String get notificationOpenBack => 'ಹಿಂದೆ';
 
   @override
   String get notificationCannotOpen =>
-      'This could not be opened. Sign in again, then open it from your dashboard.';
+      'ಇದನ್ನು ತೆರೆಯಲು ಆಗಲಿಲ್ಲ. ಮತ್ತೆ ಸೈನ್ ಇನ್ ಮಾಡಿ, ನಂತರ ನಿಮ್ಮ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್‌ನಿಂದ ತೆರೆಯಿರಿ.';
 
   @override
-  String get authLoginSuccessful => 'Login successful';
+  String get authLoginSuccessful => 'ಲಾಗಿನ್ ಯಶಸ್ವಿಯಾಗಿದೆ';
 
   @override
   String authRoleAlreadySelected(String role) {
-    return '$role account already selected';
+    return '$role ಖಾತೆ ಈಗಾಗಲೇ ಆಯ್ಕೆಯಾಗಿದೆ';
   }
 
   @override
   String authRoleSelected(String role) {
-    return '$role account selected';
+    return '$role ಖಾತೆ ಆಯ್ಕೆಯಾಗಿದೆ';
   }
 
   @override
   String authRecoveryStep(String number, String step) {
-    return 'Step $number. $step';
+    return 'ಹಂತ $number. $step';
   }
 
   @override
-  String get authEnterPhone => 'Enter phone number';
+  String get authEnterPhone => 'ಫೋನ್ ಸಂಖ್ಯೆ ನಮೂದಿಸಿ';
 
   @override
-  String get authEnterPassword => 'Enter password';
+  String get authEnterPassword => 'ಪಾಸ್‌ವರ್ಡ್ ನಮೂದಿಸಿ';
 
   @override
-  String get authEnterName => 'Enter name';
+  String get authEnterName => 'ಹೆಸರು ನಮೂದಿಸಿ';
 
   @override
-  String get authRegistering => 'Registering, please wait.';
+  String get authRegistering => 'ನೋಂದಣಿ ಆಗುತ್ತಿದೆ, ದಯವಿಟ್ಟು ಕಾಯಿರಿ.';
 
   @override
-  String get authPasswordChanged => 'Password changed. Signed in.';
+  String get authPasswordChanged => 'ಪಾಸ್‌ವರ್ಡ್ ಬದಲಾಗಿದೆ. ಸೈನ್ ಇನ್ ಆಗಿದೆ.';
 
   @override
   String journeyWhereFinished(String title) {
-    return 'Journey finished. $title.';
+    return 'ಪಯಣ ಮುಗಿದಿದೆ. $title.';
   }
 
   @override
   String journeyWhere(String number, String total, String kind, String title) {
-    return 'Step $number of $total. $kind. $title.';
+    return '$total ರಲ್ಲಿ ಹಂತ $number. $kind. $title.';
   }
 
   @override
@@ -9075,39 +9131,39 @@ class AppLocalizationsKn extends AppLocalizations {
     String kind,
     String title,
   ) {
-    return 'Step $number of $total. $kind. $title. Listening again before the question.';
+    return '$total ರಲ್ಲಿ ಹಂತ $number. $kind. $title. ಪ್ರಶ್ನೆಗೆ ಮೊದಲು ಮತ್ತೆ ಕೇಳುತ್ತಿದ್ದೇವೆ.';
   }
 
   @override
-  String get journeyKindRecording => 'Recording';
+  String get journeyKindRecording => 'ರೆಕಾರ್ಡಿಂಗ್';
 
   @override
-  String get journeyKindNarration => 'Narration';
+  String get journeyKindNarration => 'ನಿರೂಪಣೆ';
 
   @override
-  String get journeyKindQuestion => 'Question';
+  String get journeyKindQuestion => 'ಪ್ರಶ್ನೆ';
 
   @override
-  String get journeyKindPoll => 'Poll';
+  String get journeyKindPoll => 'ಪೋಲ್';
 
   @override
   String journeyOption(String number, String text) {
-    return 'Option $number: $text.';
+    return 'ಆಯ್ಕೆ $number: $text.';
   }
 
   @override
   String journeyChooseKeys(String count) {
-    return 'Press 1 to $count to choose, then 5 to submit.';
+    return 'ಆಯ್ಕೆಮಾಡಲು 1 ರಿಂದ $count ಒತ್ತಿ, ನಂತರ ಸಲ್ಲಿಸಲು 5 ಒತ್ತಿ.';
   }
 
   @override
   String journeyPollQuestion(String question, String options, String keys) {
-    return 'Poll. There is no wrong answer. $question $options $keys';
+    return 'ಪೋಲ್. ಇಲ್ಲಿ ತಪ್ಪು ಉತ್ತರ ಇಲ್ಲ. $question $options $keys';
   }
 
   @override
   String journeyQuestion(String question, String options, String keys) {
-    return 'Question. $question $options $keys';
+    return 'ಪ್ರಶ್ನೆ. $question $options $keys';
   }
 
   @override
@@ -9117,7 +9173,7 @@ class AppLocalizationsKn extends AppLocalizations {
     String options,
     String keys,
   ) {
-    return 'Question. Try again. $triesLeft $question $options $keys';
+    return 'ಪ್ರಶ್ನೆ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ. $triesLeft $question $options $keys';
   }
 
   @override
@@ -9125,53 +9181,53 @@ class AppLocalizationsKn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count tries left.',
-      one: '1 try left.',
+      other: '$count ಪ್ರಯತ್ನಗಳು ಉಳಿದಿವೆ.',
+      one: '1 ಪ್ರಯತ್ನ ಉಳಿದಿದೆ.',
     );
     return '$_temp0';
   }
 
   @override
   String journeyChosen(String number, String option) {
-    return 'Option $number, $option, selected. Press 5 to submit, or choose another number.';
+    return 'ಆಯ್ಕೆ $number, $option, ಆಯ್ಕೆಯಾಗಿದೆ. ಸಲ್ಲಿಸಲು 5 ಒತ್ತಿ, ಅಥವಾ ಬೇರೆ ಸಂಖ್ಯೆ ಆಯ್ಕೆಮಾಡಿ.';
   }
 
   @override
   String journeyRecordingContent(String title) {
-    return 'Recording: $title. Press 5 to pause or play. Press 2 when you are ready to move on.';
+    return 'ರೆಕಾರ್ಡಿಂಗ್: $title. ನಿಲ್ಲಿಸಲು ಅಥವಾ ಪ್ಲೇ ಮಾಡಲು 5 ಒತ್ತಿ. ಮುಂದೆ ಹೋಗಲು ಸಿದ್ಧರಾದಾಗ 2 ಒತ್ತಿ.';
   }
 
   @override
-  String get journeyUntitled => 'Untitled';
+  String get journeyUntitled => 'ಶೀರ್ಷಿಕೆ ಇಲ್ಲ';
 
   @override
   String get journeyContentKeys =>
-      'Press 2 for the next step, 3 to repeat this step, 1 to hear where you are, 8 to go back to the previous recording or narration.';
+      'ಮುಂದಿನ ಹಂತಕ್ಕೆ 2, ಈ ಹಂತವನ್ನು ಪುನರಾವರ್ತಿಸಲು 3, ನೀವು ಎಲ್ಲಿದ್ದೀರಿ ಎಂದು ಕೇಳಲು 1, ಹಿಂದಿನ ರೆಕಾರ್ಡಿಂಗ್ ಅಥವಾ ನಿರೂಪಣೆಗೆ ಹಿಂತಿರುಗಲು 8 ಒತ್ತಿ.';
 
   @override
   String journeyCorrect(String answer) {
-    return 'Correct! $answer.';
+    return 'ಸರಿ! $answer.';
   }
 
   @override
-  String get journeyPollSaved => 'Thank you. Your answer is saved.';
+  String get journeyPollSaved => 'ಧನ್ಯವಾದಗಳು. ನಿಮ್ಮ ಉತ್ತರ ಉಳಿಸಲಾಗಿದೆ.';
 
   @override
   String get journeyReplayOutcome =>
-      'Not quite. Let us listen to that part again, then try once more.';
+      'ಸರಿಯಾಗಿಲ್ಲ. ಆ ಭಾಗವನ್ನು ಮತ್ತೆ ಕೇಳೋಣ, ನಂತರ ಇನ್ನೊಮ್ಮೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
   String get journeyTryAgainOutcome =>
-      'Not quite. Think again and choose another answer.';
+      'ಸರಿಯಾಗಿಲ್ಲ. ಮತ್ತೆ ಯೋಚಿಸಿ ಬೇರೆ ಉತ್ತರ ಆಯ್ಕೆಮಾಡಿ.';
 
   @override
   String journeyRevealed(String number, String answer, String explanation) {
-    return 'Not quite. The answer is option $number, $answer. $explanation';
+    return 'ಸರಿಯಾಗಿಲ್ಲ. ಉತ್ತರ ಆಯ್ಕೆ $number, $answer. $explanation';
   }
 
   @override
   String journeyWellDone(String title) {
-    return 'Well done! You finished $title.';
+    return 'ಚೆನ್ನಾಗಿದೆ! ನೀವು $title ಮುಗಿಸಿದ್ದೀರಿ.';
   }
 
   @override
@@ -9180,32 +9236,32 @@ class AppLocalizationsKn extends AppLocalizations {
       questions,
       locale: localeName,
       other:
-          'You answered $correct of $questions questions correctly on the first try.',
-      one: 'You answered $correct of 1 question correctly on the first try.',
+          'ಮೊದಲ ಪ್ರಯತ್ನದಲ್ಲಿ $questions ಪ್ರಶ್ನೆಗಳಲ್ಲಿ $correct ಸರಿಯಾಗಿ ಉತ್ತರಿಸಿದ್ದೀರಿ.',
+      one: 'ಮೊದಲ ಪ್ರಯತ್ನದಲ್ಲಿ 1 ಪ್ರಶ್ನೆಯಲ್ಲಿ $correct ಸರಿಯಾಗಿ ಉತ್ತರಿಸಿದ್ದೀರಿ.',
     );
     return '$_temp0';
   }
 
   @override
   String get journeyPlayAgainHelp =>
-      'Press 1 to play again, or 0 to go back to your journeys.';
+      'ಮತ್ತೆ ಪ್ಲೇ ಮಾಡಲು 1 ಒತ್ತಿ, ಅಥವಾ ನಿಮ್ಮ ಪಯಣಗಳಿಗೆ ಹಿಂತಿರುಗಲು 0 ಒತ್ತಿ.';
 
   @override
-  String get journeyStatusCompleted => 'Completed';
+  String get journeyStatusCompleted => 'ಮುಗಿದಿದೆ';
 
   @override
-  String get journeyStatusInProgress => 'In progress';
+  String get journeyStatusInProgress => 'ನಡೆಯುತ್ತಿದೆ';
 
   @override
-  String get journeyStatusNew => 'New';
+  String get journeyStatusNew => 'ಹೊಸದು';
 
   @override
   String journeyRowScore(String percent) {
-    return 'Score $percent percent.';
+    return 'ಅಂಕ $percent ಪ್ರತಿಶತ.';
   }
 
   @override
-  String get journeyRowDownloaded => 'Downloaded.';
+  String get journeyRowDownloaded => 'ಡೌನ್‌ಲೋಡ್ ಆಗಿದೆ.';
 
   @override
   String journeyStudentRow(
@@ -9215,7 +9271,7 @@ class AppLocalizationsKn extends AppLocalizations {
     String questions,
     String status,
   ) {
-    return '$title. $subject. $steps steps, $questions questions. $status.';
+    return '$title. $subject. $steps ಹಂತಗಳು, $questions ಪ್ರಶ್ನೆಗಳು. $status.';
   }
 
   @override
@@ -9225,286 +9281,288 @@ class AppLocalizationsKn extends AppLocalizations {
     String steps,
     String questions,
   ) {
-    return '$title. $status. $steps steps, $questions questions.';
+    return '$title. $status. $steps ಹಂತಗಳು, $questions ಪ್ರಶ್ನೆಗಳು.';
   }
 
   @override
-  String get journeyRowGraded => 'Graded.';
+  String get journeyRowGraded => 'ಅಂಕಸಹಿತ.';
 
   @override
   String journeyStepRow(String number, String total, String name) {
-    return 'Step $number of $total. $name.';
+    return '$total ರಲ್ಲಿ ಹಂತ $number. $name.';
   }
 
   @override
-  String get journeyReplaysAutomatically => 'Replays automatically.';
+  String get journeyReplaysAutomatically => 'ತಾನಾಗಿಯೇ ಮತ್ತೆ ಪ್ಲೇ ಆಗುತ್ತದೆ.';
 
   @override
   String journeyReplaysFrom(String number) {
-    return 'Replays from step $number.';
+    return 'ಹಂತ $number ರಿಂದ ಮತ್ತೆ ಪ್ಲೇ ಆಗುತ್ತದೆ.';
   }
 
   @override
-  String get journeyFinishedStatus => 'Journey finished.';
+  String get journeyFinishedStatus => 'ಪಯಣ ಮುಗಿದಿದೆ.';
 
   @override
-  String get journeyRecordingPlaying => 'Recording playing.';
+  String get journeyRecordingPlaying => 'ರೆಕಾರ್ಡಿಂಗ್ ಪ್ಲೇ ಆಗುತ್ತಿದೆ.';
 
   @override
-  String get journeyRecordingPaused => 'Recording paused.';
+  String get journeyRecordingPaused => 'ರೆಕಾರ್ಡಿಂಗ್ ನಿಲ್ಲಿಸಲಾಗಿದೆ.';
 
   @override
-  String get journeyNoOptionChosen => 'No option chosen yet.';
+  String get journeyNoOptionChosen => 'ಇನ್ನೂ ಯಾವುದೇ ಆಯ್ಕೆ ಮಾಡಿಲ್ಲ.';
 
   @override
   String journeyOptionSelected(String number, String option) {
-    return 'Option $number, $option, selected.';
+    return 'ಆಯ್ಕೆ $number, $option, ಆಯ್ಕೆಯಾಗಿದೆ.';
   }
 
   @override
   String journeyPreviewStart(String title) {
-    return 'Preview of $title. Nothing is saved.';
+    return '$title ನ ಮುನ್ನೋಟ. ಏನನ್ನೂ ಉಳಿಸಲಾಗುವುದಿಲ್ಲ.';
   }
 
   @override
   String journeyWelcomeBack(String title) {
-    return 'Welcome back to $title. Continuing where you left off.';
+    return '$title ಗೆ ಮರಳಿ ಸ್ವಾಗತ. ನೀವು ನಿಲ್ಲಿಸಿದ ಜಾಗದಿಂದ ಮುಂದುವರಿಯುತ್ತಿದೆ.';
   }
 
   @override
   String journeyStartingBrief(String title) {
-    return 'Starting $title.';
+    return '$title ಪ್ರಾರಂಭವಾಗುತ್ತಿದೆ.';
   }
 
   @override
   String journeyStartingDetailed(String title, String steps) {
-    return 'Starting $title. $steps steps. Press star at any time for help.';
+    return '$title ಪ್ರಾರಂಭವಾಗುತ್ತಿದೆ. $steps ಹಂತಗಳು. ಸಹಾಯಕ್ಕಾಗಿ ಯಾವಾಗ ಬೇಕಾದರೂ ಸ್ಟಾರ್ ಒತ್ತಿ.';
   }
 
   @override
   String journeyNotSaved(String reason) {
-    return 'Your place could not be saved. $reason';
+    return 'ನಿಮ್ಮ ಸ್ಥಾನವನ್ನು ಉಳಿಸಲು ಆಗಲಿಲ್ಲ. $reason';
   }
 
   @override
-  String get journeyListeningAgain => 'Listening again.';
+  String get journeyListeningAgain => 'ಮತ್ತೆ ಕೇಳುತ್ತಿದ್ದೇವೆ.';
 
   @override
   String journeyNarration(String text) {
-    return '$text Press 2 to continue.';
+    return '$text ಮುಂದುವರಿಯಲು 2 ಒತ್ತಿ.';
   }
 
   @override
   String journeyRecordingStatus(String title) {
-    return 'Recording: $title';
+    return 'ರೆಕಾರ್ಡಿಂಗ್: $title';
   }
 
   @override
   String get journeyRecordingFailed =>
-      'This recording could not be played. Check your internet.';
+      'ಈ ರೆಕಾರ್ಡಿಂಗ್ ಪ್ಲೇ ಮಾಡಲು ಆಗಲಿಲ್ಲ. ನಿಮ್ಮ ಇಂಟರ್ನೆಟ್ ಪರಿಶೀಲಿಸಿ.';
 
   @override
   String get journeyRecordingRetry =>
-      'Press 3 to try again, or 2 to skip to the next step.';
+      'ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಲು 3 ಒತ್ತಿ, ಅಥವಾ ಮುಂದಿನ ಹಂತಕ್ಕೆ ಹೋಗಲು 2 ಒತ್ತಿ.';
 
   @override
   String get journeyNotDownloaded =>
-      'This recording is not downloaded on this phone.';
+      'ಈ ರೆಕಾರ್ಡಿಂಗ್ ಈ ಫೋನ್‌ನಲ್ಲಿ ಡೌನ್‌ಲೋಡ್ ಆಗಿಲ್ಲ.';
 
   @override
-  String get journeyRecordingFinished => 'Recording finished.';
+  String get journeyRecordingFinished => 'ರೆಕಾರ್ಡಿಂಗ್ ಮುಗಿದಿದೆ.';
 
   @override
   String journeyAnswerFirst(String count) {
-    return 'Answer first. Press 1 to $count to choose, then 5.';
+    return 'ಮೊದಲು ಉತ್ತರಿಸಿ. ಆಯ್ಕೆಮಾಡಲು 1 ರಿಂದ $count ಒತ್ತಿ, ನಂತರ 5 ಒತ್ತಿ.';
   }
 
   @override
   String get journeyNoEarlierContent =>
-      'There is no earlier recording or narration.';
+      'ಹಿಂದೆ ಯಾವುದೇ ರೆಕಾರ್ಡಿಂಗ್ ಅಥವಾ ನಿರೂಪಣೆ ಇಲ್ಲ.';
 
   @override
-  String get journeyGoingBack => 'Going back.';
+  String get journeyGoingBack => 'ಹಿಂತಿರುಗುತ್ತಿದೆ.';
 
   @override
   String journeyNoSuchOption(String option, String count) {
-    return 'There is no option $option. Choose 1 to $count.';
+    return 'ಆಯ್ಕೆ $option ಇಲ್ಲ. 1 ರಿಂದ $count ಆಯ್ಕೆಮಾಡಿ.';
   }
 
   @override
   String journeyChooseFirst(String count) {
-    return 'Choose an answer first with 1 to $count.';
+    return 'ಮೊದಲು 1 ರಿಂದ $count ಬಳಸಿ ಉತ್ತರ ಆಯ್ಕೆಮಾಡಿ.';
   }
 
   @override
   String get journeySendLater =>
-      'Journey finished. Your answers will be sent when you are online.';
+      'ಪಯಣ ಮುಗಿದಿದೆ. ನೀವು ಆನ್‌ಲೈನ್ ಆದಾಗ ನಿಮ್ಮ ಉತ್ತರಗಳನ್ನು ಕಳುಹಿಸಲಾಗುತ್ತದೆ.';
 
   @override
-  String get journeyStartingAgain => 'Starting again.';
+  String get journeyStartingAgain => 'ಮತ್ತೆ ಪ್ರಾರಂಭಿಸಲಾಗುತ್ತಿದೆ.';
 
   @override
-  String get journeyPaused => 'Paused.';
+  String get journeyPaused => 'ನಿಲ್ಲಿಸಲಾಗಿದೆ.';
 
   @override
-  String get journeySeekRecordingsOnly => 'Seeking works on recordings only.';
+  String get journeySeekRecordingsOnly =>
+      'ಮುಂದೆ ಅಥವಾ ಹಿಂದೆ ಸರಿಸುವುದು ರೆಕಾರ್ಡಿಂಗ್‌ಗಳಲ್ಲಿ ಮಾತ್ರ ಕೆಲಸ ಮಾಡುತ್ತದೆ.';
 
   @override
   String get journeySpeedRecordingsOnly =>
-      'Recording speed changes on recordings only.';
+      'ರೆಕಾರ್ಡಿಂಗ್ ವೇಗ ರೆಕಾರ್ಡಿಂಗ್‌ಗಳಲ್ಲಿ ಮಾತ್ರ ಬದಲಾಗುತ್ತದೆ.';
 
   @override
-  String get journeyFastest => 'Fastest speed.';
+  String get journeyFastest => 'ಅತಿ ಹೆಚ್ಚು ವೇಗ.';
 
   @override
-  String get journeySlowest => 'Slowest speed.';
+  String get journeySlowest => 'ಅತಿ ಕಡಿಮೆ ವೇಗ.';
 
   @override
   String journeySpeed(String rate) {
-    return 'Recording speed $rate times.';
+    return 'ರೆಕಾರ್ಡಿಂಗ್ ವೇಗ $rate ಪಟ್ಟು.';
   }
 
   @override
-  String get journeyLeaveTitle => 'Leave this journey?';
+  String get journeyLeaveTitle => 'ಈ ಪಯಣದಿಂದ ಹೊರಡಬೇಕೇ?';
 
   @override
   String journeyLeaveMessage(String step) {
-    return 'Your place is saved on this phone. Next time you can continue from step $step.';
+    return 'ನಿಮ್ಮ ಸ್ಥಾನ ಈ ಫೋನ್‌ನಲ್ಲಿ ಉಳಿದಿದೆ. ಮುಂದಿನ ಬಾರಿ ಹಂತ $step ರಿಂದ ಮುಂದುವರಿಸಬಹುದು.';
   }
 
   @override
   String get journeyAnswerHelp =>
-      'Press a number to choose, 5 to submit, 6 to repeat the question.';
+      'ಆಯ್ಕೆಮಾಡಲು ಒಂದು ಸಂಖ್ಯೆ, ಸಲ್ಲಿಸಲು 5, ಪ್ರಶ್ನೆಯನ್ನು ಮತ್ತೆ ಕೇಳಲು 6 ಒತ್ತಿ.';
 
   @override
   String journeyStepRemoved(String remaining) {
-    return 'Step removed. The journey now has $remaining steps.';
+    return 'ಹಂತ ತೆಗೆದುಹಾಕಲಾಗಿದೆ. ಈಗ ಪಯಣದಲ್ಲಿ $remaining ಹಂತಗಳಿವೆ.';
   }
 
   @override
   String journeyStepRemovedUndo(String name) {
-    return 'Removed $name.';
+    return '$name ತೆಗೆದುಹಾಕಲಾಗಿದೆ.';
   }
 
   @override
-  String get journeyStepRestored => 'Step restored.';
+  String get journeyStepRestored => 'ಹಂತ ಮರುಸ್ಥಾಪಿಸಲಾಗಿದೆ.';
 
   @override
   String journeyCreated(String title) {
-    return 'Created $title. Now add its first step.';
+    return '$title ರಚಿಸಲಾಗಿದೆ. ಈಗ ಅದರ ಮೊದಲ ಹಂತ ಸೇರಿಸಿ.';
   }
 
   @override
-  String get journeyNoStepAdded => 'No step was added.';
+  String get journeyNoStepAdded => 'ಯಾವುದೇ ಹಂತ ಸೇರಿಸಲಾಗಿಲ್ಲ.';
 
   @override
   String journeyPreviewSkips(String issues) {
-    return 'Some steps are skipped in this preview. $issues';
+    return 'ಈ ಮುನ್ನೋಟದಲ್ಲಿ ಕೆಲವು ಹಂತಗಳನ್ನು ಬಿಡಲಾಗಿದೆ. $issues';
   }
 
   @override
   String journeyDuplicated(String title) {
-    return 'Created $title as a new draft. Find it under Drafts.';
+    return '$title ಅನ್ನು ಹೊಸ ಕರಡಾಗಿ ರಚಿಸಲಾಗಿದೆ. ಕರಡುಗಳಲ್ಲಿ ಅದನ್ನು ಹುಡುಕಿ.';
   }
 
   @override
   String journeyArchiveMessage(String title) {
-    return 'Students will no longer see $title. Results are kept. You can restore it later.';
+    return 'ವಿದ್ಯಾರ್ಥಿಗಳಿಗೆ ಇನ್ನು $title ಕಾಣುವುದಿಲ್ಲ. ಫಲಿತಾಂಶಗಳು ಉಳಿಯುತ್ತವೆ. ನಂತರ ನೀವು ಅದನ್ನು ಮರುಸ್ಥಾಪಿಸಬಹುದು.';
   }
 
   @override
   String journeyRestoreMessage(String title) {
-    return 'Students will see $title again.';
+    return 'ವಿದ್ಯಾರ್ಥಿಗಳಿಗೆ $title ಮತ್ತೆ ಕಾಣುತ್ತದೆ.';
   }
 
   @override
-  String get journeyArchived => 'Archived. Students no longer see it.';
+  String get journeyArchived =>
+      'ಆರ್ಕೈವ್ ಮಾಡಲಾಗಿದೆ. ವಿದ್ಯಾರ್ಥಿಗಳಿಗೆ ಇನ್ನು ಕಾಣುವುದಿಲ್ಲ.';
 
   @override
-  String get journeyRestored => 'Restored for students.';
+  String get journeyRestored => 'ವಿದ್ಯಾರ್ಥಿಗಳಿಗಾಗಿ ಮರುಸ್ಥಾಪಿಸಲಾಗಿದೆ.';
 
   @override
   String journeyDeleteDraftMessage(String title) {
-    return 'Delete $title permanently? Recordings stay in your library.';
+    return '$title ಅನ್ನು ಶಾಶ್ವತವಾಗಿ ಅಳಿಸಬೇಕೇ? ರೆಕಾರ್ಡಿಂಗ್‌ಗಳು ನಿಮ್ಮ ಲೈಬ್ರರಿಯಲ್ಲಿ ಉಳಿಯುತ್ತವೆ.';
   }
 
   @override
-  String get journeyDraftDeleted => 'Draft deleted.';
+  String get journeyDraftDeleted => 'ಕರಡು ಅಳಿಸಲಾಗಿದೆ.';
 
   @override
-  String get journeyNoRetriesLeft => 'Already no retries.';
+  String get journeyNoRetriesLeft => 'ಈಗಾಗಲೇ ಮರುಪ್ರಯತ್ನಗಳಿಲ್ಲ.';
 
   @override
-  String get journeyMaxRetries => 'Five retries is the most.';
+  String get journeyMaxRetries => 'ಐದು ಮರುಪ್ರಯತ್ನಗಳೇ ಗರಿಷ್ಠ.';
 
   @override
   String journeyPublished(String count) {
-    return 'Published. Students can play it now. Notifications reached $count phones.';
+    return 'ಪ್ರಕಟಿಸಲಾಗಿದೆ. ವಿದ್ಯಾರ್ಥಿಗಳು ಈಗ ಇದನ್ನು ಪ್ಲೇ ಮಾಡಬಹುದು. ಅಧಿಸೂಚನೆಗಳು $count ಫೋನ್‌ಗಳನ್ನು ತಲುಪಿವೆ.';
   }
 
   @override
   String get journeyOptionUsed =>
-      'That option is already used. Type a different option.';
+      'ಆ ಆಯ್ಕೆ ಈಗಾಗಲೇ ಬಳಕೆಯಲ್ಲಿದೆ. ಬೇರೆ ಆಯ್ಕೆ ಟೈಪ್ ಮಾಡಿ.';
 
   @override
   String get journeyNothingToReplay =>
-      'There is no recording or narration before this question yet, so a wrong answer asks again. You can add content earlier and edit this later.';
+      'ಈ ಪ್ರಶ್ನೆಗೆ ಮೊದಲು ಇನ್ನೂ ಯಾವುದೇ ರೆಕಾರ್ಡಿಂಗ್ ಅಥವಾ ನಿರೂಪಣೆ ಇಲ್ಲ, ಆದ್ದರಿಂದ ತಪ್ಪು ಉತ್ತರ ನೀಡಿದರೆ ಮತ್ತೆ ಕೇಳುತ್ತದೆ. ನೀವು ಮೊದಲು ವಿಷಯ ಸೇರಿಸಿ ನಂತರ ಇದನ್ನು ಬದಲಿಸಬಹುದು.';
 
   @override
   String get journeyBankEmpty =>
-      'Your question bank for this class and subject is empty. Choose Write a new question instead.';
+      'ಈ ತರಗತಿ ಮತ್ತು ವಿಷಯದ ನಿಮ್ಮ ಪ್ರಶ್ನೆ ಬ್ಯಾಂಕ್ ಖಾಲಿಯಾಗಿದೆ. ಬದಲಿಗೆ ಹೊಸ ಪ್ರಶ್ನೆ ಬರೆಯಿರಿ ಆಯ್ಕೆಮಾಡಿ.';
 
   @override
   String get journeyRecordViaNotes =>
-      'Opening private notes. Record, review, then choose Publish to this class and subject. Come back with 0, and choose your new recording.';
+      'ಖಾಸಗಿ ಟಿಪ್ಪಣಿಗಳನ್ನು ತೆರೆಯಲಾಗುತ್ತಿದೆ. ರೆಕಾರ್ಡ್ ಮಾಡಿ, ಪರಿಶೀಲಿಸಿ, ನಂತರ ಈ ತರಗತಿ ಮತ್ತು ವಿಷಯಕ್ಕೆ ಪ್ರಕಟಿಸಿ ಆಯ್ಕೆಮಾಡಿ. 0 ಒತ್ತಿ ಹಿಂತಿರುಗಿ, ನಿಮ್ಮ ಹೊಸ ರೆಕಾರ್ಡಿಂಗ್ ಆಯ್ಕೆಮಾಡಿ.';
 
   @override
   String get journeyNoRecordings =>
-      'There are no audio files in this class and subject yet, so nothing was added. You are back on the previous screen. To add one, choose Recording again, then 2 to upload a recording file or 3 to record a new one.';
+      'ಈ ತರಗತಿ ಮತ್ತು ವಿಷಯದಲ್ಲಿ ಇನ್ನೂ ಯಾವುದೇ ಆಡಿಯೋ ಫೈಲ್‌ಗಳಿಲ್ಲ, ಆದ್ದರಿಂದ ಏನೂ ಸೇರಿಸಲಾಗಿಲ್ಲ. ನೀವು ಹಿಂದಿನ ಪರದೆಗೆ ಮರಳಿದ್ದೀರಿ. ಒಂದನ್ನು ಸೇರಿಸಲು, ಮತ್ತೆ ರೆಕಾರ್ಡಿಂಗ್ ಆಯ್ಕೆಮಾಡಿ, ನಂತರ ರೆಕಾರ್ಡಿಂಗ್ ಫೈಲ್ ಅಪ್‌ಲೋಡ್ ಮಾಡಲು 2 ಅಥವಾ ಹೊಸದನ್ನು ರೆಕಾರ್ಡ್ ಮಾಡಲು 3 ಒತ್ತಿ.';
 
   @override
   String get journeyOpeningFiles =>
-      'Opening the file chooser for an audio file.';
+      'ಆಡಿಯೋ ಫೈಲ್‌ಗಾಗಿ ಫೈಲ್ ಆಯ್ಕೆಯನ್ನು ತೆರೆಯಲಾಗುತ್ತಿದೆ.';
 
   @override
-  String get journeyNoFile => 'No file chosen.';
+  String get journeyNoFile => 'ಯಾವುದೇ ಫೈಲ್ ಆಯ್ಕೆಮಾಡಿಲ್ಲ.';
 
   @override
-  String get journeyUploading => 'Uploading. Please wait.';
+  String get journeyUploading => 'ಅಪ್‌ಲೋಡ್ ಆಗುತ್ತಿದೆ. ದಯವಿಟ್ಟು ಕಾಯಿರಿ.';
 
   @override
   String get journeyUploadUnconfirmed =>
-      'The upload was not confirmed. Check My recordings before trying again, to avoid a duplicate.';
+      'ಅಪ್‌ಲೋಡ್ ದೃಢಪಟ್ಟಿಲ್ಲ. ನಕಲು ಆಗದಂತೆ, ಮತ್ತೆ ಪ್ರಯತ್ನಿಸುವ ಮೊದಲು ನನ್ನ ರೆಕಾರ್ಡಿಂಗ್‌ಗಳನ್ನು ಪರಿಶೀಲಿಸಿ.';
 
   @override
   String journeyUploaded(String title) {
-    return 'Uploaded $title.';
+    return '$title ಅಪ್‌ಲೋಡ್ ಆಗಿದೆ.';
   }
 
   @override
-  String get journeyStorageUnavailable => 'Journey storage is unavailable.';
+  String get journeyStorageUnavailable => 'ಪಯಣದ ಸಂಗ್ರಹಣೆ ಲಭ್ಯವಿಲ್ಲ.';
 
   @override
   String get journeyNothingInProgress =>
-      'There is no journey in progress. Press 2 for new journeys.';
+      'ಯಾವುದೇ ಪಯಣ ನಡೆಯುತ್ತಿಲ್ಲ. ಹೊಸ ಪಯಣಗಳಿಗೆ 2 ಒತ್ತಿ.';
 
   @override
   String get journeyTeacherUpdated =>
-      'Your teacher updated this journey. Download it again to play the new version offline.';
+      'ನಿಮ್ಮ ಶಿಕ್ಷಕರು ಈ ಪಯಣವನ್ನು ಬದಲಿಸಿದ್ದಾರೆ. ಹೊಸ ಆವೃತ್ತಿಯನ್ನು ಆಫ್‌ಲೈನ್‌ನಲ್ಲಿ ಪ್ಲೇ ಮಾಡಲು ಮತ್ತೆ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ.';
 
   @override
   String journeyStartOverMessage(String title) {
-    return 'Start $title again from step 1? Answers you already gave are still sent to your teacher.';
+    return '$title ಅನ್ನು ಹಂತ 1 ರಿಂದ ಮತ್ತೆ ಪ್ರಾರಂಭಿಸಬೇಕೇ? ನೀವು ಈಗಾಗಲೇ ನೀಡಿದ ಉತ್ತರಗಳು ಈಗಲೂ ನಿಮ್ಮ ಶಿಕ್ಷಕರಿಗೆ ಕಳುಹಿಸಲ್ಪಡುತ್ತವೆ.';
   }
 
   @override
   String journeyRemoveDownloadMessage(String title) {
-    return 'Remove $title from this phone? Your place in the journey is kept. You can download it again with internet.';
+    return '$title ಅನ್ನು ಈ ಫೋನ್‌ನಿಂದ ತೆಗೆದುಹಾಕಬೇಕೇ? ಪಯಣದಲ್ಲಿ ನಿಮ್ಮ ಸ್ಥಾನ ಉಳಿಯುತ್ತದೆ. ಇಂಟರ್ನೆಟ್ ಇದ್ದಾಗ ಮತ್ತೆ ಡೌನ್‌ಲೋಡ್ ಮಾಡಬಹುದು.';
   }
 
   @override
   String journeyDownloadRemoved(String title) {
-    return 'Removed the download of $title.';
+    return '$title ನ ಡೌನ್‌ಲೋಡ್ ತೆಗೆದುಹಾಕಲಾಗಿದೆ.';
   }
 
   @override
@@ -9512,20 +9570,20 @@ class AppLocalizationsKn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Downloading $count recordings. Press 0 to cancel.',
-      one: 'Downloading 1 recording. Press 0 to cancel.',
+      other: '$count ರೆಕಾರ್ಡಿಂಗ್‌ಗಳು ಡೌನ್‌ಲೋಡ್ ಆಗುತ್ತಿವೆ. ರದ್ದುಮಾಡಲು 0 ಒತ್ತಿ.',
+      one: '1 ರೆಕಾರ್ಡಿಂಗ್ ಡೌನ್‌ಲೋಡ್ ಆಗುತ್ತಿದೆ. ರದ್ದುಮಾಡಲು 0 ಒತ್ತಿ.',
     );
     return '$_temp0';
   }
 
   @override
   String journeyDownloaded(String title) {
-    return 'Downloaded. You can play $title without internet.';
+    return 'ಡೌನ್‌ಲೋಡ್ ಆಗಿದೆ. ಇಂಟರ್ನೆಟ್ ಇಲ್ಲದೆ $title ಪ್ಲೇ ಮಾಡಬಹುದು.';
   }
 
   @override
   String get journeyCancellingDownload =>
-      'Cancelling download. Saved recordings are kept.';
+      'ಡೌನ್‌ಲೋಡ್ ರದ್ದುಮಾಡಲಾಗುತ್ತಿದೆ. ಉಳಿಸಿದ ರೆಕಾರ್ಡಿಂಗ್‌ಗಳು ಉಳಿಯುತ್ತವೆ.';
 
   @override
   String journeyStepDetailsQuestion(
@@ -9534,191 +9592,190 @@ class AppLocalizationsKn extends AppLocalizations {
     String number,
     String explanation,
   ) {
-    return '$name $options Correct answer: option $number. $explanation';
+    return '$name $options ಸರಿಯಾದ ಉತ್ತರ: ಆಯ್ಕೆ $number. $explanation';
   }
 
   @override
-  String get journeyNoExplanation => 'No explanation.';
+  String get journeyNoExplanation => 'ವಿವರಣೆ ಇಲ್ಲ.';
 
   @override
   String journeyExplanation(String text) {
-    return 'Explanation: $text';
+    return 'ವಿವರಣೆ: $text';
   }
 
   @override
   String journeyStepNameRecording(String title) {
-    return 'Recording. $title';
+    return 'ರೆಕಾರ್ಡಿಂಗ್. $title';
   }
 
   @override
-  String get journeyUntitledRecording => 'Untitled recording';
+  String get journeyUntitledRecording => 'ಶೀರ್ಷಿಕೆ ಇಲ್ಲದ ರೆಕಾರ್ಡಿಂಗ್';
 
   @override
   String journeyStepNameNarration(String text) {
-    return 'Narration. $text';
+    return 'ನಿರೂಪಣೆ. $text';
   }
 
   @override
   String journeyStepNameQuestion(String text) {
-    return 'Question. $text';
+    return 'ಪ್ರಶ್ನೆ. $text';
   }
 
   @override
   String journeyStepNamePoll(String text) {
-    return 'Poll. $text';
+    return 'ಪೋಲ್. $text';
   }
 
   @override
-  String get journeyStatusPublished => 'Published';
+  String get journeyStatusPublished => 'ಪ್ರಕಟಿತ';
 
   @override
-  String get journeyStatusArchived => 'Archived';
+  String get journeyStatusArchived => 'ಆರ್ಕೈವ್ ಮಾಡಲಾಗಿದೆ';
 
   @override
-  String get journeyStatusDraft => 'Draft, not yet published';
+  String get journeyStatusDraft => 'ಕರಡು, ಇನ್ನೂ ಪ್ರಕಟಿಸಿಲ್ಲ';
 
   @override
   String journeyStatusWithChanges(String status) {
-    return '$status, with unpublished changes';
+    return '$status, ಪ್ರಕಟಿಸದ ಬದಲಾವಣೆಗಳೊಂದಿಗೆ';
   }
 
   @override
   String get journeyErrorChanged =>
-      'This journey changed. Refresh and try again.';
+      'ಈ ಪಯಣ ಬದಲಾಗಿದೆ. ರಿಫ್ರೆಶ್ ಮಾಡಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
   String get journeyErrorSignInExpired =>
-      'Your sign-in expired. Sign in again.';
+      'ನಿಮ್ಮ ಸೈನ್ ಇನ್ ಅವಧಿ ಮುಗಿದಿದೆ. ಮತ್ತೆ ಸೈನ್ ಇನ್ ಮಾಡಿ.';
 
   @override
-  String get journeyErrorPermission => 'You do not have permission to do that.';
+  String get journeyErrorPermission => 'ಅದನ್ನು ಮಾಡಲು ನಿಮಗೆ ಅನುಮತಿ ಇಲ್ಲ.';
 
   @override
-  String get journeyErrorNotAvailable => 'This journey is no longer available.';
+  String get journeyErrorNotAvailable => 'ಈ ಪಯಣ ಇನ್ನು ಲಭ್ಯವಿಲ್ಲ.';
 
   @override
   String get journeyErrorInvalid =>
-      'Some of the information could not be accepted. Check it and try again.';
+      'ಕೆಲವು ಮಾಹಿತಿಯನ್ನು ಸ್ವೀಕರಿಸಲು ಆಗಲಿಲ್ಲ. ಅದನ್ನು ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
   String get journeyErrorServer =>
-      'The school server had a problem. Try again later.';
+      'ಶಾಲೆಯ ಸರ್ವರ್‌ನಲ್ಲಿ ಸಮಸ್ಯೆ ಆಗಿದೆ. ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
   String get journeyErrorRequestFailed =>
-      'The request did not succeed. Try again.';
+      'ವಿನಂತಿ ಯಶಸ್ವಿಯಾಗಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
   String get journeyErrorResponseUnreadable =>
-      'The server response could not be read. Refresh before trying again.';
+      'ಸರ್ವರ್‌ನ ಪ್ರತಿಕ್ರಿಯೆಯನ್ನು ಓದಲು ಆಗಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸುವ ಮೊದಲು ರಿಫ್ರೆಶ್ ಮಾಡಿ.';
 
   @override
   String get journeyErrorSavedUnreadable =>
-      'The saved journey could not be read. Refresh before trying again.';
+      'ಉಳಿಸಿದ ಪಯಣವನ್ನು ಓದಲು ಆಗಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸುವ ಮೊದಲು ರಿಫ್ರೆಶ್ ಮಾಡಿ.';
 
   @override
-  String get journeyErrorListUnreadable =>
-      'The journey list could not be read.';
+  String get journeyErrorListUnreadable => 'ಪಯಣಗಳ ಪಟ್ಟಿಯನ್ನು ಓದಲು ಆಗಲಿಲ್ಲ.';
 
   @override
   String get journeyErrorMismatch =>
-      'The saved journey did not match. Refresh before trying again.';
+      'ಉಳಿಸಿದ ಪಯಣ ಹೊಂದಿಕೆಯಾಗಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸುವ ಮೊದಲು ರಿಫ್ರೆಶ್ ಮಾಡಿ.';
 
   @override
-  String get journeyErrorPreviewUnreadable =>
-      'The journey preview could not be read.';
+  String get journeyErrorPreviewUnreadable => 'ಪಯಣದ ಮುನ್ನೋಟವನ್ನು ಓದಲು ಆಗಲಿಲ್ಲ.';
 
   @override
   String get journeyErrorRecordingsUnreadable =>
-      'The recording list could not be read.';
+      'ರೆಕಾರ್ಡಿಂಗ್‌ಗಳ ಪಟ್ಟಿಯನ್ನು ಓದಲು ಆಗಲಿಲ್ಲ.';
 
   @override
   String get journeyErrorBankUnreadable =>
-      'The question bank could not be read.';
+      'ಪ್ರಶ್ನೆ ಬ್ಯಾಂಕ್ ಅನ್ನು ಓದಲು ಆಗಲಿಲ್ಲ.';
 
   @override
-  String get journeyErrorJourneyUnreadable => 'This journey could not be read.';
+  String get journeyErrorJourneyUnreadable => 'ಈ ಪಯಣವನ್ನು ಓದಲು ಆಗಲಿಲ್ಲ.';
 
   @override
   String get journeyDownloadNeedsApp =>
-      'Downloading for offline use needs the SEEDS Android app. In the browser, journeys play while you are online.';
+      'ಆಫ್‌ಲೈನ್ ಬಳಕೆಗಾಗಿ ಡೌನ್‌ಲೋಡ್ ಮಾಡಲು SEEDS Android ಆ್ಯಪ್ ಬೇಕು. ಬ್ರೌಸರ್‌ನಲ್ಲಿ, ನೀವು ಆನ್‌ಲೈನ್‌ನಲ್ಲಿರುವಾಗ ಪಯಣಗಳು ಪ್ಲೇ ಆಗುತ್ತವೆ.';
 
   @override
-  String get journeySignInFirst => 'Sign in before opening learning journeys.';
+  String get journeySignInFirst =>
+      'ಕಲಿಕೆಯ ಪಯಣಗಳನ್ನು ತೆರೆಯುವ ಮೊದಲು ಸೈನ್ ಇನ್ ಮಾಡಿ.';
 
   @override
   String get journeyStorageUnavailableDevice =>
-      'Journey storage is unavailable on this device.';
+      'ಈ ಸಾಧನದಲ್ಲಿ ಪಯಣ ಸಂಗ್ರಹಣೆ ಲಭ್ಯವಿಲ್ಲ.';
 
   @override
   String get journeyStorageFull =>
-      'Journey storage is unavailable. Check free space and try again. Nothing was deleted.';
+      'ಪಯಣ ಸಂಗ್ರಹಣೆ ಲಭ್ಯವಿಲ್ಲ. ಖಾಲಿ ಜಾಗವನ್ನು ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ. ಏನನ್ನೂ ಅಳಿಸಿಲ್ಲ.';
 
   @override
   String get journeyDownloadCancelled =>
-      'Download cancelled. Recordings already saved are kept.';
+      'ಡೌನ್‌ಲೋಡ್ ರದ್ದಾಗಿದೆ. ಈಗಾಗಲೇ ಉಳಿಸಿದ ರೆಕಾರ್ಡಿಂಗ್‌ಗಳನ್ನು ಇಟ್ಟುಕೊಳ್ಳಲಾಗಿದೆ.';
 
   @override
   String journeyRecordingsSaved(String done, String total) {
-    return '$done of $total recordings are saved.';
+    return '$total ರಲ್ಲಿ $done ರೆಕಾರ್ಡಿಂಗ್‌ಗಳು ಉಳಿಸಲಾಗಿವೆ.';
   }
 
   @override
-  String get journeyLeaveJourney => 'Leave journey';
+  String get journeyLeaveJourney => 'ಪಯಣದಿಂದ ಹೊರಬನ್ನಿ';
 
   @override
-  String get journeyLeaveSaved => 'Leave journey. Your place is saved';
+  String get journeyLeaveSaved => 'ಪಯಣದಿಂದ ಹೊರಬನ್ನಿ. ನಿಮ್ಮ ಸ್ಥಳ ಉಳಿಸಲಾಗಿದೆ';
 
   @override
-  String get journeyKeyPlayAgain => 'Play again';
+  String get journeyKeyPlayAgain => 'ಮತ್ತೆ ಪ್ಲೇ ಮಾಡಿ';
 
   @override
-  String get journeyKeySubmitAnswer => 'Submit answer';
+  String get journeyKeySubmitAnswer => 'ಉತ್ತರ ಸಲ್ಲಿಸಿ';
 
   @override
-  String get journeyKeyRepeatQuestion => 'Repeat question';
+  String get journeyKeyRepeatQuestion => 'ಪ್ರಶ್ನೆಯನ್ನು ಮತ್ತೆ ಕೇಳಿ';
 
   @override
-  String get journeyKeySlowerSpeech => 'Slower speech';
+  String get journeyKeySlowerSpeech => 'ನಿಧಾನವಾದ ಧ್ವನಿ';
 
   @override
-  String get journeyKeyWhereAmI => 'Where am I';
+  String get journeyKeyWhereAmI => 'ನಾನು ಎಲ್ಲಿದ್ದೇನೆ';
 
   @override
-  String get journeyKeyFasterSpeech => 'Faster speech';
+  String get journeyKeyFasterSpeech => 'ವೇಗವಾದ ಧ್ವನಿ';
 
   @override
-  String get journeyKeyNextStep => 'Next step';
+  String get journeyKeyNextStep => 'ಮುಂದಿನ ಹಂತ';
 
   @override
-  String get journeyKeyRepeatStep => 'Repeat this step';
+  String get journeyKeyRepeatStep => 'ಈ ಹಂತವನ್ನು ಮತ್ತೆ ಕೇಳಿ';
 
   @override
-  String get journeyKeyReadAgain => 'Read again';
+  String get journeyKeyReadAgain => 'ಮತ್ತೆ ಓದಿ';
 
   @override
-  String get journeyKeyPreviousContent => 'Previous recording or narration';
+  String get journeyKeyPreviousContent => 'ಹಿಂದಿನ ರೆಕಾರ್ಡಿಂಗ್ ಅಥವಾ ನಿರೂಪಣೆ';
 
   @override
   String journeyPreviewTitle(String title) {
-    return 'Preview: $title';
+    return 'ಮುನ್ನೋಟ: $title';
   }
 
   @override
-  String get journeyPositionFinished => 'Finished';
+  String get journeyPositionFinished => 'ಮುಗಿದಿದೆ';
 
   @override
   String journeyStepPosition(String number, String total) {
-    return 'Step $number of $total';
+    return '$total ರಲ್ಲಿ ಹಂತ $number';
   }
 
   @override
   String journeySelectedLabel(String label) {
-    return '$label, selected';
+    return '$label, ಆಯ್ಕೆ ಮಾಡಲಾಗಿದೆ';
   }
 
   @override
-  String get journeyResultsLoading => 'Results are loading.';
+  String get journeyResultsLoading => 'ಫಲಿತಾಂಶಗಳು ಲೋಡ್ ಆಗುತ್ತಿವೆ.';
 
   @override
   String journeyResultsSummary(
@@ -9727,19 +9784,19 @@ class AppLocalizationsKn extends AppLocalizations {
     String inProgress,
     String notStarted,
   ) {
-    return '$completed of $eligible students finished. $inProgress in progress, $notStarted not started.';
+    return '$eligible ರಲ್ಲಿ $completed ವಿದ್ಯಾರ್ಥಿಗಳು ಮುಗಿಸಿದ್ದಾರೆ. $inProgress ಪ್ರಗತಿಯಲ್ಲಿದೆ, $notStarted ಪ್ರಾರಂಭಿಸಿಲ್ಲ.';
   }
 
   @override
   String journeyResultsAverage(String percent) {
-    return 'Average first-try score $percent percent.';
+    return 'ಮೊದಲ ಪ್ರಯತ್ನದ ಸರಾಸರಿ ಅಂಕ $percent ಪ್ರತಿಶತ.';
   }
 
   @override
-  String get journeyResultFinished => 'Finished';
+  String get journeyResultFinished => 'ಮುಗಿದಿದೆ';
 
   @override
-  String get journeyResultNotStarted => 'Not started';
+  String get journeyResultNotStarted => 'ಪ್ರಾರಂಭಿಸಿಲ್ಲ';
 
   @override
   String journeyResultStudent(String name, String status) {
@@ -9748,30 +9805,30 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String journeyResultFirstTime(String correct, String total) {
-    return '$correct of $total right first time.';
+    return '$total ರಲ್ಲಿ $correct ಮೊದಲ ಬಾರಿಗೇ ಸರಿ.';
   }
 
   @override
   String journeyResultWrongAnswers(String count) {
-    return '$count wrong answers.';
+    return '$count ತಪ್ಪು ಉತ್ತರಗಳು.';
   }
 
   @override
   String journeyResultQuestion(String number, String text, String answered) {
-    return 'Step $number. $text. $answered answered.';
+    return 'ಹಂತ $number. $text. $answered ಉತ್ತರಿಸಿದ್ದಾರೆ.';
   }
 
   @override
   String journeyResultRate(String percent) {
-    return '$percent percent right first time.';
+    return '$percent ಪ್ರತಿಶತ ಮೊದಲ ಬಾರಿಗೇ ಸರಿ.';
   }
 
   @override
-  String get journeyResultNoAnswers => 'No answers yet.';
+  String get journeyResultNoAnswers => 'ಇನ್ನೂ ಯಾವುದೇ ಉತ್ತರಗಳಿಲ್ಲ.';
 
   @override
   String journeyResultAverageTries(String attempts) {
-    return 'Average $attempts tries.';
+    return 'ಸರಾಸರಿ $attempts ಪ್ರಯತ್ನಗಳು.';
   }
 
   @override
@@ -9781,252 +9838,254 @@ class AppLocalizationsKn extends AppLocalizations {
     String answered,
     String options,
   ) {
-    return 'Step $number. $text. $answered answered. $options.';
+    return 'ಹಂತ $number. $text. $answered ಉತ್ತರಿಸಿದ್ದಾರೆ. $options.';
   }
 
   @override
-  String get journeyResultsStudentsTitle => 'Students';
+  String get journeyResultsStudentsTitle => 'ವಿದ್ಯಾರ್ಥಿಗಳು';
 
   @override
-  String get journeyResultsQuestionsTitle => 'Questions';
+  String get journeyResultsQuestionsTitle => 'ಪ್ರಶ್ನೆಗಳು';
 
   @override
-  String get journeyResultsPollsTitle => 'Poll answers';
+  String get journeyResultsPollsTitle => 'ಪೋಲ್ ಉತ್ತರಗಳು';
 
   @override
   String journeyResultsTitle(String title) {
-    return 'Results: $title';
+    return 'ಫಲಿತಾಂಶಗಳು: $title';
   }
 
   @override
-  String get journeyResultsHearSummary => 'Hear class summary';
+  String get journeyResultsHearSummary => 'ತರಗತಿಯ ಸಾರಾಂಶ ಕೇಳಿ';
 
   @override
   String journeyResultsStudents(String count) {
-    return 'Students, $count';
+    return 'ವಿದ್ಯಾರ್ಥಿಗಳು, $count';
   }
 
   @override
   String journeyResultsQuestions(String count) {
-    return 'Questions, $count. Shows which parts need teaching again';
+    return 'ಪ್ರಶ್ನೆಗಳು, $count. ಯಾವ ಭಾಗಗಳನ್ನು ಮತ್ತೆ ಕಲಿಸಬೇಕು ಎಂದು ತೋರಿಸುತ್ತದೆ';
   }
 
   @override
   String journeyResultsPolls(String count) {
-    return 'Poll answers, $count';
+    return 'ಪೋಲ್ ಉತ್ತರಗಳು, $count';
   }
 
   @override
-  String get journeyResultsRefresh => 'Refresh results';
+  String get journeyResultsRefresh => 'ಫಲಿತಾಂಶಗಳನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಿ';
 
   @override
-  String get journeyResultsNoStudents => 'No students are in this class.';
+  String get journeyResultsNoStudents =>
+      'ಈ ತರಗತಿಯಲ್ಲಿ ಯಾವುದೇ ವಿದ್ಯಾರ್ಥಿಗಳಿಲ್ಲ.';
 
   @override
-  String get journeyResultsNoQuestions => 'This journey has no questions.';
+  String get journeyResultsNoQuestions => 'ಈ ಪಯಣದಲ್ಲಿ ಯಾವುದೇ ಪ್ರಶ್ನೆಗಳಿಲ್ಲ.';
 
   @override
-  String get journeyResultsNoPolls => 'This journey has no polls.';
+  String get journeyResultsNoPolls => 'ಈ ಪಯಣದಲ್ಲಿ ಯಾವುದೇ ಪೋಲ್‌ಗಳಿಲ್ಲ.';
 
   @override
   String get journeyNarrationLabel =>
-      'Words the phone reads aloud, for example: Let us hear about some food today';
+      'ಫೋನ್ ಗಟ್ಟಿಯಾಗಿ ಓದುವ ಪದಗಳು, ಉದಾಹರಣೆಗೆ: ಇಂದು ಕೆಲವು ಆಹಾರಗಳ ಬಗ್ಗೆ ಕೇಳೋಣ';
 
   @override
   String journeyAddOptionTitle(String number) {
-    return 'Add option $number?';
+    return 'ಆಯ್ಕೆ $number ಸೇರಿಸಬೇಕೇ?';
   }
 
   @override
   String journeyQuestionOptionsSoFar(String count) {
-    return 'The question has $count options so far.';
+    return 'ಈ ಪ್ರಶ್ನೆಯಲ್ಲಿ ಇಲ್ಲಿಯವರೆಗೆ $count ಆಯ್ಕೆಗಳಿವೆ.';
   }
 
   @override
   String journeyPollOptionsSoFar(String count) {
-    return 'The poll has $count options so far.';
+    return 'ಈ ಪೋಲ್‌ನಲ್ಲಿ ಇಲ್ಲಿಯವರೆಗೆ $count ಆಯ್ಕೆಗಳಿವೆ.';
   }
 
   @override
   String journeyAddOption(String number) {
-    return 'Add option $number';
+    return 'ಆಯ್ಕೆ $number ಸೇರಿಸಿ';
   }
 
   @override
-  String get journeyNoMoreOptions => 'No more options, continue';
+  String get journeyNoMoreOptions => 'ಇನ್ನು ಆಯ್ಕೆಗಳಿಲ್ಲ, ಮುಂದುವರಿಸಿ';
 
   @override
   String journeyOptionTitle(String number) {
-    return 'Option $number';
+    return 'ಆಯ್ಕೆ $number';
   }
 
   @override
   String journeyTypeOption(String number) {
-    return 'Type option $number';
+    return 'ಆಯ್ಕೆ $number ಟೈಪ್ ಮಾಡಿ';
   }
 
   @override
-  String get journeyReplayAutoNone => 'Automatic: ask again without replaying';
+  String get journeyReplayAutoNone => 'ಸ್ವಯಂಚಾಲಿತ: ಮತ್ತೆ ಪ್ಲೇ ಮಾಡದೆ ಮತ್ತೆ ಕೇಳಿ';
 
   @override
   String journeyReplayAutoFrom(String number, String name) {
-    return 'Automatic: replay from step $number, $name';
+    return 'ಸ್ವಯಂಚಾಲಿತ: ಹಂತ $number, $name ನಿಂದ ಮತ್ತೆ ಪ್ಲೇ ಮಾಡಿ';
   }
 
   @override
-  String get journeyAfterWrongTitle => 'After a wrong answer';
+  String get journeyAfterWrongTitle => 'ತಪ್ಪು ಉತ್ತರದ ನಂತರ';
 
   @override
   String get journeyAfterWrongIntro =>
-      'When a student answers wrongly, which part should play again before they try once more?';
+      'ವಿದ್ಯಾರ್ಥಿ ತಪ್ಪು ಉತ್ತರ ನೀಡಿದಾಗ, ಮತ್ತೊಮ್ಮೆ ಪ್ರಯತ್ನಿಸುವ ಮೊದಲು ಯಾವ ಭಾಗ ಮತ್ತೆ ಪ್ಲೇ ಆಗಬೇಕು?';
 
   @override
-  String get journeyReplayChooseStep => 'Choose a different step to replay';
+  String get journeyReplayChooseStep => 'ಮತ್ತೆ ಪ್ಲೇ ಮಾಡಲು ಬೇರೆ ಹಂತವನ್ನು ಆರಿಸಿ';
 
   @override
-  String get journeyReplayWhichStep => 'Replay from which step?';
+  String get journeyReplayWhichStep => 'ಯಾವ ಹಂತದಿಂದ ಮತ್ತೆ ಪ್ಲೇ ಮಾಡಬೇಕು?';
 
   @override
   String journeyStepLabel(String number, String name) {
-    return 'Step $number. $name';
+    return 'ಹಂತ $number. $name';
   }
 
   @override
   String journeyReviewReplayFrom(String number) {
-    return 'After a wrong answer, step $number plays again.';
+    return 'ತಪ್ಪು ಉತ್ತರದ ನಂತರ, ಹಂತ $number ಮತ್ತೆ ಪ್ಲೇ ಆಗುತ್ತದೆ.';
   }
 
   @override
   String get journeyReviewReplayAuto =>
-      'After a wrong answer, it replays automatically.';
+      'ತಪ್ಪು ಉತ್ತರದ ನಂತರ, ಅದು ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಮತ್ತೆ ಪ್ಲೇ ಆಗುತ್ತದೆ.';
 
   @override
-  String get journeyCheckBeforeSaving => 'Check before saving';
+  String get journeyCheckBeforeSaving => 'ಉಳಿಸುವ ಮೊದಲು ಪರಿಶೀಲಿಸಿ';
 
   @override
-  String get journeySaveStep => 'Save this step';
+  String get journeySaveStep => 'ಈ ಹಂತವನ್ನು ಉಳಿಸಿ';
 
   @override
-  String get journeyRestartStep => 'Start this step again';
+  String get journeyRestartStep => 'ಈ ಹಂತವನ್ನು ಮತ್ತೆ ಪ್ರಾರಂಭಿಸಿ';
 
   @override
-  String get journeyQuestionLabel => 'Type the question students will hear';
+  String get journeyQuestionLabel =>
+      'ವಿದ್ಯಾರ್ಥಿಗಳು ಕೇಳುವ ಪ್ರಶ್ನೆಯನ್ನು ಟೈಪ್ ಮಾಡಿ';
 
   @override
-  String get journeyWhichCorrect => 'Which option is correct?';
+  String get journeyWhichCorrect => 'ಯಾವ ಆಯ್ಕೆ ಸರಿ?';
 
   @override
   String journeyCurrentlyCorrect(String number) {
-    return 'Currently option $number is correct.';
+    return 'ಈಗ ಆಯ್ಕೆ $number ಸರಿಯಾಗಿದೆ.';
   }
 
   @override
   String journeyOptionChoice(String number, String text) {
-    return 'Option $number: $text';
+    return 'ಆಯ್ಕೆ $number: $text';
   }
 
   @override
-  String get journeyExplanationTitle => 'Explanation';
+  String get journeyExplanationTitle => 'ವಿವರಣೆ';
 
   @override
   String get journeyExplanationLabel =>
-      'What students hear after the right answer is revealed';
+      'ಸರಿಯಾದ ಉತ್ತರ ತಿಳಿಸಿದ ನಂತರ ವಿದ್ಯಾರ್ಥಿಗಳು ಕೇಳುವುದು';
 
   @override
-  String get journeyPollQuestionTitle => 'Poll question';
+  String get journeyPollQuestionTitle => 'ಪೋಲ್ ಪ್ರಶ್ನೆ';
 
   @override
   String get journeyPollQuestionLabel =>
-      'A question with no wrong answer, for example: Have you eaten rice this week?';
+      'ತಪ್ಪು ಉತ್ತರವಿಲ್ಲದ ಪ್ರಶ್ನೆ, ಉದಾಹರಣೆಗೆ: ಈ ವಾರ ನೀವು ಅನ್ನ ತಿಂದಿದ್ದೀರಾ?';
 
   @override
-  String get journeyQuestionBank => 'Question bank';
+  String get journeyQuestionBank => 'ಪ್ರಶ್ನೆ ಬ್ಯಾಂಕ್';
 
   @override
   String journeyBankQuestionLabel(String text, String count) {
-    return '$text. $count options.';
+    return '$text. $count ಆಯ್ಕೆಗಳು.';
   }
 
   @override
-  String get journeyAddRecording => 'Add a recording';
+  String get journeyAddRecording => 'ರೆಕಾರ್ಡಿಂಗ್ ಸೇರಿಸಿ';
 
   @override
-  String get journeyChooseMyRecordings => 'Choose from my recordings';
+  String get journeyChooseMyRecordings => 'ನನ್ನ ರೆಕಾರ್ಡಿಂಗ್‌ಗಳಿಂದ ಆರಿಸಿ';
 
   @override
-  String get journeyUploadRecordingFile => 'Upload a recording file';
+  String get journeyUploadRecordingFile => 'ರೆಕಾರ್ಡಿಂಗ್ ಫೈಲ್ ಅಪ್‌ಲೋಡ್ ಮಾಡಿ';
 
   @override
-  String get journeyRecordNew => 'Record a new recording';
+  String get journeyRecordNew => 'ಹೊಸ ರೆಕಾರ್ಡಿಂಗ್ ಮಾಡಿ';
 
   @override
-  String get journeyMyRecordings => 'My recordings';
+  String get journeyMyRecordings => 'ನನ್ನ ರೆಕಾರ್ಡಿಂಗ್‌ಗಳು';
 
   @override
-  String get journeyRecordingName => 'Recording name';
+  String get journeyRecordingName => 'ರೆಕಾರ್ಡಿಂಗ್ ಹೆಸರು';
 
   @override
-  String get journeyRecordingNameLabel => 'Name for this recording';
+  String get journeyRecordingNameLabel => 'ಈ ರೆಕಾರ್ಡಿಂಗ್‌ಗೆ ಹೆಸರು';
 
   @override
   String journeyOptionalLabel(String label) {
-    return '$label. Optional, leave empty to skip';
+    return '$label. ಐಚ್ಛಿಕ, ಬಿಟ್ಟುಬಿಡಲು ಖಾಲಿ ಬಿಡಿ';
   }
 
   @override
   String get journeyNothingEntered =>
-      'Nothing entered. Press OK on the field and type, or press 0 to go back.';
+      'ಏನೂ ನಮೂದಿಸಿಲ್ಲ. ಫೀಲ್ಡ್‌ನಲ್ಲಿ ಓಕೆ ಒತ್ತಿ ಟೈಪ್ ಮಾಡಿ, ಅಥವಾ ಹಿಂದೆ ಹೋಗಲು 0 ಒತ್ತಿ.';
 
   @override
   String journeyTooLong(String max) {
-    return 'Too long. Use at most $max characters.';
+    return 'ತುಂಬಾ ಉದ್ದವಾಗಿದೆ. ಗರಿಷ್ಠ $max ಅಕ್ಷರಗಳನ್ನು ಬಳಸಿ.';
   }
 
   @override
-  String get journeySkipped => 'Skipped.';
+  String get journeySkipped => 'ಬಿಟ್ಟುಬಿಡಲಾಗಿದೆ.';
 
   @override
   String journeyYouEntered(String text) {
-    return 'You entered: $text';
+    return 'ನೀವು ನಮೂದಿಸಿದ್ದು: $text';
   }
 
   @override
-  String get journeyMenuReady => 'Ready.';
+  String get journeyMenuReady => 'ಸಿದ್ಧವಾಗಿದೆ.';
 
   @override
-  String get journeyMenuReadDetailsHelp => 'Press 8 to read details again.';
+  String get journeyMenuReadDetailsHelp => 'ವಿವರಗಳನ್ನು ಮತ್ತೆ ಓದಲು 8 ಒತ್ತಿ.';
 
   @override
   String journeyMenuBackHelp(String back) {
-    return 'Press 0 for $back. Press star for help.';
+    return '$back ಗಾಗಿ 0 ಒತ್ತಿ. ಸಹಾಯಕ್ಕಾಗಿ ಸ್ಟಾರ್ ಒತ್ತಿ.';
   }
 
   @override
   String journeyMenuNothingAssigned(String number) {
-    return 'Nothing is assigned to $number.';
+    return '$number ಗೆ ಏನನ್ನೂ ನಿಗದಿಪಡಿಸಿಲ್ಲ.';
   }
 
   @override
   String get journeyMenuPleaseWait =>
-      'Please wait. Still working. Press 0 to go back.';
+      'ದಯವಿಟ್ಟು ಕಾಯಿರಿ. ಇನ್ನೂ ಕೆಲಸ ನಡೆಯುತ್ತಿದೆ. ಹಿಂದೆ ಹೋಗಲು 0 ಒತ್ತಿ.';
 
   @override
-  String get journeyMenuWorking => 'Working, please wait.';
+  String get journeyMenuWorking => 'ಕೆಲಸ ನಡೆಯುತ್ತಿದೆ, ದಯವಿಟ್ಟು ಕಾಯಿರಿ.';
 
   @override
-  String get journeyMenuReadDetails => 'Read details again';
+  String get journeyMenuReadDetails => 'ವಿವರಗಳನ್ನು ಮತ್ತೆ ಓದಿ';
 
   @override
   String get journeyNoInternetDownloaded =>
-      'No internet. Downloaded journeys still work. Press 5 for downloaded journeys.';
+      'ಇಂಟರ್ನೆಟ್ ಇಲ್ಲ. ಡೌನ್‌ಲೋಡ್ ಮಾಡಿದ ಪಯಣಗಳು ಇನ್ನೂ ಕೆಲಸ ಮಾಡುತ್ತವೆ. ಡೌನ್‌ಲೋಡ್ ಮಾಡಿದ ಪಯಣಗಳಿಗಾಗಿ 5 ಒತ್ತಿ.';
 
   @override
   String journeyWaitingToSend(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count finished journeys are waiting to be sent.',
-      one: '1 finished journey is waiting to be sent.',
+      other: 'ಮುಗಿದ $count ಪಯಣಗಳನ್ನು ಕಳುಹಿಸಲು ಕಾಯಲಾಗುತ್ತಿದೆ.',
+      one: 'ಮುಗಿದ 1 ಪಯಣವನ್ನು ಕಳುಹಿಸಲು ಕಾಯಲಾಗುತ್ತಿದೆ.',
     );
     return '$_temp0';
   }
@@ -10038,131 +10097,133 @@ class AppLocalizationsKn extends AppLocalizations {
     String completed,
     String downloaded,
   ) {
-    return '$newCount new, $inProgress in progress, $completed completed, $downloaded downloaded.';
+    return '$newCount ಹೊಸದು, $inProgress ಪ್ರಗತಿಯಲ್ಲಿದೆ, $completed ಪೂರ್ಣಗೊಂಡಿದೆ, $downloaded ಡೌನ್‌ಲೋಡ್ ಮಾಡಲಾಗಿದೆ.';
   }
 
   @override
-  String get journeyDownloadedJourneys => 'Downloaded journeys';
+  String get journeyDownloadedJourneys => 'ಡೌನ್‌ಲೋಡ್ ಮಾಡಿದ ಪಯಣಗಳು';
 
   @override
   String journeyDownloadedRow(String title, String steps) {
-    return '$title. $steps steps. Downloaded.';
+    return '$title. $steps ಹಂತಗಳು. ಡೌನ್‌ಲೋಡ್ ಮಾಡಲಾಗಿದೆ.';
   }
 
   @override
   String get journeyOfflineReason =>
-      'This needs internet. Press 5 for downloaded journeys.';
+      'ಇದಕ್ಕೆ ಇಂಟರ್ನೆಟ್ ಬೇಕು. ಡೌನ್‌ಲೋಡ್ ಮಾಡಿದ ಪಯಣಗಳಿಗಾಗಿ 5 ಒತ್ತಿ.';
 
   @override
-  String get journeyLearningJourneys => 'Learning journeys';
+  String get journeyLearningJourneys => 'ಕಲಿಕೆಯ ಪಯಣಗಳು';
 
   @override
   String get journeyStudentIntro =>
-      'Listen to stories and lessons, answer questions as you go, and repeat parts you need.';
+      'ಕಥೆಗಳು ಮತ್ತು ಪಾಠಗಳನ್ನು ಕೇಳಿ, ನಡುವೆ ಪ್ರಶ್ನೆಗಳಿಗೆ ಉತ್ತರಿಸಿ, ಬೇಕಾದ ಭಾಗಗಳನ್ನು ಮತ್ತೆ ಕೇಳಿ.';
 
   @override
-  String get journeyContinueLast => 'Continue my last journey';
+  String get journeyContinueLast => 'ನನ್ನ ಕೊನೆಯ ಪಯಣವನ್ನು ಮುಂದುವರಿಸಿ';
 
   @override
   String journeyNewJourneys(String count) {
-    return 'New journeys, $count';
+    return 'ಹೊಸ ಪಯಣಗಳು, $count';
   }
 
   @override
-  String get journeyNewJourneysTitle => 'New journeys';
+  String get journeyNewJourneysTitle => 'ಹೊಸ ಪಯಣಗಳು';
 
   @override
-  String get journeyNoNewJourneys => 'There are no new journeys.';
+  String get journeyNoNewJourneys => 'ಯಾವುದೇ ಹೊಸ ಪಯಣಗಳಿಲ್ಲ.';
 
   @override
   String journeyInProgressCount(String count) {
-    return 'In progress, $count';
+    return 'ಪ್ರಗತಿಯಲ್ಲಿದೆ, $count';
   }
 
   @override
-  String get journeyInProgressTitle => 'Journeys in progress';
+  String get journeyInProgressTitle => 'ಪ್ರಗತಿಯಲ್ಲಿರುವ ಪಯಣಗಳು';
 
   @override
-  String get journeyNothingInProgressShort => 'Nothing is in progress.';
+  String get journeyNothingInProgressShort => 'ಯಾವುದೂ ಪ್ರಗತಿಯಲ್ಲಿಲ್ಲ.';
 
   @override
   String journeyCompletedCount(String count) {
-    return 'Completed, $count';
+    return 'ಪೂರ್ಣಗೊಂಡಿದೆ, $count';
   }
 
   @override
-  String get journeyCompletedTitle => 'Completed journeys';
+  String get journeyCompletedTitle => 'ಪೂರ್ಣಗೊಂಡ ಪಯಣಗಳು';
 
   @override
-  String get journeyNoneCompleted => 'No journeys completed yet.';
+  String get journeyNoneCompleted => 'ಇನ್ನೂ ಯಾವುದೇ ಪಯಣ ಪೂರ್ಣಗೊಂಡಿಲ್ಲ.';
 
   @override
   String journeyDownloadedCount(String count) {
-    return 'Downloaded, $count';
+    return 'ಡೌನ್‌ಲೋಡ್ ಮಾಡಲಾಗಿದೆ, $count';
   }
 
   @override
   String get journeyNothingDownloaded =>
-      'Nothing is downloaded. Open a journey and choose Download.';
+      'ಏನನ್ನೂ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿಲ್ಲ. ಒಂದು ಪಯಣವನ್ನು ತೆರೆದು ಡೌನ್‌ಲೋಡ್ ಆರಿಸಿ.';
 
   @override
   String get journeyNoInternetNotDownloaded =>
-      'No internet, and this journey is not downloaded.';
+      'ಇಂಟರ್ನೆಟ್ ಇಲ್ಲ, ಮತ್ತು ಈ ಪಯಣವನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಿಲ್ಲ.';
 
   @override
-  String get journeyStartOverTitle => 'Start over?';
+  String get journeyStartOverTitle => 'ಮೊದಲಿನಿಂದ ಪ್ರಾರಂಭಿಸಬೇಕೇ?';
 
   @override
-  String get journeyStartOver => 'Start over';
+  String get journeyStartOver => 'ಮೊದಲಿನಿಂದ ಪ್ರಾರಂಭಿಸಿ';
 
   @override
-  String get journeyRemoveDownloadTitle => 'Remove download?';
+  String get journeyRemoveDownloadTitle => 'ಡೌನ್‌ಲೋಡ್ ತೆಗೆದುಹಾಕಬೇಕೇ?';
 
   @override
-  String get journeyRemoveDownload => 'Remove download';
+  String get journeyRemoveDownload => 'ಡೌನ್‌ಲೋಡ್ ತೆಗೆದುಹಾಕಿ';
 
   @override
   String journeySavedRecordings(String done, String total) {
-    return 'Saved $done of $total recordings.';
+    return '$total ರಲ್ಲಿ $done ರೆಕಾರ್ಡಿಂಗ್‌ಗಳನ್ನು ಉಳಿಸಲಾಗಿದೆ.';
   }
 
   @override
-  String get journeyDownloadedOnPhone => 'Downloaded on this phone.';
+  String get journeyDownloadedOnPhone => 'ಈ ಫೋನ್‌ನಲ್ಲಿ ಡೌನ್‌ಲೋಡ್ ಮಾಡಲಾಗಿದೆ.';
 
   @override
-  String get journeyNotDownloadedShort => 'Not downloaded.';
+  String get journeyNotDownloadedShort => 'ಡೌನ್‌ಲೋಡ್ ಮಾಡಿಲ್ಲ.';
 
   @override
-  String get journeyStartedThis => 'You have started this journey.';
+  String get journeyStartedThis => 'ನೀವು ಈ ಪಯಣವನ್ನು ಪ್ರಾರಂಭಿಸಿದ್ದೀರಿ.';
 
   @override
-  String get journeyWorksOffline => 'Downloaded. Works without internet.';
+  String get journeyWorksOffline =>
+      'ಡೌನ್‌ಲೋಡ್ ಮಾಡಲಾಗಿದೆ. ಇಂಟರ್ನೆಟ್ ಇಲ್ಲದೆ ಕೆಲಸ ಮಾಡುತ್ತದೆ.';
 
   @override
-  String get journeyContinueJourney => 'Continue journey';
+  String get journeyContinueJourney => 'ಪಯಣವನ್ನು ಮುಂದುವರಿಸಿ';
 
   @override
-  String get journeyStartJourney => 'Start journey';
+  String get journeyStartJourney => 'ಪಯಣ ಪ್ರಾರಂಭಿಸಿ';
 
   @override
-  String get journeyHearAbout => 'Hear about this journey';
+  String get journeyHearAbout => 'ಈ ಪಯಣದ ಬಗ್ಗೆ ಕೇಳಿ';
 
   @override
-  String get journeyDownloadOffline => 'Download to play without internet';
+  String get journeyDownloadOffline =>
+      'ಇಂಟರ್ನೆಟ್ ಇಲ್ಲದೆ ಪ್ಲೇ ಮಾಡಲು ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ';
 
   @override
   String get journeyDownloadInProgress =>
-      'A download is in progress. Press 0 to cancel it.';
+      'ಡೌನ್‌ಲೋಡ್ ನಡೆಯುತ್ತಿದೆ. ಅದನ್ನು ರದ್ದುಗೊಳಿಸಲು 0 ಒತ್ತಿ.';
 
   @override
-  String get journeyStartFromBeginning => 'Start over from the beginning';
+  String get journeyStartFromBeginning => 'ಮೊದಲಿನಿಂದಲೇ ಮತ್ತೆ ಪ್ರಾರಂಭಿಸಿ';
 
   @override
-  String get journeyNotStartedYet => 'You have not started this journey yet.';
+  String get journeyNotStartedYet => 'ನೀವು ಇನ್ನೂ ಈ ಪಯಣವನ್ನು ಪ್ರಾರಂಭಿಸಿಲ್ಲ.';
 
   @override
   String journeyLatestLoaded(String message) {
-    return '$message The latest version is now loaded.';
+    return '$message ಇತ್ತೀಚಿನ ಆವೃತ್ತಿಯನ್ನು ಈಗ ಲೋಡ್ ಮಾಡಲಾಗಿದೆ.';
   }
 
   @override
@@ -10171,61 +10232,61 @@ class AppLocalizationsKn extends AppLocalizations {
     String published,
     String archived,
   ) {
-    return '$drafts drafts, $published published, $archived archived.';
+    return '$drafts ಕರಡುಗಳು, $published ಪ್ರಕಟಿತ, $archived ಆರ್ಕೈವ್ ಮಾಡಲಾಗಿದೆ.';
   }
 
   @override
-  String get journeyNewJourneyTitle => 'New learning journey';
+  String get journeyNewJourneyTitle => 'ಹೊಸ ಕಲಿಕೆಯ ಪಯಣ';
 
   @override
-  String get journeyNameExample => 'Journey name, for example: Food around us';
+  String get journeyNameExample => 'ಪಯಣದ ಹೆಸರು, ಉದಾಹರಣೆಗೆ: ನಮ್ಮ ಸುತ್ತಲಿನ ಆಹಾರ';
 
   @override
-  String get journeyRefreshFirst => 'Press 5 to refresh the list first.';
+  String get journeyRefreshFirst => 'ಮೊದಲು ಪಟ್ಟಿಯನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಲು 5 ಒತ್ತಿ.';
 
   @override
   String journeyTeacherIntro(String workspace) {
-    return '$workspace. Build one flow of recordings, narration, questions and polls for students.';
+    return '$workspace. ವಿದ್ಯಾರ್ಥಿಗಳಿಗಾಗಿ ರೆಕಾರ್ಡಿಂಗ್‌ಗಳು, ನಿರೂಪಣೆ, ಪ್ರಶ್ನೆಗಳು ಮತ್ತು ಪೋಲ್‌ಗಳ ಒಂದು ಹರಿವನ್ನು ರಚಿಸಿ.';
   }
 
   @override
-  String get journeyCreateNew => 'Create a new journey';
+  String get journeyCreateNew => 'ಹೊಸ ಪಯಣವನ್ನು ರಚಿಸಿ';
 
   @override
   String journeyDraftsCount(String count) {
-    return 'Drafts, $count';
+    return 'ಕರಡುಗಳು, $count';
   }
 
   @override
-  String get journeyDraftJourneys => 'Draft journeys';
+  String get journeyDraftJourneys => 'ಕರಡು ಪಯಣಗಳು';
 
   @override
-  String get journeyNoDrafts => 'There are no drafts.';
+  String get journeyNoDrafts => 'ಯಾವುದೇ ಕರಡುಗಳಿಲ್ಲ.';
 
   @override
   String journeyPublishedCount(String count) {
-    return 'Published, $count';
+    return 'ಪ್ರಕಟಿತ, $count';
   }
 
   @override
-  String get journeyPublishedJourneys => 'Published journeys';
+  String get journeyPublishedJourneys => 'ಪ್ರಕಟಿತ ಪಯಣಗಳು';
 
   @override
-  String get journeyNothingPublished => 'Nothing is published yet.';
+  String get journeyNothingPublished => 'ಇನ್ನೂ ಏನನ್ನೂ ಪ್ರಕಟಿಸಿಲ್ಲ.';
 
   @override
   String journeyArchivedCount(String count) {
-    return 'Archived, $count';
+    return 'ಆರ್ಕೈವ್ ಮಾಡಲಾಗಿದೆ, $count';
   }
 
   @override
-  String get journeyArchivedJourneys => 'Archived journeys';
+  String get journeyArchivedJourneys => 'ಆರ್ಕೈವ್ ಮಾಡಿದ ಪಯಣಗಳು';
 
   @override
-  String get journeyNothingArchived => 'Nothing is archived.';
+  String get journeyNothingArchived => 'ಏನನ್ನೂ ಆರ್ಕೈವ್ ಮಾಡಿಲ್ಲ.';
 
   @override
-  String get journeyRefreshList => 'Refresh list';
+  String get journeyRefreshList => 'ಪಟ್ಟಿಯನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಿ';
 
   @override
   String journeyOverviewSummary(
@@ -10235,202 +10296,204 @@ class AppLocalizationsKn extends AppLocalizations {
     String graded,
     String retries,
   ) {
-    return '$status. $steps steps, $questions questions. $graded. $retries';
+    return '$status. $steps ಹಂತಗಳು, $questions ಪ್ರಶ್ನೆಗಳು. $graded. $retries';
   }
 
   @override
-  String get journeyGraded => 'Graded';
+  String get journeyGraded => 'ಅಂಕಸಹಿತ';
 
   @override
-  String get journeyNotGraded => 'Not graded';
+  String get journeyNotGraded => 'ಅಂಕರಹಿತ';
 
   @override
   String journeyRetriesPerQuestion(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count retries per question.',
-      one: '1 retry per question.',
+      other: 'ಪ್ರತಿ ಪ್ರಶ್ನೆಗೆ $count ಮರುಪ್ರಯತ್ನಗಳು.',
+      one: 'ಪ್ರತಿ ಪ್ರಶ್ನೆಗೆ 1 ಮರುಪ್ರಯತ್ನ.',
     );
     return '$_temp0';
   }
 
   @override
-  String get journeySteps => 'Steps';
+  String get journeySteps => 'ಹಂತಗಳು';
 
   @override
   String journeyAddStepTitle(String number) {
-    return 'Add step $number';
+    return 'ಹಂತ $number ಸೇರಿಸಿ';
   }
 
   @override
   String get journeyAddStepIntro =>
-      'The new step goes at the end. You can move it later.';
+      'ಹೊಸ ಹಂತ ಕೊನೆಯಲ್ಲಿ ಸೇರುತ್ತದೆ. ನೀವು ಅದನ್ನು ನಂತರ ಸರಿಸಬಹುದು.';
 
   @override
-  String get journeyChoiceRecording => 'Recording';
+  String get journeyChoiceRecording => 'ರೆಕಾರ್ಡಿಂಗ್';
 
   @override
-  String get journeyChoiceNarration => 'Narration read by the phone';
+  String get journeyChoiceNarration => 'ಫೋನ್ ಓದುವ ನಿರೂಪಣೆ';
 
   @override
-  String get journeyChoiceQuestion => 'Question';
+  String get journeyChoiceQuestion => 'ಪ್ರಶ್ನೆ';
 
   @override
-  String get journeyChoicePoll => 'Poll, no wrong answer';
+  String get journeyChoicePoll => 'ಪೋಲ್, ತಪ್ಪು ಉತ್ತರವಿಲ್ಲ';
 
   @override
   String journeySavedAsStep(String number, String name) {
-    return 'Saved as step $number. $name';
+    return 'ಹಂತ $number ಆಗಿ ಉಳಿಸಲಾಗಿದೆ. $name';
   }
 
   @override
-  String get journeyAddQuestion => 'Add a question';
+  String get journeyAddQuestion => 'ಪ್ರಶ್ನೆ ಸೇರಿಸಿ';
 
   @override
-  String get journeyWriteNewQuestion => 'Write a new question';
+  String get journeyWriteNewQuestion => 'ಹೊಸ ಪ್ರಶ್ನೆ ಬರೆಯಿರಿ';
 
   @override
-  String get journeyChooseFromBank => 'Choose from my question bank';
+  String get journeyChooseFromBank => 'ನನ್ನ ಪ್ರಶ್ನೆ ಬ್ಯಾಂಕ್‌ನಿಂದ ಆರಿಸಿ';
 
   @override
-  String get journeyHearAndEdit => 'Hear and edit steps';
+  String get journeyHearAndEdit => 'ಹಂತಗಳನ್ನು ಕೇಳಿ ಮತ್ತು ಸಂಪಾದಿಸಿ';
 
   @override
-  String get journeyNoStepsYet => 'There are no steps yet. Press 2 to add one.';
+  String get journeyNoStepsYet =>
+      'ಇನ್ನೂ ಯಾವುದೇ ಹಂತಗಳಿಲ್ಲ. ಒಂದನ್ನು ಸೇರಿಸಲು 2 ಒತ್ತಿ.';
 
   @override
-  String get journeyAddStep => 'Add a step';
+  String get journeyAddStep => 'ಹಂತ ಸೇರಿಸಿ';
 
   @override
-  String get journeyPreviewAsStudent => 'Preview as a student';
+  String get journeyPreviewAsStudent => 'ವಿದ್ಯಾರ್ಥಿಯಾಗಿ ಮುನ್ನೋಟ ನೋಡಿ';
 
   @override
-  String get journeyAddStepFirst => 'Add a step first.';
+  String get journeyAddStepFirst => 'ಮೊದಲು ಒಂದು ಹಂತ ಸೇರಿಸಿ.';
 
   @override
-  String get journeyPublishToStudents => 'Publish to students';
+  String get journeyPublishToStudents => 'ವಿದ್ಯಾರ್ಥಿಗಳಿಗೆ ಪ್ರಕಟಿಸಿ';
 
   @override
-  String get journeyPublishChanges => 'Publish changes';
+  String get journeyPublishChanges => 'ಬದಲಾವಣೆಗಳನ್ನು ಪ್ರಕಟಿಸಿ';
 
   @override
-  String get journeyStudentResults => 'Student results';
+  String get journeyStudentResults => 'ವಿದ್ಯಾರ್ಥಿಗಳ ಫಲಿತಾಂಶಗಳು';
 
   @override
-  String get journeyMoreOptions => 'More options';
+  String get journeyMoreOptions => 'ಇನ್ನಷ್ಟು ಆಯ್ಕೆಗಳು';
 
   @override
   String journeyStepSaved(String number) {
-    return 'Step $number saved.';
+    return 'ಹಂತ $number ಉಳಿಸಲಾಗಿದೆ.';
   }
 
   @override
   String journeyMoved(String number, String total) {
-    return 'Moved. This is now step $number of $total.';
+    return 'ಸರಿಸಲಾಗಿದೆ. ಇದು ಈಗ $total ರಲ್ಲಿ ಹಂತ $number.';
   }
 
   @override
   String journeyRemoveStepTitle(String number) {
-    return 'Remove step $number?';
+    return 'ಹಂತ $number ತೆಗೆದುಹಾಕಬೇಕೇ?';
   }
 
   @override
   String journeyRemoveStepMessage(String name) {
-    return 'Remove $name? Recordings stay in your library. Questions that replayed this step will replay automatically instead.';
+    return '$name ತೆಗೆದುಹಾಕಬೇಕೇ? ರೆಕಾರ್ಡಿಂಗ್‌ಗಳು ನಿಮ್ಮ ಲೈಬ್ರರಿಯಲ್ಲಿ ಉಳಿಯುತ್ತವೆ. ಈ ಹಂತವನ್ನು ಮತ್ತೆ ಪ್ಲೇ ಮಾಡುತ್ತಿದ್ದ ಪ್ರಶ್ನೆಗಳು ಬದಲಾಗಿ ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಮತ್ತೆ ಪ್ಲೇ ಮಾಡುತ್ತವೆ.';
   }
 
   @override
-  String get journeyRemoveStep => 'Remove step';
+  String get journeyRemoveStep => 'ಹಂತ ತೆಗೆದುಹಾಕಿ';
 
   @override
-  String get journeyStepNotFound => 'Step not found';
+  String get journeyStepNotFound => 'ಹಂತ ಸಿಗಲಿಲ್ಲ';
 
   @override
   String get journeyStepWasRemoved =>
-      'This step was removed. Press 0 to go back.';
+      'ಈ ಹಂತವನ್ನು ತೆಗೆದುಹಾಕಲಾಗಿದೆ. ಹಿಂದೆ ಹೋಗಲು 0 ಒತ್ತಿ.';
 
   @override
-  String get journeyHearStepInFull => 'Hear this step in full';
+  String get journeyHearStepInFull => 'ಈ ಹಂತವನ್ನು ಪೂರ್ತಿಯಾಗಿ ಕೇಳಿ';
 
   @override
-  String get journeyEditStep => 'Edit this step';
+  String get journeyEditStep => 'ಈ ಹಂತವನ್ನು ಸಂಪಾದಿಸಿ';
 
   @override
-  String get journeyMoveEarlier => 'Move earlier';
+  String get journeyMoveEarlier => 'ಮುಂಚೆಗೆ ಸರಿಸಿ';
 
   @override
-  String get journeyAlreadyFirst => 'This is already the first step.';
+  String get journeyAlreadyFirst => 'ಇದು ಈಗಾಗಲೇ ಮೊದಲ ಹಂತ.';
 
   @override
-  String get journeyMoveLater => 'Move later';
+  String get journeyMoveLater => 'ನಂತರಕ್ಕೆ ಸರಿಸಿ';
 
   @override
-  String get journeyAlreadyLast => 'This is already the last step.';
+  String get journeyAlreadyLast => 'ಇದು ಈಗಾಗಲೇ ಕೊನೆಯ ಹಂತ.';
 
   @override
-  String get journeyRemoveThisStep => 'Remove this step';
+  String get journeyRemoveThisStep => 'ಈ ಹಂತವನ್ನು ತೆಗೆದುಹಾಕಿ';
 
   @override
-  String get journeyRenameTitle => 'Rename journey';
+  String get journeyRenameTitle => 'ಪಯಣದ ಹೆಸರು ಬದಲಿಸಿ';
 
   @override
-  String get journeyNameLabel => 'Journey name';
+  String get journeyNameLabel => 'ಪಯಣದ ಹೆಸರು';
 
   @override
   String journeyRenamed(String title) {
-    return 'Renamed to $title.';
+    return 'ಹೆಸರನ್ನು $title ಎಂದು ಬದಲಿಸಲಾಗಿದೆ.';
   }
 
   @override
-  String get journeyArchiveTitle => 'Archive this journey?';
+  String get journeyArchiveTitle => 'ಈ ಪಯಣವನ್ನು ಆರ್ಕೈವ್ ಮಾಡಬೇಕೇ?';
 
   @override
-  String get journeyRestoreTitle => 'Restore this journey?';
+  String get journeyRestoreTitle => 'ಈ ಪಯಣವನ್ನು ಮರುಸ್ಥಾಪಿಸಬೇಕೇ?';
 
   @override
-  String get journeyArchive => 'Archive';
+  String get journeyArchive => 'ಆರ್ಕೈವ್ ಮಾಡಿ';
 
   @override
-  String get journeyRestore => 'Restore';
+  String get journeyRestore => 'ಮರುಸ್ಥಾಪಿಸಿ';
 
   @override
-  String get journeyDeleteDraftTitle => 'Delete this draft?';
+  String get journeyDeleteDraftTitle => 'ಈ ಕರಡನ್ನು ಅಳಿಸಬೇಕೇ?';
 
   @override
-  String get journeyDeleteDraft => 'Delete draft';
+  String get journeyDeleteDraft => 'ಕರಡು ಅಳಿಸಿ';
 
   @override
-  String get journeyPublishFirst => 'Publish the journey first.';
+  String get journeyPublishFirst => 'ಮೊದಲು ಪಯಣವನ್ನು ಪ್ರಕಟಿಸಿ.';
 
   @override
-  String get journeyRename => 'Rename';
+  String get journeyRename => 'ಹೆಸರು ಬದಲಿಸಿ';
 
   @override
-  String get journeyGradingNowGraded => 'Grading and tries, now graded';
+  String get journeyGradingNowGraded =>
+      'ಅಂಕ ನೀಡಿಕೆ ಮತ್ತು ಪ್ರಯತ್ನಗಳು, ಈಗ ಅಂಕಸಹಿತ';
 
   @override
-  String get journeyGradingNowNotGraded => 'Grading and tries, now not graded';
+  String get journeyGradingNowNotGraded =>
+      'ಅಂಕ ನೀಡಿಕೆ ಮತ್ತು ಪ್ರಯತ್ನಗಳು, ಈಗ ಅಂಕರಹಿತ';
 
   @override
-  String get journeyDuplicate => 'Duplicate as a new draft';
+  String get journeyDuplicate => 'ಹೊಸ ಕರಡಾಗಿ ನಕಲು ಮಾಡಿ';
 
   @override
-  String get journeyArchiveHide => 'Archive, hide from students';
+  String get journeyArchiveHide => 'ಆರ್ಕೈವ್ ಮಾಡಿ, ವಿದ್ಯಾರ್ಥಿಗಳಿಂದ ಮರೆಮಾಡಿ';
 
   @override
-  String get journeyRestoreForStudents => 'Restore for students';
+  String get journeyRestoreForStudents => 'ವಿದ್ಯಾರ್ಥಿಗಳಿಗಾಗಿ ಮರುಸ್ಥಾಪಿಸಿ';
 
   @override
-  String get journeyDeleteThisDraft => 'Delete this draft';
+  String get journeyDeleteThisDraft => 'ಈ ಕರಡನ್ನು ಅಳಿಸಿ';
 
   @override
   String get journeyGradedSummary =>
-      'Graded: the first try at each question counts towards a score.';
+      'ಅಂಕಸಹಿತ: ಪ್ರತಿ ಪ್ರಶ್ನೆಯ ಮೊದಲ ಪ್ರಯತ್ನವನ್ನು ಅಂಕಕ್ಕೆ ಎಣಿಸಲಾಗುತ್ತದೆ.';
 
   @override
-  String get journeyNotGradedSummary =>
-      'Not graded: questions are for practice only.';
+  String get journeyNotGradedSummary => 'ಅಂಕರಹಿತ: ಪ್ರಶ್ನೆಗಳು ಅಭ್ಯಾಸಕ್ಕೆ ಮಾತ್ರ.';
 
   @override
   String journeyMoreTriesSummary(int count) {
@@ -10438,48 +10501,48 @@ class AppLocalizationsKn extends AppLocalizations {
       count,
       locale: localeName,
       other:
-          'After a wrong answer, a student gets $count more tries, with the content replayed first.',
+          'ತಪ್ಪು ಉತ್ತರದ ನಂತರ, ವಿದ್ಯಾರ್ಥಿಗೆ ಇನ್ನೂ $count ಪ್ರಯತ್ನಗಳು ಸಿಗುತ್ತವೆ, ಮೊದಲು ವಿಷಯವನ್ನು ಮತ್ತೆ ಪ್ಲೇ ಮಾಡಲಾಗುತ್ತದೆ.',
       one:
-          'After a wrong answer, a student gets 1 more try, with the content replayed first.',
+          'ತಪ್ಪು ಉತ್ತರದ ನಂತರ, ವಿದ್ಯಾರ್ಥಿಗೆ ಇನ್ನೂ 1 ಪ್ರಯತ್ನ ಸಿಗುತ್ತದೆ, ಮೊದಲು ವಿಷಯವನ್ನು ಮತ್ತೆ ಪ್ಲೇ ಮಾಡಲಾಗುತ್ತದೆ.',
     );
     return '$_temp0';
   }
 
   @override
-  String get journeyGradingTitle => 'Grading and tries';
+  String get journeyGradingTitle => 'ಅಂಕ ನೀಡಿಕೆ ಮತ್ತು ಪ್ರಯತ್ನಗಳು';
 
   @override
-  String get journeyTurnGradingOff => 'Turn grading off';
+  String get journeyTurnGradingOff => 'ಅಂಕ ನೀಡಿಕೆ ಆಫ್ ಮಾಡಿ';
 
   @override
-  String get journeyTurnGradingOn => 'Turn grading on';
+  String get journeyTurnGradingOn => 'ಅಂಕ ನೀಡಿಕೆ ಆನ್ ಮಾಡಿ';
 
   @override
-  String get journeyGradingIsOff => 'Grading is off.';
+  String get journeyGradingIsOff => 'ಅಂಕ ನೀಡಿಕೆ ಆಫ್ ಆಗಿದೆ.';
 
   @override
-  String get journeyGradingIsOn => 'Grading is on.';
+  String get journeyGradingIsOn => 'ಅಂಕ ನೀಡಿಕೆ ಆನ್ ಆಗಿದೆ.';
 
   @override
-  String get journeyFewerTries => 'Fewer tries';
+  String get journeyFewerTries => 'ಕಡಿಮೆ ಪ್ರಯತ್ನಗಳು';
 
   @override
-  String get journeyMoreTries => 'More tries';
+  String get journeyMoreTries => 'ಹೆಚ್ಚು ಪ್ರಯತ್ನಗಳು';
 
   @override
-  String get journeyLoadingSummary => 'Loading the summary.';
+  String get journeyLoadingSummary => 'ಸಾರಾಂಶ ಲೋಡ್ ಆಗುತ್ತಿದೆ.';
 
   @override
-  String get journeyNoProblems => 'No problems.';
+  String get journeyNoProblems => 'ಯಾವುದೇ ಸಮಸ್ಯೆಗಳಿಲ್ಲ.';
 
   @override
   String journeyProblems(String issues) {
-    return 'Problems to fix before publishing: $issues';
+    return 'ಪ್ರಕಟಿಸುವ ಮೊದಲು ಸರಿಪಡಿಸಬೇಕಾದ ಸಮಸ್ಯೆಗಳು: $issues';
   }
 
   @override
   String journeyThingsToCheck(String warnings) {
-    return 'Things to check: $warnings';
+    return 'ಪರಿಶೀಲಿಸಬೇಕಾದ ವಿಷಯಗಳು: $warnings';
   }
 
   @override
@@ -10492,240 +10555,241 @@ class AppLocalizationsKn extends AppLocalizations {
     String polls,
     String graded,
   ) {
-    return '$title. $steps steps: $recordings recordings, $narrations narrations, $questions questions, $polls polls. $graded.';
+    return '$title. $steps ಹಂತಗಳು: $recordings ರೆಕಾರ್ಡಿಂಗ್‌ಗಳು, $narrations ನಿರೂಪಣೆಗಳು, $questions ಪ್ರಶ್ನೆಗಳು, $polls ಪೋಲ್‌ಗಳು. $graded.';
   }
 
   @override
   String journeyPublishTitle(String title) {
-    return 'Publish $title?';
+    return '$title ಪ್ರಕಟಿಸಬೇಕೇ?';
   }
 
   @override
   String get journeyPublishMessage =>
-      'All students in this class will be able to play and download it, and they will get a notification.';
+      'ಈ ತರಗತಿಯ ಎಲ್ಲಾ ವಿದ್ಯಾರ್ಥಿಗಳು ಇದನ್ನು ಪ್ಲೇ ಮತ್ತು ಡೌನ್‌ಲೋಡ್ ಮಾಡಬಹುದು, ಮತ್ತು ಅವರಿಗೆ ಅಧಿಸೂಚನೆ ಬರುತ್ತದೆ.';
 
   @override
-  String get journeyPublishNow => 'Publish now';
+  String get journeyPublishNow => 'ಈಗ ಪ್ರಕಟಿಸಿ';
 
   @override
-  String get journeyPublishedShort => 'Published.';
+  String get journeyPublishedShort => 'ಪ್ರಕಟಿಸಲಾಗಿದೆ.';
 
   @override
-  String get journeyReviewBeforePublishing => 'Review before publishing';
+  String get journeyReviewBeforePublishing => 'ಪ್ರಕಟಿಸುವ ಮೊದಲು ಪರಿಶೀಲಿಸಿ';
 
   @override
   String get journeyFixProblemsFirst =>
-      'Fix the problems first. Press 8 to hear them.';
+      'ಮೊದಲು ಸಮಸ್ಯೆಗಳನ್ನು ಸರಿಪಡಿಸಿ. ಅವುಗಳನ್ನು ಕೇಳಲು 8 ಒತ್ತಿ.';
 
   @override
-  String get journeyPreviewFirst => 'Preview as a student first';
+  String get journeyPreviewFirst => 'ಮೊದಲು ವಿದ್ಯಾರ್ಥಿಯಾಗಿ ಮುನ್ನೋಟ ನೋಡಿ';
 
   @override
   String undoOffer(String seconds) {
-    return 'Press 1 within $seconds seconds to undo.';
+    return 'ರದ್ದುಗೊಳಿಸಲು $seconds ಸೆಕೆಂಡುಗಳ ಒಳಗೆ 1 ಒತ್ತಿ.';
   }
 
   @override
   String undoDone(String action) {
-    return 'Undone. $action was reversed.';
+    return 'ರದ್ದುಗೊಳಿಸಲಾಗಿದೆ. $action ಅನ್ನು ಹಿಂಪಡೆಯಲಾಗಿದೆ.';
   }
 
   @override
   String get undoFailed =>
-      'Undo did not work. Check the item and add it again if needed.';
+      'ರದ್ದುಗೊಳಿಸುವುದು ಕೆಲಸ ಮಾಡಲಿಲ್ಲ. ಐಟಂ ಪರಿಶೀಲಿಸಿ, ಬೇಕಿದ್ದರೆ ಮತ್ತೆ ಸೇರಿಸಿ.';
 
   @override
-  String get uiBack => 'Back';
+  String get uiBack => 'ಹಿಂದೆ';
 
   @override
-  String get uiCancel => 'Cancel';
+  String get uiCancel => 'ರದ್ದುಮಾಡಿ';
 
   @override
-  String get uiContinue => 'Continue';
+  String get uiContinue => 'ಮುಂದುವರಿಸಿ';
 
   @override
-  String get uiNotNow => 'Not now';
+  String get uiNotNow => 'ಈಗ ಬೇಡ';
 
   @override
   String uiPressFor(String key, String action) {
-    return 'Press $key for $action.';
+    return '$actionಗಾಗಿ $key ಒತ್ತಿ.';
   }
 
   @override
   String uiLabelUnavailable(String label) {
-    return '$label, unavailable';
+    return '$label, ಲಭ್ಯವಿಲ್ಲ';
   }
 
   @override
-  String get uiAlreadyHome => 'You are already home.';
+  String get uiAlreadyHome => 'ನೀವು ಈಗಾಗಲೇ ಮುಖಪುಟದಲ್ಲಿದ್ದೀರಿ.';
 
   @override
   String uiNotAvailableNow(String label) {
-    return '$label is not available right now.';
+    return '$label ಈಗ ಲಭ್ಯವಿಲ್ಲ.';
   }
 
   @override
   String uiListLoading(String title) {
-    return 'Loading $title. Press 0 to go back.';
+    return '$title ಲೋಡ್ ಆಗುತ್ತಿದೆ. ಹಿಂದೆ ಹೋಗಲು 0 ಒತ್ತಿ.';
   }
 
   @override
   String uiListPage(String title, String number) {
-    return '$title. Page $number.';
+    return '$title. ಪುಟ $number.';
   }
 
   @override
   String uiListScreenName(String title, String number) {
-    return '$title. Page $number';
+    return '$title. ಪುಟ $number';
   }
 
   @override
-  String get uiListNoMatches => 'No matching items.';
+  String get uiListNoMatches => 'ಹೊಂದುವ ಐಟಂಗಳಿಲ್ಲ.';
 
   @override
   String get uiListHelp =>
-      'Press 6 for list options, including refresh. Press 7 for the previous page. Press 8 to search all items. Press 9 for the next page. Press 0 to go back. Use D-pad up and down to move between items and page controls, and OK to select. Press star to repeat help. Press hash to stop speech.';
+      'ರಿಫ್ರೆಶ್ ಸೇರಿದಂತೆ ಪಟ್ಟಿಯ ಆಯ್ಕೆಗಳಿಗಾಗಿ 6 ಒತ್ತಿ. ಹಿಂದಿನ ಪುಟಕ್ಕಾಗಿ 7 ಒತ್ತಿ. ಎಲ್ಲಾ ಐಟಂಗಳನ್ನು ಹುಡುಕಲು 8 ಒತ್ತಿ. ಮುಂದಿನ ಪುಟಕ್ಕಾಗಿ 9 ಒತ್ತಿ. ಹಿಂದೆ ಹೋಗಲು 0 ಒತ್ತಿ. ಐಟಂಗಳು ಮತ್ತು ಪುಟ ನಿಯಂತ್ರಣಗಳ ನಡುವೆ ಚಲಿಸಲು D-pad ಮೇಲೆ ಮತ್ತು ಕೆಳಗೆ ಬಳಸಿ, ಆರಿಸಲು ಓಕೆ ಒತ್ತಿ. ಸಹಾಯವನ್ನು ಮತ್ತೆ ಕೇಳಲು ಸ್ಟಾರ್ ಒತ್ತಿ. ಧ್ವನಿ ನಿಲ್ಲಿಸಲು ಹ್ಯಾಶ್ ಒತ್ತಿ.';
 
   @override
   String get uiListLoadFailed =>
-      'This page could not be loaded. Press 6 for retry options. Your previous page is kept.';
+      'ಈ ಪುಟವನ್ನು ಲೋಡ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸುವ ಆಯ್ಕೆಗಳಿಗಾಗಿ 6 ಒತ್ತಿ. ನಿಮ್ಮ ಹಿಂದಿನ ಪುಟ ಹಾಗೆಯೇ ಇದೆ.';
 
   @override
   String get uiListLoadingWait =>
-      'Loading. Please wait, or press 0 to go back.';
+      'ಲೋಡ್ ಆಗುತ್ತಿದೆ. ದಯವಿಟ್ಟು ಕಾಯಿರಿ, ಅಥವಾ ಹಿಂದೆ ಹೋಗಲು 0 ಒತ್ತಿ.';
 
   @override
   String uiListNoItem(String number) {
-    return 'No item is assigned to $number on this page.';
+    return 'ಈ ಪುಟದಲ್ಲಿ $number ಗೆ ಯಾವುದೇ ಐಟಂ ನಿಗದಿಯಾಗಿಲ್ಲ.';
   }
 
   @override
-  String get uiListFirstPage => 'This is the first page.';
+  String get uiListFirstPage => 'ಇದು ಮೊದಲ ಪುಟ.';
 
   @override
-  String get uiListLastPage => 'This is the last page.';
+  String get uiListLastPage => 'ಇದು ಕೊನೆಯ ಪುಟ.';
 
   @override
   String uiListSearchTitle(String title) {
-    return 'Search $title';
+    return '$title ಹುಡುಕಿ';
   }
 
   @override
-  String get uiListSearchLabel => 'Search all available items';
+  String get uiListSearchLabel => 'ಲಭ್ಯವಿರುವ ಎಲ್ಲಾ ಐಟಂಗಳನ್ನು ಹುಡುಕಿ';
 
   @override
-  String get uiListSearchTooLong => 'Use at most 200 characters for search.';
+  String get uiListSearchTooLong => 'ಹುಡುಕಾಟಕ್ಕೆ ಗರಿಷ್ಠ 200 ಅಕ್ಷರಗಳನ್ನು ಬಳಸಿ.';
 
   @override
-  String get uiListOptions => 'List options';
+  String get uiListOptions => 'ಪಟ್ಟಿಯ ಆಯ್ಕೆಗಳು';
 
   @override
-  String get uiListSearch => 'Search';
+  String get uiListSearch => 'ಹುಡುಕಿ';
 
   @override
-  String get uiListClearSearch => 'Clear search';
+  String get uiListClearSearch => 'ಹುಡುಕಾಟ ತೆರವುಗೊಳಿಸಿ';
 
   @override
-  String get uiListRefreshPage => 'Refresh this page';
+  String get uiListRefreshPage => 'ಈ ಪುಟವನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಿ';
 
   @override
-  String get uiListRetry => 'Retry';
+  String get uiListRetry => 'ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ';
 
   @override
-  String get uiListFilters => 'Filters';
+  String get uiListFilters => 'ಫಿಲ್ಟರ್‌ಗಳು';
 
   @override
-  String get uiListPreviousPage => 'Previous page';
+  String get uiListPreviousPage => 'ಹಿಂದಿನ ಪುಟ';
 
   @override
-  String get uiListSearchAll => 'Search all items';
+  String get uiListSearchAll => 'ಎಲ್ಲಾ ಐಟಂಗಳನ್ನು ಹುಡುಕಿ';
 
   @override
-  String get uiListNextPage => 'Next page';
+  String get uiListNextPage => 'ಮುಂದಿನ ಪುಟ';
 
   @override
   String get uiListSections =>
-      'items, list options, previous page, search, next page and back';
+      'ಐಟಂಗಳು, ಪಟ್ಟಿಯ ಆಯ್ಕೆಗಳು, ಹಿಂದಿನ ಪುಟ, ಹುಡುಕಾಟ, ಮುಂದಿನ ಪುಟ ಮತ್ತು ಹಿಂದೆ';
 
   @override
-  String get uiWaitingConfirmation => 'Waiting for confirmation. Please wait.';
+  String get uiWaitingConfirmation =>
+      'ಖಚಿತಪಡಿಸುವಿಕೆಗಾಗಿ ಕಾಯಲಾಗುತ್ತಿದೆ. ದಯವಿಟ್ಟು ಕಾಯಿರಿ.';
 
   @override
-  String get uiFinishWord => 'Finish entering the current word, then press OK.';
+  String get uiFinishWord => 'ಈಗಿನ ಪದವನ್ನು ಟೈಪ್ ಮಾಡಿ ಮುಗಿಸಿ, ನಂತರ ಓಕೆ ಒತ್ತಿ.';
 
   @override
   String get uiStepFailed =>
-      'This step could not be completed. Your entry is kept. Try again.';
+      'ಈ ಹಂತವನ್ನು ಪೂರ್ಣಗೊಳಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ನೀವು ನಮೂದಿಸಿದ್ದು ಹಾಗೆಯೇ ಇದೆ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
-  String get uiPasswordVisible => 'Password is visible.';
+  String get uiPasswordVisible => 'ಪಾಸ್‌ವರ್ಡ್ ಕಾಣಿಸುತ್ತಿದೆ.';
 
   @override
-  String get uiPasswordHidden => 'Password is hidden.';
+  String get uiPasswordHidden => 'ಪಾಸ್‌ವರ್ಡ್ ಮರೆಮಾಡಲಾಗಿದೆ.';
 
   @override
   String uiTextStepScreen(String title, String label) {
-    return '$title. $label. Editing. Press OK to finish, or use up or down to leave the field.';
+    return '$title. $label. ಎಡಿಟ್ ಮಾಡಲಾಗುತ್ತಿದೆ. ಮುಗಿಸಲು ಓಕೆ ಒತ್ತಿ, ಅಥವಾ ಫೀಲ್ಡ್‌ನಿಂದ ಹೊರಬರಲು ಮೇಲೆ ಅಥವಾ ಕೆಳಗೆ ಬಳಸಿ.';
   }
 
   @override
-  String get uiShowOrHidePassword => 'Show or hide password';
+  String get uiShowOrHidePassword => 'ಪಾಸ್‌ವರ್ಡ್ ತೋರಿಸಿ ಅಥವಾ ಮರೆಮಾಡಿ';
 
   @override
   String get uiDateEnterNumbers =>
-      'Enter a number in every date and time field.';
+      'ಪ್ರತಿ ದಿನಾಂಕ ಮತ್ತು ಸಮಯದ ಫೀಲ್ಡ್‌ನಲ್ಲಿ ಒಂದು ಸಂಖ್ಯೆಯನ್ನು ನಮೂದಿಸಿ.';
 
   @override
   String uiDateChooseValid(String from, String to) {
-    return 'Choose a valid date from $from to $to.';
+    return '$from ರಿಂದ $to ವರೆಗಿನ ಸರಿಯಾದ ದಿನಾಂಕವನ್ನು ಆರಿಸಿ.';
   }
 
   @override
   String get uiDateInvalid =>
-      'Enter a valid date, an hour from 0 to 23, and a minute from 0 to 59.';
+      'ಸರಿಯಾದ ದಿನಾಂಕ, 0 ರಿಂದ 23 ರವರೆಗಿನ ಗಂಟೆ, ಮತ್ತು 0 ರಿಂದ 59 ರವರೆಗಿನ ನಿಮಿಷವನ್ನು ನಮೂದಿಸಿ.';
 
   @override
   String uiDateChoose(String from, String to) {
-    return 'Choose a date from $from to $to.';
+    return '$from ರಿಂದ $to ವರೆಗಿನ ದಿನಾಂಕವನ್ನು ಆರಿಸಿ.';
   }
 
   @override
   String uiRange(String from, String to) {
-    return '$from to $to';
+    return '$from ರಿಂದ $to';
   }
 
   @override
-  String get uiYear => 'Year';
+  String get uiYear => 'ವರ್ಷ';
 
   @override
-  String get uiMonth => 'Month';
+  String get uiMonth => 'ತಿಂಗಳು';
 
   @override
-  String get uiDay => 'Day';
+  String get uiDay => 'ದಿನ';
 
   @override
-  String get uiHour => 'Hour';
+  String get uiHour => 'ಗಂಟೆ';
 
   @override
-  String get uiMinute => 'Minute';
+  String get uiMinute => 'ನಿಮಿಷ';
 
   @override
   String uiDateFieldEmpty(String name, String range) {
-    return '$name, $range, currently empty';
+    return '$name, $range, ಈಗ ಖಾಲಿ ಇದೆ';
   }
 
   @override
   String uiDateFieldValue(String name, String range, String value) {
-    return '$name, $range, currently $value';
+    return '$name, $range, ಈಗ $value';
   }
 
   @override
   String uiDateScreen(String from, String to) {
-    return 'Set date and time in the phone\'s local time. Choose a date from $from to $to.';
+    return 'ಫೋನ್‌ನ ಸ್ಥಳೀಯ ಸಮಯದಲ್ಲಿ ದಿನಾಂಕ ಮತ್ತು ಸಮಯವನ್ನು ಹೊಂದಿಸಿ. $from ರಿಂದ $to ವರೆಗಿನ ದಿನಾಂಕವನ್ನು ಆರಿಸಿ.';
   }
 
   @override
-  String get uiSaveDateTime => 'Save date and time';
+  String get uiSaveDateTime => 'ದಿನಾಂಕ ಮತ್ತು ಸಮಯ ಉಳಿಸಿ';
 
   @override
   String uiChoiceValue(String label, String value) {
@@ -10739,90 +10803,90 @@ class AppLocalizationsKn extends AppLocalizations {
     String position,
     String total,
   ) {
-    return '$label: $value, $position of $total';
+    return '$label: $value, $total ರಲ್ಲಿ $position';
   }
 
   @override
   String uiChoiceChange(String description) {
-    return '$description. Use left or right to change';
+    return '$description. ಬದಲಾಯಿಸಲು ಎಡ ಅಥವಾ ಬಲ ಬಳಸಿ';
   }
 
   @override
   String get startupPreferencesFailed =>
-      'Some preferences could not be loaded. Defaults are being used.';
+      'ಕೆಲವು ಆದ್ಯತೆಗಳನ್ನು ಲೋಡ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ಡೀಫಾಲ್ಟ್‌ಗಳನ್ನು ಬಳಸಲಾಗುತ್ತಿದೆ.';
 
   @override
-  String get startupNotificationsTitle => 'Session notifications';
+  String get startupNotificationsTitle => 'ಸೆಷನ್ ಅಧಿಸೂಚನೆಗಳು';
 
   @override
   String get startupNotificationsMessage =>
-      'SEEDS uses notifications to tell you about session invitations and updates. You can continue using the app if you choose Not now.';
+      'ಸೆಷನ್ ಆಹ್ವಾನಗಳು ಮತ್ತು ಅಪ್‌ಡೇಟ್‌ಗಳ ಬಗ್ಗೆ ತಿಳಿಸಲು SEEDS ಅಧಿಸೂಚನೆಗಳನ್ನು ಬಳಸುತ್ತದೆ. ನೀವು ಈಗ ಬೇಡ ಆರಿಸಿದರೂ ಆ್ಯಪ್ ಬಳಸುವುದನ್ನು ಮುಂದುವರಿಸಬಹುದು.';
 
   @override
-  String get startupEnableNotifications => 'Enable notifications';
+  String get startupEnableNotifications => 'ಅಧಿಸೂಚನೆಗಳನ್ನು ಆನ್ ಮಾಡಿ';
 
   @override
-  String get startupLoading => 'SEEDS is loading';
+  String get startupLoading => 'SEEDS ಲೋಡ್ ಆಗುತ್ತಿದೆ';
 
   @override
-  String get startupWelcomeScreenName => 'Welcome to SEEDS';
+  String get startupWelcomeScreenName => 'SEEDS ಗೆ ಸ್ವಾಗತ';
 
   @override
-  String get startupLoginButton => 'Login, button';
+  String get startupLoginButton => 'ಸೈನ್ ಇನ್, ಬಟನ್';
 
   @override
-  String get startupRegisterButton => 'Register, button';
+  String get startupRegisterButton => 'ನೋಂದಣಿ, ಬಟನ್';
 
   @override
-  String get startupSettingsButton => 'Settings, button';
+  String get startupSettingsButton => 'ಸೆಟ್ಟಿಂಗ್‌ಗಳು, ಬಟನ್';
 
   @override
-  String get startupRepeatInstructionsButton => 'Repeat instructions, button';
+  String get startupRepeatInstructionsButton => 'ಸೂಚನೆಗಳನ್ನು ಮತ್ತೆ ಕೇಳಿ, ಬಟನ್';
 
   @override
-  String get authSimAutofillOptional => 'SIM phone-number autofill is optional';
+  String get authSimAutofillOptional => 'SIM ನಿಂದ ಫೋನ್ ಸಂಖ್ಯೆ ತುಂಬುವುದು ಐಚ್ಛಿಕ';
 
   @override
   String get authRegisteredNowLogIn =>
-      'Registered. Now log in. Phone number field. Press star for help.';
+      'ನೋಂದಣಿ ಆಗಿದೆ. ಈಗ ಲಾಗಿನ್ ಮಾಡಿ. ಫೋನ್ ಸಂಖ್ಯೆ ಕ್ಷೇತ್ರ. ಸಹಾಯಕ್ಕಾಗಿ ಸ್ಟಾರ್ ಒತ್ತಿ.';
 
   @override
   String get authSimUnavailableOnDevice =>
-      'SIM suggestions are unavailable on this device. Enter the phone number manually.';
+      'ಈ ಫೋನ್‌ನಲ್ಲಿ SIM ಸಲಹೆಗಳು ಲಭ್ಯವಿಲ್ಲ. ಫೋನ್ ಸಂಖ್ಯೆಯನ್ನು ನೀವೇ ನಮೂದಿಸಿ.';
 
   @override
-  String get authSimDialogTitle => 'Optional SIM autofill';
+  String get authSimDialogTitle => 'ಐಚ್ಛಿಕ SIM ಸ್ವಯಂ ತುಂಬುವಿಕೆ';
 
   @override
   String get authSimDialogMessage =>
-      'Read optional phone-number suggestions from this device? You will choose a suggestion before it replaces the phone field. This does not verify who owns an account. SIM access is never required for login, registration, Wi-Fi, or joining a session.';
+      'ಈ ಫೋನ್‌ನಿಂದ ಐಚ್ಛಿಕ ಫೋನ್ ಸಂಖ್ಯೆ ಸಲಹೆಗಳನ್ನು ಓದಬೇಕೇ? ಫೋನ್ ಕ್ಷೇತ್ರದಲ್ಲಿ ತುಂಬುವ ಮೊದಲು ನೀವೇ ಒಂದು ಸಲಹೆಯನ್ನು ಆಯ್ಕೆ ಮಾಡುತ್ತೀರಿ. ಇದು ಖಾತೆ ಯಾರದು ಎಂದು ಪರಿಶೀಲಿಸುವುದಿಲ್ಲ. ಲಾಗಿನ್, ನೋಂದಣಿ, Wi-Fi ಅಥವಾ ಸೆಷನ್‌ಗೆ ಸೇರಲು SIM ಪ್ರವೇಶ ಎಂದಿಗೂ ಬೇಕಿಲ್ಲ.';
 
   @override
-  String get authSimDialogConfirm => 'Read SIM suggestions';
+  String get authSimDialogConfirm => 'SIM ಸಲಹೆಗಳನ್ನು ಓದಿ';
 
   @override
   String get authSimAutofillSkipped =>
-      'SIM autofill skipped. Enter the phone number manually.';
+      'SIM ಸ್ವಯಂ ತುಂಬುವಿಕೆ ಬಿಡಲಾಗಿದೆ. ಫೋನ್ ಸಂಖ್ಯೆಯನ್ನು ನೀವೇ ನಮೂದಿಸಿ.';
 
   @override
-  String get authSimDetecting => 'Detecting SIM card...';
+  String get authSimDetecting => 'SIM ಕಾರ್ಡ್ ಹುಡುಕಲಾಗುತ್ತಿದೆ...';
 
   @override
   String get authSimAutofillUnavailable =>
-      'SIM autofill unavailable. Enter the phone number manually.';
+      'SIM ಸ್ವಯಂ ತುಂಬುವಿಕೆ ಲಭ್ಯವಿಲ್ಲ. ಫೋನ್ ಸಂಖ್ಯೆಯನ್ನು ನೀವೇ ನಮೂದಿಸಿ.';
 
   @override
   String get authSimNoneFound =>
-      'No SIM card found. Enter the phone number manually.';
+      'SIM ಕಾರ್ಡ್ ಸಿಗಲಿಲ್ಲ. ಫೋನ್ ಸಂಖ್ಯೆಯನ್ನು ನೀವೇ ನಮೂದಿಸಿ.';
 
   @override
   String authSimCardsDetected(String count) {
-    return '$count SIM cards detected. Please choose one.';
+    return '$count SIM ಕಾರ್ಡ್‌ಗಳು ಸಿಕ್ಕಿವೆ. ದಯವಿಟ್ಟು ಒಂದನ್ನು ಆಯ್ಕೆ ಮಾಡಿ.';
   }
 
   @override
   String get authSimSuggestionUnavailable =>
-      'SIM suggestion unavailable. Enter the phone number manually.';
+      'SIM ಸಲಹೆ ಲಭ್ಯವಿಲ್ಲ. ಫೋನ್ ಸಂಖ್ಯೆಯನ್ನು ನೀವೇ ನಮೂದಿಸಿ.';
 
   @override
   String authSimOptionLabel(String number, String carrier) {
@@ -10830,200 +10894,201 @@ class AppLocalizationsKn extends AppLocalizations {
   }
 
   @override
-  String get authSimUnknownCarrier => 'Unknown carrier';
+  String get authSimUnknownCarrier => 'ಅಪರಿಚಿತ ನೆಟ್‌ವರ್ಕ್';
 
   @override
   String get authSimSelectedFilled =>
-      'Selected suggestion filled. This is not proof of account ownership.';
+      'ಆಯ್ಕೆ ಮಾಡಿದ ಸಲಹೆ ತುಂಬಲಾಗಿದೆ. ಇದು ಖಾತೆ ನಿಮ್ಮದು ಎಂಬುದಕ್ಕೆ ಪುರಾವೆಯಲ್ಲ.';
 
   @override
   String get authSimSuggestionFilledSpoken =>
-      'Phone-number suggestion filled. Enter your password to sign in. No sign-in was sent.';
+      'ಫೋನ್ ಸಂಖ್ಯೆ ಸಲಹೆ ತುಂಬಲಾಗಿದೆ. ಸೈನ್ ಇನ್ ಮಾಡಲು ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ನಮೂದಿಸಿ. ಯಾವುದೇ ಸೈನ್ ಇನ್ ಕಳುಹಿಸಿಲ್ಲ.';
 
   @override
-  String get authErrorEnterPhone => 'Enter your phone number.';
+  String get authErrorEnterPhone => 'ನಿಮ್ಮ ಫೋನ್ ಸಂಖ್ಯೆ ನಮೂದಿಸಿ.';
 
   @override
-  String get authErrorInvalidPhone => 'Enter a valid 10-digit phone number.';
+  String get authErrorInvalidPhone => 'ಸರಿಯಾದ 10 ಅಂಕಿಯ ಫೋನ್ ಸಂಖ್ಯೆ ನಮೂದಿಸಿ.';
 
   @override
-  String get authErrorEnterPassword => 'Enter your password.';
+  String get authErrorEnterPassword => 'ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ನಮೂದಿಸಿ.';
 
   @override
-  String get authErrorPasswordTooShort =>
-      'Password must be at least 6 characters.';
+  String get authErrorPasswordTooShort => 'ಪಾಸ್‌ವರ್ಡ್ ಕನಿಷ್ಠ 6 ಅಕ್ಷರಗಳಿರಬೇಕು.';
 
   @override
-  String get authErrorInvalidServerResponse => 'Invalid response from server';
+  String get authErrorInvalidServerResponse =>
+      'ಸರ್ವರ್‌ನಿಂದ ತಪ್ಪಾದ ಉತ್ತರ ಬಂದಿದೆ';
 
   @override
   String get authErrorNotRegisteredAdmin =>
-      'This phone number is not registered as an admin account. Press 1, 2 or 3 to choose the account type.';
+      'ಈ ಫೋನ್ ಸಂಖ್ಯೆ ನಿರ್ವಾಹಕರ ಖಾತೆಯಾಗಿ ನೋಂದಣಿಯಾಗಿಲ್ಲ. ಖಾತೆಯ ಪ್ರಕಾರ ಆಯ್ಕೆ ಮಾಡಲು 1, 2 ಅಥವಾ 3 ಒತ್ತಿ.';
 
   @override
   String get authErrorNotRegisteredTeacher =>
-      'This phone number is not registered as a teacher account. Press 1, 2 or 3 to choose the account type.';
+      'ಈ ಫೋನ್ ಸಂಖ್ಯೆ ಶಿಕ್ಷಕರ ಖಾತೆಯಾಗಿ ನೋಂದಣಿಯಾಗಿಲ್ಲ. ಖಾತೆಯ ಪ್ರಕಾರ ಆಯ್ಕೆ ಮಾಡಲು 1, 2 ಅಥವಾ 3 ಒತ್ತಿ.';
 
   @override
   String get authErrorNotRegisteredStudent =>
-      'This phone number is not registered as a student account. Press 1, 2 or 3 to choose the account type.';
+      'ಈ ಫೋನ್ ಸಂಖ್ಯೆ ವಿದ್ಯಾರ್ಥಿ ಖಾತೆಯಾಗಿ ನೋಂದಣಿಯಾಗಿಲ್ಲ. ಖಾತೆಯ ಪ್ರಕಾರ ಆಯ್ಕೆ ಮಾಡಲು 1, 2 ಅಥವಾ 3 ಒತ್ತಿ.';
 
   @override
   String get authErrorResponseNotVerified =>
-      'The sign-in response could not be verified. Please try again.';
+      'ಸೈನ್ ಇನ್ ಉತ್ತರವನ್ನು ಪರಿಶೀಲಿಸಲು ಆಗಲಿಲ್ಲ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
   String authErrorMovedToPhone(String message) {
-    return '$message Moved to phone number field.';
+    return '$message ಫೋನ್ ಸಂಖ್ಯೆ ಕ್ಷೇತ್ರಕ್ಕೆ ಸರಿಸಲಾಗಿದೆ.';
   }
 
   @override
   String authErrorMovedToAccountType(String message) {
-    return '$message Moved to account type.';
+    return '$message ಖಾತೆಯ ಪ್ರಕಾರಕ್ಕೆ ಸರಿಸಲಾಗಿದೆ.';
   }
 
   @override
   String authErrorMovedToPassword(String message) {
-    return '$message Moved to password field.';
+    return '$message ಪಾಸ್‌ವರ್ಡ್ ಕ್ಷೇತ್ರಕ್ಕೆ ಸರಿಸಲಾಗಿದೆ.';
   }
 
   @override
-  String get authRoleAdministrator => 'Administrator';
+  String get authRoleAdministrator => 'ನಿರ್ವಾಹಕರು';
 
   @override
-  String get authRoleTeacher => 'Teacher';
+  String get authRoleTeacher => 'ಶಿಕ್ಷಕರು';
 
   @override
-  String get authRoleStudent => 'Student';
+  String get authRoleStudent => 'ವಿದ್ಯಾರ್ಥಿ';
 
   @override
   String get authRecoveryStep1 =>
-      'Ask your school administrator to reset your password. They must check who you are in person. A phone number or SIM alone does not prove it. Never send anyone your permanent password.';
+      'ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ಮರುಹೊಂದಿಸಲು ನಿಮ್ಮ ಶಾಲೆಯ ನಿರ್ವಾಹಕರನ್ನು ಕೇಳಿ. ಅವರು ನೀವು ಯಾರು ಎಂದು ನೇರವಾಗಿ ಭೇಟಿಯಾಗಿ ಪರಿಶೀಲಿಸಬೇಕು. ಕೇವಲ ಫೋನ್ ಸಂಖ್ಯೆ ಅಥವಾ SIM ಅದನ್ನು ಸಾಬೀತುಪಡಿಸುವುದಿಲ್ಲ. ನಿಮ್ಮ ಶಾಶ್ವತ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಯಾರಿಗೂ ಎಂದಿಗೂ ಕಳುಹಿಸಬೇಡಿ.';
 
   @override
   String get authRecoveryStep2 =>
-      'The administrator gives you a private 12-digit temporary password. It works for 24 hours. Ask for a new one if it expires.';
+      'ನಿರ್ವಾಹಕರು ನಿಮಗೆ ಖಾಸಗಿಯಾದ 12 ಅಂಕಿಯ ತಾತ್ಕಾಲಿಕ ಪಾಸ್‌ವರ್ಡ್ ನೀಡುತ್ತಾರೆ. ಅದು 24 ಗಂಟೆ ಕೆಲಸ ಮಾಡುತ್ತದೆ. ಅವಧಿ ಮುಗಿದರೆ ಹೊಸದನ್ನು ಕೇಳಿ.';
 
   @override
   String get authRecoveryStep3 =>
-      'Sign in with your phone number and the temporary password, then choose a new password.';
+      'ನಿಮ್ಮ ಫೋನ್ ಸಂಖ್ಯೆ ಮತ್ತು ತಾತ್ಕಾಲಿಕ ಪಾಸ್‌ವರ್ಡ್‌ನಿಂದ ಸೈನ್ ಇನ್ ಮಾಡಿ, ನಂತರ ಹೊಸ ಪಾಸ್‌ವರ್ಡ್ ಆಯ್ಕೆ ಮಾಡಿ.';
 
   @override
   String get authRecoveryStep4 =>
-      'After 10 wrong tries, sign-in pauses for 15 minutes. Recovery needs internet. Files already on other phones are not removed instantly.';
+      '10 ತಪ್ಪು ಪ್ರಯತ್ನಗಳ ನಂತರ, ಸೈನ್ ಇನ್ 15 ನಿಮಿಷ ನಿಲ್ಲುತ್ತದೆ. ಮರುಪಡೆಯಲು ಇಂಟರ್ನೆಟ್ ಬೇಕು. ಈಗಾಗಲೇ ಬೇರೆ ಫೋನ್‌ಗಳಲ್ಲಿರುವ ಫೈಲ್‌ಗಳು ತಕ್ಷಣ ತೆಗೆದುಹಾಕಲ್ಪಡುವುದಿಲ್ಲ.';
 
   @override
-  String get authRecoveryHelpTitle => 'Password recovery help';
+  String get authRecoveryHelpTitle => 'ಪಾಸ್‌ವರ್ಡ್ ಮರುಪಡೆಯುವ ಸಹಾಯ';
 
   @override
   String authRecoveryHelpIntro(String count) {
-    return '$count short steps. Press down to hear each step.';
+    return '$count ಸಣ್ಣ ಹಂತಗಳು. ಪ್ರತಿ ಹಂತವನ್ನು ಕೇಳಲು ಕೆಳಗೆ ಒತ್ತಿ.';
   }
 
   @override
-  String get authBackToLogin => 'Back to login';
+  String get authBackToLogin => 'ಲಾಗಿನ್‌ಗೆ ಹಿಂತಿರುಗಿ';
 
   @override
-  String get authBackToLoginButton => 'Back to login, button';
+  String get authBackToLoginButton => 'ಲಾಗಿನ್‌ಗೆ ಹಿಂತಿರುಗಿ, ಬಟನ್';
 
   @override
   String get notesRecordingStarted =>
-      'Recording started. Select Stop recording when finished.';
+      'ರೆಕಾರ್ಡಿಂಗ್ ಪ್ರಾರಂಭವಾಗಿದೆ. ಮುಗಿದಾಗ ರೆಕಾರ್ಡಿಂಗ್ ನಿಲ್ಲಿಸಿ ಆರಿಸಿ.';
 
   @override
   String get notesActionNotConfirmed =>
-      'This note action could not be confirmed. Check storage, microphone permission or connection. Your drafts are kept.';
+      'ಈ ಟಿಪ್ಪಣಿ ಕ್ರಿಯೆಯನ್ನು ದೃಢೀಕರಿಸಲು ಆಗಲಿಲ್ಲ. ಸಂಗ್ರಹಣೆ, ಮೈಕ್ರೊಫೋನ್ ಅನುಮತಿ ಅಥವಾ ಸಂಪರ್ಕವನ್ನು ಪರಿಶೀಲಿಸಿ. ನಿಮ್ಮ ಕರಡುಗಳನ್ನು ಇಟ್ಟುಕೊಳ್ಳಲಾಗಿದೆ.';
 
   @override
-  String get notesNoneYet => 'No private notes yet.';
+  String get notesNoneYet => 'ಇನ್ನೂ ಯಾವುದೇ ಖಾಸಗಿ ಟಿಪ್ಪಣಿಗಳಿಲ್ಲ.';
 
   @override
   String notesLoaded(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count private notes loaded.',
-      one: '1 private note loaded.',
+      other: '$count ಖಾಸಗಿ ಟಿಪ್ಪಣಿಗಳು ಲೋಡ್ ಆಗಿವೆ.',
+      one: '1 ಖಾಸಗಿ ಟಿಪ್ಪಣಿ ಲೋಡ್ ಆಗಿದೆ.',
     );
     return '$_temp0';
   }
 
   @override
-  String get notesNameDialogTitle => 'Name private note';
+  String get notesNameDialogTitle => 'ಖಾಸಗಿ ಟಿಪ್ಪಣಿಗೆ ಹೆಸರು ನೀಡಿ';
 
   @override
-  String get notesDefaultTitle => 'Private note';
+  String get notesDefaultTitle => 'ಖಾಸಗಿ ಟಿಪ್ಪಣಿ';
 
   @override
   String notesDefaultLessonTitle(String lesson) {
-    return 'Note for $lesson';
+    return '$lesson ಗಾಗಿ ಟಿಪ್ಪಣಿ';
   }
 
   @override
-  String get notesRecordConfirmTitle => 'Record private note?';
+  String get notesRecordConfirmTitle => 'ಖಾಸಗಿ ಟಿಪ್ಪಣಿ ರೆಕಾರ್ಡ್ ಮಾಡಬೇಕೇ?';
 
   @override
   String notesRecordConfirmMessage(String lessonPoint) {
-    return 'Record microphone audio on this phone only, for up to five minutes or the remaining separate 10 MB note allowance. Stop recording before using spoken controls. App speech, leaving this screen or app interruption stops recording. Live-session recording is blocked. $lessonPoint No automatic upload or sharing. Microphone permission may be requested.';
+    return 'ಮೈಕ್ರೊಫೋನ್ ಆಡಿಯೊವನ್ನು ಈ ಫೋನ್‌ನಲ್ಲಿ ಮಾತ್ರ ರೆಕಾರ್ಡ್ ಮಾಡಲಾಗುತ್ತದೆ, ಗರಿಷ್ಠ ಐದು ನಿಮಿಷ ಅಥವಾ ಟಿಪ್ಪಣಿಗಳಿಗಾಗಿ ಪ್ರತ್ಯೇಕವಾಗಿ ಉಳಿದಿರುವ 10 MB ಮಿತಿಯವರೆಗೆ. ಧ್ವನಿ ನಿಯಂತ್ರಣಗಳನ್ನು ಬಳಸುವ ಮೊದಲು ರೆಕಾರ್ಡಿಂಗ್ ನಿಲ್ಲಿಸಿ. ಆ್ಯಪ್ ಧ್ವನಿ, ಈ ಪರದೆಯಿಂದ ಹೊರಹೋಗುವುದು ಅಥವಾ ಆ್ಯಪ್ ಅಡಚಣೆ ರೆಕಾರ್ಡಿಂಗ್ ನಿಲ್ಲಿಸುತ್ತದೆ. ಲೈವ್ ಸೆಷನ್ ರೆಕಾರ್ಡಿಂಗ್ ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ. $lessonPoint ಸ್ವಯಂಚಾಲಿತ ಅಪ್‌ಲೋಡ್ ಅಥವಾ ಹಂಚಿಕೆ ಇಲ್ಲ. ಮೈಕ್ರೊಫೋನ್ ಅನುಮತಿ ಕೇಳಬಹುದು.';
   }
 
   @override
   String notesLessonPointSeconds(String seconds) {
-    return 'Lesson point: $seconds seconds.';
+    return 'ಪಾಠದ ಸ್ಥಾನ: $seconds ಸೆಕೆಂಡುಗಳು.';
   }
 
   @override
-  String get notesStartRecording => 'Start recording';
+  String get notesStartRecording => 'ರೆಕಾರ್ಡಿಂಗ್ ಪ್ರಾರಂಭಿಸಿ';
 
   @override
-  String get notesDoNotRecord => 'Do not record';
+  String get notesDoNotRecord => 'ರೆಕಾರ್ಡ್ ಮಾಡಬೇಡಿ';
 
   @override
   String get notesReviewStoppedChanged =>
-      'Review stopped because the screen or app changed. Open this note again to review.';
+      'ಪರದೆ ಅಥವಾ ಆ್ಯಪ್ ಬದಲಾದ ಕಾರಣ ಪರಿಶೀಲನೆ ನಿಂತಿದೆ. ಪರಿಶೀಲಿಸಲು ಈ ಟಿಪ್ಪಣಿಯನ್ನು ಮತ್ತೆ ತೆರೆಯಿರಿ.';
 
   @override
   String get notesReviewStoppedAccount =>
-      'Review stopped because your account changed. Open private notes again.';
+      'ನಿಮ್ಮ ಖಾತೆ ಬದಲಾದ ಕಾರಣ ಪರಿಶೀಲನೆ ನಿಂತಿದೆ. ಖಾಸಗಿ ಟಿಪ್ಪಣಿಗಳನ್ನು ಮತ್ತೆ ತೆರೆಯಿರಿ.';
 
   @override
-  String get notesRenameDialogTitle => 'Rename private note';
+  String get notesRenameDialogTitle => 'ಖಾಸಗಿ ಟಿಪ್ಪಣಿಯ ಹೆಸರು ಬದಲಿಸಿ';
 
   @override
   String notesRemoveTitle(String title) {
-    return 'Remove $title?';
+    return '$title ತೆಗೆದುಹಾಕಬೇಕೇ?';
   }
 
   @override
   String notesRemoveMessage(String title) {
-    return 'Remove only $title from this account on this phone? Other notes, learning progress and bookmarks are kept. If previously published, the online recording and downloaded copies are not removed.';
+    return 'ಈ ಫೋನ್‌ನಲ್ಲಿರುವ ಈ ಖಾತೆಯಿಂದ $title ಅನ್ನು ಮಾತ್ರ ತೆಗೆದುಹಾಕಬೇಕೇ? ಇತರ ಟಿಪ್ಪಣಿಗಳು, ಕಲಿಕೆಯ ಪ್ರಗತಿ ಮತ್ತು ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳನ್ನು ಇಟ್ಟುಕೊಳ್ಳಲಾಗುತ್ತದೆ. ಹಿಂದೆ ಪ್ರಕಟಿಸಿದ್ದರೆ, ಆನ್‌ಲೈನ್ ರೆಕಾರ್ಡಿಂಗ್ ಮತ್ತು ಡೌನ್‌ಲೋಡ್ ಮಾಡಿದ ಪ್ರತಿಗಳನ್ನು ತೆಗೆದುಹಾಕಲಾಗುವುದಿಲ್ಲ.';
   }
 
   @override
-  String get notesRemoveSelected => 'Remove selected note';
+  String get notesRemoveSelected => 'ಆಯ್ಕೆ ಮಾಡಿದ ಟಿಪ್ಪಣಿ ತೆಗೆದುಹಾಕಿ';
 
   @override
-  String get notesKeepNote => 'Keep note';
+  String get notesKeepNote => 'ಟಿಪ್ಪಣಿ ಇಟ್ಟುಕೊಳ್ಳಿ';
 
   @override
   String notesRemoved(String title) {
-    return '$title removed. Other notes and learning progress kept.';
+    return '$title ತೆಗೆದುಹಾಕಲಾಗಿದೆ. ಇತರ ಟಿಪ್ಪಣಿಗಳು ಮತ್ತು ಕಲಿಕೆಯ ಪ್ರಗತಿಯನ್ನು ಇಟ್ಟುಕೊಳ್ಳಲಾಗಿದೆ.';
   }
 
   @override
   String get notesReviewBeforePublish =>
-      'Play and review this note privately before publishing.';
+      'ಪ್ರಕಟಿಸುವ ಮೊದಲು ಈ ಟಿಪ್ಪಣಿಯನ್ನು ಖಾಸಗಿಯಾಗಿ ಪ್ಲೇ ಮಾಡಿ ಪರಿಶೀಲಿಸಿ.';
 
   @override
   String get notesSignInAsTeacher =>
-      'Sign in as the teacher before publishing.';
+      'ಪ್ರಕಟಿಸುವ ಮೊದಲು ಶಿಕ್ಷಕರಾಗಿ ಸೈನ್ ಇನ್ ಮಾಡಿ.';
 
   @override
   String get notesNoWorkspace =>
-      'No authorized class/subject workspace was confirmed. Your draft is kept.';
+      'ಯಾವುದೇ ಅಧಿಕೃತ ತರಗತಿ/ವಿಷಯ ಕಾರ್ಯಕ್ಷೇತ್ರವನ್ನು ದೃಢೀಕರಿಸಲಾಗಿಲ್ಲ. ನಿಮ್ಮ ಕರಡನ್ನು ಇಟ್ಟುಕೊಳ್ಳಲಾಗಿದೆ.';
 
   @override
-  String get notesPublishTitle => 'Publish reviewed note to class?';
+  String get notesPublishTitle =>
+      'ಪರಿಶೀಲಿಸಿದ ಟಿಪ್ಪಣಿಯನ್ನು ತರಗತಿಗೆ ಪ್ರಕಟಿಸಬೇಕೇ?';
 
   @override
   String notesPublishMessage(
@@ -11031,55 +11096,55 @@ class AppLocalizationsKn extends AppLocalizations {
     String className,
     String subjectName,
   ) {
-    return 'Confirm you reviewed $title and want to publish it to $className, $subjectName. Authorized class members can stream or download it for up to 30 days offline. Disconnected copies cannot be instantly revoked. Your local draft stays. An unconfirmed upload may already have published; check the library before retrying to avoid duplicates.';
+    return 'ನೀವು $title ಅನ್ನು ಪರಿಶೀಲಿಸಿದ್ದೀರಿ ಮತ್ತು ಅದನ್ನು $className, $subjectName ಗೆ ಪ್ರಕಟಿಸಲು ಬಯಸುತ್ತೀರಿ ಎಂದು ದೃಢೀಕರಿಸಿ. ಅಧಿಕೃತ ತರಗತಿ ಸದಸ್ಯರು ಇದನ್ನು ಸ್ಟ್ರೀಮ್ ಮಾಡಬಹುದು ಅಥವಾ ಗರಿಷ್ಠ 30 ದಿನಗಳವರೆಗೆ ಆಫ್‌ಲೈನ್‌ಗಾಗಿ ಡೌನ್‌ಲೋಡ್ ಮಾಡಬಹುದು. ಸಂಪರ್ಕ ಕಡಿತಗೊಂಡ ಪ್ರತಿಗಳನ್ನು ತಕ್ಷಣ ಹಿಂಪಡೆಯಲು ಸಾಧ್ಯವಿಲ್ಲ. ನಿಮ್ಮ ಸ್ಥಳೀಯ ಕರಡು ಉಳಿಯುತ್ತದೆ. ದೃಢೀಕರಿಸದ ಅಪ್‌ಲೋಡ್ ಈಗಾಗಲೇ ಪ್ರಕಟವಾಗಿರಬಹುದು; ನಕಲುಗಳನ್ನು ತಪ್ಪಿಸಲು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸುವ ಮೊದಲು ಲೈಬ್ರರಿಯನ್ನು ಪರಿಶೀಲಿಸಿ.';
   }
 
   @override
-  String get notesPublishConfirm => 'Publish to selected class';
+  String get notesPublishConfirm => 'ಆಯ್ಕೆ ಮಾಡಿದ ತರಗತಿಗೆ ಪ್ರಕಟಿಸಿ';
 
   @override
-  String get notesKeepDraftPrivate => 'Keep draft private';
+  String get notesKeepDraftPrivate => 'ಕರಡನ್ನು ಖಾಸಗಿಯಾಗಿ ಇಡಿ';
 
   @override
-  String get notesSignInChanged => 'Sign-in changed. The draft was not sent.';
+  String get notesSignInChanged => 'ಸೈನ್ ಇನ್ ಬದಲಾಗಿದೆ. ಕರಡನ್ನು ಕಳುಹಿಸಲಾಗಿಲ್ಲ.';
 
   @override
   String get notesAccountChangedBeforePublish =>
-      'Your account changed before publication was confirmed. Check the original teacher library before retrying.';
+      'ಪ್ರಕಟಣೆ ದೃಢೀಕರಿಸುವ ಮೊದಲೇ ನಿಮ್ಮ ಖಾತೆ ಬದಲಾಗಿದೆ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸುವ ಮೊದಲು ಮೂಲ ಶಿಕ್ಷಕರ ಲೈಬ್ರರಿಯನ್ನು ಪರಿಶೀಲಿಸಿ.';
 
   @override
   String get notesPublishNotConfirmed =>
-      'Publication was not confirmed. Check the class library before retrying; your private draft is kept.';
+      'ಪ್ರಕಟಣೆ ದೃಢೀಕರಿಸಲಾಗಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸುವ ಮೊದಲು ತರಗತಿಯ ಲೈಬ್ರರಿಯನ್ನು ಪರಿಶೀಲಿಸಿ; ನಿಮ್ಮ ಖಾಸಗಿ ಕರಡನ್ನು ಇಟ್ಟುಕೊಳ್ಳಲಾಗಿದೆ.';
 
   @override
   String get notesPublishUnreadable =>
-      'Publication confirmation was unreadable. Check the library before retrying; your draft is kept.';
+      'ಪ್ರಕಟಣೆಯ ದೃಢೀಕರಣವನ್ನು ಓದಲು ಆಗಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸುವ ಮೊದಲು ಲೈಬ್ರರಿಯನ್ನು ಪರಿಶೀಲಿಸಿ; ನಿಮ್ಮ ಕರಡನ್ನು ಇಟ್ಟುಕೊಳ್ಳಲಾಗಿದೆ.';
 
   @override
   String get notesPublishIdentityMismatch =>
-      'Publication identity did not match. Check the library before retrying; your draft is kept.';
+      'ಪ್ರಕಟಣೆಯ ಗುರುತು ಹೊಂದಿಕೆಯಾಗಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸುವ ಮೊದಲು ಲೈಬ್ರರಿಯನ್ನು ಪರಿಶೀಲಿಸಿ; ನಿಮ್ಮ ಕರಡನ್ನು ಇಟ್ಟುಕೊಳ್ಳಲಾಗಿದೆ.';
 
   @override
   String notesPublished(String audioId) {
-    return 'Published as recording $audioId. Your local draft is kept. Do not publish again unless you intend another recording.';
+    return 'ರೆಕಾರ್ಡಿಂಗ್ $audioId ಆಗಿ ಪ್ರಕಟಿಸಲಾಗಿದೆ. ನಿಮ್ಮ ಸ್ಥಳೀಯ ಕರಡನ್ನು ಇಟ್ಟುಕೊಳ್ಳಲಾಗಿದೆ. ಇನ್ನೊಂದು ರೆಕಾರ್ಡಿಂಗ್ ಬೇಕಿದ್ದರೆ ಮಾತ್ರ ಮತ್ತೆ ಪ್ರಕಟಿಸಿ.';
   }
 
   @override
   String get notesStopBeforeLeaving =>
-      'Recording stop was not confirmed. Stop again or background the app before leaving.';
+      'ರೆಕಾರ್ಡಿಂಗ್ ನಿಲ್ಲಿಸಿದ್ದು ದೃಢೀಕರಿಸಲಾಗಿಲ್ಲ. ಹೊರಹೋಗುವ ಮೊದಲು ಮತ್ತೆ ನಿಲ್ಲಿಸಿ ಅಥವಾ ಆ್ಯಪ್ ಅನ್ನು ಹಿನ್ನೆಲೆಗೆ ಕಳುಹಿಸಿ.';
 
   @override
   String get notesRules =>
-      'Private note rules. Each note can be up to five minutes. Notes use a separate 10 megabyte allowance for each account. Recording only starts when you confirm it, and never inside a live session. App speech, leaving this screen or an interruption stops recording, so stop recording before using spoken controls. Student notes stay private on this phone. Teacher drafts must be reviewed and confirmed before publishing. Notes are kept after you log out.';
+      'ಖಾಸಗಿ ಟಿಪ್ಪಣಿ ನಿಯಮಗಳು. ಪ್ರತಿ ಟಿಪ್ಪಣಿ ಐದು ನಿಮಿಷಗಳವರೆಗೆ ಇರಬಹುದು. ಟಿಪ್ಪಣಿಗಳಿಗೆ ಪ್ರತಿ ಖಾತೆಗೆ ಪ್ರತ್ಯೇಕ 10 ಮೆಗಾಬೈಟ್ ಜಾಗ ಇರುತ್ತದೆ. ನೀವು ದೃಢೀಕರಿಸಿದಾಗ ಮಾತ್ರ ರೆಕಾರ್ಡಿಂಗ್ ಶುರುವಾಗುತ್ತದೆ, ಲೈವ್ ಸೆಷನ್ ಒಳಗೆ ಎಂದಿಗೂ ಆಗುವುದಿಲ್ಲ. ಆ್ಯಪ್ ಧ್ವನಿ, ಈ ಪರದೆಯಿಂದ ಹೊರಹೋಗುವುದು ಅಥವಾ ಅಡಚಣೆ ರೆಕಾರ್ಡಿಂಗ್ ನಿಲ್ಲಿಸುತ್ತದೆ, ಆದ್ದರಿಂದ ಧ್ವನಿ ನಿಯಂತ್ರಣಗಳನ್ನು ಬಳಸುವ ಮೊದಲು ರೆಕಾರ್ಡಿಂಗ್ ನಿಲ್ಲಿಸಿ. ವಿದ್ಯಾರ್ಥಿಗಳ ಟಿಪ್ಪಣಿಗಳು ಈ ಫೋನ್‌ನಲ್ಲಿ ಖಾಸಗಿಯಾಗಿ ಇರುತ್ತವೆ. ಶಿಕ್ಷಕರ ಕರಡುಗಳನ್ನು ಪ್ರಕಟಿಸುವ ಮೊದಲು ಪರಿಶೀಲಿಸಿ ದೃಢೀಕರಿಸಬೇಕು. ನೀವು ಲಾಗ್ ಔಟ್ ಮಾಡಿದ ನಂತರವೂ ಟಿಪ್ಪಣಿಗಳು ಉಳಿಯುತ್ತವೆ.';
 
   @override
   String notesRecordingFor(String duration) {
-    return 'Recording for $duration.';
+    return '$duration ರಿಂದ ರೆಕಾರ್ಡಿಂಗ್ ಆಗುತ್ತಿದೆ.';
   }
 
   @override
   String notesUsage(String megabytes) {
-    return '$megabytes of 10 MB private notes used.';
+    return '10 MB ಖಾಸಗಿ ಟಿಪ್ಪಣಿ ಜಾಗದಲ್ಲಿ $megabytes ಬಳಸಲಾಗಿದೆ.';
   }
 
   @override
@@ -11088,540 +11153,542 @@ class AppLocalizationsKn extends AppLocalizations {
   }
 
   @override
-  String get authBackToLoginKey => '0: Back to login';
+  String get authBackToLoginKey => '0: ಲಾಗಿನ್‌ಗೆ ಹಿಂತಿರುಗಿ';
 
   @override
-  String get authRoleRowSelected => 'Selected';
+  String get authRoleRowSelected => 'ಆಯ್ಕೆಯಾಗಿದೆ';
 
   @override
-  String get authLoginScreenName => 'Login Screen';
+  String get authLoginScreenName => 'ಲಾಗಿನ್ ಪರದೆ';
 
   @override
   String get authLoginNavigationSections =>
-      'phone number, password, account type, login, registration, SIM suggestions and recovery help';
+      'ಫೋನ್ ಸಂಖ್ಯೆ, ಪಾಸ್‌ವರ್ಡ್, ಖಾತೆಯ ಪ್ರಕಾರ, ಲಾಗಿನ್, ನೋಂದಣಿ, SIM ಸಲಹೆಗಳು ಮತ್ತು ಮರುಪಡೆಯುವ ಸಹಾಯ';
 
   @override
-  String get authLoginKeySimLabel =>
-      'Read optional SIM phone-number suggestions';
+  String get authLoginKeySimLabel => 'ಐಚ್ಛಿಕ SIM ಫೋನ್ ಸಂಖ್ಯೆ ಸಲಹೆಗಳನ್ನು ಓದಿ';
 
   @override
-  String get authLoginKeyRecoveryLabel => 'School-admin password recovery help';
+  String get authLoginKeyRecoveryLabel =>
+      'ಶಾಲಾ ನಿರ್ವಾಹಕರ ಮೂಲಕ ಪಾಸ್‌ವರ್ಡ್ ಮರುಪಡೆಯುವ ಸಹಾಯ';
 
   @override
-  String get authPhoneNumberField => 'Phone number field';
+  String get authPhoneNumberField => 'ಫೋನ್ ಸಂಖ್ಯೆ ಕ್ಷೇತ್ರ';
 
   @override
-  String get authPasswordField => 'Password field';
+  String get authPasswordField => 'ಪಾಸ್‌ವರ್ಡ್ ಕ್ಷೇತ್ರ';
 
   @override
-  String get authHidePassword => 'Hide password';
+  String get authHidePassword => 'ಪಾಸ್‌ವರ್ಡ್ ಮರೆಮಾಡಿ';
 
   @override
-  String get authShowPassword => 'Show password';
+  String get authShowPassword => 'ಪಾಸ್‌ವರ್ಡ್ ತೋರಿಸಿ';
 
   @override
   String authRoleFieldNavLabel(String role) {
-    return 'Account type: $role, selected. Press 1, 2 or 3 to change, or use left and right';
+    return 'ಖಾತೆಯ ಪ್ರಕಾರ: $role, ಆಯ್ಕೆಯಾಗಿದೆ. ಬದಲಾಯಿಸಲು 1, 2 ಅಥವಾ 3 ಒತ್ತಿ, ಅಥವಾ ಎಡ ಮತ್ತು ಬಲ ಬಳಸಿ';
   }
 
   @override
   String authLoginAsButton(String role) {
-    return 'Login as $role, button';
+    return '$role ಆಗಿ ಲಾಗಿನ್ ಮಾಡಿ, ಬಟನ್';
   }
 
   @override
-  String get authRegisterNewAccountButton => 'Register a new account, button';
+  String get authRegisterNewAccountButton => 'ಹೊಸ ಖಾತೆ ನೋಂದಾಯಿಸಿ, ಬಟನ್';
 
   @override
   String get authSimSuggestionsTargetLabel =>
-      'Read optional SIM phone-number suggestions. Manual entry always works.';
+      'ಐಚ್ಛಿಕ SIM ಫೋನ್ ಸಂಖ್ಯೆ ಸಲಹೆಗಳನ್ನು ಓದಿ. ನೀವೇ ನಮೂದಿಸುವುದು ಯಾವಾಗಲೂ ಸಾಧ್ಯ.';
 
   @override
   String get authForgotPasswordTargetLabel =>
-      'Forgot password? School-admin recovery help';
+      'ಪಾಸ್‌ವರ್ಡ್ ಮರೆತಿರಾ? ಶಾಲಾ ನಿರ್ವಾಹಕರ ಮೂಲಕ ಮರುಪಡೆಯುವ ಸಹಾಯ';
 
   @override
-  String get authWelcomeBack => 'Welcome Back';
+  String get authWelcomeBack => 'ಮರಳಿ ಸ್ವಾಗತ';
 
   @override
-  String get authRegisteredBanner => 'Registered. Now log in.';
+  String get authRegisteredBanner => 'ನೋಂದಣಿ ಆಗಿದೆ. ಈಗ ಲಾಗಿನ್ ಮಾಡಿ.';
 
   @override
-  String get authPhoneNumber => 'Phone number';
+  String get authPhoneNumber => 'ಫೋನ್ ಸಂಖ್ಯೆ';
 
   @override
-  String get authPassword => 'Password';
+  String get authPassword => 'ಪಾಸ್‌ವರ್ಡ್';
 
   @override
-  String get authAccountType => 'Account type';
+  String get authAccountType => 'ಖಾತೆಯ ಪ್ರಕಾರ';
 
   @override
   String authRoleFieldValue(String role) {
-    return '$role, selected. Press 1, 2 or 3 to change';
+    return '$role, ಆಯ್ಕೆಯಾಗಿದೆ. ಬದಲಾಯಿಸಲು 1, 2 ಅಥವಾ 3 ಒತ್ತಿ';
   }
 
   @override
-  String get authRoleOptionStudent => '1 Student';
+  String get authRoleOptionStudent => '1 ವಿದ್ಯಾರ್ಥಿ';
 
   @override
-  String get authRoleOptionTeacher => '2 Teacher';
+  String get authRoleOptionTeacher => '2 ಶಿಕ್ಷಕರು';
 
   @override
-  String get authRoleOptionAdmin => '3 Admin';
+  String get authRoleOptionAdmin => '3 ನಿರ್ವಾಹಕರು';
 
   @override
-  String get authSigningIn => 'Signing in, please wait';
+  String get authSigningIn => 'ಸೈನ್ ಇನ್ ಆಗುತ್ತಿದೆ, ದಯವಿಟ್ಟು ಕಾಯಿರಿ';
 
   @override
   String authLoginAsKey(String role) {
-    return '4: Login as $role';
+    return '4: $role ಆಗಿ ಲಾಗಿನ್ ಮಾಡಿ';
   }
 
   @override
-  String get authNoAccountRegisterKey => '5: Don\'t have an account? Register';
+  String get authNoAccountRegisterKey => '5: ಖಾತೆ ಇಲ್ಲವೇ? ನೋಂದಾಯಿಸಿ';
 
   @override
-  String get authReadSimSuggestionsKey => '6: Read optional SIM suggestions';
+  String get authReadSimSuggestionsKey => '6: ಐಚ್ಛಿಕ SIM ಸಲಹೆಗಳನ್ನು ಓದಿ';
 
   @override
-  String get authForgotPasswordKey => '7: Forgot password? Recovery help';
+  String get authForgotPasswordKey => '7: ಪಾಸ್‌ವರ್ಡ್ ಮರೆತಿರಾ? ಮರುಪಡೆಯುವ ಸಹಾಯ';
 
   @override
   String authErrorMovedToName(String message) {
-    return '$message Moved to name field.';
+    return '$message ಹೆಸರು ಕ್ಷೇತ್ರಕ್ಕೆ ಸರಿಸಲಾಗಿದೆ.';
   }
 
   @override
-  String get authErrorEnterName => 'Enter your name.';
+  String get authErrorEnterName => 'ನಿಮ್ಮ ಹೆಸರು ನಮೂದಿಸಿ.';
 
   @override
-  String get authErrorEnterAPassword => 'Enter a password.';
+  String get authErrorEnterAPassword => 'ಒಂದು ಪಾಸ್‌ವರ್ಡ್ ನಮೂದಿಸಿ.';
 
   @override
-  String get authRegisteringAsTeacher => 'Registering as teacher';
+  String get authRegisteringAsTeacher => 'ಶಿಕ್ಷಕರಾಗಿ ನೋಂದಣಿ ಆಗುತ್ತಿದೆ';
 
   @override
-  String get authRegisteringAsStudent => 'Registering as student';
+  String get authRegisteringAsStudent => 'ವಿದ್ಯಾರ್ಥಿಯಾಗಿ ನೋಂದಣಿ ಆಗುತ್ತಿದೆ';
 
   @override
-  String get authRegistrationScreenName => 'Registration Screen';
+  String get authRegistrationScreenName => 'ನೋಂದಣಿ ಪರದೆ';
 
   @override
   String get authRegisterNavigationSections =>
-      'name, phone number, password, student or teacher account type, register, and login';
+      'ಹೆಸರು, ಫೋನ್ ಸಂಖ್ಯೆ, ಪಾಸ್‌ವರ್ಡ್, ವಿದ್ಯಾರ್ಥಿ ಅಥವಾ ಶಿಕ್ಷಕರ ಖಾತೆಯ ಪ್ರಕಾರ, ನೋಂದಣಿ ಮತ್ತು ಲಾಗಿನ್';
 
   @override
-  String get authNameField => 'Name field';
+  String get authNameField => 'ಹೆಸರು ಕ್ಷೇತ್ರ';
 
   @override
   String get authRegisterRoleTeacherLabel =>
-      'Account type: Teacher. Press OK or 3 to switch to student';
+      'ಖಾತೆಯ ಪ್ರಕಾರ: ಶಿಕ್ಷಕರು. ವಿದ್ಯಾರ್ಥಿಗೆ ಬದಲಾಯಿಸಲು ಓಕೆ ಅಥವಾ 3 ಒತ್ತಿ';
 
   @override
   String get authRegisterRoleStudentLabel =>
-      'Account type: Student. Press OK or 3 to switch to teacher';
+      'ಖಾತೆಯ ಪ್ರಕಾರ: ವಿದ್ಯಾರ್ಥಿ. ಶಿಕ್ಷಕರಿಗೆ ಬದಲಾಯಿಸಲು ಓಕೆ ಅಥವಾ 3 ಒತ್ತಿ';
 
   @override
-  String get authRegisterAsTeacherButton => 'Register as teacher, button';
+  String get authRegisterAsTeacherButton => 'ಶಿಕ್ಷಕರಾಗಿ ನೋಂದಾಯಿಸಿ, ಬಟನ್';
 
   @override
-  String get authRegisterAsStudentButton => 'Register as student, button';
+  String get authRegisterAsStudentButton => 'ವಿದ್ಯಾರ್ಥಿಯಾಗಿ ನೋಂದಾಯಿಸಿ, ಬಟನ್';
 
   @override
-  String get authGoToLoginLabel => 'Already have an account? Go to login';
+  String get authGoToLoginLabel => 'ಈಗಾಗಲೇ ಖಾತೆ ಇದೆಯೇ? ಲಾಗಿನ್‌ಗೆ ಹೋಗಿ';
 
   @override
-  String get authRegisterTitle => 'Register';
+  String get authRegisterTitle => 'ನೋಂದಣಿ';
 
   @override
-  String get authName => 'Name';
+  String get authName => 'ಹೆಸರು';
 
   @override
   String get authRegisterAsTeacherKey =>
-      '3: Register as Teacher. Change account type';
+      '3: ಶಿಕ್ಷಕರಾಗಿ ನೋಂದಾಯಿಸಿ. ಖಾತೆಯ ಪ್ರಕಾರ ಬದಲಾಯಿಸಿ';
 
   @override
   String get authRegisterAsStudentKey =>
-      '3: Register as Student. Change account type';
+      '3: ವಿದ್ಯಾರ್ಥಿಯಾಗಿ ನೋಂದಾಯಿಸಿ. ಖಾತೆಯ ಪ್ರಕಾರ ಬದಲಾಯಿಸಿ';
 
   @override
-  String get authRegisteringPleaseWait => 'Registering, please wait';
+  String get authRegisteringPleaseWait => 'ನೋಂದಣಿ ಆಗುತ್ತಿದೆ, ದಯವಿಟ್ಟು ಕಾಯಿರಿ';
 
   @override
-  String get authRegisterKey => '1: Register';
+  String get authRegisterKey => '1: ನೋಂದಾಯಿಸಿ';
 
   @override
-  String get authHaveAccountLoginKey => '2: Already have an account? Login';
+  String get authHaveAccountLoginKey => '2: ಈಗಾಗಲೇ ಖಾತೆ ಇದೆಯೇ? ಲಾಗಿನ್ ಮಾಡಿ';
 
   @override
   String get authChangePasswordBusy =>
-      'Saving. Waiting for password-change confirmation.';
+      'ಉಳಿಸಲಾಗುತ್ತಿದೆ. ಪಾಸ್‌ವರ್ಡ್ ಬದಲಾವಣೆಯ ದೃಢೀಕರಣಕ್ಕಾಗಿ ಕಾಯಲಾಗುತ್ತಿದೆ.';
 
   @override
   String get authChangePasswordErrorEnterTemporary =>
-      'Enter your temporary credential. Moved to that field.';
+      'ನಿಮ್ಮ ತಾತ್ಕಾಲಿಕ ಕೋಡ್ ನಮೂದಿಸಿ. ಆ ಕ್ಷೇತ್ರಕ್ಕೆ ಸರಿಸಲಾಗಿದೆ.';
 
   @override
   String get authChangePasswordErrorTooShort =>
-      'Enter a new password of at least 6 characters. Moved to new password.';
+      'ಕನಿಷ್ಠ 6 ಅಕ್ಷರಗಳ ಹೊಸ ಪಾಸ್‌ವರ್ಡ್ ನಮೂದಿಸಿ. ಹೊಸ ಪಾಸ್‌ವರ್ಡ್‌ಗೆ ಸರಿಸಲಾಗಿದೆ.';
 
   @override
   String get authChangePasswordErrorMismatch =>
-      'The new passwords do not match. Moved to repeat new password.';
+      'ಹೊಸ ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಹೊಂದಿಕೆಯಾಗುತ್ತಿಲ್ಲ. ಹೊಸ ಪಾಸ್‌ವರ್ಡ್ ಮತ್ತೆ ನಮೂದಿಸುವ ಕ್ಷೇತ್ರಕ್ಕೆ ಸರಿಸಲಾಗಿದೆ.';
 
   @override
   String get authChangePasswordErrorSameAsTemporary =>
-      'Choose a password different from the temporary credential. Moved to new password.';
+      'ತಾತ್ಕಾಲಿಕ ಕೋಡ್‌ಗಿಂತ ಬೇರೆ ಪಾಸ್‌ವರ್ಡ್ ಆಯ್ಕೆ ಮಾಡಿ. ಹೊಸ ಪಾಸ್‌ವರ್ಡ್‌ಗೆ ಸರಿಸಲಾಗಿದೆ.';
 
   @override
   String get authChangePasswordSessionInactive =>
-      'This recovery session is no longer active. Sign in again.';
+      'ಈ ಮರುಪಡೆಯುವ ಅವಧಿ ಈಗ ಸಕ್ರಿಯವಾಗಿಲ್ಲ. ಮತ್ತೆ ಸೈನ್ ಇನ್ ಮಾಡಿ.';
 
   @override
   String get authChangePasswordAccountChanged =>
-      'Your account changed. No replacement sign-in was saved.';
+      'ನಿಮ್ಮ ಖಾತೆ ಬದಲಾಗಿದೆ. ಬದಲಿ ಸೈನ್ ಇನ್ ಉಳಿಸಲಾಗಿಲ್ಲ.';
 
   @override
   String authChangePasswordNotConfirmed(String message) {
-    return '$message Password change is not confirmed. If the connection failed, try signing in with your new password before requesting another reset.';
+    return '$message ಪಾಸ್‌ವರ್ಡ್ ಬದಲಾವಣೆ ದೃಢಪಟ್ಟಿಲ್ಲ. ಸಂಪರ್ಕ ವಿಫಲವಾಗಿದ್ದರೆ, ಇನ್ನೊಂದು ಮರುಹೊಂದಿಕೆ ಕೇಳುವ ಮೊದಲು ನಿಮ್ಮ ಹೊಸ ಪಾಸ್‌ವರ್ಡ್‌ನಿಂದ ಸೈನ್ ಇನ್ ಮಾಡಿ ನೋಡಿ.';
   }
 
   @override
   String get authChangePasswordResponseNotVerified =>
-      'The password-change response could not be verified. Try signing in again with your new password.';
+      'ಪಾಸ್‌ವರ್ಡ್ ಬದಲಾವಣೆಯ ಉತ್ತರವನ್ನು ಪರಿಶೀಲಿಸಲು ಆಗಲಿಲ್ಲ. ನಿಮ್ಮ ಹೊಸ ಪಾಸ್‌ವರ್ಡ್‌ನಿಂದ ಮತ್ತೆ ಸೈನ್ ಇನ್ ಮಾಡಿ ನೋಡಿ.';
 
   @override
   String get authChangePasswordReplacementNotVerified =>
-      'The replacement sign-in could not be verified. Sign in again with your new password.';
+      'ಬದಲಿ ಸೈನ್ ಇನ್ ಅನ್ನು ಪರಿಶೀಲಿಸಲು ಆಗಲಿಲ್ಲ. ನಿಮ್ಮ ಹೊಸ ಪಾಸ್‌ವರ್ಡ್‌ನಿಂದ ಮತ್ತೆ ಸೈನ್ ಇನ್ ಮಾಡಿ.';
 
   @override
   String get authChangePasswordSignInNotSaved =>
-      'Your sign-in could not be saved. Sign in again with your new password.';
+      'ನಿಮ್ಮ ಸೈನ್ ಇನ್ ಉಳಿಸಲು ಆಗಲಿಲ್ಲ. ನಿಮ್ಮ ಹೊಸ ಪಾಸ್‌ವರ್ಡ್‌ನಿಂದ ಮತ್ತೆ ಸೈನ್ ಇನ್ ಮಾಡಿ.';
 
   @override
   String get authChangePasswordSignInNotSavedOnPhone =>
-      'Your sign-in could not be saved on this phone. Sign in again with your new password.';
+      'ನಿಮ್ಮ ಸೈನ್ ಇನ್ ಅನ್ನು ಈ ಫೋನ್‌ನಲ್ಲಿ ಉಳಿಸಲು ಆಗಲಿಲ್ಲ. ನಿಮ್ಮ ಹೊಸ ಪಾಸ್‌ವರ್ಡ್‌ನಿಂದ ಮತ್ತೆ ಸೈನ್ ಇನ್ ಮಾಡಿ.';
 
   @override
-  String get authTemporaryCredential => 'Temporary credential';
+  String get authTemporaryCredential => 'ತಾತ್ಕಾಲಿಕ ಕೋಡ್';
 
   @override
-  String get authNewPassword => 'New password';
+  String get authNewPassword => 'ಹೊಸ ಪಾಸ್‌ವರ್ಡ್';
 
   @override
-  String get authRepeatNewPassword => 'Repeat new password';
+  String get authRepeatNewPassword => 'ಹೊಸ ಪಾಸ್‌ವರ್ಡ್ ಮತ್ತೆ ನಮೂದಿಸಿ';
 
   @override
-  String get authChangePasswordScreenName => 'Change temporary password';
+  String get authChangePasswordScreenName => 'ತಾತ್ಕಾಲಿಕ ಪಾಸ್‌ವರ್ಡ್ ಬದಲಾಯಿಸಿ';
 
   @override
   String get authChangePasswordIntro =>
-      'Enter the temporary credential from your administrator, then a new password of at least 6 characters, twice. Internet is required. The dashboard opens after the new password is confirmed.';
+      'ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ನೀಡಿದ ತಾತ್ಕಾಲಿಕ ಕೋಡ್ ನಮೂದಿಸಿ, ನಂತರ ಕನಿಷ್ಠ 6 ಅಕ್ಷರಗಳ ಹೊಸ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಎರಡು ಬಾರಿ ನಮೂದಿಸಿ. ಇಂಟರ್ನೆಟ್ ಬೇಕು. ಹೊಸ ಪಾಸ್‌ವರ್ಡ್ ದೃಢಪಟ್ಟ ನಂತರ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್ ತೆರೆಯುತ್ತದೆ.';
 
   @override
-  String get authSaveNewPassword => 'Save new password';
+  String get authSaveNewPassword => 'ಹೊಸ ಪಾಸ್‌ವರ್ಡ್ ಉಳಿಸಿ';
 
   @override
-  String get authSignOut => 'Sign out';
+  String get authSignOut => 'ಸೈನ್ ಔಟ್';
 
   @override
-  String get authTemporaryCredentialField =>
-      'Temporary credential. Hidden input.';
+  String get authTemporaryCredentialField => 'ತಾತ್ಕಾಲಿಕ ಕೋಡ್. ಮರೆಮಾಡಿದ ನಮೂದು.';
 
   @override
   String get authNewPasswordField =>
-      'New password. At least 6 characters. Hidden input.';
+      'ಹೊಸ ಪಾಸ್‌ವರ್ಡ್. ಕನಿಷ್ಠ 6 ಅಕ್ಷರಗಳು. ಮರೆಮಾಡಿದ ನಮೂದು.';
 
   @override
-  String get authRepeatNewPasswordField => 'Repeat new password. Hidden input.';
+  String get authRepeatNewPasswordField =>
+      'ಹೊಸ ಪಾಸ್‌ವರ್ಡ್ ಮತ್ತೆ ನಮೂದಿಸಿ. ಮರೆಮಾಡಿದ ನಮೂದು.';
 
   @override
-  String get authSaveNewPasswordButton => 'Save new password, button';
+  String get authSaveNewPasswordButton => 'ಹೊಸ ಪಾಸ್‌ವರ್ಡ್ ಉಳಿಸಿ, ಬಟನ್';
 
   @override
-  String get authSignOutConfirmButton => 'Sign out, asks to confirm';
+  String get authSignOutConfirmButton => 'ಸೈನ್ ಔಟ್, ದೃಢೀಕರಣ ಕೇಳುತ್ತದೆ';
 
   @override
-  String get authChangePasswordTitle => 'Change password';
+  String get authChangePasswordTitle => 'ಪಾಸ್‌ವರ್ಡ್ ಬದಲಾಯಿಸಿ';
 
   @override
   String get authChangePasswordInfo =>
-      'Your school administrator issued a temporary credential. It lasts 24 hours. After 10 wrong attempts, sign-in pauses for 15 minutes. Choose a different password of at least 6 characters. This requires internet.';
+      'ನಿಮ್ಮ ಶಾಲಾ ನಿರ್ವಾಹಕರು ತಾತ್ಕಾಲಿಕ ಕೋಡ್ ನೀಡಿದ್ದಾರೆ. ಅದು 24 ಗಂಟೆ ಇರುತ್ತದೆ. 10 ತಪ್ಪು ಪ್ರಯತ್ನಗಳ ನಂತರ, ಸೈನ್ ಇನ್ 15 ನಿಮಿಷ ನಿಲ್ಲುತ್ತದೆ. ಕನಿಷ್ಠ 6 ಅಕ್ಷರಗಳ ಬೇರೆ ಪಾಸ್‌ವರ್ಡ್ ಆಯ್ಕೆ ಮಾಡಿ. ಇದಕ್ಕೆ ಇಂಟರ್ನೆಟ್ ಬೇಕು.';
 
   @override
-  String get authSignOutKey => '0: Sign out';
+  String get authSignOutKey => '0: ಸೈನ್ ಔಟ್';
 
   @override
   String authSimOptionValid(String label, String digits) {
-    return '$label. Phone number $digits. Press OK to fill the phone field.';
+    return '$label. ಫೋನ್ ಸಂಖ್ಯೆ $digits. ಫೋನ್ ಕ್ಷೇತ್ರ ತುಂಬಲು ಓಕೆ ಒತ್ತಿ.';
   }
 
   @override
   String authSimOptionInvalid(String label) {
-    return '$label. Number unavailable. Enter the phone number manually.';
+    return '$label. ಸಂಖ್ಯೆ ಲಭ್ಯವಿಲ್ಲ. ಫೋನ್ ಸಂಖ್ಯೆಯನ್ನು ನೀವೇ ನಮೂದಿಸಿ.';
   }
 
   @override
   String get authSimInvalidSuggestion =>
-      'This SIM does not provide a valid phone-number suggestion. Manual entry still works.';
+      'ಈ SIM ಸರಿಯಾದ ಫೋನ್ ಸಂಖ್ಯೆ ಸಲಹೆ ನೀಡುವುದಿಲ್ಲ. ನೀವೇ ನಮೂದಿಸುವುದು ಇನ್ನೂ ಸಾಧ್ಯ.';
 
   @override
   String get authSimChooseScreenName =>
-      'Choose an optional SIM suggestion. Use up and down to review each SIM, then OK to select. This is not account verification.';
+      'ಐಚ್ಛಿಕ SIM ಸಲಹೆಯನ್ನು ಆಯ್ಕೆ ಮಾಡಿ. ಪ್ರತಿ SIM ಕೇಳಲು ಮೇಲೆ ಮತ್ತು ಕೆಳಗೆ ಬಳಸಿ, ನಂತರ ಆಯ್ಕೆ ಮಾಡಲು ಓಕೆ ಒತ್ತಿ. ಇದು ಖಾತೆ ಪರಿಶೀಲನೆಯಲ್ಲ.';
 
   @override
-  String get authSimCancelLabel => 'Cancel without changing the phone number';
+  String get authSimCancelLabel => 'ಫೋನ್ ಸಂಖ್ಯೆ ಬದಲಾಯಿಸದೆ ರದ್ದುಮಾಡಿ';
 
   @override
-  String get authSimChooseTitle => 'Choose SIM suggestion';
+  String get authSimChooseTitle => 'SIM ಸಲಹೆ ಆಯ್ಕೆ ಮಾಡಿ';
 
   @override
   String get authSimChooseInfo =>
-      'Selecting fills the phone field only. Your password is still required. Cancel keeps manual entry unchanged.';
+      'ಆಯ್ಕೆ ಮಾಡಿದರೆ ಫೋನ್ ಕ್ಷೇತ್ರ ಮಾತ್ರ ತುಂಬುತ್ತದೆ. ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ಇನ್ನೂ ಬೇಕು. ರದ್ದುಮಾಡಿದರೆ ನೀವು ನಮೂದಿಸಿದ್ದು ಬದಲಾಗುವುದಿಲ್ಲ.';
 
   @override
-  String get authSimCancelKey => '0: Cancel';
+  String get authSimCancelKey => '0: ರದ್ದುಮಾಡಿ';
 
   @override
-  String get inviteStatusInvited => 'Invited';
+  String get inviteStatusInvited => 'ಆಹ್ವಾನಿಸಲಾಗಿದೆ';
 
   @override
-  String get inviteStatusNotInvited => 'Not invited. OK to invite';
+  String get inviteStatusNotInvited => 'ಆಹ್ವಾನಿಸಿಲ್ಲ. ಆಹ್ವಾನಿಸಲು ಓಕೆ';
 
   @override
-  String get inviteTitle => 'Invite Students';
+  String get inviteTitle => 'ವಿದ್ಯಾರ್ಥಿಗಳನ್ನು ಆಹ್ವಾನಿಸಿ';
 
   @override
-  String get inviteTooltipBack => '0: Back to session';
+  String get inviteTooltipBack => '0: ಸೆಷನ್‌ಗೆ ಹಿಂತಿರುಗಿ';
 
   @override
-  String get inviteTooltipRefresh => '1: Refresh student list';
+  String get inviteTooltipRefresh => '1: ವಿದ್ಯಾರ್ಥಿ ಪಟ್ಟಿಯನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಿ';
 
   @override
-  String get inviteInvitingTo => 'Inviting students to:';
+  String get inviteInvitingTo => 'ಇಲ್ಲಿಗೆ ವಿದ್ಯಾರ್ಥಿಗಳನ್ನು ಆಹ್ವಾನಿಸಲಾಗುತ್ತಿದೆ:';
 
   @override
   String inviteInvitedCount(String invited, String total) {
-    return '$invited of $total invited';
+    return '$total ರಲ್ಲಿ $invited ಆಹ್ವಾನಿಸಲಾಗಿದೆ';
   }
 
   @override
-  String get inviteAllButton => '2: Invite All Students';
+  String get inviteAllButton => '2: ಎಲ್ಲಾ ವಿದ್ಯಾರ್ಥಿಗಳನ್ನು ಆಹ್ವಾನಿಸಿ';
 
   @override
-  String get inviteSearchField => 'Search by name or phone number';
+  String get inviteSearchField => 'ಹೆಸರು ಅಥವಾ ಫೋನ್ ಸಂಖ್ಯೆಯಿಂದ ಹುಡುಕಿ';
 
   @override
-  String get inviteSearchHelper => 'Leave empty to list every student';
+  String get inviteSearchHelper => 'ಎಲ್ಲಾ ವಿದ್ಯಾರ್ಥಿಗಳ ಪಟ್ಟಿಗೆ ಖಾಲಿ ಬಿಡಿ';
 
   @override
-  String get inviteLoadingStudents => 'Loading students';
+  String get inviteLoadingStudents => 'ವಿದ್ಯಾರ್ಥಿಗಳನ್ನು ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ';
 
   @override
   String get inviteNoMatchShort =>
-      'No students match. Clear the search to list everyone.';
+      'ಯಾವ ವಿದ್ಯಾರ್ಥಿಯೂ ಹೊಂದುತ್ತಿಲ್ಲ. ಎಲ್ಲರ ಪಟ್ಟಿಗೆ ಹುಡುಕಾಟವನ್ನು ತೆರವುಗೊಳಿಸಿ.';
 
   @override
-  String get libraryUploadTitleField => 'Title *';
+  String get libraryUploadTitleField => 'ಶೀರ್ಷಿಕೆ *';
 
   @override
-  String get libraryUploadDescriptionField => 'Description';
+  String get libraryUploadDescriptionField => 'ವಿವರಣೆ';
 
   @override
-  String get libraryCancelKey0Button => 'Cancel (0)';
+  String get libraryCancelKey0Button => 'ರದ್ದುಮಾಡಿ (0)';
 
   @override
-  String get libraryUploadKey3Button => 'Upload (3)';
+  String get libraryUploadKey3Button => 'ಅಪ್‌ಲೋಡ್ (3)';
 
   @override
-  String get libraryConfirmKey1Button => 'Confirm (1)';
+  String get libraryConfirmKey1Button => 'ದೃಢೀಕರಿಸಿ (1)';
 
   @override
   String librarySessionNumber(String id) {
-    return 'Session #$id';
+    return 'ಸೆಷನ್ #$id';
   }
 
   @override
-  String get libraryKey5PauseForClass => '5: Pause for class';
+  String get libraryKey5PauseForClass => '5: ತರಗತಿಗಾಗಿ ವಿರಾಮಗೊಳಿಸಿ';
 
   @override
-  String get libraryKey5PlayForClass => '5: Play for class';
+  String get libraryKey5PlayForClass => '5: ತರಗತಿಗಾಗಿ ಪ್ಲೇ ಮಾಡಿ';
 
   @override
-  String get libraryRecordingsSeekKeysHint => '4: Back 10 s. 6: Forward 10 s.';
+  String get libraryRecordingsSeekKeysHint =>
+      '4: 10 ಸೆಕೆಂಡ್ ಹಿಂದೆ. 6: 10 ಸೆಕೆಂಡ್ ಮುಂದೆ.';
 
   @override
-  String get libraryKey1ChooseRecording => '1: Choose recording';
+  String get libraryKey1ChooseRecording => '1: ರೆಕಾರ್ಡಿಂಗ್ ಆಯ್ಕೆಮಾಡಿ';
 
   @override
-  String get libraryUploadingButton => 'Uploading';
+  String get libraryUploadingButton => 'ಅಪ್‌ಲೋಡ್ ಆಗುತ್ತಿದೆ';
 
   @override
-  String get libraryKey2Upload => '2: Upload';
+  String get libraryKey2Upload => '2: ಅಪ್‌ಲೋಡ್';
 
   @override
   String get libraryRecordingsFooterKeysHint =>
-      '3: Status. *: Help. #: Stop speech.';
+      '3: ಸ್ಥಿತಿ. *: ಸಹಾಯ. #: ಧ್ವನಿ ನಿಲ್ಲಿಸಿ.';
 
   @override
-  String get notesBackStopsRecording => 'Back. Stops any recording first';
+  String get notesBackStopsRecording =>
+      'ಹಿಂದೆ. ಮೊದಲು ಯಾವುದೇ ರೆಕಾರ್ಡಿಂಗ್ ನಿಲ್ಲಿಸುತ್ತದೆ';
 
   @override
-  String get notesReadRules => 'Read note rules';
+  String get notesReadRules => 'ಟಿಪ್ಪಣಿ ನಿಯಮಗಳನ್ನು ಓದಿ';
 
   @override
-  String get notesRefreshPrivate => 'Refresh private notes';
+  String get notesRefreshPrivate => 'ಖಾಸಗಿ ಟಿಪ್ಪಣಿಗಳನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಿ';
 
   @override
   String get notesRecordAsksFirst =>
-      'Record a private note. Asks for a name and confirmation first';
+      'ಖಾಸಗಿ ಟಿಪ್ಪಣಿ ರೆಕಾರ್ಡ್ ಮಾಡಿ. ಮೊದಲು ಹೆಸರು ಮತ್ತು ದೃಢೀಕರಣ ಕೇಳುತ್ತದೆ';
 
   @override
-  String get notesStopRecordingNow => 'Stop recording now';
+  String get notesStopRecordingNow => 'ಈಗ ರೆಕಾರ್ಡಿಂಗ್ ನಿಲ್ಲಿಸಿ';
 
   @override
   String get notesReadRecordingTimeStops =>
-      'Read recording time. Reading aloud stops recording';
+      'ರೆಕಾರ್ಡಿಂಗ್ ಸಮಯ ಓದಿ. ಗಟ್ಟಿಯಾಗಿ ಓದಿದರೆ ರೆಕಾರ್ಡಿಂಗ್ ನಿಲ್ಲುತ್ತದೆ';
 
   @override
-  String get notesReadPrivateStatus => 'Read private note status';
+  String get notesReadPrivateStatus => 'ಖಾಸಗಿ ಟಿಪ್ಪಣಿ ಸ್ಥಿತಿ ಓದಿ';
 
   @override
-  String get notesStopPrivateReview => 'Stop private review';
+  String get notesStopPrivateReview => 'ಖಾಸಗಿ ಪರಿಶೀಲನೆ ನಿಲ್ಲಿಸಿ';
 
   @override
   String notesStopReviewingTitle(String title) {
-    return 'Stop reviewing $title';
+    return '$title ಪರಿಶೀಲನೆ ನಿಲ್ಲಿಸಿ';
   }
 
   @override
-  String get notesStopReviewingNote => 'Stop reviewing note';
+  String get notesStopReviewingNote => 'ಟಿಪ್ಪಣಿ ಪರಿಶೀಲನೆ ನಿಲ್ಲಿಸಿ';
 
   @override
   String notesReviewTitlePrivately(String title, String duration) {
-    return 'Review $title privately. $duration.';
+    return '$title ಅನ್ನು ಖಾಸಗಿಯಾಗಿ ಪರಿಶೀಲಿಸಿ. $duration.';
   }
 
   @override
   String notesReviewTitleIncomplete(String title) {
-    return 'Review $title privately. Incomplete recording; cannot play.';
+    return '$title ಅನ್ನು ಖಾಸಗಿಯಾಗಿ ಪರಿಶೀಲಿಸಿ. ಅಪೂರ್ಣ ರೆಕಾರ್ಡಿಂಗ್; ಪ್ಲೇ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ.';
   }
 
   @override
   String notesRenameTitle(String title) {
-    return 'Rename $title';
+    return '$title ಮರುಹೆಸರಿಸಿ';
   }
 
   @override
   String notesPublishTitleAsks(String title) {
-    return 'Publish reviewed $title to a class and subject, asks to confirm';
+    return 'ಪರಿಶೀಲಿಸಿದ $title ಅನ್ನು ತರಗತಿ ಮತ್ತು ವಿಷಯಕ್ಕೆ ಪ್ರಕಟಿಸಿ, ದೃಢೀಕರಿಸಲು ಕೇಳುತ್ತದೆ';
   }
 
   @override
   String notesRemoveTitleAsks(String title) {
-    return 'Remove $title, asks to confirm';
+    return '$title ತೆಗೆದುಹಾಕಿ, ದೃಢೀಕರಿಸಲು ಕೇಳುತ್ತದೆ';
   }
 
   @override
-  String get notesScreenName => 'Private notes';
+  String get notesScreenName => 'ಖಾಸಗಿ ಟಿಪ್ಪಣಿಗಳು';
 
   @override
   String get notesIntroduction =>
-      'Use Read note rules to hear how notes are kept.';
+      'ಟಿಪ್ಪಣಿಗಳನ್ನು ಹೇಗೆ ಇಡಲಾಗುತ್ತದೆ ಎಂದು ಕೇಳಲು ಟಿಪ್ಪಣಿ ನಿಯಮಗಳನ್ನು ಓದಿ ಬಳಸಿ.';
 
   @override
-  String get notesBack => 'Back';
+  String get notesBack => 'ಹಿಂದೆ';
 
   @override
   String notesStorageSummary(String megabytes) {
-    return '$megabytes / 10 MB private notes. Separate from lesson downloads. No automatic deletion.';
+    return '$megabytes / 10 MB ಖಾಸಗಿ ಟಿಪ್ಪಣಿಗಳು. ಪಾಠ ಡೌನ್‌ಲೋಡ್‌ಗಳಿಂದ ಪ್ರತ್ಯೇಕ. ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಅಳಿಸುವುದಿಲ್ಲ.';
   }
 
   @override
   String notesLessonContext(String title, String seconds) {
-    return '$title. Captured lesson point: $seconds seconds.';
+    return '$title. ಸೆರೆಹಿಡಿದ ಪಾಠದ ಸ್ಥಾನ: $seconds ಸೆಕೆಂಡುಗಳು.';
   }
 
   @override
   String notesRecordingTime(String time) {
-    return 'Recording time $time';
+    return 'ರೆಕಾರ್ಡಿಂಗ್ ಸಮಯ $time';
   }
 
   @override
-  String get notesRefreshNotes => 'Refresh notes';
+  String get notesRefreshNotes => 'ಟಿಪ್ಪಣಿಗಳನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಿ';
 
   @override
-  String get notesRecordPrivateNote => 'Record a private note';
+  String get notesRecordPrivateNote => 'ಖಾಸಗಿ ಟಿಪ್ಪಣಿ ರೆಕಾರ್ಡ್ ಮಾಡಿ';
 
   @override
-  String get notesStopRecording => 'Stop recording';
+  String get notesStopRecording => 'ರೆಕಾರ್ಡಿಂಗ್ ನಿಲ್ಲಿಸಿ';
 
   @override
-  String get notesReadRecordingTime => 'Read recording time';
+  String get notesReadRecordingTime => 'ರೆಕಾರ್ಡಿಂಗ್ ಸಮಯ ಓದಿ';
 
   @override
-  String get notesReadNoteStatus => 'Read note status';
+  String get notesReadNoteStatus => 'ಟಿಪ್ಪಣಿ ಸ್ಥಿತಿ ಓದಿ';
 
   @override
-  String get notesStatusNeedsAttention => 'Needs attention';
+  String get notesStatusNeedsAttention => 'ಗಮನ ಬೇಕು';
 
   @override
-  String get notesStatusIncomplete => 'Incomplete';
+  String get notesStatusIncomplete => 'ಅಪೂರ್ಣ';
 
   @override
-  String get notesStatusPlaying => 'Playing';
+  String get notesStatusPlaying => 'ಪ್ಲೇ ಆಗುತ್ತಿದೆ';
 
   @override
-  String get notesStatusReviewed => 'Reviewed';
+  String get notesStatusReviewed => 'ಪರಿಶೀಲಿಸಲಾಗಿದೆ';
 
   @override
-  String get notesStatusSaved => 'Saved';
+  String get notesStatusSaved => 'ಉಳಿಸಲಾಗಿದೆ';
 
   @override
   String notesNoteSeconds(String seconds) {
-    return '$seconds seconds. Private local note.';
+    return '$seconds ಸೆಕೆಂಡುಗಳು. ಖಾಸಗಿ ಸ್ಥಳೀಯ ಟಿಪ್ಪಣಿ.';
   }
 
   @override
   String get notesNoteIncomplete =>
-      'Interrupted or incomplete note. Cannot play or publish.';
+      'ಅಡಚಣೆಯಾದ ಅಥವಾ ಅಪೂರ್ಣ ಟಿಪ್ಪಣಿ. ಪ್ಲೇ ಅಥವಾ ಪ್ರಕಟಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ.';
 
   @override
   String notesNoteLessonPoint(String lesson, String seconds) {
-    return 'Lesson $lesson, point $seconds seconds.';
+    return 'ಪಾಠ $lesson, ಸ್ಥಾನ $seconds ಸೆಕೆಂಡುಗಳು.';
   }
 
   @override
-  String get notesReviewPlaying => 'Review playing';
+  String get notesReviewPlaying => 'ಪರಿಶೀಲನೆ ಪ್ಲೇ ಆಗುತ್ತಿದೆ';
 
   @override
-  String get notesReviewPrivately => 'Review privately';
+  String get notesReviewPrivately => 'ಖಾಸಗಿಯಾಗಿ ಪರಿಶೀಲಿಸಿ';
 
   @override
-  String get notesRename => 'Rename';
+  String get notesRename => 'ಮರುಹೆಸರಿಸಿ';
 
   @override
-  String get notesPublishReviewedNote => 'Publish reviewed note';
+  String get notesPublishReviewedNote => 'ಪರಿಶೀಲಿಸಿದ ಟಿಪ್ಪಣಿ ಪ್ರಕಟಿಸಿ';
 
   @override
-  String get notesEnterNameBeforeSaving => 'Enter a name before saving.';
+  String get notesEnterNameBeforeSaving => 'ಉಳಿಸುವ ಮೊದಲು ಹೆಸರು ನಮೂದಿಸಿ.';
 
   @override
   String notesNameDialogInstructions(String title) {
-    return '$title. OK enters editing. Up or Down leaves editing, then choose Save or Cancel.';
+    return '$title. ಓಕೆ ಒತ್ತಿದರೆ ಸಂಪಾದನೆ ಶುರುವಾಗುತ್ತದೆ. ಮೇಲೆ ಅಥವಾ ಕೆಳಗೆ ಒತ್ತಿದರೆ ಸಂಪಾದನೆಯಿಂದ ಹೊರಬರುತ್ತದೆ, ನಂತರ ಉಳಿಸಿ ಅಥವಾ ರದ್ದುಮಾಡಿ ಆಯ್ಕೆಮಾಡಿ.';
   }
 
   @override
-  String get notesNoteName => 'Note name';
+  String get notesNoteName => 'ಟಿಪ್ಪಣಿ ಹೆಸರು';
 
   @override
-  String get notesSaveNoteName => 'Save note name';
+  String get notesSaveNoteName => 'ಟಿಪ್ಪಣಿ ಹೆಸರು ಉಳಿಸಿ';
 
   @override
-  String get notesCancel => 'Cancel';
+  String get notesCancel => 'ರದ್ದುಮಾಡಿ';
 
   @override
-  String get notesSaveName => 'Save name';
+  String get notesSaveName => 'ಹೆಸರು ಉಳಿಸಿ';
 
   @override
   String notesWorkspaceLabel(String className, String subjectName) {
@@ -11630,233 +11697,233 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get notesChooseWorkspaceInstructions =>
-      'Choose an authorized class and subject before publishing. Nothing is uploaded until the next confirmation.';
+      'ಪ್ರಕಟಿಸುವ ಮೊದಲು ಅನುಮತಿ ಇರುವ ತರಗತಿ ಮತ್ತು ವಿಷಯವನ್ನು ಆಯ್ಕೆಮಾಡಿ. ಮುಂದಿನ ದೃಢೀಕರಣದವರೆಗೆ ಏನನ್ನೂ ಅಪ್‌ಲೋಡ್ ಮಾಡುವುದಿಲ್ಲ.';
 
   @override
-  String get notesCancelPublication => 'Cancel publication';
+  String get notesCancelPublication => 'ಪ್ರಕಟಣೆ ರದ್ದುಮಾಡಿ';
 
   @override
-  String get notesPublishWhichWorkspace => 'Publish to which workspace?';
+  String get notesPublishWhichWorkspace => 'ಯಾವ ಕಾರ್ಯಸ್ಥಳಕ್ಕೆ ಪ್ರಕಟಿಸಬೇಕು?';
 
   @override
   String settingsDecrease(String setting) {
-    return 'Decrease $setting';
+    return '$setting ಕಡಿಮೆ ಮಾಡಿ';
   }
 
   @override
   String settingsIncrease(String setting) {
-    return 'Increase $setting';
+    return '$setting ಹೆಚ್ಚಿಸಿ';
   }
 
   @override
-  String get settingsResetTooltip => 'Reset to Defaults';
+  String get settingsResetTooltip => 'ಮೂಲ ಸ್ಥಿತಿಗೆ ಮರುಹೊಂದಿಸಿ';
 
   @override
-  String get settingsSectionSpeech => 'Speech';
+  String get settingsSectionSpeech => 'ಮಾತು';
 
   @override
-  String get settingsAppSpeechTitle => 'App speech';
+  String get settingsAppSpeechTitle => 'ಆ್ಯಪ್ ಧ್ವನಿ';
 
   @override
   String get settingsAppSpeechSubtitle =>
-      'The app reads out screens and messages';
+      'ಆ್ಯಪ್ ಪರದೆಗಳು ಮತ್ತು ಸಂದೇಶಗಳನ್ನು ಓದಿ ಹೇಳುತ್ತದೆ';
 
   @override
   String settingsLanguageButton(String language) {
-    return 'Speech language: $language';
+    return 'ಮಾತಿನ ಭಾಷೆ: $language';
   }
 
   @override
-  String get settingsVolumeTitle => 'Volume';
+  String get settingsVolumeTitle => 'ವಾಲ್ಯೂಮ್';
 
   @override
-  String get settingsVolumeSubtitle => 'How loud app speech is';
+  String get settingsVolumeSubtitle => 'ಆ್ಯಪ್ ಧ್ವನಿ ಎಷ್ಟು ಜೋರಾಗಿರಬೇಕು';
 
   @override
   String settingsPercentValue(String percent) {
-    return '$percent percent';
+    return '$percent ಪ್ರತಿಶತ';
   }
 
   @override
-  String get settingsSpeedTitle => 'Speech speed';
+  String get settingsSpeedTitle => 'ಮಾತಿನ ವೇಗ';
 
   @override
   String get settingsSpeedSubtitle =>
-      'How fast app speech is. Quizzes can use their own speed';
+      'ಆ್ಯಪ್ ಧ್ವನಿ ಎಷ್ಟು ವೇಗವಾಗಿರಬೇಕು. ಕ್ವಿಜ್‌ಗಳು ತಮ್ಮದೇ ವೇಗ ಬಳಸಬಹುದು';
 
   @override
   String settingsTimesNormal(String speed) {
-    return '$speed times normal';
+    return 'ಸಾಮಾನ್ಯಕ್ಕಿಂತ $speed ಪಟ್ಟು';
   }
 
   @override
-  String get settingsTestButton => '5: Test speech';
+  String get settingsTestButton => '5: ಧ್ವನಿ ಪರೀಕ್ಷಿಸಿ';
 
   @override
   String settingsNarrationButton(String level) {
-    return 'Narration level: $level';
+    return 'ನಿರೂಪಣೆಯ ಮಟ್ಟ: $level';
   }
 
   @override
   String settingsCheckingVoice(String language) {
-    return 'Checking $language voice...';
+    return '$language ಧ್ವನಿ ಪರಿಶೀಲಿಸಲಾಗುತ್ತಿದೆ...';
   }
 
   @override
   String settingsCheckVoiceButton(String language) {
-    return '7: Check $language voice';
+    return '7: $language ಧ್ವನಿ ಪರಿಶೀಲಿಸಿ';
   }
 
   @override
-  String get settingsStopButton => '#: Stop speech';
+  String get settingsStopButton => '#: ಮಾತು ನಿಲ್ಲಿಸಿ';
 
   @override
-  String get settingsSectionDisplay => 'Display';
+  String get settingsSectionDisplay => 'ಪ್ರದರ್ಶನ';
 
   @override
-  String get settingsHighContrastTitle => 'High Contrast';
+  String get settingsHighContrastTitle => 'ಹೈ ಕಾಂಟ್ರಾಸ್ಟ್';
 
   @override
   String get settingsHighContrastSubtitle =>
-      'On by default: white and yellow on black for low vision';
+      'ಮೊದಲಿನಿಂದ ಆನ್: ಕಡಿಮೆ ದೃಷ್ಟಿ ಇರುವವರಿಗೆ ಕಪ್ಪು ಹಿನ್ನೆಲೆಯಲ್ಲಿ ಬಿಳಿ ಮತ್ತು ಹಳದಿ';
 
   @override
-  String get settingsTextSizeTitle => 'Text size';
+  String get settingsTextSizeTitle => 'ಅಕ್ಷರದ ಗಾತ್ರ';
 
   @override
   String get settingsTextSizeSubtitle =>
-      'App text size; system font scaling is also respected';
+      'ಆ್ಯಪ್ ಅಕ್ಷರದ ಗಾತ್ರ; ಫೋನ್‌ನ ಅಕ್ಷರ ಗಾತ್ರದ ಸೆಟ್ಟಿಂಗ್ ಅನ್ನೂ ಪಾಲಿಸಲಾಗುತ್ತದೆ';
 
   @override
-  String get settingsSectionKeys => 'Keys and help';
+  String get settingsSectionKeys => 'ಕೀಗಳು ಮತ್ತು ಸಹಾಯ';
 
   @override
-  String get settingsShortcutsTitle => 'Show keypad shortcuts';
+  String get settingsShortcutsTitle => 'ಕೀಪ್ಯಾಡ್ ಶಾರ್ಟ್‌ಕಟ್‌ಗಳನ್ನು ತೋರಿಸಿ';
 
   @override
-  String get settingsShortcutsSubtitle => 'Show key numbers on buttons';
+  String get settingsShortcutsSubtitle => 'ಬಟನ್‌ಗಳ ಮೇಲೆ ಕೀ ಸಂಖ್ಯೆಗಳನ್ನು ತೋರಿಸಿ';
 
   @override
   String get settingsGlobalKeysHint =>
-      'On every screen: 0 back, star help, hash stop speech.';
+      'ಪ್ರತಿ ಪರದೆಯಲ್ಲಿ: 0 ಹಿಂದೆ, ಸ್ಟಾರ್ ಸಹಾಯ, ಹ್ಯಾಶ್ ಮಾತು ನಿಲ್ಲಿಸುತ್ತದೆ.';
 
   @override
-  String get settingsVoiceCommandsTitle => 'Voice commands';
+  String get settingsVoiceCommandsTitle => 'ಧ್ವನಿ ಆದೇಶಗಳು';
 
   @override
   String get settingsVoiceCommandsSubtitle =>
-      'Enable Listen for command in sessions. No automatic listening.';
+      'ಸೆಷನ್‌ಗಳಲ್ಲಿ \'ಆದೇಶಕ್ಕಾಗಿ ಆಲಿಸಿ\' ಆನ್ ಮಾಡಿ. ತಾನಾಗಿಯೇ ಆಲಿಸುವುದಿಲ್ಲ.';
 
   @override
-  String get settingsSoundCuesTitle => '8: Sound cues';
+  String get settingsSoundCuesTitle => '8: ಧ್ವನಿ ಸೂಚನೆಗಳು';
 
   @override
-  String get settingsVibrationTitle => '9: Vibration';
+  String get settingsVibrationTitle => '9: ಕಂಪನ';
 
   @override
   String get settingsVoiceHelpButton =>
-      'Voice command help: say mute, unmute, raise hand, lower hand, leave or repeat.';
+      'ಧ್ವನಿ ಆದೇಶ ಸಹಾಯ: ಮ್ಯೂಟ್, ಅನ್‌ಮ್ಯೂಟ್, ಕೈ ಎತ್ತಿ, ಕೈ ಇಳಿಸಿ, ಹೊರಹೋಗಿ ಅಥವಾ ಮತ್ತೆ ಹೇಳಿ ಎಂದು ಹೇಳಿ.';
 
   @override
-  String get uiSave => 'Save';
+  String get uiSave => 'ಉಳಿಸಿ';
 
   @override
-  String get uiClose => 'Close';
+  String get uiClose => 'ಮುಚ್ಚಿ';
 
   @override
-  String get learningLessonPositionLabel => 'Lesson position';
+  String get learningLessonPositionLabel => 'ಪಾಠದ ಸ್ಥಾನ';
 
   @override
-  String get learningReadStatusButton => 'Read learning status';
+  String get learningReadStatusButton => 'ಕಲಿಕೆಯ ಸ್ಥಿತಿ ಓದಿ';
 
   @override
-  String get learningAddBookmarkButton => 'Add bookmark';
+  String get learningAddBookmarkButton => 'ಬುಕ್‌ಮಾರ್ಕ್ ಸೇರಿಸಿ';
 
   @override
   String learningBookmarksButton(String count) {
-    return 'Bookmarks ($count)';
+    return 'ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು ($count)';
   }
 
   @override
-  String get learningPrivateNotesButton => 'Private study notes';
+  String get learningPrivateNotesButton => 'ಖಾಸಗಿ ಅಧ್ಯಯನ ಟಿಪ್ಪಣಿಗಳು';
 
   @override
-  String get learningSetAButton => 'Set A';
+  String get learningSetAButton => 'A ಹೊಂದಿಸಿ';
 
   @override
   String learningSetAAtButton(String time) {
-    return 'Set A $time';
+    return 'A ಹೊಂದಿಸಿ $time';
   }
 
   @override
-  String get learningSetBButton => 'Set B';
+  String get learningSetBButton => 'B ಹೊಂದಿಸಿ';
 
   @override
   String learningSetBAtButton(String time) {
-    return 'Set B $time';
+    return 'B ಹೊಂದಿಸಿ $time';
   }
 
   @override
-  String get learningRepeatOffButton => 'Repeat off';
+  String get learningRepeatOffButton => 'ಪುನರಾವರ್ತನೆ ಆಫ್';
 
   @override
-  String get learningRepeatOnButton => 'Repeat on';
+  String get learningRepeatOnButton => 'ಪುನರಾವರ್ತನೆ ಆನ್';
 
   @override
-  String get learningClearABButton => 'Clear A-B';
+  String get learningClearABButton => 'A-B ತೆರವುಗೊಳಿಸಿ';
 
   @override
   String learningBackTenButton(String key) {
-    return '$key: Back 10 seconds';
+    return '$key: 10 ಸೆಕೆಂಡ್ ಹಿಂದೆ';
   }
 
   @override
   String learningForwardTenButton(String key) {
-    return '$key: Forward 10 seconds';
+    return '$key: 10 ಸೆಕೆಂಡ್ ಮುಂದೆ';
   }
 
   @override
   String learningSlowerButton(String key) {
-    return '$key: Slower';
+    return '$key: ನಿಧಾನ';
   }
 
   @override
   String learningFasterButton(String key) {
-    return '$key: Faster';
+    return '$key: ವೇಗ';
   }
 
   @override
-  String get learningRetrySavingButton => 'Retry saving';
+  String get learningRetrySavingButton => 'ಉಳಿಸಲು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ';
 
   @override
-  String get learningNameBookmarkTitle => 'Name bookmark';
+  String get learningNameBookmarkTitle => 'ಬುಕ್‌ಮಾರ್ಕ್‌ಗೆ ಹೆಸರಿಡಿ';
 
   @override
-  String get learningBookmarkNameFieldLabel => 'Name';
+  String get learningBookmarkNameFieldLabel => 'ಹೆಸರು';
 
   @override
-  String get learningBookmarksTitle => 'Bookmarks';
+  String get learningBookmarksTitle => 'ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು';
 
   @override
   String get learningBookmarksLessonChanged =>
-      'The lesson changed. Close this list and open bookmarks for the current lesson.';
+      'ಪಾಠ ಬದಲಾಗಿದೆ. ಈ ಪಟ್ಟಿಯನ್ನು ಮುಚ್ಚಿ, ಈಗಿನ ಪಾಠದ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳನ್ನು ತೆರೆಯಿರಿ.';
 
   @override
   String get learningBookmarksEmpty =>
-      'No bookmarks yet. Use Add bookmark at a position you want to remember.';
+      'ಇನ್ನೂ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳಿಲ್ಲ. ನೆನಪಿಡಲು ಬಯಸುವ ಸ್ಥಾನದಲ್ಲಿ ಬುಕ್‌ಮಾರ್ಕ್ ಸೇರಿಸಿ ಬಳಸಿ.';
 
   @override
   String get learningBookmarksUnavailable =>
-      'Saved bookmarks are unavailable. Retry saving to restore access to saved progress.';
+      'ಉಳಿಸಿದ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು ಲಭ್ಯವಿಲ್ಲ. ಉಳಿಸಿದ ಪ್ರಗತಿಯನ್ನು ಮತ್ತೆ ಪಡೆಯಲು ಉಳಿಸಲು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
   String learningBookmarkAtButton(String label, String time) {
-    return '$label at $time';
+    return '$time ನಲ್ಲಿ $label';
   }
 
   @override
   String learningRemoveBookmarkSemantics(String label) {
-    return 'Remove bookmark $label';
+    return 'ಬುಕ್‌ಮಾರ್ಕ್ $label ತೆಗೆದುಹಾಕಿ';
   }
 
   @override
@@ -11865,108 +11932,108 @@ class AppLocalizationsKn extends AppLocalizations {
   }
 
   @override
-  String get uiKeypadFooter => '*: Help. #: Stop app speech.';
+  String get uiKeypadFooter => '*: ಸಹಾಯ. #: ಆ್ಯಪ್ ಧ್ವನಿ ನಿಲ್ಲಿಸಿ.';
 
   @override
   String uiListSearchValue(String query) {
-    return 'Search: $query';
+    return 'ಹುಡುಕಾಟ: $query';
   }
 
   @override
-  String get uiListLoadingShort => 'Loading. Press 0 to go back.';
+  String get uiListLoadingShort => 'ಲೋಡ್ ಆಗುತ್ತಿದೆ. ಹಿಂದೆ ಹೋಗಲು 0 ಒತ್ತಿ.';
 
   @override
   String get keypadTextEditingHint =>
-      'While editing, keys enter text. Press OK to finish. Use up or down if OK does not finish editing.';
+      'ಎಡಿಟ್ ಮಾಡುವಾಗ, ಕೀಗಳು ಪಠ್ಯವನ್ನು ನಮೂದಿಸುತ್ತವೆ. ಮುಗಿಸಲು ಓಕೆ ಒತ್ತಿ. ಓಕೆ ಎಡಿಟಿಂಗ್ ಮುಗಿಸದಿದ್ದರೆ ಮೇಲೆ ಅಥವಾ ಕೆಳಗೆ ಬಳಸಿ.';
 
   @override
-  String get keypadWaitingConfirmation => 'Waiting for confirmation.';
+  String get keypadWaitingConfirmation => 'ಖಚಿತಪಡಿಸುವಿಕೆಗಾಗಿ ಕಾಯಲಾಗುತ್ತಿದೆ.';
 
   @override
-  String get keypadContinueKey1 => '1: Continue';
+  String get keypadContinueKey1 => '1: ಮುಂದುವರಿಸಿ';
 
   @override
-  String get keypadHidePasswordKey2 => '2: Hide password';
+  String get keypadHidePasswordKey2 => '2: ಪಾಸ್‌ವರ್ಡ್ ಮರೆಮಾಡಿ';
 
   @override
-  String get keypadShowPasswordKey2 => '2: Show password';
+  String get keypadShowPasswordKey2 => '2: ಪಾಸ್‌ವರ್ಡ್ ತೋರಿಸಿ';
 
   @override
-  String get keypadBackKey0 => '0: Back';
+  String get keypadBackKey0 => '0: ಹಿಂದೆ';
 
   @override
   String uiKeyedLabelUnavailable(String number, String label) {
-    return '$number: $label (unavailable)';
+    return '$number: $label (ಲಭ್ಯವಿಲ್ಲ)';
   }
 
   @override
-  String get journeyMenuReadDetailsKey8 => '8: Read details again';
+  String get journeyMenuReadDetailsKey8 => '8: ವಿವರಗಳನ್ನು ಮತ್ತೆ ಓದಿ';
 
   @override
-  String get sessionTileHandRaised => 'Hand raised';
+  String get sessionTileHandRaised => 'ಕೈ ಎತ್ತಿದ್ದಾರೆ';
 
   @override
-  String get sessionTileSpeaking => 'Speaking';
+  String get sessionTileSpeaking => 'ಮಾತನಾಡುತ್ತಿದ್ದಾರೆ';
 
   @override
   String sessionRemoveFromSession(String name) {
-    return 'Remove $name from session';
+    return '$name ಅವರನ್ನು ಸೆಷನ್‌ನಿಂದ ತೆಗೆದುಹಾಕಿ';
   }
 
   @override
-  String get classroomConsoleTitle => 'Classroom console';
+  String get classroomConsoleTitle => 'ತರಗತಿ ಕನ್ಸೋಲ್';
 
   @override
-  String get uiHourRange => 'Hour (0 to 23)';
+  String get uiHourRange => 'ಗಂಟೆ (0 ರಿಂದ 23)';
 
   @override
-  String get uiSetDateTimeTitle => 'Set date and time';
+  String get uiSetDateTimeTitle => 'ದಿನಾಂಕ ಮತ್ತು ಸಮಯ ಹೊಂದಿಸಿ';
 
   @override
   String get uiSetDateTimeHint =>
-      'Use local time. Press OK to edit each number.';
+      'ಸ್ಥಳೀಯ ಸಮಯ ಬಳಸಿ. ಪ್ರತಿ ಸಂಖ್ಯೆಯನ್ನು ಎಡಿಟ್ ಮಾಡಲು ಓಕೆ ಒತ್ತಿ.';
 
   @override
   String quizExtraTitle(String name) {
-    return 'Extra time: $name';
+    return 'ಹೆಚ್ಚುವರಿ ಸಮಯ: $name';
   }
 
   @override
   String get quizExtraInfo =>
-      'Future attempts only. Existing deadlines do not change. Quiz closing time still applies; extend availability separately if needed. Zero removes extra minutes.';
+      'ಮುಂದಿನ ಪ್ರಯತ್ನಗಳಿಗೆ ಮಾತ್ರ. ಈಗಿರುವ ಗಡುವುಗಳು ಬದಲಾಗುವುದಿಲ್ಲ. ಕ್ವಿಜ್ ಮುಚ್ಚುವ ಸಮಯ ಇನ್ನೂ ಅನ್ವಯಿಸುತ್ತದೆ; ಬೇಕಿದ್ದರೆ ಲಭ್ಯತೆಯನ್ನು ಪ್ರತ್ಯೇಕವಾಗಿ ವಿಸ್ತರಿಸಿ. ಸೊನ್ನೆ ಹೆಚ್ಚುವರಿ ನಿಮಿಷಗಳನ್ನು ತೆಗೆದುಹಾಕುತ್ತದೆ.';
 
   @override
-  String get quizExtraMinutesField => 'Extra minutes';
+  String get quizExtraMinutesField => 'ಹೆಚ್ಚುವರಿ ನಿಮಿಷಗಳು';
 
   @override
-  String get quizExtraSaveButton => 'Save future extra time';
+  String get quizExtraSaveButton => 'ಮುಂದಿನ ಹೆಚ್ಚುವರಿ ಸಮಯ ಉಳಿಸಿ';
 
   @override
   String quizSpeedValue(String speed) {
-    return 'Quiz speech speed: $speed×';
+    return 'ಕ್ವಿಜ್ ಧ್ವನಿ ವೇಗ: $speed×';
   }
 
   @override
-  String get uiCancelKey0 => '0: Cancel';
+  String get uiCancelKey0 => '0: ರದ್ದುಮಾಡಿ';
 
   @override
-  String get uiSaveKey1 => '1: Save';
+  String get uiSaveKey1 => '1: ಉಳಿಸಿ';
 
   @override
-  String get uiNone => 'none';
+  String get uiNone => 'ಯಾವುದೂ ಇಲ್ಲ';
 
   @override
   String uiPreviousOf(String label) {
-    return 'Previous $label';
+    return 'ಹಿಂದಿನ $label';
   }
 
   @override
   String uiNextOf(String label) {
-    return 'Next $label';
+    return 'ಮುಂದಿನ $label';
   }
 
   @override
-  String get journeyOpening => 'Opening journey';
+  String get journeyOpening => 'ಪಯಣ ತೆರೆಯಲಾಗುತ್ತಿದೆ';
 
   @override
   String journeyStepHeading(String position, String kind) {
@@ -11975,527 +12042,532 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String journeyStepHeadingReplay(String position, String kind) {
-    return '$position. $kind. Listening again';
+    return '$position. $kind. ಮತ್ತೆ ಕೇಳಲಾಗುತ್ತಿದೆ';
   }
 
   @override
   String journeyFirstTryShort(String correct, String total) {
-    return '$correct of $total correct on the first try.';
+    return 'ಮೊದಲ ಪ್ರಯತ್ನದಲ್ಲಿ $total ರಲ್ಲಿ $correct ಸರಿ.';
   }
 
   @override
-  String get journeyLeaveKey0 => '0: Leave journey';
+  String get journeyLeaveKey0 => '0: ಪಯಣದಿಂದ ಹೊರಬನ್ನಿ';
 
   @override
-  String get quizRevisionsTitle => 'Question revisions';
+  String get quizRevisionsTitle => 'ಪ್ರಶ್ನೆ ಪರಿಷ್ಕರಣೆಗಳು';
 
   @override
-  String get quizRevisionsBackTooltip => 'Go back from question revisions';
+  String get quizRevisionsBackTooltip => 'ಪ್ರಶ್ನೆ ಪರಿಷ್ಕರಣೆಗಳಿಂದ ಹಿಂದೆ ಹೋಗಿ';
 
   @override
   String quizRevisionSectionHear(String section) {
-    return '$section. Double tap to hear it';
+    return '$section. ಕೇಳಲು ಎರಡು ಬಾರಿ ಟ್ಯಾಪ್ ಮಾಡಿ';
   }
 
   @override
-  String get adminResetAttested => 'Identity verification attested.';
+  String get adminResetAttested => 'ಗುರುತು ಪರಿಶೀಲನೆಯನ್ನು ದೃಢಪಡಿಸಲಾಗಿದೆ.';
 
   @override
-  String get adminResetNotAttested => 'Identity verification not attested.';
+  String get adminResetNotAttested => 'ಗುರುತು ಪರಿಶೀಲನೆಯನ್ನು ದೃಢಪಡಿಸಿಲ್ಲ.';
 
   @override
-  String get adminResetConfirmTitle => 'Reset this password?';
+  String get adminResetConfirmTitle => 'ಈ ಪಾಸ್‌ವರ್ಡ್ ಮರುಹೊಂದಿಸಬೇಕೆ?';
 
   @override
   String adminResetConfirmMessage(String name, String phone) {
-    return 'Reset $name, phone $phone? This replaces the old password and ends online sessions. Disconnected downloaded lessons cannot be instantly revoked. Existing lessons, notes and learning records are retained. A 12-digit temporary credential lasts 24 hours and requires password change. After 10 wrong attempts, temporary-credential sign-in pauses for 15 minutes.';
+    return '$name, ಫೋನ್ $phone ಮರುಹೊಂದಿಸಬೇಕೆ? ಇದು ಹಳೆಯ ಪಾಸ್‌ವರ್ಡ್ ಬದಲಿಸುತ್ತದೆ ಮತ್ತು ಆನ್‌ಲೈನ್ ಸೆಷನ್‌ಗಳನ್ನು ಕೊನೆಗೊಳಿಸುತ್ತದೆ. ಸಂಪರ್ಕವಿಲ್ಲದ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿದ ಪಾಠಗಳನ್ನು ತಕ್ಷಣ ಹಿಂಪಡೆಯಲು ಸಾಧ್ಯವಿಲ್ಲ. ಈಗಿರುವ ಪಾಠಗಳು, ಟಿಪ್ಪಣಿಗಳು ಮತ್ತು ಕಲಿಕೆಯ ದಾಖಲೆಗಳು ಉಳಿಯುತ್ತವೆ. 12 ಅಂಕಿಯ ತಾತ್ಕಾಲಿಕ ಕೋಡ್ 24 ಗಂಟೆ ಇರುತ್ತದೆ ಮತ್ತು ಪಾಸ್‌ವರ್ಡ್ ಬದಲಾವಣೆ ಅಗತ್ಯ. 10 ತಪ್ಪು ಪ್ರಯತ್ನಗಳ ನಂತರ, ತಾತ್ಕಾಲಿಕ ಕೋಡ್ ಸೈನ್ ಇನ್ 15 ನಿಮಿಷ ತಡೆಹಿಡಿಯಲಾಗುತ್ತದೆ.';
   }
 
   @override
-  String get adminResetKeepPassword => 'Keep password';
+  String get adminResetKeepPassword => 'ಪಾಸ್‌ವರ್ಡ್ ಇರಿಸಿಕೊಳ್ಳಿ';
 
   @override
-  String get adminResetResetPassword => 'Reset password';
+  String get adminResetResetPassword => 'ಪಾಸ್‌ವರ್ಡ್ ಮರುಹೊಂದಿಸಿ';
 
   @override
   String get adminResetSignInChanged =>
-      'Administrator sign-in changed. No reset was sent.';
+      'ನಿರ್ವಾಹಕರ ಸೈನ್ ಇನ್ ಬದಲಾಗಿದೆ. ಯಾವುದೇ ಮರುಹೊಂದಿಕೆ ಕಳುಹಿಸಿಲ್ಲ.';
 
   @override
   String get adminResetSending =>
-      'Sending reset. Waiting for server confirmation.';
+      'ಮರುಹೊಂದಿಕೆ ಕಳುಹಿಸಲಾಗುತ್ತಿದೆ. ಸರ್ವರ್ ದೃಢೀಕರಣಕ್ಕಾಗಿ ಕಾಯಲಾಗುತ್ತಿದೆ.';
 
   @override
   String adminResetNotConfirmed(String reason) {
-    return 'Reset not confirmed. $reason It may already have taken effect. Close and refresh this account before considering another reset.';
+    return 'ಮರುಹೊಂದಿಕೆ ದೃಢೀಕರಿಸಿಲ್ಲ. $reason ಇದು ಈಗಾಗಲೇ ಜಾರಿಯಾಗಿರಬಹುದು. ಇನ್ನೊಂದು ಮರುಹೊಂದಿಕೆ ಯೋಚಿಸುವ ಮೊದಲು ಮುಚ್ಚಿ ಈ ಖಾತೆಯನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಿ.';
   }
 
   @override
   String get adminResetResponseNotVerified =>
-      'The reset response could not be verified. The password may already have changed. Close and refresh before considering another reset.';
+      'ಮರುಹೊಂದಿಕೆಯ ಪ್ರತಿಕ್ರಿಯೆಯನ್ನು ಪರಿಶೀಲಿಸಲು ಆಗಲಿಲ್ಲ. ಪಾಸ್‌ವರ್ಡ್ ಈಗಾಗಲೇ ಬದಲಾಗಿರಬಹುದು. ಇನ್ನೊಂದು ಮರುಹೊಂದಿಕೆ ಯೋಚಿಸುವ ಮೊದಲು ಮುಚ್ಚಿ ರಿಫ್ರೆಶ್ ಮಾಡಿ.';
 
   @override
   String get adminResetConfirmedSpoken =>
-      'Password reset confirmed. The credential is hidden. Use Read credential only when it is private. Closing discards this copy.';
+      'ಪಾಸ್‌ವರ್ಡ್ ಮರುಹೊಂದಿಕೆ ದೃಢೀಕರಿಸಲಾಗಿದೆ. ಕೋಡ್ ಮರೆಮಾಡಲಾಗಿದೆ. ಖಾಸಗಿಯಾಗಿದ್ದಾಗ ಮಾತ್ರ ಕೋಡ್ ಓದಿ ಬಳಸಿ. ಮುಚ್ಚಿದರೆ ಈ ಪ್ರತಿ ತಿರಸ್ಕರಿಸಲಾಗುತ್ತದೆ.';
 
   @override
   String get adminResetPhoneNotConfirmed =>
-      'Reset could not be confirmed on this phone. Close and refresh the account before considering another reset.';
+      'ಈ ಫೋನ್‌ನಲ್ಲಿ ಮರುಹೊಂದಿಕೆ ದೃಢೀಕರಿಸಲು ಆಗಲಿಲ್ಲ. ಇನ್ನೊಂದು ಮರುಹೊಂದಿಕೆ ಯೋಚಿಸುವ ಮೊದಲು ಮುಚ್ಚಿ ಖಾತೆಯನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಿ.';
 
   @override
   String get adminResetStorageUnavailable =>
-      'Account storage is unavailable. Close recovery and restart SEEDS before considering a reset.';
+      'ಖಾತೆ ಸಂಗ್ರಹಣೆ ಲಭ್ಯವಿಲ್ಲ. ಮರುಹೊಂದಿಕೆ ಯೋಚಿಸುವ ಮೊದಲು ಮರುಪಡೆಯುವಿಕೆ ಮುಚ್ಚಿ SEEDS ಮರುಪ್ರಾರಂಭಿಸಿ.';
 
   @override
   String adminResetCredentialSpoken(String digits, String expires) {
-    return 'Temporary credential: $digits. Expires at $expires, UTC. Deliver privately to the verified person. It must be replaced at sign-in.';
+    return 'ತಾತ್ಕಾಲಿಕ ಕೋಡ್: $digits. $expires, UTC ಕ್ಕೆ ಅವಧಿ ಮುಗಿಯುತ್ತದೆ. ಪರಿಶೀಲಿಸಿದ ವ್ಯಕ್ತಿಗೆ ಖಾಸಗಿಯಾಗಿ ತಲುಪಿಸಿ. ಸೈನ್ ಇನ್ ಸಮಯದಲ್ಲಿ ಇದನ್ನು ಬದಲಿಸಬೇಕು.';
   }
 
   @override
-  String get adminResetDiscardTitle => 'Discard this credential copy?';
+  String get adminResetDiscardTitle => 'ಈ ಕೋಡ್ ಪ್ರತಿಯನ್ನು ತಿರಸ್ಕರಿಸಬೇಕೆ?';
 
   @override
   String get adminResetDiscardMessage =>
-      'Confirm that you delivered the temporary credential privately, or accept that another verified administrator reset will be needed. SEEDS will not show this copy again. This does not cancel the completed reset.';
+      'ತಾತ್ಕಾಲಿಕ ಕೋಡ್ ಅನ್ನು ಖಾಸಗಿಯಾಗಿ ತಲುಪಿಸಿದ್ದೀರಿ ಎಂದು ದೃಢೀಕರಿಸಿ, ಅಥವಾ ಪರಿಶೀಲಿತ ನಿರ್ವಾಹಕರಿಂದ ಇನ್ನೊಂದು ಮರುಹೊಂದಿಕೆ ಬೇಕಾಗುತ್ತದೆ ಎಂದು ಒಪ್ಪಿಕೊಳ್ಳಿ. SEEDS ಈ ಪ್ರತಿಯನ್ನು ಮತ್ತೆ ತೋರಿಸುವುದಿಲ್ಲ. ಇದು ಪೂರ್ಣಗೊಂಡ ಮರುಹೊಂದಿಕೆಯನ್ನು ರದ್ದುಮಾಡುವುದಿಲ್ಲ.';
 
   @override
-  String get adminResetKeepReviewing => 'Keep reviewing';
+  String get adminResetKeepReviewing => 'ಪರಿಶೀಲನೆ ಮುಂದುವರಿಸಿ';
 
   @override
-  String get adminResetCloseDiscard => 'Close and discard';
+  String get adminResetCloseDiscard => 'ಮುಚ್ಚಿ ತಿರಸ್ಕರಿಸಿ';
 
   @override
   String get adminResetScreenName =>
-      'Administrator password recovery. Verify identity outside SEEDS before resetting. Credentials are hidden until explicitly requested.';
+      'ನಿರ್ವಾಹಕರ ಪಾಸ್‌ವರ್ಡ್ ಮರುಪಡೆಯುವಿಕೆ. ಮರುಹೊಂದಿಸುವ ಮೊದಲು SEEDS ಹೊರಗೆ ಗುರುತು ಪರಿಶೀಲಿಸಿ. ಸ್ಪಷ್ಟವಾಗಿ ಕೇಳುವವರೆಗೆ ಕೋಡ್‌ಗಳನ್ನು ಮರೆಮಾಡಲಾಗುತ್ತದೆ.';
 
   @override
-  String get adminResetCloseRecovery => 'Close recovery';
+  String get adminResetCloseRecovery => 'ಮರುಪಡೆಯುವಿಕೆ ಮುಚ್ಚಿ';
 
   @override
-  String get adminResetReadAccount => 'Read selected account details';
+  String get adminResetReadAccount => 'ಆಯ್ಕೆಮಾಡಿದ ಖಾತೆಯ ವಿವರಗಳನ್ನು ಓದಿ';
 
   @override
   String adminResetAccountDetails(String name, String phone) {
-    return '$name. Phone $phone.';
+    return '$name. ಫೋನ್ $phone.';
   }
 
   @override
   String get adminResetIdentityChecked =>
-      'Identity verified outside SEEDS. Checked. Press OK to change.';
+      'SEEDS ಹೊರಗೆ ಗುರುತು ಪರಿಶೀಲಿಸಲಾಗಿದೆ. ಗುರುತು ಹಾಕಲಾಗಿದೆ. ಬದಲಿಸಲು ಓಕೆ ಒತ್ತಿ.';
 
   @override
   String get adminResetIdentityNotChecked =>
-      'Identity verified outside SEEDS. Not checked. Press OK to change.';
+      'SEEDS ಹೊರಗೆ ಗುರುತು ಪರಿಶೀಲಿಸಲಾಗಿದೆ. ಗುರುತು ಹಾಕಿಲ್ಲ. ಬದಲಿಸಲು ಓಕೆ ಒತ್ತಿ.';
 
   @override
-  String get adminResetResetAndEnd => 'Reset password and end online sessions';
+  String get adminResetResetAndEnd =>
+      'ಪಾಸ್‌ವರ್ಡ್ ಮರುಹೊಂದಿಸಿ ಮತ್ತು ಆನ್‌ಲೈನ್ ಸೆಷನ್‌ಗಳನ್ನು ಕೊನೆಗೊಳಿಸಿ';
 
   @override
   String get adminResetReadCredentialLabel =>
-      'Read and reveal temporary credential. Only use privately.';
+      'ತಾತ್ಕಾಲಿಕ ಕೋಡ್ ಓದಿ ಮತ್ತು ತೋರಿಸಿ. ಖಾಸಗಿಯಾಗಿ ಮಾತ್ರ ಬಳಸಿ.';
 
   @override
-  String get adminResetCloseRefresh => 'Close and refresh account';
+  String get adminResetCloseRefresh => 'ಮುಚ್ಚಿ ಖಾತೆಯನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಿ';
 
   @override
-  String get adminResetTitle => 'Password recovery';
+  String get adminResetTitle => 'ಪಾಸ್‌ವರ್ಡ್ ಮರುಪಡೆಯುವಿಕೆ';
 
   @override
   String get adminResetVerifyInfo =>
-      'Verify the person outside SEEDS. A phone number or SIM suggestion is not identity verification. Never reset based only on a message or a claimed name.';
+      'SEEDS ಹೊರಗೆ ವ್ಯಕ್ತಿಯನ್ನು ಪರಿಶೀಲಿಸಿ. ಫೋನ್ ಸಂಖ್ಯೆ ಅಥವಾ SIM ಸಲಹೆ ಗುರುತು ಪರಿಶೀಲನೆ ಅಲ್ಲ. ಕೇವಲ ಸಂದೇಶ ಅಥವಾ ಹೇಳಿಕೊಂಡ ಹೆಸರಿನ ಆಧಾರದ ಮೇಲೆ ಎಂದಿಗೂ ಮರುಹೊಂದಿಸಬೇಡಿ.';
 
   @override
   String get adminResetVerifiedCheckbox =>
-      'I verified this person outside SEEDS';
+      'ನಾನು ಈ ವ್ಯಕ್ತಿಯನ್ನು SEEDS ಹೊರಗೆ ಪರಿಶೀಲಿಸಿದ್ದೇನೆ';
 
   @override
-  String get adminResetWaiting => 'Waiting for reset confirmation.';
+  String get adminResetWaiting => 'ಮರುಹೊಂದಿಕೆ ದೃಢೀಕರಣಕ್ಕಾಗಿ ಕಾಯಲಾಗುತ್ತಿದೆ.';
 
   @override
   String get adminResetConfirmedInfo =>
-      'Reset confirmed. Credential hidden until requested. It is valid for 24 hours. Closing discards this copy. Deliver privately; never post it in a class.';
+      'ಮರುಹೊಂದಿಕೆ ದೃಢೀಕರಿಸಲಾಗಿದೆ. ಕೇಳುವವರೆಗೆ ಕೋಡ್ ಮರೆಮಾಡಲಾಗಿದೆ. ಇದು 24 ಗಂಟೆ ಮಾನ್ಯವಾಗಿರುತ್ತದೆ. ಮುಚ್ಚಿದರೆ ಈ ಪ್ರತಿ ತಿರಸ್ಕರಿಸಲಾಗುತ್ತದೆ. ಖಾಸಗಿಯಾಗಿ ತಲುಪಿಸಿ; ತರಗತಿಯಲ್ಲಿ ಎಂದಿಗೂ ಹಾಕಬೇಡಿ.';
 
   @override
-  String get adminResetRevealButton => 'Read and reveal credential privately';
+  String get adminResetRevealButton => 'ಕೋಡ್ ಅನ್ನು ಖಾಸಗಿಯಾಗಿ ಓದಿ ಮತ್ತು ತೋರಿಸಿ';
 
   @override
   String adminResetCredentialShown(String digits, String expires) {
-    return 'Temporary credential: $digits\nExpires: $expires UTC';
+    return 'ತಾತ್ಕಾಲಿಕ ಕೋಡ್: $digits\nಅವಧಿ ಮುಗಿಯುವುದು: $expires UTC';
   }
 
   @override
-  String get adminResetCloseRefreshKey0 => '0: Close and refresh account';
+  String get adminResetCloseRefreshKey0 => '0: ಮುಚ್ಚಿ ಖಾತೆಯನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಿ';
 
   @override
   String get apiTemporarySignInPaused =>
-      'Temporary-credential sign-in is paused for 15 minutes. Try later or contact your school administrator.';
+      'ತಾತ್ಕಾಲಿಕ ಕೋಡ್ ಸೈನ್ ಇನ್ 15 ನಿಮಿಷ ತಡೆಹಿಡಿಯಲಾಗಿದೆ. ನಂತರ ಪ್ರಯತ್ನಿಸಿ ಅಥವಾ ನಿಮ್ಮ ಶಾಲೆಯ ನಿರ್ವಾಹಕರನ್ನು ಸಂಪರ್ಕಿಸಿ.';
 
   @override
   String get apiTemporaryCredentialExpired =>
-      'Your temporary credential expired. Contact your school administrator for a replacement.';
+      'ನಿಮ್ಮ ತಾತ್ಕಾಲಿಕ ಕೋಡ್ ಅವಧಿ ಮುಗಿದಿದೆ. ಬದಲಿ ಕೋಡ್‌ಗಾಗಿ ನಿಮ್ಮ ಶಾಲೆಯ ನಿರ್ವಾಹಕರನ್ನು ಸಂಪರ್ಕಿಸಿ.';
 
   @override
   String get apiPasswordMustDiffer =>
-      'Choose a password different from the temporary credential.';
+      'ತಾತ್ಕಾಲಿಕ ಕೋಡ್‌ಗಿಂತ ಬೇರೆ ಪಾಸ್‌ವರ್ಡ್ ಆಯ್ಕೆಮಾಡಿ.';
 
   @override
   String get apiTemporaryCredentialRejected =>
-      'The temporary credential was not accepted. Check it and try again.';
+      'ತಾತ್ಕಾಲಿಕ ಕೋಡ್ ಸ್ವೀಕರಿಸಲಾಗಿಲ್ಲ. ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
   String get apiRecoverySignInExpired =>
-      'Your recovery sign-in expired or changed. Sign in again.';
+      'ನಿಮ್ಮ ಮರುಪಡೆಯುವಿಕೆ ಸೈನ್ ಇನ್ ಅವಧಿ ಮುಗಿದಿದೆ ಅಥವಾ ಬದಲಾಗಿದೆ. ಮತ್ತೆ ಸೈನ್ ಇನ್ ಮಾಡಿ.';
 
   @override
   String get apiCheckInformation =>
-      'Please check the information and try again.';
+      'ದಯವಿಟ್ಟು ಮಾಹಿತಿಯನ್ನು ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
-  String get apiInvalidLogin => 'Invalid phone number or password.';
+  String get apiInvalidLogin => 'ತಪ್ಪಾದ ಫೋನ್ ಸಂಖ್ಯೆ ಅಥವಾ ಪಾಸ್‌ವರ್ಡ್.';
 
   @override
-  String get apiNoPermission => 'You do not have permission to do that.';
+  String get apiNoPermission => 'ಅದನ್ನು ಮಾಡಲು ನಿಮಗೆ ಅನುಮತಿ ಇಲ್ಲ.';
 
   @override
   String get apiSessionNotFound =>
-      'Session not found. Check the session ID and try again.';
+      'ಸೆಷನ್ ಸಿಗಲಿಲ್ಲ. ಸೆಷನ್ ID ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
-  String get apiItemNotFound => 'The requested item was not found.';
+  String get apiItemNotFound => 'ಕೇಳಿದ ಐಟಂ ಸಿಗಲಿಲ್ಲ.';
 
   @override
   String get apiServiceUnavailable =>
-      'The service is temporarily unavailable. Please try again.';
+      'ಸೇವೆ ತಾತ್ಕಾಲಿಕವಾಗಿ ಲಭ್ಯವಿಲ್ಲ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
   String get apiNetworkFailure =>
-      'We could not complete that request. Check your connection and try again.';
+      'ಆ ವಿನಂತಿಯನ್ನು ಪೂರ್ಣಗೊಳಿಸಲು ಆಗಲಿಲ್ಲ. ನಿಮ್ಮ ಸಂಪರ್ಕ ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
   String get apiUnknownFailure =>
-      'We could not complete that request. Please try again.';
+      'ಆ ವಿನಂತಿಯನ್ನು ಪೂರ್ಣಗೊಳಿಸಲು ಆಗಲಿಲ್ಲ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
   String get apiAccountChangedRequestNotSent =>
-      'Your account changed. This request was not sent.';
+      'ನಿಮ್ಮ ಖಾತೆ ಬದಲಾಗಿದೆ. ಈ ವಿನಂತಿಯನ್ನು ಕಳುಹಿಸಿಲ್ಲ.';
 
   @override
   String get apiAccountOrSessionChanged =>
-      'Your account or session changed. This action was not sent.';
+      'ನಿಮ್ಮ ಖಾತೆ ಅಥವಾ ಸೆಷನ್ ಬದಲಾಗಿದೆ. ಈ ಕ್ರಿಯೆಯನ್ನು ಕಳುಹಿಸಿಲ್ಲ.';
 
   @override
   String get apiResponseUnreadable =>
-      'The service response could not be read. The action may have been received; check its status before trying again.';
+      'ಸೇವೆಯ ಪ್ರತಿಕ್ರಿಯೆಯನ್ನು ಓದಲು ಆಗಲಿಲ್ಲ. ಕ್ರಿಯೆ ತಲುಪಿರಬಹುದು; ಮತ್ತೆ ಪ್ರಯತ್ನಿಸುವ ಮೊದಲು ಅದರ ಸ್ಥಿತಿ ಪರಿಶೀಲಿಸಿ.';
 
   @override
   String get apiSignInBeforeAction =>
-      'Sign in again before sending this action.';
+      'ಈ ಕ್ರಿಯೆಯನ್ನು ಕಳುಹಿಸುವ ಮೊದಲು ಮತ್ತೆ ಸೈನ್ ಇನ್ ಮಾಡಿ.';
 
   @override
   String get apiAccountChangedNotConfirmed =>
-      'Your account changed. This action could not be confirmed.';
+      'ನಿಮ್ಮ ಖಾತೆ ಬದಲಾಗಿದೆ. ಈ ಕ್ರಿಯೆಯನ್ನು ದೃಢೀಕರಿಸಲು ಆಗಲಿಲ್ಲ.';
 
   @override
   String get apiActionNotConfirmed =>
-      'The action was not confirmed. It may have reached the class. Check its status before trying again.';
+      'ಕ್ರಿಯೆ ದೃಢೀಕರಿಸಲ್ಪಟ್ಟಿಲ್ಲ. ಅದು ತರಗತಿಯನ್ನು ತಲುಪಿರಬಹುದು. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸುವ ಮೊದಲು ಅದರ ಸ್ಥಿತಿ ಪರಿಶೀಲಿಸಿ.';
 
   @override
   String get apiAccountChangedActionNotSent =>
-      'Your account changed. This action was not sent.';
+      'ನಿಮ್ಮ ಖಾತೆ ಬದಲಾಗಿದೆ. ಈ ಕ್ರಿಯೆಯನ್ನು ಕಳುಹಿಸಿಲ್ಲ.';
 
   @override
-  String get apiRequestFailed => 'Request failed';
+  String get apiRequestFailed => 'ವಿನಂತಿ ವಿಫಲವಾಗಿದೆ';
 
   @override
-  String get notificationPrivateTitle => 'SEEDS update';
+  String get notificationPrivateTitle => 'SEEDS ಅಪ್‌ಡೇಟ್';
 
   @override
-  String get notificationPrivateBody => 'Open SEEDS to review your updates.';
+  String get notificationPrivateBody =>
+      'ನಿಮ್ಮ ಅಪ್‌ಡೇಟ್‌ಗಳನ್ನು ನೋಡಲು SEEDS ತೆರೆಯಿರಿ.';
 
   @override
   String get notificationRegistrationFailed =>
-      'Notifications could not be registered. Refresh SEEDS to check class invitations.';
+      'ಅಧಿಸೂಚನೆಗಳನ್ನು ನೋಂದಾಯಿಸಲು ಆಗಲಿಲ್ಲ. ತರಗತಿ ಆಹ್ವಾನಗಳನ್ನು ಪರಿಶೀಲಿಸಲು SEEDS ರಿಫ್ರೆಶ್ ಮಾಡಿ.';
 
   @override
-  String get notificationChannelName => 'Session Notifications';
+  String get notificationChannelName => 'ಸೆಷನ್ ಅಧಿಸೂಚನೆಗಳು';
 
   @override
   String get notificationChannelDescription =>
-      'Notifications for session invitations and updates';
+      'ಸೆಷನ್ ಆಹ್ವಾನಗಳು ಮತ್ತು ಅಪ್‌ಡೇಟ್‌ಗಳ ಅಧಿಸೂಚನೆಗಳು';
 
   @override
   String get notificationDisplayFailed =>
-      'An update arrived, but the phone notification could not be displayed. Open SEEDS to check updates.';
+      'ಒಂದು ಅಪ್‌ಡೇಟ್ ಬಂದಿದೆ, ಆದರೆ ಫೋನ್ ಅಧಿಸೂಚನೆಯನ್ನು ತೋರಿಸಲು ಆಗಲಿಲ್ಲ. ಅಪ್‌ಡೇಟ್‌ಗಳನ್ನು ಪರಿಶೀಲಿಸಲು SEEDS ತೆರೆಯಿರಿ.';
 
   @override
   String get activityCleanupFailed =>
-      'Expired activity could not be cleaned. Check device storage.';
+      'ಅವಧಿ ಮುಗಿದ ಚಟುವಟಿಕೆಯನ್ನು ತೆರವುಗೊಳಿಸಲು ಆಗಲಿಲ್ಲ. ಸಾಧನದ ಸಂಗ್ರಹಣೆ ಪರಿಶೀಲಿಸಿ.';
 
   @override
   String get activitySyncUnavailable =>
-      'Activity sync is unavailable. Learning is still available.';
+      'ಚಟುವಟಿಕೆ ಸಿಂಕ್ ಲಭ್ಯವಿಲ್ಲ. ಕಲಿಕೆ ಇನ್ನೂ ಲಭ್ಯವಿದೆ.';
 
   @override
-  String get activitySignInToSync => 'Sign in to sync activity.';
+  String get activitySignInToSync => 'ಚಟುವಟಿಕೆ ಸಿಂಕ್ ಮಾಡಲು ಸೈನ್ ಇನ್ ಮಾಡಿ.';
 
   @override
   String get activityQueueFull =>
-      'Activity queue is full. Some older actions cannot be reported.';
+      'ಚಟುವಟಿಕೆ ಸರತಿ ತುಂಬಿದೆ. ಕೆಲವು ಹಳೆಯ ಕ್ರಿಯೆಗಳನ್ನು ವರದಿ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ.';
 
   @override
-  String get activityWaitingToSync => 'Some activity is waiting to sync.';
+  String get activityWaitingToSync => 'ಕೆಲವು ಚಟುವಟಿಕೆ ಸಿಂಕ್‌ಗಾಗಿ ಕಾಯುತ್ತಿದೆ.';
 
   @override
   String get activityRejected =>
-      'Some activity was expired or no longer permitted and was not synced.';
+      'ಕೆಲವು ಚಟುವಟಿಕೆಯ ಅವಧಿ ಮುಗಿದಿತ್ತು ಅಥವಾ ಇನ್ನು ಅನುಮತಿ ಇರಲಿಲ್ಲ, ಆದ್ದರಿಂದ ಸಿಂಕ್ ಆಗಿಲ್ಲ.';
 
   @override
-  String get authLogoutTitle => 'Log out of SEEDS?';
+  String get authLogoutTitle => 'SEEDS ನಿಂದ ಲಾಗ್ ಔಟ್ ಆಗಬೇಕೇ?';
 
   @override
   String get authLogoutMessage =>
-      'You will need to enter your phone number and password again.';
+      'ನೀವು ನಿಮ್ಮ ಫೋನ್ ಸಂಖ್ಯೆ ಮತ್ತು ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಮತ್ತೆ ನಮೂದಿಸಬೇಕಾಗುತ್ತದೆ.';
 
   @override
-  String get authLogoutCancel => 'Cancel';
+  String get authLogoutCancel => 'ರದ್ದುಮಾಡಿ';
 
   @override
-  String get authLogoutConfirm => 'Log out';
+  String get authLogoutConfirm => 'ಲಾಗ್ ಔಟ್';
 
   @override
-  String get authLoggedOut => 'Logged out.';
+  String get authLoggedOut => 'ಲಾಗ್ ಔಟ್ ಆಗಿದೆ.';
 
   @override
-  String get startupLoadingTools => 'Loading accessible learning tools…';
+  String get startupLoadingTools =>
+      'ಸುಲಭವಾಗಿ ಬಳಸಬಹುದಾದ ಕಲಿಕೆಯ ಉಪಕರಣಗಳು ಲೋಡ್ ಆಗುತ್ತಿವೆ…';
 
   @override
-  String get startupTagline => 'Connecting everyone, everywhere';
+  String get startupTagline => 'ಎಲ್ಲರನ್ನೂ, ಎಲ್ಲೆಡೆ ಸಂಪರ್ಕಿಸುತ್ತಿದೆ';
 
   @override
-  String get startupLoginKey1 => '1. Login';
+  String get startupLoginKey1 => '1. ಸೈನ್ ಇನ್';
 
   @override
-  String get startupLogin => 'Login';
+  String get startupLogin => 'ಸೈನ್ ಇನ್';
 
   @override
-  String get startupRegisterKey2 => '2. Register';
+  String get startupRegisterKey2 => '2. ನೋಂದಣಿ';
 
   @override
-  String get startupRegister => 'Register';
+  String get startupRegister => 'ನೋಂದಣಿ';
 
   @override
-  String get startupSettings => 'Settings';
+  String get startupSettings => 'ಸೆಟ್ಟಿಂಗ್‌ಗಳು';
 
   @override
-  String get startupRepeatInstructions => 'Repeat instructions';
+  String get startupRepeatInstructions => 'ಸೂಚನೆಗಳನ್ನು ಮತ್ತೆ ಕೇಳಿ';
 
   @override
-  String get startupFeatureAudioTitle => 'Real-time Audio';
+  String get startupFeatureAudioTitle => 'ನೇರ ಆಡಿಯೋ';
 
   @override
-  String get startupFeatureAudioText => 'Crystal clear voice communication';
+  String get startupFeatureAudioText => 'ಸ್ಪಷ್ಟವಾದ ಧ್ವನಿ ಸಂವಹನ';
 
   @override
-  String get startupFeatureAccessibleTitle => 'Fully Accessible';
+  String get startupFeatureAccessibleTitle => 'ಎಲ್ಲರೂ ಬಳಸಬಹುದು';
 
   @override
   String get startupFeatureAccessibleText =>
-      'Speech, large buttons and keypad control';
+      'ಧ್ವನಿ, ದೊಡ್ಡ ಬಟನ್‌ಗಳು ಮತ್ತು ಕೀಪ್ಯಾಡ್ ನಿಯಂತ್ರಣ';
 
   @override
-  String get startupFeatureCollaborationTitle => 'Collaboration';
+  String get startupFeatureCollaborationTitle => 'ಸಹಯೋಗ';
 
   @override
-  String get startupFeatureCollaborationText => 'Raise hands and interact';
+  String get startupFeatureCollaborationText => 'ಕೈ ಎತ್ತಿ ಮತ್ತು ಭಾಗವಹಿಸಿ';
 
   @override
-  String get settingsResetTitle => 'Reset Settings';
+  String get settingsResetTitle => 'ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಮರುಹೊಂದಿಸಿ';
 
   @override
-  String get settingsResetCancelButton => '1: Cancel';
+  String get settingsResetCancelButton => '1: ರದ್ದುಮಾಡಿ';
 
   @override
-  String get settingsResetConfirmButton => '2: Reset';
+  String get settingsResetConfirmButton => '2: ಮರುಹೊಂದಿಸಿ';
 
   @override
   String teacherHomeFallbackName(String id) {
-    return 'Teacher $id';
+    return 'ಶಿಕ್ಷಕರು $id';
   }
 
   @override
   String dashboardSignedInAs(String name) {
-    return 'Signed in as $name';
+    return '$name ಆಗಿ ಸೈನ್ ಇನ್ ಆಗಿದ್ದೀರಿ';
   }
 
   @override
-  String get dashboardRefreshSessionsKey1 => '1: Refresh sessions';
+  String get dashboardRefreshSessionsKey1 => '1: ಸೆಷನ್‌ಗಳನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಿ';
 
   @override
-  String get dashboardLogOutKey0 => '0: Log out';
+  String get dashboardLogOutKey0 => '0: ಲಾಗ್ ಔಟ್';
 
   @override
-  String get dashboardRefreshingSessions => 'Refreshing sessions';
+  String get dashboardRefreshingSessions =>
+      'ಸೆಷನ್‌ಗಳನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಲಾಗುತ್ತಿದೆ';
 
   @override
   String teacherHomeWelcome(String name) {
-    return 'Welcome, $name!';
+    return 'ಸ್ವಾಗತ, $name!';
   }
 
   @override
   String get teacherHomeTagline =>
-      'Manage your sessions and connect with students';
+      'ನಿಮ್ಮ ಸೆಷನ್‌ಗಳನ್ನು ನಿರ್ವಹಿಸಿ ಮತ್ತು ವಿದ್ಯಾರ್ಥಿಗಳೊಂದಿಗೆ ಸಂಪರ್ಕಿಸಿ';
 
   @override
   String get teacherHomeChooseWorkspaceKey7 =>
-      '7: Choose class and subject workspace';
+      '7: ತರಗತಿ ಮತ್ತು ವಿಷಯ ವರ್ಕ್‌ಸ್ಪೇಸ್ ಆರಿಸಿ';
 
   @override
   String teacherHomeChangeWorkspaceKey7(String className, String subjectName) {
-    return '7: $className, $subjectName. Change workspace';
+    return '7: $className, $subjectName. ವರ್ಕ್‌ಸ್ಪೇಸ್ ಬದಲಿಸಿ';
   }
 
   @override
-  String get teacherHomePlaylistsKey5 => '5: Class Playlists';
+  String get teacherHomePlaylistsKey5 => '5: ತರಗತಿ ಪ್ಲೇಲಿಸ್ಟ್‌ಗಳು';
 
   @override
-  String get teacherHomeJourneysKey8 => '8: Learning Journeys';
+  String get teacherHomeJourneysKey8 => '8: ಕಲಿಕೆಯ ಪಯಣಗಳು';
 
   @override
-  String get teacherHomeQuizzesKey6 => '6: Quizzes & Question Bank';
+  String get teacherHomeQuizzesKey6 => '6: ಕ್ವಿಜ್‌ಗಳು ಮತ್ತು ಪ್ರಶ್ನೆ ಬ್ಯಾಂಕ್';
 
   @override
-  String get teacherHomeCreateSessionKey2 => '2: Create New Session';
+  String get teacherHomeCreateSessionKey2 => '2: ಹೊಸ ಸೆಷನ್ ರಚಿಸಿ';
 
   @override
-  String get dashboardAudioLibraryKey3 => '3: Recorded Audio Library';
+  String get dashboardAudioLibraryKey3 => '3: ರೆಕಾರ್ಡ್ ಮಾಡಿದ ಆಡಿಯೊ ಲೈಬ್ರರಿ';
 
   @override
-  String get teacherHomeSearchKey4 => '4: Search by name or number';
+  String get teacherHomeSearchKey4 => '4: ಹೆಸರು ಅಥವಾ ಸಂಖ್ಯೆಯಿಂದ ಹುಡುಕಿ';
 
   @override
   String get teacherHomeSearchHint =>
-      'Type a session name, or the session number with the number keys. Leave empty to list all.';
+      'ಸೆಷನ್ ಹೆಸರು ಟೈಪ್ ಮಾಡಿ, ಅಥವಾ ಸಂಖ್ಯೆ ಕೀಗಳಿಂದ ಸೆಷನ್ ಸಂಖ್ಯೆ ಟೈಪ್ ಮಾಡಿ. ಎಲ್ಲವನ್ನೂ ನೋಡಲು ಖಾಲಿ ಬಿಡಿ.';
 
   @override
-  String get teacherHomeYourSessions => 'Your sessions';
+  String get teacherHomeYourSessions => 'ನಿಮ್ಮ ಸೆಷನ್‌ಗಳು';
 
   @override
   String teacherHomeYourSessionsCount(String count) {
-    return 'Your sessions, $count';
+    return 'ನಿಮ್ಮ ಸೆಷನ್‌ಗಳು, $count';
   }
 
   @override
-  String get teacherHomeYourSessionsHeading => 'Your Sessions';
+  String get teacherHomeYourSessionsHeading => 'ನಿಮ್ಮ ಸೆಷನ್‌ಗಳು';
 
   @override
-  String get teacherHomeNoSessions => 'No sessions yet. Press 2 to create one.';
+  String get teacherHomeNoSessions =>
+      'ಇನ್ನೂ ಯಾವುದೇ ಸೆಷನ್ ಇಲ್ಲ. ಒಂದನ್ನು ರಚಿಸಲು 2 ಒತ್ತಿ.';
 
   @override
   String get teacherHomeNoMatches =>
-      'No matching sessions. Clear the search to list all sessions.';
+      'ಹೊಂದುವ ಸೆಷನ್ ಇಲ್ಲ. ಎಲ್ಲಾ ಸೆಷನ್‌ಗಳನ್ನು ನೋಡಲು ಹುಡುಕಾಟವನ್ನು ಅಳಿಸಿ.';
 
   @override
   String teacherHomeEndTitleForEveryone(String title) {
-    return 'End $title for everyone';
+    return 'ಎಲ್ಲರಿಗೂ $title ಮುಗಿಸಿ';
   }
 
   @override
   String teacherHomeDeleteTitlePermanently(String title) {
-    return 'Delete $title permanently';
+    return '$title ಅನ್ನು ಶಾಶ್ವತವಾಗಿ ಅಳಿಸಿ';
   }
 
   @override
   String teacherHomeLiveJoined(String count) {
-    return 'Live now, $count joined';
+    return 'ಈಗ ಲೈವ್, $count ಜನ ಸೇರಿದ್ದಾರೆ';
   }
 
   @override
   String teacherHomeSessionNumber(String number) {
-    return 'Session number $number';
+    return 'ಸೆಷನ್ ಸಂಖ್ಯೆ $number';
   }
 
   @override
   String teacherHomePlaceSessionNumber(String place, String number) {
-    return '$place. Session number $number';
+    return '$place. ಸೆಷನ್ ಸಂಖ್ಯೆ $number';
   }
 
   @override
-  String get teacherHomeDelete => 'Delete';
+  String get teacherHomeDelete => 'ಅಳಿಸಿ';
 
   @override
-  String get teacherHomeSessionTitleField => 'Session Title';
+  String get teacherHomeSessionTitleField => 'ಸೆಷನ್ ಶೀರ್ಷಿಕೆ';
 
   @override
-  String get teacherHomeSessionTitleHint => 'e.g., English Class - Unit 5';
+  String get teacherHomeSessionTitleHint => 'ಉದಾ., ಇಂಗ್ಲಿಷ್ ತರಗತಿ - ಘಟಕ 5';
 
   @override
-  String get teacherHomeCreateKey1 => 'Create (1)';
+  String get teacherHomeCreateKey1 => 'ರಚಿಸಿ (1)';
 
   @override
   String studentHomeFallbackName(String id) {
-    return 'Student $id';
+    return 'ವಿದ್ಯಾರ್ಥಿ $id';
   }
 
   @override
-  String get studentHomeLoading => 'Student dashboard is loading';
+  String get studentHomeLoading => 'ವಿದ್ಯಾರ್ಥಿ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್ ಲೋಡ್ ಆಗುತ್ತಿದೆ';
 
   @override
   String studentHomeWelcome(String name) {
-    return 'Welcome, $name';
+    return 'ಸ್ವಾಗತ, $name';
   }
 
   @override
   String studentHomeClass(String name) {
-    return 'Class: $name';
+    return 'ತರಗತಿ: $name';
   }
 
   @override
-  String get studentHomeAssignmentPending => 'assignment pending';
+  String get studentHomeAssignmentPending => 'ತರಗತಿ ನೀಡುವುದು ಬಾಕಿ ಇದೆ';
 
   @override
-  String get studentHomeLiveSessionsNone => 'Live sessions: none';
+  String get studentHomeLiveSessionsNone => 'ಲೈವ್ ಸೆಷನ್‌ಗಳು: ಯಾವುದೂ ಇಲ್ಲ';
 
   @override
   String studentHomeLiveSessionsCount(String count) {
-    return 'Live sessions: $count';
+    return 'ಲೈವ್ ಸೆಷನ್‌ಗಳು: $count';
   }
 
   @override
-  String get studentHomeSessionNumberKey2 => '2: Session number';
+  String get studentHomeSessionNumberKey2 => '2: ಸೆಷನ್ ಸಂಖ್ಯೆ';
 
   @override
-  String get studentHomeSessionName => 'Session name';
+  String get studentHomeSessionName => 'ಸೆಷನ್ ಹೆಸರು';
 
   @override
-  String get studentHomeSubjectFilter => 'Subject filter';
+  String get studentHomeSubjectFilter => 'ವಿಷಯ ಫಿಲ್ಟರ್';
 
   @override
-  String get studentHomePlaylistsKey4 => '4: My Playlists · Private';
+  String get studentHomePlaylistsKey4 => '4: ನನ್ನ ಪ್ಲೇಲಿಸ್ಟ್‌ಗಳು · ಖಾಸಗಿ';
 
   @override
-  String get studentHomeQuizzesKey5 => '5: Quizzes';
+  String get studentHomeQuizzesKey5 => '5: ಕ್ವಿಜ್‌ಗಳು';
 
   @override
-  String get studentHomeJourneysKey6 => '6: Learning Journeys';
+  String get studentHomeJourneysKey6 => '6: ಕಲಿಕೆಯ ಪಯಣಗಳು';
 
   @override
   String studentHomeTeacher(String name) {
-    return 'Teacher: $name';
+    return 'ಶಿಕ್ಷಕರು: $name';
   }
 
   @override
   String studentHomeSessionOkToJoin(String number) {
-    return 'Session $number. OK to join';
+    return 'ಸೆಷನ್ $number. ಸೇರಲು ಓಕೆ';
   }
 
   @override
   String studentHomeJoinSessionLabel(String session) {
-    return '$session. Join session';
+    return '$session. ಸೆಷನ್‌ಗೆ ಸೇರಿ';
   }
 
   @override
   String adminActiveAssignmentCount(String count) {
-    return '$count active assignments';
+    return '$count ಸಕ್ರಿಯ ನಿಯೋಜನೆಗಳು';
   }
 
   @override
@@ -12505,40 +12577,40 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get adminTextDialogHelper =>
-      'Press OK to type, then 1 to save or 0 to cancel';
+      'ಟೈಪ್ ಮಾಡಲು ಓಕೆ ಒತ್ತಿ, ನಂತರ ಉಳಿಸಲು 1 ಅಥವಾ ರದ್ದುಮಾಡಲು 0 ಒತ್ತಿ';
 
   @override
-  String get adminSaveKey1 => 'Save (1)';
+  String get adminSaveKey1 => 'ಉಳಿಸಿ (1)';
 
   @override
   String adminManageUser(String name) {
-    return 'Manage $name';
+    return '$name ನಿರ್ವಹಿಸಿ';
   }
 
   @override
-  String get adminManageAssignmentsKey1 => '1: Manage assignments';
+  String get adminManageAssignmentsKey1 => '1: ನಿಯೋಜನೆಗಳನ್ನು ನಿರ್ವಹಿಸಿ';
 
   @override
-  String get adminPasswordRecoveryKey2 => '2: Password recovery';
+  String get adminPasswordRecoveryKey2 => '2: ಪಾಸ್‌ವರ್ಡ್ ಮರುಪಡೆಯುವಿಕೆ';
 
   @override
   String adminRemoveStudentFromClass(String name, String className) {
-    return 'Remove $name from $className (2)';
+    return '$name ಅವರನ್ನು $className ನಿಂದ ತೆಗೆದುಹಾಕಿ (2)';
   }
 
   @override
-  String get adminRemoveClassKey2 => 'Remove class (2)';
+  String get adminRemoveClassKey2 => 'ತರಗತಿ ತೆಗೆದುಹಾಕಿ (2)';
 
   @override
-  String get adminAssignKey1 => 'Assign (1)';
+  String get adminAssignKey1 => 'ನಿಯೋಜಿಸಿ (1)';
 
   @override
   String adminAssignTeacher(String name) {
-    return 'Assign $name';
+    return '$name ನಿಯೋಜಿಸಿ';
   }
 
   @override
-  String get adminCurrentAssignments => 'Current assignments';
+  String get adminCurrentAssignments => 'ಈಗಿನ ನಿಯೋಜನೆಗಳು';
 
   @override
   String adminRemoveTeacherAssignment(
@@ -12546,304 +12618,309 @@ class AppLocalizationsKn extends AppLocalizations {
     String className,
     String subjectName,
   ) {
-    return 'Remove $name from $className, $subjectName';
+    return '$name ಅವರನ್ನು $className, $subjectName ನಿಂದ ತೆಗೆದುಹಾಕಿ';
   }
 
   @override
-  String get adminAddAssignment => 'Add an assignment';
+  String get adminAddAssignment => 'ನಿಯೋಜನೆ ಸೇರಿಸಿ';
 
   @override
-  String get adminAppBarTitle => 'SEEDS Administration';
+  String get adminAppBarTitle => 'SEEDS ಆಡಳಿತ';
 
   @override
-  String get adminRefreshKey1 => '1: Refresh administration data';
+  String get adminRefreshKey1 => '1: ಆಡಳಿತ ಡೇಟಾ ರಿಫ್ರೆಶ್ ಮಾಡಿ';
 
   @override
-  String get adminLoading => 'Loading administration data';
+  String get adminLoading => 'ಆಡಳಿತ ಡೇಟಾ ಲೋಡ್ ಆಗುತ್ತಿದೆ';
 
   @override
   String adminChangeSectionKey7(String section) {
-    return '7: Change section. Now: $section';
+    return '7: ವಿಭಾಗ ಬದಲಿಸಿ. ಈಗ: $section';
   }
 
   @override
-  String get adminSearchKey2 => '2: Search by name or phone number';
+  String get adminSearchKey2 => '2: ಹೆಸರು ಅಥವಾ ಫೋನ್ ಸಂಖ್ಯೆಯಿಂದ ಹುಡುಕಿ';
 
   @override
-  String get adminSearchHelper => 'Press OK when done to show matches';
+  String get adminSearchHelper => 'ಹೊಂದುವವುಗಳನ್ನು ತೋರಿಸಲು ಮುಗಿದ ನಂತರ ಓಕೆ ಒತ್ತಿ';
 
   @override
   String adminRoleFilterChipsLabel(String label) {
-    return 'Account type filter: $label, selected. Use left and right arrows to change.';
+    return 'ಖಾತೆ ಪ್ರಕಾರ ಫಿಲ್ಟರ್: $label, ಆಯ್ಕೆಯಾಗಿದೆ. ಬದಲಿಸಲು ಎಡ ಮತ್ತು ಬಲ ಬಾಣಗಳನ್ನು ಬಳಸಿ.';
   }
 
   @override
-  String get adminAccountTypeKey3 => '3: Account type';
+  String get adminAccountTypeKey3 => '3: ಖಾತೆ ಪ್ರಕಾರ';
 
   @override
-  String get adminChipAllAccounts => 'All accounts';
+  String get adminChipAllAccounts => 'ಎಲ್ಲಾ ಖಾತೆಗಳು';
 
   @override
-  String get adminChipStudents => 'Students';
+  String get adminChipStudents => 'ವಿದ್ಯಾರ್ಥಿಗಳು';
 
   @override
-  String get adminChipTeachers => 'Teachers';
+  String get adminChipTeachers => 'ಶಿಕ್ಷಕರು';
 
   @override
   String adminAssignmentFilterChipsLabel(String label) {
-    return 'Assignment filter: $label, selected. Use left and right arrows to change.';
+    return 'ನಿಯೋಜನೆ ಫಿಲ್ಟರ್: $label, ಆಯ್ಕೆಯಾಗಿದೆ. ಬದಲಿಸಲು ಎಡ ಮತ್ತು ಬಲ ಬಾಣಗಳನ್ನು ಬಳಸಿ.';
   }
 
   @override
-  String get adminAssignmentKey4 => '4: Assignment';
+  String get adminAssignmentKey4 => '4: ನಿಯೋಜನೆ';
 
   @override
-  String get adminChipAll => 'All';
+  String get adminChipAll => 'ಎಲ್ಲಾ';
 
   @override
-  String get adminCreateSubjectKey5 => '5: Create subject';
+  String get adminCreateSubjectKey5 => '5: ವಿಷಯ ರಚಿಸಿ';
 
   @override
-  String get adminCreateClassKey6 => '6: Create class';
+  String get adminCreateClassKey6 => '6: ತರಗತಿ ರಚಿಸಿ';
 
   @override
-  String get adminStatusActive => 'Active';
+  String get adminStatusActive => 'ಸಕ್ರಿಯ';
 
   @override
-  String get adminClassTileHint => 'Press OK for subjects, or to archive';
+  String get adminClassTileHint => 'ವಿಷಯಗಳಿಗಾಗಿ ಅಥವಾ ಆರ್ಕೈವ್ ಮಾಡಲು ಓಕೆ ಒತ್ತಿ';
 
   @override
-  String get adminPressOkRestore => 'Press OK to restore';
+  String get adminPressOkRestore => 'ಮರುಸ್ಥಾಪಿಸಲು ಓಕೆ ಒತ್ತಿ';
 
   @override
-  String get adminPressOkArchive => 'Press OK to archive';
+  String get adminPressOkArchive => 'ಆರ್ಕೈವ್ ಮಾಡಲು ಓಕೆ ಒತ್ತಿ';
 
   @override
   String sessionTitleTeacher(String title) {
-    return '$title (Teacher)';
+    return '$title (ಶಿಕ್ಷಕರು)';
   }
 
   @override
-  String get libraryStatusStopped => 'Stopped';
+  String get libraryStatusStopped => 'ನಿಲ್ಲಿಸಲಾಗಿದೆ';
 
   @override
   String libraryUploadFileName(String name) {
-    return 'File: $name';
+    return 'ಫೈಲ್: $name';
   }
 
   @override
   String libraryAudioSessionTitle(String number) {
-    return 'Audio - Session $number';
+    return 'ಆಡಿಯೊ - ಸೆಷನ್ $number';
   }
 
   @override
   String libraryRecordingsCount(String count) {
-    return '$count recordings';
+    return '$count ರೆಕಾರ್ಡಿಂಗ್‌ಗಳು';
   }
 
   @override
   String libraryUploadedAt(String date) {
-    return 'Uploaded: $date';
+    return 'ಅಪ್‌ಲೋಡ್ ಮಾಡಿದ್ದು: $date';
   }
 
   @override
   String libraryStopPreviewOf(String title) {
-    return 'Stop preview of $title';
+    return '$title ಮುನ್ನೋಟ ನಿಲ್ಲಿಸಿ';
   }
 
   @override
   String libraryPreviewPrivately(String title) {
-    return 'Preview $title privately';
+    return '$title ಅನ್ನು ಖಾಸಗಿಯಾಗಿ ಮುನ್ನೋಟ ಮಾಡಿ';
   }
 
   @override
   String libraryPlayForEveryone(String title) {
-    return 'Play $title for everyone in the session';
+    return 'ಸೆಷನ್‌ನಲ್ಲಿರುವ ಎಲ್ಲರಿಗೂ $title ಪ್ಲೇ ಮಾಡಿ';
   }
 
   @override
   String get librarySelectClassHint =>
-      'Select a class to play recorded lessons. Online lessons require internet. Use Downloaded lessons for saved audio.';
+      'ರೆಕಾರ್ಡ್ ಮಾಡಿದ ಪಾಠಗಳನ್ನು ಪ್ಲೇ ಮಾಡಲು ತರಗತಿ ಆಯ್ಕೆಮಾಡಿ. ಆನ್‌ಲೈನ್ ಪಾಠಗಳಿಗೆ ಇಂಟರ್ನೆಟ್ ಬೇಕು. ಉಳಿಸಿದ ಆಡಿಯೊಗಾಗಿ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿದ ಪಾಠಗಳನ್ನು ಬಳಸಿ.';
 
   @override
   String libraryFoundCount(String count) {
-    return '$count found';
+    return '$count ಸಿಕ್ಕಿವೆ';
   }
 
   @override
   String get librarySearchSessionHint =>
-      'Use \"Search by Session Name\" above to access a class quickly.';
+      'ತರಗತಿಯನ್ನು ಬೇಗ ತೆರೆಯಲು ಮೇಲಿನ \"ಸೆಷನ್ ಹೆಸರಿನಿಂದ ಹುಡುಕಿ\" ಬಳಸಿ.';
 
   @override
   String librarySessionHash(String number) {
-    return 'Session #$number';
+    return 'ಸೆಷನ್ #$number';
   }
 
   @override
   String libraryStatusFinished(String title) {
-    return 'Finished $title';
+    return '$title ಮುಗಿದಿದೆ';
   }
 
   @override
   String libraryStatusPaused(String title) {
-    return 'Paused $title';
+    return '$title ವಿರಾಮಗೊಂಡಿದೆ';
   }
 
   @override
   String libraryStatusPlaying(String title) {
-    return 'Playing $title';
+    return '$title ಪ್ಲೇ ಆಗುತ್ತಿದೆ';
   }
 
   @override
-  String get libraryTitleField => 'Title';
+  String get libraryTitleField => 'ಶೀರ್ಷಿಕೆ';
 
   @override
-  String get libraryDescriptionOptional => 'Description (optional)';
+  String get libraryDescriptionOptional => 'ವಿವರಣೆ (ಐಚ್ಛಿಕ)';
 
   @override
   String libraryAudioLibrarySession(String number) {
-    return 'Audio Library, session $number';
+    return 'ಆಡಿಯೊ ಲೈಬ್ರರಿ, ಸೆಷನ್ $number';
   }
 
   @override
-  String get libraryUploadingAudio => 'Uploading audio';
+  String get libraryUploadingAudio => 'ಆಡಿಯೊ ಅಪ್‌ಲೋಡ್ ಆಗುತ್ತಿದೆ';
 
   @override
-  String get libraryAddAudioKey3Tooltip => 'Add audio, key 3';
+  String get libraryAddAudioKey3Tooltip => 'ಆಡಿಯೊ ಸೇರಿಸಿ, ಕೀ 3';
 
   @override
-  String get libraryAddAudioKey3 => '3: Add audio';
+  String get libraryAddAudioKey3 => '3: ಆಡಿಯೊ ಸೇರಿಸಿ';
 
   @override
-  String get libraryNoRecordingsForClass => 'No recordings for this class yet.';
+  String get libraryNoRecordingsForClass =>
+      'ಈ ತರಗತಿಗೆ ಇನ್ನೂ ರೆಕಾರ್ಡಿಂಗ್‌ಗಳಿಲ್ಲ.';
 
   @override
   String get libraryNoRecordingsAskTeacher =>
-      'No recordings available yet. Ask your teacher to upload some.';
+      'ಇನ್ನೂ ಯಾವುದೇ ರೆಕಾರ್ಡಿಂಗ್ ಲಭ್ಯವಿಲ್ಲ. ಕೆಲವನ್ನು ಅಪ್‌ಲೋಡ್ ಮಾಡಲು ನಿಮ್ಮ ಶಿಕ್ಷಕರನ್ನು ಕೇಳಿ.';
 
   @override
   String libraryPositionSpeed(String position, String total, String speed) {
-    return '$position of $total. Speed ${speed}x';
+    return '$total ರಲ್ಲಿ $position. ವೇಗ ${speed}x';
   }
 
   @override
   String libraryNowPlaying(String title) {
-    return 'Now playing: $title';
+    return 'ಈಗ ಪ್ಲೇ ಆಗುತ್ತಿದೆ: $title';
   }
 
   @override
   String libraryRecordingsMatch(String count, String total) {
-    return '$count of $total recordings match';
+    return '$total ರಲ್ಲಿ $count ರೆಕಾರ್ಡಿಂಗ್‌ಗಳು ಹೊಂದುತ್ತವೆ';
   }
 
   @override
-  String get libraryNoUnlinkedAudio => 'No unlinked audio available.';
+  String get libraryNoUnlinkedAudio => 'ಲಿಂಕ್ ಆಗದ ಯಾವುದೇ ಆಡಿಯೊ ಲಭ್ಯವಿಲ್ಲ.';
 
   @override
-  String get libraryNoSearchMatches => 'No recordings match your search.';
+  String get libraryNoSearchMatches =>
+      'ನಿಮ್ಮ ಹುಡುಕಾಟಕ್ಕೆ ಯಾವುದೇ ರೆಕಾರ್ಡಿಂಗ್ ಹೊಂದುತ್ತಿಲ್ಲ.';
 
   @override
-  String get libraryFindingLesson => 'Finding your lesson';
+  String get libraryFindingLesson => 'ನಿಮ್ಮ ಪಾಠವನ್ನು ಹುಡುಕಲಾಗುತ್ತಿದೆ';
 
   @override
-  String get libraryTitleRequiredField => 'Title *';
+  String get libraryTitleRequiredField => 'ಶೀರ್ಷಿಕೆ *';
 
   @override
-  String get libraryUploadNewAudio => 'Upload New Audio';
+  String get libraryUploadNewAudio => 'ಹೊಸ ಆಡಿಯೋ ಅಪ್‌ಲೋಡ್ ಮಾಡಿ';
 
   @override
-  String get libraryStopPreview => 'Stop Preview';
+  String get libraryStopPreview => 'ಮುನ್ನೋಟ ನಿಲ್ಲಿಸಿ';
 
   @override
-  String get libraryPreviewOnlyMe => 'Preview (Only Me)';
+  String get libraryPreviewOnlyMe => 'ಮುನ್ನೋಟ (ನನಗೆ ಮಾತ್ರ)';
 
   @override
-  String get libraryPreview => 'Preview';
+  String get libraryPreview => 'ಮುನ್ನೋಟ';
 
   @override
-  String get libraryStop => 'Stop';
+  String get libraryStop => 'ನಿಲ್ಲಿಸಿ';
 
   @override
-  String get libraryPlayInSession => 'Play in Session';
+  String get libraryPlayInSession => 'ಸೆಷನ್‌ನಲ್ಲಿ ಪ್ಲೇ ಮಾಡಿ';
 
   @override
-  String get librarySessionShort => 'Session';
+  String get librarySessionShort => 'ಸೆಷನ್';
 
   @override
-  String get libraryNotesTooltip => 'Private notes and recording drafts';
+  String get libraryNotesTooltip =>
+      'ಖಾಸಗಿ ಟಿಪ್ಪಣಿಗಳು ಮತ್ತು ರೆಕಾರ್ಡಿಂಗ್ ಕರಡುಗಳು';
 
   @override
-  String get libraryBrowseClassesKey5 => '5: Browse active classes';
+  String get libraryBrowseClassesKey5 => '5: ಸಕ್ರಿಯ ತರಗತಿಗಳನ್ನು ನೋಡಿ';
 
   @override
-  String get librarySearchClassByName => 'Search Class by Name';
+  String get librarySearchClassByName => 'ಹೆಸರಿನಿಂದ ತರಗತಿಯನ್ನು ಹುಡುಕಿ';
 
   @override
-  String get librarySearchClassHint => 'Enter Session/Class Name';
+  String get librarySearchClassHint => 'ಸೆಷನ್/ತರಗತಿಯ ಹೆಸರು ನಮೂದಿಸಿ';
 
   @override
-  String get libraryMyAudioLibrary => 'My Audio Library';
+  String get libraryMyAudioLibrary => 'ನನ್ನ ಆಡಿಯೋ ಲೈಬ್ರರಿ';
 
   @override
-  String get libraryAllAudioFiles => 'All Audio Files';
+  String get libraryAllAudioFiles => 'ಎಲ್ಲಾ ಆಡಿಯೋ ಫೈಲ್‌ಗಳು';
 
   @override
-  String get libraryManageAudioFiles => 'Manage and upload your audio files';
+  String get libraryManageAudioFiles =>
+      'ನಿಮ್ಮ ಆಡಿಯೋ ಫೈಲ್‌ಗಳನ್ನು ನಿರ್ವಹಿಸಿ ಮತ್ತು ಅಪ್‌ಲೋಡ್ ಮಾಡಿ';
 
   @override
-  String get libraryBrowseAudioFiles => 'Browse all uploaded audio files';
+  String get libraryBrowseAudioFiles =>
+      'ಅಪ್‌ಲೋಡ್ ಮಾಡಿದ ಎಲ್ಲಾ ಆಡಿಯೋ ಫೈಲ್‌ಗಳನ್ನು ನೋಡಿ';
 
   @override
-  String get libraryActiveClasses => 'Active Classes';
+  String get libraryActiveClasses => 'ಸಕ್ರಿಯ ತರಗತಿಗಳು';
 
   @override
-  String get libraryNoActiveClasses => 'No active classes found.';
+  String get libraryNoActiveClasses => 'ಯಾವುದೇ ಸಕ್ರಿಯ ತರಗತಿಗಳು ಸಿಗಲಿಲ್ಲ.';
 
   @override
-  String get libraryAddAudioToSessions => 'Add audio to sessions';
+  String get libraryAddAudioToSessions => 'ಸೆಷನ್‌ಗಳಿಗೆ ಆಡಿಯೋ ಸೇರಿಸಿ';
 
   @override
-  String get libraryConfirmKey1 => '1: Confirm';
+  String get libraryConfirmKey1 => '1: ಖಚಿತಪಡಿಸಿ';
 
   @override
-  String get libraryDownloadLessons => 'Download lessons';
+  String get libraryDownloadLessons => 'ಪಾಠಗಳನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ';
 
   @override
-  String get libraryRepeatHelp => 'Repeat help';
+  String get libraryRepeatHelp => 'ಸಹಾಯವನ್ನು ಮತ್ತೆ ಕೇಳಿ';
 
   @override
-  String get libraryBack10s => 'Back 10 s';
+  String get libraryBack10s => '10 ಸೆಕೆಂಡ್ ಹಿಂದೆ';
 
   @override
-  String get libraryPause => 'Pause';
+  String get libraryPause => 'ವಿರಾಮ';
 
   @override
-  String get libraryPlay => 'Play';
+  String get libraryPlay => 'ಪ್ಲೇ ಮಾಡಿ';
 
   @override
-  String get libraryForward10s => 'Forward 10 s';
+  String get libraryForward10s => '10 ಸೆಕೆಂಡ್ ಮುಂದೆ';
 
   @override
-  String get libraryCloseAddAudio => 'Close add audio options';
+  String get libraryCloseAddAudio => 'ಆಡಿಯೋ ಸೇರಿಸುವ ಆಯ್ಕೆಗಳನ್ನು ಮುಚ್ಚಿ';
 
   @override
-  String get libraryUploadNewFileKey1 => '1: Upload New File';
+  String get libraryUploadNewFileKey1 => '1: ಹೊಸ ಫೈಲ್ ಅಪ್‌ಲೋಡ್ ಮಾಡಿ';
 
   @override
-  String get librarySelectExistingKey2 => '2: Select from Existing Library';
+  String get librarySelectExistingKey2 => '2: ಈಗಿರುವ ಲೈಬ್ರರಿಯಿಂದ ಆರಿಸಿ';
 
   @override
-  String get librarySelectAudio => 'Select Audio';
+  String get librarySelectAudio => 'ಆಡಿಯೋ ಆರಿಸಿ';
 
   @override
-  String get libraryRefreshAvailable => 'Refresh available audio';
+  String get libraryRefreshAvailable => 'ಲಭ್ಯವಿರುವ ಆಡಿಯೋವನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಿ';
 
   @override
-  String get librarySearchByTitle => 'Search by title';
+  String get librarySearchByTitle => 'ಶೀರ್ಷಿಕೆಯಿಂದ ಹುಡುಕಿ';
 
   @override
   String get libraryNothingPlaying =>
-      'Nothing playing. Select a lesson or press 5.';
+      'ಏನೂ ಪ್ಲೇ ಆಗುತ್ತಿಲ್ಲ. ಒಂದು ಪಾಠವನ್ನು ಆರಿಸಿ ಅಥವಾ 5 ಒತ್ತಿ.';
 
   @override
   String spokenDayMonthYear(String day, String month, String year) {
@@ -12852,97 +12929,99 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get downloadPartialReserve =>
-      'Partial files reserve their complete size.';
+      'ಅಪೂರ್ಣ ಫೈಲ್‌ಗಳು ತಮ್ಮ ಪೂರ್ಣ ಗಾತ್ರದ ಜಾಗವನ್ನು ಕಾಯ್ದಿರಿಸುತ್ತವೆ.';
 
   @override
   String downloadProgressStarting(String title) {
-    return '$title: starting downloaded';
+    return '$title: ಡೌನ್‌ಲೋಡ್ ಪ್ರಾರಂಭವಾಗುತ್ತಿದೆ';
   }
 
   @override
   String downloadPercentDone(String title, String percent) {
-    return '$title: $percent percent downloaded';
+    return '$title: $percent ಪ್ರತಿಶತ ಡೌನ್‌ಲೋಡ್ ಆಗಿದೆ';
   }
 
   @override
   String downloadRecordUnreadable(String id) {
-    return 'Download record $id could not be read. Files are kept. Remove only this download to recover; progress and bookmarks are kept.';
+    return 'ಡೌನ್‌ಲೋಡ್ ದಾಖಲೆ $id ಅನ್ನು ಓದಲು ಆಗಲಿಲ್ಲ. ಫೈಲ್‌ಗಳನ್ನು ಉಳಿಸಲಾಗಿದೆ. ಸರಿಪಡಿಸಲು ಈ ಡೌನ್‌ಲೋಡ್ ಅನ್ನು ಮಾತ್ರ ತೆಗೆದುಹಾಕಿ; ಪ್ರಗತಿ ಮತ್ತು ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು ಉಳಿಯುತ್ತವೆ.';
   }
 
   @override
   String downloadRemoveUnreadable(String id) {
-    return 'Remove unreadable download $id';
+    return 'ಓದಲಾಗದ ಡೌನ್‌ಲೋಡ್ $id ಅನ್ನು ತೆಗೆದುಹಾಕಿ';
   }
 
   @override
-  String get downloadStatusDownloaded => 'Downloaded';
+  String get downloadStatusDownloaded => 'ಡೌನ್‌ಲೋಡ್ ಆಗಿದೆ';
 
   @override
-  String get downloadStatusPartial => 'Partial download';
+  String get downloadStatusPartial => 'ಅಪೂರ್ಣ ಡೌನ್‌ಲೋಡ್';
 
   @override
   String downloadSizeRenewal(String megabytes) {
-    return '$megabytes MB. Access renewal required.';
+    return '$megabytes MB. ಪ್ರವೇಶವನ್ನು ನವೀಕರಿಸಬೇಕು.';
   }
 
   @override
   String downloadSizeExpires(String megabytes, String date) {
-    return '$megabytes MB. Access expires on $date.';
+    return '$megabytes MB. ಪ್ರವೇಶ $date ರಂದು ಮುಗಿಯುತ್ತದೆ.';
   }
 
   @override
-  String get downloadTitle => 'Downloads';
+  String get downloadTitle => 'ಡೌನ್‌ಲೋಡ್‌ಗಳು';
 
   @override
   String get downloadAccessInfo =>
-      '30-day offline access. Other accounts have separate allowances. No automatic deletion.';
+      '30 ದಿನಗಳ ಆಫ್‌ಲೈನ್ ಪ್ರವೇಶ. ಇತರ ಖಾತೆಗಳಿಗೆ ಪ್ರತ್ಯೇಕ ಮಿತಿಗಳಿವೆ. ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಅಳಿಸುವುದಿಲ್ಲ.';
 
   @override
-  String get downloadRefreshKey1 => '1: Refresh downloads';
+  String get downloadRefreshKey1 => '1: ಡೌನ್‌ಲೋಡ್‌ಗಳನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಿ';
 
   @override
-  String get downloadFindOnlineKey2 => '2: Find recordings online';
+  String get downloadFindOnlineKey2 =>
+      '2: ಆನ್‌ಲೈನ್‌ನಲ್ಲಿ ರೆಕಾರ್ಡಿಂಗ್‌ಗಳನ್ನು ಹುಡುಕಿ';
 
   @override
-  String get downloadReadStatusKey3 => '3: Read status';
+  String get downloadReadStatusKey3 => '3: ಸ್ಥಿತಿಯನ್ನು ಓದಿ';
 
   @override
-  String get downloadCancelKey4 => '4: Cancel download';
+  String get downloadCancelKey4 => '4: ಡೌನ್‌ಲೋಡ್ ರದ್ದುಮಾಡಿ';
 
   @override
   String get downloadNoneYetFindOnline =>
-      'No downloads yet. Find recordings online or open Downloads from a class or playlist.';
+      'ಇನ್ನೂ ಯಾವುದೇ ಡೌನ್‌ಲೋಡ್‌ಗಳಿಲ್ಲ. ಆನ್‌ಲೈನ್‌ನಲ್ಲಿ ರೆಕಾರ್ಡಿಂಗ್‌ಗಳನ್ನು ಹುಡುಕಿ ಅಥವಾ ತರಗತಿ ಅಥವಾ ಪ್ಲೇಲಿಸ್ಟ್‌ನಿಂದ ಡೌನ್‌ಲೋಡ್‌ಗಳನ್ನು ತೆರೆಯಿರಿ.';
 
   @override
-  String get downloadPlayLesson => 'Play downloaded lesson';
+  String get downloadPlayLesson => 'ಡೌನ್‌ಲೋಡ್ ಮಾಡಿದ ಪಾಠವನ್ನು ಪ್ಲೇ ಮಾಡಿ';
 
   @override
-  String get downloadRenewOnline => 'Renew access online';
+  String get downloadRenewOnline => 'ಆನ್‌ಲೈನ್‌ನಲ್ಲಿ ಪ್ರವೇಶವನ್ನು ನವೀಕರಿಸಿ';
 
   @override
-  String get downloadRemove => 'Remove download';
+  String get downloadRemove => 'ಡೌನ್‌ಲೋಡ್ ತೆಗೆದುಹಾಕಿ';
 
   @override
-  String get downloadListedKey5 => '5: Download listed recordings';
+  String get downloadListedKey5 =>
+      '5: ಪಟ್ಟಿಯಲ್ಲಿರುವ ರೆಕಾರ್ಡಿಂಗ್‌ಗಳನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ';
 
   @override
   String get downloadAvailableInfo =>
-      'Available recordings. Downloads use internet data.';
+      'ಲಭ್ಯವಿರುವ ರೆಕಾರ್ಡಿಂಗ್‌ಗಳು. ಡೌನ್‌ಲೋಡ್‌ಗಳು ಇಂಟರ್ನೆಟ್ ಡೇಟಾ ಬಳಸುತ್ತವೆ.';
 
   @override
   String playlistClassSubjectTitle(String className, String subjectName) {
-    return '$className · $subjectName Playlists';
+    return '$className · $subjectName ಪ್ಲೇಲಿಸ್ಟ್‌ಗಳು';
   }
 
   @override
-  String get playlistStatusPrivate => 'Private';
+  String get playlistStatusPrivate => 'ಖಾಸಗಿ';
 
   @override
-  String get playlistClassPlaylist => 'Class playlist';
+  String get playlistClassPlaylist => 'ತರಗತಿ ಪ್ಲೇಲಿಸ್ಟ್';
 
   @override
   String playlistItemCount(String count) {
-    return '$count items';
+    return '$count ಐಟಂಗಳು';
   }
 
   @override
@@ -12951,128 +13030,130 @@ class AppLocalizationsKn extends AppLocalizations {
     String subjectName,
     String count,
   ) {
-    return '$className, $subjectName, $count items';
+    return '$className, $subjectName, $count ಐಟಂಗಳು';
   }
 
   @override
-  String get playlistFinished => 'Finished. End of playlist';
+  String get playlistFinished => 'ಮುಗಿಯಿತು. ಪ್ಲೇಲಿಸ್ಟ್‌ನ ಕೊನೆ';
 
   @override
-  String get playlistAddKey2 => '2 Add';
+  String get playlistAddKey2 => '2 ಸೇರಿಸಿ';
 
   @override
-  String get playlistAddAudioKey2Label => 'Add audio, key 2';
+  String get playlistAddAudioKey2Label => 'ಆಡಿಯೋ ಸೇರಿಸಿ, ಕೀ 2';
 
   @override
-  String get playlistPauseKey5 => '5 Pause';
+  String get playlistPauseKey5 => '5 ವಿರಾಮ';
 
   @override
-  String get playlistPlayKey5 => '5 Play';
+  String get playlistPlayKey5 => '5 ಪ್ಲೇ';
 
   @override
   String playlistPauseTitleKey5(String title) {
-    return 'Pause $title, key 5';
+    return '$title ವಿರಾಮಗೊಳಿಸಿ, ಕೀ 5';
   }
 
   @override
   String playlistPlayTitleKey5(String title) {
-    return 'Play $title, key 5';
+    return '$title ಪ್ಲೇ ಮಾಡಿ, ಕೀ 5';
   }
 
   @override
-  String get playlistPreviousKey3 => '3 Previous';
+  String get playlistPreviousKey3 => '3 ಹಿಂದಿನದು';
 
   @override
-  String get playlistPreviousItemKey3 => 'Previous item, key 3';
+  String get playlistPreviousItemKey3 => 'ಹಿಂದಿನ ಐಟಂ, ಕೀ 3';
 
   @override
-  String get playlistNextKey8 => '8 Next';
+  String get playlistNextKey8 => '8 ಮುಂದಿನದು';
 
   @override
-  String get playlistNextItemKey8 => 'Next item, key 8';
+  String get playlistNextItemKey8 => 'ಮುಂದಿನ ಐಟಂ, ಕೀ 8';
 
   @override
-  String get playlistRestore => 'Restore';
+  String get playlistRestore => 'ಮರುಸ್ಥಾಪಿಸಿ';
 
   @override
-  String get playlistArchive => 'Archive';
+  String get playlistArchive => 'ಆರ್ಕೈವ್ ಮಾಡಿ';
 
   @override
-  String get playlistDeletePlaylist => 'Delete playlist';
+  String get playlistDeletePlaylist => 'ಪ್ಲೇಲಿಸ್ಟ್ ಅಳಿಸಿ';
 
   @override
   String playlistRestoreNamedButton(String title) {
-    return 'Restore $title';
+    return '$title ಮರುಸ್ಥಾಪಿಸಿ';
   }
 
   @override
   String playlistArchiveNamedButton(String title) {
-    return 'Archive $title';
+    return '$title ಆರ್ಕೈವ್ ಮಾಡಿ';
   }
 
   @override
   String playlistDeleteNamedButton(String title) {
-    return 'Delete $title';
+    return '$title ಅಳಿಸಿ';
   }
 
   @override
   String playlistMoveUp(String title) {
-    return 'Move $title up';
+    return '$title ಅನ್ನು ಮೇಲಕ್ಕೆ ಸರಿಸಿ';
   }
 
   @override
   String playlistMoveDown(String title) {
-    return 'Move $title down';
+    return '$title ಅನ್ನು ಕೆಳಕ್ಕೆ ಸರಿಸಿ';
   }
 
   @override
-  String get playlistCreateKey2 => '2: Create playlist';
+  String get playlistCreateKey2 => '2: ಪ್ಲೇಲಿಸ್ಟ್ ರಚಿಸಿ';
 
   @override
   String get playlistNoneInClass =>
-      'No playlists in this class and subject. Press 2 to create one.';
+      'ಈ ತರಗತಿ ಮತ್ತು ವಿಷಯದಲ್ಲಿ ಯಾವುದೇ ಪ್ಲೇಲಿಸ್ಟ್‌ಗಳಿಲ್ಲ. ಒಂದನ್ನು ರಚಿಸಲು 2 ಒತ್ತಿ.';
 
   @override
-  String get playlistMyPlaylists => 'My Playlists';
+  String get playlistMyPlaylists => 'ನನ್ನ ಪ್ಲೇಲಿಸ್ಟ್‌ಗಳು';
 
   @override
-  String get playlistPrivateNoticeTitle => 'Your playlists are private';
+  String get playlistPrivateNoticeTitle => 'ನಿಮ್ಮ ಪ್ಲೇಲಿಸ್ಟ್‌ಗಳು ಖಾಸಗಿಯಾಗಿವೆ';
 
   @override
   String get playlistPrivateNoticeText =>
-      'Teachers, administrators, and other students cannot view them.';
+      'ಶಿಕ್ಷಕರು, ನಿರ್ವಾಹಕರು ಮತ್ತು ಇತರ ವಿದ್ಯಾರ್ಥಿಗಳು ಅವುಗಳನ್ನು ನೋಡಲು ಸಾಧ್ಯವಿಲ್ಲ.';
 
   @override
-  String get playlistCreatePrivateKey2 => '2: Create private playlist';
+  String get playlistCreatePrivateKey2 => '2: ಖಾಸಗಿ ಪ್ಲೇಲಿಸ್ಟ್ ರಚಿಸಿ';
 
   @override
-  String get playlistMyPrivateHeading => 'My private playlists';
+  String get playlistMyPrivateHeading => 'ನನ್ನ ಖಾಸಗಿ ಪ್ಲೇಲಿಸ್ಟ್‌ಗಳು';
 
   @override
-  String get playlistNoPrivate => 'No private playlists yet.';
+  String get playlistNoPrivate => 'ಇನ್ನೂ ಯಾವುದೇ ಖಾಸಗಿ ಪ್ಲೇಲಿಸ್ಟ್‌ಗಳಿಲ್ಲ.';
 
   @override
-  String get playlistClassHeading => 'Class playlists';
+  String get playlistClassHeading => 'ತರಗತಿ ಪ್ಲೇಲಿಸ್ಟ್‌ಗಳು';
 
   @override
-  String get playlistNoClassPublished => 'No class playlists published yet.';
+  String get playlistNoClassPublished =>
+      'ಇನ್ನೂ ಯಾವುದೇ ತರಗತಿ ಪ್ಲೇಲಿಸ್ಟ್‌ಗಳನ್ನು ಪ್ರಕಟಿಸಿಲ್ಲ.';
 
   @override
-  String get playlistAddAudioTitle => 'Add audio';
+  String get playlistAddAudioTitle => 'ಆಡಿಯೋ ಸೇರಿಸಿ';
 
   @override
   String get playlistUnavailableRetry =>
-      'Playlist is unavailable. Press 1 to try again.';
+      'ಪ್ಲೇಲಿಸ್ಟ್ ಲಭ್ಯವಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಲು 1 ಒತ್ತಿ.';
 
   @override
-  String get playlistDownloadRecordings => 'Download playlist recordings';
+  String get playlistDownloadRecordings =>
+      'ಪ್ಲೇಲಿಸ್ಟ್ ರೆಕಾರ್ಡಿಂಗ್‌ಗಳನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ';
 
   @override
   String get playlistMoveHint =>
-      'Play or select an item, then move it up or down.';
+      'ಒಂದು ಐಟಂ ಅನ್ನು ಪ್ಲೇ ಮಾಡಿ ಅಥವಾ ಆರಿಸಿ, ನಂತರ ಅದನ್ನು ಮೇಲಕ್ಕೆ ಅಥವಾ ಕೆಳಕ್ಕೆ ಸರಿಸಿ.';
 
   @override
-  String get playlistNoAudio => 'This playlist has no audio yet.';
+  String get playlistNoAudio => 'ಈ ಪ್ಲೇಲಿಸ್ಟ್‌ನಲ್ಲಿ ಇನ್ನೂ ಆಡಿಯೋ ಇಲ್ಲ.';
 
   @override
   String quizClassSubjectHeading(String className, String subjectName) {
@@ -13081,403 +13162,406 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get quizBankEditNote =>
-      'Editing a bank question never changes an existing quiz snapshot.';
+      'ಬ್ಯಾಂಕ್ ಪ್ರಶ್ನೆಯನ್ನು ಸಂಪಾದಿಸಿದರೆ, ಈಗಾಗಲೇ ಇರುವ ಕ್ವಿಜ್‌ನ ಪ್ರತಿ ಎಂದಿಗೂ ಬದಲಾಗುವುದಿಲ್ಲ.';
 
   @override
-  String get quizNoBankQuestions => 'No bank questions yet';
+  String get quizNoBankQuestions => 'ಇನ್ನೂ ಯಾವುದೇ ಬ್ಯಾಂಕ್ ಪ್ರಶ್ನೆಗಳಿಲ್ಲ';
 
   @override
   String quizOptionsCount(String count) {
-    return '$count options';
+    return '$count ಆಯ್ಕೆಗಳು';
   }
 
   @override
-  String get quizNoQuizzesYet => 'No quizzes yet';
+  String get quizNoQuizzesYet => 'ಇನ್ನೂ ಯಾವುದೇ ಕ್ವಿಜ್‌ಗಳಿಲ್ಲ';
 
   @override
-  String get quizStepReviewPublish => 'Step 3: Review and publish';
+  String get quizStepReviewPublish => 'ಹಂತ 3: ಪರಿಶೀಲಿಸಿ ಮತ್ತು ಪ್ರಕಟಿಸಿ';
 
   @override
-  String get quizStepAddQuestions => 'Step 2: Add questions';
+  String get quizStepAddQuestions => 'ಹಂತ 2: ಪ್ರಶ್ನೆಗಳನ್ನು ಸೇರಿಸಿ';
 
   @override
   String quizResultsTitle(String title) {
-    return '$title results';
+    return '$title ಫಲಿತಾಂಶಗಳು';
   }
 
   @override
-  String get quizAllAttempted => 'All students have attempted';
+  String get quizAllAttempted => 'ಎಲ್ಲಾ ವಿದ್ಯಾರ್ಥಿಗಳು ಪ್ರಯತ್ನಿಸಿದ್ದಾರೆ';
 
   @override
-  String get quizRemindAllKey2 => '2: Remind all not attempted';
+  String get quizRemindAllKey2 => '2: ಪ್ರಯತ್ನಿಸದ ಎಲ್ಲರಿಗೂ ನೆನಪಿಸಿ';
 
   @override
-  String get uiNoneCapital => 'None';
+  String get uiNoneCapital => 'ಯಾವುದೂ ಇಲ್ಲ';
 
   @override
   String get quizPracticeParticipationHeading =>
-      'Practice participation, not academic grades';
+      'ಅಭ್ಯಾಸದ ಭಾಗವಹಿಸುವಿಕೆ, ಶೈಕ್ಷಣಿಕ ಅಂಕಗಳಲ್ಲ';
 
   @override
-  String get quizIndividualScores => 'Individual student scores';
+  String get quizIndividualScores => 'ಪ್ರತಿ ವಿದ್ಯಾರ್ಥಿಯ ಅಂಕಗಳು';
 
   @override
-  String get quizNotAttempted => 'Not attempted';
+  String get quizNotAttempted => 'ಪ್ರಯತ್ನಿಸಿಲ್ಲ';
 
   @override
-  String get quizPracticeNotGraded => 'Practice, not graded';
+  String get quizPracticeNotGraded => 'ಅಭ್ಯಾಸ, ಅಂಕಸಹಿತವಲ್ಲ';
 
   @override
   String quizHighestScore(String score) {
-    return 'Highest score: $score';
+    return 'ಅತಿ ಹೆಚ್ಚು ಅಂಕ: $score';
   }
 
   @override
-  String get quizAttemptInProgress => 'Attempt in progress';
+  String get quizAttemptInProgress => 'ಪ್ರಯತ್ನ ನಡೆಯುತ್ತಿದೆ';
 
   @override
-  String get quizQuizzesTitle => 'Quizzes';
+  String get quizQuizzesTitle => 'ಕ್ವಿಜ್‌ಗಳು';
 
   @override
-  String get quizRefreshQuizzesTooltip => 'Refresh quizzes';
+  String get quizRefreshQuizzesTooltip => 'ಕ್ವಿಜ್‌ಗಳನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಿ';
 
   @override
-  String get quizLoadingQuizzes => 'Loading quizzes';
+  String get quizLoadingQuizzes => 'ಕ್ವಿಜ್‌ಗಳನ್ನು ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ';
 
   @override
-  String get quizNewBankQuestionKey2 => '2: New bank question';
+  String get quizNewBankQuestionKey2 => '2: ಹೊಸ ಬ್ಯಾಂಕ್ ಪ್ರಶ್ನೆ';
 
   @override
-  String get quizNewDraftKey3 => '3: New quiz draft';
+  String get quizNewDraftKey3 => '3: ಹೊಸ ಕ್ವಿಜ್ ಕರಡು';
 
   @override
-  String get quizCreatePracticeKey4 => '4: Create untimed practice';
+  String get quizCreatePracticeKey4 => '4: ಸಮಯ ಮಿತಿ ಇಲ್ಲದ ಅಭ್ಯಾಸ ರಚಿಸಿ';
 
   @override
-  String get quizPrivateBankHeading => 'Private question bank';
+  String get quizPrivateBankHeading => 'ಖಾಸಗಿ ಪ್ರಶ್ನೆ ಬ್ಯಾಂಕ್';
 
   @override
-  String get quizOptionsButton => 'Options';
+  String get quizOptionsButton => 'ಆಯ್ಕೆಗಳು';
 
   @override
-  String get quizManagementHeading => 'Quiz management';
+  String get quizManagementHeading => 'ಕ್ವಿಜ್ ನಿರ್ವಹಣೆ';
 
   @override
-  String get quizContinueCreation => 'Continue creation';
+  String get quizContinueCreation => 'ರಚನೆಯನ್ನು ಮುಂದುವರಿಸಿ';
 
   @override
-  String get quizCloseButton => 'Close';
+  String get quizCloseButton => 'ಮುಚ್ಚಿ';
 
   @override
-  String get quizDuplicateButton => 'Duplicate';
+  String get quizDuplicateButton => 'ನಕಲು ಮಾಡಿ';
 
   @override
-  String get quizResultsButton => 'Results';
+  String get quizResultsButton => 'ಫಲಿತಾಂಶಗಳು';
 
   @override
-  String get quizRefreshResultsTooltip => 'Refresh results';
+  String get quizRefreshResultsTooltip => 'ಫಲಿತಾಂಶಗಳನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಿ';
 
   @override
-  String get quizClassStatistics => 'Class statistics';
+  String get quizClassStatistics => 'ತರಗತಿಯ ಅಂಕಿಅಂಶಗಳು';
 
   @override
-  String get quizStudentsYetToAttempt => 'Students yet to attempt';
+  String get quizStudentsYetToAttempt => 'ಇನ್ನೂ ಪ್ರಯತ್ನಿಸಬೇಕಾದ ವಿದ್ಯಾರ್ಥಿಗಳು';
 
   @override
-  String get quizNoQuizzesAvailableLabel => 'No quizzes available';
+  String get quizNoQuizzesAvailableLabel => 'ಯಾವುದೇ ಕ್ವಿಜ್‌ಗಳು ಲಭ್ಯವಿಲ್ಲ';
 
   @override
-  String get quizAttemptLimitReachedLabel => 'Attempt limit reached';
+  String get quizAttemptLimitReachedLabel => 'ಪ್ರಯತ್ನದ ಮಿತಿ ತಲುಪಿದೆ';
 
   @override
-  String get quizAnswerSavedLockedTitle => 'Answer saved and locked';
+  String get quizAnswerSavedLockedTitle => 'ಉತ್ತರ ಉಳಿಸಲಾಗಿದೆ ಮತ್ತು ಲಾಕ್ ಆಗಿದೆ';
 
   @override
   String get quizAllSavedViewResult =>
-      'All answers are saved. Select View result to confirm completion.';
+      'ಎಲ್ಲಾ ಉತ್ತರಗಳನ್ನು ಉಳಿಸಲಾಗಿದೆ. ಪೂರ್ಣಗೊಂಡಿದೆ ಎಂದು ಖಚಿತಪಡಿಸಲು ಫಲಿತಾಂಶ ನೋಡಿ ಆರಿಸಿ.';
 
   @override
   String quizAsksToConfirm(String label) {
-    return '$label, asks to confirm';
+    return '$label, ಖಚಿತಪಡಿಸಲು ಕೇಳುತ್ತದೆ';
   }
 
   @override
-  String get quizConfirmingCompletion => 'Confirming completion';
+  String get quizConfirmingCompletion =>
+      'ಪೂರ್ಣಗೊಂಡಿರುವುದನ್ನು ಖಚಿತಪಡಿಸಲಾಗುತ್ತಿದೆ';
 
   @override
-  String get quizRetryCompletionKey5 => '5: Retry completion';
+  String get quizRetryCompletionKey5 =>
+      '5: ಪೂರ್ಣಗೊಳಿಸುವಿಕೆಯನ್ನು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ';
 
   @override
-  String get quizViewResultKey5 => '5: View result';
+  String get quizViewResultKey5 => '5: ಫಲಿತಾಂಶ ನೋಡಿ';
 
   @override
   String quizHistoryTitle(String title) {
-    return '$title history';
+    return '$title ಇತಿಹಾಸ';
   }
 
   @override
-  String get quizNoAttemptsYet => 'No attempts yet';
+  String get quizNoAttemptsYet => 'ಇನ್ನೂ ಯಾವುದೇ ಪ್ರಯತ್ನಗಳಿಲ್ಲ';
 
   @override
-  String get quizHistoryTooltip => 'Attempt history and review';
+  String get quizHistoryTooltip => 'ಪ್ರಯತ್ನಗಳ ಇತಿಹಾಸ ಮತ್ತು ಪರಿಶೀಲನೆ';
 
   @override
-  String get quizLeaveWithoutSubmitting => 'Leave without submitting';
+  String get quizLeaveWithoutSubmitting => 'ಸಲ್ಲಿಸದೆ ಹೊರಹೋಗಿ';
 
   @override
   String get quizAttemptCompletePrivateLabel =>
-      'Attempt complete. Result private. Use Read result privately.';
+      'ಪ್ರಯತ್ನ ಪೂರ್ಣಗೊಂಡಿದೆ. ಫಲಿತಾಂಶ ಖಾಸಗಿಯಾಗಿದೆ. ಫಲಿತಾಂಶವನ್ನು ಖಾಸಗಿಯಾಗಿ ಓದಿ ಬಳಸಿ.';
 
   @override
-  String get quizReadResultKey8 => '8: Read result privately';
+  String get quizReadResultKey8 => '8: ಫಲಿತಾಂಶವನ್ನು ಖಾಸಗಿಯಾಗಿ ಓದಿ';
 
   @override
-  String get quizReturnKey0 => '0: Return to quizzes';
+  String get quizReturnKey0 => '0: ಕ್ವಿಜ್‌ಗಳಿಗೆ ಹಿಂತಿರುಗಿ';
 
   @override
-  String get quizReadAllOptionsLabel => 'Read all options';
+  String get quizReadAllOptionsLabel => 'ಎಲ್ಲಾ ಆಯ್ಕೆಗಳನ್ನು ಓದಿ';
 
   @override
-  String get quizSubmitAnswerKey5 => '5: Submit answer';
+  String get quizSubmitAnswerKey5 => '5: ಉತ್ತರ ಸಲ್ಲಿಸಿ';
 
   @override
   String get quizAnswerLockedActivate =>
-      'Answer saved and locked. Activate to read feedback privately.';
+      'ಉತ್ತರ ಉಳಿಸಲಾಗಿದೆ ಮತ್ತು ಲಾಕ್ ಆಗಿದೆ. ಪ್ರತಿಕ್ರಿಯೆಯನ್ನು ಖಾಸಗಿಯಾಗಿ ಓದಲು ಸಕ್ರಿಯಗೊಳಿಸಿ.';
 
   @override
-  String get quizReadSelectedAnswer => 'Read selected answer';
+  String get quizReadSelectedAnswer => 'ಆರಿಸಿದ ಉತ್ತರವನ್ನು ಓದಿ';
 
   @override
-  String get quizReadRemainingTime => 'Read remaining time';
+  String get quizReadRemainingTime => 'ಉಳಿದ ಸಮಯವನ್ನು ಓದಿ';
 
   @override
-  String get quizAttemptReviewTitle => 'Attempt review';
+  String get quizAttemptReviewTitle => 'ಪ್ರಯತ್ನದ ಪರಿಶೀಲನೆ';
 
   @override
   String get quizEditorIntro =>
-      'Complete the question and all four options, then choose the correct answer. For equations or diagrams, expand optional spoken notation and review the alternatives.';
+      'ಪ್ರಶ್ನೆ ಮತ್ತು ಎಲ್ಲಾ ನಾಲ್ಕು ಆಯ್ಕೆಗಳನ್ನು ಪೂರ್ಣಗೊಳಿಸಿ, ನಂತರ ಸರಿಯಾದ ಉತ್ತರವನ್ನು ಆರಿಸಿ. ಸಮೀಕರಣಗಳು ಅಥವಾ ಚಿತ್ರಗಳಿಗೆ, ಐಚ್ಛಿಕ ಮಾತಿನ ಸಂಕೇತವನ್ನು ತೆರೆಯಿರಿ ಮತ್ತು ಪರ್ಯಾಯಗಳನ್ನು ಪರಿಶೀಲಿಸಿ.';
 
   @override
-  String get quizWhichCorrect => 'Which answer is correct?';
+  String get quizWhichCorrect => 'ಯಾವ ಉತ್ತರ ಸರಿ?';
 
   @override
-  String get quizChooseCorrectOption => 'Choose the correct option';
+  String get quizChooseCorrectOption => 'ಸರಿಯಾದ ಆಯ್ಕೆಯನ್ನು ಆರಿಸಿ';
 
   @override
   String quizOptionWithText(String number, String text) {
-    return 'Option $number: $text';
+    return 'ಆಯ್ಕೆ $number: $text';
   }
 
   @override
   String get quizCorrectChoiceHint =>
-      'Use Left or Right to change. OK or tap selects the next option.';
+      'ಬದಲಾಯಿಸಲು ಎಡ ಅಥವಾ ಬಲ ಬಳಸಿ. ಓಕೆ ಅಥವಾ ಟ್ಯಾಪ್ ಮುಂದಿನ ಆಯ್ಕೆಯನ್ನು ಆರಿಸುತ್ತದೆ.';
 
   @override
-  String get quizExplanationOptional => 'Explanation (optional)';
+  String get quizExplanationOptional => 'ವಿವರಣೆ (ಐಚ್ಛಿಕ)';
 
   @override
   String get quizContentDescribedText =>
-      'Content: Teacher-described notation or diagram';
+      'ವಿಷಯ: ಶಿಕ್ಷಕರು ವಿವರಿಸಿದ ಸಂಕೇತ ಅಥವಾ ಚಿತ್ರ';
 
   @override
   String get quizNotationNote =>
-      'No automatic equation or diagram interpretation is provided. Teachers must write and review English spoken alternatives. For described notation, include the question, all options, and any explanation.';
+      'ಸಮೀಕರಣ ಅಥವಾ ಚಿತ್ರವನ್ನು ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಅರ್ಥೈಸುವುದಿಲ್ಲ. ಶಿಕ್ಷಕರು ಇಂಗ್ಲಿಷ್ ಮಾತಿನ ಪರ್ಯಾಯಗಳನ್ನು ಬರೆದು ಪರಿಶೀಲಿಸಬೇಕು. ವಿವರಿಸಿದ ಸಂಕೇತಕ್ಕಾಗಿ, ಪ್ರಶ್ನೆ, ಎಲ್ಲಾ ಆಯ್ಕೆಗಳು ಮತ್ತು ಯಾವುದೇ ವಿವರಣೆಯನ್ನು ಸೇರಿಸಿ.';
 
   @override
   String get quizReviewedAlternatives =>
-      'I have reviewed the spoken alternatives for accuracy';
+      'ಮಾತಿನ ಪರ್ಯಾಯಗಳು ಸರಿಯಾಗಿವೆಯೇ ಎಂದು ನಾನು ಪರಿಶೀಲಿಸಿದ್ದೇನೆ';
 
   @override
-  String get quizChangeSettings => 'Change quiz settings';
+  String get quizChangeSettings => 'ಕ್ವಿಜ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಬದಲಾಯಿಸಿ';
 
   @override
-  String get quizCreatePracticeText => 'Create untimed practice';
+  String get quizCreatePracticeText => 'ಸಮಯ ಮಿತಿ ಇಲ್ಲದ ಅಭ್ಯಾಸ ರಚಿಸಿ';
 
   @override
-  String get quizStepName => 'Step 1: Name your quiz';
+  String get quizStepName => 'ಹಂತ 1: ನಿಮ್ಮ ಕ್ವಿಜ್‌ಗೆ ಹೆಸರು ನೀಡಿ';
 
   @override
   String get quizPracticeInfo =>
-      'Practice has no per-attempt timer or retry cap. An optional closing time still ends availability.';
+      'ಅಭ್ಯಾಸಕ್ಕೆ ಪ್ರತಿ ಪ್ರಯತ್ನದ ಟೈಮರ್ ಅಥವಾ ಮರುಪ್ರಯತ್ನ ಮಿತಿ ಇಲ್ಲ. ಐಚ್ಛಿಕ ಮುಕ್ತಾಯ ಸಮಯವಿದ್ದರೆ, ಆಗ ಲಭ್ಯತೆ ಕೊನೆಗೊಳ್ಳುತ್ತದೆ.';
 
   @override
   String get quizSettingsNavLabel =>
-      'Use up and down to move through quiz settings. Press OK to edit text fields. Opening and closing times are optional.';
+      'ಕ್ವಿಜ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಚಲಿಸಲು ಮೇಲೆ ಮತ್ತು ಕೆಳಗೆ ಬಳಸಿ. ಪಠ್ಯ ಕ್ಷೇತ್ರಗಳನ್ನು ಸಂಪಾದಿಸಲು ಓಕೆ ಒತ್ತಿ. ಆರಂಭ ಮತ್ತು ಮುಕ್ತಾಯ ಸಮಯಗಳು ಐಚ್ಛಿಕ.';
 
   @override
   String get quizSettingsNavText =>
-      'Use Up and Down to move through settings, and OK to edit. Saving a draft or its settings does not publish the quiz.';
+      'ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಚಲಿಸಲು ಮೇಲೆ ಮತ್ತು ಕೆಳಗೆ ಬಳಸಿ, ಸಂಪಾದಿಸಲು ಓಕೆ ಒತ್ತಿ. ಕರಡು ಅಥವಾ ಅದರ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಉಳಿಸಿದರೆ ಕ್ವಿಜ್ ಪ್ರಕಟವಾಗುವುದಿಲ್ಲ.';
 
   @override
   String get quizSettingsReviewInfo =>
-      'Review and change the saved settings below. Saving does not publish the quiz.';
+      'ಕೆಳಗಿನ ಉಳಿಸಿದ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಪರಿಶೀಲಿಸಿ ಮತ್ತು ಬದಲಾಯಿಸಿ. ಉಳಿಸಿದರೆ ಕ್ವಿಜ್ ಪ್ರಕಟವಾಗುವುದಿಲ್ಲ.';
 
   @override
   String get quizPracticeDefaults =>
-      'Ungraded practice. Unlimited attempts, no timer, immediate feedback.';
+      'ಅಂಕರಹಿತ ಅಭ್ಯಾಸ. ಅನಿಯಮಿತ ಪ್ರಯತ್ನಗಳು, ಟೈಮರ್ ಇಲ್ಲ, ತಕ್ಷಣದ ಪ್ರತಿಕ್ರಿಯೆ.';
 
   @override
   String get quizGradedDefaults =>
-      'Default graded settings: one attempt, no timer, feedback after final submission.';
+      'ಡೀಫಾಲ್ಟ್ ಅಂಕಸಹಿತ ಸೆಟ್ಟಿಂಗ್‌ಗಳು: ಒಂದು ಪ್ರಯತ್ನ, ಟೈಮರ್ ಇಲ್ಲ, ಅಂತಿಮ ಸಲ್ಲಿಕೆಯ ನಂತರ ಪ್ರತಿಕ್ರಿಯೆ.';
 
   @override
-  String get quizHideOptionalSettingsText => 'Hide optional settings';
+  String get quizHideOptionalSettingsText => 'ಐಚ್ಛಿಕ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಮರೆಮಾಡಿ';
 
   @override
-  String get quizShowOptionalSettingsText => 'Show optional settings';
+  String get quizShowOptionalSettingsText => 'ಐಚ್ಛಿಕ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ತೋರಿಸಿ';
 
   @override
-  String get quizAttemptLimitFieldText => 'Attempt limit, 1 to 20';
+  String get quizAttemptLimitFieldText => 'ಪ್ರಯತ್ನದ ಮಿತಿ, 1 ರಿಂದ 20';
 
   @override
-  String get quizTimeLimitFieldText => 'Time limit in minutes (optional)';
+  String get quizTimeLimitFieldText => 'ನಿಮಿಷಗಳಲ್ಲಿ ಸಮಯ ಮಿತಿ (ಐಚ್ಛಿಕ)';
 
   @override
   String get quizUntimedInfo =>
-      'Untimed and ungraded, unlimited retries. Availability times still apply if set.';
+      'ಸಮಯ ಮಿತಿ ಇಲ್ಲ ಮತ್ತು ಅಂಕರಹಿತ, ಅನಿಯಮಿತ ಮರುಪ್ರಯತ್ನಗಳು. ಲಭ್ಯತೆಯ ಸಮಯಗಳನ್ನು ಹೊಂದಿಸಿದ್ದರೆ ಅವು ಅನ್ವಯಿಸುತ್ತವೆ.';
 
   @override
   String quizFeedbackValue(String policy) {
-    return 'Feedback: $policy';
+    return 'ಪ್ರತಿಕ್ರಿಯೆ: $policy';
   }
 
   @override
   String quizReleaseValue(String time) {
-    return 'Release: $time';
+    return 'ಬಿಡುಗಡೆ: $time';
   }
 
   @override
   String quizOpeningTimeLabel(String time) {
-    return '$time. Press OK to set opening time. Left clears it.';
+    return '$time. ಆರಂಭ ಸಮಯ ಹೊಂದಿಸಲು ಓಕೆ ಒತ್ತಿ. ಎಡ ಕೀ ಅದನ್ನು ತೆರವುಗೊಳಿಸುತ್ತದೆ.';
   }
 
   @override
-  String get quizNoOpeningTimeSet => 'No opening time set';
+  String get quizNoOpeningTimeSet => 'ಆರಂಭ ಸಮಯ ಹೊಂದಿಸಿಲ್ಲ';
 
   @override
-  String get quizNoOpeningTimeShort => 'No opening time';
+  String get quizNoOpeningTimeShort => 'ಆರಂಭ ಸಮಯವಿಲ್ಲ';
 
   @override
   String get quizOpeningTimeHint =>
-      'Optional · enter year, month, day, hour and minute';
+      'ಐಚ್ಛಿಕ · ವರ್ಷ, ತಿಂಗಳು, ದಿನ, ಗಂಟೆ ಮತ್ತು ನಿಮಿಷ ನಮೂದಿಸಿ';
 
   @override
   String quizClosingTimeLabel(String time) {
-    return '$time. Press OK to set closing time. Left clears it.';
+    return '$time. ಮುಕ್ತಾಯ ಸಮಯ ಹೊಂದಿಸಲು ಓಕೆ ಒತ್ತಿ. ಎಡ ಕೀ ಅದನ್ನು ತೆರವುಗೊಳಿಸುತ್ತದೆ.';
   }
 
   @override
-  String get quizNoClosingTimeSet => 'No closing time set';
+  String get quizNoClosingTimeSet => 'ಮುಕ್ತಾಯ ಸಮಯ ಹೊಂದಿಸಿಲ್ಲ';
 
   @override
-  String get quizNoClosingTimeShort => 'No closing time';
+  String get quizNoClosingTimeShort => 'ಮುಕ್ತಾಯ ಸಮಯವಿಲ್ಲ';
 
   @override
-  String get quizClosingTimeHint => 'Optional · must be after opening time';
+  String get quizClosingTimeHint => 'ಐಚ್ಛಿಕ · ಆರಂಭ ಸಮಯದ ನಂತರ ಇರಬೇಕು';
 
   @override
-  String get quizShuffleQuestions => 'Shuffle questions once per attempt';
+  String get quizShuffleQuestions =>
+      'ಪ್ರತಿ ಪ್ರಯತ್ನಕ್ಕೆ ಒಮ್ಮೆ ಪ್ರಶ್ನೆಗಳನ್ನು ಬೆರೆಸಿ';
 
   @override
-  String get quizShuffleOptions => 'Shuffle options once per attempt';
+  String get quizShuffleOptions => 'ಪ್ರತಿ ಪ್ರಯತ್ನಕ್ಕೆ ಒಮ್ಮೆ ಆಯ್ಕೆಗಳನ್ನು ಬೆರೆಸಿ';
 
   @override
   String messageProblem(String text) {
-    return 'Problem: $text';
+    return 'ಸಮಸ್ಯೆ: $text';
   }
 
   @override
   String messageMessage(String text) {
-    return 'Message: $text';
+    return 'ಸಂದೇಶ: $text';
   }
 
   @override
-  String get adminSetupSectionAccounts => 'Accounts';
+  String get adminSetupSectionAccounts => 'ಖಾತೆಗಳು';
 
   @override
-  String get adminSetupSectionCatalog => 'Classes and subjects';
+  String get adminSetupSectionCatalog => 'ತರಗತಿಗಳು ಮತ್ತು ವಿಷಯಗಳು';
 
   @override
-  String get adminSetupSectionTimetable => 'Timetable';
+  String get adminSetupSectionTimetable => 'ವೇಳಾಪಟ್ಟಿ';
 
   @override
-  String get adminSetupSectionSchedule => 'Today\'s schedule';
+  String get adminSetupSectionSchedule => 'ಇಂದಿನ ವೇಳಾಪಟ್ಟಿ';
 
   @override
-  String get adminSetupSectionSharedPhones => 'Shared phones';
+  String get adminSetupSectionSharedPhones => 'ಹಂಚಿಕೊಂಡ ಫೋನ್‌ಗಳು';
 
   @override
-  String get adminSetupSectionHolidays => 'Holidays';
+  String get adminSetupSectionHolidays => 'ರಜೆಗಳು';
 
   @override
-  String get adminSetupSectionIssues => 'Issues';
+  String get adminSetupSectionIssues => 'ಸಮಸ್ಯೆಗಳು';
 
   @override
-  String get adminSetupSectionRecords => 'Class records';
+  String get adminSetupSectionRecords => 'ತರಗತಿ ದಾಖಲೆಗಳು';
 
   @override
-  String get adminSetupSectionPicker => 'Section';
+  String get adminSetupSectionPicker => 'ವಿಭಾಗ';
 
   @override
   String adminSetupRefresh(String section) {
-    return 'Refresh $section';
+    return '$section ರಿಫ್ರೆಶ್ ಮಾಡಿ';
   }
 
   @override
-  String get adminSetupLogOut => 'Log out';
+  String get adminSetupLogOut => 'ಲಾಗ್ ಔಟ್';
 
   @override
-  String get adminSetupLoading => 'Loading';
+  String get adminSetupLoading => 'ಲೋಡ್ ಆಗುತ್ತಿದೆ';
 
   @override
-  String get adminSetupSaving => 'Saving';
+  String get adminSetupSaving => 'ಉಳಿಸಲಾಗುತ್ತಿದೆ';
 
   @override
-  String get adminSetupRetry => 'Try again';
+  String get adminSetupRetry => 'ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ';
 
   @override
   String adminSetupLoadFailed(String reason) {
-    return 'This list could not be loaded. $reason';
+    return 'ಈ ಪಟ್ಟಿಯನ್ನು ಲೋಡ್ ಮಾಡಲು ಆಗಲಿಲ್ಲ. $reason';
   }
 
   @override
   String get adminSetupUnknownError =>
-      'Something went wrong. Please try again.';
+      'ಏನೋ ತಪ್ಪಾಗಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
   String get adminSetupNotSaved =>
-      'The change could not be saved. Refresh and try again.';
+      'ಬದಲಾವಣೆಯನ್ನು ಉಳಿಸಲು ಆಗಲಿಲ್ಲ. ರಿಫ್ರೆಶ್ ಮಾಡಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
-  String get adminSetupCancel => 'Cancel';
+  String get adminSetupCancel => 'ರದ್ದುಮಾಡಿ';
 
   @override
-  String get adminSetupSave => 'Save';
+  String get adminSetupSave => 'ಉಳಿಸಿ';
 
   @override
-  String get adminSetupClose => 'Close';
+  String get adminSetupClose => 'ಮುಚ್ಚಿ';
 
   @override
-  String get adminSetupDelete => 'Delete';
+  String get adminSetupDelete => 'ಅಳಿಸಿ';
 
   @override
-  String get adminSetupRemove => 'Remove';
+  String get adminSetupRemove => 'ತೆಗೆದುಹಾಕಿ';
 
   @override
-  String get adminSetupEdit => 'Edit';
+  String get adminSetupEdit => 'ಸಂಪಾದಿಸಿ';
 
   @override
   String adminSetupEditNamed(String name) {
-    return 'Edit $name';
+    return '$name ಸಂಪಾದಿಸಿ';
   }
 
   @override
   String adminSetupRequiredField(String field) {
-    return '$field is required.';
+    return '$field ಅಗತ್ಯವಿದೆ.';
   }
 
   @override
-  String get adminSetupNoDate => 'Not set';
+  String get adminSetupNoDate => 'ಹೊಂದಿಸಿಲ್ಲ';
 
   @override
   String adminSetupDateValue(String field, String date) {
@@ -13486,7 +13570,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String adminSetupClearDate(String field) {
-    return 'Clear $field';
+    return '$field ತೆರವುಗೊಳಿಸಿ';
   }
 
   @override
@@ -13505,84 +13589,85 @@ class AppLocalizationsKn extends AppLocalizations {
   }
 
   @override
-  String get adminSetupDateField => 'Date';
+  String get adminSetupDateField => 'ದಿನಾಂಕ';
 
   @override
-  String get adminSetupInactive => 'Deactivated';
+  String get adminSetupInactive => 'ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ';
 
   @override
-  String get adminSetupFilterAll => 'All';
+  String get adminSetupFilterAll => 'ಎಲ್ಲಾ';
 
   @override
-  String get adminSetupShowFilter => 'Show';
+  String get adminSetupShowFilter => 'ತೋರಿಸಿ';
 
   @override
-  String get adminSetupRoleStudent => 'Student';
+  String get adminSetupRoleStudent => 'ವಿದ್ಯಾರ್ಥಿ';
 
   @override
-  String get adminSetupRoleTeacher => 'Teacher';
+  String get adminSetupRoleTeacher => 'ಶಿಕ್ಷಕರು';
 
   @override
-  String get adminSetupAddPerson => 'Add person';
+  String get adminSetupAddPerson => 'ವ್ಯಕ್ತಿಯನ್ನು ಸೇರಿಸಿ';
 
   @override
-  String get adminSetupSearchLabel => 'Search by name or phone number';
+  String get adminSetupSearchLabel => 'ಹೆಸರು ಅಥವಾ ಫೋನ್ ಸಂಖ್ಯೆಯಿಂದ ಹುಡುಕಿ';
 
   @override
-  String get adminSetupSearchButton => 'Search';
+  String get adminSetupSearchButton => 'ಹುಡುಕಿ';
 
   @override
-  String get adminSetupAccountTypeHeading => 'Account type';
+  String get adminSetupAccountTypeHeading => 'ಖಾತೆಯ ಪ್ರಕಾರ';
 
   @override
-  String get adminSetupAssignmentHeading => 'Class or subject assignment';
+  String get adminSetupAssignmentHeading => 'ತರಗತಿ ಅಥವಾ ವಿಷಯ ನಿಯೋಜನೆ';
 
   @override
   String adminSetupAccountsShown(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count accounts shown.',
-      one: '1 account shown.',
-      zero: 'No matching accounts.',
+      other: '$count ಖಾತೆಗಳನ್ನು ತೋರಿಸಲಾಗಿದೆ.',
+      one: '1 ಖಾತೆ ತೋರಿಸಲಾಗಿದೆ.',
+      zero: 'ಹೊಂದುವ ಖಾತೆಗಳಿಲ್ಲ.',
     );
     return '$_temp0';
   }
 
   @override
   String adminSetupTeachersHeading(int count) {
-    return 'Teachers ($count)';
+    return 'ಶಿಕ್ಷಕರು ($count)';
   }
 
   @override
   String adminSetupStudentsHeading(int count) {
-    return 'Students ($count)';
+    return 'ವಿದ್ಯಾರ್ಥಿಗಳು ($count)';
   }
 
   @override
-  String get adminSetupNameField => 'Name';
+  String get adminSetupNameField => 'ಹೆಸರು';
 
   @override
-  String get adminSetupPhoneField => 'Phone number';
+  String get adminSetupPhoneField => 'ಫೋನ್ ಸಂಖ್ಯೆ';
 
   @override
-  String get adminSetupRoleField => 'Role';
+  String get adminSetupRoleField => 'ಪಾತ್ರ';
 
   @override
   String get adminSetupTeacherPairsHeading =>
-      'Classes and subjects this teacher teaches';
+      'ಈ ಶಿಕ್ಷಕರು ಕಲಿಸುವ ತರಗತಿಗಳು ಮತ್ತು ವಿಷಯಗಳು';
 
   @override
-  String get adminSetupNoPairs => 'None yet. You can add them later.';
+  String get adminSetupNoPairs =>
+      'ಇನ್ನೂ ಯಾವುದೂ ಇಲ್ಲ. ನೀವು ಅವುಗಳನ್ನು ನಂತರ ಸೇರಿಸಬಹುದು.';
 
   @override
-  String get adminSetupClassField => 'Class';
+  String get adminSetupClassField => 'ತರಗತಿ';
 
   @override
-  String get adminSetupSubjectField => 'Subject';
+  String get adminSetupSubjectField => 'ವಿಷಯ';
 
   @override
-  String get adminSetupAddPair => 'Add class and subject';
+  String get adminSetupAddPair => 'ತರಗತಿ ಮತ್ತು ವಿಷಯ ಸೇರಿಸಿ';
 
   @override
   String adminSetupPairLabel(String className, String subject) {
@@ -13591,261 +13676,262 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String adminSetupRemovePair(String className, String subject) {
-    return 'Remove $className, $subject';
+    return '$className, $subject ತೆಗೆದುಹಾಕಿ';
   }
 
   @override
   String get adminSetupNoSubjectsInClass =>
-      'This class has no subjects yet. Add subjects under Classes and subjects.';
+      'ಈ ತರಗತಿಯಲ್ಲಿ ಇನ್ನೂ ಯಾವುದೇ ವಿಷಯಗಳಿಲ್ಲ. ತರಗತಿಗಳು ಮತ್ತು ವಿಷಯಗಳು ವಿಭಾಗದಲ್ಲಿ ವಿಷಯಗಳನ್ನು ಸೇರಿಸಿ.';
 
   @override
   String get adminSetupNoActiveClasses =>
-      'There are no active classes yet. Add one under Classes and subjects.';
+      'ಇನ್ನೂ ಯಾವುದೇ ಸಕ್ರಿಯ ತರಗತಿಗಳಿಲ್ಲ. ತರಗತಿಗಳು ಮತ್ತು ವಿಷಯಗಳು ವಿಭಾಗದಲ್ಲಿ ಒಂದನ್ನು ಸೇರಿಸಿ.';
 
   @override
   String adminSetupPersonAdded(String name) {
-    return '$name was added.';
+    return '$name ಅವರನ್ನು ಸೇರಿಸಲಾಗಿದೆ.';
   }
 
   @override
   String adminSetupEditPerson(String name) {
-    return 'Edit $name';
+    return '$name ಸಂಪಾದಿಸಿ';
   }
 
   @override
   String get adminSetupPhoneChangeNote =>
-      'Changing the phone number signs this person out on every phone.';
+      'ಫೋನ್ ಸಂಖ್ಯೆಯನ್ನು ಬದಲಾಯಿಸಿದರೆ ಈ ವ್ಯಕ್ತಿ ಎಲ್ಲಾ ಫೋನ್‌ಗಳಲ್ಲಿ ಸೈನ್ ಔಟ್ ಆಗುತ್ತಾರೆ.';
 
   @override
   String adminSetupPersonSaved(String name) {
-    return 'Changes to $name were saved.';
+    return '$name ಅವರ ಬದಲಾವಣೆಗಳನ್ನು ಉಳಿಸಲಾಗಿದೆ.';
   }
 
   @override
-  String get adminSetupDeactivate => 'Deactivate';
+  String get adminSetupDeactivate => 'ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿ';
 
   @override
-  String get adminSetupActivate => 'Activate';
+  String get adminSetupActivate => 'ಸಕ್ರಿಯಗೊಳಿಸಿ';
 
   @override
   String adminSetupDeactivateNamed(String name) {
-    return 'Deactivate $name';
+    return '$name ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿ';
   }
 
   @override
   String adminSetupActivateNamed(String name) {
-    return 'Activate $name';
+    return '$name ಸಕ್ರಿಯಗೊಳಿಸಿ';
   }
 
   @override
   String adminSetupDeactivateTitle(String name) {
-    return 'Deactivate $name?';
+    return '$name ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಬೇಕೇ?';
   }
 
   @override
   String adminSetupDeactivateMessage(String name) {
-    return '$name will be signed out and cannot sign in until the account is activated again.';
+    return '$name ಸೈನ್ ಔಟ್ ಆಗುತ್ತಾರೆ ಮತ್ತು ಖಾತೆಯನ್ನು ಮತ್ತೆ ಸಕ್ರಿಯಗೊಳಿಸುವವರೆಗೆ ಸೈನ್ ಇನ್ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ.';
   }
 
   @override
   String adminSetupActivated(String name) {
-    return '$name can sign in again.';
+    return '$name ಮತ್ತೆ ಸೈನ್ ಇನ್ ಮಾಡಬಹುದು.';
   }
 
   @override
   String adminSetupDeactivated(String name) {
-    return '$name was deactivated.';
+    return '$name ಅವರನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ.';
   }
 
   @override
-  String get adminSetupSignOutEverywhere => 'Sign out everywhere';
+  String get adminSetupSignOutEverywhere => 'ಎಲ್ಲೆಡೆ ಸೈನ್ ಔಟ್ ಮಾಡಿ';
 
   @override
   String adminSetupSignOutNamed(String name) {
-    return 'Sign $name out everywhere';
+    return '$name ಅವರನ್ನು ಎಲ್ಲೆಡೆ ಸೈನ್ ಔಟ್ ಮಾಡಿ';
   }
 
   @override
   String adminSetupSignOutTitle(String name) {
-    return 'Sign $name out everywhere?';
+    return '$name ಅವರನ್ನು ಎಲ್ಲೆಡೆ ಸೈನ್ ಔಟ್ ಮಾಡಬೇಕೇ?';
   }
 
   @override
   String adminSetupSignOutMessage(String name) {
-    return 'This ends $name\'s sign-in on every phone, for example if someone else used their number. They can sign in again with their phone number.';
+    return 'ಇದು ಎಲ್ಲಾ ಫೋನ್‌ಗಳಲ್ಲಿ $name ಅವರ ಸೈನ್ ಇನ್ ಅನ್ನು ಕೊನೆಗೊಳಿಸುತ್ತದೆ, ಉದಾಹರಣೆಗೆ ಬೇರೆ ಯಾರಾದರೂ ಅವರ ಸಂಖ್ಯೆಯನ್ನು ಬಳಸಿದ್ದರೆ. ಅವರು ತಮ್ಮ ಫೋನ್ ಸಂಖ್ಯೆಯಿಂದ ಮತ್ತೆ ಸೈನ್ ಇನ್ ಮಾಡಬಹುದು.';
   }
 
   @override
   String adminSetupSignedOut(String name) {
-    return '$name was signed out everywhere.';
+    return '$name ಅವರನ್ನು ಎಲ್ಲೆಡೆ ಸೈನ್ ಔಟ್ ಮಾಡಲಾಗಿದೆ.';
   }
 
   @override
-  String get adminSetupStudentClassAction => 'Change class';
+  String get adminSetupStudentClassAction => 'ತರಗತಿ ಬದಲಾಯಿಸಿ';
 
   @override
-  String get adminSetupTeacherAssignmentsAction => 'Classes and subjects';
+  String get adminSetupTeacherAssignmentsAction => 'ತರಗತಿಗಳು ಮತ್ತು ವಿಷಯಗಳು';
 
   @override
   String adminSetupStudentDetail(String className) {
-    return 'Student. Class: $className';
+    return 'ವಿದ್ಯಾರ್ಥಿ. ತರಗತಿ: $className';
   }
 
   @override
-  String get adminSetupStudentNoClass => 'Student. No class yet.';
+  String get adminSetupStudentNoClass => 'ವಿದ್ಯಾರ್ಥಿ. ಇನ್ನೂ ತರಗತಿ ಇಲ್ಲ.';
 
   @override
   String adminSetupTeacherDetail(String pairs) {
-    return 'Teacher. Teaches: $pairs';
+    return 'ಶಿಕ್ಷಕರು. ಕಲಿಸುವುದು: $pairs';
   }
 
   @override
-  String get adminSetupTeacherNoPairs => 'Teacher. No classes or subjects yet.';
+  String get adminSetupTeacherNoPairs =>
+      'ಶಿಕ್ಷಕರು. ಇನ್ನೂ ತರಗತಿಗಳು ಅಥವಾ ವಿಷಯಗಳಿಲ್ಲ.';
 
   @override
   String adminSetupPhoneDetail(String phone) {
-    return 'Phone: $phone';
+    return 'ಫೋನ್: $phone';
   }
 
   @override
   String adminSetupClassDialogTitle(String name) {
-    return 'Class for $name';
+    return '$name ಅವರ ತರಗತಿ';
   }
 
   @override
   String adminSetupRemoveFromClass(String className) {
-    return 'Remove from $className';
+    return '$className ನಿಂದ ತೆಗೆದುಹಾಕಿ';
   }
 
   @override
   String adminSetupStudentEnrolled(String name, String className) {
-    return '$name is now in $className.';
+    return '$name ಈಗ $className ನಲ್ಲಿದ್ದಾರೆ.';
   }
 
   @override
   String adminSetupStudentRemoved(String name) {
-    return '$name was removed from their class.';
+    return '$name ಅವರನ್ನು ಅವರ ತರಗತಿಯಿಂದ ತೆಗೆದುಹಾಕಲಾಗಿದೆ.';
   }
 
   @override
   String adminSetupAssignmentsTitle(String name) {
-    return 'Classes and subjects for $name';
+    return '$name ಅವರ ತರಗತಿಗಳು ಮತ್ತು ವಿಷಯಗಳು';
   }
 
   @override
-  String get adminSetupCurrentPairs => 'Currently teaches';
+  String get adminSetupCurrentPairs => 'ಈಗ ಕಲಿಸುತ್ತಿರುವುದು';
 
   @override
   String adminSetupPairAdded(String name, String className, String subject) {
-    return '$name now teaches $className, $subject.';
+    return '$name ಈಗ $className, $subject ಕಲಿಸುತ್ತಾರೆ.';
   }
 
   @override
   String adminSetupPairRemoved(String name, String className, String subject) {
-    return '$name no longer teaches $className, $subject.';
+    return '$name ಇನ್ನು ಮುಂದೆ $className, $subject ಕಲಿಸುವುದಿಲ್ಲ.';
   }
 
   @override
-  String get adminSetupClassesHeading => 'Classes';
+  String get adminSetupClassesHeading => 'ತರಗತಿಗಳು';
 
   @override
-  String get adminSetupSubjectsHeading => 'Subjects';
+  String get adminSetupSubjectsHeading => 'ವಿಷಯಗಳು';
 
   @override
-  String get adminSetupAddClass => 'Add class';
+  String get adminSetupAddClass => 'ತರಗತಿ ಸೇರಿಸಿ';
 
   @override
-  String get adminSetupAddSubject => 'Add subject';
+  String get adminSetupAddSubject => 'ವಿಷಯ ಸೇರಿಸಿ';
 
   @override
-  String get adminSetupNoClasses => 'No classes yet.';
+  String get adminSetupNoClasses => 'ಇನ್ನೂ ಯಾವುದೇ ತರಗತಿಗಳಿಲ್ಲ.';
 
   @override
-  String get adminSetupNoSubjects => 'No subjects yet.';
+  String get adminSetupNoSubjects => 'ಇನ್ನೂ ಯಾವುದೇ ವಿಷಯಗಳಿಲ್ಲ.';
 
   @override
-  String get adminSetupSubjectsButton => 'Subjects';
+  String get adminSetupSubjectsButton => 'ವಿಷಯಗಳು';
 
   @override
   String adminSetupClassSubjects(String className) {
-    return 'Subjects in $className';
+    return '$className ನಲ್ಲಿನ ವಿಷಯಗಳು';
   }
 
   @override
   String adminSetupArchiveNamed(String name) {
-    return 'Archive $name';
+    return '$name ಆರ್ಕೈವ್ ಮಾಡಿ';
   }
 
   @override
   String adminSetupRestoreNamed(String name) {
-    return 'Restore $name';
+    return '$name ಮರುಸ್ಥಾಪಿಸಿ';
   }
 
   @override
   String get adminSetupNoSubjectsToChoose =>
-      'There are no active subjects yet. Add a subject first.';
+      'ಇನ್ನೂ ಯಾವುದೇ ಸಕ್ರಿಯ ವಿಷಯಗಳಿಲ್ಲ. ಮೊದಲು ಒಂದು ವಿಷಯವನ್ನು ಸೇರಿಸಿ.';
 
   @override
-  String get adminSetupAddLesson => 'Add lesson to timetable';
+  String get adminSetupAddLesson => 'ವೇಳಾಪಟ್ಟಿಗೆ ಪಾಠ ಸೇರಿಸಿ';
 
   @override
-  String get adminSetupEditLesson => 'Edit timetable lesson';
+  String get adminSetupEditLesson => 'ವೇಳಾಪಟ್ಟಿಯ ಪಾಠವನ್ನು ಸಂಪಾದಿಸಿ';
 
   @override
-  String get adminSetupAllTeachers => 'All teachers';
+  String get adminSetupAllTeachers => 'ಎಲ್ಲಾ ಶಿಕ್ಷಕರು';
 
   @override
-  String get adminSetupAllClasses => 'All classes';
+  String get adminSetupAllClasses => 'ಎಲ್ಲಾ ತರಗತಿಗಳು';
 
   @override
-  String get adminSetupTeacherField => 'Teacher';
+  String get adminSetupTeacherField => 'ಶಿಕ್ಷಕರು';
 
   @override
-  String get adminSetupWeekdayField => 'Day of the week';
+  String get adminSetupWeekdayField => 'ವಾರದ ದಿನ';
 
   @override
-  String get adminSetupStartField => 'Start time';
+  String get adminSetupStartField => 'ಪ್ರಾರಂಭ ಸಮಯ';
 
   @override
-  String get adminSetupEndField => 'End time';
+  String get adminSetupEndField => 'ಮುಕ್ತಾಯ ಸಮಯ';
 
   @override
   String get adminSetupTimeHelper =>
-      '24-hour India time (IST), for example 09:30';
+      '24 ಗಂಟೆಯ ಭಾರತೀಯ ಸಮಯ (IST), ಉದಾಹರಣೆಗೆ 09:30';
 
   @override
   String adminSetupTimeInvalid(String field) {
-    return 'Enter the $field as 24-hour time, for example 09:30.';
+    return '$field ಅನ್ನು 24 ಗಂಟೆಯ ಸಮಯವಾಗಿ ನಮೂದಿಸಿ, ಉದಾಹರಣೆಗೆ 09:30.';
   }
 
   @override
-  String get adminSetupEndBeforeStart => 'The lesson must end after it starts.';
+  String get adminSetupEndBeforeStart => 'ಪಾಠವು ಪ್ರಾರಂಭವಾದ ನಂತರವೇ ಮುಗಿಯಬೇಕು.';
 
   @override
   String get adminSetupUntilBeforeFrom =>
-      'The last date must be on or after the first date.';
+      'ಕೊನೆಯ ದಿನಾಂಕವು ಮೊದಲ ದಿನಾಂಕದಂದು ಅಥವಾ ಅದರ ನಂತರ ಇರಬೇಕು.';
 
   @override
-  String get adminSetupValidFrom => 'First date';
+  String get adminSetupValidFrom => 'ಮೊದಲ ದಿನಾಂಕ';
 
   @override
-  String get adminSetupValidUntil => 'Last date';
+  String get adminSetupValidUntil => 'ಕೊನೆಯ ದಿನಾಂಕ';
 
   @override
-  String get adminSetupLessonField => 'Lesson playlist (optional)';
+  String get adminSetupLessonField => 'ಪಾಠದ ಪ್ಲೇಲಿಸ್ಟ್ (ಐಚ್ಛಿಕ)';
 
   @override
-  String get adminSetupNoLesson => 'No lesson playlist';
+  String get adminSetupNoLesson => 'ಪಾಠದ ಪ್ಲೇಲಿಸ್ಟ್ ಇಲ್ಲ';
 
   @override
   String get adminSetupNoLessonsFound =>
-      'This teacher has no lesson playlists for this class and subject yet.';
+      'ಈ ಶಿಕ್ಷಕರಿಗೆ ಈ ತರಗತಿ ಮತ್ತು ವಿಷಯಕ್ಕೆ ಇನ್ನೂ ಯಾವುದೇ ಪಾಠದ ಪ್ಲೇಲಿಸ್ಟ್‌ಗಳಿಲ್ಲ.';
 
   @override
-  String get adminSetupShowInactive => 'Show deactivated lessons';
+  String get adminSetupShowInactive => 'ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿದ ಪಾಠಗಳನ್ನು ತೋರಿಸಿ';
 
   @override
-  String get adminSetupNoTimetable => 'No timetable lessons match.';
+  String get adminSetupNoTimetable => 'ಯಾವುದೇ ವೇಳಾಪಟ್ಟಿ ಪಾಠಗಳು ಹೊಂದುತ್ತಿಲ್ಲ.';
 
   @override
   String adminSetupEntryTitle(
@@ -13854,48 +13940,49 @@ class AppLocalizationsKn extends AppLocalizations {
     String subject,
     String className,
   ) {
-    return '$start to $end: $subject, $className';
+    return '$start ರಿಂದ $end: $subject, $className';
   }
 
   @override
   String adminSetupEntryTeacher(String name) {
-    return 'Teacher: $name';
+    return 'ಶಿಕ್ಷಕರು: $name';
   }
 
   @override
   String adminSetupEntryLesson(String title) {
-    return 'Lesson playlist: $title';
+    return 'ಪಾಠದ ಪ್ಲೇಲಿಸ್ಟ್: $title';
   }
 
   @override
-  String get adminSetupEntryNoLesson => 'No lesson playlist chosen.';
+  String get adminSetupEntryNoLesson => 'ಯಾವುದೇ ಪಾಠದ ಪ್ಲೇಲಿಸ್ಟ್ ಆರಿಸಿಲ್ಲ.';
 
   @override
   String adminSetupEntryFrom(String date) {
-    return 'From $date';
+    return '$date ರಿಂದ';
   }
 
   @override
   String adminSetupEntryUntil(String date) {
-    return 'Until $date';
+    return '$date ವರೆಗೆ';
   }
 
   @override
-  String get adminSetupDateChanges => 'Date changes';
+  String get adminSetupDateChanges => 'ದಿನಾಂಕ ಬದಲಾವಣೆಗಳು';
 
   @override
   String adminSetupDateChangesNamed(String title) {
-    return 'Date changes for $title';
+    return '$title ಗಾಗಿ ದಿನಾಂಕ ಬದಲಾವಣೆಗಳು';
   }
 
   @override
-  String get adminSetupDeactivateLesson => 'Deactivate';
+  String get adminSetupDeactivateLesson => 'ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿ';
 
   @override
-  String get adminSetupReactivateLesson => 'Reactivate';
+  String get adminSetupReactivateLesson => 'ಮತ್ತೆ ಸಕ್ರಿಯಗೊಳಿಸಿ';
 
   @override
-  String get adminSetupDeactivateLessonTitle => 'Deactivate this lesson?';
+  String get adminSetupDeactivateLessonTitle =>
+      'ಈ ಪಾಠವನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಬೇಕೇ?';
 
   @override
   String adminSetupDeactivateLessonMessage(
@@ -13904,201 +13991,202 @@ class AppLocalizationsKn extends AppLocalizations {
     String weekday,
     String start,
   ) {
-    return '$subject for $className on $weekday at $start will no longer be scheduled.';
+    return '$weekday ರಂದು $start ಕ್ಕೆ $className ಗಾಗಿ ಇರುವ $subject ಇನ್ನು ಮುಂದೆ ವೇಳಾಪಟ್ಟಿಯಲ್ಲಿ ಇರುವುದಿಲ್ಲ.';
   }
 
   @override
-  String get adminSetupLessonSaved => 'Timetable saved.';
+  String get adminSetupLessonSaved => 'ವೇಳಾಪಟ್ಟಿಯನ್ನು ಉಳಿಸಲಾಗಿದೆ.';
 
   @override
-  String get adminSetupLessonDeactivated => 'Lesson deactivated.';
+  String get adminSetupLessonDeactivated => 'ಪಾಠವನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ.';
 
   @override
-  String get adminSetupLessonReactivated => 'Lesson reactivated.';
+  String get adminSetupLessonReactivated => 'ಪಾಠವನ್ನು ಮತ್ತೆ ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ.';
 
   @override
   String adminSetupClassSubjectFixed(String className, String subject) {
-    return '$className, $subject. To change the class or subject, deactivate this lesson and add a new one.';
+    return '$className, $subject. ತರಗತಿ ಅಥವಾ ವಿಷಯವನ್ನು ಬದಲಾಯಿಸಲು, ಈ ಪಾಠವನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿ ಮತ್ತು ಹೊಸದನ್ನು ಸೇರಿಸಿ.';
   }
 
   @override
   String adminSetupDateChangesTitle(String lesson, String weekday) {
-    return 'Date changes: $lesson, every $weekday';
+    return 'ದಿನಾಂಕ ಬದಲಾವಣೆಗಳು: $lesson, ಪ್ರತಿ $weekday';
   }
 
   @override
-  String get adminSetupNoDateChanges => 'No date changes.';
+  String get adminSetupNoDateChanges => 'ಯಾವುದೇ ದಿನಾಂಕ ಬದಲಾವಣೆಗಳಿಲ್ಲ.';
 
   @override
-  String get adminSetupAddDateChange => 'Change one date';
+  String get adminSetupAddDateChange => 'ಒಂದು ದಿನಾಂಕವನ್ನು ಬದಲಾಯಿಸಿ';
 
   @override
-  String get adminSetupCancelledLabel => 'Cancelled on this date.';
+  String get adminSetupCancelledLabel => 'ಈ ದಿನಾಂಕದಂದು ರದ್ದಾಗಿದೆ.';
 
   @override
   String adminSetupSubstituteLabel(String name) {
-    return 'Substitute teacher: $name';
+    return 'ಬದಲಿ ಶಿಕ್ಷಕರು: $name';
   }
 
   @override
   String get adminSetupDifferentLesson =>
-      'A different lesson playlist is used on this date.';
+      'ಈ ದಿನಾಂಕದಂದು ಬೇರೆ ಪಾಠದ ಪ್ಲೇಲಿಸ್ಟ್ ಬಳಸಲಾಗುತ್ತದೆ.';
 
   @override
   String adminSetupNoteLabel(String note) {
-    return 'Note: $note';
+    return 'ಟಿಪ್ಪಣಿ: $note';
   }
 
   @override
-  String get adminSetupClearChange => 'Clear change';
+  String get adminSetupClearChange => 'ಬದಲಾವಣೆ ತೆರವುಗೊಳಿಸಿ';
 
   @override
   String adminSetupClearChangeNamed(String date) {
-    return 'Clear the change for $date';
+    return '$date ರ ಬದಲಾವಣೆಯನ್ನು ತೆರವುಗೊಳಿಸಿ';
   }
 
   @override
   String adminSetupEditDateChangeNamed(String date) {
-    return 'Edit the change for $date';
+    return '$date ರ ಬದಲಾವಣೆಯನ್ನು ಸಂಪಾದಿಸಿ';
   }
 
   @override
   String adminSetupChangeCleared(String date) {
-    return 'The change for $date was cleared.';
+    return '$date ರ ಬದಲಾವಣೆಯನ್ನು ತೆರವುಗೊಳಿಸಲಾಗಿದೆ.';
   }
 
   @override
   String adminSetupDateChangeTitle(String lesson) {
-    return 'Change one date: $lesson';
+    return 'ಒಂದು ದಿನಾಂಕವನ್ನು ಬದಲಾಯಿಸಿ: $lesson';
   }
 
   @override
-  String get adminSetupCancelOnDate => 'Cancel the lesson on this date';
+  String get adminSetupCancelOnDate => 'ಈ ದಿನಾಂಕದಂದು ಪಾಠವನ್ನು ರದ್ದುಮಾಡಿ';
 
   @override
-  String get adminSetupSubstituteField => 'Substitute teacher (optional)';
+  String get adminSetupSubstituteField => 'ಬದಲಿ ಶಿಕ್ಷಕರು (ಐಚ್ಛಿಕ)';
 
   @override
   String adminSetupRegularTeacher(String name) {
-    return 'No substitute ($name teaches)';
+    return 'ಬದಲಿ ಇಲ್ಲ ($name ಕಲಿಸುತ್ತಾರೆ)';
   }
 
   @override
-  String get adminSetupDateLessonField => 'Lesson playlist on this date';
+  String get adminSetupDateLessonField => 'ಈ ದಿನಾಂಕದ ಪಾಠದ ಪ್ಲೇಲಿಸ್ಟ್';
 
   @override
-  String get adminSetupUsualLesson => 'Same as usual';
+  String get adminSetupUsualLesson => 'ಎಂದಿನಂತೆ';
 
   @override
-  String get adminSetupNoteField => 'Note (optional)';
+  String get adminSetupNoteField => 'ಟಿಪ್ಪಣಿ (ಐಚ್ಛಿಕ)';
 
   @override
   String adminSetupDateChangeSaved(String date) {
-    return 'The change for $date was saved.';
+    return '$date ರ ಬದಲಾವಣೆಯನ್ನು ಉಳಿಸಲಾಗಿದೆ.';
   }
 
   @override
-  String get adminSetupChooseDateFirst => 'Choose a date.';
+  String get adminSetupChooseDateFirst => 'ಒಂದು ದಿನಾಂಕವನ್ನು ಆರಿಸಿ.';
 
   @override
-  String get adminSetupPreviousDay => 'Previous day';
+  String get adminSetupPreviousDay => 'ಹಿಂದಿನ ದಿನ';
 
   @override
-  String get adminSetupNextDay => 'Next day';
+  String get adminSetupNextDay => 'ಮುಂದಿನ ದಿನ';
 
   @override
-  String get adminSetupToday => 'Today';
+  String get adminSetupToday => 'ಇಂದು';
 
   @override
   String adminSetupScheduleFor(String date) {
-    return 'Lessons on $date';
+    return '$date ರ ಪಾಠಗಳು';
   }
 
   @override
-  String get adminSetupNoLessonsOnDay => 'No lessons on this date.';
+  String get adminSetupNoLessonsOnDay => 'ಈ ದಿನಾಂಕದಂದು ಯಾವುದೇ ಪಾಠಗಳಿಲ್ಲ.';
 
   @override
   String adminSetupScheduleSubstitute(String name) {
-    return 'Teacher: $name (substitute)';
+    return 'ಶಿಕ್ಷಕರು: $name (ಬದಲಿ)';
   }
 
   @override
   String adminSetupStateLabel(String state) {
-    return 'Status: $state';
+    return 'ಸ್ಥಿತಿ: $state';
   }
 
   @override
-  String get adminSetupStateUpcoming => 'Upcoming';
+  String get adminSetupStateUpcoming => 'ಮುಂಬರುವ';
 
   @override
-  String get adminSetupStateLive => 'Live now';
+  String get adminSetupStateLive => 'ಈಗ ನೇರಪ್ರಸಾರದಲ್ಲಿದೆ';
 
   @override
-  String get adminSetupStateHeld => 'Held';
+  String get adminSetupStateHeld => 'ನಡೆದಿದೆ';
 
   @override
-  String get adminSetupStateCancelled => 'Cancelled';
+  String get adminSetupStateCancelled => 'ರದ್ದಾಗಿದೆ';
 
   @override
-  String get adminSetupStateNotStarted => 'Not started';
+  String get adminSetupStateNotStarted => 'ಪ್ರಾರಂಭವಾಗಲಿಲ್ಲ';
 
   @override
-  String get adminSetupLessonReady => 'Lesson playlist ready.';
+  String get adminSetupLessonReady => 'ಪಾಠದ ಪ್ಲೇಲಿಸ್ಟ್ ಸಿದ್ಧವಾಗಿದೆ.';
 
   @override
   String get adminSetupSharedPhoneNote =>
-      'On a shared phone, each person enters the shared phone number, then their short profile number. The profile number only chooses whose account opens. It is not a password.';
+      'ಹಂಚಿಕೊಂಡ ಫೋನ್‌ನಲ್ಲಿ, ಪ್ರತಿಯೊಬ್ಬರೂ ಹಂಚಿಕೊಂಡ ಫೋನ್ ಸಂಖ್ಯೆಯನ್ನು ನಮೂದಿಸಿ, ನಂತರ ತಮ್ಮ ಚಿಕ್ಕ ಪ್ರೊಫೈಲ್ ಸಂಖ್ಯೆಯನ್ನು ನಮೂದಿಸುತ್ತಾರೆ. ಪ್ರೊಫೈಲ್ ಸಂಖ್ಯೆ ಯಾರ ಖಾತೆ ತೆರೆಯಬೇಕು ಎಂಬುದನ್ನು ಮಾತ್ರ ಆಯ್ಕೆ ಮಾಡುತ್ತದೆ. ಇದು ಪಾಸ್‌ವರ್ಡ್ ಅಲ್ಲ.';
 
   @override
-  String get adminSetupAddSharedPhone => 'Add shared phone';
+  String get adminSetupAddSharedPhone => 'ಹಂಚಿಕೊಂಡ ಫೋನ್ ಸೇರಿಸಿ';
 
   @override
-  String get adminSetupEditSharedPhone => 'Edit shared phone';
+  String get adminSetupEditSharedPhone => 'ಹಂಚಿಕೊಂಡ ಫೋನ್ ಬದಲಿಸಿ';
 
   @override
-  String get adminSetupSharedPhoneName => 'Name, for example Class 5 phone';
+  String get adminSetupSharedPhoneName => 'ಹೆಸರು, ಉದಾಹರಣೆಗೆ ತರಗತಿ 5 ಫೋನ್';
 
   @override
-  String get adminSetupSharedPhoneNumber => 'Shared phone number';
+  String get adminSetupSharedPhoneNumber => 'ಹಂಚಿಕೊಂಡ ಫೋನ್ ಸಂಖ್ಯೆ';
 
   @override
-  String get adminSetupSharedPhoneActiveSwitch => 'Shared phone can be used';
+  String get adminSetupSharedPhoneActiveSwitch => 'ಹಂಚಿಕೊಂಡ ಫೋನ್ ಬಳಸಬಹುದು';
 
   @override
-  String get adminSetupSharedPhoneSaved => 'Shared phone saved.';
+  String get adminSetupSharedPhoneSaved => 'ಹಂಚಿಕೊಂಡ ಫೋನ್ ಉಳಿಸಲಾಗಿದೆ.';
 
   @override
-  String get adminSetupNoSharedPhones => 'No shared phones yet.';
+  String get adminSetupNoSharedPhones => 'ಇನ್ನೂ ಯಾವುದೇ ಹಂಚಿಕೊಂಡ ಫೋನ್‌ಗಳಿಲ್ಲ.';
 
   @override
   String adminSetupGroupNumber(String phone) {
-    return 'Number: $phone';
+    return 'ಸಂಖ್ಯೆ: $phone';
   }
 
   @override
   String adminSetupMemberLine(String name, String role, String code) {
-    return '$name, $role. Profile number $code';
+    return '$name, $role. ಪ್ರೊಫೈಲ್ ಸಂಖ್ಯೆ $code';
   }
 
   @override
-  String get adminSetupNoMembers => 'No people on this phone yet.';
+  String get adminSetupNoMembers => 'ಈ ಫೋನ್‌ನಲ್ಲಿ ಇನ್ನೂ ಯಾರೂ ಇಲ್ಲ.';
 
   @override
-  String get adminSetupAddMember => 'Add person';
+  String get adminSetupAddMember => 'ವ್ಯಕ್ತಿಯನ್ನು ಸೇರಿಸಿ';
 
   @override
   String adminSetupAddMemberTitle(String group) {
-    return 'Add a person to $group';
+    return '$group ಗೆ ಒಬ್ಬ ವ್ಯಕ್ತಿಯನ್ನು ಸೇರಿಸಿ';
   }
 
   @override
-  String get adminSetupSearchPeople => 'Search people by name or phone number';
+  String get adminSetupSearchPeople =>
+      'ಹೆಸರು ಅಥವಾ ಫೋನ್ ಸಂಖ್ಯೆಯಿಂದ ಜನರನ್ನು ಹುಡುಕಿ';
 
   @override
-  String get adminSetupNoPeopleFound => 'No matching people.';
+  String get adminSetupNoPeopleFound => 'ಹೊಂದುವ ಜನರು ಇಲ್ಲ.';
 
   @override
-  String get adminSetupPersonField => 'Person';
+  String get adminSetupPersonField => 'ವ್ಯಕ್ತಿ';
 
   @override
   String adminSetupPersonOption(String name, String role, String phone) {
@@ -14106,116 +14194,118 @@ class AppLocalizationsKn extends AppLocalizations {
   }
 
   @override
-  String get adminSetupChoosePerson => 'Choose a person.';
+  String get adminSetupChoosePerson => 'ಒಬ್ಬ ವ್ಯಕ್ತಿಯನ್ನು ಆಯ್ಕೆ ಮಾಡಿ.';
 
   @override
-  String get adminSetupProfileCodeField => 'Profile number';
+  String get adminSetupProfileCodeField => 'ಪ್ರೊಫೈಲ್ ಸಂಖ್ಯೆ';
 
   @override
   String get adminSetupProfileCodeHelper =>
-      '1 to 4 digits, different for each person on this phone.';
+      '1 ರಿಂದ 4 ಅಂಕಿಗಳು, ಈ ಫೋನ್‌ನಲ್ಲಿ ಪ್ರತಿಯೊಬ್ಬರಿಗೂ ಬೇರೆ ಬೇರೆ.';
 
   @override
   String get adminSetupProfileCodeInvalid =>
-      'Enter a profile number of 1 to 4 digits.';
+      '1 ರಿಂದ 4 ಅಂಕಿಗಳ ಪ್ರೊಫೈಲ್ ಸಂಖ್ಯೆಯನ್ನು ನಮೂದಿಸಿ.';
 
   @override
   String adminSetupMemberAdded(String name, String group) {
-    return '$name was added to $group.';
+    return '$name ಅವರನ್ನು $group ಗೆ ಸೇರಿಸಲಾಗಿದೆ.';
   }
 
   @override
   String adminSetupRemoveMemberNamed(String name, String group) {
-    return 'Remove $name from $group';
+    return '$name ಅವರನ್ನು $group ಇಂದ ತೆಗೆದುಹಾಕಿ';
   }
 
   @override
   String adminSetupRemoveMemberTitle(String name, String group) {
-    return 'Remove $name from $group?';
+    return '$name ಅವರನ್ನು $group ಇಂದ ತೆಗೆದುಹಾಕಬೇಕೆ?';
   }
 
   @override
   String adminSetupRemoveMemberMessage(String name) {
-    return '$name will no longer be able to choose their profile on this shared phone.';
+    return '$name ಅವರು ಇನ್ನು ಮುಂದೆ ಈ ಹಂಚಿಕೊಂಡ ಫೋನ್‌ನಲ್ಲಿ ತಮ್ಮ ಪ್ರೊಫೈಲ್ ಆಯ್ಕೆ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ.';
   }
 
   @override
   String adminSetupMemberRemoved(String name, String group) {
-    return '$name was removed from $group.';
+    return '$name ಅವರನ್ನು $group ಇಂದ ತೆಗೆದುಹಾಕಲಾಗಿದೆ.';
   }
 
   @override
-  String get adminSetupHolidayNote => 'No lessons are scheduled on holidays.';
+  String get adminSetupHolidayNote =>
+      'ರಜಾದಿನಗಳಲ್ಲಿ ಯಾವುದೇ ಪಾಠಗಳನ್ನು ನಿಗದಿಪಡಿಸಲಾಗುವುದಿಲ್ಲ.';
 
   @override
-  String get adminSetupAddHoliday => 'Add holiday';
+  String get adminSetupAddHoliday => 'ರಜಾದಿನ ಸೇರಿಸಿ';
 
   @override
-  String get adminSetupHolidayName => 'Holiday name';
+  String get adminSetupHolidayName => 'ರಜಾದಿನದ ಹೆಸರು';
 
   @override
-  String get adminSetupNoHolidays => 'No holidays yet.';
+  String get adminSetupNoHolidays => 'ಇನ್ನೂ ಯಾವುದೇ ರಜಾದಿನಗಳಿಲ್ಲ.';
 
   @override
   String adminSetupHolidayAdded(String name, String date) {
-    return '$name on $date was added.';
+    return '$date ರಂದು $name ಸೇರಿಸಲಾಗಿದೆ.';
   }
 
   @override
   String adminSetupDeleteHolidayNamed(String name, String date) {
-    return 'Delete $name on $date';
+    return '$date ರಂದು $name ಅಳಿಸಿ';
   }
 
   @override
-  String get adminSetupDeleteHolidayTitle => 'Delete this holiday?';
+  String get adminSetupDeleteHolidayTitle => 'ಈ ರಜಾದಿನವನ್ನು ಅಳಿಸಬೇಕೆ?';
 
   @override
   String adminSetupDeleteHolidayMessage(String name, String date) {
-    return '$name on $date will be removed, and lessons will be scheduled on that date again.';
+    return '$date ರಂದು $name ತೆಗೆದುಹಾಕಲಾಗುತ್ತದೆ, ಮತ್ತು ಆ ದಿನಾಂಕದಂದು ಮತ್ತೆ ಪಾಠಗಳನ್ನು ನಿಗದಿಪಡಿಸಲಾಗುತ್ತದೆ.';
   }
 
   @override
-  String get adminSetupHolidayDeleted => 'The holiday was deleted.';
+  String get adminSetupHolidayDeleted => 'ರಜಾದಿನವನ್ನು ಅಳಿಸಲಾಗಿದೆ.';
 
   @override
-  String get adminSetupIssuesOpen => 'Open';
+  String get adminSetupIssuesOpen => 'ಬಗೆಹರಿದಿಲ್ಲ';
 
   @override
-  String get adminSetupIssuesResolved => 'Resolved';
+  String get adminSetupIssuesResolved => 'ಬಗೆಹರಿದಿದೆ';
 
   @override
-  String get adminSetupNoIssues => 'No issues to show.';
+  String get adminSetupNoIssues => 'ತೋರಿಸಲು ಯಾವುದೇ ಸಮಸ್ಯೆಗಳಿಲ್ಲ.';
 
   @override
   String adminSetupIssueSeen(int count, String when) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Seen $count times.',
-      one: 'Seen once.',
+      other: '$count ಬಾರಿ ಕಂಡುಬಂದಿದೆ.',
+      one: 'ಒಮ್ಮೆ ಕಂಡುಬಂದಿದೆ.',
     );
-    return '$_temp0 Last seen $when.';
+    return '$_temp0 ಕೊನೆಯದಾಗಿ ಕಂಡುಬಂದದ್ದು $when.';
   }
 
   @override
-  String get adminSetupMarkResolved => 'Mark resolved';
+  String get adminSetupMarkResolved => 'ಬಗೆಹರಿದಿದೆ ಎಂದು ಗುರುತಿಸಿ';
 
   @override
   String adminSetupMarkResolvedNamed(String message) {
-    return 'Mark resolved: $message';
+    return 'ಬಗೆಹರಿದಿದೆ ಎಂದು ಗುರುತಿಸಿ: $message';
   }
 
   @override
-  String get adminSetupIssueResolved => 'Issue marked resolved.';
+  String get adminSetupIssueResolved =>
+      'ಸಮಸ್ಯೆಯನ್ನು ಬಗೆಹರಿದಿದೆ ಎಂದು ಗುರುತಿಸಲಾಗಿದೆ.';
 
   @override
-  String get adminSetupRecordsLive => 'Live';
+  String get adminSetupRecordsLive => 'ಲೈವ್';
 
   @override
-  String get adminSetupRecordsEnded => 'Ended';
+  String get adminSetupRecordsEnded => 'ಮುಗಿದಿದೆ';
 
   @override
-  String get adminSetupNoRecords => 'No classes to show.';
+  String get adminSetupNoRecords => 'ತೋರಿಸಲು ಯಾವುದೇ ತರಗತಿಗಳಿಲ್ಲ.';
 
   @override
   String adminSetupRecordTitle(String subject, String className) {
@@ -14223,36 +14313,36 @@ class AppLocalizationsKn extends AppLocalizations {
   }
 
   @override
-  String get adminSetupRecordLive => 'Live now';
+  String get adminSetupRecordLive => 'ಈಗ ಲೈವ್';
 
   @override
   String adminSetupRecordLiveUntil(String clock) {
-    return 'Live now. Ends at $clock';
+    return 'ಈಗ ಲೈವ್. $clock ಕ್ಕೆ ಮುಗಿಯುತ್ತದೆ';
   }
 
   @override
   String adminSetupRecordStarted(String when) {
-    return 'Started $when';
+    return 'ಪ್ರಾರಂಭವಾಯಿತು $when';
   }
 
   @override
   String adminSetupRecordEnded(String when) {
-    return 'Ended $when';
+    return 'ಮುಗಿಯಿತು $when';
   }
 
   @override
-  String get adminSetupEndedByTeacher => 'The teacher ended the class.';
+  String get adminSetupEndedByTeacher => 'ಶಿಕ್ಷಕರು ತರಗತಿಯನ್ನು ಮುಗಿಸಿದರು.';
 
   @override
-  String get adminSetupEndedByAdmin => 'An administrator ended the class.';
+  String get adminSetupEndedByAdmin => 'ನಿರ್ವಾಹಕರು ತರಗತಿಯನ್ನು ಮುಗಿಸಿದರು.';
 
   @override
   String get adminSetupEndedAutomatically =>
-      'The class ended automatically at its end time.';
+      'ತರಗತಿ ತನ್ನ ಮುಕ್ತಾಯ ಸಮಯಕ್ಕೆ ತಾನಾಗಿಯೇ ಮುಗಿಯಿತು.';
 
   @override
   String adminSetupEndedOther(String reason) {
-    return 'End reason: $reason';
+    return 'ಮುಗಿದ ಕಾರಣ: $reason';
   }
 
   @override
@@ -14260,9 +14350,9 @@ class AppLocalizationsKn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count students joined.',
-      one: '1 student joined.',
-      zero: 'No students joined.',
+      other: '$count ವಿದ್ಯಾರ್ಥಿಗಳು ಸೇರಿದರು.',
+      one: '1 ವಿದ್ಯಾರ್ಥಿ ಸೇರಿದರು.',
+      zero: 'ಯಾವುದೇ ವಿದ್ಯಾರ್ಥಿ ಸೇರಲಿಲ್ಲ.',
     );
     return '$_temp0';
   }
@@ -14272,257 +14362,259 @@ class AppLocalizationsKn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count extra minutes added.',
-      one: '1 extra minute added.',
-      zero: 'No extra time added.',
+      other: '$count ಹೆಚ್ಚುವರಿ ನಿಮಿಷಗಳನ್ನು ಸೇರಿಸಲಾಗಿದೆ.',
+      one: '1 ಹೆಚ್ಚುವರಿ ನಿಮಿಷ ಸೇರಿಸಲಾಗಿದೆ.',
+      zero: 'ಯಾವುದೇ ಹೆಚ್ಚುವರಿ ಸಮಯ ಸೇರಿಸಿಲ್ಲ.',
     );
     return '$_temp0';
   }
 
   @override
-  String get adminSetupAddFifteen => 'Add 15 minutes';
+  String get adminSetupAddFifteen => '15 ನಿಮಿಷ ಸೇರಿಸಿ';
 
   @override
   String adminSetupAddFifteenNamed(String title) {
-    return 'Add 15 minutes to $title';
+    return '$title ಗೆ 15 ನಿಮಿಷ ಸೇರಿಸಿ';
   }
 
   @override
-  String get adminSetupEndForEveryone => 'End class for everyone';
+  String get adminSetupEndForEveryone => 'ಎಲ್ಲರಿಗೂ ತರಗತಿ ಮುಗಿಸಿ';
 
   @override
   String adminSetupEndForEveryoneNamed(String title) {
-    return 'End $title for everyone';
+    return 'ಎಲ್ಲರಿಗೂ $title ಮುಗಿಸಿ';
   }
 
   @override
-  String get adminSetupEndTitle => 'End this class for everyone?';
+  String get adminSetupEndTitle => 'ಎಲ್ಲರಿಗೂ ಈ ತರಗತಿಯನ್ನು ಮುಗಿಸಬೇಕೆ?';
 
   @override
   String adminSetupEndMessage(String title) {
-    return '$title will end now for the teacher and every student.';
+    return '$title ಶಿಕ್ಷಕರು ಮತ್ತು ಪ್ರತಿಯೊಬ್ಬ ವಿದ್ಯಾರ್ಥಿಗೂ ಈಗಲೇ ಮುಗಿಯುತ್ತದೆ.';
   }
 
   @override
-  String get adminSetupKeepClass => 'Keep class going';
+  String get adminSetupKeepClass => 'ತರಗತಿ ಮುಂದುವರಿಸಿ';
 
   @override
-  String get adminSetupEndClass => 'End class';
+  String get adminSetupEndClass => 'ತರಗತಿ ಮುಗಿಸಿ';
 
   @override
-  String get adminSetupEnded => 'The class was ended.';
+  String get adminSetupEnded => 'ತರಗತಿಯನ್ನು ಮುಗಿಸಲಾಗಿದೆ.';
 
   @override
   String adminSetupExtended(String clock) {
-    return 'The class now ends at $clock.';
+    return 'ತರಗತಿ ಈಗ $clock ಕ್ಕೆ ಮುಗಿಯುತ್ತದೆ.';
   }
 
   @override
-  String get loginScreenName => 'Sign in';
+  String get loginScreenName => 'ಸೈನ್ ಇನ್';
 
   @override
-  String get loginIntro => 'Type your phone number, then press 1 to sign in.';
+  String get loginIntro =>
+      'ನಿಮ್ಮ ಫೋನ್ ಸಂಖ್ಯೆಯನ್ನು ಟೈಪ್ ಮಾಡಿ, ನಂತರ ಸೈನ್ ಇನ್ ಮಾಡಲು 1 ಒತ್ತಿ.';
 
   @override
-  String get loginPhoneField => 'Phone number. Type it with the number keys.';
+  String get loginPhoneField => 'ಫೋನ್ ಸಂಖ್ಯೆ. ಸಂಖ್ಯೆ ಕೀಗಳಿಂದ ಟೈಪ್ ಮಾಡಿ.';
 
   @override
-  String get loginPhoneLabel => 'Phone number';
+  String get loginPhoneLabel => 'ಫೋನ್ ಸಂಖ್ಯೆ';
 
   @override
-  String get loginProfileField => 'Your profile number on this shared phone';
+  String get loginProfileField => 'ಈ ಹಂಚಿಕೊಂಡ ಫೋನ್‌ನಲ್ಲಿ ನಿಮ್ಮ ಪ್ರೊಫೈಲ್ ಸಂಖ್ಯೆ';
 
   @override
-  String get loginProfileLabel => 'Profile number';
+  String get loginProfileLabel => 'ಪ್ರೊಫೈಲ್ ಸಂಖ್ಯೆ';
 
   @override
   String get loginEnterProfileCode =>
-      'This phone is shared. Type your profile number, then press 1.';
+      'ಈ ಫೋನ್ ಹಂಚಿಕೊಂಡದ್ದು. ನಿಮ್ಮ ಪ್ರೊಫೈಲ್ ಸಂಖ್ಯೆಯನ್ನು ಟೈಪ್ ಮಾಡಿ, ನಂತರ 1 ಒತ್ತಿ.';
 
   @override
-  String get loginKeySignIn => 'Sign in';
+  String get loginKeySignIn => 'ಸೈನ್ ಇನ್';
 
   @override
-  String get loginKeyContinue => 'Continue';
+  String get loginKeyContinue => 'ಮುಂದುವರಿಸಿ';
 
   @override
-  String get loginKeySim => 'Fill in my number from the SIM card';
+  String get loginKeySim => 'SIM ಕಾರ್ಡ್‌ನಿಂದ ನನ್ನ ಸಂಖ್ಯೆಯನ್ನು ತುಂಬಿಸಿ';
 
   @override
-  String get loginKeyAdmin => 'Administrator sign in';
+  String get loginKeyAdmin => 'ನಿರ್ವಾಹಕರ ಸೈನ್ ಇನ್';
 
   @override
-  String get loginKeyChangeNumber => 'Use a different number';
+  String get loginKeyChangeNumber => 'ಬೇರೆ ಸಂಖ್ಯೆ ಬಳಸಿ';
 
   @override
-  String get loginErrorEnterPhone => 'Type your phone number first.';
+  String get loginErrorEnterPhone => 'ಮೊದಲು ನಿಮ್ಮ ಫೋನ್ ಸಂಖ್ಯೆಯನ್ನು ಟೈಪ್ ಮಾಡಿ.';
 
   @override
-  String get loginErrorEnterProfile => 'Type your profile number first.';
+  String get loginErrorEnterProfile =>
+      'ಮೊದಲು ನಿಮ್ಮ ಪ್ರೊಫೈಲ್ ಸಂಖ್ಯೆಯನ್ನು ಟೈಪ್ ಮಾಡಿ.';
 
   @override
   String get loginNumberNotRegistered =>
-      'This number is not registered. Ask your school administrator to add you.';
+      'ಈ ಸಂಖ್ಯೆ ನೋಂದಣಿಯಾಗಿಲ್ಲ. ನಿಮ್ಮನ್ನು ಸೇರಿಸಲು ನಿಮ್ಮ ಶಾಲೆಯ ನಿರ್ವಾಹಕರನ್ನು ಕೇಳಿ.';
 
   @override
   String get loginProfileNotRecognised =>
-      'That profile number is not on this phone. Try again.';
+      'ಆ ಪ್ರೊಫೈಲ್ ಸಂಖ್ಯೆ ಈ ಫೋನ್‌ನಲ್ಲಿ ಇಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
   String get loginAdminUsesPassword =>
-      'Administrators sign in with a password. Press 3.';
+      'ನಿರ್ವಾಹಕರು ಪಾಸ್‌ವರ್ಡ್‌ನಿಂದ ಸೈನ್ ಇನ್ ಮಾಡುತ್ತಾರೆ. 3 ಒತ್ತಿ.';
 
   @override
-  String get loginSigningIn => 'Signing in.';
+  String get loginSigningIn => 'ಸೈನ್ ಇನ್ ಆಗುತ್ತಿದೆ.';
 
   @override
-  String get adminLoginScreenName => 'Administrator sign in';
+  String get adminLoginScreenName => 'ನಿರ್ವಾಹಕರ ಸೈನ್ ಇನ್';
 
   @override
   String get adminLoginIntro =>
-      'Type your phone number and password, then press 1.';
+      'ನಿಮ್ಮ ಫೋನ್ ಸಂಖ್ಯೆ ಮತ್ತು ಪಾಸ್‌ವರ್ಡ್ ಟೈಪ್ ಮಾಡಿ, ನಂತರ 1 ಒತ್ತಿ.';
 
   @override
-  String get classNoLongerLive => 'That class is not live now.';
+  String get classNoLongerLive => 'ಆ ತರಗತಿ ಈಗ ಲೈವ್ ಇಲ್ಲ.';
 
   @override
-  String get classAlertTitle => 'Class has started';
+  String get classAlertTitle => 'ತರಗತಿ ಪ್ರಾರಂಭವಾಗಿದೆ';
 
   @override
-  String get classAlertBody => 'Your class has started. Open to join.';
+  String get classAlertBody => 'ನಿಮ್ಮ ತರಗತಿ ಪ್ರಾರಂಭವಾಗಿದೆ. ಸೇರಲು ತೆರೆಯಿರಿ.';
 
   @override
-  String get classAlertWaitingBody => 'Your class is live. Open to join.';
+  String get classAlertWaitingBody => 'ನಿಮ್ಮ ತರಗತಿ ಲೈವ್ ಆಗಿದೆ. ಸೇರಲು ತೆರೆಯಿರಿ.';
 
   @override
-  String get classAlertChannelName => 'Class starting';
+  String get classAlertChannelName => 'ತರಗತಿ ಪ್ರಾರಂಭವಾಗುತ್ತಿದೆ';
 
   @override
   String get classAlertChannelDescription =>
-      'Rings for up to one minute when your class starts.';
+      'ನಿಮ್ಮ ತರಗತಿ ಪ್ರಾರಂಭವಾದಾಗ ಒಂದು ನಿಮಿಷದವರೆಗೆ ರಿಂಗ್ ಆಗುತ್ತದೆ.';
 
   @override
-  String get classAlertWaitingChannelName => 'Class live';
+  String get classAlertWaitingChannelName => 'ತರಗತಿ ಲೈವ್';
 
   @override
   String get classAlertWaitingChannelDescription =>
-      'Stays while your class is live so you can join.';
+      'ನೀವು ಸೇರಲು ಸಾಧ್ಯವಾಗುವಂತೆ ನಿಮ್ಮ ತರಗತಿ ಲೈವ್ ಇರುವವರೆಗೆ ಇರುತ್ತದೆ.';
 
   @override
-  String get classAlertStarted => 'Your class has started.';
+  String get classAlertStarted => 'ನಿಮ್ಮ ತರಗತಿ ಪ್ರಾರಂಭವಾಗಿದೆ.';
 
   @override
   String classAlertSubjectStarted(String subject) {
-    return '$subject class has started.';
+    return '$subject ತರಗತಿ ಪ್ರಾರಂಭವಾಗಿದೆ.';
   }
 
   @override
   String get classAlertKeys =>
-      'Press OK or 1 to join. Press 0 to stop the ringing.';
+      'ಸೇರಲು ಓಕೆ ಅಥವಾ 1 ಒತ್ತಿ. ರಿಂಗ್ ನಿಲ್ಲಿಸಲು 0 ಒತ್ತಿ.';
 
   @override
-  String get classAlertJoin => 'Join class';
+  String get classAlertJoin => 'ತರಗತಿಗೆ ಸೇರಿ';
 
   @override
-  String get classAlertNotNow => 'Not now';
+  String get classAlertNotNow => 'ಈಗ ಬೇಡ';
 
   @override
-  String get homeTitle => 'Home';
+  String get homeTitle => 'ಮುಖಪುಟ';
 
   @override
-  String get homeChecking => 'Checking for your class.';
+  String get homeChecking => 'ನಿಮ್ಮ ತರಗತಿಗಾಗಿ ಪರಿಶೀಲಿಸಲಾಗುತ್ತಿದೆ.';
 
   @override
   String get homeOffline =>
-      'No internet. Your class will appear when you are back online.';
+      'ಇಂಟರ್ನೆಟ್ ಇಲ್ಲ. ನೀವು ಮತ್ತೆ ಆನ್‌ಲೈನ್ ಬಂದಾಗ ನಿಮ್ಮ ತರಗತಿ ಕಾಣಿಸುತ್ತದೆ.';
 
   @override
-  String get homeSignInAgain => 'Please sign in again.';
+  String get homeSignInAgain => 'ದಯವಿಟ್ಟು ಮತ್ತೆ ಸೈನ್ ಇನ್ ಮಾಡಿ.';
 
   @override
-  String get homeStarForAll => 'Press star for all options.';
+  String get homeStarForAll => 'ಎಲ್ಲಾ ಆಯ್ಕೆಗಳಿಗಾಗಿ ಸ್ಟಾರ್ ಒತ್ತಿ.';
 
   @override
   String homeBriefLive(String subject) {
-    return '$subject class is live. Press 1 to join.';
+    return '$subject ತರಗತಿ ಲೈವ್ ಆಗಿದೆ. ಸೇರಲು 1 ಒತ್ತಿ.';
   }
 
   @override
   String homeBriefNext(String subject, String time) {
-    return 'Next class: $subject at $time. You can use other options while you wait.';
+    return 'ಮುಂದಿನ ತರಗತಿ: $time ಕ್ಕೆ $subject. ಕಾಯುತ್ತಿರುವಾಗ ನೀವು ಬೇರೆ ಆಯ್ಕೆಗಳನ್ನು ಬಳಸಬಹುದು.';
   }
 
   @override
   String get homeBriefNoClass =>
-      'No class right now. Press 2 to continue learning.';
+      'ಈಗ ಯಾವುದೇ ತರಗತಿ ಇಲ್ಲ. ಕಲಿಕೆ ಮುಂದುವರಿಸಲು 2 ಒತ್ತಿ.';
 
   @override
   String homeJoinClass(String subject) {
-    return 'Join $subject class';
+    return '$subject ತರಗತಿಗೆ ಸೇರಿ';
   }
 
   @override
-  String get homeNoClassNow => 'No class now';
+  String get homeNoClassNow => 'ಈಗ ತರಗತಿ ಇಲ್ಲ';
 
   @override
   String get homeNoClassReason =>
-      'Your class will appear here by itself when your teacher starts it.';
+      'ನಿಮ್ಮ ಶಿಕ್ಷಕರು ತರಗತಿ ಪ್ರಾರಂಭಿಸಿದಾಗ ಅದು ತಾನಾಗಿಯೇ ಇಲ್ಲಿ ಕಾಣಿಸುತ್ತದೆ.';
 
   @override
   String homeJoinWhenStarts(String subject, String time) {
-    return 'Join $subject automatically when it starts at $time';
+    return '$time ಕ್ಕೆ $subject ಪ್ರಾರಂಭವಾದಾಗ ತಾನಾಗಿಯೇ ಸೇರಿ';
   }
 
   @override
-  String get homeCancelAutoJoin => 'Stop joining automatically';
+  String get homeCancelAutoJoin => 'ತಾನಾಗಿಯೇ ಸೇರುವುದನ್ನು ನಿಲ್ಲಿಸಿ';
 
   @override
   String homeAutoJoinArmed(String subject) {
-    return 'I will open $subject when your teacher starts it, if you stay on this screen. You will join muted. Press 1 to cancel.';
+    return 'ನೀವು ಈ ಪರದೆಯಲ್ಲೇ ಇದ್ದರೆ, ನಿಮ್ಮ ಶಿಕ್ಷಕರು ಪ್ರಾರಂಭಿಸಿದಾಗ ನಾನು $subject ತೆರೆಯುತ್ತೇನೆ. ನೀವು ಮ್ಯೂಟ್ ಆಗಿ ಸೇರುತ್ತೀರಿ. ರದ್ದುಮಾಡಲು 1 ಒತ್ತಿ.';
   }
 
   @override
-  String get homeAutoJoinCancelled => 'Automatic joining cancelled.';
+  String get homeAutoJoinCancelled => 'ತಾನಾಗಿಯೇ ಸೇರುವುದನ್ನು ರದ್ದುಮಾಡಲಾಗಿದೆ.';
 
   @override
   String get homeAutoJoinLeft =>
-      'Automatic joining stopped because you left the home screen.';
+      'ನೀವು ಮುಖಪುಟದಿಂದ ಹೊರಬಂದ ಕಾರಣ ತಾನಾಗಿಯೇ ಸೇರುವುದು ನಿಂತಿದೆ.';
 
   @override
   String homeAutoJoined(String subject) {
-    return '$subject has started. Joining you now, muted.';
+    return '$subject ಪ್ರಾರಂಭವಾಗಿದೆ. ನಿಮ್ಮನ್ನು ಈಗ ಮ್ಯೂಟ್ ಆಗಿ ಸೇರಿಸಲಾಗುತ್ತಿದೆ.';
   }
 
   @override
-  String get homeReturningToClass => 'Returning to your class.';
+  String get homeReturningToClass => 'ನಿಮ್ಮ ತರಗತಿಗೆ ಮರಳುತ್ತಿದ್ದೇವೆ.';
 
   @override
-  String get homeContinueLearning => 'Continue learning';
+  String get homeContinueLearning => 'ಕಲಿಕೆ ಮುಂದುವರಿಸಿ';
 
   @override
   String get homeNothingToContinue =>
-      'Nothing to continue yet. Press 3 for learning journeys.';
+      'ಮುಂದುವರಿಸಲು ಇನ್ನೂ ಏನೂ ಇಲ್ಲ. ಕಲಿಕೆಯ ಪಯಣಗಳಿಗಾಗಿ 3 ಒತ್ತಿ.';
 
   @override
   String homeContinuing(String title) {
-    return 'Continuing $title.';
+    return '$title ಮುಂದುವರಿಸಲಾಗುತ್ತಿದೆ.';
   }
 
   @override
-  String get homeJourneys => 'Learning journeys';
+  String get homeJourneys => 'ಕಲಿಕೆಯ ಪಯಣಗಳು';
 
   @override
-  String get homeQuizzes => 'Quizzes';
+  String get homeQuizzes => 'ಕ್ವಿಜ್‌ಗಳು';
 
   @override
-  String get homeMore => 'More';
+  String get homeMore => 'ಇನ್ನಷ್ಟು';
 
   @override
-  String get homeMoreBrief => 'Less used options.';
+  String get homeMoreBrief => 'ಕಡಿಮೆ ಬಳಸುವ ಆಯ್ಕೆಗಳು.';
 
   @override
   String homeYourClass(String className) {
-    return 'Your class: $className.';
+    return 'ನಿಮ್ಮ ತರಗತಿ: $className.';
   }
 
   @override
@@ -14532,235 +14624,238 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String teacherHomeBriefLive(String subject) {
-    return 'Your $subject class is live. Press 1 to return to it.';
+    return 'ನಿಮ್ಮ $subject ತರಗತಿ ಲೈವ್ ಆಗಿದೆ. ಅದಕ್ಕೆ ಹಿಂತಿರುಗಲು 1 ಒತ್ತಿ.';
   }
 
   @override
   String teacherHomeBriefReady(String place) {
-    return '$place is ready. Press 1 to start it.';
+    return '$place ಸಿದ್ಧವಾಗಿದೆ. ಅದನ್ನು ಪ್ರಾರಂಭಿಸಲು 1 ಒತ್ತಿ.';
   }
 
   @override
   String teacherHomeBriefNext(String place, String time) {
-    return 'Next class: $place at $time.';
+    return 'ಮುಂದಿನ ತರಗತಿ: $place, $time ಕ್ಕೆ.';
   }
 
   @override
-  String get teacherHomeBriefNoClass => 'No class on your timetable now.';
+  String get teacherHomeBriefNoClass =>
+      'ಈಗ ನಿಮ್ಮ ವೇಳಾಪಟ್ಟಿಯಲ್ಲಿ ಯಾವುದೇ ತರಗತಿ ಇಲ್ಲ.';
 
   @override
   String teacherHomeReturn(String subject) {
-    return 'Return to $subject class';
+    return '$subject ತರಗತಿಗೆ ಹಿಂತಿರುಗಿ';
   }
 
   @override
   String teacherHomeStart(String place) {
-    return 'Start $place';
+    return '$place ಪ್ರಾರಂಭಿಸಿ';
   }
 
   @override
   String teacherHomeNext(String place, String time) {
-    return 'Next: $place at $time';
+    return 'ಮುಂದಿನದು: $place, $time ಕ್ಕೆ';
   }
 
   @override
   String teacherHomeOpensAt(String time) {
-    return 'You can start it from $time.';
+    return 'ನೀವು ಇದನ್ನು $time ರಿಂದ ಪ್ರಾರಂಭಿಸಬಹುದು.';
   }
 
   @override
   String get teacherHomeNoClassReason =>
-      'Nothing is scheduled now. To teach anyway, press 5 for More, then 3.';
+      'ಈಗ ಯಾವುದೂ ನಿಗದಿಯಾಗಿಲ್ಲ. ಆದರೂ ಕಲಿಸಲು, ಇನ್ನಷ್ಟು ಆಯ್ಕೆಗಳಿಗಾಗಿ 5 ಒತ್ತಿ, ನಂತರ 3.';
 
   @override
-  String get teacherHomeStarting => 'Starting your class.';
+  String get teacherHomeStarting => 'ನಿಮ್ಮ ತರಗತಿ ಪ್ರಾರಂಭವಾಗುತ್ತಿದೆ.';
 
   @override
   String teacherHomeStarted(String subject) {
-    return '$subject class started. Your students are being called.';
+    return '$subject ತರಗತಿ ಪ್ರಾರಂಭವಾಗಿದೆ. ನಿಮ್ಮ ವಿದ್ಯಾರ್ಥಿಗಳನ್ನು ಕರೆಯಲಾಗುತ್ತಿದೆ.';
   }
 
   @override
-  String get teacherHomeUnscheduled => 'Start an unscheduled class';
+  String get teacherHomeUnscheduled => 'ನಿಗದಿಯಾಗದ ತರಗತಿ ಪ್ರಾರಂಭಿಸಿ';
 
   @override
   String get teacherHomeUnscheduledTitle =>
-      'Which class do you want to teach now?';
+      'ಈಗ ನೀವು ಯಾವ ತರಗತಿಗೆ ಕಲಿಸಲು ಬಯಸುತ್ತೀರಿ?';
 
   @override
   String get teacherHomeAlreadyLive =>
-      'You already have a live class. Press 1 on Home to return to it.';
+      'ನಿಮ್ಮ ಒಂದು ತರಗತಿ ಈಗಾಗಲೇ ಲೈವ್ ಆಗಿದೆ. ಅದಕ್ಕೆ ಹಿಂತಿರುಗಲು ಹೋಮ್‌ನಲ್ಲಿ 1 ಒತ್ತಿ.';
 
   @override
-  String get teacherHomeChangeWorkspace =>
-      'Change class and subject for lessons';
+  String get teacherHomeChangeWorkspace => 'ಪಾಠಗಳಿಗಾಗಿ ತರಗತಿ ಮತ್ತು ವಿಷಯ ಬದಲಿಸಿ';
 
   @override
-  String get teacherHomeOneWorkspace => 'You teach one class and subject.';
+  String get teacherHomeOneWorkspace =>
+      'ನೀವು ಒಂದು ತರಗತಿ ಮತ್ತು ವಿಷಯವನ್ನು ಕಲಿಸುತ್ತೀರಿ.';
 
   @override
   String teacherHomeContentFor(String place) {
-    return 'Lessons, quizzes and playlists are for $place.';
+    return 'ಪಾಠಗಳು, ಕ್ವಿಜ್‌ಗಳು ಮತ್ತು ಪ್ಲೇಲಿಸ್ಟ್‌ಗಳು $place ಗಾಗಿ.';
   }
 
   @override
   String teacherHomeLaterItem(String place, String time) {
-    return 'Later: $place at $time.';
+    return 'ನಂತರ: $place, $time ಕ್ಕೆ.';
   }
 
   @override
   String get keyClassListWhoJoined =>
-      'Class list: who is here, who left, who has not joined';
+      'ತರಗತಿ ಪಟ್ಟಿ: ಯಾರು ಇದ್ದಾರೆ, ಯಾರು ಹೊರಟರು, ಯಾರು ಸೇರಿಲ್ಲ';
 
   @override
-  String get keyMuteAllStudents => 'Mute all students';
+  String get keyMuteAllStudents => 'ಎಲ್ಲಾ ವಿದ್ಯಾರ್ಥಿಗಳನ್ನು ಮ್ಯೂಟ್ ಮಾಡಿ';
 
   @override
   String get keyTeacherToolsAddTimeOrEnd =>
-      'Teacher tools: add time or end the class for everyone';
+      'ಶಿಕ್ಷಕರ ಉಪಕರಣಗಳು: ಸಮಯ ಸೇರಿಸಿ ಅಥವಾ ಎಲ್ಲರಿಗೂ ತರಗತಿ ಮುಗಿಸಿ';
 
   @override
   String get sessionMicAskOnce =>
-      'You join muted. SEEDS will now ask to use the microphone, so you can speak when you choose.';
+      'ನೀವು ಮ್ಯೂಟ್ ಆಗಿ ಸೇರುತ್ತೀರಿ. ನೀವು ಬಯಸಿದಾಗ ಮಾತನಾಡಲು ಸಾಧ್ಯವಾಗುವಂತೆ SEEDS ಈಗ ಮೈಕ್ರೊಫೋನ್ ಬಳಸಲು ಅನುಮತಿ ಕೇಳುತ್ತದೆ.';
 
   @override
-  String get sessionMicAskAgain => 'To speak, allow the microphone.';
+  String get sessionMicAskAgain => 'ಮಾತನಾಡಲು, ಮೈಕ್ರೊಫೋನ್‌ಗೆ ಅನುಮತಿ ನೀಡಿ.';
 
   @override
   String get sessionMicStillOff =>
-      'The microphone is still off. You can keep listening.';
+      'ಮೈಕ್ರೊಫೋನ್ ಇನ್ನೂ ಆಫ್ ಆಗಿದೆ. ನೀವು ಕೇಳುತ್ತಲೇ ಇರಬಹುದು.';
 
   @override
-  String get sessionMicSettingsTitle => 'Microphone is blocked';
+  String get sessionMicSettingsTitle => 'ಮೈಕ್ರೊಫೋನ್ ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ';
 
   @override
   String get sessionMicSettingsMessage =>
-      'Android will not ask again. To speak, open Settings, choose Permissions, and allow the microphone. You can keep listening.';
+      'Android ಮತ್ತೆ ಕೇಳುವುದಿಲ್ಲ. ಮಾತನಾಡಲು, ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ತೆರೆಯಿರಿ, ಅನುಮತಿಗಳನ್ನು ಆಯ್ಕೆ ಮಾಡಿ, ಮತ್ತು ಮೈಕ್ರೊಫೋನ್‌ಗೆ ಅನುಮತಿ ನೀಡಿ. ನೀವು ಕೇಳುತ್ತಲೇ ಇರಬಹುದು.';
 
   @override
-  String get sessionMicSettingsOpen => 'Open settings';
+  String get sessionMicSettingsOpen => 'ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ತೆರೆಯಿರಿ';
 
   @override
-  String get sessionMicSettingsCancel => 'Keep listening';
+  String get sessionMicSettingsCancel => 'ಕೇಳುತ್ತಲೇ ಇರಿ';
 
   @override
-  String get sessionMuteAllButton => '3: Mute all students';
+  String get sessionMuteAllButton => '3: ಎಲ್ಲಾ ವಿದ್ಯಾರ್ಥಿಗಳನ್ನು ಮ್ಯೂಟ್ ಮಾಡಿ';
 
   @override
-  String get sessionMuteAllLabel => 'Mute all students';
+  String get sessionMuteAllLabel => 'ಎಲ್ಲಾ ವಿದ್ಯಾರ್ಥಿಗಳನ್ನು ಮ್ಯೂಟ್ ಮಾಡಿ';
 
   @override
-  String get sessionMuteAllWaiting => 'Still muting everyone. Please wait.';
+  String get sessionMuteAllWaiting =>
+      'ಇನ್ನೂ ಎಲ್ಲರನ್ನೂ ಮ್ಯೂಟ್ ಮಾಡಲಾಗುತ್ತಿದೆ. ದಯವಿಟ್ಟು ಕಾಯಿರಿ.';
 
   @override
   String sessionMuteAllDone(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count students muted.',
-      one: '1 student muted.',
+      other: '$count ವಿದ್ಯಾರ್ಥಿಗಳನ್ನು ಮ್ಯೂಟ್ ಮಾಡಲಾಗಿದೆ.',
+      one: '1 ವಿದ್ಯಾರ್ಥಿಯನ್ನು ಮ್ಯೂಟ್ ಮಾಡಲಾಗಿದೆ.',
     );
     return '$_temp0';
   }
 
   @override
-  String get sessionMuteAllNone => 'Every student was already muted.';
+  String get sessionMuteAllNone =>
+      'ಪ್ರತಿಯೊಬ್ಬ ವಿದ್ಯಾರ್ಥಿಯೂ ಈಗಾಗಲೇ ಮ್ಯೂಟ್ ಆಗಿದ್ದರು.';
 
   @override
   String sessionMuteAllNotConfirmed(String reason) {
-    return 'Muting everyone was not confirmed. $reason Press 3 to try again.';
+    return 'ಎಲ್ಲರನ್ನೂ ಮ್ಯೂಟ್ ಮಾಡಿರುವುದು ಖಚಿತವಾಗಿಲ್ಲ. $reason ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಲು 3 ಒತ್ತಿ.';
   }
 
   @override
-  String get sessionClassListButton => '4: Class list';
+  String get sessionClassListButton => '4: ತರಗತಿ ಪಟ್ಟಿ';
 
   @override
   String sessionClassListLabel(String people) {
-    return 'Class list. $people';
+    return 'ತರಗತಿ ಪಟ್ಟಿ. $people';
   }
 
   @override
-  String get sessionClassListTitle => 'Class list';
+  String get sessionClassListTitle => 'ತರಗತಿ ಪಟ್ಟಿ';
 
   @override
   String sessionRosterCounts(int here, int left, int notJoined) {
-    return '$here here, $left left, $notJoined not joined yet.';
+    return '$here ಇಲ್ಲಿದ್ದಾರೆ, $left ಹೊರಹೋಗಿದ್ದಾರೆ, $notJoined ಇನ್ನೂ ಸೇರಿಲ್ಲ.';
   }
 
   @override
   String sessionHereNow(int count) {
-    return 'Here now: $count';
+    return 'ಈಗ ಇಲ್ಲಿದ್ದಾರೆ: $count';
   }
 
   @override
   String sessionLeftClass(int count) {
-    return 'Joined, then left: $count';
+    return 'ಸೇರಿ, ನಂತರ ಹೊರಹೋದವರು: $count';
   }
 
   @override
   String sessionNotJoined(int count) {
-    return 'Not joined yet: $count';
+    return 'ಇನ್ನೂ ಸೇರಿಲ್ಲ: $count';
   }
 
   @override
-  String get sessionHereNowTitle => 'Here now';
+  String get sessionHereNowTitle => 'ಈಗ ಇಲ್ಲಿದ್ದಾರೆ';
 
   @override
-  String get sessionLeftClassTitle => 'Joined, then left';
+  String get sessionLeftClassTitle => 'ಸೇರಿ, ನಂತರ ಹೊರಹೋದವರು';
 
   @override
-  String get sessionNotJoinedTitle => 'Not joined yet';
+  String get sessionNotJoinedTitle => 'ಇನ್ನೂ ಸೇರಿಲ್ಲ';
 
   @override
   String sessionRemovedName(String name) {
-    return '$name, removed by you';
+    return '$name, ನೀವು ತೆಗೆದುಹಾಕಿದ್ದೀರಿ';
   }
 
   @override
-  String get sessionNobody => 'Nobody.';
+  String get sessionNobody => 'ಯಾರೂ ಇಲ್ಲ.';
 
   @override
-  String get sessionRemindNotJoined => 'Ring students who have not joined';
+  String get sessionRemindNotJoined => 'ಸೇರದ ವಿದ್ಯಾರ್ಥಿಗಳಿಗೆ ರಿಂಗ್ ಮಾಡಿ';
 
   @override
-  String get sessionEveryoneJoined => 'Everyone has joined.';
+  String get sessionEveryoneJoined => 'ಎಲ್ಲರೂ ಸೇರಿದ್ದಾರೆ.';
 
   @override
   String sessionReminderSent(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Ringing $count students.',
-      one: 'Ringing 1 student.',
-      zero: 'Nobody to ring now.',
+      other: '$count ವಿದ್ಯಾರ್ಥಿಗಳಿಗೆ ರಿಂಗ್ ಮಾಡಲಾಗುತ್ತಿದೆ.',
+      one: '1 ವಿದ್ಯಾರ್ಥಿಗೆ ರಿಂಗ್ ಮಾಡಲಾಗುತ್ತಿದೆ.',
+      zero: 'ಈಗ ರಿಂಗ್ ಮಾಡಲು ಯಾರೂ ಇಲ್ಲ.',
     );
     return '$_temp0';
   }
 
   @override
   String sessionReminderSentSomeWaiting(int queued, int cooling) {
-    return 'Ringing $queued. $cooling were rung in the last 5 minutes and will not be rung again yet.';
+    return '$queued ಜನರಿಗೆ ರಿಂಗ್ ಮಾಡಲಾಗುತ್ತಿದೆ. $cooling ಜನರಿಗೆ ಕಳೆದ 5 ನಿಮಿಷಗಳಲ್ಲಿ ರಿಂಗ್ ಮಾಡಲಾಗಿದೆ, ಅವರಿಗೆ ಸದ್ಯಕ್ಕೆ ಮತ್ತೆ ರಿಂಗ್ ಮಾಡಲಾಗುವುದಿಲ್ಲ.';
   }
 
   @override
   String get sessionRosterUnavailable =>
-      'The class list could not be read. Try again.';
+      'ತರಗತಿ ಪಟ್ಟಿಯನ್ನು ಓದಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
-  String get sessionAddTime => 'Add 15 minutes';
+  String get sessionAddTime => '15 ನಿಮಿಷ ಸೇರಿಸಿ';
 
   @override
   String get sessionCannotAddTime =>
-      'No more time can be added before the next class.';
+      'ಮುಂದಿನ ತರಗತಿಗೆ ಮೊದಲು ಇನ್ನು ಸಮಯ ಸೇರಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ.';
 
   @override
   String sessionEndsBy(String clock) {
-    return 'Class ends by $clock.';
+    return 'ತರಗತಿ $clock ರೊಳಗೆ ಮುಗಿಯುತ್ತದೆ.';
   }
 
   @override
   String sessionExtendedUntil(String clock) {
-    return 'Done. The class now ends by $clock.';
+    return 'ಆಯಿತು. ತರಗತಿ ಈಗ $clock ರೊಳಗೆ ಮುಗಿಯುತ್ತದೆ.';
   }
 
   @override
@@ -14768,8 +14863,8 @@ class AppLocalizationsKn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       minutes,
       locale: localeName,
-      other: 'The class ends automatically in $minutes minutes.',
-      one: 'The class ends automatically in 1 minute.',
+      other: 'ತರಗತಿ $minutes ನಿಮಿಷಗಳಲ್ಲಿ ತಾನಾಗಿಯೇ ಮುಗಿಯುತ್ತದೆ.',
+      one: 'ತರಗತಿ 1 ನಿಮಿಷದಲ್ಲಿ ತಾನಾಗಿಯೇ ಮುಗಿಯುತ್ತದೆ.',
     );
     return '$_temp0';
   }
@@ -14780,9 +14875,9 @@ class AppLocalizationsKn extends AppLocalizations {
       minutes,
       locale: localeName,
       other:
-          'The class ends automatically in $minutes minutes. To add 15 minutes, press 7 then 1.',
+          'ತರಗತಿ $minutes ನಿಮಿಷಗಳಲ್ಲಿ ತಾನಾಗಿಯೇ ಮುಗಿಯುತ್ತದೆ. 15 ನಿಮಿಷ ಸೇರಿಸಲು, 7 ನಂತರ 1 ಒತ್ತಿ.',
       one:
-          'The class ends automatically in 1 minute. To add 15 minutes, press 7 then 1.',
+          'ತರಗತಿ 1 ನಿಮಿಷದಲ್ಲಿ ತಾನಾಗಿಯೇ ಮುಗಿಯುತ್ತದೆ. 15 ನಿಮಿಷ ಸೇರಿಸಲು, 7 ನಂತರ 1 ಒತ್ತಿ.',
     );
     return '$_temp0';
   }
@@ -14792,87 +14887,88 @@ class AppLocalizationsKn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       minutes,
       locale: localeName,
-      other: 'The class ends in $minutes minutes.',
-      one: 'The class ends in 1 minute.',
+      other: 'ತರಗತಿ $minutes ನಿಮಿಷಗಳಲ್ಲಿ ಮುಗಿಯುತ್ತದೆ.',
+      one: 'ತರಗತಿ 1 ನಿಮಿಷದಲ್ಲಿ ಮುಗಿಯುತ್ತದೆ.',
     );
     return '$_temp0';
   }
 
   @override
   String get sessionLessonReady =>
-      'Today\'s lesson is ready. Press 5, then 3, to play it for the class.';
+      'ಇಂದಿನ ಪಾಠ ಸಿದ್ಧವಾಗಿದೆ. ತರಗತಿಗೆ ಪ್ಲೇ ಮಾಡಲು 5, ನಂತರ 3 ಒತ್ತಿ.';
 
   @override
   String get sessionLessonNextReady =>
-      'The next part of today\'s lesson is ready. Press 6 to play it.';
+      'ಇಂದಿನ ಪಾಠದ ಮುಂದಿನ ಭಾಗ ಸಿದ್ಧವಾಗಿದೆ. ಪ್ಲೇ ಮಾಡಲು 6 ಒತ್ತಿ.';
 
   @override
   String get sessionJoinedStudentBrief =>
-      'You are in class and muted. Press 1 to speak, 2 to raise your hand.';
+      'ನೀವು ತರಗತಿಯಲ್ಲಿದ್ದೀರಿ ಮತ್ತು ಮ್ಯೂಟ್ ಆಗಿದ್ದೀರಿ. ಮಾತನಾಡಲು 1, ಕೈ ಎತ್ತಲು 2 ಒತ್ತಿ.';
 
   @override
   String get sessionJoinedTeacherBrief =>
-      'Your class is live. You are muted. Press 1 to speak, 3 to mute all students.';
+      'ನಿಮ್ಮ ತರಗತಿ ಲೈವ್ ಆಗಿದೆ. ನೀವು ಮ್ಯೂಟ್ ಆಗಿದ್ದೀರಿ. ಮಾತನಾಡಲು 1, ಎಲ್ಲಾ ವಿದ್ಯಾರ್ಥಿಗಳನ್ನು ಮ್ಯೂಟ್ ಮಾಡಲು 3 ಒತ್ತಿ.';
 
   @override
-  String get sessionStarForKeys => 'Press star for all keys.';
+  String get sessionStarForKeys => 'ಎಲ್ಲಾ ಕೀಗಳಿಗಾಗಿ ಸ್ಟಾರ್ ಒತ್ತಿ.';
 
   @override
   String settingsAutoDownload(String state) {
-    return 'Prepare new journeys for offline use on Wi-Fi: $state';
+    return 'Wi-Fi ನಲ್ಲಿ ಹೊಸ ಪಯಣಗಳನ್ನು ಆಫ್‌ಲೈನ್ ಬಳಕೆಗೆ ಸಿದ್ಧಪಡಿಸಿ: $state';
   }
 
   @override
-  String get settingsAutoDownloadOn => 'Journeys will be prepared on Wi-Fi.';
+  String get settingsAutoDownloadOn =>
+      'ಪಯಣಗಳನ್ನು Wi-Fi ನಲ್ಲಿ ಸಿದ್ಧಪಡಿಸಲಾಗುತ್ತದೆ.';
 
   @override
   String get settingsAutoDownloadOff =>
-      'Journeys will not be prepared automatically.';
+      'ಪಯಣಗಳನ್ನು ತಾನಾಗಿಯೇ ಸಿದ್ಧಪಡಿಸಲಾಗುವುದಿಲ್ಲ.';
 
   @override
   String get adminSetupTeacherNeedsPair =>
-      'Add at least one class and subject for the teacher.';
+      'ಶಿಕ್ಷಕರಿಗೆ ಕನಿಷ್ಠ ಒಂದು ತರಗತಿ ಮತ್ತು ವಿಷಯವನ್ನು ಸೇರಿಸಿ.';
 
   @override
   String get adminSetupTeacherHasNoPairs =>
-      'No teacher has a class and subject yet. Add them to a teacher in People first.';
+      'ಇನ್ನೂ ಯಾವ ಶಿಕ್ಷಕರಿಗೂ ತರಗತಿ ಮತ್ತು ವಿಷಯ ಇಲ್ಲ. ಮೊದಲು ಜನರು ವಿಭಾಗದಲ್ಲಿ ಶಿಕ್ಷಕರಿಗೆ ಅವುಗಳನ್ನು ಸೇರಿಸಿ.';
 
   @override
-  String get adminSetupDaysField => 'Days';
+  String get adminSetupDaysField => 'ದಿನಗಳು';
 
   @override
-  String get adminSetupChooseDays => 'Choose at least one day.';
+  String get adminSetupChooseDays => 'ಕನಿಷ್ಠ ಒಂದು ದಿನವನ್ನು ಆಯ್ಕೆ ಮಾಡಿ.';
 
   @override
   String adminSetupLessonsAdded(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count lessons added, one for each day.',
-      one: 'Lesson added.',
+      other: '$count ಪಾಠಗಳನ್ನು ಸೇರಿಸಲಾಗಿದೆ, ಪ್ರತಿ ದಿನಕ್ಕೆ ಒಂದು.',
+      one: 'ಪಾಠ ಸೇರಿಸಲಾಗಿದೆ.',
     );
     return '$_temp0';
   }
 
   @override
-  String get adminSetupArrangeBy => 'Arrange by';
+  String get adminSetupArrangeBy => 'ಹೀಗೆ ಜೋಡಿಸಿ';
 
   @override
-  String get adminSetupArrangeDay => 'Day';
+  String get adminSetupArrangeDay => 'ದಿನ';
 
   @override
-  String get adminSetupArrangeTeacher => 'Teacher';
+  String get adminSetupArrangeTeacher => 'ಶಿಕ್ಷಕರು';
 
   @override
-  String get adminSetupArrangeClass => 'Class';
+  String get adminSetupArrangeClass => 'ತರಗತಿ';
 
   @override
   String adminSetupGroupHeading(String name, int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count lessons',
-      one: '1 lesson',
+      other: '$count ಪಾಠಗಳು',
+      one: '1 ಪಾಠ',
     );
     return '$name · $_temp0';
   }
@@ -14883,304 +14979,304 @@ class AppLocalizationsKn extends AppLocalizations {
   }
 
   @override
-  String get adminSetupTimetableSearch => 'Search lessons';
+  String get adminSetupTimetableSearch => 'ಪಾಠಗಳನ್ನು ಹುಡುಕಿ';
 
   @override
-  String get adminSetupNoMatchingLessons => 'No lessons match.';
+  String get adminSetupNoMatchingLessons => 'ಯಾವುದೇ ಪಾಠಗಳು ಹೊಂದುತ್ತಿಲ್ಲ.';
 
   @override
-  String get sessionMoreButton => '7: More';
+  String get sessionMoreButton => '7: ಇನ್ನಷ್ಟು';
 
   @override
-  String get sessionMoreLabel => 'More options';
+  String get sessionMoreLabel => 'ಇನ್ನಷ್ಟು ಆಯ್ಕೆಗಳು';
 
   @override
-  String get sessionMoreTitle => 'More options';
+  String get sessionMoreTitle => 'ಇನ್ನಷ್ಟು ಆಯ್ಕೆಗಳು';
 
   @override
-  String get sessionMoreClassroomCheck => 'Classroom check';
+  String get sessionMoreClassroomCheck => 'ತರಗತಿ ಪರಿಶೀಲನೆ';
 
   @override
-  String get sessionMoreStatus => 'Class status';
+  String get sessionMoreStatus => 'ತರಗತಿಯ ಸ್ಥಿತಿ';
 
   @override
-  String get sessionMoreWhatIsPlaying => 'What is playing';
+  String get sessionMoreWhatIsPlaying => 'ಏನು ಪ್ಲೇ ಆಗುತ್ತಿದೆ';
 
   @override
-  String get sessionMoreWhoIsHere => 'Who is in class';
+  String get sessionMoreWhoIsHere => 'ತರಗತಿಯಲ್ಲಿ ಯಾರಿದ್ದಾರೆ';
 
   @override
-  String get sessionKeyRaisedHands => 'Raised hands';
+  String get sessionKeyRaisedHands => 'ಎತ್ತಿದ ಕೈಗಳು';
 
   @override
-  String get sessionKeyClassList => 'Class list';
+  String get sessionKeyClassList => 'ತರಗತಿ ಪಟ್ಟಿ';
 
   @override
-  String get sessionKeyLessonRecording => 'Lesson recording';
+  String get sessionKeyLessonRecording => 'ಪಾಠದ ರೆಕಾರ್ಡಿಂಗ್';
 
   @override
-  String get sessionKeyAnswerQuestion => 'Answer the question';
+  String get sessionKeyAnswerQuestion => 'ಪ್ರಶ್ನೆಗೆ ಉತ್ತರಿಸಿ';
 
   @override
-  String get sessionKeyMore => 'More options';
+  String get sessionKeyMore => 'ಇನ್ನಷ್ಟು ಆಯ್ಕೆಗಳು';
 
   @override
-  String get sessionKeyLeave => 'Leave class';
+  String get sessionKeyLeave => 'ತರಗತಿಯಿಂದ ಹೊರಬನ್ನಿ';
 
   @override
-  String get sessionEndClassButton => '8: End class for everyone';
+  String get sessionEndClassButton => '8: ಎಲ್ಲರಿಗೂ ತರಗತಿ ಮುಗಿಸಿ';
 
   @override
-  String get sessionEndClassLabel => 'End class for everyone. Asks to confirm';
+  String get sessionEndClassLabel =>
+      'ಎಲ್ಲರಿಗೂ ತರಗತಿ ಮುಗಿಸಿ. ಖಚಿತಪಡಿಸಲು ಕೇಳುತ್ತದೆ';
 
   @override
   String sessionActivityQuizItem(String title, int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count questions',
-      one: '1 question',
+      other: '$count ಪ್ರಶ್ನೆಗಳು',
+      one: '1 ಪ್ರಶ್ನೆ',
     );
-    return 'Quiz: $title, $_temp0';
+    return 'ಕ್ವಿಜ್: $title, $_temp0';
   }
 
   @override
   String sessionActivityJourneyItem(String title) {
-    return 'Journey: $title';
+    return 'ಪಯಣ: $title';
   }
 
   @override
   String sessionActivityStopItem(String title) {
-    return 'Stop offering $title';
+    return '$title ನೀಡುವುದನ್ನು ನಿಲ್ಲಿಸಿ';
   }
 
   @override
   String sessionActivityStartedTeacher(String title) {
-    return '$title is open for the class. Press 6 for its status.';
+    return '$title ತರಗತಿಗೆ ತೆರೆದಿದೆ. ಅದರ ಸ್ಥಿತಿಗಾಗಿ 6 ಒತ್ತಿ.';
   }
 
   @override
   String sessionActivityStoppedTeacher(String title) {
-    return '$title is no longer offered in class. Students can still find it on Home.';
+    return '$title ಇನ್ನು ತರಗತಿಯಲ್ಲಿ ನೀಡಲಾಗುತ್ತಿಲ್ಲ. ವಿದ್ಯಾರ್ಥಿಗಳು ಅದನ್ನು ಇನ್ನೂ ಮುಖಪುಟದಲ್ಲಿ ಕಾಣಬಹುದು.';
   }
 
   @override
   String sessionActivityQuizStarted(String title) {
-    return 'Your teacher started a quiz: $title. Press 4 to begin.';
+    return 'ನಿಮ್ಮ ಶಿಕ್ಷಕರು ಒಂದು ಕ್ವಿಜ್ ಪ್ರಾರಂಭಿಸಿದ್ದಾರೆ: $title. ಪ್ರಾರಂಭಿಸಲು 4 ಒತ್ತಿ.';
   }
 
   @override
   String sessionActivityJourneyStarted(String title) {
-    return 'Your teacher started a journey: $title. Press 4 to begin.';
+    return 'ನಿಮ್ಮ ಶಿಕ್ಷಕರು ಒಂದು ಪಯಣ ಪ್ರಾರಂಭಿಸಿದ್ದಾರೆ: $title. ಪ್ರಾರಂಭಿಸಲು 4 ಒತ್ತಿ.';
   }
 
   @override
   String sessionActivityStoppedStudent(String title) {
-    return '$title is closed in class. You can still find it on Home.';
+    return '$title ತರಗತಿಯಲ್ಲಿ ಮುಚ್ಚಲಾಗಿದೆ. ನೀವು ಅದನ್ನು ಇನ್ನೂ ಮುಖಪುಟದಲ್ಲಿ ಕಾಣಬಹುದು.';
   }
 
   @override
   String sessionActivityStartQuizLabel(String title) {
-    return 'Start the quiz $title';
+    return '$title ಕ್ವಿಜ್ ಪ್ರಾರಂಭಿಸಿ';
   }
 
   @override
   String sessionActivityStartJourneyLabel(String title) {
-    return 'Start the journey $title';
+    return '$title ಪಯಣ ಪ್ರಾರಂಭಿಸಿ';
   }
 
   @override
   String sessionActivityStateStudent(String title) {
-    return '$title is open.';
+    return '$title ತೆರೆದಿದೆ.';
   }
 
   @override
   String sessionActivityStateTeacher(String title) {
-    return '$title is open for the class.';
+    return '$title ತರಗತಿಗೆ ತೆರೆದಿದೆ.';
   }
 
   @override
   String sessionActivityOpening(String title) {
-    return 'Opening $title.';
+    return '$title ತೆರೆಯಲಾಗುತ್ತಿದೆ.';
   }
 
   @override
   String sessionActivityCouldNotOpen(String title) {
-    return '$title could not be opened. Check your connection and try again.';
+    return '$title ತೆರೆಯಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ನಿಮ್ಮ ಸಂಪರ್ಕ ಪರಿಶೀಲಿಸಿ ಮತ್ತು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
   }
 
   @override
-  String get sessionBackInClass => 'Back in class.';
+  String get sessionBackInClass => 'ಮತ್ತೆ ತರಗತಿಯಲ್ಲಿ.';
 
   @override
   String sessionActivityProgress(String title, int started, int finished) {
-    return '$title: $started started, $finished finished.';
+    return '$title: $started ಪ್ರಾರಂಭಿಸಿದ್ದಾರೆ, $finished ಮುಗಿಸಿದ್ದಾರೆ.';
   }
 
   @override
-  String get sessionWhatIsPlayingButton => '3: What is playing';
+  String get sessionWhatIsPlayingButton => '3: ಏನು ಪ್ಲೇ ಆಗುತ್ತಿದೆ';
 
   @override
-  String get sessionKeyEndClass => 'End class for everyone';
+  String get sessionKeyEndClass => 'ಎಲ್ಲರಿಗೂ ತರಗತಿ ಮುಗಿಸಿ';
 
   @override
-  String get sessionKeyWhatIsPlaying => 'What is playing';
+  String get sessionKeyWhatIsPlaying => 'ಏನು ಪ್ಲೇ ಆಗುತ್ತಿದೆ';
 
   @override
-  String get sessionQuizButton => '6: Quiz';
+  String get sessionQuizButton => '6: ಕ್ವಿಜ್';
 
   @override
-  String get sessionJourneyButton => '7: Journey';
+  String get sessionJourneyButton => '7: ಪಯಣ';
 
   @override
-  String get sessionQuizLabel => 'Start a quiz for the class';
+  String get sessionQuizLabel => 'ತರಗತಿಗೆ ಒಂದು ಕ್ವಿಜ್ ಪ್ರಾರಂಭಿಸಿ';
 
   @override
-  String get sessionJourneyLabel => 'Start a journey for the class';
+  String get sessionJourneyLabel => 'ತರಗತಿಗೆ ಒಂದು ಪಯಣ ಪ್ರಾರಂಭಿಸಿ';
 
   @override
   String sessionOpenLabel(String title) {
-    return '$title is open. Hear who is left, remind them, or stop it';
+    return '$title ತೆರೆದಿದೆ. ಯಾರು ಬಾಕಿ ಇದ್ದಾರೆ ಎಂದು ಕೇಳಿ, ಅವರಿಗೆ ನೆನಪಿಸಿ, ಅಥವಾ ಅದನ್ನು ನಿಲ್ಲಿಸಿ';
   }
 
   @override
-  String get sessionKeyQuiz => 'Quiz for the class';
+  String get sessionKeyQuiz => 'ತರಗತಿಗೆ ಕ್ವಿಜ್';
 
   @override
-  String get sessionKeyJourney => 'Journey for the class';
+  String get sessionKeyJourney => 'ತರಗತಿಗೆ ಪಯಣ';
 
   @override
   String sessionStartQuizButton(String title) {
-    return '4: Start quiz: $title';
+    return '4: ಕ್ವಿಜ್ ಪ್ರಾರಂಭಿಸಿ: $title';
   }
 
   @override
   String sessionStartJourneyButton(String title) {
-    return '4: Start journey: $title';
+    return '4: ಪಯಣ ಪ್ರಾರಂಭಿಸಿ: $title';
   }
 
   @override
-  String get sessionPickQuizTitle => 'Start a quiz for the class';
+  String get sessionPickQuizTitle => 'ತರಗತಿಗೆ ಒಂದು ಕ್ವಿಜ್ ಪ್ರಾರಂಭಿಸಿ';
 
   @override
-  String get sessionPickJourneyTitle => 'Start a journey for the class';
+  String get sessionPickJourneyTitle => 'ತರಗತಿಗೆ ಒಂದು ಪಯಣ ಪ್ರಾರಂಭಿಸಿ';
 
   @override
   String get sessionNoQuizToStart =>
-      'No published quiz is open for this class and subject. Publish one from Quizzes on Home first.';
+      'ಈ ತರಗತಿ ಮತ್ತು ವಿಷಯಕ್ಕೆ ಯಾವುದೇ ಪ್ರಕಟಿತ ಕ್ವಿಜ್ ತೆರೆದಿಲ್ಲ. ಮೊದಲು ಮುಖಪುಟದ ಕ್ವಿಜ್‌ಗಳಿಂದ ಒಂದನ್ನು ಪ್ರಕಟಿಸಿ.';
 
   @override
   String get sessionNoJourneyToStart =>
-      'No published journey for this class and subject. Publish one from Journeys on Home first.';
+      'ಈ ತರಗತಿ ಮತ್ತು ವಿಷಯಕ್ಕೆ ಯಾವುದೇ ಪ್ರಕಟಿತ ಪಯಣ ಇಲ್ಲ. ಮೊದಲು ಮುಖಪುಟದ ಪಯಣಗಳಿಂದ ಒಂದನ್ನು ಪ್ರಕಟಿಸಿ.';
 
   @override
   String sessionFinishedOf(int finished, int enrolled) {
-    return '$finished of $enrolled finished.';
+    return '$enrolled ರಲ್ಲಿ $finished ಮುಗಿಸಿದ್ದಾರೆ.';
   }
 
   @override
   String sessionLeftInClass(int count) {
-    return 'In class, not done ($count)';
+    return 'ತರಗತಿಯಲ್ಲಿದ್ದಾರೆ, ಮುಗಿಸಿಲ್ಲ ($count)';
   }
 
   @override
   String sessionLeftWholeClass(int count) {
-    return 'Whole class, not done ($count)';
+    return 'ಇಡೀ ತರಗತಿ, ಮುಗಿಸಿಲ್ಲ ($count)';
   }
 
   @override
-  String get sessionLeftInClassTitle => 'In class, not done';
+  String get sessionLeftInClassTitle => 'ತರಗತಿಯಲ್ಲಿದ್ದಾರೆ, ಮುಗಿಸಿಲ್ಲ';
 
   @override
-  String get sessionLeftWholeClassTitle => 'Whole class, not done';
+  String get sessionLeftWholeClassTitle => 'ಇಡೀ ತರಗತಿ, ಮುಗಿಸಿಲ್ಲ';
 
   @override
-  String get sessionRemindLeft => 'Remind those in class who are not done';
+  String get sessionRemindLeft => 'ತರಗತಿಯಲ್ಲಿದ್ದು ಮುಗಿಸದವರಿಗೆ ನೆನಪಿಸಿ';
 
   @override
-  String get sessionStartDifferentQuiz => 'Start a different quiz';
+  String get sessionStartDifferentQuiz => 'ಬೇರೆ ಕ್ವಿಜ್ ಪ್ರಾರಂಭಿಸಿ';
 
   @override
-  String get sessionStartDifferentJourney => 'Start a different journey';
+  String get sessionStartDifferentJourney => 'ಬೇರೆ ಪಯಣ ಪ್ರಾರಂಭಿಸಿ';
 
   @override
   String sessionLeftNotStarted(String name) {
-    return '$name, not started';
+    return '$name, ಪ್ರಾರಂಭಿಸಿಲ್ಲ';
   }
 
   @override
   String sessionLeftStarted(String name) {
-    return '$name, started, not finished';
+    return '$name, ಪ್ರಾರಂಭಿಸಿದ್ದಾರೆ, ಮುಗಿಸಿಲ್ಲ';
   }
 
   @override
-  String get sessionLeftHere => 'in class';
+  String get sessionLeftHere => 'ತರಗತಿಯಲ್ಲಿದ್ದಾರೆ';
 
   @override
-  String get sessionLeftAway => 'not in class';
+  String get sessionLeftAway => 'ತರಗತಿಯಲ್ಲಿಲ್ಲ';
 
   @override
-  String get sessionLeftNobodyInClass => 'Everyone in class has finished.';
+  String get sessionLeftNobodyInClass => 'ತರಗತಿಯಲ್ಲಿರುವ ಎಲ್ಲರೂ ಮುಗಿಸಿದ್ದಾರೆ.';
 
   @override
-  String get sessionLeftNobody => 'Everyone in the class has finished.';
+  String get sessionLeftNobody => 'ತರಗತಿಯ ಎಲ್ಲರೂ ಮುಗಿಸಿದ್ದಾರೆ.';
 
   @override
   String sessionRemindedLeft(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Reminded $count students.',
-      one: 'Reminded 1 student.',
-      zero: 'Nobody in class needs a reminder.',
+      other: '$count ವಿದ್ಯಾರ್ಥಿಗಳಿಗೆ ನೆನಪಿಸಲಾಗಿದೆ.',
+      one: '1 ವಿದ್ಯಾರ್ಥಿಗೆ ನೆನಪಿಸಲಾಗಿದೆ.',
+      zero: 'ತರಗತಿಯಲ್ಲಿ ಯಾರಿಗೂ ನೆನಪಿಸುವ ಅಗತ್ಯವಿಲ್ಲ.',
     );
     return '$_temp0';
   }
 
   @override
   String sessionActivityReminderQuiz(String title) {
-    return 'Your teacher reminds you to do the quiz $title. Press 4 to begin.';
+    return '$title ಕ್ವಿಜ್ ಮಾಡಲು ನಿಮ್ಮ ಶಿಕ್ಷಕರು ನೆನಪಿಸುತ್ತಿದ್ದಾರೆ. ಪ್ರಾರಂಭಿಸಲು 4 ಒತ್ತಿ.';
   }
 
   @override
   String sessionActivityReminderJourney(String title) {
-    return 'Your teacher reminds you to do the journey $title. Press 4 to begin.';
+    return '$title ಪಯಣ ಮಾಡಲು ನಿಮ್ಮ ಶಿಕ್ಷಕರು ನೆನಪಿಸುತ್ತಿದ್ದಾರೆ. ಪ್ರಾರಂಭಿಸಲು 4 ಒತ್ತಿ.';
   }
 
   @override
-  String get sessionKeyStartActivity => 'Start the quiz or journey';
+  String get sessionKeyStartActivity => 'ಕ್ವಿಜ್ ಅಥವಾ ಪಯಣ ಪ್ರಾರಂಭಿಸಿ';
 
   @override
-  String get startupSettingsKey2 => '2. Settings';
+  String get startupSettingsKey2 => '2. ಸೆಟ್ಟಿಂಗ್‌ಗಳು';
 
   @override
-  String get libraryPauseSessionKey3 =>
-      'Pause audio for the whole session, key 3';
+  String get libraryPauseSessionKey3 => 'ಇಡೀ ಸೆಷನ್‌ಗೆ ಆಡಿಯೋ ವಿರಾಮಗೊಳಿಸಿ, ಕೀ 3';
 
   @override
-  String get authSaveNewPasswordKey1 => '1: Save new password';
+  String get authSaveNewPasswordKey1 => '1: ಹೊಸ ಪಾಸ್‌ವರ್ಡ್ ಉಳಿಸಿ';
 
   @override
-  String get quizSaveSettingsKey1 => '1: Save settings';
+  String get quizSaveSettingsKey1 => '1: ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಉಳಿಸಿ';
 
   @override
-  String get quizSaveQuestionKey1 => '1: Save question';
+  String get quizSaveQuestionKey1 => '1: ಪ್ರಶ್ನೆ ಉಳಿಸಿ';
 
   @override
-  String get quizContinueToQuestionsKey1 => '1: Continue to questions';
+  String get quizContinueToQuestionsKey1 => '1: ಪ್ರಶ್ನೆಗಳಿಗೆ ಮುಂದುವರಿಸಿ';
 
   @override
-  String get adminAuthorSection => 'Quizzes and journeys';
+  String get adminAuthorSection => 'ಕ್ವಿಜ್‌ಗಳು ಮತ್ತು ಪಯಣಗಳು';
 
   @override
   String get adminAuthorNote =>
-      'Create and publish quizzes and learning journeys for a teacher. Everything you make belongs to that teacher, uses only their question bank and their own recordings, and the teacher is told about it on their Home.';
+      'ಶಿಕ್ಷಕರಿಗಾಗಿ ಕ್ವಿಜ್‌ಗಳು ಮತ್ತು ಕಲಿಕೆಯ ಪಯಣಗಳನ್ನು ರಚಿಸಿ ಮತ್ತು ಪ್ರಕಟಿಸಿ. ನೀವು ರಚಿಸುವ ಎಲ್ಲವೂ ಆ ಶಿಕ್ಷಕರಿಗೆ ಸೇರಿರುತ್ತದೆ, ಅವರ ಪ್ರಶ್ನೆ ಬ್ಯಾಂಕ್ ಮತ್ತು ಅವರದೇ ರೆಕಾರ್ಡಿಂಗ್‌ಗಳನ್ನು ಮಾತ್ರ ಬಳಸುತ್ತದೆ, ಮತ್ತು ಶಿಕ್ಷಕರಿಗೆ ಅವರ ಮುಖಪುಟದಲ್ಲಿ ಈ ಬಗ್ಗೆ ತಿಳಿಸಲಾಗುತ್ತದೆ.';
 
   @override
-  String get adminAuthorTeacher => 'Teacher';
+  String get adminAuthorTeacher => 'ಶಿಕ್ಷಕರು';
 
   @override
-  String get adminAuthorWorkspace => 'Class and subject';
+  String get adminAuthorWorkspace => 'ತರಗತಿ ಮತ್ತು ವಿಷಯ';
 
   @override
   String adminAuthorWorkspaceName(String className, String subjectName) {
@@ -15189,59 +15285,59 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get adminAuthorNoTeachers =>
-      'No teacher has a class and subject yet. Assign one in Accounts first.';
+      'ಇನ್ನೂ ಯಾವ ಶಿಕ್ಷಕರಿಗೂ ತರಗತಿ ಮತ್ತು ವಿಷಯ ಇಲ್ಲ. ಮೊದಲು ಖಾತೆಗಳು ವಿಭಾಗದಲ್ಲಿ ಒಂದನ್ನು ನಿಯೋಜಿಸಿ.';
 
   @override
-  String get adminAuthorKind => 'Show';
+  String get adminAuthorKind => 'ತೋರಿಸಿ';
 
   @override
-  String get adminAuthorKindQuizzes => 'Quizzes';
+  String get adminAuthorKindQuizzes => 'ಕ್ವಿಜ್‌ಗಳು';
 
   @override
-  String get adminAuthorKindJourneys => 'Journeys';
+  String get adminAuthorKindJourneys => 'ಪಯಣಗಳು';
 
   @override
-  String get adminAuthorNewQuiz => 'New quiz';
+  String get adminAuthorNewQuiz => 'ಹೊಸ ಕ್ವಿಜ್';
 
   @override
-  String get adminAuthorNewJourney => 'New journey';
+  String get adminAuthorNewJourney => 'ಹೊಸ ಪಯಣ';
 
   @override
   String adminAuthorNewQuizFor(String teacher) {
-    return 'New quiz for $teacher';
+    return '$teacher ಅವರಿಗೆ ಹೊಸ ಕ್ವಿಜ್';
   }
 
   @override
   String adminAuthorNewJourneyFor(String teacher) {
-    return 'New journey for $teacher';
+    return '$teacher ಅವರಿಗೆ ಹೊಸ ಪಯಣ';
   }
 
   @override
   String get adminAuthorNoQuizzes =>
-      'This teacher has no quizzes for this class and subject.';
+      'ಈ ಶಿಕ್ಷಕರಿಗೆ ಈ ತರಗತಿ ಮತ್ತು ವಿಷಯಕ್ಕೆ ಯಾವುದೇ ಕ್ವಿಜ್‌ಗಳಿಲ್ಲ.';
 
   @override
   String get adminAuthorNoJourneys =>
-      'This teacher has no journeys for this class and subject.';
+      'ಈ ಶಿಕ್ಷಕರಿಗೆ ಈ ತರಗತಿ ಮತ್ತು ವಿಷಯಕ್ಕೆ ಯಾವುದೇ ಪಯಣಗಳಿಲ್ಲ.';
 
   @override
-  String get adminAuthorStatusDraft => 'Draft';
+  String get adminAuthorStatusDraft => 'ಕರಡು';
 
   @override
-  String get adminAuthorStatusPublished => 'Published';
+  String get adminAuthorStatusPublished => 'ಪ್ರಕಟಿತ';
 
   @override
-  String get adminAuthorStatusScheduled => 'Published, opens later';
+  String get adminAuthorStatusScheduled => 'ಪ್ರಕಟಿತ, ನಂತರ ತೆರೆಯುತ್ತದೆ';
 
   @override
-  String get adminAuthorStatusClosed => 'Closed';
+  String get adminAuthorStatusClosed => 'ಮುಚ್ಚಲಾಗಿದೆ';
 
   @override
-  String get adminAuthorStatusArchived => 'Archived';
+  String get adminAuthorStatusArchived => 'ಆರ್ಕೈವ್ ಮಾಡಲಾಗಿದೆ';
 
   @override
   String adminAuthorStatusChanged(String status) {
-    return '$status, with unpublished changes';
+    return '$status, ಪ್ರಕಟಿಸದ ಬದಲಾವಣೆಗಳೊಂದಿಗೆ';
   }
 
   @override
@@ -15249,8 +15345,8 @@ class AppLocalizationsKn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count questions',
-      one: '1 question',
+      other: '$count ಪ್ರಶ್ನೆಗಳು',
+      one: '1 ಪ್ರಶ್ನೆ',
     );
     return '$_temp0';
   }
@@ -15260,137 +15356,137 @@ class AppLocalizationsKn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count steps',
-      one: '1 step',
+      other: '$count ಹಂತಗಳು',
+      one: '1 ಹಂತ',
     );
     return '$_temp0';
   }
 
   @override
-  String get adminAuthorMode => 'Quiz type';
+  String get adminAuthorMode => 'ಕ್ವಿಜ್ ಪ್ರಕಾರ';
 
   @override
-  String get adminAuthorModeGraded => 'Graded';
+  String get adminAuthorModeGraded => 'ಅಂಕಸಹಿತ';
 
   @override
-  String get adminAuthorModePractice => 'Practice';
+  String get adminAuthorModePractice => 'ಅಭ್ಯಾಸ';
 
   @override
-  String get adminAuthorEdit => 'Edit';
+  String get adminAuthorEdit => 'ಬದಲಿಸಿ';
 
   @override
   String adminAuthorEditNamed(String title) {
-    return 'Edit $title';
+    return '$title ಸಂಪಾದಿಸಿ';
   }
 
   @override
-  String get adminAuthorPublish => 'Publish';
+  String get adminAuthorPublish => 'ಪ್ರಕಟಿಸಿ';
 
   @override
   String adminAuthorPublishNamed(String title) {
-    return 'Publish $title';
+    return '$title ಪ್ರಕಟಿಸಿ';
   }
 
   @override
-  String get adminAuthorClose => 'Close quiz';
+  String get adminAuthorClose => 'ಕ್ವಿಜ್ ಮುಚ್ಚಿ';
 
   @override
   String adminAuthorCloseNamed(String title) {
-    return 'Close $title';
+    return '$title ಮುಚ್ಚಿ';
   }
 
   @override
-  String get adminAuthorArchive => 'Archive';
+  String get adminAuthorArchive => 'ಆರ್ಕೈವ್ ಮಾಡಿ';
 
   @override
   String adminAuthorArchiveNamed(String title) {
-    return 'Archive $title';
+    return '$title ಆರ್ಕೈವ್ ಮಾಡಿ';
   }
 
   @override
-  String get adminAuthorPublishQuizTitle => 'Publish this quiz?';
+  String get adminAuthorPublishQuizTitle => 'ಈ ಕ್ವಿಜ್ ಪ್ರಕಟಿಸಬೇಕೇ?';
 
   @override
   String adminAuthorPublishQuizMessage(String title, String teacher) {
-    return '$title will open to the class as $teacher\'s quiz, and the students will be notified.';
+    return '$title ತರಗತಿಗೆ $teacher ಅವರ ಕ್ವಿಜ್ ಆಗಿ ತೆರೆಯುತ್ತದೆ, ಮತ್ತು ವಿದ್ಯಾರ್ಥಿಗಳಿಗೆ ತಿಳಿಸಲಾಗುತ್ತದೆ.';
   }
 
   @override
-  String get adminAuthorPublishJourneyTitle => 'Publish this journey?';
+  String get adminAuthorPublishJourneyTitle => 'ಈ ಪಯಣ ಪ್ರಕಟಿಸಬೇಕೇ?';
 
   @override
   String adminAuthorPublishJourneyMessage(String title, String teacher) {
-    return '$title will be available to the class as $teacher\'s journey, and the students will be notified.';
+    return '$title ತರಗತಿಗೆ $teacher ಅವರ ಪಯಣವಾಗಿ ಲಭ್ಯವಿರುತ್ತದೆ, ಮತ್ತು ವಿದ್ಯಾರ್ಥಿಗಳಿಗೆ ತಿಳಿಸಲಾಗುತ್ತದೆ.';
   }
 
   @override
-  String get adminAuthorCloseQuizTitle => 'Close this quiz?';
+  String get adminAuthorCloseQuizTitle => 'ಈ ಕ್ವಿಜ್ ಮುಚ್ಚಬೇಕೇ?';
 
   @override
   String adminAuthorCloseQuizMessage(String title) {
-    return 'Students can no longer answer $title. Unfinished attempts are submitted as they are.';
+    return 'ವಿದ್ಯಾರ್ಥಿಗಳು ಇನ್ನು ಮುಂದೆ $title ಗೆ ಉತ್ತರಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ. ಮುಗಿಯದ ಪ್ರಯತ್ನಗಳನ್ನು ಇದ್ದ ಹಾಗೆಯೇ ಸಲ್ಲಿಸಲಾಗುತ್ತದೆ.';
   }
 
   @override
-  String get adminAuthorArchiveTitle => 'Archive this journey?';
+  String get adminAuthorArchiveTitle => 'ಈ ಪಯಣ ಆರ್ಕೈವ್ ಮಾಡಬೇಕೇ?';
 
   @override
   String adminAuthorArchiveMessage(String title) {
-    return 'Students will no longer see $title.';
+    return 'ವಿದ್ಯಾರ್ಥಿಗಳಿಗೆ ಇನ್ನು ಮುಂದೆ $title ಕಾಣಿಸುವುದಿಲ್ಲ.';
   }
 
   @override
   String adminAuthorPublished(String title) {
-    return '$title published.';
+    return '$title ಪ್ರಕಟಿಸಲಾಗಿದೆ.';
   }
 
   @override
   String adminAuthorClosed(String title) {
-    return '$title closed.';
+    return '$title ಮುಚ್ಚಲಾಗಿದೆ.';
   }
 
   @override
   String adminAuthorArchived(String title) {
-    return '$title archived.';
+    return '$title ಆರ್ಕೈವ್ ಮಾಡಲಾಗಿದೆ.';
   }
 
   @override
   String adminAuthorCreated(String title) {
-    return '$title created as a draft.';
+    return '$title ಕರಡು ಆಗಿ ರಚಿಸಲಾಗಿದೆ.';
   }
 
   @override
-  String get adminAuthorSaved => 'Journey saved.';
+  String get adminAuthorSaved => 'ಪಯಣ ಉಳಿಸಲಾಗಿದೆ.';
 
   @override
   String adminAuthorNotReady(String problems) {
-    return 'This quiz is not ready to publish. $problems';
+    return 'ಈ ಕ್ವಿಜ್ ಪ್ರಕಟಿಸಲು ಸಿದ್ಧವಾಗಿಲ್ಲ. $problems';
   }
 
   @override
-  String get adminAuthorTitle => 'Title';
+  String get adminAuthorTitle => 'ಶೀರ್ಷಿಕೆ';
 
   @override
-  String get adminAuthorDescription => 'Description (optional)';
+  String get adminAuthorDescription => 'ವಿವರಣೆ (ಐಚ್ಛಿಕ)';
 
   @override
-  String get adminAuthorQuizSettings => 'Quiz settings';
+  String get adminAuthorQuizSettings => 'ಕ್ವಿಜ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳು';
 
   @override
   String adminAuthorEditQuiz(String title) {
-    return 'Edit quiz: $title';
+    return 'ಕ್ವಿಜ್ ಸಂಪಾದಿಸಿ: $title';
   }
 
   @override
   String adminAuthorEditJourney(String title) {
-    return 'Edit journey: $title';
+    return 'ಪಯಣ ಸಂಪಾದಿಸಿ: $title';
   }
 
   @override
-  String get adminAuthorQuestions => 'Questions';
+  String get adminAuthorQuestions => 'ಪ್ರಶ್ನೆಗಳು';
 
   @override
-  String get adminAuthorNoQuestions => 'No questions yet.';
+  String get adminAuthorNoQuestions => 'ಇನ್ನೂ ಯಾವುದೇ ಪ್ರಶ್ನೆಗಳಿಲ್ಲ.';
 
   @override
   String adminAuthorQuestionLine(int number, String text) {
@@ -15399,203 +15495,202 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String adminAuthorCorrectAnswer(String answer) {
-    return 'Correct answer: $answer';
+    return 'ಸರಿಯಾದ ಉತ್ತರ: $answer';
   }
 
   @override
-  String get adminAuthorRemove => 'Remove';
+  String get adminAuthorRemove => 'ತೆಗೆದುಹಾಕಿ';
 
   @override
   String adminAuthorRemoveNamed(String item) {
-    return 'Remove $item';
+    return '$item ತೆಗೆದುಹಾಕಿ';
   }
 
   @override
-  String get adminAuthorAddNewQuestion => 'Type a new question';
+  String get adminAuthorAddNewQuestion => 'ಹೊಸ ಪ್ರಶ್ನೆ ಟೈಪ್ ಮಾಡಿ';
 
   @override
-  String get adminAuthorAddBankQuestion => 'Add from question bank';
+  String get adminAuthorAddBankQuestion => 'ಪ್ರಶ್ನೆ ಬ್ಯಾಂಕ್‌ನಿಂದ ಸೇರಿಸಿ';
 
   @override
-  String get adminAuthorQuestionText => 'Question';
+  String get adminAuthorQuestionText => 'ಪ್ರಶ್ನೆ';
 
   @override
   String adminAuthorOption(int number) {
-    return 'Option $number';
+    return 'ಆಯ್ಕೆ $number';
   }
 
   @override
   String adminAuthorOptionalOption(int number) {
-    return 'Option $number (optional)';
+    return 'ಆಯ್ಕೆ $number (ಐಚ್ಛಿಕ)';
   }
 
   @override
-  String get adminAuthorCorrectOption => 'Correct answer';
+  String get adminAuthorCorrectOption => 'ಸರಿಯಾದ ಉತ್ತರ';
 
   @override
   String get adminAuthorCorrectIsBlank =>
-      'The correct answer is blank. Fill it in or choose another option.';
+      'ಸರಿಯಾದ ಉತ್ತರ ಖಾಲಿಯಾಗಿದೆ. ಅದನ್ನು ತುಂಬಿ ಅಥವಾ ಬೇರೆ ಆಯ್ಕೆಯನ್ನು ಆರಿಸಿ.';
 
   @override
-  String get adminAuthorExplanation => 'Explanation (optional)';
+  String get adminAuthorExplanation => 'ವಿವರಣೆ (ಐಚ್ಛಿಕ)';
 
   @override
-  String get adminAuthorSaveToBank =>
-      'Also save to the teacher\'s question bank';
+  String get adminAuthorSaveToBank => 'ಶಿಕ್ಷಕರ ಪ್ರಶ್ನೆ ಬ್ಯಾಂಕ್‌ಗೂ ಉಳಿಸಿ';
 
   @override
-  String get adminAuthorNeedFourOptions => 'Fill in all four options.';
+  String get adminAuthorNeedFourOptions => 'ಎಲ್ಲಾ ನಾಲ್ಕು ಆಯ್ಕೆಗಳನ್ನು ತುಂಬಿ.';
 
   @override
-  String get adminAuthorNeedTwoOptions => 'Fill in at least two options.';
+  String get adminAuthorNeedTwoOptions => 'ಕನಿಷ್ಠ ಎರಡು ಆಯ್ಕೆಗಳನ್ನು ತುಂಬಿ.';
 
   @override
-  String get adminAuthorDuplicateOptions => 'Each option must be different.';
+  String get adminAuthorDuplicateOptions => 'ಪ್ರತಿ ಆಯ್ಕೆಯೂ ಬೇರೆ ಬೇರೆ ಆಗಿರಬೇಕು.';
 
   @override
   String adminAuthorRequired(String field) {
-    return '$field is required.';
+    return '$field ಅಗತ್ಯವಿದೆ.';
   }
 
   @override
-  String get adminAuthorAdd => 'Add';
+  String get adminAuthorAdd => 'ಸೇರಿಸಿ';
 
   @override
   String adminAuthorAddNamed(String item) {
-    return 'Add $item';
+    return '$item ಸೇರಿಸಿ';
   }
 
   @override
-  String get adminAuthorBankTitle => 'Teacher\'s question bank';
+  String get adminAuthorBankTitle => 'ಶಿಕ್ಷಕರ ಪ್ರಶ್ನೆ ಬ್ಯಾಂಕ್';
 
   @override
   String get adminAuthorBankEmpty =>
-      'This teacher has no saved questions for this class and subject.';
+      'ಈ ಶಿಕ್ಷಕರು ಈ ತರಗತಿ ಮತ್ತು ವಿಷಯಕ್ಕೆ ಯಾವುದೇ ಪ್ರಶ್ನೆಗಳನ್ನು ಉಳಿಸಿಲ್ಲ.';
 
   @override
-  String get adminAuthorDone => 'Done';
+  String get adminAuthorDone => 'ಮುಗಿದಿದೆ';
 
   @override
-  String get adminAuthorGraded => 'Graded: score the questions';
+  String get adminAuthorGraded => 'ಅಂಕಸಹಿತ: ಪ್ರಶ್ನೆಗಳಿಗೆ ಅಂಕ ನೀಡಿ';
 
   @override
-  String get adminAuthorRetries => 'Retries after a wrong answer';
+  String get adminAuthorRetries => 'ತಪ್ಪು ಉತ್ತರದ ನಂತರ ಮರುಪ್ರಯತ್ನಗಳು';
 
   @override
-  String get adminAuthorSteps => 'Steps';
+  String get adminAuthorSteps => 'ಹಂತಗಳು';
 
   @override
-  String get adminAuthorNoSteps => 'No steps yet.';
+  String get adminAuthorNoSteps => 'ಇನ್ನೂ ಯಾವುದೇ ಹಂತಗಳಿಲ್ಲ.';
 
   @override
   String adminAuthorStepRecording(String title) {
-    return 'Recording: $title';
+    return 'ರೆಕಾರ್ಡಿಂಗ್: $title';
   }
 
   @override
   String adminAuthorStepNarration(String text) {
-    return 'Narration: $text';
+    return 'ನಿರೂಪಣೆ: $text';
   }
 
   @override
   String adminAuthorStepQuestion(String text) {
-    return 'Question: $text';
+    return 'ಪ್ರಶ್ನೆ: $text';
   }
 
   @override
   String adminAuthorStepPoll(String text) {
-    return 'Poll: $text';
+    return 'ಪೋಲ್: $text';
   }
 
   @override
-  String get adminAuthorMoveUp => 'Move up';
+  String get adminAuthorMoveUp => 'ಮೇಲೆ ಸರಿಸಿ';
 
   @override
   String adminAuthorMoveUpNamed(String item) {
-    return 'Move $item up';
+    return '$item ಮೇಲೆ ಸರಿಸಿ';
   }
 
   @override
-  String get adminAuthorMoveDown => 'Move down';
+  String get adminAuthorMoveDown => 'ಕೆಳಗೆ ಸರಿಸಿ';
 
   @override
   String adminAuthorMoveDownNamed(String item) {
-    return 'Move $item down';
+    return '$item ಕೆಳಗೆ ಸರಿಸಿ';
   }
 
   @override
-  String get adminAuthorAddRecording => 'Add recording';
+  String get adminAuthorAddRecording => 'ರೆಕಾರ್ಡಿಂಗ್ ಸೇರಿಸಿ';
 
   @override
-  String get adminAuthorAddNarration => 'Add narration';
+  String get adminAuthorAddNarration => 'ನಿರೂಪಣೆ ಸೇರಿಸಿ';
 
   @override
-  String get adminAuthorAddQuestion => 'Add question';
+  String get adminAuthorAddQuestion => 'ಪ್ರಶ್ನೆ ಸೇರಿಸಿ';
 
   @override
-  String get adminAuthorAddPoll => 'Add poll';
+  String get adminAuthorAddPoll => 'ಪೋಲ್ ಸೇರಿಸಿ';
 
   @override
-  String get adminAuthorRecordingsTitle => 'Teacher\'s recordings';
+  String get adminAuthorRecordingsTitle => 'ಶಿಕ್ಷಕರ ರೆಕಾರ್ಡಿಂಗ್‌ಗಳು';
 
   @override
   String get adminAuthorRecordingsNote =>
-      'Only recordings this teacher uploaded for this class and subject can be used.';
+      'ಈ ಶಿಕ್ಷಕರು ಈ ತರಗತಿ ಮತ್ತು ವಿಷಯಕ್ಕೆ ಅಪ್‌ಲೋಡ್ ಮಾಡಿದ ರೆಕಾರ್ಡಿಂಗ್‌ಗಳನ್ನು ಮಾತ್ರ ಬಳಸಬಹುದು.';
 
   @override
   String get adminAuthorNoRecordings =>
-      'This teacher has not uploaded a recording for this class and subject.';
+      'ಈ ಶಿಕ್ಷಕರು ಈ ತರಗತಿ ಮತ್ತು ವಿಷಯಕ್ಕೆ ಯಾವುದೇ ರೆಕಾರ್ಡಿಂಗ್ ಅಪ್‌ಲೋಡ್ ಮಾಡಿಲ್ಲ.';
 
   @override
-  String get adminAuthorNarrationText => 'Narration text';
+  String get adminAuthorNarrationText => 'ನಿರೂಪಣೆಯ ಪಠ್ಯ';
 
   @override
-  String get adminAuthorPollText => 'Poll question';
+  String get adminAuthorPollText => 'ಪೋಲ್ ಪ್ರಶ್ನೆ';
 
   @override
-  String get adminAuthorSaveJourney => 'Save journey';
+  String get adminAuthorSaveJourney => 'ಪಯಣ ಉಳಿಸಿ';
 
   @override
   String teacherHomeNotice(String kind, String title, String action) {
-    return '$kind $title: $action for you by your administrator.';
+    return '$kind $title: ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ನಿಮಗಾಗಿ $action.';
   }
 
   @override
-  String get teacherHomeNoticeQuiz => 'Quiz';
+  String get teacherHomeNoticeQuiz => 'ಕ್ವಿಜ್';
 
   @override
-  String get teacherHomeNoticeJourney => 'Journey';
+  String get teacherHomeNoticeJourney => 'ಪಯಣ';
 
   @override
-  String get teacherHomeNoticeCreated => 'added';
+  String get teacherHomeNoticeCreated => 'ಸೇರಿಸಿದ್ದಾರೆ';
 
   @override
-  String get teacherHomeNoticePublished => 'published';
+  String get teacherHomeNoticePublished => 'ಪ್ರಕಟಿಸಿದ್ದಾರೆ';
 
   @override
-  String get teacherHomeNoticeClosed => 'closed';
+  String get teacherHomeNoticeClosed => 'ಮುಚ್ಚಿದ್ದಾರೆ';
 
   @override
-  String get teacherHomeNoticeArchived => 'archived';
+  String get teacherHomeNoticeArchived => 'ಆರ್ಕೈವ್ ಮಾಡಿದ್ದಾರೆ';
 
   @override
   String sessionPeopleJoined(String names) {
-    return '$names joined.';
+    return '$names ಸೇರಿದರು.';
   }
 
   @override
   String sessionPeopleLeft(String names) {
-    return '$names left.';
+    return '$names ಹೊರಹೋದರು.';
   }
 
   @override
   String sessionNamesAnd(String first, String last) {
-    return '$first and $last';
+    return '$first ಮತ್ತು $last';
   }
 
   @override
   String sessionHereOf(int here, int total) {
-    return '$here of $total here.';
+    return '$total ರಲ್ಲಿ $here ಇಲ್ಲಿದ್ದಾರೆ.';
   }
 
   @override
@@ -15603,63 +15698,63 @@ class AppLocalizationsKn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count students here.',
-      one: '1 student here.',
-      zero: 'No students here.',
+      other: '$count ವಿದ್ಯಾರ್ಥಿಗಳು ಇಲ್ಲಿದ್ದಾರೆ.',
+      one: '1 ವಿದ್ಯಾರ್ಥಿ ಇಲ್ಲಿದ್ದಾರೆ.',
+      zero: 'ಇಲ್ಲಿ ಯಾವುದೇ ವಿದ್ಯಾರ್ಥಿಗಳಿಲ್ಲ.',
     );
     return '$_temp0';
   }
 
   @override
   String sessionStartSummary(int here, int total) {
-    return '$here of $total students here.';
+    return '$total ವಿದ್ಯಾರ್ಥಿಗಳಲ್ಲಿ $here ಇಲ್ಲಿದ್ದಾರೆ.';
   }
 
   @override
   String uiFocusedField(String field) {
-    return 'You are in $field.';
+    return 'ನೀವು $field ನಲ್ಲಿದ್ದೀರಿ.';
   }
 
   @override
-  String get sessionStartButton => '5: Start';
+  String get sessionStartButton => '5: ಪ್ರಾರಂಭಿಸಿ';
 
   @override
   String get sessionStartLabel =>
-      'Start a quiz, journey or recording for the class';
+      'ತರಗತಿಗಾಗಿ ಕ್ವಿಜ್, ಪಯಣ ಅಥವಾ ರೆಕಾರ್ಡಿಂಗ್ ಪ್ರಾರಂಭಿಸಿ';
 
   @override
-  String get sessionStartTitle => 'Start for the class';
+  String get sessionStartTitle => 'ತರಗತಿಗಾಗಿ ಪ್ರಾರಂಭಿಸಿ';
 
   @override
-  String get sessionStartQuiz => 'Quiz';
+  String get sessionStartQuiz => 'ಕ್ವಿಜ್';
 
   @override
-  String get sessionStartJourney => 'Journey';
+  String get sessionStartJourney => 'ಪಯಣ';
 
   @override
-  String get sessionStartRecording => 'Recording';
+  String get sessionStartRecording => 'ರೆಕಾರ್ಡಿಂಗ್';
 
   @override
   String sessionStatusKeyButton(String title) {
-    return '6: Status of $title';
+    return '6: $title ಸ್ಥಿತಿ';
   }
 
   @override
   String sessionStatusKeyLabel(String title) {
-    return 'Status of $title';
+    return '$title ಸ್ಥಿತಿ';
   }
 
   @override
-  String get sessionKeyStart => 'Start a quiz, journey or recording';
+  String get sessionKeyStart => 'ಕ್ವಿಜ್, ಪಯಣ ಅಥವಾ ರೆಕಾರ್ಡಿಂಗ್ ಪ್ರಾರಂಭಿಸಿ';
 
   @override
-  String get sessionKeyStatus => 'Status of what is running';
+  String get sessionKeyStatus => 'ನಡೆಯುತ್ತಿರುವುದರ ಸ್ಥಿತಿ';
 
   @override
   String sessionActivityCounts(int present, int started, int finished) {
-    return '$present students in class. $started have attempted it, $finished finished.';
+    return 'ತರಗತಿಯಲ್ಲಿ $present ವಿದ್ಯಾರ್ಥಿಗಳು. $started ಪ್ರಯತ್ನಿಸಿದ್ದಾರೆ, $finished ಮುಗಿಸಿದ್ದಾರೆ.';
   }
 
   @override
-  String get sessionNowPlayingTitle => 'the recording';
+  String get sessionNowPlayingTitle => 'ರೆಕಾರ್ಡಿಂಗ್';
 }

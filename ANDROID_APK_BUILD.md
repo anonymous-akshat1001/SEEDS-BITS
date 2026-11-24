@@ -258,6 +258,43 @@ signing material.
 
 ## Common failures
 
+### `JAVA_HOME` points to an invalid directory
+
+This error occurs before Gradle can build the application. Find the installed
+JDK rather than copying a version-specific folder name from another machine:
+
+```powershell
+Get-Command java | Select-Object Source
+Get-ChildItem 'C:\Program Files\Microsoft' -Directory -Filter 'jdk-*'
+flutter config --list
+```
+
+Set `$Jdk` to the installed JDK root (not its `bin` directory). For the current
+Android Gradle configuration, use JDK 17. Verify both executables before saving
+the setting:
+
+```powershell
+$Jdk = Read-Host 'Enter the installed JDK 17 root directory'
+& "$Jdk\bin\java.exe" -version
+if ($LASTEXITCODE -ne 0) { throw 'Java validation failed' }
+& "$Jdk\bin\javac.exe" -version
+if ($LASTEXITCODE -ne 0) { throw 'JDK validation failed' }
+
+$env:JAVA_HOME = $Jdk
+[Environment]::SetEnvironmentVariable('JAVA_HOME', $Jdk, 'User')
+flutter config --jdk-dir "$Jdk"
+if ($LASTEXITCODE -ne 0) { throw 'Flutter JDK configuration failed' }
+
+.\android\gradlew.bat --version
+flutter doctor -v
+```
+
+Flutter's explicit `jdk-dir` setting can override `JAVA_HOME`, so correct both.
+The environment assignment fixes the current PowerShell session; the user
+setting persists for future sessions. Restart VS Code and any other terminals
+to discard inherited environment values, then retry the APK build. No clean
+or dependency upgrade is needed for this error.
+
 ### Flutter cannot delete an `ephemeral` or `.plugin_symlinks` directory
 
 A running Flutter debug session, browser launched by Flutter, IDE task, or

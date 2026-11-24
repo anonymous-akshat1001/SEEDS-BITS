@@ -191,6 +191,9 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       (widget.initialFocusNode ?? _scopeFocusNode).requestFocus();
+      // A field on the previous screen (sign-in's phone number) can leave a
+      // T9 keypad IME attached that swallows the digit keys here.
+      _releaseNativeTextInput();
       if (widget.autoPlay) {
         _arrivalPending = true;
         _scheduleInstructions(const Duration(milliseconds: 350));
@@ -244,6 +247,7 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
         } else {
           _scopeFocusNode.requestFocus();
         }
+        _releaseNativeTextInput();
       }
     });
     _scheduleInstructions(const Duration(milliseconds: 400));
@@ -795,10 +799,51 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
     _cancelInstructions();
   }
 
+  /// True when [primary] belongs to no keypad screen, nor to a text field,
+  /// and this is the innermost keypad screen on the visible route.
+  bool _ownsStrayFocus(FocusNode? primary) {
+    if (!mounted || _scopeFocusNode.context == null) return false;
+    if (!(ModalRoute.of(context)?.isCurrent ?? true)) return false;
+    if (primary != null) {
+      if (_keypadScopes.contains(primary) ||
+          primary.ancestors.any(_keypadScopes.contains)) {
+        return false;
+      }
+      if (primary.context?.widget is EditableText ||
+          primary.context?.findAncestorStateOfType<EditableTextState>() !=
+              null) {
+        return false;
+      }
+    }
+    var passedSelf = false;
+    for (final other in _keypadScopes) {
+      if (identical(other, _scopeFocusNode)) {
+        passedSelf = true;
+        continue;
+      }
+      if (!passedSelf) continue;
+      final otherContext = other.context;
+      if (otherContext == null || !otherContext.mounted) continue;
+      if (!(ModalRoute.of(otherContext)?.isCurrent ?? true)) continue;
+      // A later keypad scope on the visible route (nested inside this one or
+      // beside it) answers instead, so a key never runs twice.
+      if (!_scopeFocusNode.ancestors.contains(other)) return false;
+    }
+    return true;
+  }
+
   KeyEventResult _handleEarlyKeyEvent(KeyEvent event) {
     final primary = FocusManager.instance.primaryFocus;
     if (primary == null || !_scopeFocusNode.hasFocus) {
-      return KeyEventResult.ignored;
+      // Focus can drop outside every keypad screen (TalkBack moving focus,
+      // a closed overlay). The screen on top then still answers its keys
+      // instead of ignoring them.
+      if (event is! KeyDownEvent || !_ownsStrayFocus(primary)) {
+        return KeyEventResult.ignored;
+      }
+      _scopeFocusNode.requestFocus();
+      _actedBeforeArrival();
+      return _handleKeyEvent(_scopeFocusNode, event);
     }
     if (event is KeyDownEvent) _actedBeforeArrival();
     // Native sliders consume arrows before bubbling reaches the screen.

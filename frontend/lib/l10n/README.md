@@ -44,6 +44,11 @@ text-to-speech voice.
 Any message missing from a language file is spoken in English. After
 generation, `untranslated.json` lists the remaining keys for each language.
 
+The Hindi, Kannada, Telugu and Bengali files currently contain complete
+AI-generated first drafts. Have a native speaker review them, especially
+messages about passwords, privacy and quiz results, and correct the text
+directly in the language file.
+
 Labels such as `5: Test speech` start with the keypad key to press; keep the
 digit and the symbols `*` and `#` as they are.
 

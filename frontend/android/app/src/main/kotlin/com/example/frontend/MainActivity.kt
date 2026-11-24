@@ -99,6 +99,7 @@ class MainActivity: FlutterActivity() {
                 // T9 IMEs can keep consuming physical keys after Flutter clears its client.
                 val inputMethod = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
                 inputMethod.restartInput(view)
+                inputMethod.hideSoftInputFromWindow(view.windowToken, 0)
                 result.success(null)
             }
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "seeds/feedback")

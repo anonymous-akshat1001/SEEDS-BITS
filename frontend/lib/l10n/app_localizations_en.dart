@@ -574,7 +574,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ttsUnavailable =>
-      'Speech is unavailable. Enable an English Android text-to-speech voice, then use Test TTS in Settings.';
+      'Speech is unavailable. Enable an English Android text-to-speech voice, then use Test speech in Settings.';
 
   @override
   String ttsLanguageFallback(String language) {
@@ -591,7 +591,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String ttsVoiceInstalled(String language) {
-    return 'Android reports installed $language voice data. Use Test TTS in Settings, then test it again in airplane mode before relying on offline speech. This check cannot prove that you can hear it.';
+    return 'Android reports installed $language voice data. Use Test speech in Settings, then test it again in airplane mode before relying on offline speech. This check cannot prove that you can hear it.';
   }
 
   @override
@@ -620,18 +620,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ttsSettingsFailed =>
-      'Speech settings could not be applied. Try Test TTS again.';
+      'Speech settings could not be applied. Try Test speech again.';
 
   @override
   String get ttsCouldNotStart =>
-      'Speech could not start. Try Test TTS in Settings.';
+      'Speech could not start. Try Test speech in Settings.';
 
   @override
   String get ttsNotAvailable =>
-      'Speech was not available. Try Test TTS in Settings.';
+      'Speech was not available. Try Test speech in Settings.';
 
   @override
-  String get ttsFailed => 'Speech failed. Try Test TTS in Settings.';
+  String get ttsFailed => 'Speech failed. Try Test speech in Settings.';
 
   @override
   String get ttsLessonResumeFailed =>

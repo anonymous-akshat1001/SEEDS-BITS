@@ -418,7 +418,7 @@
       }
     }
   },
-  "ttsUnavailable": "Speech is unavailable. Enable an English Android text-to-speech voice, then use Test TTS in Settings.",
+  "ttsUnavailable": "Speech is unavailable. Enable an English Android text-to-speech voice, then use Test speech in Settings.",
   "ttsLanguageFallback": "No {language} voice is available on this phone, so SEEDS will speak English. Install the {language} voice in Android text-to-speech settings, then check the voice in Settings.",
   "@ttsLanguageFallback": {
     "placeholders": {
@@ -429,7 +429,7 @@
   },
   "ttsScreenReaderDetected": "Screen reader detected. SEEDS will send its announcements to your screen reader.",
   "ttsScreenReaderOff": "Screen reader turned off. SEEDS will speak for itself.",
-  "ttsVoiceInstalled": "Android reports installed {language} voice data. Use Test TTS in Settings, then test it again in airplane mode before relying on offline speech. This check cannot prove that you can hear it.",
+  "ttsVoiceInstalled": "Android reports installed {language} voice data. Use Test speech in Settings, then test it again in airplane mode before relying on offline speech. This check cannot prove that you can hear it.",
   "@ttsVoiceInstalled": {
     "placeholders": {
       "language": {
@@ -470,10 +470,10 @@
     }
   },
   "ttsSpeedChangeFailed": "Speech speed could not be changed. Try again.",
-  "ttsSettingsFailed": "Speech settings could not be applied. Try Test TTS again.",
-  "ttsCouldNotStart": "Speech could not start. Try Test TTS in Settings.",
-  "ttsNotAvailable": "Speech was not available. Try Test TTS in Settings.",
-  "ttsFailed": "Speech failed. Try Test TTS in Settings.",
+  "ttsSettingsFailed": "Speech settings could not be applied. Try Test speech again.",
+  "ttsCouldNotStart": "Speech could not start. Try Test speech in Settings.",
+  "ttsNotAvailable": "Speech was not available. Try Test speech in Settings.",
+  "ttsFailed": "Speech failed. Try Test speech in Settings.",
   "ttsLessonResumeFailed": "The recorded lesson could not resume. Select Play to retry.",
   "ttsStopFailed": "Speech could not be stopped. Check the Android TTS engine.",
   "ttsNoPendingUpdates": "No pending updates.",

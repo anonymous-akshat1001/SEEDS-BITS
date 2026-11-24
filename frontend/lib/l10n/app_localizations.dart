@@ -1024,7 +1024,7 @@ abstract class AppLocalizations {
   /// No description provided for @ttsUnavailable.
   ///
   /// In en, this message translates to:
-  /// **'Speech is unavailable. Enable an English Android text-to-speech voice, then use Test TTS in Settings.'**
+  /// **'Speech is unavailable. Enable an English Android text-to-speech voice, then use Test speech in Settings.'**
   String get ttsUnavailable;
 
   /// No description provided for @ttsLanguageFallback.
@@ -1048,7 +1048,7 @@ abstract class AppLocalizations {
   /// No description provided for @ttsVoiceInstalled.
   ///
   /// In en, this message translates to:
-  /// **'Android reports installed {language} voice data. Use Test TTS in Settings, then test it again in airplane mode before relying on offline speech. This check cannot prove that you can hear it.'**
+  /// **'Android reports installed {language} voice data. Use Test speech in Settings, then test it again in airplane mode before relying on offline speech. This check cannot prove that you can hear it.'**
   String ttsVoiceInstalled(String language);
 
   /// No description provided for @ttsVoiceNotOffline.
@@ -1084,25 +1084,25 @@ abstract class AppLocalizations {
   /// No description provided for @ttsSettingsFailed.
   ///
   /// In en, this message translates to:
-  /// **'Speech settings could not be applied. Try Test TTS again.'**
+  /// **'Speech settings could not be applied. Try Test speech again.'**
   String get ttsSettingsFailed;
 
   /// No description provided for @ttsCouldNotStart.
   ///
   /// In en, this message translates to:
-  /// **'Speech could not start. Try Test TTS in Settings.'**
+  /// **'Speech could not start. Try Test speech in Settings.'**
   String get ttsCouldNotStart;
 
   /// No description provided for @ttsNotAvailable.
   ///
   /// In en, this message translates to:
-  /// **'Speech was not available. Try Test TTS in Settings.'**
+  /// **'Speech was not available. Try Test speech in Settings.'**
   String get ttsNotAvailable;
 
   /// No description provided for @ttsFailed.
   ///
   /// In en, this message translates to:
-  /// **'Speech failed. Try Test TTS in Settings.'**
+  /// **'Speech failed. Try Test speech in Settings.'**
   String get ttsFailed;
 
   /// No description provided for @ttsLessonResumeFailed.

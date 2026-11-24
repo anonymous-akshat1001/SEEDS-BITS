@@ -304,6 +304,9 @@ void main() {
           ),
         ),
       );
+      // Opening the screen releases any IME left by a previous screen.
+      await tester.pump();
+      nativeReleases.clear();
       await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
       expect(phone.hasFocus, isTrue);
       await tester.enterText(find.byType(TextField).first, '9000000000');
@@ -1034,6 +1037,90 @@ void main() {
       await tester.pumpWidget(const SizedBox.shrink());
     },
   );
+
+  testWidgets('a screen opened after sign-in releases the keypad IME', (
+    tester,
+  ) async {
+    var releases = 0;
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      const MethodChannel('seeds/keypad'),
+      (call) async {
+        if (call.method == 'finishTextEditing') releases++;
+        return null;
+      },
+    );
+    final phone = FocusNode();
+    final navigatorKey = GlobalKey<NavigatorState>();
+    var started = 0;
+    await tester.pumpWidget(
+      MaterialApp(
+        navigatorKey: navigatorKey,
+        home: KeypadInstructionWrapper(
+          autoPlay: false,
+          initialFocusNode: phone,
+          actions: const {},
+          focusTargets: [
+            KeypadFocusTarget(node: phone, label: 'Phone', isTextField: true),
+          ],
+          child: Scaffold(body: TextField(focusNode: phone)),
+        ),
+      ),
+    );
+    await tester.pump();
+    expect(phone.hasFocus, isTrue);
+    expect(releases, 0);
+
+    unawaited(
+      navigatorKey.currentState!.pushReplacement(
+        MaterialPageRoute<void>(
+          builder: (_) => KeypadInstructionWrapper(
+            autoPlay: false,
+            actions: {1: () => started++},
+            child: const Scaffold(body: Text('Home')),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(releases, greaterThan(0));
+    await tester.sendKeyEvent(LogicalKeyboardKey.digit1);
+    expect(started, 1);
+    await tester.pumpWidget(const SizedBox.shrink());
+    phone.dispose();
+  });
+
+  testWidgets('number keys still work when focus leaves every keypad screen', (
+    tester,
+  ) async {
+    final stray = FocusNode(debugLabel: 'outside');
+    var started = 0;
+    await tester.pumpWidget(
+      MaterialApp(
+        builder: (context, child) => Column(
+          children: [
+            Expanded(child: child!),
+            Focus(focusNode: stray, child: const Text('Outside')),
+          ],
+        ),
+        home: KeypadInstructionWrapper(
+          autoPlay: false,
+          actions: {1: () => started++},
+          child: const Scaffold(body: Text('Home')),
+        ),
+      ),
+    );
+    await tester.pump();
+    stray.requestFocus();
+    await tester.pump();
+    expect(stray.hasFocus, isTrue);
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.digit1);
+    await tester.pump();
+    expect(started, 1);
+    expect(stray.hasFocus, isFalse);
+    await tester.pumpWidget(const SizedBox.shrink());
+    stray.dispose();
+  });
 }
 
 /// Like the quiz: listens to speech and calls setState when it ends.

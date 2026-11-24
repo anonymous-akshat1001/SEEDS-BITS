@@ -363,6 +363,7 @@ Details: README "Interaction-reduction model" and API table.
 | Speech length on screens with many options | Keep options few (principle 3); proposals S4 and S5 |
 | Testing teacher and student in tabs of the same web browser: browsers allow about 6 open connections per server, and each open class screen holds one permanently, so actions can queue and time out (seen as "Leave not working") | Test with separate browsers or devices, or on Android; leaving no longer depends on the server's answer |
 | A class started before the timetable existed (no timetable link, no end time) stays live and appears as "class is live" | Vision Empower ends it in the dashboard (Class records, End class); not ended automatically by decision |
+| On keypad phones the T9 input method can stay attached after the sign-in phone field closes and swallow the number keys on the next screen (seen as "number keys do nothing on Home" with TalkBack on) | Every screen releases the input method when it opens or is returned to without a text field focused; if focus lands outside every keypad screen, the screen on top still answers its keys. Needs confirming on the button phone |
 
 ## 13. Status against this design
 
@@ -435,3 +436,4 @@ items below need **real button phones and blind users**:
 | Nov 2026 | Mentor review: backend owns all known information; minimise options; assume defaults; global mute and unmute with a speaking protocol; voice commands to be tested in real use. Class size is not fixed (the "10 students" was an example). |
 | Nov 2026 | Teacher hears one "4 of 5 students here" a minute after the start, then joins and leaves by name, grouped; students are not told about others joining |
 | 20 Nov 2026 | One Start key (5) for quiz, journey or recording; Status (6) only while something runs; More 7; End class 8; one thing runs at a time; recording player reads its keys before playing; leaving needs one confirmation; coming back to a screen reads the main keys and points to star; loading screens wait for their data; sign-in reads all keys with the field focused (section 8.4) |
+| 23 Nov 2026 | Number keys must never be lost to a lingering keypad input method or stray focus: screens release the IME on arrival and the top screen answers keys when focus is outside every screen |
