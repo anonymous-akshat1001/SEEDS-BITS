@@ -75,12 +75,22 @@ class BrowserSpeechEngine extends FlutterTts {
     }
   }
 
-  /// A voice for exactly [language], preferring one installed on the device.
+  /// A voice for [language], preferring one installed on the device: the
+  /// exact locale (kn-IN) first, then any voice of the same language (kn).
   _Voice? _voiceFor(String language) {
     final wanted = _normalizedLang(language);
-    final matches = _voices.where((voice) => _normalizedLang(voice.lang) == wanted);
-    return matches.where((voice) => voice.localService).firstOrNull ??
+    final primary = wanted.split('-').first;
+    _Voice? best(Iterable<_Voice> matches) =>
+        matches.where((voice) => voice.localService).firstOrNull ??
         matches.firstOrNull;
+    return best(
+          _voices.where((voice) => _normalizedLang(voice.lang) == wanted),
+        ) ??
+        best(
+          _voices.where(
+            (voice) => _normalizedLang(voice.lang).split('-').first == primary,
+          ),
+        );
   }
 
   /// Any English voice, preferring one installed on the device, which keeps
@@ -102,7 +112,11 @@ class BrowserSpeechEngine extends FlutterTts {
     return completion.future;
   }
 
-  void _start(String text, Completer<int> completion, {required bool fallback}) {
+  void _start(
+    String text,
+    Completer<int> completion, {
+    required bool fallback,
+  }) {
     final utterance = _Utterance(text)
       // Web Speech treats 1 as normal speed; Android's plugin doubles the
       // flutter_tts value, so do the same here for identical speeds.
@@ -169,10 +183,18 @@ class BrowserSpeechEngine extends FlutterTts {
     if (completion != null && !completion.isCompleted) completion.complete(1);
   }
 
+  /// Returns 0 when the browser has no voice for [language] (Chrome on
+  /// Windows has none for Kannada, Telugu or Bengali), so SEEDS falls back
+  /// to English and says why instead of staying silent. Voices can load a
+  /// moment after the page opens, so an empty list is waited for briefly.
   @override
   Future<dynamic> setLanguage(String language) async {
     _language = language;
-    return 1;
+    for (var attempt = 0; attempt < 10 && _voices.isEmpty; attempt++) {
+      await Future<void>.delayed(const Duration(milliseconds: 150));
+    }
+    if (_voices.isEmpty) return 1;
+    return _voiceFor(language) == null ? 0 : 1;
   }
 
   @override

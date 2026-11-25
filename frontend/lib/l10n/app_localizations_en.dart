@@ -469,21 +469,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String keypadPressFor(String key, String action) {
-    return 'Press $key for $action';
-  }
-
-  @override
-  String get keypadListSeparator => '. ';
-
-  @override
-  String get keypadRepeatInstructions =>
-      'Press star to repeat these instructions.';
-
-  @override
-  String get keypadRepeatFullHelp => 'Press star to repeat full help.';
-
-  @override
   String get keypadStarForShortcuts => 'Press star for all shortcuts.';
 
   @override
@@ -497,38 +482,16 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get keypadNumberedBackAndStop =>
-      'Press 0 to go back or cancel. Press hash to stop app speech.';
-
-  @override
-  String get keypadNumberedEditing =>
-      'While editing, keys enter text. Press OK to finish, or use up or down to leave the field.';
-
-  @override
-  String get keypadNumberedMove =>
-      'Use D-pad up and down to move between choices and OK to select.';
-
-  @override
   String get keypadEssentialMove =>
       'Use up and down to move, and OK to select.';
-
-  @override
-  String get keypadPressZeroBack => 'Press 0 to go back.';
 
   @override
   String get keypadHashAndStar =>
       'Press hash to stop speech. Press star to repeat these instructions.';
 
   @override
-  String get keypadDirectionKeys => 'Use the direction keys to move.';
-
-  @override
   String get keypadDirectionKeysAndOk =>
       'Use the direction keys to move and OK to select.';
-
-  @override
-  String get keypadActivateOrEdit =>
-      'Press OK to activate a control or edit a field.';
 
   @override
   String get keypadLeaveField =>
@@ -3175,11 +3138,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String sessionPressKeyFor(String key, String action) {
-    return 'Press $key for $action.';
-  }
-
-  @override
   String get sessionMicWaitingLabel => 'Microphone waiting for confirmation';
 
   @override
@@ -3524,12 +3482,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String sessionRaisedHandBy(String name) {
-    return '$name raised hand. Press 2 for raised hands.';
+    return '$name raised a hand.';
   }
 
   @override
-  String get sessionRaisedHandUnknown =>
-      'A participant raised hand. Press 2 for raised hands.';
+  String get sessionRaisedHandUnknown => 'A student raised a hand.';
 
   @override
   String get sessionParticipantJoined => 'A participant joined.';
@@ -4255,243 +4212,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get classroomOnlyTeacherAcknowledges =>
-      'Only the session teacher may acknowledge a hand.';
-
-  @override
-  String get classroomHandChanged =>
-      'The selected hand changed. Read the queue again.';
-
-  @override
-  String get classroomAckUnconfirmed =>
-      'The hand acknowledgment was not confirmed. Read the queue before retrying.';
-
-  @override
-  String get classroomAckUnreadable =>
-      'Hand acknowledgment was not readable. Check the queue before trying again.';
-
-  @override
-  String classroomAcknowledgedChanged(String name) {
-    return '$name acknowledged earlier. Their hand has since changed; read the queue again. Their microphone was not changed.';
-  }
-
-  @override
-  String classroomAcknowledged(String name) {
-    return '$name acknowledged. The selected hand was lowered. Their microphone was not changed.';
-  }
-
-  @override
-  String get classroomHandsHelp =>
-      'Raised hands. Read summary for the last received classroom state. Previous and Next select a raised hand without changing it. Acknowledge lowers only the selected hand after server confirmation. It never unmutes anyone. Older hands with unknown order are labelled separately.';
-
-  @override
-  String get classroomConsoleHelp =>
-      'Classroom console. Read summary for the last received classroom state. Previous and Next select a raised hand without changing it. Acknowledge lowers only the selected hand after server confirmation. It never unmutes anyone. Older hands with unknown order are labelled separately.';
-
-  @override
-  String get classroomHandsTitle => 'Raised hands';
-
-  @override
-  String get classroomNoHands =>
-      'No raised hands in the last received classroom state.';
-
-  @override
-  String classroomSelectedGone(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other:
-          'The selected hand is no longer in the queue. $count raised hands remain. Use Next or Previous to select a hand.',
-      one:
-          'The selected hand is no longer in the queue. 1 raised hand remain. Use Next or Previous to select a hand.',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String classroomConsoleSelectedGone(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other:
-          'The selected hand is no longer in the queue. $count raised hands remain. Use Next or Previous to select a hand.',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String classroomHandTitle(String position, String total, String name) {
-    return 'Hand $position of $total, $name, waiting';
-  }
-
-  @override
-  String classroomParticipantNumbered(String id) {
-    return 'Participant $id';
-  }
-
-  @override
-  String get classroomKnownOrder => 'Server-recorded queue order.';
-
-  @override
-  String get classroomUnknownOrder =>
-      'Original raise order unknown; shown before known-order hands.';
-
-  @override
-  String get classroomReportedMuted => 'Microphone reported muted.';
-
-  @override
-  String get classroomReportedUnmuted =>
-      'Microphone reported unmuted; this is not proof of speech.';
-
-  @override
-  String get classroomNoHandsShort => 'No raised hands';
-
-  @override
-  String get classroomNoHandSelected => 'No hand selected';
-
-  @override
-  String classroomLowering(String name) {
-    return 'Lowering hand for $name. Waiting for the server.';
-  }
-
-  @override
-  String classroomLoweredLast(String name) {
-    return 'Hand lowered for $name. The hand queue is now empty.';
-  }
-
-  @override
-  String classroomLoweredNext(String name, String next) {
-    return 'Hand lowered for $name. Next: $next.';
-  }
-
-  @override
-  String get classroomNoSummary => 'No classroom summary is available yet.';
-
-  @override
-  String get classroomReadSummary => 'Read classroom summary';
-
-  @override
-  String get classroomPreviousHand => 'Previous raised hand';
-
-  @override
-  String get classroomReadHand => 'Read selected hand';
-
-  @override
-  String classroomReadHandLabel(String hand) {
-    return 'Read selected hand. $hand';
-  }
-
-  @override
-  String get classroomNextHand => 'Next raised hand';
-
-  @override
-  String get classroomWaitingAck => 'Waiting for hand acknowledgment';
-
-  @override
-  String get classroomAckNoneSelected =>
-      'Acknowledge and lower selected hand. No hand selected';
-
-  @override
-  String classroomAckLabel(String name) {
-    return 'Lower $name. Never unmutes';
-  }
-
-  @override
-  String get classroomAckSelectedLabel => 'Lower selected hand. Never unmutes';
-
-  @override
-  String get classroomAckButton => 'Acknowledge and lower hand';
-
-  @override
-  String get classroomRepeatConsoleHelp => 'Repeat console help';
-
-  @override
-  String get classroomConsoleSections =>
-      'read classroom summary, previous hand, read selected hand, next hand, acknowledge hand, stop speech, help and back. If no hands or summary are available, selecting their controls reads that status';
-
-  @override
-  String get classroomSnapshotNote =>
-      'Counts reflect the last received snapshot, not guaranteed audio delivery. Active speaker identification is unavailable.';
-
-  @override
-  String get classroomWaitingAckNote =>
-      'Waiting for server acknowledgment. No microphone is changed.';
-
-  @override
-  String classroomSummaryParticipants(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count participants',
-      one: '1 participant',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String classroomSummaryHands(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count raised hands',
-      one: '1 raised hand',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String classroomSummaryMicrophones(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count microphones',
-      one: '1 microphone',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String get classroomSummaryNobodySpeaking => 'Nobody detected speaking.';
-
-  @override
-  String classroomSummarySpeaking(String names) {
-    return 'Detected speaking: $names.';
-  }
-
-  @override
-  String get classroomSummaryNoRecording => 'No class recording selected.';
-
-  @override
-  String classroomSummaryRecordingPlaying(String title) {
-    return 'Class recording $title. Playing requested.';
-  }
-
-  @override
-  String classroomSummaryRecordingPaused(String title) {
-    return 'Class recording $title. Paused.';
-  }
-
-  @override
-  String get classroomSummaryPreviewActive =>
-      'Private preview active on this phone only.';
-
-  @override
-  String get classroomSummaryPreviewStopped => 'Private preview stopped.';
-
-  @override
-  String classroomSummary(
-    String connection,
-    String people,
-    String hands,
-    String muted,
-    String speaking,
-    String recording,
-    String preview,
-  ) {
-    return 'Local connection: $connection. Last received classroom state: $people, $hands, $muted reported muted. Remote reconnecting counts are unavailable. $speaking $recording $preview Microphone flags and accepted playback requests do not prove that anyone spoke or heard audio.';
-  }
-
-  @override
   String get sessionToolsTitle => 'Teacher tools';
 
   @override
@@ -4502,18 +4222,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sessionPeopleTitle => 'Participants and raised hands';
-
-  @override
-  String sessionHandQueue(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: 'Raised hands queue, $count hands waiting',
-      one: 'Raised hands queue, 1 hand waiting',
-      zero: 'Raised hands queue, No hands waiting',
-    );
-    return '$_temp0';
-  }
 
   @override
   String sessionParticipantList(int count) {
@@ -9994,14 +9702,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get journeyMenuReady => 'Ready.';
 
   @override
-  String get journeyMenuReadDetailsHelp => 'Press 8 to read details again.';
-
-  @override
-  String journeyMenuBackHelp(String back) {
-    return 'Press 0 for $back. Press star for help.';
-  }
-
-  @override
   String journeyMenuNothingAssigned(String number) {
     return 'Nothing is assigned to $number.';
   }
@@ -11912,9 +11612,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String sessionRemoveFromSession(String name) {
     return 'Remove $name from session';
   }
-
-  @override
-  String get classroomConsoleTitle => 'Classroom console';
 
   @override
   String get uiHourRange => 'Hour (0 to 23)';
@@ -14321,7 +14018,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loginScreenName => 'Sign in';
 
   @override
-  String get loginIntro => 'Type your phone number, then press 1 to sign in.';
+  String get loginIntro =>
+      'Type your phone number, press OK, then press 1 to sign in.';
 
   @override
   String get loginPhoneField => 'Phone number. Type it with the number keys.';
@@ -14337,7 +14035,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get loginEnterProfileCode =>
-      'This phone is shared. Type your profile number, then press 1.';
+      'This phone is shared. Type your profile number, press OK, then press 1.';
 
   @override
   String get loginKeySignIn => 'Sign in';
@@ -14380,7 +14078,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get adminLoginIntro =>
-      'Type your phone number and password, then press 1.';
+      'Type your phone number and password, pressing OK after each, then press 1.';
 
   @override
   String get classNoLongerLive => 'That class is not live now.';
@@ -14644,7 +14342,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sessionMicSettingsCancel => 'Keep listening';
 
   @override
-  String get sessionMuteAllButton => '3: Mute all students';
+  String get sessionMuteAllButton => '2: Mute all students';
 
   @override
   String get sessionMuteAllLabel => 'Mute all students';
@@ -14668,11 +14366,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String sessionMuteAllNotConfirmed(String reason) {
-    return 'Muting everyone was not confirmed. $reason Press 3 to try again.';
+    return 'Muting everyone was not confirmed. $reason Press 2 to try again.';
   }
 
   @override
-  String get sessionClassListButton => '4: Class list';
+  String get sessionClassListButton => '3: Class list';
 
   @override
   String sessionClassListLabel(String people) {
@@ -14780,9 +14478,9 @@ class AppLocalizationsEn extends AppLocalizations {
       minutes,
       locale: localeName,
       other:
-          'The class ends automatically in $minutes minutes. To add 15 minutes, press 7 then 1.',
+          'The class ends automatically in $minutes minutes. To add 15 minutes, press 5 then 1.',
       one:
-          'The class ends automatically in 1 minute. To add 15 minutes, press 7 then 1.',
+          'The class ends automatically in 1 minute. To add 15 minutes, press 5 then 1.',
     );
     return '$_temp0';
   }
@@ -14800,11 +14498,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sessionLessonReady =>
-      'Today\'s lesson is ready. Press 5, then 3, to play it for the class.';
+      'Today\'s lesson is ready. Press 4, then 3, to play it for the class.';
 
   @override
   String get sessionLessonNextReady =>
-      'The next part of today\'s lesson is ready. Press 6 to play it.';
+      'The next part of today\'s lesson is ready. Press 7 to play it.';
 
   @override
   String get sessionJoinedStudentBrief =>
@@ -14812,7 +14510,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sessionJoinedTeacherBrief =>
-      'Your class is live. You are muted. Press 1 to speak, 3 to mute all students.';
+      'Your class is live. You are muted. Press 1 to speak, 2 to mute all students.';
 
   @override
   String get sessionStarForKeys => 'Press star for all keys.';
@@ -14889,7 +14587,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminSetupNoMatchingLessons => 'No lessons match.';
 
   @override
-  String get sessionMoreButton => '7: More';
+  String sessionMoreButton(String key) {
+    return '$key: More';
+  }
 
   @override
   String get sessionMoreLabel => 'More options';
@@ -14901,16 +14601,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sessionMoreClassroomCheck => 'Classroom check';
 
   @override
-  String get sessionMoreStatus => 'Class status';
-
-  @override
   String get sessionMoreWhatIsPlaying => 'What is playing';
 
   @override
   String get sessionMoreWhoIsHere => 'Who is in class';
-
-  @override
-  String get sessionKeyRaisedHands => 'Raised hands';
 
   @override
   String get sessionKeyClassList => 'Class list';
@@ -14928,7 +14622,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sessionKeyLeave => 'Leave class';
 
   @override
-  String get sessionEndClassButton => '8: End class for everyone';
+  String get sessionEndClassButton => '6: End class for everyone';
 
   @override
   String get sessionEndClassLabel => 'End class for everyone. Asks to confirm';
@@ -14956,7 +14650,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String sessionActivityStartedTeacher(String title) {
-    return '$title is open for the class. Press 6 for its status.';
+    return '$title is open for the class. Press 7 for its status.';
   }
 
   @override
@@ -14966,12 +14660,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String sessionActivityQuizStarted(String title) {
-    return 'Your teacher started a quiz: $title. Press 4 to begin.';
+    return 'Your teacher assigned a quiz: $title. Press 5 to start it.';
   }
 
   @override
   String sessionActivityJourneyStarted(String title) {
-    return 'Your teacher started a journey: $title. Press 4 to begin.';
+    return 'Your teacher assigned a learning journey: $title. Press 5 to start it.';
   }
 
   @override
@@ -15051,12 +14745,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String sessionStartQuizButton(String title) {
-    return '4: Start quiz: $title';
+    return '5: Start quiz: $title';
   }
 
   @override
   String sessionStartJourneyButton(String title) {
-    return '4: Start journey: $title';
+    return '5: Start journey: $title';
   }
 
   @override
@@ -15139,12 +14833,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String sessionActivityReminderQuiz(String title) {
-    return 'Your teacher reminds you to do the quiz $title. Press 4 to begin.';
+    return 'Your teacher reminds you to do the quiz $title. Press 5 to start it.';
   }
 
   @override
   String sessionActivityReminderJourney(String title) {
-    return 'Your teacher reminds you to do the journey $title. Press 4 to begin.';
+    return 'Your teacher reminds you to do the learning journey $title. Press 5 to start it.';
   }
 
   @override
@@ -15556,29 +15250,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminAuthorSaveJourney => 'Save journey';
 
   @override
-  String teacherHomeNotice(String kind, String title, String action) {
-    return '$kind $title: $action for you by your administrator.';
-  }
-
-  @override
-  String get teacherHomeNoticeQuiz => 'Quiz';
-
-  @override
-  String get teacherHomeNoticeJourney => 'Journey';
-
-  @override
-  String get teacherHomeNoticeCreated => 'added';
-
-  @override
-  String get teacherHomeNoticePublished => 'published';
-
-  @override
-  String get teacherHomeNoticeClosed => 'closed';
-
-  @override
-  String get teacherHomeNoticeArchived => 'archived';
-
-  @override
   String sessionPeopleJoined(String names) {
     return '$names joined.';
   }
@@ -15621,7 +15292,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get sessionStartButton => '5: Start';
+  String get sessionStartButton => '4: Start';
 
   @override
   String get sessionStartLabel =>
@@ -15641,7 +15312,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String sessionStatusKeyButton(String title) {
-    return '6: Status of $title';
+    return '7: Status of $title';
   }
 
   @override
@@ -15662,4 +15333,106 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sessionNowPlayingTitle => 'the recording';
+
+  @override
+  String get noticeActorAdmin => 'Your administrator';
+
+  @override
+  String noticeQuizCreated(String actor, String title) {
+    return '$actor added quiz $title.';
+  }
+
+  @override
+  String noticeQuizPublished(String actor, String title) {
+    return '$actor published quiz $title.';
+  }
+
+  @override
+  String noticeQuizClosed(String actor, String title) {
+    return '$actor closed quiz $title.';
+  }
+
+  @override
+  String noticeJourneyCreated(String actor, String title) {
+    return '$actor added learning journey $title.';
+  }
+
+  @override
+  String noticeJourneyPublished(String actor, String title) {
+    return '$actor published learning journey $title.';
+  }
+
+  @override
+  String noticeJourneyArchived(String actor, String title) {
+    return '$actor archived learning journey $title.';
+  }
+
+  @override
+  String noticePlaylistPublished(String actor, String title) {
+    return '$actor published playlist $title.';
+  }
+
+  @override
+  String noticeLessonCreated(String actor, String title) {
+    return '$actor added lesson $title.';
+  }
+
+  @override
+  String noticeLessonUpdated(String actor, String title) {
+    return '$actor changed lesson $title.';
+  }
+
+  @override
+  String noticeLessonRemoved(String actor, String title) {
+    return '$actor removed lesson $title.';
+  }
+
+  @override
+  String noticeLessonRemovedOn(String actor, String title, String date) {
+    return '$actor removed you from lesson $title on $date.';
+  }
+
+  @override
+  String noticeLessonCancelled(String actor, String title, String date) {
+    return '$actor cancelled lesson $title on $date.';
+  }
+
+  @override
+  String noticeLessonSubstitute(String actor, String title, String date) {
+    return '$actor asked you to teach lesson $title on $date.';
+  }
+
+  @override
+  String noticeLessonCovered(String actor, String title, String date) {
+    return '$actor gave your lesson $title on $date to another teacher.';
+  }
+
+  @override
+  String keypadKeyFor(String key, String action) {
+    return '$key for $action';
+  }
+
+  @override
+  String keypadPressKeys(String keys) {
+    return 'Press $keys.';
+  }
+
+  @override
+  String get keypadKeySeparator => ', ';
+
+  @override
+  String get keypadStarHelp => 'Press star for help.';
+
+  @override
+  String get sessionCloseRecording => 'Close recording for the class';
+
+  @override
+  String sessionRecordingClosedTeacher(String title) {
+    return '$title is closed for the class.';
+  }
+
+  @override
+  String sessionRecordingClosedStudent(String title) {
+    return 'Your teacher closed the recording $title.';
+  }
 }

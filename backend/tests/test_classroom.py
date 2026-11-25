@@ -295,6 +295,37 @@ async def test_one_lesson_can_be_added_on_several_days_and_a_clash_adds_none(sch
 
 
 @pytest.mark.asyncio
+async def test_lesson_changes_are_announced_to_the_teacher_and_class(school):
+    db, data, clock, factory, sent = school
+    created = await admin_api.create_timetable_entry(admin_api.TimetableEntryCreate(
+        teacher_id=data["teacher"].user_id, class_id=data["class_one"].class_id,
+        subject_id=data["english"].subject_id, weekdays=[0, 2],
+        start_time="09:00", end_time="09:40",
+    ), admin=data["admin"], db=db)
+    teacher_home = await classroom.home(data["teacher"], db)
+    assert [(n["kind"], n["title"], n["action"], n["actor_role"]) for n in teacher_home["notices"]] == [
+        ("lesson", "English, Class 6", "created", "admin"),
+    ]
+    assert teacher_home["admin_notices"] == teacher_home["notices"]
+    student_home = await classroom.home(data["asha"], db)
+    assert [n["action"] for n in student_home["notices"]] == ["created"]
+
+    await admin_api.set_occurrence_override(
+        created["entry_id"], MONDAY, admin_api.OccurrenceUpdate(substitute_teacher_id=data["other_teacher"].user_id),
+        admin=data["admin"], db=db,
+    )
+    substitute = (await classroom.home(data["other_teacher"], db))["notices"]
+    assert [(n["action"], n["detail"]) for n in substitute] == [("substitute", MONDAY.isoformat())]
+    regular = [n["action"] for n in (await classroom.home(data["teacher"], db))["notices"]]
+    assert regular == ["created", "covered"]
+
+    await admin_api.update_timetable_entry(
+        created["entry_id"], admin_api.TimetableEntryUpdate(is_active=False), admin=data["admin"], db=db,
+    )
+    assert [n["action"] for n in (await classroom.home(data["ravi"], db))["notices"]] == ["created", "removed"]
+
+
+@pytest.mark.asyncio
 async def test_new_people_need_a_class_or_a_class_and_subject(school):
     db, data, clock, factory, sent = school
     for payload in (

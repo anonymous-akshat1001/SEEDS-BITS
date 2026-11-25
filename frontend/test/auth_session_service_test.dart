@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:frontend/l10n/speech.dart';
 import 'package:frontend/services/auth_session_service.dart';
+import 'package:frontend/services/tts_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -50,4 +52,31 @@ void main() {
     expect(prefs.getBool('tts_enabled'), isTrue);
     expect(find.text('Welcome'), findsOneWidget);
   });
+
+  testWidgets(
+    'a language chosen before signing in is kept, even over the account\'s saved settings',
+    (tester) async {
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        const MethodChannel('flutter_tts'),
+        (_) async => 1,
+      );
+      // This account last signed in before choosing any language.
+      SharedPreferences.setMockInitialValues({
+        'account_profile_7': '{"tts_enabled":true}',
+      });
+      await TtsService.setSpeechLanguage(SpeechLanguage.hindi);
+      await AuthSessionService.saveLoginState({
+        'access_token': 'token',
+        'user_id': 7,
+        'role': 'student',
+        'name': 'Asha',
+      });
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getString('speech_language'), 'hi');
+      expect(TtsService.selectedLanguage, SpeechLanguage.hindi);
+      expect(Speech.language, SpeechLanguage.hindi);
+      expect(prefs.containsKey(TtsService.languageChosenSignedOutKey), isFalse);
+      await TtsService.setSpeechLanguage(SpeechLanguage.english);
+    },
+  );
 }

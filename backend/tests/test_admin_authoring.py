@@ -175,9 +175,14 @@ async def test_admin_creates_and_publishes_quiz_for_teacher_with_new_and_bank_qu
     assert [(n["kind"], n["title"], n["action"]) for n in notices] == [
         ("quiz", "Nouns", "created"), ("quiz", "Nouns", "published"), ("quiz", "Nouns", "closed"),
     ]
-    assert set(notices[0]) == {"notice_id", "kind", "title", "action"}
-    stored = (await db.execute(select(models.TeacherNotice))).scalars().all()
+    assert set(notices[0]) == {"notice_id", "kind", "title", "action", "detail", "actor_role", "actor_name"}
+    assert notices[0]["actor_role"] == "admin"
+    stored = (await db.execute(select(models.TeacherNotice).where(
+        models.TeacherNotice.teacher_id == data["rao"].user_id,
+    ))).scalars().all()
     assert {row.actor_id for row in stored} == {data["admin"].user_id}
+    student = (await classroom.home(data["asha"], db))["notices"]
+    assert [(n["kind"], n["action"], n["actor_name"]) for n in student] == [("quiz", "published", "Mrs Rao")]
     assert {row.item_id for row in stored} == {quiz["quiz_id"]}
     assert await home_notices(db, data["das"]) == []
 

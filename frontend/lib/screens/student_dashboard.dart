@@ -67,6 +67,13 @@ class _StudentDashboardState extends State<StudentDashboard>
       unawaited(_arrive());
       return;
     }
+    // Something the teacher or administrator changed while Home is open.
+    if (onScreen && _spokeArrival) {
+      final notices = takeNotices();
+      if (notices != null && notices.isNotEmpty) {
+        unawaited(TtsService.speak(notices));
+      }
+    }
     final live = _live;
     final previousLive = previous?['live_class'];
     final previousId = previousLive is Map ? previousLive['session_id'] : null;
@@ -109,6 +116,7 @@ class _StudentDashboardState extends State<StudentDashboard>
           ?carried,
           Speech.t.homeTitle,
           _brief(),
+          ?takeNotices(),
           JourneyMenu.spokenKeys(_choices, DashboardText.logout),
         ].join(' '),
       ),

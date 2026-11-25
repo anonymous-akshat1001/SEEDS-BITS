@@ -11,6 +11,8 @@ from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
 from uuid import uuid4
 
+from fastapi.responses import JSONResponse
+
 request_id = ContextVar("request_id", default=None)
 HEALTH = {"requests": 0, "errors": 0, "last_error_at": None}
 
@@ -108,6 +110,12 @@ def configure_app(app):
             logger.error("request_failed", exc_info=True, extra={
                 "event_code": "request_failed", "error_type": type(error).__name__,
             })
-            raise
+            # Answered here (inside CORS) so browsers see a 500 with the
+            # request ID instead of a misleading CORS error.
+            return JSONResponse(
+                {"detail": "Internal server error", "request_id": request_id.get()},
+                status_code=500,
+                headers={"X-Request-ID": request_id.get()},
+            )
         finally:
             request_id.reset(token)

@@ -315,26 +315,6 @@
       }
     }
   },
-  "keypadPressFor": "Press {key} for {action}",
-  "@keypadPressFor": {
-    "description": "One keypad shortcut. No full stop; one is added after the last.",
-    "placeholders": {
-      "key": {
-        "type": "String",
-        "example": "1"
-      },
-      "action": {
-        "type": "String",
-        "example": "Login"
-      }
-    }
-  },
-  "keypadListSeparator": ". ",
-  "@keypadListSeparator": {
-    "description": "Placed between two 'Press 1 for ...' phrases."
-  },
-  "keypadRepeatInstructions": "Press star to repeat these instructions.",
-  "keypadRepeatFullHelp": "Press star to repeat full help.",
   "keypadStarForShortcuts": "Press star for all shortcuts.",
   "keypadScreenReaderIntro": "{screen}. Press star for keypad help.",
   "@keypadScreenReaderIntro": {
@@ -353,15 +333,9 @@
       }
     }
   },
-  "keypadNumberedBackAndStop": "Press 0 to go back or cancel. Press hash to stop app speech.",
-  "keypadNumberedEditing": "While editing, keys enter text. Press OK to finish, or use up or down to leave the field.",
-  "keypadNumberedMove": "Use D-pad up and down to move between choices and OK to select.",
   "keypadEssentialMove": "Use up and down to move, and OK to select.",
-  "keypadPressZeroBack": "Press 0 to go back.",
   "keypadHashAndStar": "Press hash to stop speech. Press star to repeat these instructions.",
-  "keypadDirectionKeys": "Use the direction keys to move.",
   "keypadDirectionKeysAndOk": "Use the direction keys to move and OK to select.",
-  "keypadActivateOrEdit": "Press OK to activate a control or edit a field.",
   "keypadLeaveField": "While editing, press OK or use up or down to leave the field.",
   "keypadPosition": ", {index} of {total}",
   "@keypadPosition": {
@@ -3091,17 +3065,6 @@
       }
     }
   },
-  "sessionPressKeyFor": "Press {key} for {action}.",
-  "@sessionPressKeyFor": {
-    "placeholders": {
-      "key": {
-        "type": "String"
-      },
-      "action": {
-        "type": "String"
-      }
-    }
-  },
   "sessionMicWaitingLabel": "Microphone waiting for confirmation",
   "sessionUnmuteMicrophone": "Unmute microphone",
   "sessionMuteMicrophone": "Mute microphone",
@@ -3400,7 +3363,7 @@
   "sessionHandRaised": "Hand raised",
   "sessionHandLowered": "Hand lowered",
   "sessionHandNotConfirmed": "Your hand change was not confirmed. Press 2 to try again.",
-  "sessionRaisedHandBy": "{name} raised hand. Press 2 for raised hands.",
+  "sessionRaisedHandBy": "{name} raised a hand.",
   "@sessionRaisedHandBy": {
     "placeholders": {
       "name": {
@@ -3408,7 +3371,7 @@
       }
     }
   },
-  "sessionRaisedHandUnknown": "A participant raised hand. Press 2 for raised hands.",
+  "sessionRaisedHandUnknown": "A student raised a hand.",
   "sessionParticipantJoined": "A participant joined.",
   "sessionParticipantsJoinedGroup": "Participants joined",
   "@sessionParticipantsJoinedGroup": {
@@ -4037,228 +4000,10 @@
       }
     }
   },
-  "classroomOnlyTeacherAcknowledges": "Only the session teacher may acknowledge a hand.",
-  "classroomHandChanged": "The selected hand changed. Read the queue again.",
-  "classroomAckUnconfirmed": "The hand acknowledgment was not confirmed. Read the queue before retrying.",
-  "classroomAckUnreadable": "Hand acknowledgment was not readable. Check the queue before trying again.",
-  "classroomAcknowledgedChanged": "{name} acknowledged earlier. Their hand has since changed; read the queue again. Their microphone was not changed.",
-  "@classroomAcknowledgedChanged": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "classroomAcknowledged": "{name} acknowledged. The selected hand was lowered. Their microphone was not changed.",
-  "@classroomAcknowledged": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "classroomHandsHelp": "Raised hands. Read summary for the last received classroom state. Previous and Next select a raised hand without changing it. Acknowledge lowers only the selected hand after server confirmation. It never unmutes anyone. Older hands with unknown order are labelled separately.",
-  "classroomConsoleHelp": "Classroom console. Read summary for the last received classroom state. Previous and Next select a raised hand without changing it. Acknowledge lowers only the selected hand after server confirmation. It never unmutes anyone. Older hands with unknown order are labelled separately.",
-  "classroomHandsTitle": "Raised hands",
-  "classroomNoHands": "No raised hands in the last received classroom state.",
-  "classroomSelectedGone": "{count, plural, =1{The selected hand is no longer in the queue. 1 raised hand remain. Use Next or Previous to select a hand.} other{The selected hand is no longer in the queue. {count} raised hands remain. Use Next or Previous to select a hand.}}",
-  "@classroomSelectedGone": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "classroomConsoleSelectedGone": "{count, plural, other{The selected hand is no longer in the queue. {count} raised hands remain. Use Next or Previous to select a hand.}}",
-  "@classroomConsoleSelectedGone": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "classroomHandTitle": "Hand {position} of {total}, {name}, waiting",
-  "@classroomHandTitle": {
-    "placeholders": {
-      "position": {
-        "type": "String"
-      },
-      "total": {
-        "type": "String"
-      },
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "classroomParticipantNumbered": "Participant {id}",
-  "@classroomParticipantNumbered": {
-    "description": "Name used for a participant without a name; id is a number.",
-    "placeholders": {
-      "id": {
-        "type": "String"
-      }
-    }
-  },
-  "classroomKnownOrder": "Server-recorded queue order.",
-  "classroomUnknownOrder": "Original raise order unknown; shown before known-order hands.",
-  "classroomReportedMuted": "Microphone reported muted.",
-  "classroomReportedUnmuted": "Microphone reported unmuted; this is not proof of speech.",
-  "classroomNoHandsShort": "No raised hands",
-  "classroomNoHandSelected": "No hand selected",
-  "classroomLowering": "Lowering hand for {name}. Waiting for the server.",
-  "@classroomLowering": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "classroomLoweredLast": "Hand lowered for {name}. The hand queue is now empty.",
-  "@classroomLoweredLast": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "classroomLoweredNext": "Hand lowered for {name}. Next: {next}.",
-  "@classroomLoweredNext": {
-    "description": "next: the next hand, such as \"Hand 1 of 2, Ravi, waiting\".",
-    "placeholders": {
-      "name": {
-        "type": "String"
-      },
-      "next": {
-        "type": "String"
-      }
-    }
-  },
-  "classroomNoSummary": "No classroom summary is available yet.",
-  "classroomReadSummary": "Read classroom summary",
-  "classroomPreviousHand": "Previous raised hand",
-  "classroomReadHand": "Read selected hand",
-  "classroomReadHandLabel": "Read selected hand. {hand}",
-  "@classroomReadHandLabel": {
-    "description": "hand: the selected hand, such as \"Hand 1 of 2, Ravi, waiting\".",
-    "placeholders": {
-      "hand": {
-        "type": "String"
-      }
-    }
-  },
-  "classroomNextHand": "Next raised hand",
-  "classroomWaitingAck": "Waiting for hand acknowledgment",
-  "classroomAckNoneSelected": "Acknowledge and lower selected hand. No hand selected",
-  "classroomAckLabel": "Lower {name}. Never unmutes",
-  "@classroomAckLabel": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "classroomAckSelectedLabel": "Lower selected hand. Never unmutes",
-  "classroomAckButton": "Acknowledge and lower hand",
-  "classroomRepeatConsoleHelp": "Repeat console help",
-  "classroomConsoleSections": "read classroom summary, previous hand, read selected hand, next hand, acknowledge hand, stop speech, help and back. If no hands or summary are available, selecting their controls reads that status",
-  "@classroomConsoleSections": {
-    "description": "Inserted into \"Use D-pad up and down to move through ...\"."
-  },
-  "classroomSnapshotNote": "Counts reflect the last received snapshot, not guaranteed audio delivery. Active speaker identification is unavailable.",
-  "classroomWaitingAckNote": "Waiting for server acknowledgment. No microphone is changed.",
-  "classroomSummaryParticipants": "{count, plural, =1{1 participant} other{{count} participants}}",
-  "@classroomSummaryParticipants": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "classroomSummaryHands": "{count, plural, =1{1 raised hand} other{{count} raised hands}}",
-  "@classroomSummaryHands": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "classroomSummaryMicrophones": "{count, plural, =1{1 microphone} other{{count} microphones}}",
-  "@classroomSummaryMicrophones": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "classroomSummaryNobodySpeaking": "Nobody detected speaking.",
-  "classroomSummarySpeaking": "Detected speaking: {names}.",
-  "@classroomSummarySpeaking": {
-    "description": "names: comma separated participant names.",
-    "placeholders": {
-      "names": {
-        "type": "String"
-      }
-    }
-  },
-  "classroomSummaryNoRecording": "No class recording selected.",
-  "classroomSummaryRecordingPlaying": "Class recording {title}. Playing requested.",
-  "@classroomSummaryRecordingPlaying": {
-    "placeholders": {
-      "title": {
-        "type": "String"
-      }
-    }
-  },
-  "classroomSummaryRecordingPaused": "Class recording {title}. Paused.",
-  "@classroomSummaryRecordingPaused": {
-    "placeholders": {
-      "title": {
-        "type": "String"
-      }
-    }
-  },
-  "classroomSummaryPreviewActive": "Private preview active on this phone only.",
-  "classroomSummaryPreviewStopped": "Private preview stopped.",
-  "classroomSummary": "Local connection: {connection}. Last received classroom state: {people}, {hands}, {muted} reported muted. Remote reconnecting counts are unavailable. {speaking} {recording} {preview} Microphone flags and accepted playback requests do not prove that anyone spoke or heard audio.",
-  "@classroomSummary": {
-    "description": "connection: connection status sentence; people, hands, muted: counts such as \"3 participants\", \"1 raised hand\", \"2 microphones\"; speaking, recording, preview: full sentences.",
-    "placeholders": {
-      "connection": {
-        "type": "String"
-      },
-      "people": {
-        "type": "String"
-      },
-      "hands": {
-        "type": "String"
-      },
-      "muted": {
-        "type": "String"
-      },
-      "speaking": {
-        "type": "String"
-      },
-      "recording": {
-        "type": "String"
-      },
-      "preview": {
-        "type": "String"
-      }
-    }
-  },
   "sessionToolsTitle": "Teacher tools",
   "sessionInvite": "Invite students",
   "sessionEndClass": "End class for everyone, asks to confirm",
   "sessionPeopleTitle": "Participants and raised hands",
-  "sessionHandQueue": "{count, plural, =0{Raised hands queue, No hands waiting} =1{Raised hands queue, 1 hand waiting} other{Raised hands queue, {count} hands waiting}}",
-  "@sessionHandQueue": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "sessionParticipantList": "{count, plural, =1{Participants list, 1 person} other{Participants list, {count} people}}",
   "@sessionParticipantList": {
     "placeholders": {
@@ -9840,15 +9585,6 @@
     }
   },
   "journeyMenuReady": "Ready.",
-  "journeyMenuReadDetailsHelp": "Press 8 to read details again.",
-  "journeyMenuBackHelp": "Press 0 for {back}. Press star for help.",
-  "@journeyMenuBackHelp": {
-    "placeholders": {
-      "back": {
-        "type": "String"
-      }
-    }
-  },
   "journeyMenuNothingAssigned": "Nothing is assigned to {number}.",
   "@journeyMenuNothingAssigned": {
     "placeholders": {
@@ -11376,7 +11112,6 @@
       }
     }
   },
-  "classroomConsoleTitle": "Classroom console",
   "uiHourRange": "Hour (0 to 23)",
   "uiSetDateTimeTitle": "Set date and time",
   "uiSetDateTimeHint": "Use local time. Press OK to edit each number.",
@@ -13920,7 +13655,7 @@
   "@loginScreenName": {
     "description": "Title of the sign-in screen for students and teachers."
   },
-  "loginIntro": "Type your phone number, then press 1 to sign in.",
+  "loginIntro": "Type your phone number, press OK, then press 1 to sign in.",
   "@loginIntro": {
     "description": "Short arrival speech on the sign-in screen."
   },
@@ -13940,7 +13675,7 @@
   "@loginProfileLabel": {
     "description": "Visible label of the shared-phone profile number field."
   },
-  "loginEnterProfileCode": "This phone is shared. Type your profile number, then press 1.",
+  "loginEnterProfileCode": "This phone is shared. Type your profile number, press OK, then press 1.",
   "@loginEnterProfileCode": {
     "description": "Spoken when the number belongs to a shared phone."
   },
@@ -13992,7 +13727,7 @@
   "@adminLoginScreenName": {
     "description": "Title of the administrator password screen."
   },
-  "adminLoginIntro": "Type your phone number and password, then press 1.",
+  "adminLoginIntro": "Type your phone number and password, pressing OK after each, then press 1.",
   "@adminLoginIntro": {
     "description": "Short arrival speech on the administrator sign-in screen."
   },
@@ -14386,7 +14121,7 @@
   "@sessionMicSettingsCancel": {
     "description": "Dialog cancel."
   },
-  "sessionMuteAllButton": "3: Mute all students",
+  "sessionMuteAllButton": "2: Mute all students",
   "@sessionMuteAllButton": {
     "description": "Teacher key 8 button."
   },
@@ -14411,7 +14146,7 @@
   "@sessionMuteAllNone": {
     "description": "Spoken when nobody needed muting."
   },
-  "sessionMuteAllNotConfirmed": "Muting everyone was not confirmed. {reason} Press 3 to try again.",
+  "sessionMuteAllNotConfirmed": "Muting everyone was not confirmed. {reason} Press 2 to try again.",
   "@sessionMuteAllNotConfirmed": {
     "description": "Spoken when mute all failed.",
     "placeholders": {
@@ -14420,7 +14155,7 @@
       }
     }
   },
-  "sessionClassListButton": "4: Class list",
+  "sessionClassListButton": "3: Class list",
   "@sessionClassListButton": {
     "description": "Teacher key 7 button."
   },
@@ -14572,7 +14307,7 @@
       }
     }
   },
-  "sessionEndingSoonTeacherExtend": "{minutes, plural, =1{The class ends automatically in 1 minute. To add 15 minutes, press 7 then 1.} other{The class ends automatically in {minutes} minutes. To add 15 minutes, press 7 then 1.}}",
+  "sessionEndingSoonTeacherExtend": "{minutes, plural, =1{The class ends automatically in 1 minute. To add 15 minutes, press 5 then 1.} other{The class ends automatically in {minutes} minutes. To add 15 minutes, press 5 then 1.}}",
   "@sessionEndingSoonTeacherExtend": {
     "description": "Warning for teachers.",
     "placeholders": {
@@ -14590,11 +14325,11 @@
       }
     }
   },
-  "sessionLessonReady": "Today's lesson is ready. Press 5, then 3, to play it for the class.",
+  "sessionLessonReady": "Today's lesson is ready. Press 4, then 3, to play it for the class.",
   "@sessionLessonReady": {
     "description": "Spoken when a prepared lesson is selected."
   },
-  "sessionLessonNextReady": "The next part of today's lesson is ready. Press 6 to play it.",
+  "sessionLessonNextReady": "The next part of today's lesson is ready. Press 7 to play it.",
   "@sessionLessonNextReady": {
     "description": "Spoken when the next lesson part is selected."
   },
@@ -14602,7 +14337,7 @@
   "@sessionJoinedStudentBrief": {
     "description": "Short speech on joining a class as a student."
   },
-  "sessionJoinedTeacherBrief": "Your class is live. You are muted. Press 1 to speak, 3 to mute all students.",
+  "sessionJoinedTeacherBrief": "Your class is live. You are muted. Press 1 to speak, 2 to mute all students.",
   "@sessionJoinedTeacherBrief": {
     "description": "Short speech on entering a class as a teacher."
   },
@@ -14700,9 +14435,13 @@
   "@adminSetupNoMatchingLessons": {
     "description": "Admin timetable: search found nothing"
   },
-  "sessionMoreButton": "7: More",
+  "sessionMoreButton": "{key}: More",
   "@sessionMoreButton": {
-    "description": "Live class: visible button that opens the less used actions"
+    "placeholders": {
+      "key": {
+        "type": "String"
+      }
+    }
   },
   "sessionMoreLabel": "More options",
   "@sessionMoreLabel": {
@@ -14716,10 +14455,6 @@
   "@sessionMoreClassroomCheck": {
     "description": "Live class More: teacher starts or closes a classroom check"
   },
-  "sessionMoreStatus": "Class status",
-  "@sessionMoreStatus": {
-    "description": "Live class More: hear the class status and any updates"
-  },
   "sessionMoreWhatIsPlaying": "What is playing",
   "@sessionMoreWhatIsPlaying": {
     "description": "Live class More: student hears the lesson recording status"
@@ -14727,10 +14462,6 @@
   "sessionMoreWhoIsHere": "Who is in class",
   "@sessionMoreWhoIsHere": {
     "description": "Live class More: student hears who is in class"
-  },
-  "sessionKeyRaisedHands": "Raised hands",
-  "@sessionKeyRaisedHands": {
-    "description": "Live class key help, teacher key 2"
   },
   "sessionKeyClassList": "Class list",
   "@sessionKeyClassList": {
@@ -14752,7 +14483,7 @@
   "@sessionKeyLeave": {
     "description": "Live class key help, key 0"
   },
-  "sessionEndClassButton": "8: End class for everyone",
+  "sessionEndClassButton": "6: End class for everyone",
   "@sessionEndClassButton": {
     "description": "Teacher class screen key 6"
   },
@@ -14790,7 +14521,7 @@
       }
     }
   },
-  "sessionActivityStartedTeacher": "{title} is open for the class. Press 6 for its status.",
+  "sessionActivityStartedTeacher": "{title} is open for the class. Press 7 for its status.",
   "@sessionActivityStartedTeacher": {
     "description": "Teacher confirmation",
     "placeholders": {
@@ -14808,7 +14539,7 @@
       }
     }
   },
-  "sessionActivityQuizStarted": "Your teacher started a quiz: {title}. Press 4 to begin.",
+  "sessionActivityQuizStarted": "Your teacher assigned a quiz: {title}. Press 5 to start it.",
   "@sessionActivityQuizStarted": {
     "description": "Student announcement",
     "placeholders": {
@@ -14817,7 +14548,7 @@
       }
     }
   },
-  "sessionActivityJourneyStarted": "Your teacher started a journey: {title}. Press 4 to begin.",
+  "sessionActivityJourneyStarted": "Your teacher assigned a learning journey: {title}. Press 5 to start it.",
   "@sessionActivityJourneyStarted": {
     "description": "Student announcement",
     "placeholders": {
@@ -14953,7 +14684,7 @@
   "@sessionKeyJourney": {
     "description": "Key help, teacher key 7"
   },
-  "sessionStartQuizButton": "4: Start quiz: {title}",
+  "sessionStartQuizButton": "5: Start quiz: {title}",
   "@sessionStartQuizButton": {
     "description": "Student key 6 while a quiz is open",
     "placeholders": {
@@ -14962,7 +14693,7 @@
       }
     }
   },
-  "sessionStartJourneyButton": "4: Start journey: {title}",
+  "sessionStartJourneyButton": "5: Start journey: {title}",
   "@sessionStartJourneyButton": {
     "description": "Student key 7 while a journey is open",
     "placeholders": {
@@ -15080,7 +14811,7 @@
       }
     }
   },
-  "sessionActivityReminderQuiz": "Your teacher reminds you to do the quiz {title}. Press 4 to begin.",
+  "sessionActivityReminderQuiz": "Your teacher reminds you to do the quiz {title}. Press 5 to start it.",
   "@sessionActivityReminderQuiz": {
     "description": "Student reminder",
     "placeholders": {
@@ -15089,7 +14820,7 @@
       }
     }
   },
-  "sessionActivityReminderJourney": "Your teacher reminds you to do the journey {title}. Press 4 to begin.",
+  "sessionActivityReminderJourney": "Your teacher reminds you to do the learning journey {title}. Press 5 to start it.",
   "@sessionActivityReminderJourney": {
     "description": "Student reminder",
     "placeholders": {
@@ -15704,45 +15435,6 @@
   "@adminAuthorSaveJourney": {
     "description": "Saves the journey editor."
   },
-  "teacherHomeNotice": "{kind} {title}: {action} for you by your administrator.",
-  "@teacherHomeNotice": {
-    "description": "Teacher home: an admin change",
-    "placeholders": {
-      "kind": {
-        "type": "String"
-      },
-      "title": {
-        "type": "String"
-      },
-      "action": {
-        "type": "String"
-      }
-    }
-  },
-  "teacherHomeNoticeQuiz": "Quiz",
-  "@teacherHomeNoticeQuiz": {
-    "description": "Notice kind"
-  },
-  "teacherHomeNoticeJourney": "Journey",
-  "@teacherHomeNoticeJourney": {
-    "description": "Notice kind"
-  },
-  "teacherHomeNoticeCreated": "added",
-  "@teacherHomeNoticeCreated": {
-    "description": "Notice action"
-  },
-  "teacherHomeNoticePublished": "published",
-  "@teacherHomeNoticePublished": {
-    "description": "Notice action"
-  },
-  "teacherHomeNoticeClosed": "closed",
-  "@teacherHomeNoticeClosed": {
-    "description": "Notice action"
-  },
-  "teacherHomeNoticeArchived": "archived",
-  "@teacherHomeNoticeArchived": {
-    "description": "Notice action"
-  },
   "sessionPeopleJoined": "{names} joined.",
   "@sessionPeopleJoined": {
     "description": "Teacher: students who joined",
@@ -15815,7 +15507,7 @@
       }
     }
   },
-  "sessionStartButton": "5: Start",
+  "sessionStartButton": "4: Start",
   "@sessionStartButton": {
     "description": "Teacher class screen key 5"
   },
@@ -15839,7 +15531,7 @@
   "@sessionStartRecording": {
     "description": "Start menu choice"
   },
-  "sessionStatusKeyButton": "6: Status of {title}",
+  "sessionStatusKeyButton": "7: Status of {title}",
   "@sessionStatusKeyButton": {
     "description": "Teacher key 6 while something runs",
     "placeholders": {
@@ -15883,5 +15575,215 @@
   "sessionNowPlayingTitle": "the recording",
   "@sessionNowPlayingTitle": {
     "description": "Status title when the recording has no title"
+  },
+  "noticeActorAdmin": "Your administrator",
+  "noticeQuizCreated": "{actor} added quiz {title}.",
+  "@noticeQuizCreated": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "noticeQuizPublished": "{actor} published quiz {title}.",
+  "@noticeQuizPublished": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "noticeQuizClosed": "{actor} closed quiz {title}.",
+  "@noticeQuizClosed": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "noticeJourneyCreated": "{actor} added learning journey {title}.",
+  "@noticeJourneyCreated": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "noticeJourneyPublished": "{actor} published learning journey {title}.",
+  "@noticeJourneyPublished": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "noticeJourneyArchived": "{actor} archived learning journey {title}.",
+  "@noticeJourneyArchived": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "noticePlaylistPublished": "{actor} published playlist {title}.",
+  "@noticePlaylistPublished": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "noticeLessonCreated": "{actor} added lesson {title}.",
+  "@noticeLessonCreated": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "noticeLessonUpdated": "{actor} changed lesson {title}.",
+  "@noticeLessonUpdated": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "noticeLessonRemoved": "{actor} removed lesson {title}.",
+  "@noticeLessonRemoved": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "noticeLessonRemovedOn": "{actor} removed you from lesson {title} on {date}.",
+  "@noticeLessonRemovedOn": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "title": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "noticeLessonCancelled": "{actor} cancelled lesson {title} on {date}.",
+  "@noticeLessonCancelled": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "title": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "noticeLessonSubstitute": "{actor} asked you to teach lesson {title} on {date}.",
+  "@noticeLessonSubstitute": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "title": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "noticeLessonCovered": "{actor} gave your lesson {title} on {date} to another teacher.",
+  "@noticeLessonCovered": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "title": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "keypadKeyFor": "{key} for {action}",
+  "@keypadKeyFor": {
+    "placeholders": {
+      "key": {
+        "type": "String"
+      },
+      "action": {
+        "type": "String"
+      }
+    },
+    "description": "One item of a key list, e.g. '1 for Quizzes'. Items are joined by keypadKeySeparator and placed in keypadPressKeys."
+  },
+  "keypadPressKeys": "Press {keys}.",
+  "@keypadPressKeys": {
+    "placeholders": {
+      "keys": {
+        "type": "String"
+      }
+    },
+    "description": "keys: items like '1 for Quizzes, 2 for Playlists, 0 for Back'."
+  },
+  "keypadKeySeparator": ", ",
+  "keypadStarHelp": "Press star for help.",
+  "@keypadKeySeparator": {
+    "description": "Joins key list items; normally a comma and a space."
+  },
+  "sessionCloseRecording": "Close recording for the class",
+  "sessionRecordingClosedTeacher": "{title} is closed for the class.",
+  "@sessionRecordingClosedTeacher": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionRecordingClosedStudent": "Your teacher closed the recording {title}.",
+  "@sessionRecordingClosedStudent": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
   }
 }

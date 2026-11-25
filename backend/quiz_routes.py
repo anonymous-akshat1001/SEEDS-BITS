@@ -869,6 +869,9 @@ async def publish_quiz(
             reminder_at, {"quiz_id": quiz.quiz_id},
         )
     await teacher_notices.record(db, teacher, "quiz", quiz, "published")
+    await teacher_notices.notify_class(
+        db, quiz.class_id, teacher.user_id, "quiz", quiz.quiz_id, quiz.title, "published",
+    )
     await db.commit()
     published = await _get_quiz(db, quiz_id)
     students = await _eligible_students(db, published.class_id)

@@ -98,44 +98,9 @@ class _TeacherDashboardState extends State<TeacherDashboard>
     }
     // Something the administrator did while Home is open.
     if (onScreen && _spokeArrival) {
-      final notices = _takeNotices();
+      final notices = takeNotices();
       if (notices != null) unawaited(TtsService.speak(notices));
     }
-  }
-
-  final _heardNotices = <int>{};
-
-  /// The administrator's unheard changes ("Quiz Plants: published for you
-  /// by your administrator."), marked as heard once spoken.
-  String? _takeNotices() {
-    final t = Speech.t;
-    final fresh = [
-      for (final item in (home?['admin_notices'] as List?) ?? const [])
-        if (item is Map &&
-            item['notice_id'] is int &&
-            !_heardNotices.contains(item['notice_id']))
-          Map<String, dynamic>.from(item),
-    ];
-    if (fresh.isEmpty) return null;
-    final ids = [for (final item in fresh) item['notice_id'] as int];
-    _heardNotices.addAll(ids);
-    unawaited(ApiService.markNoticesSeen(ids));
-    return fresh
-        .map(
-          (item) => t.teacherHomeNotice(
-            item['kind'] == 'journey'
-                ? t.teacherHomeNoticeJourney
-                : t.teacherHomeNoticeQuiz,
-            '${item['title']}',
-            switch (item['action']) {
-              'published' => t.teacherHomeNoticePublished,
-              'closed' => t.teacherHomeNoticeClosed,
-              'archived' => t.teacherHomeNoticeArchived,
-              _ => t.teacherHomeNoticeCreated,
-            },
-          ),
-        )
-        .join(' ');
   }
 
   Future<void> _arrive() async {
@@ -160,7 +125,7 @@ class _TeacherDashboardState extends State<TeacherDashboard>
           ?carried,
           Speech.t.homeTitle,
           _brief(),
-          ?_takeNotices(),
+          ?takeNotices(),
           JourneyMenu.spokenKeys(_choices, DashboardText.logout),
         ].join(' '),
       ),

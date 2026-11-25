@@ -8,7 +8,7 @@ import '../../widgets/journey_prompts.dart';
 import '../../widgets/keypad_paged_list.dart';
 import 'live_session.dart';
 
-/// Key 6 for students: everyone in the class, read only. The teacher comes
+/// More, Who is here (students): everyone in the class, read only. The teacher comes
 /// first, then this phone's user, then everyone else by name. Selecting a
 /// person reads whether their hand is raised and their microphone is on.
 class ClassMembersScreen extends StatelessWidget {

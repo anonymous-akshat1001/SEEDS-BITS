@@ -149,7 +149,15 @@ class AuthSessionService {
     if (saved.any((ok) => !ok) || !await prefs.setString('token', token)) {
       throw StateError('Sign-in could not be saved');
     }
-    if (await restoreAccountProfile(prefs, userId)) {
+    final chosenSignedOut = prefs.getString(
+      TtsService.languageChosenSignedOutKey,
+    );
+    final restored = await restoreAccountProfile(prefs, userId);
+    if (chosenSignedOut != null) {
+      await prefs.setString('speech_language', chosenSignedOut);
+      await prefs.remove(TtsService.languageChosenSignedOutKey);
+    }
+    if (restored || chosenSignedOut != null) {
       await _applyPreferences(prefs);
     }
   }

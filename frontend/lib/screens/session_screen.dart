@@ -31,7 +31,6 @@ import '../services/sse_service.dart';
 import '../services/tts_service.dart';
 import '../utils/keypad_actions.dart';
 import '../utils/ui_utils.dart';
-import '../widgets/classroom_console_dialog.dart';
 import '../widgets/journey_menu.dart';
 import '../widgets/journey_prompts.dart';
 import '../widgets/key_instruction_wrapper.dart';
@@ -209,7 +208,6 @@ class _SessionScreenState extends State<SessionScreen>
   // The quiz or journey the teacher opened for the class: kind, id, title.
   Map<String, dynamic>? _activity;
   bool _activityBusy = false;
-  bool _handQueueOpen = false;
   bool _isReturningToDashboard = false;
   bool _leaveConfirmationOpen = false;
 
@@ -254,7 +252,6 @@ class _SessionScreenState extends State<SessionScreen>
   final _muteFocus = FocusNode(debugLabel: 'session-mute');
   final _handFocus = FocusNode(debugLabel: 'session-hand');
   final _recordingFocus = FocusNode(debugLabel: 'session-recording');
-  final _handsFocus = FocusNode(debugLabel: 'session-raised-hands');
   final _participantsFocus = FocusNode(debugLabel: 'session-participants');
   final _muteAllFocus = FocusNode(debugLabel: 'session-mute-all');
   final _moreFocus = FocusNode(debugLabel: 'session-more');
@@ -569,6 +566,7 @@ class _SessionScreenState extends State<SessionScreen>
         }
       case 'session_state':
         _updateSessionState(data);
+        // Announced once if it is new to this student (joined late).
         _applyActivity(data['activity'], announce: false);
         if (widget.isTeacher) unawaited(_prepareLesson());
       case 'activity_started':
@@ -613,6 +611,8 @@ class _SessionScreenState extends State<SessionScreen>
         _peers.handleSignal(data);
       case 'audio_selected':
         _onAudioSelected(data);
+      case 'audio_cleared':
+        unawaited(_onAudioCleared(data));
       case 'audio_play':
         _onAudioPlay(data);
       case 'audio_pause':
@@ -985,6 +985,50 @@ class _SessionScreenState extends State<SessionScreen>
     }
   }
 
+  /// The teacher closed the class recording: stop it here and forget it, so
+  /// nothing is playing and Status (7) goes away.
+  Future<void> _onAudioCleared(Map<String, dynamic> data) async {
+    final hadRecording = _currentAudioId != null;
+    final title = data['title'] as String? ?? _currentAudioTitle;
+    if (!mounted) return;
+    setState(() {
+      _currentAudioId = null;
+      _currentAudioTitle = null;
+      _isPlayingSessionAudio = false;
+      _currentPosition = 0;
+      _audioDuration = null;
+      _recordingRunning = false;
+    });
+    if (!widget.isTeacher && hadRecording) {
+      _speakIfEnabled(
+        SessionText.recordingClosedStudent(
+          title ?? SessionText.recordingFallbackLower,
+        ),
+      );
+    }
+    // A slow native player must not delay the state or the announcement.
+    try {
+      await _sessionAudioPlayer.stop().timeout(const Duration(seconds: 2));
+    } catch (error) {
+      debugPrint('[AUDIO STOP ERROR] $error');
+    }
+  }
+
+  @override
+  Future<bool> closeRecording() async {
+    final title = _currentAudioTitle ?? SessionText.recordingFallbackLower;
+    final closed = await ApiService.closeClassRecording(widget.sessionId);
+    if (!mounted) return false;
+    if (!closed.isSuccess) {
+      _error(closed.failure!.message);
+      return false;
+    }
+    unawaited(_onAudioCleared({'title': title}));
+    unawaited(FeedbackCues.play(Cue.ok));
+    _speakIfEnabled(SessionText.recordingClosedTeacher(title));
+    return true;
+  }
+
   Future<void> _onAudioPause(Map<String, dynamic> data) async {
     final position = (data['position'] as num?)?.toDouble();
     await _sessionAudioPlayer.pause();
@@ -1284,9 +1328,6 @@ class _SessionScreenState extends State<SessionScreen>
       !_handRaised
           ? _toggleHandRaise()
           : _speakIfEnabled(SessionText.handAlreadyRaised);
-    } else if (widget.isTeacher &&
-        matches(const {'hands', 'raised hands', 'hand queue'})) {
-      openHandQueue();
     } else if (matches(const {'quiz', 'start quiz'})) {
       widget.isTeacher
           ? unawaited(_pickActivity('quiz'))
@@ -1385,40 +1426,9 @@ class _SessionScreenState extends State<SessionScreen>
     ].where((part) => part.isNotEmpty).join(' '),
   );
 
-  /// More, Class status: the full picture, then any held-back updates.
-  Future<void> _speakFullStatus() async {
-    await TtsService.speak(
-      [
-        widget.isTeacher ? classroomSummary() : _stateSummary(),
-        SessionText.people(_participants.length),
-        SessionText.messages(_messages.length),
-      ].where((part) => part.isNotEmpty).toSet().join(' '),
-      priority: SpeechPriority.requested,
-    );
-    await TtsService.readPendingUpdates();
-  }
-
   void _speakClassStatus() => unawaited(
     TtsService.speak(classStatus(), priority: SpeechPriority.requested),
   );
-
-  @override
-  String classroomSummary() {
-    final people = _participants.values;
-    return SessionText.classroomSummary(
-      connection: _connectionMessage,
-      people: people.length,
-      hands: raisedHandCount,
-      muted: people.where((p) => p['is_muted'] == true).length,
-      speaking: _peers.speaking
-          .map((id) => _participants[id]?['name'])
-          .whereType<String>()
-          .toList(),
-      recording: _currentAudioId == null ? null : _currentAudioTitle,
-      recordingPlaying: _isPlayingSessionAudio,
-      previewing: _previewingAudioId != null,
-    );
-  }
 
   // ── LiveSession: participants ──────────────────────────────────────────
 
@@ -1452,61 +1462,6 @@ class _SessionScreenState extends State<SessionScreen>
         speaking: _peers.speaking.contains(participant['id']),
       );
 
-  @override
-  Future<void> openHandQueue() async {
-    if (!widget.isTeacher || _handQueueOpen) return;
-    _handQueueOpen = true;
-    try {
-      await showDialog<void>(
-        context: context,
-        builder: (_) => ClassroomConsoleDialog(
-          revision: _changes,
-          participants: () => _participants.values.toList(),
-          summary: classroomSummary,
-          acknowledge: _acknowledgeHand,
-        ),
-      );
-    } finally {
-      _handQueueOpen = false;
-    }
-  }
-
-  Future<String?> _acknowledgeHand(int id, int? order) async {
-    if (!widget.isTeacher) return SessionText.onlyTeacherAcknowledges;
-    final participant = _participants[id];
-    if (participant == null ||
-        participant['raised_hand'] != true ||
-        participant['hand_queue_order'] != order) {
-      return SessionText.handChanged;
-    }
-    final name =
-        participant['name'] as String? ?? SessionText.participantFallback;
-    final result = await _sse.send({
-      'type': 'acknowledge_hand',
-      'target_participant_id': id,
-      'hand_queue_order': order,
-    });
-    if (!mounted) return null;
-    if (!result.isSuccess) {
-      return result.failure?.message ?? SessionText.ackUnconfirmed;
-    }
-    final state = result.data?['hand_state'];
-    if (state is! Map<String, dynamic> ||
-        state['participant_id'] != id ||
-        state['raised_hand'] != false ||
-        state['hand_revision'] is! int) {
-      return SessionText.ackUnreadable;
-    }
-    _onHandChanged(state, false);
-    await _speakIfEnabled(
-      SessionText.acknowledged(
-        name,
-        changedSince: _participants[id]?['raised_hand'] == true,
-      ),
-    );
-    return null;
-  }
-
   /// One key mutes every student (S20); the teacher's own microphone is not
   /// touched and students can unmute themselves afterwards. A retried press
   /// carries the same request id, so it is answered once and never
@@ -1530,7 +1485,7 @@ class _SessionScreenState extends State<SessionScreen>
       });
       if (!mounted) return;
       if (!result.isSuccess) {
-        // Keep the id: pressing 8 again retries the same request.
+        // Keep the id: pressing 2 again retries the same request.
         _error(SessionText.muteAllNotConfirmed(result.failure!.message));
         return;
       }
@@ -1934,22 +1889,30 @@ class _SessionScreenState extends State<SessionScreen>
         : null;
     if (!mounted) return;
     setState(() => _activity = next);
-    if (!announce || widget.isTeacher) return;
+    if (widget.isTeacher) return;
     if (next != null) {
+      final key = '${next['kind']}:${next['id']}';
+      if (key == _heardActivity) return;
+      _heardActivity = key;
       unawaited(FeedbackCues.play(Cue.ok));
       _speakIfEnabled(
         SessionText.activityStartedStudent(
           '${next['kind']}',
           '${next['title']}',
         ),
-        priority: SpeechPriority.critical,
+        // Live: interrupt. On joining: after the class's own arrival speech.
+        priority: announce ? SpeechPriority.critical : SpeechPriority.requested,
       );
-    } else if (previousTitle != null) {
+    } else if (announce && previousTitle != null) {
+      _heardActivity = null;
       _speakIfEnabled(SessionText.activityStoppedStudent(previousTitle));
     }
   }
 
-  /// Teacher key 6 (quiz) or 7 (journey); students start the open one with 4.
+  /// The quiz or journey a student has already been told about.
+  String? _heardActivity;
+
+  /// Voice commands "quiz" and "journey"; students start the open one (5).
   /// Teachers: start one, or, while that kind is open, the follow-up menu.
   void _activityKey(String kind) {
     if (!widget.isTeacher) {
@@ -2103,7 +2066,7 @@ class _SessionScreenState extends State<SessionScreen>
     }
   }
 
-  /// Student key 4: straight into the quiz's first question or the
+  /// Student key 5: straight into the quiz's first question or the
   /// journey's first step, with no list or confirmation in between. The
   /// class keeps running underneath; leaving returns here.
   Future<void> _startActivity() async {
@@ -2316,7 +2279,6 @@ class _SessionScreenState extends State<SessionScreen>
       _muteFocus,
       _handFocus,
       _recordingFocus,
-      _handsFocus,
       _participantsFocus,
       _muteAllFocus,
       _moreFocus,
@@ -2340,8 +2302,8 @@ class _SessionScreenState extends State<SessionScreen>
   /// Every control on the main screen, in focus order. Keys, focus labels
   /// and buttons all come from this one list, so the spoken help, D-pad
   /// order and visible buttons always match the account's role. Only what
-  /// is needed every minute is here; key 8 opens the rest. Ending is last:
-  /// 9 ends the class for everyone (teacher), 0 leaves.
+  /// is needed every minute is here; More opens the rest. 0 leaves; the
+  /// teacher ends the class for everyone with 6.
   List<_SessionOption> get _options => [
     _SessionOption(
       key: 1,
@@ -2379,16 +2341,16 @@ class _SessionScreenState extends State<SessionScreen>
         iconColor: UIUtils.errorColor,
       ),
     _SessionOption(
-      key: 7,
+      key: widget.isTeacher ? 5 : 4,
       node: _moreFocus,
       icon: Icons.more_horiz,
-      button: SessionText.moreButton,
+      button: SessionText.moreButton(widget.isTeacher ? 5 : 4),
       label: SessionText.moreLabel,
       onActivate: _openMore,
     ),
     if (widget.isTeacher)
       _SessionOption(
-        key: 8,
+        key: 6,
         node: _endClassFocus,
         icon: Icons.stop_circle_outlined,
         button: SessionText.endClassButton,
@@ -2396,6 +2358,7 @@ class _SessionScreenState extends State<SessionScreen>
         onActivate: () => unawaited(confirmEndSession()),
         iconColor: UIUtils.errorColor,
       ),
+    ...widget.isTeacher ? _teacherLastOptions : _studentLastOptions,
     _SessionOption(
       key: 0,
       node: _leaveFocus,
@@ -2407,9 +2370,9 @@ class _SessionScreenState extends State<SessionScreen>
     ),
   ];
 
-  /// Students: their microphone and hand, the teacher's quiz or journey
-  /// while one is open, and what is playing. Chat and who is here are under
-  /// More.
+  /// Students: their microphone, hand and what is playing; More (4) has
+  /// chat and who is here. The teacher's quiz or journey (5) is listed last,
+  /// only while one is open.
   List<_SessionOption> get _studentOptions => [
     _SessionOption(
       key: 2,
@@ -2433,9 +2396,61 @@ class _SessionScreenState extends State<SessionScreen>
       ),
       onActivate: _speakRecordingStatus,
     ),
+  ];
+
+  /// Teachers: mute all (2), the class list (3) and Start (4). More (5) has
+  /// adding time and chat; 6 ends the class. A raised hand is announced as
+  /// it happens, so there is no hand queue to manage.
+  List<_SessionOption> get _teacherOptions => [
+    _SessionOption(
+      key: 2,
+      node: _muteAllFocus,
+      icon: Icons.volume_off_outlined,
+      button: SessionText.muteAllButton,
+      label: SessionText.muteAllLabel,
+      onActivate: () => unawaited(muteAllStudents()),
+      isEnabled: () => !_muteAllPending,
+    ),
+    _SessionOption(
+      key: 3,
+      node: _participantsFocus,
+      icon: Icons.people_outline,
+      button: SessionText.classListButton,
+      label: SessionText.classListLabel(_participants.length),
+      onActivate: _openParticipants,
+    ),
+    _SessionOption(
+      key: 4,
+      node: _activityFocus,
+      icon: Icons.play_circle_outline,
+      button: SessionText.startButton,
+      label: SessionText.startLabel,
+      onActivate: () => unawaited(_openStart()),
+      isEnabled: () => !_activityBusy,
+    ),
+  ];
+
+  /// Listed after More and End so the numbers run in order.
+  List<_SessionOption> get _teacherLastOptions => [
+    if (_running != null)
+      _SessionOption(
+        key: 7,
+        node: _journeyFocus,
+        icon: _running == 'recording'
+            ? (_recordingActive ? Icons.pause : Icons.play_arrow)
+            : Icons.insights_outlined,
+        button: SessionText.statusKeyButton(_runningTitle),
+        label: SessionText.statusKeyLabel(_runningTitle),
+        onActivate: () => unawaited(_openRunningStatus()),
+        isEnabled: () => !_activityBusy,
+        selected: true,
+      ),
+  ];
+
+  List<_SessionOption> get _studentLastOptions => [
     if (_activity != null)
       _SessionOption(
-        key: 4,
+        key: 5,
         node: _activityFocus,
         icon: _activity!['kind'] == 'quiz'
             ? Icons.quiz_outlined
@@ -2454,61 +2469,7 @@ class _SessionScreenState extends State<SessionScreen>
       ),
   ];
 
-  /// Teachers: hands, mute all, the class list, Start (5) and, while
-  /// something runs, its status (6). Adding time, chat and the full status
-  /// are under More (7); ending the class is 8.
-  List<_SessionOption> get _teacherOptions => [
-    _SessionOption(
-      key: 2,
-      node: _handsFocus,
-      icon: raisedHandCount > 0 ? Icons.pan_tool : Icons.pan_tool_outlined,
-      button: SessionText.handsButton(raisedHandCount),
-      label: SessionText.handsLabel(raisedHandCount),
-      onActivate: openHandQueue,
-      selected: raisedHandCount > 0,
-    ),
-    _SessionOption(
-      key: 3,
-      node: _muteAllFocus,
-      icon: Icons.volume_off_outlined,
-      button: SessionText.muteAllButton,
-      label: SessionText.muteAllLabel,
-      onActivate: () => unawaited(muteAllStudents()),
-      isEnabled: () => !_muteAllPending,
-    ),
-    _SessionOption(
-      key: 4,
-      node: _participantsFocus,
-      icon: Icons.people_outline,
-      button: SessionText.classListButton,
-      label: SessionText.classListLabel(_participants.length),
-      onActivate: _openParticipants,
-    ),
-    _SessionOption(
-      key: 5,
-      node: _activityFocus,
-      icon: Icons.play_circle_outline,
-      button: SessionText.startButton,
-      label: SessionText.startLabel,
-      onActivate: () => unawaited(_openStart()),
-      isEnabled: () => !_activityBusy,
-    ),
-    if (_running != null)
-      _SessionOption(
-        key: 6,
-        node: _journeyFocus,
-        icon: _running == 'recording'
-            ? (_recordingActive ? Icons.pause : Icons.play_arrow)
-            : Icons.insights_outlined,
-        button: SessionText.statusKeyButton(_runningTitle),
-        label: SessionText.statusKeyLabel(_runningTitle),
-        onActivate: () => unawaited(_openRunningStatus()),
-        isEnabled: () => !_activityBusy,
-        selected: true,
-      ),
-  ];
-
-  // ── Start (5) and Status (6) ──────────────────────────────────────────
+  // ── Start (4) and Status (7) ──────────────────────────────────────────
   // One thing runs at a time: a quiz, a journey or a recording. Starting
   // one stops the others.
 
@@ -2527,7 +2488,7 @@ class _SessionScreenState extends State<SessionScreen>
       ? _activityTitle!
       : recordingTitle ?? SessionText.nowPlayingTitle;
 
-  /// Key 5: choose a quiz, a journey or a recording.
+  /// Teacher key 4: choose a quiz, a journey or a recording.
   Future<void> _openStart() async {
     if (!widget.isTeacher || _activityBusy) return;
     final choice = await JourneyPrompts.pick(
@@ -2564,7 +2525,7 @@ class _SessionScreenState extends State<SessionScreen>
     _push(SessionRecordingsScreen(session: this, startWhenReady: true));
   }
 
-  /// Key 6: the status of what is running.
+  /// Teacher key 7: the status of what is running.
   Future<void> _openRunningStatus() async {
     final running = _running;
     if (running == null) return;
@@ -2575,7 +2536,7 @@ class _SessionScreenState extends State<SessionScreen>
     }
   }
 
-  /// Key 7: everything used less than every minute.
+  /// More (teacher 5, student 4): everything used less than every minute.
   List<JourneyChoice> _moreChoices() => [
     if (widget.isTeacher)
       JourneyChoice(
@@ -2587,7 +2548,6 @@ class _SessionScreenState extends State<SessionScreen>
     JourneyChoice(SessionText.chatLabel(_messages.length), _openChat),
     if (!widget.isTeacher)
       JourneyChoice(SessionText.moreWhoIsHere, _openMembers),
-    JourneyChoice(SessionText.moreStatus, () => unawaited(_speakFullStatus())),
   ];
 
   Map<int, VoidCallback> get _keyActions => {

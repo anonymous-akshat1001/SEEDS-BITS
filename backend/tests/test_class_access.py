@@ -174,6 +174,24 @@ async def live_room(seeded_db, monkeypatch):
 
 
 @pytest.mark.asyncio
+async def test_closing_the_class_recording_clears_it_for_everyone(live_room, monkeypatch):
+    db, data, room, teacher, student, logs, broadcast = live_room
+    monkeypatch.setattr(main.SessionLogger, "log_audio_pause", AsyncMock())
+    main.SESSION_STATE[room.session_id]["playback"] = {
+        "audio_id": 5, "title": "Plants", "status": "playing", "speed": 1.0, "position": 12.0,
+    }
+    with pytest.raises(main.HTTPException) as denied:
+        await main.rest_clear_audio(room.session_id, current_user=data["student"], db=db)
+    assert denied.value.status_code == 403
+    result = await main.rest_clear_audio(room.session_id, current_user=data["teacher"], db=db)
+    assert result == {"ok": True, "audio_id": 5, "title": "Plants"}
+    assert main.SESSION_STATE[room.session_id]["playback"] == {}
+    assert broadcast.await_args_list[-1].args[1] == {
+        "type": "audio_cleared", "audio_id": 5, "title": "Plants",
+    }
+
+
+@pytest.mark.asyncio
 async def test_mute_all_mutes_every_student_once_and_never_the_teacher(live_room):
     db, data, room, teacher, student, logs, broadcast = live_room
     teacher.is_muted = False

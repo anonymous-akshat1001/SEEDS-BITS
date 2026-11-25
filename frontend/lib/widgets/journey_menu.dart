@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../l10n/speech.dart';
+import '../utils/keypad_actions.dart';
 import '../services/feedback_cues.dart';
 import '../services/tts_service.dart';
 import '../utils/ui_utils.dart';
@@ -75,20 +76,18 @@ class JourneyMenu extends StatefulWidget {
   /// Label of key 0; "Back" unless the screen names it.
   String get backLabel => _backLabel ?? Speech.t.uiBack;
 
-  /// "Press 1 for ..., press 0 for ..." for screens that speak their own
-  /// arrival (the homes), so every key is still read when they open.
+  /// "Press 1 for ..., 0 for .... Press star for help." for screens that
+  /// speak their own arrival (the homes), so every key is read when they
+  /// open.
   static String spokenKeys(List<JourneyChoice> choices, String backLabel) {
     final t = Speech.t;
-    return [
+    return '${spokenKeyList({
       for (var index = 0; index < choices.length; index++)
-        t.uiPressFor(
-          '${index + 1}',
-          choices[index].enabled
-              ? choices[index].label
-              : t.uiLabelUnavailable(choices[index].label),
-        ),
-      t.journeyMenuBackHelp(backLabel),
-    ].join(' ');
+        index + 1: choices[index].enabled
+            ? choices[index].label
+            : t.uiLabelUnavailable(choices[index].label),
+      0: backLabel,
+    })} ${t.keypadStarHelp}';
   }
 
   @override
@@ -129,11 +128,8 @@ class _JourneyMenuState extends State<JourneyMenu> {
       t.journeyMenuReady,
       ?widget.issue,
       ?widget.status,
-      for (var index = 0; index < widget.choices.length; index++)
-        t.uiPressFor('${index + 1}', _label(index)),
-      if (widget.details != null || widget.introduction != null)
-        t.journeyMenuReadDetailsHelp,
-      t.journeyMenuBackHelp(widget.backLabel),
+      spokenKeyList(_spokenLabels),
+      t.keypadStarHelp,
     ].join(' ');
   }
 
@@ -188,6 +184,14 @@ class _JourneyMenuState extends State<JourneyMenu> {
     ),
   );
 
+  Map<int, String> get _spokenLabels => {
+    for (var index = 0; index < widget.choices.length; index++)
+      index + 1: _label(index),
+    if (widget.details != null || widget.introduction != null)
+      8: Speech.t.journeyMenuReadDetails,
+    0: widget.backLabel,
+  };
+
   String _label(int index) {
     final choice = widget.choices[index];
     return choice.enabled
@@ -220,11 +224,7 @@ class _JourneyMenuState extends State<JourneyMenu> {
           widget.status,
         ].whereType<String>().join(' '),
         autoPlay: widget.autoPlay && !_awaitingFirstLoad,
-        labels: {
-          for (var index = 0; index < widget.choices.length; index++)
-            index + 1: _label(index),
-          if (hasDetails) 8: t.journeyMenuReadDetails,
-        },
+        labels: _spokenLabels,
         actions: {
           0: _back,
           for (var index = 0; index < 5; index++)

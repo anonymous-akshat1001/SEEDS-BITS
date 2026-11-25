@@ -1090,6 +1090,23 @@ async def rest_pause_audio(session_id: int,
 
 
 
+# Close the class recording for everyone (the recording itself is kept).
+@app.delete("/sessions/{session_id}/audio")
+async def rest_clear_audio(session_id: int,
+                           current_user: models.User = Depends(require_teacher),
+                           db: AsyncSession = Depends(get_db)):
+    classroom_session = await db.get(models.Session, session_id)
+    if classroom_session is None:
+        raise HTTPException(status_code=404, detail="Session not found")
+    await access.require_session_access(db, current_user, classroom_session, manage=True)
+    closed = await ws_mgr.audio_clear(session_id)
+    if closed is None:
+        raise HTTPException(status_code=404, detail="Session not found")
+    await SessionLogger.log_audio_pause(db, session_id, current_user.user_id)
+    return {"ok": True, **closed}
+
+
+
 # Unified audio control endpoint supporting play, pause, seek, and speed change
 @app.post("/sessions/{session_id}/audio/control")
 async def control_audio_playback(

@@ -469,21 +469,6 @@ class AppLocalizationsBn extends AppLocalizations {
   }
 
   @override
-  String keypadPressFor(String key, String action) {
-    return '$action-এর জন্য $key টিপুন';
-  }
-
-  @override
-  String get keypadListSeparator => '। ';
-
-  @override
-  String get keypadRepeatInstructions =>
-      'এই নির্দেশগুলি আবার শুনতে স্টার টিপুন।';
-
-  @override
-  String get keypadRepeatFullHelp => 'সম্পূর্ণ সাহায্য আবার শুনতে স্টার টিপুন।';
-
-  @override
   String get keypadStarForShortcuts => 'সব শর্টকাটের জন্য স্টার টিপুন।';
 
   @override
@@ -497,38 +482,16 @@ class AppLocalizationsBn extends AppLocalizations {
   }
 
   @override
-  String get keypadNumberedBackAndStop =>
-      'ফিরে যেতে বা বাতিল করতে 0 টিপুন। অ্যাপের কণ্ঠস্বর থামাতে হ্যাশ টিপুন।';
-
-  @override
-  String get keypadNumberedEditing =>
-      'লেখার সময় কী টিপলে লেখা হয়। শেষ করতে ওকে টিপুন, অথবা ঘর ছাড়তে উপর বা নিচ ব্যবহার করুন।';
-
-  @override
-  String get keypadNumberedMove =>
-      'বিকল্পগুলির মধ্যে যেতে D-pad উপর ও নিচ ব্যবহার করুন এবং বেছে নিতে ওকে টিপুন।';
-
-  @override
   String get keypadEssentialMove =>
       'যেতে উপর ও নিচ ব্যবহার করুন, এবং বেছে নিতে ওকে টিপুন।';
-
-  @override
-  String get keypadPressZeroBack => 'ফিরে যেতে 0 টিপুন।';
 
   @override
   String get keypadHashAndStar =>
       'কণ্ঠস্বর থামাতে হ্যাশ টিপুন। এই নির্দেশগুলি আবার শুনতে স্টার টিপুন।';
 
   @override
-  String get keypadDirectionKeys => 'যেতে দিক-নির্দেশক কী ব্যবহার করুন।';
-
-  @override
   String get keypadDirectionKeysAndOk =>
       'যেতে দিক-নির্দেশক কী ব্যবহার করুন এবং বেছে নিতে ওকে টিপুন।';
-
-  @override
-  String get keypadActivateOrEdit =>
-      'কোনো কন্ট্রোল চালু করতে বা ঘরে লিখতে ওকে টিপুন।';
 
   @override
   String get keypadLeaveField =>
@@ -3179,11 +3142,6 @@ class AppLocalizationsBn extends AppLocalizations {
   }
 
   @override
-  String sessionPressKeyFor(String key, String action) {
-    return '$action-এর জন্য $key টিপুন।';
-  }
-
-  @override
   String get sessionMicWaitingLabel =>
       'মাইক্রোফোন নিশ্চয়তার জন্য অপেক্ষা করছে';
 
@@ -3533,12 +3491,11 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String sessionRaisedHandBy(String name) {
-    return '$name হাত তুলেছেন। তোলা হাতের জন্য 2 টিপুন।';
+    return '$name হাত তুলেছেন।';
   }
 
   @override
-  String get sessionRaisedHandUnknown =>
-      'একজন অংশগ্রহণকারী হাত তুলেছেন। হাত তোলাদের তালিকার জন্য 2 টিপুন।';
+  String get sessionRaisedHandUnknown => 'একজন শিক্ষার্থী হাত তুলেছেন।';
 
   @override
   String get sessionParticipantJoined => 'একজন অংশগ্রহণকারী যোগ দিয়েছেন।';
@@ -4268,245 +4225,6 @@ class AppLocalizationsBn extends AppLocalizations {
   }
 
   @override
-  String get classroomOnlyTeacherAcknowledges =>
-      'শুধু সেশনের শিক্ষক তোলা হাত স্বীকার করতে পারেন।';
-
-  @override
-  String get classroomHandChanged =>
-      'বাছাই করা হাত বদলে গেছে। আবার তালিকাটি পড়ুন।';
-
-  @override
-  String get classroomAckUnconfirmed =>
-      'হাত স্বীকার করা নিশ্চিত হয়নি। আবার চেষ্টা করার আগে তালিকাটি পড়ুন।';
-
-  @override
-  String get classroomAckUnreadable =>
-      'হাত স্বীকার করার উত্তর পড়া যায়নি। আবার চেষ্টা করার আগে তালিকাটি দেখুন।';
-
-  @override
-  String classroomAcknowledgedChanged(String name) {
-    return '$name-কে আগে স্বীকার করা হয়েছিল। এরপর তাঁর হাত বদলেছে; আবার তালিকাটি পড়ুন। তাঁর মাইক্রোফোন বদলানো হয়নি।';
-  }
-
-  @override
-  String classroomAcknowledged(String name) {
-    return '$name-কে স্বীকার করা হয়েছে। বাছাই করা হাতটি নামানো হয়েছে। তাঁর মাইক্রোফোন বদলানো হয়নি।';
-  }
-
-  @override
-  String get classroomHandsHelp =>
-      'তোলা হাত। সর্বশেষ পাওয়া ক্লাসের অবস্থার জন্য সারাংশ পড়ুন। আগের ও পরের দিয়ে একটি তোলা হাত বাছাই করা যায়, এতে হাত বদলায় না। স্বীকার করুন শুধু সার্ভার নিশ্চিত করার পর বাছাই করা হাতটি নামায়। এটি কখনও কাউকে আনমিউট করে না। অজানা ক্রমের পুরনো হাতগুলো আলাদাভাবে চিহ্নিত থাকে।';
-
-  @override
-  String get classroomConsoleHelp =>
-      'ক্লাস কনসোল। সর্বশেষ পাওয়া ক্লাসের অবস্থার জন্য সারাংশ পড়ুন। আগের ও পরের দিয়ে একটি তোলা হাত বাছাই করা যায়, এতে হাত বদলায় না। স্বীকার করুন শুধু সার্ভার নিশ্চিত করার পর বাছাই করা হাতটি নামায়। এটি কখনও কাউকে আনমিউট করে না। অজানা ক্রমের পুরনো হাতগুলো আলাদাভাবে চিহ্নিত থাকে।';
-
-  @override
-  String get classroomHandsTitle => 'তোলা হাত';
-
-  @override
-  String get classroomNoHands =>
-      'সর্বশেষ পাওয়া ক্লাসের অবস্থায় কোনো তোলা হাত নেই।';
-
-  @override
-  String classroomSelectedGone(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other:
-          'বাছাই করা হাতটি আর তালিকায় নেই। $countটি তোলা হাত বাকি আছে। একটি হাত বাছাই করতে পরের বা আগের ব্যবহার করুন।',
-      one:
-          'বাছাই করা হাতটি আর তালিকায় নেই। 1টি তোলা হাত বাকি আছে। একটি হাত বাছাই করতে পরের বা আগের ব্যবহার করুন।',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String classroomConsoleSelectedGone(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other:
-          'বাছাই করা হাতটি আর তালিকায় নেই। $countটি তোলা হাত বাকি আছে। একটি হাত বাছাই করতে পরের বা আগের ব্যবহার করুন।',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String classroomHandTitle(String position, String total, String name) {
-    return '$totalটির মধ্যে $position নম্বর হাত, $name, অপেক্ষা করছেন';
-  }
-
-  @override
-  String classroomParticipantNumbered(String id) {
-    return 'অংশগ্রহণকারী $id';
-  }
-
-  @override
-  String get classroomKnownOrder => 'সার্ভারে রেকর্ড করা তালিকার ক্রম।';
-
-  @override
-  String get classroomUnknownOrder =>
-      'হাত তোলার আসল ক্রম অজানা; জানা ক্রমের হাতগুলোর আগে দেখানো হয়েছে।';
-
-  @override
-  String get classroomReportedMuted => 'মাইক্রোফোন মিউট বলে জানানো হয়েছে।';
-
-  @override
-  String get classroomReportedUnmuted =>
-      'মাইক্রোফোন আনমিউট বলে জানানো হয়েছে; এর মানে এই নয় যে তিনি কথা বলছেন।';
-
-  @override
-  String get classroomNoHandsShort => 'কোনো তোলা হাত নেই';
-
-  @override
-  String get classroomNoHandSelected => 'কোনো হাত বাছাই করা নেই';
-
-  @override
-  String classroomLowering(String name) {
-    return '$name-এর হাত নামানো হচ্ছে। সার্ভারের অপেক্ষা করা হচ্ছে।';
-  }
-
-  @override
-  String classroomLoweredLast(String name) {
-    return '$name-এর হাত নামানো হয়েছে। হাতের তালিকা এখন খালি।';
-  }
-
-  @override
-  String classroomLoweredNext(String name, String next) {
-    return '$name-এর হাত নামানো হয়েছে। পরের: $next।';
-  }
-
-  @override
-  String get classroomNoSummary => 'এখনও কোনো ক্লাসের সারাংশ পাওয়া যায়নি।';
-
-  @override
-  String get classroomReadSummary => 'ক্লাসের সারাংশ পড়ুন';
-
-  @override
-  String get classroomPreviousHand => 'আগের তোলা হাত';
-
-  @override
-  String get classroomReadHand => 'বাছাই করা হাত পড়ুন';
-
-  @override
-  String classroomReadHandLabel(String hand) {
-    return 'বাছাই করা হাত পড়ুন। $hand';
-  }
-
-  @override
-  String get classroomNextHand => 'পরের তোলা হাত';
-
-  @override
-  String get classroomWaitingAck => 'হাত স্বীকার করার অপেক্ষা করা হচ্ছে';
-
-  @override
-  String get classroomAckNoneSelected =>
-      'বাছাই করা হাত স্বীকার করে নামান। কোনো হাত বাছাই করা নেই';
-
-  @override
-  String classroomAckLabel(String name) {
-    return '$name-এর হাত নামান। কখনো আনমিউট করে না';
-  }
-
-  @override
-  String get classroomAckSelectedLabel =>
-      'বেছে নেওয়া হাত নামান। কখনো আনমিউট করে না';
-
-  @override
-  String get classroomAckButton => 'স্বীকার করুন এবং হাত নামান';
-
-  @override
-  String get classroomRepeatConsoleHelp => 'কনসোলের সাহায্য আবার শুনুন';
-
-  @override
-  String get classroomConsoleSections =>
-      'ক্লাসের সারাংশ শুনুন, আগের হাত, বেছে নেওয়া হাত শুনুন, পরের হাত, হাত স্বীকার করুন, কথা থামান, সাহায্য এবং ফিরে যান। কোনো হাত বা সারাংশ না থাকলে, সেগুলির নিয়ন্ত্রণ বেছে নিলে সেই অবস্থা পড়ে শোনানো হয়';
-
-  @override
-  String get classroomSnapshotNote =>
-      'সংখ্যাগুলি শেষ পাওয়া তথ্য অনুযায়ী, অডিও পৌঁছানোর নিশ্চয়তা নয়। কে কথা বলছেন তা জানা যাচ্ছে না।';
-
-  @override
-  String get classroomWaitingAckNote =>
-      'সার্ভারের নিশ্চিতকরণের অপেক্ষা করা হচ্ছে। কোনো মাইক্রোফোন বদলানো হয়নি।';
-
-  @override
-  String classroomSummaryParticipants(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count জন অংশগ্রহণকারী',
-      one: '1 জন অংশগ্রহণকারী',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String classroomSummaryHands(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$countটি তোলা হাত',
-      one: '1টি তোলা হাত',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String classroomSummaryMicrophones(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$countটি মাইক্রোফোন',
-      one: '1টি মাইক্রোফোন',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String get classroomSummaryNobodySpeaking => 'কাউকে কথা বলতে শোনা যায়নি।';
-
-  @override
-  String classroomSummarySpeaking(String names) {
-    return 'কথা বলছেন: $names।';
-  }
-
-  @override
-  String get classroomSummaryNoRecording =>
-      'কোনো ক্লাস রেকর্ডিং বেছে নেওয়া হয়নি।';
-
-  @override
-  String classroomSummaryRecordingPlaying(String title) {
-    return 'ক্লাস রেকর্ডিং $title। চালানোর অনুরোধ করা হয়েছে।';
-  }
-
-  @override
-  String classroomSummaryRecordingPaused(String title) {
-    return 'ক্লাস রেকর্ডিং $title। থামানো আছে।';
-  }
-
-  @override
-  String get classroomSummaryPreviewActive =>
-      'শুধু এই ফোনে ব্যক্তিগত প্রিভিউ চলছে।';
-
-  @override
-  String get classroomSummaryPreviewStopped => 'ব্যক্তিগত প্রিভিউ বন্ধ হয়েছে।';
-
-  @override
-  String classroomSummary(
-    String connection,
-    String people,
-    String hands,
-    String muted,
-    String speaking,
-    String recording,
-    String preview,
-  ) {
-    return 'নিজের সংযোগ: $connection। শেষ পাওয়া ক্লাসের অবস্থা: $people, $hands, $muted মিউট বলে জানানো হয়েছে। অন্যদের আবার সংযোগের সংখ্যা জানা যাচ্ছে না। $speaking $recording $preview মাইক্রোফোনের চিহ্ন আর গৃহীত চালানোর অনুরোধ প্রমাণ করে না যে কেউ কথা বলেছেন বা অডিও শুনেছেন।';
-  }
-
-  @override
   String get sessionToolsTitle => 'শিক্ষকের টুল';
 
   @override
@@ -4518,18 +4236,6 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get sessionPeopleTitle => 'অংশগ্রহণকারী এবং তোলা হাত';
-
-  @override
-  String sessionHandQueue(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: 'তোলা হাতের সারি, $countটি হাত অপেক্ষায়',
-      one: 'তোলা হাতের সারি, 1টি হাত অপেক্ষায়',
-      zero: 'তোলা হাতের সারি, কোনো হাত অপেক্ষায় নেই',
-    );
-    return '$_temp0';
-  }
 
   @override
   String sessionParticipantList(int count) {
@@ -10014,14 +9720,6 @@ class AppLocalizationsBn extends AppLocalizations {
   String get journeyMenuReady => 'প্রস্তুত।';
 
   @override
-  String get journeyMenuReadDetailsHelp => 'বিবরণ আবার শুনতে 8 টিপুন।';
-
-  @override
-  String journeyMenuBackHelp(String back) {
-    return '$back-এর জন্য 0 টিপুন। সাহায্যের জন্য স্টার টিপুন।';
-  }
-
-  @override
   String journeyMenuNothingAssigned(String number) {
     return '$number-এ কিছু দেওয়া নেই।';
   }
@@ -11940,9 +11638,6 @@ class AppLocalizationsBn extends AppLocalizations {
   String sessionRemoveFromSession(String name) {
     return '$name-কে সেশন থেকে সরান';
   }
-
-  @override
-  String get classroomConsoleTitle => 'ক্লাসরুম কনসোল';
 
   @override
   String get uiHourRange => 'ঘণ্টা (0 থেকে 23)';
@@ -14361,7 +14056,7 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get loginIntro =>
-      'আপনার ফোন নম্বর টাইপ করুন, তারপর সাইন ইন করতে 1 টিপুন।';
+      'আপনার ফোন নম্বর টাইপ করুন, ওকে টিপুন, তারপর সাইন ইন করতে 1 টিপুন।';
 
   @override
   String get loginPhoneField => 'ফোন নম্বর। নম্বর কী দিয়ে টাইপ করুন।';
@@ -14377,7 +14072,7 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get loginEnterProfileCode =>
-      'এই ফোনটি শেয়ার করা। আপনার প্রোফাইল নম্বর টাইপ করুন, তারপর 1 টিপুন।';
+      'এই ফোনটি শেয়ার করা। আপনার প্রোফাইল নম্বর টাইপ করুন, ওকে টিপুন, তারপর 1 টিপুন।';
 
   @override
   String get loginKeySignIn => 'সাইন ইন';
@@ -14420,7 +14115,7 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get adminLoginIntro =>
-      'আপনার ফোন নম্বর ও পাসওয়ার্ড টাইপ করুন, তারপর 1 টিপুন।';
+      'আপনার ফোন নম্বর ও পাসওয়ার্ড টাইপ করুন, প্রতিটির পরে ওকে টিপুন, তারপর 1 টিপুন।';
 
   @override
   String get classNoLongerLive => 'ওই ক্লাসটি এখন লাইভ নেই।';
@@ -14681,7 +14376,7 @@ class AppLocalizationsBn extends AppLocalizations {
   String get sessionMicSettingsCancel => 'শুনতে থাকুন';
 
   @override
-  String get sessionMuteAllButton => '3: সব শিক্ষার্থীকে মিউট করুন';
+  String get sessionMuteAllButton => '2: সব শিক্ষার্থীকে মিউট করুন';
 
   @override
   String get sessionMuteAllLabel => 'সব শিক্ষার্থীকে মিউট করুন';
@@ -14706,11 +14401,11 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String sessionMuteAllNotConfirmed(String reason) {
-    return 'সবাইকে মিউট করা নিশ্চিত হয়নি। $reason আবার চেষ্টা করতে 3 টিপুন।';
+    return 'সবাইকে মিউট করা নিশ্চিত হয়নি। $reason আবার চেষ্টা করতে 2 টিপুন।';
   }
 
   @override
-  String get sessionClassListButton => '4: ক্লাসের তালিকা';
+  String get sessionClassListButton => '3: ক্লাসের তালিকা';
 
   @override
   String sessionClassListLabel(String people) {
@@ -14819,9 +14514,9 @@ class AppLocalizationsBn extends AppLocalizations {
       minutes,
       locale: localeName,
       other:
-          'ক্লাস $minutes মিনিটের মধ্যে নিজে থেকেই শেষ হবে। 15 মিনিট যোগ করতে 7 টিপুন, তারপর 1 টিপুন।',
+          'ক্লাস $minutes মিনিটের মধ্যে নিজে থেকেই শেষ হবে। 15 মিনিট যোগ করতে 5 টিপুন, তারপর 1 টিপুন।',
       one:
-          'ক্লাস 1 মিনিটের মধ্যে নিজে থেকেই শেষ হবে। 15 মিনিট যোগ করতে 7 টিপুন, তারপর 1 টিপুন।',
+          'ক্লাস 1 মিনিটের মধ্যে নিজে থেকেই শেষ হবে। 15 মিনিট যোগ করতে 5 টিপুন, তারপর 1 টিপুন।',
     );
     return '$_temp0';
   }
@@ -14839,11 +14534,11 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get sessionLessonReady =>
-      'আজকের পাঠ তৈরি। ক্লাসের জন্য চালাতে 5 টিপুন, তারপর 3 টিপুন।';
+      'আজকের পাঠ তৈরি। ক্লাসের জন্য চালাতে 4 টিপুন, তারপর 3 টিপুন।';
 
   @override
   String get sessionLessonNextReady =>
-      'আজকের পাঠের পরের অংশ তৈরি। চালাতে 6 টিপুন।';
+      'আজকের পাঠের পরের অংশ তৈরি। চালাতে 7 টিপুন।';
 
   @override
   String get sessionJoinedStudentBrief =>
@@ -14851,7 +14546,7 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get sessionJoinedTeacherBrief =>
-      'আপনার ক্লাস লাইভ চলছে। আপনি মিউট আছেন। কথা বলতে 1 টিপুন, সব শিক্ষার্থীকে মিউট করতে 3 টিপুন।';
+      'আপনার ক্লাস লাইভ চলছে। আপনি মিউট আছেন। কথা বলতে 1 টিপুন, সব শিক্ষার্থীকে মিউট করতে 2 টিপুন।';
 
   @override
   String get sessionStarForKeys => 'সব কী জানতে স্টার টিপুন।';
@@ -14927,7 +14622,9 @@ class AppLocalizationsBn extends AppLocalizations {
   String get adminSetupNoMatchingLessons => 'কোনো পাঠ মেলেনি।';
 
   @override
-  String get sessionMoreButton => '7: আরও';
+  String sessionMoreButton(String key) {
+    return '$key: আরও';
+  }
 
   @override
   String get sessionMoreLabel => 'আরও বিকল্প';
@@ -14939,16 +14636,10 @@ class AppLocalizationsBn extends AppLocalizations {
   String get sessionMoreClassroomCheck => 'ক্লাস যাচাই';
 
   @override
-  String get sessionMoreStatus => 'ক্লাসের অবস্থা';
-
-  @override
   String get sessionMoreWhatIsPlaying => 'কী চলছে';
 
   @override
   String get sessionMoreWhoIsHere => 'ক্লাসে কে কে আছে';
-
-  @override
-  String get sessionKeyRaisedHands => 'তোলা হাত';
 
   @override
   String get sessionKeyClassList => 'ক্লাসের তালিকা';
@@ -14966,7 +14657,7 @@ class AppLocalizationsBn extends AppLocalizations {
   String get sessionKeyLeave => 'ক্লাস ছেড়ে যান';
 
   @override
-  String get sessionEndClassButton => '8: সবার জন্য ক্লাস শেষ করুন';
+  String get sessionEndClassButton => '6: সবার জন্য ক্লাস শেষ করুন';
 
   @override
   String get sessionEndClassLabel =>
@@ -14995,7 +14686,7 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String sessionActivityStartedTeacher(String title) {
-    return '$title ক্লাসের জন্য খোলা হয়েছে। এর অবস্থা জানতে 6 টিপুন।';
+    return '$title ক্লাসের জন্য খোলা হয়েছে। এর অবস্থা জানতে 7 টিপুন।';
   }
 
   @override
@@ -15005,12 +14696,12 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String sessionActivityQuizStarted(String title) {
-    return 'আপনার শিক্ষক একটি কুইজ শুরু করেছেন: $title। শুরু করতে 4 টিপুন।';
+    return 'আপনার শিক্ষক একটি কুইজ দিয়েছেন: $title। শুরু করতে 5 টিপুন।';
   }
 
   @override
   String sessionActivityJourneyStarted(String title) {
-    return 'আপনার শিক্ষক একটি যাত্রা শুরু করেছেন: $title। শুরু করতে 4 টিপুন।';
+    return 'আপনার শিক্ষক একটি শেখার যাত্রা দিয়েছেন: $title। শুরু করতে 5 টিপুন।';
   }
 
   @override
@@ -15090,12 +14781,12 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String sessionStartQuizButton(String title) {
-    return '4: কুইজ শুরু করুন: $title';
+    return '5: কুইজ শুরু করুন: $title';
   }
 
   @override
   String sessionStartJourneyButton(String title) {
-    return '4: যাত্রা শুরু করুন: $title';
+    return '5: যাত্রা শুরু করুন: $title';
   }
 
   @override
@@ -15178,12 +14869,12 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String sessionActivityReminderQuiz(String title) {
-    return 'আপনার শিক্ষক আপনাকে কুইজ $title করার কথা মনে করিয়ে দিচ্ছেন। শুরু করতে 4 টিপুন।';
+    return 'আপনার শিক্ষক আপনাকে কুইজ $title করার কথা মনে করিয়ে দিচ্ছেন। শুরু করতে 5 টিপুন।';
   }
 
   @override
   String sessionActivityReminderJourney(String title) {
-    return 'আপনার শিক্ষক আপনাকে যাত্রা $title করার কথা মনে করিয়ে দিচ্ছেন। শুরু করতে 4 টিপুন।';
+    return 'আপনার শিক্ষক আপনাকে শেখার যাত্রা $title করার কথা মনে করিয়ে দিচ্ছেন। শুরু করতে 5 টিপুন।';
   }
 
   @override
@@ -15593,29 +15284,6 @@ class AppLocalizationsBn extends AppLocalizations {
   String get adminAuthorSaveJourney => 'যাত্রা সেভ করুন';
 
   @override
-  String teacherHomeNotice(String kind, String title, String action) {
-    return '$kind $title: আপনার প্রশাসক আপনার জন্য $action।';
-  }
-
-  @override
-  String get teacherHomeNoticeQuiz => 'কুইজ';
-
-  @override
-  String get teacherHomeNoticeJourney => 'যাত্রা';
-
-  @override
-  String get teacherHomeNoticeCreated => 'যোগ করেছেন';
-
-  @override
-  String get teacherHomeNoticePublished => 'প্রকাশ করেছেন';
-
-  @override
-  String get teacherHomeNoticeClosed => 'বন্ধ করেছেন';
-
-  @override
-  String get teacherHomeNoticeArchived => 'আর্কাইভ করেছেন';
-
-  @override
   String sessionPeopleJoined(String names) {
     return '$names যোগ দিয়েছে।';
   }
@@ -15658,7 +15326,7 @@ class AppLocalizationsBn extends AppLocalizations {
   }
 
   @override
-  String get sessionStartButton => '5: শুরু করুন';
+  String get sessionStartButton => '4: শুরু করুন';
 
   @override
   String get sessionStartLabel =>
@@ -15678,7 +15346,7 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String sessionStatusKeyButton(String title) {
-    return '6: $title-এর অবস্থা';
+    return '7: $title-এর অবস্থা';
   }
 
   @override
@@ -15699,4 +15367,106 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get sessionNowPlayingTitle => 'রেকর্ডিংটি';
+
+  @override
+  String get noticeActorAdmin => 'আপনার প্রশাসক';
+
+  @override
+  String noticeQuizCreated(String actor, String title) {
+    return '$actor কুইজ $title যোগ করেছেন।';
+  }
+
+  @override
+  String noticeQuizPublished(String actor, String title) {
+    return '$actor কুইজ $title প্রকাশ করেছেন।';
+  }
+
+  @override
+  String noticeQuizClosed(String actor, String title) {
+    return '$actor কুইজ $title বন্ধ করেছেন।';
+  }
+
+  @override
+  String noticeJourneyCreated(String actor, String title) {
+    return '$actor শেখার যাত্রা $title যোগ করেছেন।';
+  }
+
+  @override
+  String noticeJourneyPublished(String actor, String title) {
+    return '$actor শেখার যাত্রা $title প্রকাশ করেছেন।';
+  }
+
+  @override
+  String noticeJourneyArchived(String actor, String title) {
+    return '$actor শেখার যাত্রা $title আর্কাইভ করেছেন।';
+  }
+
+  @override
+  String noticePlaylistPublished(String actor, String title) {
+    return '$actor প্লেলিস্ট $title প্রকাশ করেছেন।';
+  }
+
+  @override
+  String noticeLessonCreated(String actor, String title) {
+    return '$actor পাঠ $title যোগ করেছেন।';
+  }
+
+  @override
+  String noticeLessonUpdated(String actor, String title) {
+    return '$actor পাঠ $title বদলেছেন।';
+  }
+
+  @override
+  String noticeLessonRemoved(String actor, String title) {
+    return '$actor পাঠ $title সরিয়ে দিয়েছেন।';
+  }
+
+  @override
+  String noticeLessonRemovedOn(String actor, String title, String date) {
+    return '$actor $date তারিখের পাঠ $title থেকে আপনাকে সরিয়ে দিয়েছেন।';
+  }
+
+  @override
+  String noticeLessonCancelled(String actor, String title, String date) {
+    return '$actor $date তারিখের পাঠ $title বাতিল করেছেন।';
+  }
+
+  @override
+  String noticeLessonSubstitute(String actor, String title, String date) {
+    return '$actor আপনাকে $date তারিখে পাঠ $title পড়াতে বলেছেন।';
+  }
+
+  @override
+  String noticeLessonCovered(String actor, String title, String date) {
+    return '$actor $date তারিখের আপনার পাঠ $title অন্য একজন শিক্ষককে দিয়েছেন।';
+  }
+
+  @override
+  String keypadKeyFor(String key, String action) {
+    return '$action-এর জন্য $key';
+  }
+
+  @override
+  String keypadPressKeys(String keys) {
+    return '$keys টিপুন।';
+  }
+
+  @override
+  String get keypadKeySeparator => ', ';
+
+  @override
+  String get keypadStarHelp => 'সাহায্যের জন্য স্টার টিপুন।';
+
+  @override
+  String get sessionCloseRecording => 'ক্লাসের জন্য রেকর্ডিং বন্ধ করুন';
+
+  @override
+  String sessionRecordingClosedTeacher(String title) {
+    return '$title ক্লাসের জন্য বন্ধ করা হয়েছে।';
+  }
+
+  @override
+  String sessionRecordingClosedStudent(String title) {
+    return 'আপনার শিক্ষক রেকর্ডিং $title বন্ধ করেছেন।';
+  }
 }

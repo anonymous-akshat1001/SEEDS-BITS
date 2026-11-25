@@ -9,7 +9,7 @@ import '../../widgets/journey_prompts.dart';
 import '../../widgets/keypad_paged_list.dart';
 import 'live_session.dart';
 
-/// Key 4 in a live class: read messages (newest first), write one, or send
+/// More, Chat in a live class: read messages (newest first), write one, or send
 /// a quick phrase. The class keeps running underneath.
 class SessionChatScreen extends StatelessWidget {
   const SessionChatScreen({super.key, required this.session});

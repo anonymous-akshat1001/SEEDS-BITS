@@ -65,6 +65,32 @@ void main() {
       .map((target) => target.node.debugLabel)
       .toList();
 
+  testWidgets('welcome names Settings on opening and on coming back', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        navigatorObservers: [routeObserver],
+        home: const WelcomeScreen(),
+        routes: {'/login': (_) => const Scaffold(body: Text('Sign in'))},
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 600));
+    expect(
+      spoken.join(' '),
+      contains('Press 1 for Login, 2 for Settings. Press star for help.'),
+    );
+    await tester.sendKeyEvent(LogicalKeyboardKey.digit1);
+    await tester.pumpAndSettle();
+    spoken.clear();
+    tester.state<NavigatorState>(find.byType(Navigator)).pop();
+    await tester.pump(const Duration(milliseconds: 600));
+    await tester.pumpAndSettle();
+    expect(spoken.join(' '), contains('Press 1 for Login, 2 for Settings.'));
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
   testWidgets('welcome stops only on actions; descriptions are plain text', (
     tester,
   ) async {
@@ -130,7 +156,10 @@ void main() {
         await tester.enterText(find.byType(TextField).at(1), '12');
         await tester.tap(find.text('1: Continue'));
         await tester.pumpAndSettle();
-        expect(bodies.last, {'phone_number': '9888000000', 'profile_code': '12'});
+        expect(bodies.last, {
+          'phone_number': '9888000000',
+          'profile_code': '12',
+        });
         expect(bodies.first.containsKey('profile_code'), isFalse);
         await tester.pumpWidget(const SizedBox.shrink());
       },
@@ -148,16 +177,19 @@ void main() {
   });
 
   testWidgets(
-    'sign-in starts in the number field but still reads every key and how editing works',
+    'sign-in starts in the number field and says to press OK before the keys',
     (tester) async {
       await open(tester, const LoginScreen());
       await tester.pump(const Duration(milliseconds: 600));
       final opening = spoken.join(' ');
-      expect(opening, contains('Press 1 for Sign in'));
-      expect(opening, contains('Press 3 for'));
-      expect(opening, contains('Press 0'));
-      expect(opening, contains('You are in'));
-      expect(opening, contains('Press OK to finish'));
+      final ok = opening.indexOf('press OK');
+      final field = opening.indexOf('You are in Phone number.');
+      final keys = opening.indexOf('Press 1 for Sign in');
+      expect(ok, greaterThanOrEqualTo(0), reason: opening);
+      expect(field, greaterThan(ok), reason: opening);
+      expect(keys, greaterThan(field), reason: opening);
+      expect(opening, contains(', 3 for'));
+      expect(opening, isNot(contains('While editing')));
       expect(FocusManager.instance.primaryFocus?.debugLabel, 'login-phone');
       await tester.pumpWidget(const SizedBox.shrink());
     },
@@ -176,7 +208,9 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
-  testWidgets('an unknown number says to ask the administrator', (tester) async {
+  testWidgets('an unknown number says to ask the administrator', (
+    tester,
+  ) async {
     await http.runWithClient(
       () async {
         await open(tester, const LoginScreen());

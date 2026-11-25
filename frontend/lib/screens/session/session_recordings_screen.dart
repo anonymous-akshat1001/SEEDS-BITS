@@ -41,6 +41,7 @@ class _SessionRecordingsScreenState extends State<SessionRecordingsScreen> {
   final _faster = FocusNode(debugLabel: 'recordings-faster');
   final _choose = FocusNode(debugLabel: 'recordings-choose');
   final _upload = FocusNode(debugLabel: 'recordings-upload');
+  final _close = FocusNode(debugLabel: 'recordings-close');
   final _back = FocusNode(debugLabel: 'recordings-back');
 
   LiveSession get _session => widget.session;
@@ -96,6 +97,7 @@ class _SessionRecordingsScreenState extends State<SessionRecordingsScreen> {
       _faster,
       _choose,
       _upload,
+      _close,
       _back,
     ]) {
       node.dispose();
@@ -182,6 +184,17 @@ class _SessionRecordingsScreenState extends State<SessionRecordingsScreen> {
     }
   }
 
+  /// Key 8: stops the recording for everyone and returns to the class, like
+  /// "Stop offering" for a quiz or journey.
+  Future<void> _closeRecording() async {
+    if (_session.recordingId == null) {
+      _speak(SessionText.noRecording);
+      return;
+    }
+    final closed = await _session.closeRecording();
+    if (closed && mounted) Navigator.of(context).maybePop();
+  }
+
   void _uploadRecording() {
     if (_session.uploadingAudio) {
       _speak(SessionText.uploadInProgress);
@@ -225,6 +238,7 @@ class _SessionRecordingsScreenState extends State<SessionRecordingsScreen> {
         playerForwardKey: () => _seek(10),
         playerSlowerKey: () => _speed(-0.25),
         playerFasterKey: () => _speed(0.25),
+        if (hasRecording) 8: () => unawaited(_closeRecording()),
         0: () => Navigator.of(context).maybePop(),
       };
       // Any key means the teacher has taken control: no automatic start.
@@ -248,6 +262,7 @@ class _SessionRecordingsScreenState extends State<SessionRecordingsScreen> {
           playerForwardKey: SessionText.forward10,
           playerSlowerKey: SessionText.slower,
           playerFasterKey: SessionText.faster,
+          if (hasRecording) 8: SessionText.closeRecording,
         },
         actions: actions,
         focusTargets: [
@@ -300,6 +315,12 @@ class _SessionRecordingsScreenState extends State<SessionRecordingsScreen> {
                 : '2. ${SessionText.uploadRecording}',
             onActivate: _uploadRecording,
           ),
+          if (hasRecording)
+            KeypadFocusTarget(
+              node: _close,
+              label: '8. ${SessionText.closeRecording}',
+              onActivate: () => unawaited(_closeRecording()),
+            ),
           KeypadFocusTarget(
             node: _back,
             label: '0. ${SessionText.backToClass}',
@@ -383,6 +404,12 @@ class _SessionRecordingsScreenState extends State<SessionRecordingsScreen> {
                         : Speech.t.libraryKey2Upload,
                     _session.uploadingAudio ? null : _uploadRecording,
                   ),
+                  if (hasRecording)
+                    _button(
+                      _close,
+                      '8: ${SessionText.closeRecording}',
+                      () => unawaited(_closeRecording()),
+                    ),
                   _button(
                     _back,
                     '0: ${SessionText.backToClass}',

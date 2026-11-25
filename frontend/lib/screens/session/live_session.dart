@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 
-/// What the live class sub-screens (chat, class console, recordings) can
+/// What the live class sub-screens (chat, class list, recordings) can
 /// read and do. The class screen implements it and stays alive underneath,
 /// so WebRTC, the class connection and the microphone keep running while a
 /// sub-screen is open. [changes] fires whenever any of the values change.
@@ -10,17 +10,15 @@ abstract interface class LiveSession {
 
   // Spoken state.
   String classStatus();
-  String classroomSummary();
 
   // Participants.
   int? get ownParticipantId;
   List<Map<String, dynamic>> get participants;
   int get raisedHandCount;
   String participantSummary(Map<String, dynamic> participant);
-  Future<void> openHandQueue();
   Future<void> removeParticipant(int participantId);
 
-  /// Teacher key 3: mutes every student once; they may unmute themselves.
+  /// Teacher key 2: mutes every student once; they may unmute themselves.
   Future<void> muteAllStudents();
 
   /// Who is connected, who joined and left, who never joined (teacher only).
@@ -57,6 +55,10 @@ abstract interface class LiveSession {
   Future<void> uploadAudio();
   Future<void> previewAudio(int audioId, String title);
   Future<void> selectAudio(int audioId, String title, {required bool play});
+
+  /// Stops the class recording for everyone and closes it; returns whether
+  /// the server confirmed it.
+  Future<bool> closeRecording();
 
   // Teacher tools.
   Future<void> confirmEndSession();

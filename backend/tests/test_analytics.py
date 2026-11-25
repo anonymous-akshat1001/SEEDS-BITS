@@ -252,6 +252,29 @@ def test_diagnostics_never_include_message_exception_or_query_string():
     assert json.loads(text)["event"] == "library_diagnostic"
 
 
+@pytest.mark.asyncio
+async def test_a_crash_is_a_500_the_browser_can_read():
+    import httpx
+    from fastapi import FastAPI
+    from fastapi.middleware.cors import CORSMiddleware
+    from logging_config import configure_app
+
+    app = FastAPI()
+    configure_app(app)
+
+    @app.get("/boom")
+    async def boom():
+        raise RuntimeError("database is behind")
+
+    app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://test") as client:
+        response = await client.get("/boom", headers={"Origin": "http://localhost:61410"})
+    assert response.status_code == 500
+    assert response.headers["access-control-allow-origin"] == "*"
+    assert response.json()["request_id"] == response.headers["X-Request-ID"]
+    assert "database" not in response.text
+
+
 @pytest.mark.parametrize("date,expected", [
     (datetime(2024, 8, 31), datetime(2026, 2, 28)),
     (datetime(2022, 8, 31), datetime(2024, 2, 29)),

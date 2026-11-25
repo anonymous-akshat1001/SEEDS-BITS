@@ -140,24 +140,27 @@ Map<int, String> get quizAttemptKeyLabels => {
 // all, 4 class list, 5 start a quiz, journey or recording, 6 status of what
 // is running (only while something runs), 8 end the class. Students: 3 what
 // is playing, 4 start the open quiz or journey (only while one is open).
+/// Student class keys, numbered in order: speak, hand, what is playing,
+/// More, and the teacher's quiz or journey while one is open.
 Map<int, String> sessionStudentKeyLabels({bool activityOpen = false}) => {
   1: Speech.t.keyMuteOrUnmute,
   2: Speech.t.keyRaiseOrLowerHand,
   3: Speech.t.sessionKeyWhatIsPlaying,
-  if (activityOpen) 4: Speech.t.sessionKeyStartActivity,
-  7: Speech.t.sessionKeyMore,
+  4: Speech.t.sessionKeyMore,
+  if (activityOpen) 5: Speech.t.sessionKeyStartActivity,
   0: Speech.t.sessionKeyLeave,
 };
 
+/// Teacher class keys, numbered in order; the status of what is running
+/// comes last because it only exists while something runs.
 Map<int, String> sessionTeacherKeyLabels({bool running = false}) => {
   1: Speech.t.keyMuteOrUnmute,
-  2: Speech.t.sessionKeyRaisedHands,
-  3: Speech.t.keyMuteAllStudents,
-  4: Speech.t.sessionKeyClassList,
-  5: Speech.t.sessionKeyStart,
-  if (running) 6: Speech.t.sessionKeyStatus,
-  7: Speech.t.sessionKeyMore,
-  8: Speech.t.sessionKeyEndClass,
+  2: Speech.t.keyMuteAllStudents,
+  3: Speech.t.sessionKeyClassList,
+  4: Speech.t.sessionKeyStart,
+  5: Speech.t.sessionKeyMore,
+  6: Speech.t.sessionKeyEndClass,
+  if (running) 7: Speech.t.sessionKeyStatus,
   0: Speech.t.sessionKeyLeave,
 };
 
@@ -212,26 +215,35 @@ Map<int, String> get selectExistingAudioKeyLabels => {
   0: Speech.t.keyGoBack,
 };
 
+/// Every key as one short sentence, 0 last:
+/// "Press 1 for Login, 2 for Register, 0 for Back."
+String spokenKeyList(Map<int, String> labels) {
+  if (labels.isEmpty) return '';
+  final t = Speech.t;
+  int order(int key) => key == 0 ? 100 : key;
+  final sorted = labels.entries.toList()
+    ..sort((a, b) => order(a.key).compareTo(order(b.key)));
+  return t.keypadPressKeys(
+    sorted
+        .map((entry) => t.keypadKeyFor('${entry.key}', entry.value))
+        .join(t.keypadKeySeparator),
+  );
+}
+
 /// Builds a TTS-friendly instruction string from a labels map.
 ///
-/// Example output: "Press 1 for Login. Press 2 for Register."
+/// Example output: "Login. Press 1 for Login, 2 for Register. Press star
+/// for help."
 String buildTtsInstructions(
   Map<int, String> labels, {
   String? screenName,
   bool includeRepeatHint = true,
 }) {
   final t = Speech.t;
-  final sorted = labels.entries.toList()
-    ..sort((a, b) => a.key.compareTo(b.key));
-
-  final parts = sorted
-      .map((e) => t.keypadPressFor('${e.key}', e.value))
-      .join(t.keypadListSeparator);
-
-  final repeatHint = includeRepeatHint ? ' ${t.keypadRepeatInstructions}' : '';
-
+  final parts = spokenKeyList(labels);
+  final repeatHint = includeRepeatHint ? ' ${t.keypadStarHelp}' : '';
   if (screenName != null && screenName.isNotEmpty) {
-    return '$screenName. $parts.$repeatHint';
+    return '$screenName. $parts$repeatHint';
   }
-  return '$parts.$repeatHint';
+  return '$parts$repeatHint';
 }

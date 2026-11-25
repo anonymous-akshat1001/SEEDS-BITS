@@ -1,4 +1,5 @@
 import '../l10n/speech.dart';
+import '../utils/keypad_actions.dart';
 import '../utils/spoken_format.dart';
 import 'announce.dart';
 
@@ -34,15 +35,7 @@ abstract final class SessionText {
     required String keys,
   }) => _t.sessionJoinedDetailed(status, keys);
 
-  static String keyHelp(Map<int, String> labels) {
-    final keys = labels.entries.toList()
-      ..sort(
-        (a, b) => (a.key == 0 ? 10 : a.key).compareTo(b.key == 0 ? 10 : b.key),
-      );
-    return keys
-        .map((e) => _t.sessionPressKeyFor('${e.key}', e.value))
-        .join(' ');
-  }
+  static String keyHelp(Map<int, String> labels) => spokenKeyList(labels);
 
   // Focus labels and visible button text on the main screen.
   static String muteLabel(bool muted, bool pending) => pending
@@ -450,75 +443,16 @@ abstract final class SessionText {
 
   // ─── Leaving sub-screens ──────────────────────────────────────────────────
   static String get backToClass => _t.sessionBackToClass;
+
+  // ─── Closing the class recording (teacher player, key 8) ─────────────────
+  static String get closeRecording => _t.sessionCloseRecording;
+  static String recordingClosedTeacher(String title) =>
+      _t.sessionRecordingClosedTeacher(title);
+  static String recordingClosedStudent(String title) =>
+      _t.sessionRecordingClosedStudent(title);
   static String get backToSession => _t.classroomBackToSession;
   static String get back => _t.classroomBack;
   static String get stopSpeech => _t.sessionStopSpeech;
-
-  // ─── Hands queue (classroom console dialog) ─────────────────────────────
-  static String get onlyTeacherAcknowledges =>
-      _t.classroomOnlyTeacherAcknowledges;
-  static String get handChanged => _t.classroomHandChanged;
-  static String get ackUnconfirmed => _t.classroomAckUnconfirmed;
-  static String get ackUnreadable => _t.classroomAckUnreadable;
-  static String acknowledged(String name, {required bool changedSince}) =>
-      changedSince
-      ? _t.classroomAcknowledgedChanged(name)
-      : _t.classroomAcknowledged(name);
-  static String get consoleHelp => _t.classroomHandsHelp;
-  static String get handsTitle => _t.classroomHandsTitle;
-  static String get noHands => _t.classroomNoHands;
-  static String selectedGone(int count) => _t.classroomSelectedGone(count);
-  static String handTitle(int index, int total, String name) =>
-      _t.classroomHandTitle('${index + 1}', '$total', name);
-  static String get knownOrder => _t.classroomKnownOrder;
-  static String get unknownOrder => _t.classroomUnknownOrder;
-  static String get reportedMuted => _t.classroomReportedMuted;
-  static String get reportedUnmuted => _t.classroomReportedUnmuted;
-  static String get noHandsShort => _t.classroomNoHandsShort;
-  static String get noHandSelected => _t.classroomNoHandSelected;
-  static String lowering(String name) => _t.classroomLowering(name);
-  static String loweredLast(String name) => _t.classroomLoweredLast(name);
-  static String loweredNext(String name, String next) =>
-      _t.classroomLoweredNext(name, next);
-  static String get noSummary => _t.classroomNoSummary;
-  static String get readSummary => _t.classroomReadSummary;
-  static String get previousHand => _t.classroomPreviousHand;
-  static String get readHand => _t.classroomReadHand;
-  static String get nextHand => _t.classroomNextHand;
-  static String get waitingAck => _t.classroomWaitingAck;
-  static String get ackNoneSelected => _t.classroomAckNoneSelected;
-  static String ackLabel(String name) => _t.classroomAckLabel(name);
-  static String get ackButton => _t.classroomAckButton;
-  static String get repeatConsoleHelp => _t.classroomRepeatConsoleHelp;
-  static String get consoleSections => _t.classroomConsoleSections;
-  static String get snapshotNote => _t.classroomSnapshotNote;
-  static String get waitingAckNote => _t.classroomWaitingAckNote;
-  static String classroomSummary({
-    required String connection,
-    required int people,
-    required int hands,
-    required int muted,
-    required List<String> speaking,
-    required String? recording,
-    required bool recordingPlaying,
-    required bool previewing,
-  }) => _t.classroomSummary(
-    connection,
-    _t.classroomSummaryParticipants(people),
-    _t.classroomSummaryHands(hands),
-    _t.classroomSummaryMicrophones(muted),
-    speaking.isEmpty
-        ? _t.classroomSummaryNobodySpeaking
-        : _t.classroomSummarySpeaking(speaking.join(', ')),
-    recording == null
-        ? _t.classroomSummaryNoRecording
-        : recordingPlaying
-        ? _t.classroomSummaryRecordingPlaying(recording)
-        : _t.classroomSummaryRecordingPaused(recording),
-    previewing
-        ? _t.classroomSummaryPreviewActive
-        : _t.classroomSummaryPreviewStopped,
-  );
 
   // ─── Teacher tools menu (teacher, key 9) ────────────────────────────────
   static String get toolsTitle => _t.sessionToolsTitle;
@@ -527,7 +461,6 @@ abstract final class SessionText {
   static String get invite => _t.sessionInvite;
   static String get endClass => _t.sessionEndClass;
   static String get peopleTitle => _t.sessionPeopleTitle;
-  static String handQueue(int hands) => _t.sessionHandQueue(hands);
   static String participantList(int count) => _t.sessionParticipantList(count);
   static String get summaryChoice => _t.sessionSummaryChoice;
   static String get participantsTitle => _t.sessionParticipantsTitle;
@@ -712,10 +645,9 @@ abstract final class SessionText {
   static String get nowPlayingTitle => _t.sessionNowPlayingTitle;
 
   // More (key 7)
-  static String get moreButton => _t.sessionMoreButton;
+  static String moreButton(int key) => _t.sessionMoreButton('$key');
   static String get moreLabel => _t.sessionMoreLabel;
   static String get moreTitle => _t.sessionMoreTitle;
-  static String get moreStatus => _t.sessionMoreStatus;
   static String get moreWhatIsPlaying => _t.sessionMoreWhatIsPlaying;
   static String get moreWhoIsHere => _t.sessionMoreWhoIsHere;
 }

@@ -332,6 +332,9 @@ async def publish_journey(
     journey.published_at = now
     journey.status = "published"
     await teacher_notices.record(db, teacher, "journey", journey, "published")
+    await teacher_notices.notify_class(
+        db, journey.class_id, teacher.user_id, "journey", journey.journey_id, journey.title, "published",
+    )
     await db.commit()
     notifications = await _notify_published(db, journey)
     return {"ok": True, "journey": _teacher_payload(journey), "notifications": notifications}

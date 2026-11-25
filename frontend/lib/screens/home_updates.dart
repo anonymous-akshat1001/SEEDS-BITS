@@ -7,6 +7,7 @@ import '../services/api_service.dart';
 import '../services/auth_session_service.dart';
 import '../services/message_center.dart';
 import '../services/notification_services.dart';
+import '../utils/spoken_format.dart';
 
 /// Keeps a home screen current without a Refresh button (S12): it asks the
 /// server what to do now when it opens, every 20 seconds while it is on
@@ -27,6 +28,61 @@ mixin HomeUpdates<T extends StatefulWidget>
 
   /// Called after every successful check with the previous answer.
   void homeChanged(Map<String, dynamic>? previous, {required bool first});
+
+  final _heardNotices = <int>{};
+
+  /// What someone else changed for this account since it was last heard
+  /// ("Your administrator added lesson English, Class 6."), spoken once and
+  /// marked as heard. Null when there is nothing new.
+  String? takeNotices() {
+    final list = home?['notices'] ?? home?['admin_notices'];
+    final fresh = [
+      for (final item in list is List ? list : const [])
+        if (item is Map &&
+            item['notice_id'] is int &&
+            !_heardNotices.contains(item['notice_id']))
+          Map<String, dynamic>.from(item),
+    ];
+    if (fresh.isEmpty) return null;
+    final ids = [for (final item in fresh) item['notice_id'] as int];
+    _heardNotices.addAll(ids);
+    unawaited(ApiService.markNoticesSeen(ids));
+    return fresh.map(noticeText).whereType<String>().join(' ');
+  }
+
+  /// One notice as a sentence; null for a kind this app does not know.
+  static String? noticeText(Map<String, dynamic> item) {
+    final t = Speech.t;
+    final name = item['actor_name'];
+    final actor = item['actor_role'] == 'admin' || name is! String
+        ? t.noticeActorAdmin
+        : name;
+    final title = '${item['title']}';
+    final detail = item['detail'];
+    final day = detail is String ? DateTime.tryParse(detail) : null;
+    final date = day == null ? '' : SpokenFormat.date(day);
+    return switch ((item['kind'], item['action'])) {
+      ('quiz', 'published') => t.noticeQuizPublished(actor, title),
+      ('quiz', 'closed') => t.noticeQuizClosed(actor, title),
+      ('quiz', _) => t.noticeQuizCreated(actor, title),
+      ('journey', 'published') => t.noticeJourneyPublished(actor, title),
+      ('journey', 'archived') => t.noticeJourneyArchived(actor, title),
+      ('journey', _) => t.noticeJourneyCreated(actor, title),
+      ('playlist', _) => t.noticePlaylistPublished(actor, title),
+      ('lesson', 'updated') => t.noticeLessonUpdated(actor, title),
+      ('lesson', 'removed') when day != null => t.noticeLessonRemovedOn(
+        actor,
+        title,
+        date,
+      ),
+      ('lesson', 'removed') => t.noticeLessonRemoved(actor, title),
+      ('lesson', 'cancelled') => t.noticeLessonCancelled(actor, title, date),
+      ('lesson', 'substitute') => t.noticeLessonSubstitute(actor, title, date),
+      ('lesson', 'covered') => t.noticeLessonCovered(actor, title, date),
+      ('lesson', _) => t.noticeLessonCreated(actor, title),
+      _ => null,
+    };
+  }
 
   void startHomeUpdates() {
     WidgetsBinding.instance.addObserver(this);

@@ -139,10 +139,13 @@ void main() {
           'Focused: First',
           'Muted. Hand raised.',
           'Last message: Saved draft.',
-          'Press 1 for Do one.',
+          'Press 1 for Do one',
+          'Use the direction keys',
         ].map(help.indexOf).toList();
         expect(order.every((index) => index >= 0), isTrue, reason: help);
         expect(order, [...order]..sort());
+        // No text field on this screen, so no editing instructions.
+        expect(help, isNot(contains('editing')));
       },
     );
 
@@ -175,21 +178,30 @@ void main() {
         await tester.pump(const Duration(milliseconds: 400));
         await tester.pumpAndSettle();
         final opening = spoken.join(' ');
-        expect(opening, contains('Home. English is live.'));
-        expect(opening, contains('Press 1 for Open details.'));
-        expect(opening, contains('Press 2 for Do two.'));
-        expect(opening, contains('Press 5 for Do five.'));
+        expect(
+          opening,
+          contains(
+            'Home. English is live. Press 1 for Open details, 2 for Do two, '
+            '5 for Do five. Press star for help.',
+          ),
+        );
+        // The first screen has nowhere to go back to, so 0 is not offered.
+        expect(opening, isNot(contains('0 for Back')));
+        expect(opening, isNot(contains('hash')));
+        expect(opening, isNot(contains('editing')));
         await tester.sendKeyEvent(LogicalKeyboardKey.digit1);
         await tester.pumpAndSettle();
         spoken.clear();
         tester.state<NavigatorState>(find.byType(Navigator)).pop();
         await tester.pump(const Duration(milliseconds: 500));
         await tester.pumpAndSettle();
-        expect(spoken.last, contains('Home. English is live.'));
-        expect(spoken.last, contains('Press 1 for Open details.'));
-        expect(spoken.last, contains('Press 2 for Do two.'));
-        expect(spoken.last, isNot(contains('Do five')));
-        expect(spoken.last, endsWith('Press star for all keys.'));
+        expect(
+          spoken.last,
+          endsWith(
+            'Home. English is live. Press 1 for Open details, 2 for Do two. '
+            'Press star for all keys.',
+          ),
+        );
       },
     );
 

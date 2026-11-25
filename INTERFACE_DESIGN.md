@@ -47,14 +47,22 @@ them, the feature must be redesigned, not the rule.
    handled by the teacher's voice and a simple global control, not by many
    per-student buttons.
 6. **Short, predictable speech.** The number of options is kept small so that
-   the full list of keys is short enough to hear. Every screen reads all its
-   keys whenever it is opened or returned to, so nobody has to press star
-   first. Star repeats everything.
+   the full list of keys is short enough to hear. Opening a screen reads all
+   its keys in one sentence ("Press 1 for A, 2 for B, 0 for Back."), so
+   nobody has to press star first; coming back reads only the main key and
+   Back. Star always gives everything (section 8.3).
 7. **Same key, same meaning.** Shared keys never move between screens (see
    section 8.1).
 8. **Nothing is lost.** The backend keeps the records (attendance, class
    history, quiz results). They are not shown to the teacher on the phone
    unless they are needed in class.
+9. **Tell people what others changed.** When someone else changes what a
+   person will meet (a lesson, a quiz, a journey), that person hears it
+   once, in a sentence, the next time their Home updates. Nobody has to go
+   looking for changes.
+10. **One language, chosen once.** Everything the app says comes from one
+    set of translation files, so a new language needs only its translations
+    (section 8.6).
 
 ## 3. Context and constraints
 
@@ -90,7 +98,8 @@ is in this table.
 | What if the teacher has three classes today? | Home always offers only the current or next one. When one ends, the next becomes the default. The full day is available on request (Home, key 8: details). |
 | Which students are in the class? | The students Vision Empower enrolled in that class. Nobody picks them. |
 | How do students know the class started? | Starting the class rings every enrolled student's phone for up to 60 seconds. Students who still have not joined are rung once more 10 minutes later. Nobody is rung twice within 5 minutes. |
-| How does the teacher know who came? | One minute after the class starts the teacher hears "4 of 5 students here." After that, joins and leaves are spoken by name, grouped: "Akshat and Meena joined. 4 of 5 here." The class list (key 4) has the full picture. |
+| How does the teacher know who came? | One minute after the class starts the teacher hears "4 of 5 students here." After that, joins and leaves are spoken by name, grouped: "Akshat and Meena joined. 4 of 5 here." The class list (key 3) has the full picture. |
+| How does someone learn that another person changed their lessons or work? | The server stores a notice for each affected person (never for the person who made the change). Home reads unheard notices once and marks them heard (section 6.7). |
 | What if a student opens the app late? | Home shows "1: Join" whenever their class is live. One key joins. There is nothing to choose. |
 | Can a teacher or student be in two classes at once? | No. The database allows one live class per teacher and per enrolled class (so per student). |
 | What is the class called? | The system names it from the subject, class and time. There is no title to type. |
@@ -112,10 +121,12 @@ is in this table.
 2. Enter the weekly timetable: teacher, class, subject, days, start and end
    time, optional date range and prepared lesson. One entry can cover several
    weekdays. Only the teacher's own classes and subjects can be chosen.
-   Overlaps for a teacher or a class are refused.
+   Overlaps for a teacher or a class are refused. When the timetable list is
+   filtered by a teacher, the class filter offers only that teacher's
+   classes (and goes back to "All classes" if the chosen class does not fit).
 3. Add holidays and per-date changes (cancel, substitute, different lesson).
 4. Optionally create and publish quizzes and journeys on a teacher's behalf
-   (the teacher is told about it on their Home).
+   (the teacher hears about it on their Home, section 6.7).
 
 ### 6.2 The teacher's class (the default path)
 
@@ -123,12 +134,13 @@ is in this table.
 Open app -> Home speaks: "Home. Physics, Class 6 is ready. Press 1 to start it."
          -> press 1
 Class starts -> all enrolled students' phones ring
-             -> "Your class is live. You are muted. Press 1 to speak, 3 to mute all students."
+             -> "Your class is live. You are muted. Press 1 to speak, 2 to mute all students."
 After 1 minute -> teacher hears once: "4 of 5 students here."
 Later arrivals -> "Akshat and Meena joined. 5 of 5 here."  (grouped, by name)
-Teaching     -> teacher unmutes (1), calls a student by name, mutes all (3) when needed
-Content      -> 5 Start: quiz, journey or recording; 6 hears how it is going
-End          -> teacher presses 8 (confirm) or the class ends itself at the cutoff
+Hands        -> "Asha raised a hand."  (nothing to open or acknowledge)
+Teaching     -> teacher unmutes (1), calls a student by name, mutes all (2) when needed
+Content      -> 4 Start: quiz, journey or recording; 7 hears how it is going
+End          -> teacher presses 6 (confirm) or the class ends itself at the cutoff
 ```
 
 Total key presses to start teaching: **one**.
@@ -155,11 +167,12 @@ Student missed it, opens the app at 2:30 -> Home: "Physics class is live. Press 
 The teacher runs the room by voice:
 
 1. Everyone joins **muted**.
-2. A student who wants to speak raises a hand (key 2). The teacher hears it
-   and can go through hands in order (key 2).
+2. A student who wants to speak raises a hand (key 2). The teacher hears
+   "Akshat raised a hand." There is no hands queue to open, step through or
+   acknowledge (removed 25 Nov 2026, section 8.5).
 3. The teacher calls the student by name: "Akshat, you can speak now."
 4. The student unmutes (key 1), speaks, and mutes again.
-5. If the room gets noisy, the teacher presses **3: mute all students**.
+5. If the room gets noisy, the teacher presses **2: mute all students**.
 
 There is **no per-student mute or unmute button**: it was removed because it
 needs a list, a selection and a confirmation, and the protocol does the same
@@ -167,11 +180,12 @@ job by voice. The proposed tightening of this protocol is in section 14.
 
 ### 6.5 Starting something in class: quiz, journey or recording
 
-1. Teacher presses **5: Start**. A short screen offers **1 Quiz, 2 Journey,
+1. Teacher presses **4: Start**. A short screen offers **1 Quiz, 2 Journey,
    3 Recording**.
 2. **Quiz / Journey:** the teacher picks a published one for this class and
-   subject. Every student hears "Your teacher started a quiz: Plants. Press 4
-   to begin" and presses **4**. It opens straight at the first question;
+   subject. Every student hears "Your teacher assigned a quiz: Plants. Press
+   5 to start it" and presses **5**. A student who joins later hears the same
+   sentence once on joining. It opens straight at the first question;
    leaving returns to the class. Class sound keeps playing.
 3. **Recording:** the recording player opens and first reads its keys (5
    play or pause, 4/6 back and forward, 7/9 speed, 1 choose another, 3
@@ -181,12 +195,16 @@ job by voice. The proposed tightening of this protocol is in section 14.
 4. **One thing runs at a time.** Starting a quiz or journey pauses the
    recording; starting a recording closes the open quiz or journey (it stays
    in the students' normal lists).
-5. **6: Status** appears on the class screen only while something runs:
+5. **7: Status** appears on the class screen only while something runs:
    - for a quiz or journey: "5 students in class. 3 have attempted it, 1
      finished." then: who in class has not finished, who in the whole class
      has not finished, remind those in class, start a different one, stop
      offering it;
-   - for a recording: the recording player with all its controls.
+   - for a recording: the recording player with all its controls, and
+     **8: Close recording for the class**, which stops it on every phone
+     (students hear "Your teacher closed the recording Plants.") and returns
+     the teacher to the class; Status then disappears. It is the recording's
+     equivalent of "Stop offering" for a quiz or journey.
 6. It stays in the students' normal Quizzes or Journeys lists after class.
 
 ### 6.5a Leaving class
@@ -205,6 +223,28 @@ is no second "leave without server confirmation?" question.
 - **Teacher Home:** quizzes, journeys, playlists, and under More: offline
   library, change subject, a class outside the timetable, settings.
 
+### 6.7 Changes made by someone else (notices)
+
+When the administrator or a teacher changes something, every other person it
+affects hears one sentence on their Home, for example "Your administrator
+added lesson English, Class 6." or "Mrs Rao published quiz Plants."
+
+| Change | Who hears it |
+|---|---|
+| Lesson added to the timetable | Its teacher and the students of the class |
+| Lesson changed (time, day, lesson attached) | Its teacher |
+| Lesson removed or made inactive | Its teacher and the students |
+| Lesson moved to another teacher | Old teacher ("removed"), new teacher ("added") |
+| One date cancelled | Its teacher, the substitute (if any) and the students, with the date |
+| Substitute set for a date | The substitute ("asked you to teach ... on ...") and the regular teacher ("gave your lesson ... to another teacher") |
+| Quiz, journey or playlist published | The students of the class; the teacher too when the administrator did it for them |
+
+- The person who made the change never hears their own change.
+- Notices are spoken when Home opens and whenever Home updates while it is
+  on screen (every 20 seconds, and at once when a push arrives). Each is
+  spoken once and then marked heard on the server.
+- The administrator is spoken as "Your administrator"; a teacher by name.
+
 ## 7. What was removed, and why
 
 | Removed | Why | Replaced by |
@@ -217,9 +257,12 @@ is no second "leave without server confirmation?" question.
 | Class history on the phone | Not needed in class | Kept on the server for Vision Empower |
 | Per-student mute and unmute | Too many key presses; protocol does it | Mute all + speaking protocol |
 | Classroom check (understood / repeat / help) | Redundant with raising a hand and with in-class quizzes | Raise hand; quiz in class |
-| Many keys on the class screen (status, chat, updates, tools on their own keys) | Too long to hear, rarely used | Rare actions under **7: More** |
-| Separate keys for quiz, journey and recording | Three keys for one idea ("put something in front of the class") | One **5: Start** key, then 1 / 2 / 3 |
+| Many keys on the class screen (status, chat, updates, tools on their own keys) | Too long to hear, rarely used | Rare actions under **More** (teacher 5, student 4) |
+| Separate keys for quiz, journey and recording | Three keys for one idea ("put something in front of the class") | One **4: Start** key, then 1 / 2 / 3 |
 | A second "leave without server confirmation?" question | An extra decision the student cannot judge | Leave after one confirmation |
+| Teacher's raised-hands console (queue, step through hands, acknowledge, "who raised first") (25 Nov 2026) | A list, a selection and a confirmation for something the teacher's voice already does; a blind teacher had to leave the class screen to manage it | One spoken sentence: "Asha raised a hand." The teacher calls the name |
+| Full class status under More (participants, hands, microphones, recording) (25 Nov 2026) | Long to hear and repeated what star and the class list already say | Star (current state); teacher 3: Class list; student More, Who is here |
+| "Press OK to leave the field" on screens without a text field (25 Nov 2026) | Instructions about editing where nothing can be edited | Said only in the star help of screens with a text field |
 
 ## 8. Keypad and speech
 
@@ -231,13 +274,16 @@ is no second "leave without server confirmation?" question.
 | 0 | Back, cancel or leave (leaving a class and logging out ask to confirm) |
 | \* | Where am I, the current state, the last message, and every key |
 | # | Stop speech (never navigates) |
-| 8 | Repeat the last message (on menus: details; teacher class screen: end class) |
+| 8 | Repeat the last message (on menus: details; in the teacher's class recording player: close the recording for the class) |
 | 9 | Faster in audio players; otherwise unused where possible |
 | Audio players | 4 back 10 s, 5 play or pause, 6 forward 10 s, 7 slower, 9 faster |
 | Quiz answers | 1 to 4 choose, 5 submit, 6 repeat the question |
 
-Things that end something use the highest numbers on their screen (the
-teacher's end class is 8, then 0 leave).
+Keys are numbered without gaps, most used first. The permanent action that
+ends something takes the highest permanent number (the teacher's end class
+is 6, then 0 leave). A key that exists only for a while (the teacher's 7
+Status, the student's 5 Start activity) comes after all permanent keys, so
+appearing or disappearing never moves another key.
 
 ### 8.2 Screens
 
@@ -253,43 +299,51 @@ More: 1 offline library, 2 change subject, 3 class outside the timetable,
 learning, 3 journeys, 4 quizzes, 5 More, 0 log out.
 More: 1 library, 2 playlists, 3 settings.
 
-**Class screen**
+**Class screen** (renumbered 25 Nov 2026, section 8.5)
 
 | Key | Teacher | Student |
 |---|---|---|
 | 1 | Mute / unmute myself | Mute / unmute myself |
-| 2 | Raised hands (in order) | Raise / lower hand |
-| 3 | Mute all students | What is playing |
-| 4 | Class list (here, left, not joined; ring those not joined) | Start the quiz or journey (only while one is open) |
-| 5 | Start: 1 quiz, 2 journey, 3 recording | – |
-| 6 | Status of what is running (only while something runs) | – |
-| 7 | More: add 15 minutes, chat, class status | More: chat, who is in class, class status |
-| 8 | End class for everyone (asks to confirm) | (repeat last message) |
+| 2 | Mute all students | Raise / lower hand |
+| 3 | Class list (here, left, not joined; ring those not joined) | What is playing |
+| 4 | Start: 1 quiz, 2 journey, 3 recording | More: chat, who is in class |
+| 5 | More: add 15 minutes, chat | Start the quiz or journey (only while one is open) |
+| 6 | End class for everyone (asks to confirm) | – |
+| 7 | Status of what is running (only while something runs) | – |
 | 0 | Leave (class keeps running) | Leave (one confirmation) |
 
 ### 8.3 Speech rules
 
-- **Opening a screen:** the screen's name, its state in one sentence, then
-  every key. This applies on every screen for now (including the journey
-  player, the class list, journey review, and with "Essential" speech or
-  TalkBack on); which screens should be shorter will be decided later. Example: "Home. Physics, Class 6 is ready. Press 1 for Start
-  Physics, Class 6. Press 2 for Quizzes ... Press 0 for Log out."
-- **Opening a screen with a text field already focused** (sign-in): the
-  same full speech, then "You are in Phone number. While editing, keys enter
-  text. Press OK to finish, or use up or down to leave the field." The
-  field's own announcement no longer cuts the screen's instructions off.
+- **Opening a screen:** the screen's name, its state in one sentence, every
+  key in **one sentence**, then "Press star for help." Example: "Home.
+  Physics, Class 6 is ready. Press 1 for Start Physics, Class 6, 2 for
+  Quizzes, 3 for Journeys, 4 for Playlists, 5 for More, 0 for Log out. Press
+  star for help." Back (0) is always said last, and only where 0 can go
+  back (the first screen, such as Welcome, has no Back). "Press" is said
+  once, not before every key.
+- **Opening a screen with a text field** (sign-in): the task first,
+  including OK ("Type your phone number, press OK, then press 1 to sign
+  in."), then "You are in Phone number.", then the keys. How editing works
+  ("while editing ... press OK or up or down to leave the field") is said
+  only in the star help, and only on screens that have a text field.
 - **Coming back to a screen** (from a list, chat, settings or a dialog): the
-  screen's name, its state, the main keys (1 to 3 and 0), then "Press star
-  for all keys." This shorter form is used **only** when coming back; every
-  other arrival reads every key.
+  screen's name, its state, only the main key (the first one) and Back,
+  then "Press star for all keys." Example: "Home. Press 1 for Start Physics,
+  Class 6, 0 for Log out. Press star for all keys."
 - **Pressing a key or touching the screen before the opening speech starts**
   drops that opening speech, so it never talks over what the person did.
 - **Screens that are still loading** say only "Journeys. Working, please
   wait." and read their counts and keys once the data has arrived, so nothing
   is announced with wrong values (such as "0 new journeys" while loading).
-- **Star** always gives the full picture.
+- **Star** always gives the full picture: every key, how to move between
+  controls, and (only where there is a text field) how editing works.
 - **In class**, status speech mentions only what is not ordinary: a raised
   hand, playing audio, an open quiz, the end time, a connection problem.
+- **In class, assignments are announced with their key:** "Your teacher
+  assigned a quiz: Plants. Press 5 to start it." Each assignment is spoken
+  once per student (also to a student who joins after it started).
+- **Raised hands (teacher only):** "Asha raised a hand.", spoken at
+  requested priority so it is heard over class audio.
 - **Who came, in class (teacher only):** nothing during the first minute,
   then one summary ("4 of 5 students here."). After that, joins and leaves
   that happen close together (within 2 seconds) are spoken as one sentence:
@@ -297,24 +351,183 @@ More: 1 library, 2 playlists, 3 settings.
   enrolled students. Students hear none of this.
 - **Keep lists short.** Because every key is read on opening, a screen with
   more than about six options is a design problem (principle 3). Mentor
-  concern: reading options must not take most of the time. See section 14,
-  S4 and S5.
+  concern: reading options must not take most of the time. See section 8.5
+  and section 14, S4 and S5.
 
 ### 8.4 Design choices, assumptions and how they help (20 Nov 2026)
 
 | # | Choice | Assumption | How it helps |
 |---|---|---|---|
-| 1 | Sign-in reads every key and how editing works, even though the cursor starts in the phone field | A first-time blind user does not know OK leaves a field or that 3 is administrator sign-in | Nothing on the screen has to be discovered; the person can type at once or choose another option |
+| 1 | Sign-in reads every key and how editing works, even though the cursor starts in the phone field (**changed 25 Nov:** how editing works moved to star help, 8.5 C1) | A first-time blind user does not know OK leaves a field or that 3 is administrator sign-in | Nothing on the screen has to be discovered; the person can type at once or choose another option |
 | 2 | Screens that load data speak only "loading" until the data has arrived | Wrong numbers are worse than a short wait | No misleading speech ("0 new journeys" followed by "2") |
 | 3 | Leaving class needs one confirmation and never waits more than 3 seconds for the server | The student's intent is clear once they confirm; the server also learns from the closed connection | Leave always works, including on slow networks; one decision instead of two |
-| 4 | Coming back to a screen reads the main keys (1 to 3 and 0) and "Press star for all keys"; every other arrival reads all keys | After using a sub-screen the person already knows where they are; the first keys are the most used | Shorter speech for frequent back-and-forth without hiding anything (star) |
+| 4 | Coming back to a screen reads the main keys (1 to 3 and 0) and "Press star for all keys"; every other arrival reads all keys (**changed 25 Nov:** only the first key and 0, 8.5 C2) | After using a sub-screen the person already knows where they are; the first keys are the most used | Shorter speech for frequent back-and-forth without hiding anything (star) |
 | 5 | Timetable and live classes: a class marked live from before the timetable existed stays live until ended | Vision Empower ends such classes from Class records; no automatic clean-up (decided) | Nothing is ended without a person deciding; see 12 |
-| 6 | One **5: Start** key opens Quiz / Journey / Recording | Teachers think "put something in front of the class", then choose what | One key to remember; the choice screen reads its three options |
+| 6 | One **Start** key opens Quiz / Journey / Recording (was 5; **4 since 25 Nov**) | Teachers think "put something in front of the class", then choose what | One key to remember; the choice screen reads its three options |
 | 7 | The recording player reads its keys before the recording starts; a key press cancels the automatic start | A blind teacher cannot hear the controls once the recording plays over them | The teacher knows pause, seek and speed before audio begins |
-| 8 | **6: Status** appears only while something runs; for a quiz or journey it gives "N students in class, M have attempted it, K finished", for a recording it opens the player | Status is only meaningful while something runs | No dead key on the screen; one key for "how is it going?" whatever is running |
+| 8 | **Status** appears only while something runs (was 6; **7 since 25 Nov**); for a quiz or journey it gives "N students in class, M have attempted it, K finished", for a recording it opens the player | Status is only meaningful while something runs | No dead key on the screen; one key for "how is it going?" whatever is running |
 | 9 | One thing runs at a time (quiz, journey or recording) | Students cannot listen to a recording and answer a quiz at once | Simple mental model; Status always means the one running thing |
-| 10 | Teacher keys: 5 Start, 6 Status, 7 More, 8 End class, 0 Leave; students: More on 7 too | Same key, same meaning across roles; ending is highest | Less to learn; ending cannot be pressed by accident in place of a common action |
-| 11 | In class, the teacher's 8 ends the class instead of repeating the last message | Repeating the last message is still available with star | The end key is the highest number on the screen, as agreed |
+| 10 | Teacher keys: 5 Start, 6 Status, 7 More, 8 End class, 0 Leave; students: More on 7 too (**replaced 25 Nov** by the layout in 8.2, 8.5 C4) | Same key, same meaning across roles; ending is highest | Less to learn; ending cannot be pressed by accident in place of a common action |
+| 11 | In class, the teacher's 8 ends the class instead of repeating the last message (**replaced 25 Nov:** end class is 6; 8 is unused in class) | Repeating the last message is still available with star | The end key is the highest number on the screen, as agreed |
+
+### 8.5 Design choices, why they suit, and alternatives considered (25 Nov 2026)
+
+Driven by feedback that instructions were too long, that the class screen
+had too many features for blind users, and that people did not learn about
+changes others made. The guiding question for each choice: *does it reduce
+what a blind person must hear, remember or navigate?*
+
+**C1. One-sentence key lists, editing help only where there is editing**
+
+- *Choice:* "Press 1 for A, 2 for B, 0 for Back. Press star for help."
+  "Press" is said once; Back is always last. The "while editing ... press OK
+  to leave the field" sentence is said only in star help, and only on screens
+  with a text field.
+- *Why it suits:* listening time is the cost of every screen. Repeating
+  "Press N for" before each key nearly doubles that time without adding
+  information. Telling someone how to leave a field that does not exist
+  teaches them to stop listening. Back last means the person always knows
+  where the list ends.
+- *Alternatives considered:*
+  - *Keep "Press N for X." per key* (old behaviour): clearer for a very
+    first use, but too long once a screen has five or six keys.
+  - *Read no keys, only "press star for keys"*: shortest, but a new user
+    must press star on every screen, breaking principle 6.
+  - *Learn once, then be brief (S4: full keys for the first three visits)*:
+    still possible later; it needs per-person, per-screen counters and makes
+    the same screen sound different on different days, which is confusing
+    on shared phones.
+
+**C2. Coming back reads only the main key, Back and star**
+
+- *Choice:* returning to a screen says its name, state, the first key, 0,
+  and "Press star for all keys".
+- *Why it suits:* coming back is the most frequent arrival (out of a list,
+  a dialog, chat). The person has just been on this screen; they need the
+  way forward and the way back, nothing else.
+- *Alternatives considered:* read keys 1 to 3 and 0 (the 20 Nov rule; still
+  long on Home); say only the screen name (too little: a person who was
+  interrupted has no way forward without star); a sound cue only (fast,
+  but unclear to new users and not translatable into meaning).
+
+**C3. Raised hand is one spoken sentence; the hands console is removed**
+
+- *Choice:* the teacher hears "Asha raised a hand." There is no queue to
+  open, step through or acknowledge.
+- *Why it suits:* the speaking protocol (6.4) already runs on the teacher's
+  voice. The console needed a list, a selection and a confirmation, and it
+  took the teacher off the class screen while the class was talking. For a
+  blind teacher, hearing the name is the whole job.
+- *Alternatives considered:* keep the console under More (less in the way,
+  but still a feature to learn and translate); announce the queue position
+  ("Asha raised a hand, second in line"; more to hear, rarely needed in
+  small classes); an "acknowledge" key that lowers the hand (useful, but
+  the student can lower their own hand with 2 once called).
+
+**C4. Fewer class features, consecutive keys**
+
+- *Choice:* teacher 1 Mute, 2 Mute all, 3 Class list, 4 Start, 5 More, 6 End
+  class, 7 Status (only while running), 0 Leave. Student 1 Mute, 2 Hand, 3
+  What is playing, 4 More, 5 Start activity (only while open), 0 Leave. Full
+  class status is removed; More holds only Add time and Chat (teacher) or
+  Chat and Who is here (student). Chosen with the project owner, who asked
+  for consecutive numbers.
+- *Why it suits:* every key on the class screen is read on joining, so each
+  removed key shortens the join speech and leaves less to remember. No gaps
+  means the person can guess the next key. Temporary keys go last so that
+  their appearing never moves a permanent key (principle 7). Mute and hand
+  stay on 1 and 2 for both roles, the most used actions in class.
+- *Alternatives considered:*
+  - *Keep the old numbers with gaps* (2 empty for the teacher): less
+    relearning for existing testers, but a gap sounds like a missing key.
+  - *Remove chat as well*: chat is the only way to send a link or a note
+    without speaking; kept, but under More.
+  - *Remove the class list*: it is the only place to ring students who have
+    not joined; kept on 3.
+  - *End class on the highest key (7) with Status before it*: Status would
+    then move End class whenever something starts running.
+
+**C5. Assignments are announced to students with the key to press**
+
+- *Choice:* "Your teacher assigned a quiz: Plants. Press 5 to start it." It
+  is spoken at once when the teacher starts it, and once on joining for a
+  student who arrives later. Reminders say the same key.
+- *Why it suits:* a blind student cannot see that a new option appeared on
+  the screen. Telling what happened and the single key to press turns it
+  into a one-key action. Saying it once per assignment avoids repeating it
+  every time the screen updates.
+- *Alternatives considered:* open the quiz automatically (fastest, but takes
+  the student out of the class audio without consent and fails if they are
+  speaking); a sound cue only (not understandable alone); repeat the
+  announcement every minute until started (the teacher's reminder already
+  does this on request).
+
+**C6. Spoken notices for changes made by someone else** (section 6.7)
+
+- *Choice:* the server stores one notice per affected person; Home speaks it
+  once ("Your administrator added lesson English, Class 6.") and marks it
+  heard. The person who made the change is never told.
+- *Why it suits:* a blind teacher cannot glance at a timetable to notice a
+  change. A sentence on Home, in the same place every time, needs no
+  navigation. Storing notices on the server means a notice is not lost if
+  the phone was off, and is not repeated on a second phone.
+- *Alternatives considered:*
+  - *Push notification only*: can be late, blocked or swiped away, and is
+    outside the app's own speech and language; used only as a trigger to
+    check Home sooner.
+  - *A "What's new" list*: one more screen to navigate; violates principle 3.
+  - *Live event stream outside class*: instant, but keeps a connection open
+    all day on low-end phones; the 20-second Home check is enough for
+    timetable changes.
+  - *Notify only teachers*: students also lose time when a lesson is
+    cancelled, so they are told about cancellations and additions too.
+
+**C7. Timetable filter: a teacher's classes only (administrator dashboard)**
+
+- *Choice:* after choosing a teacher, the class filter lists only the
+  classes that teacher is assigned to; an invalid class choice resets to
+  "All classes".
+- *Why it suits:* the dashboard is used by sighted Vision Empower staff, but
+  offering classes that would always give an empty list wastes time and
+  looks like missing data.
+- *Alternatives considered:* keep all classes (simple, but invites empty
+  results); show all classes with the teacher's first (still offers
+  impossible choices); load classes from the timetable entries (would hide
+  assigned classes with no lessons yet, which is exactly when the
+  administrator needs them).
+
+### 8.6 Speech language
+
+- **Languages:** English, Hindi, Kannada, Telugu and Bengali. The person
+  picks one in Settings (the language key moves to the next language and
+  speaks its name in that language, e.g. "हिन्दी, Hindi"). It is saved per
+  profile on the phone. A language chosen before signing in (from the
+  Welcome screen's Settings) is kept through sign-in and becomes that
+  person's language, even if their saved settings had another one.
+- **One source of text:** every spoken and shown sentence lives in
+  `frontend/lib/l10n/app_en.arb`, with one translated file per language
+  (`app_hi.arb`, `app_kn.arb`, `app_te.arb`, `app_bn.arb`). Adding a language
+  means adding its file and an entry in `SpeechLanguage`; no screen code
+  changes.
+- **Fallback:** if a sentence is missing in a language, English is used for
+  that sentence. If the phone (or browser) has no voice for the chosen
+  language, the app says so in English and speaks English until the voice is
+  installed. In a browser, voices depend on the browser: Chrome on Windows
+  has Hindi but no Kannada, Telugu or Bengali voice; Microsoft Edge has all
+  four. On Android phones, Google Text-to-speech provides all four.
+- **Kept the same in every language:** digits, key prefixes such as "5:",
+  and placeholders such as `{title}`; a test checks every file for missing
+  placeholders, unbalanced braces, unknown keys and changed list lengths.
+- **Why:** many students and teachers are more comfortable in their home
+  language, and the keypad grammar stays identical, so switching language
+  never changes which key does what.
+- **Alternatives considered:** machine translation on the phone at run time
+  (needs a network and gives unpredictable wording); separate builds per
+  language (more apps to install and update); recorded audio prompts
+  (natural, but every change needs a new recording in five languages and
+  names such as quiz titles cannot be recorded).
+- **Limits:** the current translations are AI drafts and need review by
+  native speakers; voice commands in class remain English only.
 
 ## 9. Class alerts and joining
 
@@ -324,7 +537,7 @@ More: 1 library, 2 playlists, 3 settings.
   is live.
 - The ring is a convenience, not the mechanism. Joining always works by
   opening the app (section 6.3).
-- The teacher's class list (key 4) shows who is here, who joined and left,
+- The teacher's class list (key 3) shows who is here, who joined and left,
   who has not joined, and can ring those not joined once (5-minute cooldown).
 
 ## 10. Administrator dashboard (Vision Empower)
@@ -341,6 +554,12 @@ IST. Server rules are enforced on the server, not only in the dashboard.
   (cancel, substitute, lesson) and holidays.
 - `POST /classes/start` is idempotent; `GET /me/home` returns everything the
   Home screen needs (live class, today, next class, notices).
+- Notices (section 6.7): one row per affected person in the notices table
+  (kind: quiz, journey, playlist, lesson; action: created, published,
+  closed, archived, updated, removed, cancelled, substitute, covered;
+  optional date). Written by timetable, date-change and publish routes;
+  returned by `/me/home` for teachers and students and marked heard with
+  `POST /me/notices/seen`. Migration `20261125_15`.
 - Durable jobs table and worker: alerts, reminders, end warnings, automatic
   end, quiz reminders.
 - One-live-class rules enforced by unique database indexes.
@@ -373,6 +592,11 @@ Details: README "Interaction-reduction model" and API table.
 Also built after the mentor review: join and leave news by name, grouped,
 and the one-minute start summary (former gap G1, suggestions S1 and S8).
 
+Built on 25 Nov 2026 (section 8.5): one-sentence key lists, shorter
+return speech, simplified class screen with consecutive keys, spoken
+raised hands, in-class assignment announcements, spoken notices (6.7),
+teacher-filtered timetable classes, and speech in five languages (8.6).
+
 **Gaps against the mentor review:**
 
 | ID | Gap | Today |
@@ -390,14 +614,15 @@ independently.
 | ID | Suggestion | Closes |
 |---|---|---|
 | S1 | **Done.** Names on join and leave, grouped, with "4 of 5 here". | G1 |
-| S3 | **Teacher-controlled speaking.** Replace key 3 with a toggle "mute all / unmute all". While the class is muted by the teacher, a student's key 1 does not unmute but raises their hand. The teacher calls a name and unmutes all (or, optionally, unmutes the first raised hand from the hands queue). Needs a decision: is "unmute all" safe with every student's microphone open on low-end phones? | G3 |
-| S4 | **Learn once, then be brief.** Read every key the first three times a screen is opened (per person, per screen), then only the state and "star for keys". A Settings switch "Always read all keys" restores the full list. This answers the mentor's concern that reading options takes most of the time, while still teaching new users every key. | Speech time |
+| S3 | **Teacher-controlled speaking.** Replace key 2 with a toggle "mute all / unmute all". While the class is muted by the teacher, a student's key 1 does not unmute but raises their hand. The teacher calls a name and unmutes all. Needs a decision: is "unmute all" safe with every student's microphone open on low-end phones? | G3 |
+| S4 | **Learn once, then be brief.** Read every key the first three times a screen is opened (per person, per screen), then only the state and "star for keys". Partly answered on 25 Nov by one-sentence key lists and shorter return speech (8.5 C1, C2); revisit after timing speech on devices. | Speech time |
 | S5 | **Lesson-only player.** In class, key 5 simply plays or pauses the prepared lesson for everyone; seek, speed, choosing another recording and upload move under More. | G5 |
 | S6 | **Name the class companions on Home.** Teacher: "Physics, Class 6, 2 pm, with 4 students: Akshat, Meena, Ravi, Asha. Press 1 to start." Names only when 5 or fewer, otherwise the count. | G4 |
 | S7 | **Join on open.** If a student's class is live when they open the app, join after a short spoken countdown ("Joining Physics in 3 seconds. Press 0 to stay on Home."), so "open the app" is the whole action. | Flow 6.3 |
 | S8 | **Done.** One "4 of 5 students here" a minute after the start instead of one announcement per student. | Speech time |
-| S9 | **Voice command trial plan**: test "mute all" spoken by the teacher while (a) a student is speaking, (b) a recording plays, (c) on loudspeaker vs earphones. If unreliable, keep voice commands off by default and rely on key 3. Consider push-to-talk (hold a key) for voice commands to avoid false triggers. | G6 |
-| S10 | **Retire unused code paths** (old session lists, invitations, classroom check strings) from the app and translation files to reduce translation and testing effort. | Maintenance |
+| S9 | **Voice command trial plan**: test "mute all" spoken by the teacher while (a) a student is speaking, (b) a recording plays, (c) on loudspeaker vs earphones. If unreliable, keep voice commands off by default and rely on key 2. Consider push-to-talk (hold a key) for voice commands to avoid false triggers. | G6 |
+| S10 | **Retire unused code paths** (old session lists, invitations, classroom check strings) from the app and translation files to reduce translation and testing effort. The hands console and full class status strings were removed on 25 Nov; about 460 older unused strings remain. | Maintenance |
+| S11 | **Native-speaker review of translations** (Hindi, Kannada, Telugu, Bengali), starting with Home, sign-in and the class screen. | Section 8.6 |
 
 ## 15. Test plan
 
@@ -419,6 +644,12 @@ items below need **real button phones and blind users**:
 10. Speech length: time taken to hear each main screen's opening speech
     (target: under 15 seconds for Home and the class screen).
 11. Network loss in class; reopening returns to the class.
+12. Notices: the administrator adds, changes and cancels a lesson while the
+    teacher's and a student's Home are open; each hears it once within
+    about 20 seconds, and the administrator hears nothing.
+13. In-class assignment: the teacher starts a quiz; students in class and a
+    student joining later hear "Press 5 to start it" once.
+14. Each speech language with its Android voice installed and missing.
 
 ## 16. Decision log
 
@@ -437,3 +668,6 @@ items below need **real button phones and blind users**:
 | Nov 2026 | Teacher hears one "4 of 5 students here" a minute after the start, then joins and leaves by name, grouped; students are not told about others joining |
 | 20 Nov 2026 | One Start key (5) for quiz, journey or recording; Status (6) only while something runs; More 7; End class 8; one thing runs at a time; recording player reads its keys before playing; leaving needs one confirmation; coming back to a screen reads the main keys and points to star; loading screens wait for their data; sign-in reads all keys with the field focused (section 8.4) |
 | 23 Nov 2026 | Number keys must never be lost to a lingering keypad input method or stray focus: screens release the IME on arrival and the top screen answers keys when focus is outside every screen |
+| 24 Nov 2026 | Speech in English, Hindi, Kannada, Telugu and Bengali from one set of translation files, chosen in Settings per profile, with English fallback (section 8.6) |
+| 25 Nov 2026 | Key lists spoken in one sentence; editing help only on screens with a text field; coming back reads the main key, Back and star; hands console and full class status removed; class keys renumbered without gaps (teacher 1 to 7, student 1 to 5); students hear assignments with the key to press; spoken notices for changes made by others; timetable class filter follows the teacher (section 8.5) |
+| 25 Nov 2026 | Teacher can close the class recording (player key 8), like stopping a quiz; a language chosen before sign-in carries into the account; in a browser, a language without a voice falls back to English with an explanation instead of staying silent |

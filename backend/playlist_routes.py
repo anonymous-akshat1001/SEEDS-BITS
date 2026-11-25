@@ -11,6 +11,7 @@ from sqlalchemy.orm import selectinload
 import access_control as access
 import auth
 import models
+import teacher_notices
 import schemas
 from database import get_db
 
@@ -239,6 +240,10 @@ async def publish_teacher_playlist(
     await access.require_teacher_playlist_access(db, teacher, playlist, manage=True)
     if published and playlist.is_archived:
         raise HTTPException(status_code=400, detail="Restore the playlist before publishing it")
+    if published and not playlist.is_published and playlist.class_id is not None:
+        await teacher_notices.notify_class(
+            db, playlist.class_id, teacher.user_id, "playlist", playlist.playlist_id, playlist.title, "published",
+        )
     playlist.is_published = published
     await db.commit()
     return _teacher_payload(await _teacher_playlist(db, playlist_id))

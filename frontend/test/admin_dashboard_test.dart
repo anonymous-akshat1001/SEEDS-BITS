@@ -292,6 +292,47 @@ void main() {
   });
 
   testWidgets(
+    'filtering the timetable by a teacher offers only that teacher\'s classes',
+    (tester) async {
+      await http.runWithClient(
+        () async {
+          await open(tester, AdminSection.timetable);
+          await tap(tester, find.text('All classes'));
+          expect(find.text('Class 6'), findsWidgets);
+          await tap(tester, find.text('Class 5').last);
+
+          await tap(tester, find.text('All teachers'));
+          await tap(tester, find.text('Mr Rao').last);
+          await tap(tester, find.text('Class 5'));
+          expect(find.text('Class 6'), findsNothing);
+          await tap(tester, find.text('Class 5').last);
+
+          // Ms Iyer teaches no class, so the class filter goes back to all.
+          await tap(tester, find.text('Mr Rao'));
+          await tap(tester, find.text('Ms Iyer').last);
+          expect(find.text('All classes'), findsOneWidget);
+          final last = requests.lastWhere(
+            (r) => r.url.path == '/admin/timetable',
+          );
+          expect(last.url.queryParameters.containsKey('class_id'), isFalse);
+        },
+        () => server({
+          'GET /admin/users': (_) => json(teachers),
+          'GET /catalog/classes': (_) => json([
+            ...classes,
+            {
+              'class_id': 6,
+              'name': 'Class 6',
+              'is_active': true,
+              'sort_order': 1,
+            },
+          ]),
+        }),
+      );
+    },
+  );
+
+  testWidgets(
     'a new lesson offers only the teacher\'s own classes and subjects and can repeat on several days',
     (tester) async {
       await http.runWithClient(

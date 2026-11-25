@@ -194,14 +194,19 @@ void main() {
           expect(arrival, contains('English, Class 6 is ready'));
           expect(
             arrival,
-            contains('Quiz Plants: published for you by your administrator.'),
+            contains('Your administrator published quiz Plants.'),
           );
-          for (final key in ['1', '2', '3', '4', '5', '0']) {
-            expect(arrival, contains('Press $key for'));
+          expect(
+            arrival,
+            contains('Your administrator added lesson English, Class 7.'),
+          );
+          expect(arrival, contains('Press 1 for'));
+          for (final key in ['2', '3', '4', '5', '0']) {
+            expect(arrival, contains(', $key for'));
           }
           expect(seen, [
             {
-              'notice_ids': [4],
+              'notice_ids': [4, 5],
             },
           ]);
           await tester.pumpWidget(const SizedBox.shrink());
@@ -222,6 +227,14 @@ void main() {
                         'title': 'Plants',
                         'action': 'published',
                       },
+                      {
+                        'notice_id': 5,
+                        'kind': 'lesson',
+                        'title': 'English, Class 7',
+                        'action': 'created',
+                        'actor_role': 'admin',
+                        'actor_name': 'Mrs Admin',
+                      },
                     ]
                   : [],
             }),
@@ -232,26 +245,30 @@ void main() {
     },
   );
 
-  testWidgets('a class that cannot start yet says when it can, without starting', (
-    tester,
-  ) async {
-    final requests = <String>[];
-    await http.runWithClient(
-      () async {
-        await open(tester, const TeacherDashboard());
-        expect(find.text('1: Next: English, Class 6 at 09:00'), findsOneWidget);
-        await tester.sendKeyEvent(LogicalKeyboardKey.digit1);
-        await tester.pumpAndSettle();
-        expect(spoken.last, contains('You can start it from'));
-        expect(requests, isNot(contains('/classes/start')));
-        await tester.pumpWidget(const SizedBox.shrink());
-      },
-      () => MockClient((request) async {
-        requests.add(request.url.path);
-        return http.Response(jsonEncode(teacherHome(canStart: false)), 200);
-      }),
-    );
-  });
+  testWidgets(
+    'a class that cannot start yet says when it can, without starting',
+    (tester) async {
+      final requests = <String>[];
+      await http.runWithClient(
+        () async {
+          await open(tester, const TeacherDashboard());
+          expect(
+            find.text('1: Next: English, Class 6 at 09:00'),
+            findsOneWidget,
+          );
+          await tester.sendKeyEvent(LogicalKeyboardKey.digit1);
+          await tester.pumpAndSettle();
+          expect(spoken.last, contains('You can start it from'));
+          expect(requests, isNot(contains('/classes/start')));
+          await tester.pumpWidget(const SizedBox.shrink());
+        },
+        () => MockClient((request) async {
+          requests.add(request.url.path);
+          return http.Response(jsonEncode(teacherHome(canStart: false)), 200);
+        }),
+      );
+    },
+  );
 
   testWidgets('changing class and subject is a numbered choice under More', (
     tester,

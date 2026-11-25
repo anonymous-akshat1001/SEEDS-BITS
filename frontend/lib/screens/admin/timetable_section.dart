@@ -82,6 +82,28 @@ class _TimetableSectionState extends State<TimetableSection> {
     });
   }
 
+  /// Class filter choices: every active class, or only the classes the
+  /// filtered teacher is assigned to.
+  List<(int, String)> get _classOptions {
+    if (_teacherFilter == _none) {
+      return [
+        for (final schoolClass in _classes)
+          (schoolClass['class_id'] as int, '${schoolClass['name']}'),
+      ];
+    }
+    final teacher = _teachers
+        .where((teacher) => teacher['user_id'] == _teacherFilter)
+        .firstOrNull;
+    final seen = <int>{};
+    return [
+      for (final pair in (teacher?['assignments'] as List?) ?? const [])
+        if (pair is Map &&
+            pair['class_id'] is int &&
+            seen.add(pair['class_id'] as int))
+          (pair['class_id'] as int, '${pair['class_name']}'),
+    ];
+  }
+
   Future<void> _openEntry([JsonMap? entry]) async {
     final saved = await showDialog<JsonMap>(
       context: context,
@@ -263,7 +285,12 @@ class _TimetableSectionState extends State<TimetableSection> {
               (teacher['user_id'] as int, '${teacher['name']}'),
           ],
           onChanged: (value) {
-            setState(() => _teacherFilter = value ?? _none);
+            setState(() {
+              _teacherFilter = value ?? _none;
+              if (!_classOptions.any((option) => option.$1 == _classFilter)) {
+                _classFilter = _none;
+              }
+            });
             _load();
           },
         ),
@@ -271,11 +298,7 @@ class _TimetableSectionState extends State<TimetableSection> {
         AdminDropdown<int>(
           label: t.adminSetupClassField,
           value: _classFilter,
-          options: [
-            (_none, t.adminSetupAllClasses),
-            for (final schoolClass in _classes)
-              (schoolClass['class_id'] as int, '${schoolClass['name']}'),
-          ],
+          options: [(_none, t.adminSetupAllClasses), ..._classOptions],
           onChanged: (value) {
             setState(() => _classFilter = value ?? _none);
             _load();

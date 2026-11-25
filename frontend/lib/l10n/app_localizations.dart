@@ -871,30 +871,6 @@ abstract class AppLocalizations {
   /// **'Focused: {item}.'**
   String commonWhereFocused(String item);
 
-  /// One keypad shortcut. No full stop; one is added after the last.
-  ///
-  /// In en, this message translates to:
-  /// **'Press {key} for {action}'**
-  String keypadPressFor(String key, String action);
-
-  /// Placed between two 'Press 1 for ...' phrases.
-  ///
-  /// In en, this message translates to:
-  /// **'. '**
-  String get keypadListSeparator;
-
-  /// No description provided for @keypadRepeatInstructions.
-  ///
-  /// In en, this message translates to:
-  /// **'Press star to repeat these instructions.'**
-  String get keypadRepeatInstructions;
-
-  /// No description provided for @keypadRepeatFullHelp.
-  ///
-  /// In en, this message translates to:
-  /// **'Press star to repeat full help.'**
-  String get keypadRepeatFullHelp;
-
   /// No description provided for @keypadStarForShortcuts.
   ///
   /// In en, this message translates to:
@@ -913,35 +889,11 @@ abstract class AppLocalizations {
   /// **'Use D-pad up and down to move through {sections}. Press OK to activate the focused control.'**
   String keypadMoveThroughSections(String sections);
 
-  /// No description provided for @keypadNumberedBackAndStop.
-  ///
-  /// In en, this message translates to:
-  /// **'Press 0 to go back or cancel. Press hash to stop app speech.'**
-  String get keypadNumberedBackAndStop;
-
-  /// No description provided for @keypadNumberedEditing.
-  ///
-  /// In en, this message translates to:
-  /// **'While editing, keys enter text. Press OK to finish, or use up or down to leave the field.'**
-  String get keypadNumberedEditing;
-
-  /// No description provided for @keypadNumberedMove.
-  ///
-  /// In en, this message translates to:
-  /// **'Use D-pad up and down to move between choices and OK to select.'**
-  String get keypadNumberedMove;
-
   /// No description provided for @keypadEssentialMove.
   ///
   /// In en, this message translates to:
   /// **'Use up and down to move, and OK to select.'**
   String get keypadEssentialMove;
-
-  /// No description provided for @keypadPressZeroBack.
-  ///
-  /// In en, this message translates to:
-  /// **'Press 0 to go back.'**
-  String get keypadPressZeroBack;
 
   /// No description provided for @keypadHashAndStar.
   ///
@@ -949,23 +901,11 @@ abstract class AppLocalizations {
   /// **'Press hash to stop speech. Press star to repeat these instructions.'**
   String get keypadHashAndStar;
 
-  /// No description provided for @keypadDirectionKeys.
-  ///
-  /// In en, this message translates to:
-  /// **'Use the direction keys to move.'**
-  String get keypadDirectionKeys;
-
   /// No description provided for @keypadDirectionKeysAndOk.
   ///
   /// In en, this message translates to:
   /// **'Use the direction keys to move and OK to select.'**
   String get keypadDirectionKeysAndOk;
-
-  /// No description provided for @keypadActivateOrEdit.
-  ///
-  /// In en, this message translates to:
-  /// **'Press OK to activate a control or edit a field.'**
-  String get keypadActivateOrEdit;
 
   /// No description provided for @keypadLeaveField.
   ///
@@ -4683,12 +4623,6 @@ abstract class AppLocalizations {
   /// **'You are in the class. {status} {keys} Use up and down to move between controls and OK to select. Press star for where you are and help. Press hash to stop speech.'**
   String sessionJoinedDetailed(String status, String keys);
 
-  /// No description provided for @sessionPressKeyFor.
-  ///
-  /// In en, this message translates to:
-  /// **'Press {key} for {action}.'**
-  String sessionPressKeyFor(String key, String action);
-
   /// No description provided for @sessionMicWaitingLabel.
   ///
   /// In en, this message translates to:
@@ -5214,13 +5148,13 @@ abstract class AppLocalizations {
   /// No description provided for @sessionRaisedHandBy.
   ///
   /// In en, this message translates to:
-  /// **'{name} raised hand. Press 2 for raised hands.'**
+  /// **'{name} raised a hand.'**
   String sessionRaisedHandBy(String name);
 
   /// No description provided for @sessionRaisedHandUnknown.
   ///
   /// In en, this message translates to:
-  /// **'A participant raised hand. Press 2 for raised hands.'**
+  /// **'A student raised a hand.'**
   String get sessionRaisedHandUnknown;
 
   /// No description provided for @sessionParticipantJoined.
@@ -6406,308 +6340,6 @@ abstract class AppLocalizations {
     String named,
   );
 
-  /// No description provided for @classroomOnlyTeacherAcknowledges.
-  ///
-  /// In en, this message translates to:
-  /// **'Only the session teacher may acknowledge a hand.'**
-  String get classroomOnlyTeacherAcknowledges;
-
-  /// No description provided for @classroomHandChanged.
-  ///
-  /// In en, this message translates to:
-  /// **'The selected hand changed. Read the queue again.'**
-  String get classroomHandChanged;
-
-  /// No description provided for @classroomAckUnconfirmed.
-  ///
-  /// In en, this message translates to:
-  /// **'The hand acknowledgment was not confirmed. Read the queue before retrying.'**
-  String get classroomAckUnconfirmed;
-
-  /// No description provided for @classroomAckUnreadable.
-  ///
-  /// In en, this message translates to:
-  /// **'Hand acknowledgment was not readable. Check the queue before trying again.'**
-  String get classroomAckUnreadable;
-
-  /// No description provided for @classroomAcknowledgedChanged.
-  ///
-  /// In en, this message translates to:
-  /// **'{name} acknowledged earlier. Their hand has since changed; read the queue again. Their microphone was not changed.'**
-  String classroomAcknowledgedChanged(String name);
-
-  /// No description provided for @classroomAcknowledged.
-  ///
-  /// In en, this message translates to:
-  /// **'{name} acknowledged. The selected hand was lowered. Their microphone was not changed.'**
-  String classroomAcknowledged(String name);
-
-  /// No description provided for @classroomHandsHelp.
-  ///
-  /// In en, this message translates to:
-  /// **'Raised hands. Read summary for the last received classroom state. Previous and Next select a raised hand without changing it. Acknowledge lowers only the selected hand after server confirmation. It never unmutes anyone. Older hands with unknown order are labelled separately.'**
-  String get classroomHandsHelp;
-
-  /// No description provided for @classroomConsoleHelp.
-  ///
-  /// In en, this message translates to:
-  /// **'Classroom console. Read summary for the last received classroom state. Previous and Next select a raised hand without changing it. Acknowledge lowers only the selected hand after server confirmation. It never unmutes anyone. Older hands with unknown order are labelled separately.'**
-  String get classroomConsoleHelp;
-
-  /// No description provided for @classroomHandsTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Raised hands'**
-  String get classroomHandsTitle;
-
-  /// No description provided for @classroomNoHands.
-  ///
-  /// In en, this message translates to:
-  /// **'No raised hands in the last received classroom state.'**
-  String get classroomNoHands;
-
-  /// No description provided for @classroomSelectedGone.
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, =1{The selected hand is no longer in the queue. 1 raised hand remain. Use Next or Previous to select a hand.} other{The selected hand is no longer in the queue. {count} raised hands remain. Use Next or Previous to select a hand.}}'**
-  String classroomSelectedGone(int count);
-
-  /// No description provided for @classroomConsoleSelectedGone.
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, other{The selected hand is no longer in the queue. {count} raised hands remain. Use Next or Previous to select a hand.}}'**
-  String classroomConsoleSelectedGone(int count);
-
-  /// No description provided for @classroomHandTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Hand {position} of {total}, {name}, waiting'**
-  String classroomHandTitle(String position, String total, String name);
-
-  /// Name used for a participant without a name; id is a number.
-  ///
-  /// In en, this message translates to:
-  /// **'Participant {id}'**
-  String classroomParticipantNumbered(String id);
-
-  /// No description provided for @classroomKnownOrder.
-  ///
-  /// In en, this message translates to:
-  /// **'Server-recorded queue order.'**
-  String get classroomKnownOrder;
-
-  /// No description provided for @classroomUnknownOrder.
-  ///
-  /// In en, this message translates to:
-  /// **'Original raise order unknown; shown before known-order hands.'**
-  String get classroomUnknownOrder;
-
-  /// No description provided for @classroomReportedMuted.
-  ///
-  /// In en, this message translates to:
-  /// **'Microphone reported muted.'**
-  String get classroomReportedMuted;
-
-  /// No description provided for @classroomReportedUnmuted.
-  ///
-  /// In en, this message translates to:
-  /// **'Microphone reported unmuted; this is not proof of speech.'**
-  String get classroomReportedUnmuted;
-
-  /// No description provided for @classroomNoHandsShort.
-  ///
-  /// In en, this message translates to:
-  /// **'No raised hands'**
-  String get classroomNoHandsShort;
-
-  /// No description provided for @classroomNoHandSelected.
-  ///
-  /// In en, this message translates to:
-  /// **'No hand selected'**
-  String get classroomNoHandSelected;
-
-  /// No description provided for @classroomLowering.
-  ///
-  /// In en, this message translates to:
-  /// **'Lowering hand for {name}. Waiting for the server.'**
-  String classroomLowering(String name);
-
-  /// No description provided for @classroomLoweredLast.
-  ///
-  /// In en, this message translates to:
-  /// **'Hand lowered for {name}. The hand queue is now empty.'**
-  String classroomLoweredLast(String name);
-
-  /// next: the next hand, such as "Hand 1 of 2, Ravi, waiting".
-  ///
-  /// In en, this message translates to:
-  /// **'Hand lowered for {name}. Next: {next}.'**
-  String classroomLoweredNext(String name, String next);
-
-  /// No description provided for @classroomNoSummary.
-  ///
-  /// In en, this message translates to:
-  /// **'No classroom summary is available yet.'**
-  String get classroomNoSummary;
-
-  /// No description provided for @classroomReadSummary.
-  ///
-  /// In en, this message translates to:
-  /// **'Read classroom summary'**
-  String get classroomReadSummary;
-
-  /// No description provided for @classroomPreviousHand.
-  ///
-  /// In en, this message translates to:
-  /// **'Previous raised hand'**
-  String get classroomPreviousHand;
-
-  /// No description provided for @classroomReadHand.
-  ///
-  /// In en, this message translates to:
-  /// **'Read selected hand'**
-  String get classroomReadHand;
-
-  /// hand: the selected hand, such as "Hand 1 of 2, Ravi, waiting".
-  ///
-  /// In en, this message translates to:
-  /// **'Read selected hand. {hand}'**
-  String classroomReadHandLabel(String hand);
-
-  /// No description provided for @classroomNextHand.
-  ///
-  /// In en, this message translates to:
-  /// **'Next raised hand'**
-  String get classroomNextHand;
-
-  /// No description provided for @classroomWaitingAck.
-  ///
-  /// In en, this message translates to:
-  /// **'Waiting for hand acknowledgment'**
-  String get classroomWaitingAck;
-
-  /// No description provided for @classroomAckNoneSelected.
-  ///
-  /// In en, this message translates to:
-  /// **'Acknowledge and lower selected hand. No hand selected'**
-  String get classroomAckNoneSelected;
-
-  /// No description provided for @classroomAckLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Lower {name}. Never unmutes'**
-  String classroomAckLabel(String name);
-
-  /// No description provided for @classroomAckSelectedLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Lower selected hand. Never unmutes'**
-  String get classroomAckSelectedLabel;
-
-  /// No description provided for @classroomAckButton.
-  ///
-  /// In en, this message translates to:
-  /// **'Acknowledge and lower hand'**
-  String get classroomAckButton;
-
-  /// No description provided for @classroomRepeatConsoleHelp.
-  ///
-  /// In en, this message translates to:
-  /// **'Repeat console help'**
-  String get classroomRepeatConsoleHelp;
-
-  /// Inserted into "Use D-pad up and down to move through ...".
-  ///
-  /// In en, this message translates to:
-  /// **'read classroom summary, previous hand, read selected hand, next hand, acknowledge hand, stop speech, help and back. If no hands or summary are available, selecting their controls reads that status'**
-  String get classroomConsoleSections;
-
-  /// No description provided for @classroomSnapshotNote.
-  ///
-  /// In en, this message translates to:
-  /// **'Counts reflect the last received snapshot, not guaranteed audio delivery. Active speaker identification is unavailable.'**
-  String get classroomSnapshotNote;
-
-  /// No description provided for @classroomWaitingAckNote.
-  ///
-  /// In en, this message translates to:
-  /// **'Waiting for server acknowledgment. No microphone is changed.'**
-  String get classroomWaitingAckNote;
-
-  /// No description provided for @classroomSummaryParticipants.
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, =1{1 participant} other{{count} participants}}'**
-  String classroomSummaryParticipants(int count);
-
-  /// No description provided for @classroomSummaryHands.
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, =1{1 raised hand} other{{count} raised hands}}'**
-  String classroomSummaryHands(int count);
-
-  /// No description provided for @classroomSummaryMicrophones.
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, =1{1 microphone} other{{count} microphones}}'**
-  String classroomSummaryMicrophones(int count);
-
-  /// No description provided for @classroomSummaryNobodySpeaking.
-  ///
-  /// In en, this message translates to:
-  /// **'Nobody detected speaking.'**
-  String get classroomSummaryNobodySpeaking;
-
-  /// names: comma separated participant names.
-  ///
-  /// In en, this message translates to:
-  /// **'Detected speaking: {names}.'**
-  String classroomSummarySpeaking(String names);
-
-  /// No description provided for @classroomSummaryNoRecording.
-  ///
-  /// In en, this message translates to:
-  /// **'No class recording selected.'**
-  String get classroomSummaryNoRecording;
-
-  /// No description provided for @classroomSummaryRecordingPlaying.
-  ///
-  /// In en, this message translates to:
-  /// **'Class recording {title}. Playing requested.'**
-  String classroomSummaryRecordingPlaying(String title);
-
-  /// No description provided for @classroomSummaryRecordingPaused.
-  ///
-  /// In en, this message translates to:
-  /// **'Class recording {title}. Paused.'**
-  String classroomSummaryRecordingPaused(String title);
-
-  /// No description provided for @classroomSummaryPreviewActive.
-  ///
-  /// In en, this message translates to:
-  /// **'Private preview active on this phone only.'**
-  String get classroomSummaryPreviewActive;
-
-  /// No description provided for @classroomSummaryPreviewStopped.
-  ///
-  /// In en, this message translates to:
-  /// **'Private preview stopped.'**
-  String get classroomSummaryPreviewStopped;
-
-  /// connection: connection status sentence; people, hands, muted: counts such as "3 participants", "1 raised hand", "2 microphones"; speaking, recording, preview: full sentences.
-  ///
-  /// In en, this message translates to:
-  /// **'Local connection: {connection}. Last received classroom state: {people}, {hands}, {muted} reported muted. Remote reconnecting counts are unavailable. {speaking} {recording} {preview} Microphone flags and accepted playback requests do not prove that anyone spoke or heard audio.'**
-  String classroomSummary(
-    String connection,
-    String people,
-    String hands,
-    String muted,
-    String speaking,
-    String recording,
-    String preview,
-  );
-
   /// No description provided for @sessionToolsTitle.
   ///
   /// In en, this message translates to:
@@ -6731,12 +6363,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Participants and raised hands'**
   String get sessionPeopleTitle;
-
-  /// No description provided for @sessionHandQueue.
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, =0{Raised hands queue, No hands waiting} =1{Raised hands queue, 1 hand waiting} other{Raised hands queue, {count} hands waiting}}'**
-  String sessionHandQueue(int count);
 
   /// No description provided for @sessionParticipantList.
   ///
@@ -14370,18 +13996,6 @@ abstract class AppLocalizations {
   /// **'Ready.'**
   String get journeyMenuReady;
 
-  /// No description provided for @journeyMenuReadDetailsHelp.
-  ///
-  /// In en, this message translates to:
-  /// **'Press 8 to read details again.'**
-  String get journeyMenuReadDetailsHelp;
-
-  /// No description provided for @journeyMenuBackHelp.
-  ///
-  /// In en, this message translates to:
-  /// **'Press 0 for {back}. Press star for help.'**
-  String journeyMenuBackHelp(String back);
-
   /// No description provided for @journeyMenuNothingAssigned.
   ///
   /// In en, this message translates to:
@@ -17479,12 +17093,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Remove {name} from session'**
   String sessionRemoveFromSession(String name);
-
-  /// No description provided for @classroomConsoleTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Classroom console'**
-  String get classroomConsoleTitle;
 
   /// No description provided for @uiHourRange.
   ///
@@ -21352,7 +20960,7 @@ abstract class AppLocalizations {
   /// Short arrival speech on the sign-in screen.
   ///
   /// In en, this message translates to:
-  /// **'Type your phone number, then press 1 to sign in.'**
+  /// **'Type your phone number, press OK, then press 1 to sign in.'**
   String get loginIntro;
 
   /// Focus label of the phone number field.
@@ -21382,7 +20990,7 @@ abstract class AppLocalizations {
   /// Spoken when the number belongs to a shared phone.
   ///
   /// In en, this message translates to:
-  /// **'This phone is shared. Type your profile number, then press 1.'**
+  /// **'This phone is shared. Type your profile number, press OK, then press 1.'**
   String get loginEnterProfileCode;
 
   /// Key 1 on the sign-in screens.
@@ -21460,7 +21068,7 @@ abstract class AppLocalizations {
   /// Short arrival speech on the administrator sign-in screen.
   ///
   /// In en, this message translates to:
-  /// **'Type your phone number and password, then press 1.'**
+  /// **'Type your phone number and password, pressing OK after each, then press 1.'**
   String get adminLoginIntro;
 
   /// Spoken when a class to open has ended or has not started.
@@ -21874,7 +21482,7 @@ abstract class AppLocalizations {
   /// Teacher key 8 button.
   ///
   /// In en, this message translates to:
-  /// **'3: Mute all students'**
+  /// **'2: Mute all students'**
   String get sessionMuteAllButton;
 
   /// Teacher key 8 focus label.
@@ -21904,13 +21512,13 @@ abstract class AppLocalizations {
   /// Spoken when mute all failed.
   ///
   /// In en, this message translates to:
-  /// **'Muting everyone was not confirmed. {reason} Press 3 to try again.'**
+  /// **'Muting everyone was not confirmed. {reason} Press 2 to try again.'**
   String sessionMuteAllNotConfirmed(String reason);
 
   /// Teacher key 7 button.
   ///
   /// In en, this message translates to:
-  /// **'4: Class list'**
+  /// **'3: Class list'**
   String get sessionClassListButton;
 
   /// Teacher key 7 focus label.
@@ -22042,7 +21650,7 @@ abstract class AppLocalizations {
   /// Warning for teachers.
   ///
   /// In en, this message translates to:
-  /// **'{minutes, plural, =1{The class ends automatically in 1 minute. To add 15 minutes, press 7 then 1.} other{The class ends automatically in {minutes} minutes. To add 15 minutes, press 7 then 1.}}'**
+  /// **'{minutes, plural, =1{The class ends automatically in 1 minute. To add 15 minutes, press 5 then 1.} other{The class ends automatically in {minutes} minutes. To add 15 minutes, press 5 then 1.}}'**
   String sessionEndingSoonTeacherExtend(int minutes);
 
   /// Warning for students.
@@ -22054,13 +21662,13 @@ abstract class AppLocalizations {
   /// Spoken when a prepared lesson is selected.
   ///
   /// In en, this message translates to:
-  /// **'Today\'s lesson is ready. Press 5, then 3, to play it for the class.'**
+  /// **'Today\'s lesson is ready. Press 4, then 3, to play it for the class.'**
   String get sessionLessonReady;
 
   /// Spoken when the next lesson part is selected.
   ///
   /// In en, this message translates to:
-  /// **'The next part of today\'s lesson is ready. Press 6 to play it.'**
+  /// **'The next part of today\'s lesson is ready. Press 7 to play it.'**
   String get sessionLessonNextReady;
 
   /// Short speech on joining a class as a student.
@@ -22072,7 +21680,7 @@ abstract class AppLocalizations {
   /// Short speech on entering a class as a teacher.
   ///
   /// In en, this message translates to:
-  /// **'Your class is live. You are muted. Press 1 to speak, 3 to mute all students.'**
+  /// **'Your class is live. You are muted. Press 1 to speak, 2 to mute all students.'**
   String get sessionJoinedTeacherBrief;
 
   /// Ends short class speech.
@@ -22177,11 +21785,11 @@ abstract class AppLocalizations {
   /// **'No lessons match.'**
   String get adminSetupNoMatchingLessons;
 
-  /// Live class: visible button that opens the less used actions
+  /// No description provided for @sessionMoreButton.
   ///
   /// In en, this message translates to:
-  /// **'7: More'**
-  String get sessionMoreButton;
+  /// **'{key}: More'**
+  String sessionMoreButton(String key);
 
   /// Live class: spoken name of the More button
   ///
@@ -22201,12 +21809,6 @@ abstract class AppLocalizations {
   /// **'Classroom check'**
   String get sessionMoreClassroomCheck;
 
-  /// Live class More: hear the class status and any updates
-  ///
-  /// In en, this message translates to:
-  /// **'Class status'**
-  String get sessionMoreStatus;
-
   /// Live class More: student hears the lesson recording status
   ///
   /// In en, this message translates to:
@@ -22218,12 +21820,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Who is in class'**
   String get sessionMoreWhoIsHere;
-
-  /// Live class key help, teacher key 2
-  ///
-  /// In en, this message translates to:
-  /// **'Raised hands'**
-  String get sessionKeyRaisedHands;
 
   /// Live class key help, teacher key 4
   ///
@@ -22258,7 +21854,7 @@ abstract class AppLocalizations {
   /// Teacher class screen key 6
   ///
   /// In en, this message translates to:
-  /// **'8: End class for everyone'**
+  /// **'6: End class for everyone'**
   String get sessionEndClassButton;
 
   /// Teacher class screen key 6, spoken
@@ -22288,7 +21884,7 @@ abstract class AppLocalizations {
   /// Teacher confirmation
   ///
   /// In en, this message translates to:
-  /// **'{title} is open for the class. Press 6 for its status.'**
+  /// **'{title} is open for the class. Press 7 for its status.'**
   String sessionActivityStartedTeacher(String title);
 
   /// Teacher confirmation
@@ -22300,13 +21896,13 @@ abstract class AppLocalizations {
   /// Student announcement
   ///
   /// In en, this message translates to:
-  /// **'Your teacher started a quiz: {title}. Press 4 to begin.'**
+  /// **'Your teacher assigned a quiz: {title}. Press 5 to start it.'**
   String sessionActivityQuizStarted(String title);
 
   /// Student announcement
   ///
   /// In en, this message translates to:
-  /// **'Your teacher started a journey: {title}. Press 4 to begin.'**
+  /// **'Your teacher assigned a learning journey: {title}. Press 5 to start it.'**
   String sessionActivityJourneyStarted(String title);
 
   /// Student announcement
@@ -22426,13 +22022,13 @@ abstract class AppLocalizations {
   /// Student key 6 while a quiz is open
   ///
   /// In en, this message translates to:
-  /// **'4: Start quiz: {title}'**
+  /// **'5: Start quiz: {title}'**
   String sessionStartQuizButton(String title);
 
   /// Student key 7 while a journey is open
   ///
   /// In en, this message translates to:
-  /// **'4: Start journey: {title}'**
+  /// **'5: Start journey: {title}'**
   String sessionStartJourneyButton(String title);
 
   /// Teacher list of quizzes
@@ -22552,13 +22148,13 @@ abstract class AppLocalizations {
   /// Student reminder
   ///
   /// In en, this message translates to:
-  /// **'Your teacher reminds you to do the quiz {title}. Press 4 to begin.'**
+  /// **'Your teacher reminds you to do the quiz {title}. Press 5 to start it.'**
   String sessionActivityReminderQuiz(String title);
 
   /// Student reminder
   ///
   /// In en, this message translates to:
-  /// **'Your teacher reminds you to do the journey {title}. Press 4 to begin.'**
+  /// **'Your teacher reminds you to do the learning journey {title}. Press 5 to start it.'**
   String sessionActivityReminderJourney(String title);
 
   /// Key help, student key 4 while a quiz or journey is open
@@ -23197,48 +22793,6 @@ abstract class AppLocalizations {
   /// **'Save journey'**
   String get adminAuthorSaveJourney;
 
-  /// Teacher home: an admin change
-  ///
-  /// In en, this message translates to:
-  /// **'{kind} {title}: {action} for you by your administrator.'**
-  String teacherHomeNotice(String kind, String title, String action);
-
-  /// Notice kind
-  ///
-  /// In en, this message translates to:
-  /// **'Quiz'**
-  String get teacherHomeNoticeQuiz;
-
-  /// Notice kind
-  ///
-  /// In en, this message translates to:
-  /// **'Journey'**
-  String get teacherHomeNoticeJourney;
-
-  /// Notice action
-  ///
-  /// In en, this message translates to:
-  /// **'added'**
-  String get teacherHomeNoticeCreated;
-
-  /// Notice action
-  ///
-  /// In en, this message translates to:
-  /// **'published'**
-  String get teacherHomeNoticePublished;
-
-  /// Notice action
-  ///
-  /// In en, this message translates to:
-  /// **'closed'**
-  String get teacherHomeNoticeClosed;
-
-  /// Notice action
-  ///
-  /// In en, this message translates to:
-  /// **'archived'**
-  String get teacherHomeNoticeArchived;
-
   /// Teacher: students who joined
   ///
   /// In en, this message translates to:
@@ -23284,7 +22838,7 @@ abstract class AppLocalizations {
   /// Teacher class screen key 5
   ///
   /// In en, this message translates to:
-  /// **'5: Start'**
+  /// **'4: Start'**
   String get sessionStartButton;
 
   /// Teacher key 5 spoken
@@ -23320,7 +22874,7 @@ abstract class AppLocalizations {
   /// Teacher key 6 while something runs
   ///
   /// In en, this message translates to:
-  /// **'6: Status of {title}'**
+  /// **'7: Status of {title}'**
   String sessionStatusKeyButton(String title);
 
   /// Teacher key 6 spoken
@@ -23352,6 +22906,138 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'the recording'**
   String get sessionNowPlayingTitle;
+
+  /// No description provided for @noticeActorAdmin.
+  ///
+  /// In en, this message translates to:
+  /// **'Your administrator'**
+  String get noticeActorAdmin;
+
+  /// No description provided for @noticeQuizCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'{actor} added quiz {title}.'**
+  String noticeQuizCreated(String actor, String title);
+
+  /// No description provided for @noticeQuizPublished.
+  ///
+  /// In en, this message translates to:
+  /// **'{actor} published quiz {title}.'**
+  String noticeQuizPublished(String actor, String title);
+
+  /// No description provided for @noticeQuizClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'{actor} closed quiz {title}.'**
+  String noticeQuizClosed(String actor, String title);
+
+  /// No description provided for @noticeJourneyCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'{actor} added learning journey {title}.'**
+  String noticeJourneyCreated(String actor, String title);
+
+  /// No description provided for @noticeJourneyPublished.
+  ///
+  /// In en, this message translates to:
+  /// **'{actor} published learning journey {title}.'**
+  String noticeJourneyPublished(String actor, String title);
+
+  /// No description provided for @noticeJourneyArchived.
+  ///
+  /// In en, this message translates to:
+  /// **'{actor} archived learning journey {title}.'**
+  String noticeJourneyArchived(String actor, String title);
+
+  /// No description provided for @noticePlaylistPublished.
+  ///
+  /// In en, this message translates to:
+  /// **'{actor} published playlist {title}.'**
+  String noticePlaylistPublished(String actor, String title);
+
+  /// No description provided for @noticeLessonCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'{actor} added lesson {title}.'**
+  String noticeLessonCreated(String actor, String title);
+
+  /// No description provided for @noticeLessonUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'{actor} changed lesson {title}.'**
+  String noticeLessonUpdated(String actor, String title);
+
+  /// No description provided for @noticeLessonRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'{actor} removed lesson {title}.'**
+  String noticeLessonRemoved(String actor, String title);
+
+  /// No description provided for @noticeLessonRemovedOn.
+  ///
+  /// In en, this message translates to:
+  /// **'{actor} removed you from lesson {title} on {date}.'**
+  String noticeLessonRemovedOn(String actor, String title, String date);
+
+  /// No description provided for @noticeLessonCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'{actor} cancelled lesson {title} on {date}.'**
+  String noticeLessonCancelled(String actor, String title, String date);
+
+  /// No description provided for @noticeLessonSubstitute.
+  ///
+  /// In en, this message translates to:
+  /// **'{actor} asked you to teach lesson {title} on {date}.'**
+  String noticeLessonSubstitute(String actor, String title, String date);
+
+  /// No description provided for @noticeLessonCovered.
+  ///
+  /// In en, this message translates to:
+  /// **'{actor} gave your lesson {title} on {date} to another teacher.'**
+  String noticeLessonCovered(String actor, String title, String date);
+
+  /// One item of a key list, e.g. '1 for Quizzes'. Items are joined by keypadKeySeparator and placed in keypadPressKeys.
+  ///
+  /// In en, this message translates to:
+  /// **'{key} for {action}'**
+  String keypadKeyFor(String key, String action);
+
+  /// keys: items like '1 for Quizzes, 2 for Playlists, 0 for Back'.
+  ///
+  /// In en, this message translates to:
+  /// **'Press {keys}.'**
+  String keypadPressKeys(String keys);
+
+  /// Joins key list items; normally a comma and a space.
+  ///
+  /// In en, this message translates to:
+  /// **', '**
+  String get keypadKeySeparator;
+
+  /// No description provided for @keypadStarHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Press star for help.'**
+  String get keypadStarHelp;
+
+  /// No description provided for @sessionCloseRecording.
+  ///
+  /// In en, this message translates to:
+  /// **'Close recording for the class'**
+  String get sessionCloseRecording;
+
+  /// No description provided for @sessionRecordingClosedTeacher.
+  ///
+  /// In en, this message translates to:
+  /// **'{title} is closed for the class.'**
+  String sessionRecordingClosedTeacher(String title);
+
+  /// No description provided for @sessionRecordingClosedStudent.
+  ///
+  /// In en, this message translates to:
+  /// **'Your teacher closed the recording {title}.'**
+  String sessionRecordingClosedStudent(String title);
 }
 
 class _AppLocalizationsDelegate

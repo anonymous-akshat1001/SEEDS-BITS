@@ -254,7 +254,9 @@ async def home(
                 f"Teacher {current_user.name} has no class and subject assigned.",
                 {"user_id": current_user.user_id},
             )
-        payload["admin_notices"] = await teacher_notices.unseen(db, current_user.user_id)
+        payload["notices"] = await teacher_notices.unseen(db, current_user.user_id)
+        # Older apps read the same list under its first name.
+        payload["admin_notices"] = payload["notices"]
         return payload
     if current_user.role == "student":
         membership = (await db.execute(
@@ -274,6 +276,7 @@ async def home(
                 {"user_id": current_user.user_id},
             )
             return payload
+        payload["notices"] = await teacher_notices.unseen(db, current_user.user_id)
         payload["class_name"] = membership.school_class.name if membership.school_class else None
         live = await live_session_for_class(db, membership.class_id)
         if live is not None:

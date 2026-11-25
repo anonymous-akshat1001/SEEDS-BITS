@@ -219,6 +219,11 @@ class TtsService {
   static Future<bool> setSpeechLanguage(SpeechLanguage language) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_languageKey, language.code);
+    // Chosen before signing in: the next sign-in keeps it instead of the
+    // account's older saved language.
+    if (!prefs.containsKey('token')) {
+      await prefs.setString(languageChosenSignedOutKey, language.code);
+    }
     _selectedLanguage = language;
     await stop();
     if (_initializing != null) await _initializing;
@@ -236,6 +241,7 @@ class TtsService {
   }
 
   static const _languageKey = 'speech_language';
+  static const languageChosenSignedOutKey = 'speech_language_signed_out';
 
   /// Follows Android TalkBack unless the user explicitly chose a speech mode
   /// in Settings, so app speech and the screen reader never talk together.

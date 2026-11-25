@@ -1102,7 +1102,9 @@ class AdminIssue(Base):
 
 
 class TeacherNotice(Base):
-    """Tells a teacher that an administrator changed their quiz or journey."""
+    """Tells an account what someone else changed for it: an administrator
+    acting for a teacher, a lesson scheduled or changed, or class work
+    published for a student. teacher_id is the recipient (any role)."""
 
     __tablename__ = "teacher_notices"
 
@@ -1113,14 +1115,22 @@ class TeacherNotice(Base):
     item_id = Column(Integer, nullable=False)
     title = Column(String(300), nullable=False)
     action = Column(String(12), nullable=False)
+    # A one-day change's ISO date; otherwise empty.
+    detail = Column(String(40))
     created_at = Column(TIMESTAMP, nullable=False, default=datetime.utcnow)
     seen_at = Column(TIMESTAMP)
 
     __table_args__ = (
-        CheckConstraint("kind IN ('quiz', 'journey')", name="check_teacher_notice_kind"),
         CheckConstraint(
-            "action IN ('created', 'published', 'closed', 'archived')",
+            "kind IN ('quiz', 'journey', 'playlist', 'lesson')",
+            name="check_teacher_notice_kind",
+        ),
+        CheckConstraint(
+            "action IN ('created', 'published', 'closed', 'archived', 'updated', "
+            "'removed', 'cancelled', 'substitute', 'covered')",
             name="check_teacher_notice_action",
         ),
         Index("ix_teacher_notice_unseen", "teacher_id", "seen_at"),
     )
+
+    actor = relationship("User", foreign_keys=[actor_id])

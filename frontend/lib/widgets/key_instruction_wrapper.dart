@@ -434,7 +434,7 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
             ? _whereAmIText()
             : cameBack
             ? _returnText()
-            : '${_instructionText()}${_focusedFieldNote()}',
+            : _instructionText(),
       ].join(' ');
       await TtsService.speak(text, priority: SpeechPriority.navigation);
       return;
@@ -455,7 +455,7 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
             ? _whereAmIText()
             : cameBack
             ? _returnText()
-            : '${_instructionText(detailed: detailed)}${_focusedFieldNote()}',
+            : _instructionText(detailed: detailed),
       ].where((part) => part.isNotEmpty).join(' ');
       if (instructions.isNotEmpty) await TtsService.speak(instructions);
     } catch (error) {
@@ -552,88 +552,84 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
     return labels;
   }
 
-  /// Coming back from a screen opened on top: the screen, its state, the
-  /// main keys (1 to 3 and 0), then that star reads every key.
+  /// Coming back from a screen opened on top: the screen, its state and
+  /// only the two main keys (the first choice and 0), then that star reads
+  /// every key.
   String _returnText() {
     final t = Speech.t;
     final brief = widget.brief == null || widget.brief!.isEmpty
         ? widget.stateSummary?.call()
         : widget.brief;
-    final major =
-        _labels.entries
-            .where(
-              (entry) => entry.key >= 1 && entry.key <= 3 || entry.key == 0,
-            )
-            .toList()
-          ..sort(
-            (a, b) =>
-                (a.key == 0 ? 10 : a.key).compareTo(b.key == 0 ? 10 : b.key),
-          );
+    final keys = _keysWithBack;
+    final forward = keys.keys.where((key) => key != 0).toList()..sort();
+    final major = {
+      if (forward.isNotEmpty) forward.first: keys[forward.first]!,
+      if (keys.containsKey(0))
+        0: keys[0]!
+      else if (forward.length > 1)
+        forward[1]: keys[forward[1]]!,
+    };
     return [
       '$_screenName.',
       if (brief != null && brief.isNotEmpty) brief,
-      for (final entry in major)
-        '${t.keypadPressFor('${entry.key}', entry.value)}.',
+      if (major.isNotEmpty) spokenKeyList(major),
       t.sessionStarForKeys,
     ].join(' ');
   }
 
+  /// The screen's keys, with 0 named Back when the screen does not label it
+  /// and there is somewhere to go back to (not on the first screen).
+  Map<int, String> get _keysWithBack => {
+    ..._labels,
+    if (!_labels.containsKey(0) &&
+        (Navigator.maybeOf(context)?.canPop() ?? false) &&
+        (widget.interactionPolicy == KeypadInteractionPolicy.numbered ||
+            _labels.isNotEmpty))
+      0: Speech.t.uiBack,
+  };
+
+  bool get _hasTextField =>
+      widget.focusTargets.any((target) => target.isTextField);
+
   /// When a screen opens with a text field already focused (sign-in), say
-  /// so and how editing works, after the keys.
+  /// which field, before the keys; how editing works is in the star help.
   String _focusedFieldNote() {
     final current = _currentTarget;
     if (current == null || !current.isTextField || !current.node.hasFocus) {
       return '';
     }
-    return ' ${Speech.t.uiFocusedField(current.label)} ${Speech.t.keypadNumberedEditing}';
+    return '${Speech.t.uiFocusedField(current.label)} ';
   }
 
-  /// Opening a screen reads its state sentence and every key, so a blind
-  /// user always knows all their options without pressing star.
+  /// Opening a screen reads its name, state and every key in one short
+  /// sentence. Star ([detailed]) adds how to move, hash, and how editing
+  /// works when the screen has a text field.
   String _instructionText({bool detailed = false, bool withName = true}) {
     final t = Speech.t;
     final name = withName ? '$_screenName. ' : '';
     final brief = widget.brief == null || widget.brief!.isEmpty
         ? null
         : widget.brief;
-    // Every arrival, including coming back from a screen opened on top,
-    // reads the state and every key: nobody has to press star first.
     final introduction = [
       if (!detailed && brief != null) brief,
       ?widget.introduction,
     ].map((part) => '$part ').join();
-    final sections = widget.navigationSections == null
-        ? ''
-        : '${t.keypadMoveThroughSections(widget.navigationSections!)} ';
-    if (widget.interactionPolicy == KeypadInteractionPolicy.numbered) {
-      final choices = _labels.entries
-          .where((entry) => entry.key >= 1 && entry.key <= 5)
-          .map((entry) => '${t.keypadPressFor('${entry.key}', entry.value)}.')
-          .join(' ');
-      final extra =
-          '${_labels.entries.where((entry) => entry.key > 5).map((entry) => '${t.keypadPressFor('${entry.key}', entry.value)}.').join(' ')} '
-          '${t.keypadNumberedBackAndStop} '
-          '${detailed ? t.keypadNumberedEditing : ''}';
-      return '$name$introduction$choices '
-          '${sections.isEmpty ? '${t.keypadNumberedMove} ' : sections}$extra '
-          '${t.keypadRepeatFullHelp}';
-    }
-
-    if (_labels.isNotEmpty) {
-      final back = _labels.containsKey(0) ? '' : '${t.keypadPressZeroBack} ';
-      final keys = !detailed && brief != null
-          ? '$name$introduction${buildTtsInstructions(_labels, includeRepeatHint: false)}'
-          : '$introduction${buildTtsInstructions(_labels, screenName: withName ? widget.screenName : null, includeRepeatHint: false)}';
-      return '$keys '
-          '$back${t.keypadHashAndStar} '
-          '${sections.isEmpty ? '${t.keypadDirectionKeys} ' : sections}${t.keypadActivateOrEdit} '
-          '${t.keypadLeaveField}';
-    }
-    if ((widget.screenName ?? '').isNotEmpty) {
-      return '$name$introduction${sections.isEmpty ? '${t.keypadDirectionKeysAndOk} ' : sections}'
-          '${t.keypadRepeatInstructions}';
-    }
-    return '';
+    final keys = _keysWithBack;
+    final how = !detailed
+        ? keys.isEmpty
+              ? '${t.keypadDirectionKeysAndOk} ${t.keypadStarHelp}'
+              : t.keypadStarHelp
+        : [
+            widget.navigationSections != null
+                ? t.keypadMoveThroughSections(widget.navigationSections!)
+                : t.keypadDirectionKeysAndOk,
+            t.keypadHashAndStar,
+            if (_hasTextField) t.keypadLeaveField,
+          ].join(' ');
+    final keyText = keys.isEmpty ? '' : '${spokenKeyList(keys)} ';
+    if (keys.isEmpty && (widget.screenName ?? '').isEmpty) return '';
+    final field = detailed ? '' : _focusedFieldNote();
+    return '$name$introduction$field$keyText$how';
   }
 
   /// Star: screen, focused item, current state and last message, then keys.

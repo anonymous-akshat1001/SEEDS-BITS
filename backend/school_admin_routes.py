@@ -20,6 +20,7 @@ import access_control as access
 import auth
 import classroom
 import models
+import teacher_notices
 import scheduling as sched
 from database import get_db
 from sign_in_routes import normalize_phone
@@ -536,7 +537,13 @@ async def create_timetable_entry(
     ]
     db.add_all(entries)
     await db.commit()
-    created = [_entry_payload(await _load_entry(db, entry.entry_id)) for entry in entries]
+    loaded = [await _load_entry(db, entry.entry_id) for entry in entries]
+    first = loaded[0]
+    title = teacher_notices.lesson_title(first)
+    teacher_notices.notify(db, [first.teacher_id], admin.user_id, "lesson", first.entry_id, title, "created")
+    await teacher_notices.notify_class(db, first.class_id, admin.user_id, "lesson", first.entry_id, title, "created")
+    await db.commit()
+    created = [_entry_payload(entry) for entry in loaded]
     # The first lesson keeps the single-entry response shape; "entries" lists every day.
     return {**created[0], "entries": created}
 
@@ -582,10 +589,24 @@ async def update_timetable_entry(
             message = _conflict_message(conflicts)
             await db.rollback()
             raise HTTPException(status_code=409, detail=message)
+    previous_teacher, was_active = entry.teacher_id, entry.is_active
+    title = teacher_notices.lesson_title(entry)
     entry.teacher_id, entry.weekday = teacher_id, weekday
     entry.start_minute, entry.end_minute = start, end
     entry.valid_from, entry.valid_until = valid_from, valid_until
     entry.lesson_playlist_id, entry.is_active = playlist_id, active
+    if was_active and not active:
+        teacher_notices.notify(db, [previous_teacher], admin.user_id, "lesson", entry_id, title, "removed")
+        await teacher_notices.notify_class(db, entry.class_id, admin.user_id, "lesson", entry_id, title, "removed")
+    elif active:
+        if previous_teacher != teacher_id:
+            teacher_notices.notify(db, [previous_teacher], admin.user_id, "lesson", entry_id, title, "removed")
+        teacher_notices.notify(
+            db, [teacher_id], admin.user_id, "lesson", entry_id, title,
+            "updated" if was_active and previous_teacher == teacher_id else "created",
+        )
+        if not was_active:
+            await teacher_notices.notify_class(db, entry.class_id, admin.user_id, "lesson", entry_id, title, "created")
     await db.commit()
     return _entry_payload(await _load_entry(db, entry_id))
 
@@ -656,10 +677,26 @@ async def set_occurrence_override(
     if row is None:
         row = models.OccurrenceOverride(entry_id=entry_id, occurrence_date=occurrence_date)
         db.add(row)
+    was_cancelled, previous_substitute = row.is_cancelled, row.substitute_teacher_id
     row.is_cancelled = payload.is_cancelled
     row.substitute_teacher_id = payload.substitute_teacher_id
     row.lesson_playlist_id = payload.lesson_playlist_id
     row.note = payload.note
+    title, day = teacher_notices.lesson_title(entry), teacher_notices.day_detail(occurrence_date)
+    if payload.is_cancelled and not was_cancelled:
+        teacher_notices.notify(
+            db, [entry.teacher_id, payload.substitute_teacher_id], admin.user_id,
+            "lesson", entry_id, title, "cancelled", day,
+        )
+        await teacher_notices.notify_class(db, entry.class_id, admin.user_id, "lesson", entry_id, title, "cancelled", day)
+    elif not payload.is_cancelled and payload.substitute_teacher_id != previous_substitute:
+        if payload.substitute_teacher_id is not None:
+            teacher_notices.notify(
+                db, [payload.substitute_teacher_id], admin.user_id, "lesson", entry_id, title, "substitute", day,
+            )
+            teacher_notices.notify(db, [entry.teacher_id], admin.user_id, "lesson", entry_id, title, "covered", day)
+        elif previous_substitute is not None:
+            teacher_notices.notify(db, [previous_substitute], admin.user_id, "lesson", entry_id, title, "removed", day)
     await db.commit()
     row = (await db.execute(
         select(models.OccurrenceOverride).options(selectinload(models.OccurrenceOverride.substitute))

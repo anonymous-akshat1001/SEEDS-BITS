@@ -8,7 +8,7 @@ import '../../widgets/journey_menu.dart';
 import '../../widgets/journey_prompts.dart';
 import 'live_session.dart';
 
-/// Key 9 in class: the less used actions, kept off the main class screen
+/// More in class (teacher 5, student 4): the less used actions, kept off the main class screen
 /// so it only shows what is needed every minute. The class keeps running
 /// underneath. [choices] is rebuilt whenever the class changes.
 class SessionMoreScreen extends StatelessWidget {
@@ -33,9 +33,9 @@ class SessionMoreScreen extends StatelessWidget {
   );
 }
 
-/// Key 4 for teachers (S44): who is here, who joined and left, and who has
+/// Key 3 for teachers (S44): who is here, who joined and left, and who has
 /// not joined, read as counts first and names on request; one key rings
-/// everyone not yet joined (S45). Raised hands are here too.
+/// everyone not yet joined (S45).
 class ClassRosterScreen extends StatefulWidget {
   const ClassRosterScreen({super.key, required this.session});
 
@@ -179,10 +179,6 @@ class _ClassRosterScreenState extends State<ClassRosterScreen> {
       () => unawaited(_remind()),
       enabled: _group('not_joined').isNotEmpty,
       unavailableReason: SessionText.everyoneJoined,
-    ),
-    JourneyChoice(
-      SessionText.handQueue(_session.raisedHandCount),
-      () => unawaited(_session.openHandQueue()),
     ),
   ];
 }

@@ -329,5 +329,19 @@ class WebSocketManager:
         await self.broadcast(session_id, {"type": "audio_pause", "position": position})
 
 
+    # The teacher closes the class recording: nothing is selected or playing,
+    # so phones stop it and late joiners do not start it.
+    async def audio_clear(self, session_id: int) -> Optional[dict]:
+        async with SESSION_LOCK:
+            state = SESSION_STATE.get(session_id)
+            if state is None:
+                return None
+            previous = state.get("playback") or {}
+            state["playback"] = {}
+        closed = {"audio_id": previous.get("audio_id"), "title": previous.get("title")}
+        await self.broadcast(session_id, {"type": "audio_cleared", **closed})
+        return closed
+
+
 # Singleton — imported everywhere
 ws_mgr = WebSocketManager()

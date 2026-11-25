@@ -931,6 +931,14 @@ class ApiService {
         context: 'class activity',
       );
 
+  /// Closes the class recording for everyone (the recording is kept).
+  static Future<ApiResult<void>> closeClassRecording(int sessionId) =>
+      deleteResult(
+        '/sessions/$sessionId/audio',
+        useAuth: true,
+        context: 'class recording',
+      );
+
   /// Enrolled students who have not finished the open quiz or journey.
   static Future<ApiResult<Map<String, dynamic>>> classActivityLeft(
     int sessionId,
