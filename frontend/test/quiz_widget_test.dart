@@ -1127,10 +1127,7 @@ void main() {
         await tester.sendKeyEvent(LogicalKeyboardKey.digit8);
         await tester.pumpAndSettle();
         expect(requests, 0);
-        expect(
-          find.text('Finish quiz now, asks to confirm'),
-          findsOneWidget,
-        );
+        expect(find.text('Finish quiz now, asks to confirm'), findsOneWidget);
         await activate(tester, 'quiz-early-finish');
         expect(requests, greaterThan(0));
         await tester.pumpWidget(const SizedBox.shrink());
@@ -1253,6 +1250,96 @@ void main() {
         () => MockClient((_) {
           submissions++;
           return response.future;
+        }),
+      );
+    },
+  );
+
+  testWidgets(
+    'with no connection the answer is kept and sent when it is back; from class, finishing returns there',
+    (tester) async {
+      final spoken = <String>[];
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        const MethodChannel('flutter_tts'),
+        (call) async {
+          if (call.method == 'speak') spoken.add(call.arguments.toString());
+          return 1;
+        },
+      );
+      await TtsService.configure(enabled: true, mode: SpeechMode.selfVoicing);
+      var offline = true;
+      final requests = <String>[];
+      await http.runWithClient(
+        () async {
+          await tester.pumpWidget(
+            MaterialApp(
+              home: Builder(
+                builder: (context) => Scaffold(
+                  body: TextButton(
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => QuizAttemptScreen(
+                          quizTitle: 'In class',
+                          initialAttempt: attemptFixture(),
+                          returnWhenFinished: true,
+                        ),
+                      ),
+                    ),
+                    child: const Text('Class'),
+                  ),
+                ),
+              ),
+            ),
+          );
+          await tester.tap(find.text('Class'));
+          await tester.pumpAndSettle();
+          await tester.sendKeyEvent(LogicalKeyboardKey.digit2);
+          await tester.sendKeyEvent(LogicalKeyboardKey.digit5);
+          // Ten seconds of quiet retries, then the student is told once.
+          await tester.pump(const Duration(seconds: 12));
+          expect(
+            spoken.join(' '),
+            contains('Your answer is kept and will be sent'),
+          );
+          expect(find.byType(QuizAttemptScreen), findsOneWidget);
+          offline = false;
+          await tester.pump(const Duration(seconds: 4));
+          await tester.pumpAndSettle();
+          expect(
+            requests.where((path) => path.endsWith('/answers')).length,
+            greaterThan(1),
+          );
+          expect(requests.last, '/student/attempts/7/complete');
+          // Finished from class: back to the class, no result screen.
+          expect(find.byType(QuizAttemptScreen), findsNothing);
+          expect(find.text('Class'), findsOneWidget);
+          await tester.pumpWidget(const SizedBox.shrink());
+        },
+        () => MockClient((request) async {
+          requests.add(request.url.path);
+          if (offline) throw http.ClientException('offline');
+          if (request.url.path.endsWith('/complete')) {
+            return http.Response(
+              jsonEncode({
+                ...attemptFixture(),
+                'status': 'completed',
+                'question': null,
+                'answered_count': 1,
+                'correct_count': 1,
+                'percentage_score': 100.0,
+              }),
+              200,
+            );
+          }
+          return http.Response(
+            jsonEncode({
+              'is_correct': true,
+              'selected_option_text': 'Second',
+              'correct_option_text': 'Second',
+              'next_question': null,
+            }),
+            200,
+          );
         }),
       );
     },

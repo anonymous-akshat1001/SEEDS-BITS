@@ -11290,8 +11290,8 @@
   "apiNoPermission": "You do not have permission to do that.",
   "apiSessionNotFound": "Session not found. Check the session ID and try again.",
   "apiItemNotFound": "The requested item was not found.",
-  "apiServiceUnavailable": "The service is temporarily unavailable. Please try again.",
-  "apiNetworkFailure": "We could not complete that request. Check your connection and try again.",
+  "apiServiceUnavailable": "The service is not answering right now.",
+  "apiNetworkFailure": "No connection, so that did not go through.",
   "apiUnknownFailure": "We could not complete that request. Please try again.",
   "apiAccountChangedRequestNotSent": "Your account changed. This request was not sent.",
   "apiAccountOrSessionChanged": "Your account or session changed. This action was not sent.",
@@ -13655,7 +13655,7 @@
   "@loginScreenName": {
     "description": "Title of the sign-in screen for students and teachers."
   },
-  "loginIntro": "Type your phone number, press OK, then press 1 to sign in.",
+  "loginIntro": "Type your phone number. Signing in starts by itself when it is complete.",
   "@loginIntro": {
     "description": "Short arrival speech on the sign-in screen."
   },
@@ -13675,7 +13675,7 @@
   "@loginProfileLabel": {
     "description": "Visible label of the shared-phone profile number field."
   },
-  "loginEnterProfileCode": "This phone is shared. Type your profile number, press OK, then press 1.",
+  "loginEnterProfileCode": "This phone is shared. Type your profile number.",
   "@loginEnterProfileCode": {
     "description": "Spoken when the number belongs to a shared phone."
   },
@@ -15782,6 +15782,24 @@
   "@sessionRecordingClosedStudent": {
     "placeholders": {
       "title": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSetupSpeechLanguageField": "Speech language",
+  "adminSetupSpeechRateField": "Speech speed",
+  "adminSetupSpeechNotSet": "Not set (the person chooses)",
+  "adminSetupSpeechHelp": "Used on the person's phone without them opening Settings. They can still change it there.",
+  "loginSimNumberUsed": "This phone's number was used.",
+  "loginSimNumberFilled": "This phone's number is filled in. Press 1 to sign in, or type another number.",
+  "messagePressToRetry": "Press {key} to try again.",
+  "sessionHandQueuedRaise": "No connection. Your hand will go up when the connection is back. Press 2 to cancel.",
+  "sessionHandQueuedLower": "No connection. Your hand will go down when the connection is back. Press 2 to cancel.",
+  "sessionHandQueueCancelled": "Hand request cancelled.",
+  "quizAnswerQueued": "No connection. Your answer is kept and will be sent when the connection is back.",
+  "@messagePressToRetry": {
+    "placeholders": {
+      "key": {
         "type": "String"
       }
     }

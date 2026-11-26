@@ -145,16 +145,22 @@ void main() {
     await http.runWithClient(
       () async {
         await open(tester, const LoginScreen());
+        // The 10th digit signs in, and the profile number's last digit
+        // continues: neither OK nor 1 is needed.
+        await tester.enterText(find.byType(TextField).first, '988800000');
+        await tester.pumpAndSettle();
+        expect(bodies, isEmpty);
         await tester.enterText(find.byType(TextField).first, '9888000000');
-        await tester.tap(find.text('1: Sign in'));
         await tester.pumpAndSettle();
         expect(
           FocusManager.instance.primaryFocus?.debugLabel,
           'login-profile-code',
         );
         expect(spoken.join(' '), contains('This phone is shared'));
+        await tester.enterText(find.byType(TextField).at(1), '1');
+        await tester.pumpAndSettle();
+        expect(bodies, hasLength(1));
         await tester.enterText(find.byType(TextField).at(1), '12');
-        await tester.tap(find.text('1: Continue'));
         await tester.pumpAndSettle();
         expect(bodies.last, {
           'phone_number': '9888000000',
@@ -177,16 +183,16 @@ void main() {
   });
 
   testWidgets(
-    'sign-in starts in the number field and says to press OK before the keys',
+    'sign-in starts in the number field and says it signs in by itself, before the keys',
     (tester) async {
       await open(tester, const LoginScreen());
       await tester.pump(const Duration(milliseconds: 600));
       final opening = spoken.join(' ');
-      final ok = opening.indexOf('press OK');
+      final task = opening.indexOf('Signing in starts by itself');
       final field = opening.indexOf('You are in Phone number.');
       final keys = opening.indexOf('Press 1 for Sign in');
-      expect(ok, greaterThanOrEqualTo(0), reason: opening);
-      expect(field, greaterThan(ok), reason: opening);
+      expect(task, greaterThanOrEqualTo(0), reason: opening);
+      expect(field, greaterThan(task), reason: opening);
       expect(keys, greaterThan(field), reason: opening);
       expect(opening, contains(', 3 for'));
       expect(opening, isNot(contains('While editing')));
@@ -215,9 +221,8 @@ void main() {
       () async {
         await open(tester, const LoginScreen());
         await tester.enterText(find.byType(TextField).first, '9111111111');
-        await tester.tap(find.text('1: Sign in'));
         await tester.pumpAndSettle();
-        expect(spoken.last, contains('Ask your school administrator'));
+        expect(spoken.join(' '), contains('Ask your school administrator'));
         await tester.pumpWidget(const SizedBox.shrink());
       },
       () => MockClient(

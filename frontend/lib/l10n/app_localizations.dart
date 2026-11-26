@@ -17493,13 +17493,13 @@ abstract class AppLocalizations {
   /// No description provided for @apiServiceUnavailable.
   ///
   /// In en, this message translates to:
-  /// **'The service is temporarily unavailable. Please try again.'**
+  /// **'The service is not answering right now.'**
   String get apiServiceUnavailable;
 
   /// No description provided for @apiNetworkFailure.
   ///
   /// In en, this message translates to:
-  /// **'We could not complete that request. Check your connection and try again.'**
+  /// **'No connection, so that did not go through.'**
   String get apiNetworkFailure;
 
   /// No description provided for @apiUnknownFailure.
@@ -20960,7 +20960,7 @@ abstract class AppLocalizations {
   /// Short arrival speech on the sign-in screen.
   ///
   /// In en, this message translates to:
-  /// **'Type your phone number, press OK, then press 1 to sign in.'**
+  /// **'Type your phone number. Signing in starts by itself when it is complete.'**
   String get loginIntro;
 
   /// Focus label of the phone number field.
@@ -20990,7 +20990,7 @@ abstract class AppLocalizations {
   /// Spoken when the number belongs to a shared phone.
   ///
   /// In en, this message translates to:
-  /// **'This phone is shared. Type your profile number, press OK, then press 1.'**
+  /// **'This phone is shared. Type your profile number.'**
   String get loginEnterProfileCode;
 
   /// Key 1 on the sign-in screens.
@@ -23038,6 +23038,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your teacher closed the recording {title}.'**
   String sessionRecordingClosedStudent(String title);
+
+  /// No description provided for @adminSetupSpeechLanguageField.
+  ///
+  /// In en, this message translates to:
+  /// **'Speech language'**
+  String get adminSetupSpeechLanguageField;
+
+  /// No description provided for @adminSetupSpeechRateField.
+  ///
+  /// In en, this message translates to:
+  /// **'Speech speed'**
+  String get adminSetupSpeechRateField;
+
+  /// No description provided for @adminSetupSpeechNotSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Not set (the person chooses)'**
+  String get adminSetupSpeechNotSet;
+
+  /// No description provided for @adminSetupSpeechHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Used on the person\'s phone without them opening Settings. They can still change it there.'**
+  String get adminSetupSpeechHelp;
+
+  /// No description provided for @loginSimNumberUsed.
+  ///
+  /// In en, this message translates to:
+  /// **'This phone\'s number was used.'**
+  String get loginSimNumberUsed;
+
+  /// No description provided for @loginSimNumberFilled.
+  ///
+  /// In en, this message translates to:
+  /// **'This phone\'s number is filled in. Press 1 to sign in, or type another number.'**
+  String get loginSimNumberFilled;
+
+  /// No description provided for @messagePressToRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Press {key} to try again.'**
+  String messagePressToRetry(String key);
+
+  /// No description provided for @sessionHandQueuedRaise.
+  ///
+  /// In en, this message translates to:
+  /// **'No connection. Your hand will go up when the connection is back. Press 2 to cancel.'**
+  String get sessionHandQueuedRaise;
+
+  /// No description provided for @sessionHandQueuedLower.
+  ///
+  /// In en, this message translates to:
+  /// **'No connection. Your hand will go down when the connection is back. Press 2 to cancel.'**
+  String get sessionHandQueuedLower;
+
+  /// No description provided for @sessionHandQueueCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Hand request cancelled.'**
+  String get sessionHandQueueCancelled;
+
+  /// No description provided for @quizAnswerQueued.
+  ///
+  /// In en, this message translates to:
+  /// **'No connection. Your answer is kept and will be sent when the connection is back.'**
+  String get quizAnswerQueued;
 }
 
 class _AppLocalizationsDelegate

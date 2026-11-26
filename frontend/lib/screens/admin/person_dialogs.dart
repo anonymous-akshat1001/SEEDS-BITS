@@ -2,7 +2,71 @@ import 'package:flutter/material.dart';
 
 import '../../l10n/speech.dart';
 import '../../services/admin_setup_api.dart';
+import '../../services/tts_service.dart';
 import 'admin_common.dart';
+
+/// The language and speed the person's phone speaks with. "Not set" leaves
+/// the choice to the person; either way they can change it in Settings.
+class SpeechChoiceFields extends StatelessWidget {
+  const SpeechChoiceFields({
+    super.key,
+    required this.value,
+    required this.onChanged,
+    this.enabled = true,
+  });
+
+  final AdminSpeech value;
+  final ValueChanged<AdminSpeech> onChanged;
+  final bool enabled;
+
+  static const _notSetLanguage = '';
+  static const _notSetRate = -1.0;
+
+  /// flutter_tts speeds offered (1 to 2.5 times normal).
+  static const rates = [0.5, 0.625, 0.75, 0.875, 1.0, 1.25];
+
+  @override
+  Widget build(BuildContext context) {
+    final t = Speech.t;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        AdminDropdown<String>(
+          label: t.adminSetupSpeechLanguageField,
+          value: value.language ?? _notSetLanguage,
+          helperText: t.adminSetupSpeechHelp,
+          options: [
+            (_notSetLanguage, t.adminSetupSpeechNotSet),
+            for (final language in SpeechLanguage.values)
+              (language.code, language.displayName),
+          ],
+          onChanged: enabled
+              ? (code) => onChanged((
+                  language: code == null || code.isEmpty ? null : code,
+                  rate: value.rate,
+                ))
+              : null,
+        ),
+        const SizedBox(height: 8),
+        AdminDropdown<double>(
+          label: t.adminSetupSpeechRateField,
+          value: value.rate ?? _notSetRate,
+          options: [
+            (_notSetRate, t.adminSetupSpeechNotSet),
+            for (final rate in {...rates, ?value.rate}.toList()..sort())
+              (rate, TtsService.describeSpeed(rate)),
+          ],
+          onChanged: enabled
+              ? (rate) => onChanged((
+                  language: value.language,
+                  rate: rate == null || rate < 0 ? null : rate,
+                ))
+              : null,
+        ),
+      ],
+    );
+  }
+}
 
 typedef ClassSubjectPair = ({
   int classId,
@@ -170,6 +234,7 @@ class _AddPersonDialogState extends State<AddPersonDialog> {
   String _role = 'student';
   int _classId = _noClass;
   final List<ClassSubjectPair> _pairs = [];
+  AdminSpeech _speech = (language: null, rate: null);
   bool _busy = false;
   String? _error;
 
@@ -215,6 +280,7 @@ class _AddPersonDialogState extends State<AddPersonDialog> {
         for (final pair in _pairs)
           (classId: pair.classId, subjectId: pair.subjectId),
       ],
+      speech: _speech,
     );
     if (!mounted) return;
     if (!result.isSuccess) {
@@ -319,12 +385,19 @@ class _AddPersonDialogState extends State<AddPersonDialog> {
             },
           ),
         ],
+        const SizedBox(height: 12),
+        SpeechChoiceFields(
+          value: _speech,
+          enabled: !_busy,
+          onChanged: (speech) => setState(() => _speech = speech),
+        ),
       ],
     );
   }
 }
 
-/// Edits a person's name and phone number; pops with the updated account.
+/// Edits a person's name, phone number and speech; pops with the updated
+/// account.
 class EditPersonDialog extends StatefulWidget {
   const EditPersonDialog({super.key, required this.person});
 
@@ -339,6 +412,11 @@ class _EditPersonDialogState extends State<EditPersonDialog> {
   late final _phone = TextEditingController(
     text: '${widget.person['phone_number'] ?? ''}',
   );
+  late final AdminSpeech _savedSpeech = (
+    language: widget.person['speech_language'] as String?,
+    rate: (widget.person['speech_rate'] as num?)?.toDouble(),
+  );
+  late AdminSpeech _speech = _savedSpeech;
   bool _busy = false;
   String? _error;
 
@@ -363,7 +441,8 @@ class _EditPersonDialogState extends State<EditPersonDialog> {
     }
     final nameChanged = name != '${widget.person['name']}';
     final phoneChanged = phone != '${widget.person['phone_number']}';
-    if (!nameChanged && !phoneChanged) {
+    final speechChanged = _speech != _savedSpeech;
+    if (!nameChanged && !phoneChanged && !speechChanged) {
       Navigator.pop(context);
       return;
     }
@@ -375,6 +454,7 @@ class _EditPersonDialogState extends State<EditPersonDialog> {
       widget.person['user_id'] as int,
       name: nameChanged ? name : null,
       phoneNumber: phoneChanged ? phone : null,
+      speech: speechChanged ? _speech : null,
     );
     if (!mounted) return;
     if (!result.isSuccess) {
@@ -412,6 +492,12 @@ class _EditPersonDialogState extends State<EditPersonDialog> {
             helperText: t.adminSetupPhoneChangeNote,
             helperMaxLines: 3,
           ),
+        ),
+        const SizedBox(height: 12),
+        SpeechChoiceFields(
+          value: _speech,
+          enabled: !_busy,
+          onChanged: (speech) => setState(() => _speech = speech),
         ),
       ],
     );

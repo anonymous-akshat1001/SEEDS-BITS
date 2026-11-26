@@ -284,6 +284,51 @@ void main() {
       },
     );
 
+    testWidgets('from class, a finished journey returns to the class by itself', (
+      tester,
+    ) async {
+      final audio = FakeAudio();
+      await tester.pumpWidget(
+        app(
+          Builder(
+            builder: (context) => Scaffold(
+              body: TextButton(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => JourneyPlayerScreen(
+                      snapshot: foodJourney(),
+                      audio: audio,
+                      streamUrl: (id) async => 'stream/$id',
+                      returnWhenFinished: true,
+                    ),
+                  ),
+                ),
+                child: const Text('Class'),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('Class'));
+      await tester.pumpAndSettle();
+      await press(tester, LogicalKeyboardKey.digit2);
+      audio.finish();
+      await tester.pumpAndSettle();
+      for (final key in [
+        LogicalKeyboardKey.digit1,
+        LogicalKeyboardKey.digit5,
+        LogicalKeyboardKey.digit1,
+        LogicalKeyboardKey.digit5,
+        LogicalKeyboardKey.digit3,
+        LogicalKeyboardKey.digit5,
+      ]) {
+        await press(tester, key);
+      }
+      expect(spoken.join(' '), contains('You finished Food around us'));
+      expect(find.byType(JourneyPlayerScreen), findsNothing);
+      expect(find.text('Class'), findsOneWidget);
+    });
+
     testWidgets('leaving mid-journey asks for confirmation and 1 cancels', (
       tester,
     ) async {

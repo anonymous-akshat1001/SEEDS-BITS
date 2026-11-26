@@ -105,8 +105,10 @@ mixin HomeUpdates<T extends StatefulWidget>
     final wait = _failures == 0
         ? interval
         : Duration(
-            seconds: (interval.inSeconds * (1 << _failures.clamp(0, 3)))
-                .clamp(interval.inSeconds, longestWait.inSeconds),
+            seconds: (interval.inSeconds * (1 << _failures.clamp(0, 3))).clamp(
+              interval.inSeconds,
+              longestWait.inSeconds,
+            ),
           );
     _timer = Timer(wait, () {
       // Off screen (a class or a quiz is open): check again on return.
@@ -138,10 +140,15 @@ mixin HomeUpdates<T extends StatefulWidget>
       }
       _failures = 0;
       final previous = home;
+      final data = result.data is Map
+          ? Map<String, dynamic>.from(result.data as Map)
+          : <String, dynamic>{};
+      // A new language or speed from the administrator is applied before
+      // anything is spoken, so Home already speaks the right way.
+      await AuthSessionService.applyAdministratorSpeech(data['speech']);
+      if (!mounted) return;
       setState(() {
-        home = result.data is Map
-            ? Map<String, dynamic>.from(result.data as Map)
-            : <String, dynamic>{};
+        home = data;
         homeIssue = null;
         homeLoaded = true;
       });

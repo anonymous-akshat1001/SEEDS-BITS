@@ -11953,12 +11953,10 @@ class AppLocalizationsTe extends AppLocalizations {
   String get apiItemNotFound => 'అడిగిన అంశం కనుగొనబడలేదు.';
 
   @override
-  String get apiServiceUnavailable =>
-      'సేవ తాత్కాలికంగా అందుబాటులో లేదు. దయచేసి మళ్లీ ప్రయత్నించండి.';
+  String get apiServiceUnavailable => 'సేవ ఇప్పుడు స్పందించడం లేదు.';
 
   @override
-  String get apiNetworkFailure =>
-      'ఆ అభ్యర్థనను పూర్తి చేయలేకపోయాము. మీ కనెక్షన్‌ను తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.';
+  String get apiNetworkFailure => 'కనెక్షన్ లేదు, అందుకే అది జరగలేదు.';
 
   @override
   String get apiUnknownFailure =>
@@ -14134,7 +14132,7 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get loginIntro =>
-      'మీ ఫోన్ నంబర్ టైప్ చేసి, ఓకే నొక్కండి, తర్వాత సైన్ ఇన్ చేయడానికి 1 నొక్కండి.';
+      'మీ ఫోన్ నంబర్ టైప్ చేయండి. నంబర్ పూర్తి కాగానే సైన్ ఇన్ దానంతట అదే మొదలవుతుంది.';
 
   @override
   String get loginPhoneField => 'ఫోన్ నంబర్. నంబర్ కీలతో టైప్ చేయండి.';
@@ -14150,7 +14148,7 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get loginEnterProfileCode =>
-      'ఈ ఫోన్ షేర్ చేయబడింది. మీ ప్రొఫైల్ నంబర్ టైప్ చేసి, ఓకే నొక్కండి, తర్వాత 1 నొక్కండి.';
+      'ఈ ఫోన్ షేర్ చేయబడింది. మీ ప్రొఫైల్ నంబర్ టైప్ చేయండి.';
 
   @override
   String get loginKeySignIn => 'సైన్ ఇన్';
@@ -15560,4 +15558,45 @@ class AppLocalizationsTe extends AppLocalizations {
   String sessionRecordingClosedStudent(String title) {
     return 'మీ ఉపాధ్యాయులు $title రికార్డింగ్‌ను మూసివేశారు.';
   }
+
+  @override
+  String get adminSetupSpeechLanguageField => 'మాట్లాడే భాష';
+
+  @override
+  String get adminSetupSpeechRateField => 'మాట్లాడే వేగం';
+
+  @override
+  String get adminSetupSpeechNotSet => 'సెట్ చేయలేదు (వ్యక్తే ఎంచుకుంటారు)';
+
+  @override
+  String get adminSetupSpeechHelp =>
+      'వ్యక్తి ఫోన్‌లో సెట్టింగ్‌లు తెరవకుండానే వాడబడుతుంది. వారు అక్కడ దీన్ని మార్చుకోవచ్చు.';
+
+  @override
+  String get loginSimNumberUsed => 'ఈ ఫోన్ నంబర్ ఉపయోగించబడింది.';
+
+  @override
+  String get loginSimNumberFilled =>
+      'ఈ ఫోన్ నంబర్ నింపబడింది. సైన్ ఇన్ చేయడానికి 1 నొక్కండి, లేదా వేరే నంబర్ టైప్ చేయండి.';
+
+  @override
+  String messagePressToRetry(String key) {
+    return 'మళ్ళీ ప్రయత్నించడానికి $key నొక్కండి.';
+  }
+
+  @override
+  String get sessionHandQueuedRaise =>
+      'కనెక్షన్ లేదు. కనెక్షన్ తిరిగి రాగానే మీ చేయి ఎత్తబడుతుంది. రద్దు చేయడానికి 2 నొక్కండి.';
+
+  @override
+  String get sessionHandQueuedLower =>
+      'కనెక్షన్ లేదు. కనెక్షన్ తిరిగి రాగానే మీ చేయి దించబడుతుంది. రద్దు చేయడానికి 2 నొక్కండి.';
+
+  @override
+  String get sessionHandQueueCancelled =>
+      'చేయి ఎత్తే అభ్యర్థన రద్దు చేయబడింది.';
+
+  @override
+  String get quizAnswerQueued =>
+      'కనెక్షన్ లేదు. మీ సమాధానం ఉంచబడింది, కనెక్షన్ తిరిగి రాగానే పంపబడుతుంది.';
 }

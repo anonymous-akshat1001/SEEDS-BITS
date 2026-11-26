@@ -24,6 +24,7 @@ import '../services/feedback_cues.dart';
 import '../services/journey_api.dart';
 import '../services/message_center.dart';
 import '../services/offline_journey_store.dart';
+import '../services/pending_action.dart';
 import '../services/private_note_recorder.dart';
 import '../services/session_microphone_controller.dart';
 import '../services/session_voice_controller.dart';
@@ -1196,20 +1197,47 @@ class _SessionScreenState extends State<SessionScreen>
     }
   }
 
+  /// Each press of 2 is a new request; a newer one (or cancelling a queued
+  /// one) makes an older request stop retrying.
+  int _handRequest = 0;
+
+  /// The request is waiting for the connection to come back.
+  bool _handQueued = false;
+
   Future<void> _toggleHandRaise() async {
+    if (_handQueued) {
+      _handRequest++;
+      setState(() {
+        _handQueued = false;
+        _handPending = false;
+      });
+      _speakIfEnabled(SessionText.handQueueCancelled);
+      return;
+    }
     if (_handPending) {
       _speakIfEnabled(SessionText.waitingHand);
       return;
     }
     final raised = !_handRaised;
     final revision = _handRevision;
+    final request = ++_handRequest;
+    bool current() => mounted && request == _handRequest;
     setState(() => _handPending = true);
-    final result = await _sse.send({
-      'type': raised ? 'raise_hand' : 'lower_hand',
-    });
-    if (!mounted) return;
+    // With no connection the hand is kept and sent when it is back, instead
+    // of failing and asking the student to try again.
+    final result = await sendWhenConnected(
+      () => _sse.send({'type': raised ? 'raise_hand' : 'lower_hand'}),
+      stillWanted: current,
+      onQueued: () {
+        if (!current()) return;
+        setState(() => _handQueued = true);
+        _speakIfEnabled(SessionText.handQueued(raised));
+      },
+    );
+    if (!current()) return;
     setState(() {
       _handPending = false;
+      _handQueued = false;
       if (result.isSuccess && revision == _handRevision) _handRaised = raised;
     });
     if (result.isSuccess) {
@@ -2087,6 +2115,7 @@ class _SessionScreenState extends State<SessionScreen>
         screen = QuizAttemptScreen(
           quizTitle: title,
           initialAttempt: attempt.data!,
+          returnWhenFinished: true,
         );
       } else {
         const api = JourneyApi();
@@ -2097,6 +2126,7 @@ class _SessionScreenState extends State<SessionScreen>
             snapshot: snapshot,
             store: store,
             api: api,
+            returnWhenFinished: true,
           );
         } catch (error) {
           if (!mounted) return;
@@ -2381,7 +2411,8 @@ class _SessionScreenState extends State<SessionScreen>
       button: SessionText.handButton(_handRaised, _handPending),
       label: SessionText.handLabel(_handRaised, _handPending),
       onActivate: _toggleHandRaise,
-      isEnabled: () => !_handPending,
+      // While waiting for the connection, 2 cancels the request.
+      isEnabled: () => !_handPending || _handQueued,
       selected: _handRaised,
     ),
     _SessionOption(

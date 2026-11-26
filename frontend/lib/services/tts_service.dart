@@ -286,6 +286,16 @@ class TtsService {
     );
   }
 
+  /// Saves [rate] as a deliberate choice, so the one-time move away from
+  /// the old default never removes it.
+  static Future<void> storeSpeechRate(
+    SharedPreferences prefs,
+    double rate,
+  ) async {
+    await prefs.setDouble('tts_speech_rate', clampSpeechRate(rate));
+    await prefs.setInt(_speechRateVersionKey, _speechRateVersion);
+  }
+
   /// Settings used to save the old default (1.5 times) on every save, so a
   /// stored 0.75 almost always means "never changed". Move those phones to
   /// the new default once; any other saved speed is kept.

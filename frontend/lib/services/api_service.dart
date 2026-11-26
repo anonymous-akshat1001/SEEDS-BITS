@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
@@ -51,6 +52,44 @@ class ApiService {
   static const bool devMode = false;
 
   static String? cachedToken; // set this right after reading from prefs
+
+  /// How long a request keeps retrying, unheard, while there is no
+  /// connection. Only after this is the person told (S: retry quietly).
+  @visibleForTesting
+  static Duration quietRetryWindow = const Duration(seconds: 10);
+
+  /// Sends [send] again after a connection failure until it works or
+  /// [quietRetryWindow] has passed. A timeout is retried only for requests
+  /// that are safe to repeat ([retryTimeouts]); a write that timed out may
+  /// already have reached the server.
+  static Future<http.Response> _quietly(
+    Future<http.Response> Function() send, {
+    required bool retryTimeouts,
+    bool Function()? canSend,
+  }) async {
+    var waited = Duration.zero;
+    var wait = const Duration(milliseconds: 500);
+    while (true) {
+      try {
+        return await send();
+      } catch (error) {
+        final transient =
+            error is http.ClientException ||
+            (retryTimeouts && error is TimeoutException);
+        if (!transient ||
+            waited + wait > quietRetryWindow ||
+            (canSend != null && !canSend())) {
+          rethrow;
+        }
+        await Future<void>.delayed(wait);
+        waited += wait;
+        final doubled = wait * 2;
+        wait = doubled > const Duration(seconds: 3)
+            ? const Duration(seconds: 3)
+            : doubled;
+      }
+    }
+  }
 
   /// Converts HTTP and transport failures into text safe for UI and TTS.
   /// Raw response details remain available only for debug logging.
@@ -233,10 +272,16 @@ class ApiService {
       );
     }
     try {
-      final request = http.get(uri, headers: headers);
-      final response = requestTimeout == null
-          ? await request
-          : await request.timeout(requestTimeout);
+      final response = await _quietly(
+        () {
+          final request = http.get(uri, headers: headers);
+          return requestTimeout == null
+              ? request
+              : request.timeout(requestTimeout);
+        },
+        retryTimeouts: true,
+        canSend: canSend,
+      );
       final body = _decodeBody(response.body);
       if (response.statusCode >= 200 && response.statusCode < 300) {
         return ApiResult<dynamic>.success(body ?? <String, dynamic>{});
@@ -313,10 +358,16 @@ class ApiService {
       return ApiResult.failure(failure);
     }
     try {
-      final request = method == 'PUT'
-          ? http.put(uri, headers: headers, body: jsonEncode(data))
-          : http.post(uri, headers: headers, body: jsonEncode(data));
-      final response = await request.timeout(requestTimeout);
+      final response = await _quietly(
+        () {
+          final request = method == 'PUT'
+              ? http.put(uri, headers: headers, body: jsonEncode(data))
+              : http.post(uri, headers: headers, body: jsonEncode(data));
+          return request.timeout(requestTimeout);
+        },
+        retryTimeouts: false,
+        canSend: canSend,
+      );
       final body = _decodeBody(response.body);
       if (response.statusCode >= 200 && response.statusCode < 300) {
         if (requireJsonObject && body is! Map<String, dynamic>) {
@@ -420,14 +471,20 @@ class ApiService {
       );
     }
     try {
-      final request = http.delete(
-        uri,
-        headers: headers,
-        body: data == null ? null : jsonEncode(data),
+      final response = await _quietly(
+        () {
+          final request = http.delete(
+            uri,
+            headers: headers,
+            body: data == null ? null : jsonEncode(data),
+          );
+          return requestTimeout == null
+              ? request
+              : request.timeout(requestTimeout);
+        },
+        retryTimeouts: true,
+        canSend: canSend,
       );
-      final response = requestTimeout == null
-          ? await request
-          : await request.timeout(requestTimeout);
       if (response.statusCode >= 200 && response.statusCode < 300) {
         return const ApiResult<void>.success(null);
       }
@@ -454,16 +511,20 @@ class ApiService {
   }) async {
     final uri = await _buildUri('/auth/phone-login');
     try {
-      final response = await http
-          .post(
-            uri,
-            headers: const {'Content-Type': 'application/json'},
-            body: jsonEncode({
-              'phone_number': phoneNumber,
-              'profile_code': ?profileCode,
-            }),
-          )
-          .timeout(const Duration(seconds: 10));
+      // Signing in changes nothing on the server, so it is safe to repeat.
+      final response = await _quietly(
+        () => http
+            .post(
+              uri,
+              headers: const {'Content-Type': 'application/json'},
+              body: jsonEncode({
+                'phone_number': phoneNumber,
+                'profile_code': ?profileCode,
+              }),
+            )
+            .timeout(const Duration(seconds: 10)),
+        retryTimeouts: true,
+      );
       final body = _decodeBody(response.body);
       if (response.statusCode >= 200 &&
           response.statusCode < 300 &&

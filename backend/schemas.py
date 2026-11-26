@@ -374,6 +374,8 @@ class AdminUserOut(BaseModel):
     phone_number: str
     role: str
     is_active: bool = True
+    speech_language: Optional[str] = None
+    speech_rate: Optional[float] = None
     class_id: Optional[int] = None
     class_name: Optional[str] = None
     assignment_count: int = 0

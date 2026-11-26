@@ -39,6 +39,7 @@ class JourneyPlayerScreen extends StatefulWidget {
     this.audio,
     this.offline = false,
     this.streamUrl,
+    this.returnWhenFinished = false,
   });
 
   final JourneySnapshot snapshot;
@@ -52,6 +53,10 @@ class JourneyPlayerScreen extends StatefulWidget {
   /// Played from the downloaded copy without internet.
   final bool offline;
   final Future<String> Function(int audioId)? streamUrl;
+
+  /// Opened from a live class: once the journey is finished, say so and go
+  /// back to the class by itself. From Home the finished screen stays.
+  final bool returnWhenFinished;
 
   @override
   State<JourneyPlayerScreen> createState() => _JourneyPlayerScreenState();
@@ -326,17 +331,41 @@ class _JourneyPlayerScreenState extends State<JourneyPlayerScreen>
       '${prefix.isEmpty ? '' : '$prefix '}${JourneyAnnouncer.finished(_engine)}',
     );
     final store = widget.store;
-    if (widget.preview || store == null) return;
-    await _save();
-    try {
-      await store.clearProgress(widget.snapshot.journeyId);
-    } on OfflineJourneyException {
-      // The completed run is already queued; stale progress restarts fresh.
+    if (!widget.preview && store != null) {
+      await _save();
+      try {
+        await store.clearProgress(widget.snapshot.journeyId);
+      } on OfflineJourneyException {
+        // The completed run is already queued; stale progress restarts fresh.
+      }
+      final report = await store.syncPending(widget.api);
+      if (mounted && report.remaining > 0 && report.offline) {
+        setState(() => _status = JourneyAnnouncer.sendLater);
+      }
     }
-    final report = await store.syncPending(widget.api);
-    if (mounted && report.remaining > 0 && report.offline) {
-      setState(() => _status = JourneyAnnouncer.sendLater);
+    if (widget.returnWhenFinished && mounted) _returnAfterSpeech();
+  }
+
+  /// Back to the class once the "finished" sentence has been heard.
+  void _returnAfterSpeech() {
+    void leave() {
+      if (mounted && !_leaving) {
+        _leaving = true;
+        Navigator.of(context).pop();
+      }
     }
+
+    if (!TtsService.speaking.value) {
+      leave();
+      return;
+    }
+    void listener() {
+      if (TtsService.speaking.value) return;
+      TtsService.speaking.removeListener(listener);
+      leave();
+    }
+
+    TtsService.speaking.addListener(listener);
   }
 
   Future<void> _playAgain() async {

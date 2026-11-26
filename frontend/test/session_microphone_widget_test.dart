@@ -16,6 +16,7 @@ class _ClassServer {
   final events = StreamController<List<int>>();
   final acknowledgment = Completer<http.StreamedResponse>();
   int actions = 0;
+  bool offlineActions = false;
   final actionBodies = <Map<String, dynamic>>[];
   final audioControls = <Map<String, dynamic>>[];
   final activityRequests = <String>[];
@@ -83,6 +84,7 @@ class _ClassServer {
       );
     }
     if (request.url.path.endsWith('/action')) {
+      if (offlineActions) throw http.ClientException('offline');
       actions++;
       final decoded = jsonDecode(await utf8.decodeStream(body));
       if (decoded is! Map<String, dynamic>) throw StateError('Invalid action');
@@ -474,6 +476,40 @@ void main() {
       }, teacher: true);
     },
   );
+
+  testWidgets('a raised hand with no connection goes up when it is back', (
+    tester,
+  ) async {
+    final server = _ClassServer()..offlineActions = true;
+    await _withClass(tester, server, () async {
+      await tester.sendKeyEvent(LogicalKeyboardKey.digit2);
+      await tester.pump(const Duration(seconds: 12));
+      expect(
+        spoken.join(' '),
+        contains('Your hand will go up when the connection is back'),
+      );
+      expect(server.actions, 0);
+      server.offlineActions = false;
+      await tester.pump(const Duration(seconds: 4));
+      expect(server.actionBodies.single['type'], 'raise_hand');
+      server.acknowledge(
+        200,
+        body: {
+          'ok': true,
+          'hand_state': {
+            'type': 'hand_raised',
+            'participant_id': 11,
+            'raised_hand': true,
+          },
+        },
+      );
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pumpAndSettle();
+      expect(find.text('2: Lower hand'), findsOneWidget);
+      await tester.pump(const Duration(seconds: 6));
+      await tester.pumpAndSettle();
+    });
+  });
 
   testWidgets(
     'More, Who is in class lists everyone for a student, teacher first',

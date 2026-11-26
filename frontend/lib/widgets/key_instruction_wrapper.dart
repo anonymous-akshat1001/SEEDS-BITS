@@ -974,6 +974,7 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
         if (!_heldActionKeys.add(event.physicalKey)) {
           return KeyEventResult.handled;
         }
+        MessageCenter.noteKey(digit);
         widget.actions[digit]!();
         _updateDebug(key.keyLabel, character, digit, true);
         return KeyEventResult.handled;
@@ -985,6 +986,7 @@ class _KeypadInstructionWrapperState extends State<KeypadInstructionWrapper>
         return KeyEventResult.handled;
       }
       _lastFiredAt[digit] = now;
+      MessageCenter.noteKey(digit);
       widget.actions[digit]!();
       _updateDebug(key.keyLabel, character, digit, true);
       return KeyEventResult.handled;

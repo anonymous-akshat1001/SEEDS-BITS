@@ -134,7 +134,7 @@ def test_class_subject_migration_backfills_legacy_pairs(tmp_path, monkeypatch):
         "quiz_attempts",
         "quiz_responses",
     }.issubset(table_names)
-    assert version == ("20261125_15",)
+    assert version == ("20261126_16",)
     assert {"analytics_sessions", "session_runs", "analytics_attendance",
             "analytics_attendance_joins", "analytics_maintenance"}.issubset(table_names)
     assert "lesson_sequences" not in table_names

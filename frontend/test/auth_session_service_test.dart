@@ -79,4 +79,51 @@ void main() {
       await TtsService.setSpeechLanguage(SpeechLanguage.english);
     },
   );
+
+  testWidgets(
+    'the administrator\'s speech is used, a change in Settings is kept, and a new choice applies again',
+    (tester) async {
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        const MethodChannel('flutter_tts'),
+        (_) async => 1,
+      );
+      SharedPreferences.setMockInitialValues({});
+      Future<void> signIn(Map<String, Object?> speech) =>
+          AuthSessionService.saveLoginState({
+            'access_token': 'token',
+            'user_id': 9,
+            'role': 'teacher',
+            'speech': speech,
+          });
+      await signIn({'language': 'kn', 'rate': 0.75});
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getString('speech_language'), 'kn');
+      expect(prefs.getDouble('tts_speech_rate'), 0.75);
+      expect(TtsService.selectedLanguage, SpeechLanguage.kannada);
+
+      // The person picks Hindi in Settings; the same choice from the
+      // administrator does not undo it.
+      await TtsService.setSpeechLanguage(SpeechLanguage.hindi);
+      expect(
+        await AuthSessionService.applyAdministratorSpeech({
+          'language': 'kn',
+          'rate': 0.75,
+        }),
+        isFalse,
+      );
+      expect(prefs.getString('speech_language'), 'hi');
+
+      // A new choice from the administrator applies once more.
+      expect(
+        await AuthSessionService.applyAdministratorSpeech({
+          'language': 'te',
+          'rate': 0.75,
+        }),
+        isTrue,
+      );
+      expect(TtsService.selectedLanguage, SpeechLanguage.telugu);
+      expect(prefs.getDouble('tts_speech_rate'), 0.75);
+      await TtsService.setSpeechLanguage(SpeechLanguage.english);
+    },
+  );
 }

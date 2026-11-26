@@ -11888,12 +11888,10 @@ class AppLocalizationsBn extends AppLocalizations {
   String get apiItemNotFound => 'যেটি চেয়েছেন সেটি পাওয়া যায়নি।';
 
   @override
-  String get apiServiceUnavailable =>
-      'পরিষেবা সাময়িকভাবে পাওয়া যাচ্ছে না। আবার চেষ্টা করুন।';
+  String get apiServiceUnavailable => 'পরিষেবা এখন সাড়া দিচ্ছে না।';
 
   @override
-  String get apiNetworkFailure =>
-      'অনুরোধটি সম্পূর্ণ করা যায়নি। আপনার সংযোগ দেখে নিয়ে আবার চেষ্টা করুন।';
+  String get apiNetworkFailure => 'সংযোগ নেই, তাই এটি হয়নি।';
 
   @override
   String get apiUnknownFailure =>
@@ -14056,7 +14054,7 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get loginIntro =>
-      'আপনার ফোন নম্বর টাইপ করুন, ওকে টিপুন, তারপর সাইন ইন করতে 1 টিপুন।';
+      'আপনার ফোন নম্বর টাইপ করুন। নম্বর পুরো হলেই সাইন ইন নিজে থেকে শুরু হবে।';
 
   @override
   String get loginPhoneField => 'ফোন নম্বর। নম্বর কী দিয়ে টাইপ করুন।';
@@ -14072,7 +14070,7 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get loginEnterProfileCode =>
-      'এই ফোনটি শেয়ার করা। আপনার প্রোফাইল নম্বর টাইপ করুন, ওকে টিপুন, তারপর 1 টিপুন।';
+      'এই ফোনটি শেয়ার করা। আপনার প্রোফাইল নম্বর টাইপ করুন।';
 
   @override
   String get loginKeySignIn => 'সাইন ইন';
@@ -15469,4 +15467,44 @@ class AppLocalizationsBn extends AppLocalizations {
   String sessionRecordingClosedStudent(String title) {
     return 'আপনার শিক্ষক রেকর্ডিং $title বন্ধ করেছেন।';
   }
+
+  @override
+  String get adminSetupSpeechLanguageField => 'বলার ভাষা';
+
+  @override
+  String get adminSetupSpeechRateField => 'বলার গতি';
+
+  @override
+  String get adminSetupSpeechNotSet => 'ঠিক করা নেই (ব্যক্তি নিজে বেছে নেবেন)';
+
+  @override
+  String get adminSetupSpeechHelp =>
+      'ব্যক্তির ফোনে সেটিংস না খুলেই ব্যবহার হয়। তিনি সেখানে এটি বদলাতেও পারেন।';
+
+  @override
+  String get loginSimNumberUsed => 'এই ফোনের নম্বর ব্যবহার করা হয়েছে।';
+
+  @override
+  String get loginSimNumberFilled =>
+      'এই ফোনের নম্বর ভরা হয়েছে। সাইন ইন করতে 1 টিপুন, অথবা অন্য নম্বর টাইপ করুন।';
+
+  @override
+  String messagePressToRetry(String key) {
+    return 'আবার চেষ্টা করতে $key টিপুন।';
+  }
+
+  @override
+  String get sessionHandQueuedRaise =>
+      'সংযোগ নেই। সংযোগ ফিরলেই আপনার হাত উঠবে। বাতিল করতে 2 টিপুন।';
+
+  @override
+  String get sessionHandQueuedLower =>
+      'সংযোগ নেই। সংযোগ ফিরলেই আপনার হাত নামবে। বাতিল করতে 2 টিপুন।';
+
+  @override
+  String get sessionHandQueueCancelled => 'হাত তোলার অনুরোধ বাতিল হয়েছে।';
+
+  @override
+  String get quizAnswerQueued =>
+      'সংযোগ নেই। আপনার উত্তর রাখা আছে, সংযোগ ফিরলেই পাঠানো হবে।';
 }

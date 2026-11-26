@@ -11924,12 +11924,10 @@ class AppLocalizationsKn extends AppLocalizations {
   String get apiItemNotFound => 'ಕೇಳಿದ ಐಟಂ ಸಿಗಲಿಲ್ಲ.';
 
   @override
-  String get apiServiceUnavailable =>
-      'ಸೇವೆ ತಾತ್ಕಾಲಿಕವಾಗಿ ಲಭ್ಯವಿಲ್ಲ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
+  String get apiServiceUnavailable => 'ಸೇವೆ ಈಗ ಉತ್ತರಿಸುತ್ತಿಲ್ಲ.';
 
   @override
-  String get apiNetworkFailure =>
-      'ಆ ವಿನಂತಿಯನ್ನು ಪೂರ್ಣಗೊಳಿಸಲು ಆಗಲಿಲ್ಲ. ನಿಮ್ಮ ಸಂಪರ್ಕ ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
+  String get apiNetworkFailure => 'ಸಂಪರ್ಕವಿಲ್ಲ, ಆದ್ದರಿಂದ ಅದು ಆಗಲಿಲ್ಲ.';
 
   @override
   String get apiUnknownFailure =>
@@ -14104,7 +14102,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get loginIntro =>
-      'ನಿಮ್ಮ ಫೋನ್ ಸಂಖ್ಯೆಯನ್ನು ಟೈಪ್ ಮಾಡಿ, ಓಕೆ ಒತ್ತಿ, ನಂತರ ಸೈನ್ ಇನ್ ಮಾಡಲು 1 ಒತ್ತಿ.';
+      'ನಿಮ್ಮ ಫೋನ್ ಸಂಖ್ಯೆಯನ್ನು ಟೈಪ್ ಮಾಡಿ. ಸಂಖ್ಯೆ ಪೂರ್ಣವಾದಾಗ ಸೈನ್ ಇನ್ ತಾನಾಗಿಯೇ ಆರಂಭವಾಗುತ್ತದೆ.';
 
   @override
   String get loginPhoneField => 'ಫೋನ್ ಸಂಖ್ಯೆ. ಸಂಖ್ಯೆ ಕೀಗಳಿಂದ ಟೈಪ್ ಮಾಡಿ.';
@@ -14120,7 +14118,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get loginEnterProfileCode =>
-      'ಈ ಫೋನ್ ಹಂಚಿಕೊಂಡದ್ದು. ನಿಮ್ಮ ಪ್ರೊಫೈಲ್ ಸಂಖ್ಯೆಯನ್ನು ಟೈಪ್ ಮಾಡಿ, ಓಕೆ ಒತ್ತಿ, ನಂತರ 1 ಒತ್ತಿ.';
+      'ಈ ಫೋನ್ ಹಂಚಿಕೊಂಡದ್ದು. ನಿಮ್ಮ ಪ್ರೊಫೈಲ್ ಸಂಖ್ಯೆಯನ್ನು ಟೈಪ್ ಮಾಡಿ.';
 
   @override
   String get loginKeySignIn => 'ಸೈನ್ ಇನ್';
@@ -15524,4 +15522,45 @@ class AppLocalizationsKn extends AppLocalizations {
   String sessionRecordingClosedStudent(String title) {
     return 'ನಿಮ್ಮ ಶಿಕ್ಷಕರು $title ರೆಕಾರ್ಡಿಂಗ್ ಮುಚ್ಚಿದ್ದಾರೆ.';
   }
+
+  @override
+  String get adminSetupSpeechLanguageField => 'ಮಾತಿನ ಭಾಷೆ';
+
+  @override
+  String get adminSetupSpeechRateField => 'ಮಾತಿನ ವೇಗ';
+
+  @override
+  String get adminSetupSpeechNotSet =>
+      'ಹೊಂದಿಸಿಲ್ಲ (ವ್ಯಕ್ತಿಯೇ ಆಯ್ಕೆ ಮಾಡುತ್ತಾರೆ)';
+
+  @override
+  String get adminSetupSpeechHelp =>
+      'ವ್ಯಕ್ತಿಯ ಫೋನ್‌ನಲ್ಲಿ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ತೆರೆಯದೆ ಬಳಸಲಾಗುತ್ತದೆ. ಅವರು ಅಲ್ಲಿ ಇದನ್ನು ಬದಲಾಯಿಸಬಹುದು.';
+
+  @override
+  String get loginSimNumberUsed => 'ಈ ಫೋನ್‌ನ ಸಂಖ್ಯೆಯನ್ನು ಬಳಸಲಾಗಿದೆ.';
+
+  @override
+  String get loginSimNumberFilled =>
+      'ಈ ಫೋನ್‌ನ ಸಂಖ್ಯೆಯನ್ನು ತುಂಬಲಾಗಿದೆ. ಸೈನ್ ಇನ್ ಮಾಡಲು 1 ಒತ್ತಿ, ಅಥವಾ ಬೇರೆ ಸಂಖ್ಯೆ ಟೈಪ್ ಮಾಡಿ.';
+
+  @override
+  String messagePressToRetry(String key) {
+    return 'ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಲು $key ಒತ್ತಿ.';
+  }
+
+  @override
+  String get sessionHandQueuedRaise =>
+      'ಸಂಪರ್ಕವಿಲ್ಲ. ಸಂಪರ್ಕ ಮರಳಿದಾಗ ನಿಮ್ಮ ಕೈ ಎತ್ತಲಾಗುತ್ತದೆ. ರದ್ದುಮಾಡಲು 2 ಒತ್ತಿ.';
+
+  @override
+  String get sessionHandQueuedLower =>
+      'ಸಂಪರ್ಕವಿಲ್ಲ. ಸಂಪರ್ಕ ಮರಳಿದಾಗ ನಿಮ್ಮ ಕೈ ಇಳಿಸಲಾಗುತ್ತದೆ. ರದ್ದುಮಾಡಲು 2 ಒತ್ತಿ.';
+
+  @override
+  String get sessionHandQueueCancelled => 'ಕೈ ಎತ್ತುವ ವಿನಂತಿ ರದ್ದಾಗಿದೆ.';
+
+  @override
+  String get quizAnswerQueued =>
+      'ಸಂಪರ್ಕವಿಲ್ಲ. ನಿಮ್ಮ ಉತ್ತರವನ್ನು ಇಟ್ಟುಕೊಳ್ಳಲಾಗಿದೆ, ಸಂಪರ್ಕ ಮರಳಿದಾಗ ಕಳುಹಿಸಲಾಗುತ್ತದೆ.';
 }

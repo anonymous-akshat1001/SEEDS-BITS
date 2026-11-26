@@ -241,6 +241,7 @@ async def home(
         "name": current_user.name,
         "server_time": sched.iso_utc(now),
         "live_class": None,
+        "speech": auth.speech_payload(current_user),
     }
     if current_user.role == "teacher":
         live = await live_session_for_teacher(db, current_user.user_id)

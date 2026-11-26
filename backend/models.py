@@ -124,12 +124,24 @@ class User(Base):
     # Students and teachers sign in by phone number only; an inactive account
     # cannot sign in or receive class alerts.
     is_active = Column(Boolean, nullable=False, default=True, server_default=text("true"))
+    # Speech set by the administrator (null: not set). The phone applies a
+    # value when it changes; the person can still change it in Settings.
+    speech_language = Column(String(5))
+    speech_rate = Column(Float)
     created_at = Column(TIMESTAMP, server_default=func.now())
     fcm_tokens = relationship("FCMToken", back_populates="user", cascade="all, delete-orphan")
 
 
     __table_args__ = (
         CheckConstraint("role IN ('admin', 'teacher', 'student')", name="check_role"),
+        CheckConstraint(
+            "speech_language IS NULL OR speech_language IN ('en', 'hi', 'kn', 'te', 'bn')",
+            name="check_user_speech_language",
+        ),
+        CheckConstraint(
+            "speech_rate IS NULL OR (speech_rate >= 0.25 AND speech_rate <= 2.0)",
+            name="check_user_speech_rate",
+        ),
     )
 
     # Relationships

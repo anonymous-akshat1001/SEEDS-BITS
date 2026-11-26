@@ -9,6 +9,7 @@ import '../l10n/speech.dart';
 import '../services/api_service.dart';
 import '../services/feedback_cues.dart';
 import '../services/message_center.dart';
+import '../services/pending_action.dart';
 import '../services/quiz_speech_speed.dart';
 import '../services/tts_service.dart';
 import '../utils/keypad_actions.dart';
@@ -2427,10 +2428,15 @@ class QuizAttemptScreen extends StatefulWidget {
     super.key,
     required this.quizTitle,
     required this.initialAttempt,
+    this.returnWhenFinished = false,
   });
 
   final String quizTitle;
   final Map<String, dynamic> initialAttempt;
+
+  /// Opened from a live class: once the quiz is finished, say so and go
+  /// back to the class by itself. From Home the result screen stays.
+  final bool returnWhenFinished;
 
   @override
   State<QuizAttemptScreen> createState() => _QuizAttemptScreenState();
@@ -2444,6 +2450,9 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
   int? _selectedOptionId;
   Map<String, dynamic>? _feedback;
   bool _submitting = false;
+
+  /// The answer is kept on the phone until the connection is back.
+  bool _answerQueued = false;
   bool _completing = false;
   String? _completionError;
   Timer? _timer;
@@ -2708,13 +2717,29 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
       return;
     }
     setState(() => _submitting = true);
-    final response = await ApiService.submitQuizAnswer(
-      attemptId: _attempt['attempt_id'] as int,
-      questionId: question['quiz_question_id'] as int,
-      optionId: _selectedOptionId!,
+    final attemptId = _attempt['attempt_id'] as int;
+    final questionId = question['quiz_question_id'] as int;
+    final optionId = _selectedOptionId!;
+    // With no connection the answer is kept and sent when it is back, so
+    // the student never has to answer again.
+    final response = await sendWhenConnected(
+      () => ApiService.submitQuizAnswer(
+        attemptId: attemptId,
+        questionId: questionId,
+        optionId: optionId,
+      ),
+      stillWanted: () => mounted && _attempt['status'] == 'in_progress',
+      onQueued: () {
+        if (!mounted) return;
+        setState(() => _answerQueued = true);
+        unawaited(TtsService.speak(Speech.t.quizAnswerQueued));
+      },
     );
     if (!mounted) return;
-    setState(() => _submitting = false);
+    setState(() {
+      _submitting = false;
+      _answerQueued = false;
+    });
     final result = response.data;
     if (!response.isSuccess ||
         result == null ||
@@ -2866,6 +2891,15 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
       _attempt = result;
       _completing = false;
     });
+    if (widget.returnWhenFinished) {
+      await TtsService.speak(
+        Speech.t.quizAttemptStatusPrivate('${result['status']}'),
+      );
+      _afterSpeech(() {
+        if (mounted) Navigator.pop(context);
+      });
+      return;
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _keypad.focusAndAnnounce(
@@ -2949,7 +2983,8 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
       return;
     }
     if (_exitDialog) return;
-    if (_submitting || _completing) {
+    // A queued answer may wait a long time; the student can still leave.
+    if ((_submitting && !_answerQueued) || _completing) {
       await TtsService.speak(Speech.t.quizWaitPending);
       return;
     }

@@ -117,8 +117,37 @@ class MessageCenter {
   static void success(String text, {bool speak = true}) =>
       show(text, kind: MessageKind.success, speak: speak);
 
+  static int? _lastKey;
+  static DateTime? _lastKeyAt;
+
+  /// The number key the person last pressed for an action. A connection
+  /// problem right after it is fixed by pressing that key again.
+  static void noteKey(int key) {
+    _lastKey = key;
+    _lastKeyAt = DateTime.now();
+  }
+
+  /// Connection and service problems end with the key that tries again,
+  /// when the problem follows a key press (0 only goes back).
+  static String withRetryKey(String text) {
+    final t = Speech.t;
+    final key = _lastKey;
+    final at = _lastKeyAt;
+    final retryable =
+        text.contains(t.apiNetworkFailure) ||
+        text.contains(t.apiServiceUnavailable);
+    if (!retryable ||
+        key == null ||
+        key == 0 ||
+        at == null ||
+        DateTime.now().difference(at) > const Duration(seconds: 40)) {
+      return text;
+    }
+    return '$text ${t.messagePressToRetry('$key')}';
+  }
+
   static void error(String text, {bool speak = true}) =>
-      show(text, kind: MessageKind.error, speak: speak);
+      show(withRetryKey(text), kind: MessageKind.error, speak: speak);
 
   /// "Last message: ...", or null when there is none.
   static String? spoken() {

@@ -342,6 +342,27 @@ async def test_new_people_need_a_class_or_a_class_and_subject(school):
 
 
 @pytest.mark.asyncio
+async def test_the_administrator_sets_speech_and_the_phone_receives_it(school):
+    db, data, clock, factory, sent = school
+    created = await admin_api.create_user(admin_api.UserCreate(
+        name="Mina", phone_number="9111111111", role="student", class_id=data["class_one"].class_id,
+        speech_language="kn", speech_rate=0.75,
+    ), admin=data["admin"], db=db)
+    assert (created["speech_language"], created["speech_rate"]) == ("kn", 0.75)
+    mina = await db.get(models.User, created["user_id"])
+    assert auth.session_payload(mina)["speech"] == {"language": "kn", "rate": 0.75}
+    # Changing the name leaves speech alone; sending null clears only that field.
+    await admin_api.update_user(mina.user_id, admin_api.UserUpdate(name="Meena"), admin=data["admin"], db=db)
+    updated = await admin_api.update_user(
+        mina.user_id, admin_api.UserUpdate(speech_language=None), admin=data["admin"], db=db,
+    )
+    assert (updated["speech_language"], updated["speech_rate"]) == (None, 0.75)
+    assert (await classroom.home(mina, db))["speech"] == {"language": None, "rate": 0.75}
+    with pytest.raises(ValueError):
+        admin_api.UserUpdate(speech_language="fr")
+
+
+@pytest.mark.asyncio
 async def test_prepared_lesson_is_linked_and_listed_in_order_for_the_teacher(school):
     db, data, clock, factory, sent = school
     audio = [

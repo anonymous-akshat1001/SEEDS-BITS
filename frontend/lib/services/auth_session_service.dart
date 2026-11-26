@@ -149,17 +149,78 @@ class AuthSessionService {
     if (saved.any((ok) => !ok) || !await prefs.setString('token', token)) {
       throw StateError('Sign-in could not be saved');
     }
+    await prefs.remove(signedOutByChoiceKey);
     final chosenSignedOut = prefs.getString(
       TtsService.languageChosenSignedOutKey,
     );
     final restored = await restoreAccountProfile(prefs, userId);
+    final administered = await _takeAdministratorSpeech(
+      prefs,
+      userId,
+      data['speech'],
+    );
     if (chosenSignedOut != null) {
       await prefs.setString('speech_language', chosenSignedOut);
       await prefs.remove(TtsService.languageChosenSignedOutKey);
     }
-    if (restored || chosenSignedOut != null) {
+    if (restored || administered || chosenSignedOut != null) {
       await _applyPreferences(prefs);
     }
+  }
+
+  static String _administeredKey(int userId) => 'administered_speech_$userId';
+
+  /// Set when the person logged out on purpose; cleared by the next sign-in.
+  static const signedOutByChoiceKey = 'signed_out_by_choice';
+
+  /// Applies the language and speed the administrator chose for this
+  /// person (`speech` from sign-in or Home), but only a value that changed
+  /// since it was last applied on this phone: a change the person made in
+  /// Settings is kept until the administrator changes that value again.
+  /// Returns whether anything was applied.
+  static Future<bool> applyAdministratorSpeech(Object? speech) async {
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getInt('user_id');
+    if (userId == null) return false;
+    final applied = await _takeAdministratorSpeech(prefs, userId, speech);
+    if (applied) await TtsService.loadFromPreferences();
+    return applied;
+  }
+
+  static Future<bool> _takeAdministratorSpeech(
+    SharedPreferences prefs,
+    int userId,
+    Object? speech,
+  ) async {
+    if (speech is! Map) return false;
+    final language = speech['language'];
+    final rate = speech['rate'];
+    Map<String, Object?> last;
+    try {
+      final saved = jsonDecode(
+        prefs.getString(_administeredKey(userId)) ?? '{}',
+      );
+      last = saved is Map ? Map<String, Object?>.from(saved) : {};
+    } on FormatException {
+      last = {};
+    }
+    var applied = false;
+    if (language is String && language != last['language']) {
+      await prefs.setString('speech_language', language);
+      applied = true;
+    }
+    if (rate is num && rate.toDouble() != last['rate']) {
+      await TtsService.storeSpeechRate(prefs, rate.toDouble());
+      applied = true;
+    }
+    await prefs.setString(
+      _administeredKey(userId),
+      jsonEncode({
+        'language': language is String ? language : null,
+        'rate': rate is num ? rate.toDouble() : null,
+      }),
+    );
+    return applied;
   }
 
   static Future<bool> confirmLogout(BuildContext context) async {
@@ -188,6 +249,10 @@ class AuthSessionService {
       debugPrint('[LOGOUT] Notification token cleanup deferred: $error');
     }
     await clearLoginState();
+    // The next sign-in on this phone may be someone else: the SIM number is
+    // offered but not used to sign straight back in.
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(signedOutByChoiceKey, true);
     MessageCenter.carryToNextScreen(Speech.t.authLoggedOut);
     if (!context.mounted) return true;
     Navigator.of(context).pushNamedAndRemoveUntil('/welcome', (_) => false);

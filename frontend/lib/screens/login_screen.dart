@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mobile_number/mobile_number.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../announcers/auth_text.dart';
 import '../l10n/speech.dart';
@@ -28,9 +29,11 @@ void openHomeForRole(BuildContext context, String role) {
   Navigator.of(context).pushNamedAndRemoveUntil(route, (_) => false);
 }
 
-/// Students and teachers sign in with their phone number only. The keypad
-/// enters the number, so it works with no SIM card and on Wi-Fi. A shared
-/// phone then asks for the person's short profile number.
+/// Students and teachers sign in with their phone number only. On Android
+/// the SIM card's number is used by itself when the phone allows it; else
+/// the keypad enters the number, so it works with no SIM card and on Wi-Fi.
+/// Sign-in starts as soon as the number is complete. A shared phone then
+/// asks for the person's short profile number, also sent once complete.
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -53,6 +56,46 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _simRequestPending = false;
   bool _simDetecting = false;
   String? _simStatusMessage;
+
+  /// Digits in a shared phone's profile number, from the server.
+  int? _profileLength;
+
+  /// Set once the phone's own permission prompt was refused, so it is not
+  /// shown again; key 2 still reads the SIM on request.
+  static const _simDeclinedKey = 'sim_number_declined';
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => unawaited(_useSimNumberAutomatically()),
+    );
+  }
+
+  /// Digits a complete number has: 10 for a mobile number, 11 with a
+  /// leading 0, 12 with +91.
+  static int _completeLength(String text) {
+    final trimmed = text.trimLeft();
+    if (trimmed.startsWith('+')) return 12;
+    return trimmed.startsWith('0') ? 11 : 10;
+  }
+
+  static int _digits(String text) => text.replaceAll(RegExp(r'\D'), '').length;
+
+  void _phoneChanged(String text) {
+    if (_errorMessage != null) setState(() => _errorMessage = null);
+    if (!_needsProfile && _digits(text) == _completeLength(text)) {
+      unawaited(_signIn());
+    }
+  }
+
+  void _codeChanged(String text) {
+    if (_errorMessage != null) setState(() => _errorMessage = null);
+    final length = _profileLength;
+    if (_needsProfile && length != null && _digits(text) == length) {
+      unawaited(_signIn());
+    }
+  }
 
   /// Strips the leading '91' country code from Indian phone numbers.
   String _stripCountryCode(String number) {
@@ -79,7 +122,58 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  // ── Optional SIM suggestion: never automatic, never required ──────────
+  // ── The SIM number, used by itself when the phone allows it ──────────
+
+  /// Reads this phone's own number without any question from SEEDS. The
+  /// phone's permission prompt appears at most once; if it is refused, or
+  /// there is no SIM or no readable number, the person simply types it. One
+  /// number is used straight away (unless the last person logged out on
+  /// purpose); with two SIM cards the person chooses.
+  Future<void> _useSimNumberAutomatically() async {
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) return;
+    if (!mounted || phoneCtrl.text.isNotEmpty || isLoading) return;
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.getBool(_simDeclinedKey) == true) return;
+    try {
+      // No timeouts: if the phone never answers, the number is just typed.
+      var status = await Permission.phone.status;
+      if (!status.isGranted) status = await Permission.phone.request();
+      if (!mounted) return;
+      if (!status.isGranted) {
+        await prefs.setBool(_simDeclinedKey, true);
+        return;
+      }
+      final lookup = MobileNumber.getSimCards;
+      if (lookup == null) return;
+      final cards = await lookup;
+      if (!mounted || phoneCtrl.text.isNotEmpty || isLoading) return;
+      final numbers = {
+        for (final card in cards)
+          if (_stripCountryCode(card.number ?? '') case final number
+              when RegExp(r'^\d{10}$').hasMatch(number))
+            number,
+      }.toList();
+      if (numbers.isEmpty) return;
+      if (numbers.length > 1) {
+        await _showSimSelectionDialog(cards);
+        return;
+      }
+      phoneCtrl.text = numbers.single;
+      final signedOutByChoice =
+          prefs.getBool(AuthSessionService.signedOutByChoiceKey) == true;
+      setState(() => _simStatusMessage = Speech.t.loginSimNumberUsed);
+      if (signedOutByChoice) {
+        await TtsService.speak(Speech.t.loginSimNumberFilled);
+      } else {
+        await _signIn();
+      }
+    } catch (error) {
+      // Any failure only means the number is typed, as on Wi-Fi.
+      debugPrint('Automatic SIM number unavailable (${error.runtimeType})');
+    }
+  }
+
+  // ── Optional SIM suggestion on key 2 (asks first) ──────────────────────
 
   Future<void> _initMobileNumber() async {
     if (_simRequestPending || _simDetecting || isLoading) return;
@@ -209,7 +303,11 @@ class _LoginScreenState extends State<LoginScreen> {
       phoneCtrl.text = selection;
       _simStatusMessage = Speech.t.authSimSelectedFilled;
     });
-    await TtsService.speak(Speech.t.authSimSuggestionFilledSpoken);
+    if (_digits(selection) == _completeLength(selection)) {
+      await _signIn();
+    } else {
+      await TtsService.speak(Speech.t.authSimSuggestionFilledSpoken);
+    }
   }
 
   // ── Sign in ────────────────────────────────────────────────────────────
@@ -246,8 +344,10 @@ class _LoginScreenState extends State<LoginScreen> {
       }
       final data = result.data!;
       if (data['profile_required'] == true) {
+        final length = data['code_length'];
         setState(() {
           _needsProfile = true;
+          _profileLength = length is int && length > 0 ? length : null;
           isLoading = false;
         });
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -283,6 +383,7 @@ class _LoginScreenState extends State<LoginScreen> {
     }
     setState(() {
       _needsProfile = false;
+      _profileLength = null;
       _errorMessage = null;
       codeCtrl.clear();
     });
@@ -291,6 +392,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _setError(String message, FocusNode target) {
     if (!mounted) return;
+    final t = Speech.t;
+    // A connection problem is fixed by signing in again with 1.
+    if (message.contains(t.apiNetworkFailure) ||
+        message.contains(t.apiServiceUnavailable)) {
+      message = '$message ${t.messagePressToRetry('1')}';
+    }
     setState(() {
       _errorMessage = message;
       isLoading = false;
@@ -391,6 +498,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       icon: Icons.phone_iphone_rounded,
                       error: _needsProfile ? null : _errorMessage,
                       readOnly: _needsProfile,
+                      onChanged: _phoneChanged,
                     ),
                     if (_needsProfile) ...[
                       SizedBox(height: UIUtils.spacing(context, 12)),
@@ -400,6 +508,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         label: t.loginProfileLabel,
                         icon: Icons.pin_outlined,
                         error: _errorMessage,
+                        onChanged: _codeChanged,
                       ),
                     ],
                     SizedBox(height: UIUtils.spacing(context, 12)),
@@ -451,6 +560,7 @@ class _LoginScreenState extends State<LoginScreen> {
     required FocusNode focusNode,
     required String label,
     required IconData icon,
+    required ValueChanged<String> onChanged,
     String? error,
     bool readOnly = false,
   }) => TextField(
@@ -459,9 +569,7 @@ class _LoginScreenState extends State<LoginScreen> {
     readOnly: readOnly,
     keyboardType: TextInputType.phone,
     inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[\d+ ]'))],
-    onChanged: (_) {
-      if (_errorMessage != null) setState(() => _errorMessage = null);
-    },
+    onChanged: onChanged,
     style: TextStyle(
       fontSize: UIUtils.fontSize(context, 18),
       color: UIUtils.textColor,

@@ -3,12 +3,15 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:frontend/screens/login_screen.dart';
 import 'package:frontend/services/notification_services.dart';
 import 'package:frontend/services/tts_service.dart';
 import 'package:frontend/widgets/sim_suggestion_dialog.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -45,7 +48,8 @@ void main() {
 
   setUp(() async {
     AndroidFlutterLocalNotificationsPlugin.registerWith();
-    SharedPreferences.setMockInitialValues({});
+    // Key 2 tests: the automatic read is off, as after a refused permission.
+    SharedPreferences.setMockInitialValues({'sim_number_declined': true});
     phoneCalls = [];
     simCalls = [];
     cards = [
@@ -105,7 +109,7 @@ void main() {
     (tester) async {
       await tester.pumpWidget(const MaterialApp(home: LoginScreen()));
       await tester.pump();
-      await tester.enterText(find.byType(TextField).first, '9000000002');
+      await tester.enterText(find.byType(TextField).first, '900000002');
       await tester.sendKeyEvent(LogicalKeyboardKey.select);
       await tester.pump();
       expect(tester.testTextInput.hasAnyClients, isFalse);
@@ -115,7 +119,7 @@ void main() {
       expect(find.textContaining('Read SIM suggestions'), findsOneWidget);
       expect(
         tester.widget<TextField>(find.byType(TextField).first).controller!.text,
-        '9000000002',
+        '900000002',
       );
       expect(phoneCalls, isEmpty);
       expect(simCalls, isEmpty);
@@ -123,37 +127,110 @@ void main() {
     },
   );
 
-  androidTestWidgets(
-    'login never reads SIM information automatically even when permission already exists; declining keeps manual entry',
-    (tester) async {
-      await tester.pumpWidget(const MaterialApp(home: LoginScreen()));
-      await tester.pumpAndSettle();
-      expect(phoneCalls, isEmpty);
-      expect(simCalls, isEmpty);
-      await tester.enterText(find.byType(TextField).first, '9000000002');
-      await activate(tester, 'login-sim-suggestion');
-      await activate(tester, 'dialog-cancel');
-      expect(phoneCalls, isEmpty);
-      expect(simCalls, isEmpty);
-      expect(
-        tester.widget<TextField>(find.byType(TextField).first).controller!.text,
-        '9000000002',
+  group('the SIM number is used by itself', () {
+    late List<Map<String, dynamic>> signIns;
+
+    Future<void> openLogin(WidgetTester tester) async {
+      await http.runWithClient(
+        () async {
+          await tester.pumpWidget(const MaterialApp(home: LoginScreen()));
+          await tester.pumpAndSettle();
+        },
+        () => MockClient((request) async {
+          signIns.add(jsonDecode(request.body) as Map<String, dynamic>);
+          return http.Response('{"detail":"not registered"}', 401);
+        }),
       );
-    },
-  );
+    }
+
+    setUp(() {
+      signIns = [];
+      dotenv.testLoad(fileInput: 'API_BASE_URL=https://example.test');
+    });
+
+    androidTestWidgets(
+      'one SIM fills the number and signs in, with no question',
+      (tester) async {
+        SharedPreferences.setMockInitialValues({});
+        await openLogin(tester);
+        expect(find.textContaining('Read SIM suggestions'), findsNothing);
+        expect(
+          tester
+              .widget<TextField>(find.byType(TextField).first)
+              .controller!
+              .text,
+          '9000000001',
+        );
+        expect(signIns.single, {'phone_number': '9000000001'});
+        await tester.pumpWidget(const SizedBox.shrink());
+      },
+    );
+
+    androidTestWidgets(
+      'after logging out on purpose the number is filled but not used',
+      (tester) async {
+        SharedPreferences.setMockInitialValues({'signed_out_by_choice': true});
+        await openLogin(tester);
+        expect(
+          tester
+              .widget<TextField>(find.byType(TextField).first)
+              .controller!
+              .text,
+          '9000000001',
+        );
+        expect(signIns, isEmpty);
+        await tester.pumpWidget(const SizedBox.shrink());
+      },
+    );
+
+    androidTestWidgets('two SIMs ask which number is yours', (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      cards.add({
+        'carrierName': 'Second carrier',
+        'number': '+91 9000000003',
+        'slotIndex': 1,
+      });
+      await openLogin(tester);
+      expect(find.text('Choose SIM suggestion'), findsOneWidget);
+      expect(signIns, isEmpty);
+    });
+
+    androidTestWidgets(
+      'a refused permission is asked once; then the number is typed',
+      (tester) async {
+        SharedPreferences.setMockInitialValues({});
+        permissionGranted = false;
+        await openLogin(tester);
+        expect(simCalls, isEmpty);
+        expect(
+          tester
+              .widget<TextField>(find.byType(TextField).first)
+              .controller!
+              .text,
+          isEmpty,
+        );
+        final prefs = await SharedPreferences.getInstance();
+        expect(prefs.getBool('sim_number_declined'), isTrue);
+        phoneCalls.clear();
+        await openLogin(tester);
+        expect(phoneCalls, isEmpty);
+        await tester.pumpWidget(const SizedBox.shrink());
+      },
+    );
+  });
 
   androidTestWidgets(
     'SIM suggestions require consent then a keypad selection; one SIM never silently replaces manual entry',
     (tester) async {
       await tester.pumpWidget(const MaterialApp(home: LoginScreen()));
       await tester.pump();
-      await tester.enterText(find.byType(TextField).first, '9000000002');
+      await tester.enterText(find.byType(TextField).first, '900000002');
       await activate(tester, 'login-sim-suggestion');
       await activate(tester, 'dialog-confirm');
       expect(find.text('Choose SIM suggestion'), findsOneWidget);
       expect(
         tester.widget<TextField>(find.byType(TextField).first).controller!.text,
-        '9000000002',
+        '900000002',
       );
       await activate(tester, 'sim-suggestion-0');
       expect(
@@ -175,7 +252,7 @@ void main() {
       permissionGranted = false;
       await tester.pumpWidget(const MaterialApp(home: LoginScreen()));
       await tester.pump();
-      await tester.enterText(find.byType(TextField).first, '9000000002');
+      await tester.enterText(find.byType(TextField).first, '900000002');
       await activate(tester, 'login-sim-suggestion');
       await activate(tester, 'dialog-confirm');
       expect(simCalls, isEmpty);
@@ -185,7 +262,7 @@ void main() {
       );
       expect(
         tester.widget<TextField>(find.byType(TextField).first).controller!.text,
-        '9000000002',
+        '900000002',
       );
       expect(find.text('1: Sign in'), findsOneWidget);
     },
@@ -199,7 +276,7 @@ void main() {
       ];
       await tester.pumpWidget(const MaterialApp(home: LoginScreen()));
       await tester.pump();
-      await tester.enterText(find.byType(TextField).first, '9000000002');
+      await tester.enterText(find.byType(TextField).first, '900000002');
       await activate(tester, 'login-sim-suggestion');
       await activate(tester, 'dialog-confirm');
       await activate(tester, 'sim-suggestion-0');
@@ -207,7 +284,7 @@ void main() {
       await activate(tester, 'sim-suggestion-cancel');
       expect(
         tester.widget<TextField>(find.byType(TextField).first).controller!.text,
-        '9000000002',
+        '900000002',
       );
     },
   );
@@ -280,7 +357,7 @@ void main() {
       cards = [];
       await tester.pumpWidget(const MaterialApp(home: LoginScreen()));
       await tester.pump();
-      await tester.enterText(find.byType(TextField).first, '9000000002');
+      await tester.enterText(find.byType(TextField).first, '900000002');
       await activate(tester, 'login-sim-suggestion');
       await activate(tester, 'dialog-confirm');
       expect(
@@ -299,7 +376,7 @@ void main() {
       );
       expect(
         tester.widget<TextField>(find.byType(TextField).first).controller!.text,
-        '9000000002',
+        '900000002',
       );
       expect(find.text('1: Sign in'), findsOneWidget);
       expect(find.text('Choose SIM suggestion'), findsNothing);
@@ -316,12 +393,12 @@ void main() {
       });
       await tester.pumpWidget(const MaterialApp(home: LoginScreen()));
       await tester.pump();
-      await tester.enterText(find.byType(TextField).first, '9000000002');
+      await tester.enterText(find.byType(TextField).first, '900000002');
       await activate(tester, 'login-sim-suggestion');
       await activate(tester, 'dialog-confirm');
       expect(
         tester.widget<TextField>(find.byType(TextField).first).controller!.text,
-        '9000000002',
+        '900000002',
       );
       await activate(tester, 'sim-suggestion-1');
       expect(
@@ -350,7 +427,7 @@ void main() {
         );
         await tester.pumpWidget(const MaterialApp(home: LoginScreen()));
         await tester.pump();
-        await tester.enterText(find.byType(TextField).first, '9000000002');
+        await tester.enterText(find.byType(TextField).first, '900000002');
         await activate(tester, 'login-sim-suggestion');
         await activate(tester, 'dialog-confirm');
         expect(
@@ -364,7 +441,7 @@ void main() {
               .widget<TextField>(find.byType(TextField).first)
               .controller!
               .text,
-          '9000000002',
+          '900000002',
         );
         expect(find.text('1: Sign in'), findsOneWidget);
         expect(tester.takeException(), isNull);

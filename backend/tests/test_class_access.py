@@ -310,6 +310,31 @@ async def test_single_participant_microphone_control_no_longer_exists(live_room,
 
 
 @pytest.mark.asyncio
+async def test_a_student_who_starts_speaking_has_the_hand_lowered(live_room):
+    db, data, room, teacher, student, logs, broadcast = live_room
+    student.hand_raised = True
+    student.hand_queue_order = 1
+    await db.commit()
+    result = await main.session_action(
+        room.session_id, main.SessionAction(type="mute_self", mute=False),
+        current_user=data["student"], db=db,
+    )
+    await db.refresh(student)
+    assert student.hand_raised is False and student.is_muted is False
+    assert result["hand_state"]["automatic"] is True
+    events = [call.args[1]["type"] for call in broadcast.await_args_list]
+    assert events == ["participant_muted", "hand_lowered"]
+    assert main.SESSION_STATE[room.session_id]["participants"][student.participant_id]["raised_hand"] is False
+    # Muting again, or unmuting without a hand up, changes nothing else.
+    broadcast.reset_mock()
+    await main.session_action(
+        room.session_id, main.SessionAction(type="mute_self", mute=True),
+        current_user=data["student"], db=db,
+    )
+    assert [call.args[1]["type"] for call in broadcast.await_args_list] == ["participant_muted"]
+
+
+@pytest.mark.asyncio
 @pytest.mark.parametrize("raised", [True, False])
 async def test_hand_status_is_saved_for_reconnection(live_room, raised):
     db, data, room, teacher, student, logs, broadcast = live_room

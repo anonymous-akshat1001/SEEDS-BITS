@@ -11861,12 +11861,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get apiItemNotFound => 'The requested item was not found.';
 
   @override
-  String get apiServiceUnavailable =>
-      'The service is temporarily unavailable. Please try again.';
+  String get apiServiceUnavailable => 'The service is not answering right now.';
 
   @override
-  String get apiNetworkFailure =>
-      'We could not complete that request. Check your connection and try again.';
+  String get apiNetworkFailure => 'No connection, so that did not go through.';
 
   @override
   String get apiUnknownFailure =>
@@ -14019,7 +14017,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get loginIntro =>
-      'Type your phone number, press OK, then press 1 to sign in.';
+      'Type your phone number. Signing in starts by itself when it is complete.';
 
   @override
   String get loginPhoneField => 'Phone number. Type it with the number keys.';
@@ -14035,7 +14033,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get loginEnterProfileCode =>
-      'This phone is shared. Type your profile number, press OK, then press 1.';
+      'This phone is shared. Type your profile number.';
 
   @override
   String get loginKeySignIn => 'Sign in';
@@ -15435,4 +15433,44 @@ class AppLocalizationsEn extends AppLocalizations {
   String sessionRecordingClosedStudent(String title) {
     return 'Your teacher closed the recording $title.';
   }
+
+  @override
+  String get adminSetupSpeechLanguageField => 'Speech language';
+
+  @override
+  String get adminSetupSpeechRateField => 'Speech speed';
+
+  @override
+  String get adminSetupSpeechNotSet => 'Not set (the person chooses)';
+
+  @override
+  String get adminSetupSpeechHelp =>
+      'Used on the person\'s phone without them opening Settings. They can still change it there.';
+
+  @override
+  String get loginSimNumberUsed => 'This phone\'s number was used.';
+
+  @override
+  String get loginSimNumberFilled =>
+      'This phone\'s number is filled in. Press 1 to sign in, or type another number.';
+
+  @override
+  String messagePressToRetry(String key) {
+    return 'Press $key to try again.';
+  }
+
+  @override
+  String get sessionHandQueuedRaise =>
+      'No connection. Your hand will go up when the connection is back. Press 2 to cancel.';
+
+  @override
+  String get sessionHandQueuedLower =>
+      'No connection. Your hand will go down when the connection is back. Press 2 to cancel.';
+
+  @override
+  String get sessionHandQueueCancelled => 'Hand request cancelled.';
+
+  @override
+  String get quizAnswerQueued =>
+      'No connection. Your answer is kept and will be sent when the connection is back.';
 }

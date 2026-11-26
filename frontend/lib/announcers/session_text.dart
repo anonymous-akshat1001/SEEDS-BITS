@@ -177,6 +177,9 @@ abstract final class SessionText {
   static String get handRaised => _t.sessionHandRaised;
   static String get handLowered => _t.sessionHandLowered;
   static String get handNotConfirmed => _t.sessionHandNotConfirmed;
+  static String handQueued(bool raise) =>
+      raise ? _t.sessionHandQueuedRaise : _t.sessionHandQueuedLower;
+  static String get handQueueCancelled => _t.sessionHandQueueCancelled;
   static String raisedHandBy(String? name) =>
       name == null ? _t.sessionRaisedHandUnknown : _t.sessionRaisedHandBy(name);
 

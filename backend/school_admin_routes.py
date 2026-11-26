@@ -68,18 +68,26 @@ class Workspace(BaseModel):
     subject_id: int
 
 
+SpeechLanguage = Literal["en", "hi", "kn", "te", "bn"]
+
+
 class UserCreate(BaseModel):
     name: str = Field(min_length=1, max_length=200)
     phone_number: str = Field(min_length=1, max_length=32)
     role: Literal["student", "teacher"]
     class_id: Optional[int] = None
     assignments: list[Workspace] = Field(default_factory=list)
+    speech_language: Optional[SpeechLanguage] = None
+    speech_rate: Optional[float] = Field(default=None, ge=0.25, le=2.0)
 
 
 class UserUpdate(BaseModel):
     name: Optional[str] = Field(default=None, min_length=1, max_length=200)
     phone_number: Optional[str] = Field(default=None, min_length=1, max_length=32)
     is_active: Optional[bool] = None
+    # Sending null clears the administrator's choice.
+    speech_language: Optional[SpeechLanguage] = None
+    speech_rate: Optional[float] = Field(default=None, ge=0.25, le=2.0)
 
 
 def _user_payload(user: models.User) -> dict:
@@ -90,6 +98,8 @@ def _user_payload(user: models.User) -> dict:
         "role": user.role,
         "is_active": user.is_active,
         "auth_version": user.auth_version,
+        "speech_language": user.speech_language,
+        "speech_rate": user.speech_rate,
     }
 
 
@@ -112,6 +122,7 @@ async def create_user(
     user = models.User(
         name=payload.name.strip(), phone_number=phone, role=payload.role,
         password_hash=auth.UNUSABLE_PASSWORD, is_active=True,
+        speech_language=payload.speech_language, speech_rate=payload.speech_rate,
     )
     db.add(user)
     try:
@@ -156,6 +167,11 @@ async def update_user(
     revoke = False
     if payload.name is not None:
         user.name = payload.name.strip()
+    sent = payload.model_fields_set
+    if "speech_language" in sent:
+        user.speech_language = payload.speech_language
+    if "speech_rate" in sent:
+        user.speech_rate = payload.speech_rate
     if payload.phone_number is not None:
         phone = normalize_phone(payload.phone_number)
         if phone != user.phone_number:

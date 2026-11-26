@@ -7,6 +7,10 @@ import 'api_service.dart';
 
 typedef JsonMap = Map<String, dynamic>;
 
+/// Speech the administrator chose for a person: a language code
+/// (en, hi, kn, te, bn) and a flutter_tts speed; null means not chosen.
+typedef AdminSpeech = ({String? language, double? rate});
+
 /// Administrator setup calls: people, shared phones, timetable, holidays,
 /// issues and class records. Every call needs the admin's bearer token.
 abstract final class AdminSetupApi {
@@ -174,6 +178,7 @@ abstract final class AdminSetupApi {
     required String role,
     int? classId,
     List<({int classId, int subjectId})> assignments = const [],
+    AdminSpeech speech = (language: null, rate: null),
   }) => _post('/admin/users', {
     'name': name,
     'phone_number': phoneNumber,
@@ -184,17 +189,25 @@ abstract final class AdminSetupApi {
         for (final pair in assignments)
           {'class_id': pair.classId, 'subject_id': pair.subjectId},
       ],
+    'speech_language': ?speech.language,
+    'speech_rate': ?speech.rate,
   });
 
+  /// [speech], when given, replaces both values (null clears one).
   static Future<ApiResult<JsonMap>> updatePerson(
     int accountId, {
     String? name,
     String? phoneNumber,
     bool? isActive,
+    AdminSpeech? speech,
   }) => _patch('/admin/users/$accountId', {
     'name': ?name,
     'phone_number': ?phoneNumber,
     'is_active': ?isActive,
+    if (speech != null) ...{
+      'speech_language': speech.language,
+      'speech_rate': speech.rate,
+    },
   });
 
   static Future<ApiResult<JsonMap>> signOutEverywhere(

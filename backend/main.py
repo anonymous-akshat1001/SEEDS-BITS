@@ -1793,6 +1793,28 @@ async def session_action(
                 "is_muted":       is_muted,
             },
         )
+        # A student who was called and starts speaking no longer needs the
+        # hand up: lowering it saves a key press and keeps the list honest.
+        if not is_muted and not is_teacher and p.hand_raised:
+            p.hand_raised = False
+            p.hand_queue_order = None
+            p.hand_revision = (p.hand_revision or 0) + 1
+            await db.commit()
+            event = {
+                "type": "hand_lowered", "participant_id": participant_id,
+                "raised_hand": False, "hand_queue_order": None,
+                "hand_revision": p.hand_revision, "automatic": True,
+            }
+            async with SESSION_LOCK:
+                metadata = SESSION_STATE.get(session_id, {}).get("participants", {}).get(participant_id)
+                if metadata is not None and metadata.get("hand_revision", 0) <= p.hand_revision:
+                    metadata.update({
+                        "raised_hand": False, "hand_queue_order": None,
+                        "hand_revision": p.hand_revision,
+                    })
+            await SessionLogger.log_hand_lowered(db, session_id, user_id, participant_id)
+            await ws_mgr.broadcast(session_id, event)
+            return {"ok": True, "hand_state": event}
 
     elif typ in {"raise_hand", "lower_hand", "acknowledge_hand", "leave_session"}:
         target = p

@@ -143,7 +143,13 @@ def session_payload(user: models.User) -> dict:
         "role": user.role,
         "name": user.name,
         "must_change_password": bool(user.must_change_password),
+        "speech": speech_payload(user),
     }
+
+
+def speech_payload(user: models.User) -> dict:
+    """Speech the administrator chose for this person (nulls: not chosen)."""
+    return {"language": user.speech_language, "rate": user.speech_rate}
 
 
 async def verify_temporary_password(user: models.User, password: str, db: AsyncSession):
